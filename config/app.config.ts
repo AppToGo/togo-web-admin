@@ -9,7 +9,7 @@ export const APP_CONFIG = {
   description: "Automatización de pedidos por WhatsApp",
   version: "1.0.0",
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/v1",
     timeout: 30000,
   },
   auth: {

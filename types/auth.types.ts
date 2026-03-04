@@ -13,6 +13,7 @@ export interface AuthenticatedUser {
   name: string;
   role: UserRole;
   businessId: string | null;
+  businessName: string | null;
   operatorProfileId: string | null;
 }
 

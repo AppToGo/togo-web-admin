@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useCurrentUser, useAuthStore } from "@/features/auth/stores/auth.store";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +17,7 @@ const navigation = [
   },
   {
     name: "Pedidos",
-    href: "/orders",
+    href: "/dashboard/orders",
     icon: ShoppingBagIcon,
   },
   {
@@ -39,10 +39,17 @@ const navigation = [
 
 interface SidebarProps {
   isOpen: boolean;
+  isCollapsed: boolean;
   onClose: () => void;
+  onToggleCollapse: () => void;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({
+  isOpen,
+  isCollapsed,
+  onClose,
+  onToggleCollapse,
+}: SidebarProps) {
   const pathname = usePathname();
   const user = useCurrentUser();
   const logout = useLogout();
@@ -52,7 +59,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -60,24 +67,28 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-100",
-          "transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 z-50 h-full",
+          "glass-strong border-r border-white/50",
+          "transition-all duration-300 ease-in-out",
           "lg:translate-x-0",
-          !isOpen && "-translate-x-full"
+          !isOpen && "-translate-x-full lg:hidden",
+          isCollapsed ? "w-20" : "w-64"
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100">
+        <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#6366F1] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center shrink-0 shadow-card">
               <span className="text-white font-bold text-sm">T</span>
             </div>
-            <span className="font-bold text-xl text-slate-900">Togo</span>
+            {!isCollapsed && (
+              <span className="font-bold text-xl text-slate-900">Togo</span>
+            )}
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-3 space-y-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -85,50 +96,82 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                  "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                  isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
                   isActive
-                    ? "bg-[#6366F1]/10 text-[#6366F1]"
+                    ? "bg-indigo-50 text-indigo-600"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 )}
+                title={isCollapsed ? item.name : undefined}
               >
                 <item.icon
                   className={cn(
-                    "w-5 h-5",
-                    isActive ? "text-[#6366F1]" : "text-slate-400"
+                    "w-5 h-5 shrink-0",
+                    isActive ? "text-indigo-600" : "text-slate-400"
                   )}
                 />
-                {item.name}
+                {!isCollapsed && <span>{item.name}</span>}
               </Link>
             );
           })}
         </nav>
 
+        {/* Toggle collapse button (desktop only) */}
+        <div className="absolute top-20 -right-3 hidden lg:block">
+          <button
+            onClick={onToggleCollapse}
+            className="w-6 h-6 rounded-full bg-white shadow-card border border-slate-100 text-slate-600 flex items-center justify-center hover:text-indigo-600 hover:border-indigo-200 transition-all"
+            title={isCollapsed ? "Expandir menú" : "Colapsar menú"}
+          >
+            <ChevronIcon
+              className={cn(
+                "w-3 h-3 transition-transform duration-300",
+                isCollapsed ? "rotate-180" : ""
+              )}
+            />
+          </button>
+        </div>
+
         {/* User section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50">
-            <div className="w-10 h-10 rounded-full bg-[#6366F1] flex items-center justify-center flex-shrink-0">
+        <div
+          className={cn(
+            "absolute bottom-0 left-0 right-0 border-t border-slate-100/50",
+            isCollapsed ? "p-2" : "p-4"
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center rounded-card bg-slate-50/80",
+              isCollapsed ? "justify-center p-2" : "gap-3 px-4 py-3"
+            )}
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-indigo-purple flex items-center justify-center shrink-0">
               <span className="text-white font-medium text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900 truncate">
-                {user?.name || "Usuario"}
-              </p>
-              <p className="text-xs text-slate-500 truncate">
-                {user?.email || ""}
-              </p>
-            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-900 truncate">
+                  {user?.name || "Usuario"}
+                </p>
+                <p className="text-xs text-slate-500 truncate">
+                  {user?.email || ""}
+                </p>
+              </div>
+            )}
           </div>
-          <Button
-            variant="ghost"
-            className="w-full mt-2 text-slate-500 hover:text-red-600"
-            onClick={() => logout.mutate()}
-            isLoading={logout.isPending}
-          >
-            <LogoutIcon className="w-4 h-4 mr-2" />
-            Cerrar sesión
-          </Button>
+          {!isCollapsed && (
+            <Button
+              variant="ghost"
+              className="w-full mt-2 text-slate-500 hover:text-red-600"
+              onClick={() => logout.mutate()}
+              isLoading={logout.isPending}
+            >
+              <LogoutIcon className="w-4 h-4 mr-2" />
+              Cerrar sesión
+            </Button>
+          )}
         </div>
       </aside>
     </>
@@ -245,6 +288,20 @@ function LogoutIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
       />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
     </svg>
   );
 }

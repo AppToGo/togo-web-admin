@@ -21,7 +21,13 @@ export default function DashboardPage() {
             ¡Hola, {user?.name || "Usuario"}!
           </h2>
           <p className="text-slate-500 mt-1">
-            Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos.
+            {user?.businessName ? (
+              <>
+                Bienvenido a <span className="font-medium text-slate-700">{user.businessName}</span>. Aquí podrás gestionar tus pedidos y productos.
+              </>
+            ) : (
+              "Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos."
+            )}
           </p>
         </div>
 
