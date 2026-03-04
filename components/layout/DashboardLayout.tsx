@@ -34,20 +34,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main content area */}
       <div
         className={cn(
+          "flex flex-col min-h-screen",
           "transition-all duration-300",
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
         )}
       >
-        {/* Header */}
+        {/* Header - Fixed */}
         <Header
           onMenuClick={handleMenuClick}
           isSidebarOpen={sidebarOpen}
           isSidebarCollapsed={sidebarCollapsed}
         />
 
-        {/* Page content */}
-        <main className="p-4 sm:p-6 pt-20">
-          <div className="max-w-400 mx-auto">{children}</div>
+        {/* Page content - with padding for fixed header */}
+        <main className="flex-1 px-4 pb-4 sm:px-6 sm:pb-6 pt-20">
+          <div className="max-w-screen-2xl mx-auto">{children}</div>
         </main>
       </div>
     </div>
