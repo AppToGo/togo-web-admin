@@ -4,17 +4,20 @@
  * Auth Provider
  * 
  * Handles session restoration on app initialization.
- * Critical for the in-memory access token architecture:
- * - After page reload, access token is lost from memory
- * - This provider attempts to restore the session using the httpOnly cookie
- * - Shows loading state while restoring
+ * Critical for the in-memory access token architecture.
  * 
- * SYNCHRONIZATION:
- * Uses auth-sync.service to prevent race conditions with Axios interceptor.
- * When restoring, the interceptor knows NOT to attempt its own refresh.
+ * FLOW:
+ * 1. Check if access token exists in memory (Zustand)
+ * 2. If yes → user is authenticated, render app
+ * 3. If no → check for refresh token cookie via API call
+ * 4. If refresh succeeds → restore session
+ * 5. If refresh fails (401/no cookie) → redirect to login
+ * 
+ * SYNCHRONIZATION: Uses auth-sync.service to coordinate with Axios interceptor.
  */
 
 import { ReactNode, useEffect, useState, createContext, useContext } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { 
   startGlobalRefresh, 
@@ -22,7 +25,7 @@ import {
   isRefreshInProgress 
 } from "@/services/auth-sync.service";
 
-type AuthRestoreState = "idle" | "restoring" | "restored" | "failed";
+type AuthRestoreState = "checking" | "authenticated" | "unauthenticated";
 
 interface AuthContextType {
   restoreState: AuthRestoreState;
@@ -30,7 +33,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  restoreState: "idle",
+  restoreState: "checking",
   isReady: false,
 });
 
@@ -40,60 +43,84 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [restoreState, setRestoreState] = useState<AuthRestoreState>("idle");
+  const [restoreState, setRestoreState] = useState<AuthRestoreState>("checking");
+  const router = useRouter();
+  const pathname = usePathname();
   const { accessToken, isAuthenticated, setAuthData, clearAuth } = useAuthStore();
 
   useEffect(() => {
-    // If we already have an access token in memory, no need to restore
+    // Check if current route is public
+    const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+
+    // If we already have an access token in memory, we're good
     if (accessToken) {
-      setRestoreState("restored");
+      console.log("[AuthProvider] Access token exists in memory, authenticated");
+      setRestoreState("authenticated");
       return;
     }
 
-    // If we're already restoring globally (maybe from another tab/component), wait
+    // If we're on a public route, don't try to restore (no loading state needed)
+    if (isPublicRoute) {
+      console.log("[AuthProvider] On public route, skip restore");
+      setRestoreState("unauthenticated");
+      return;
+    }
+
+    // If a global refresh is already in progress, wait for it
     if (isRefreshInProgress()) {
-      setRestoreState("restoring");
+      console.log("[AuthProvider] Refresh already in progress, waiting...");
       return;
     }
 
-    // Check if we have a refresh token cookie by attempting a refresh
-    setRestoreState("restoring");
-
+    // Attempt to restore session
+    console.log("[AuthProvider] Attempting session restore...");
+    
     async function restoreSession() {
-      // Use global sync to prevent double refresh
       const token = await startGlobalRefresh(async () => {
         try {
           const response = await fetch("/api/auth/refresh", {
             method: "POST",
-            credentials: "include", // Important: sends the httpOnly cookie
+            credentials: "include",
           });
 
           if (response.ok) {
             const data = await response.json();
             setAuthData(data);
+            console.log("[AuthProvider] Session restored successfully");
             return { success: true, token: data.access_token };
+          } else if (response.status === 401) {
+            // No valid session (no cookie or expired)
+            console.log("[AuthProvider] No valid session (401), redirecting to login");
+            clearAuth();
+            return { success: false, token: null };
           } else {
-            // No valid session - cookie might be expired or invalid
+            console.log("[AuthProvider] Refresh failed with status:", response.status);
             clearAuth();
             return { success: false, token: null };
           }
         } catch (error) {
-          console.error("Session restoration failed:", error);
+          console.error("[AuthProvider] Session restoration error:", error);
           clearAuth();
           return { 
             success: false, 
-            token: null, 
+            token: null,
             error: error instanceof Error ? error : new Error("Unknown error") 
           };
         }
       });
 
-      // Update state based on result
       if (token) {
-        setRestoreState("restored");
+        setRestoreState("authenticated");
       } else {
-        setRestoreState("failed");
+        setRestoreState("unauthenticated");
+        // Redirect to login with return URL
+        const loginUrl = new URL("/login", window.location.origin);
+        loginUrl.searchParams.set("redirect", pathname);
+        router.replace(loginUrl.toString());
       }
     }
 
@@ -101,25 +128,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Cleanup on unmount
     return () => {
-      if (restoreState === "restoring") {
-        clearGlobalRefreshState();
-      }
+      clearGlobalRefreshState();
     };
-  }, [accessToken, isAuthenticated, setAuthData, clearAuth]);
+  }, [accessToken, isAuthenticated, pathname, router, setAuthData, clearAuth]);
 
-  const isReady = restoreState === "restored" || restoreState === "failed";
-
-  // Show loading spinner while restoring session
-  if (restoreState === "restoring") {
+  // Show loading spinner only while checking on protected routes
+  if (restoreState === "checking" && !PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Restaurando sesión...</p>
+          <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#6366f1 transparent #6366f1 #6366f1' }} />
+          <p className="text-sm" style={{ color: '#64748b' }}>Restaurando sesión...</p>
         </div>
       </div>
     );
   }
+
+  const isReady = restoreState === "authenticated" || restoreState === "unauthenticated";
 
   return (
     <AuthContext.Provider value={{ restoreState, isReady }}>

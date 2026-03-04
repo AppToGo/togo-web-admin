@@ -33,8 +33,11 @@ export const config = {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  console.log("[Middleware] Path:", pathname);
+
   // Skip API routes
   if (pathname.startsWith("/api")) {
+    console.log("[Middleware] Skipping API route");
     return NextResponse.next();
   }
 
@@ -49,9 +52,11 @@ export function middleware(request: NextRequest) {
   }
 
   // Read refresh token from httpOnly cookie
-  // NOTE: We only check existence, not validity (Edge Runtime limitation)
   const refreshToken = request.cookies.get("togo_refresh_token")?.value;
   const hasCookie = !!refreshToken;
+
+  console.log("[Middleware] Cookie present:", hasCookie);
+  console.log("[Middleware] Cookie value:", refreshToken ? "[exists]" : "[none]");
 
   // Check route types
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
@@ -59,17 +64,23 @@ export function middleware(request: NextRequest) {
   );
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
+  console.log("[Middleware] Is public route:", isPublicRoute);
+  console.log("[Middleware] Is auth route:", isAuthRoute);
+
   // 1. Authenticated user trying to access auth route -> redirect to dashboard
   if (hasCookie && isAuthRoute) {
+    console.log("[Middleware] Has cookie + auth route -> redirect to dashboard");
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // 2. Non-authenticated user trying to access protected route -> redirect to login
   if (!hasCookie && !isPublicRoute) {
+    console.log("[Middleware] No cookie + protected route -> redirect to login");
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
+  console.log("[Middleware] Allowing request");
   return NextResponse.next();
 }

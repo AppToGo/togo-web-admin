@@ -18,19 +18,23 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <Input
-        label="Correo electrónico"
-        type="email"
-        placeholder="tu@empresa.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        autoComplete="email"
-        error={login.error?.message}
-      />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Email Field */}
+      <div>
+        <Input
+          label="Correo electrónico"
+          type="email"
+          placeholder="tu@empresa.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          error={login.error?.message}
+        />
+      </div>
 
-      <div className="space-y-1">
+      {/* Password Field */}
+      <div>
         <Input
           label="Contraseña"
           type="password"
@@ -40,19 +44,20 @@ export function LoginForm() {
           required
           autoComplete="current-password"
         />
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-2">
           <Link
             href="/forgot-password"
-            className="text-sm text-[#6366F1] hover:text-[#5558E0] hover:underline"
+            className="text-sm text-indigo-500 hover:text-indigo-600 hover:underline"
           >
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
       </div>
 
+      {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full"
+        className="w-full h-12"
         isLoading={login.isPending}
         disabled={login.isPending}
       >

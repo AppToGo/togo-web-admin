@@ -31,20 +31,37 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
+      console.log("[useLogin] Calling login API...");
       const response = await loginApi(credentials);
+      console.log("[useLogin] Login successful, got refresh token");
       
       // Store refresh token in httpOnly cookie
-      await fetch("/api/auth/set-cookie", {
+      console.log("[useLogin] Calling set-cookie API...");
+      const setCookieResponse = await fetch("/api/auth/set-cookie", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: response.refresh_token }),
+        credentials: "include", // CRITICAL: allows cookies to be set
       });
       
+      console.log("[useLogin] Set-cookie response status:", setCookieResponse.status);
+      
+      if (!setCookieResponse.ok) {
+        const errorData = await setCookieResponse.json();
+        console.error("[useLogin] Failed to set cookie:", errorData);
+        throw new Error("Failed to set session cookie");
+      }
+      
+      console.log("[useLogin] Cookie set successfully");
       return response;
     },
     onSuccess: (data) => {
+      console.log("[useLogin] Setting auth data and redirecting...");
       setAuthData(data);
       router.push("/dashboard");
+    },
+    onError: (error) => {
+      console.error("[useLogin] Login error:", error);
     },
   });
 }
@@ -65,13 +82,22 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
+      console.log("[useLogout] Calling logout proxy...");
       // Call backend logout - it should read from cookie or we pass dummy
-      await fetch("/api/auth/logout-proxy", { method: "POST" });
+      await fetch("/api/auth/logout-proxy", { 
+        method: "POST",
+        credentials: "include",
+      });
     },
     onSuccess: async () => {
+      console.log("[useLogout] Clearing cookie...");
       // Clear cookie
-      await fetch("/api/auth/clear-cookie", { method: "POST" });
+      await fetch("/api/auth/clear-cookie", { 
+        method: "POST",
+        credentials: "include",
+      });
       
+      console.log("[useLogout] Clearing cache and state...");
       // Clear all queries from cache
       queryClient.clear();
       
@@ -82,8 +108,12 @@ export function useLogout() {
       router.push("/login");
     },
     onError: async () => {
+      console.log("[useLogout] Error, forcing cleanup...");
       // Even if API fails, clear local state
-      await fetch("/api/auth/clear-cookie", { method: "POST" });
+      await fetch("/api/auth/clear-cookie", { 
+        method: "POST",
+        credentials: "include",
+      });
       queryClient.clear();
       clearAuth();
       router.push("/login");
