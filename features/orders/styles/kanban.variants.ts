@@ -15,15 +15,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 // ============================================================================
 
 export const kanbanCardVariants = cva(
-  // Base styles
-  "relative bg-white rounded-2xl p-4 cursor-pointer transition-all duration-200",
+  // Base styles - usando utilidades personalizadas
+  "relative bg-white rounded-card p-4 cursor-pointer transition-all duration-200",
   {
     variants: {
       // Elevación/sombra de la tarjeta
       elevation: {
-        default:
-          "shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]",
-        dragging: "shadow-[0_8px_24px_rgba(0,0,0,0.12)] scale-[1.02]",
+        default: "shadow-card hover:shadow-card-md",
+        dragging: "shadow-card-lg scale-[1.02]",
         static: "shadow-none",
       },
       // Borde de la tarjeta
@@ -123,7 +122,7 @@ export type KanbanColumnVariantProps = VariantProps<
 // COLUMN HEADER COLOR VARIANTS
 // ============================================================================
 
-export const columnHeaderColorVariants = cva("px-4 py-3 rounded-2xl mb-3", {
+export const columnHeaderColorVariants = cva("px-4 py-3 rounded-card-lg mb-3", {
   variants: {
     color: {
       gray: "bg-gray-100",
@@ -196,7 +195,7 @@ export type ProgressBarFillVariantProps = VariantProps<
 // ============================================================================
 
 export const metricsCardVariants = cva(
-  "bg-white/60 backdrop-blur-sm rounded-2xl p-5 border border-white/50",
+  "glass rounded-card-lg p-5 border border-white/50",
   {
     variants: {
       variant: {
@@ -291,13 +290,13 @@ export type PageBackgroundVariantProps = VariantProps<
 // ============================================================================
 
 export const mainContainerVariants = cva(
-  "rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden",
+  "rounded-card-xl shadow-glass overflow-hidden",
   {
     variants: {
       variant: {
-        default: "bg-white/70 backdrop-blur-xl",
+        default: "glass",
         solid: "bg-white",
-        glass: "bg-white/40 backdrop-blur-2xl",
+        glass: "glass-light",
       },
     },
     defaultVariants: {
