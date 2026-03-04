@@ -1,0 +1,74 @@
+/**
+ * Authentication Type Definitions
+ * 
+ * Types related to authentication and user session
+ */
+
+import { UserRole } from "./index";
+
+// Authenticated User (from JWT payload)
+export interface AuthenticatedUser {
+  userId: string;
+  email: string | null;
+  name: string;
+  role: UserRole;
+  businessId: string | null;
+  operatorProfileId: string | null;
+}
+
+// Login Request
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+// Login Response from API
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  user: AuthenticatedUser;
+}
+
+// Refresh Token Request
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+// Auth State
+export interface AuthState {
+  user: AuthenticatedUser | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: number | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+// Auth Actions
+export interface AuthActions {
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshAccessToken: () => Promise<boolean>;
+  setAuthData: (data: LoginResponse) => void;
+  clearAuth: () => void;
+}
+
+// Registration (prepared for future implementation)
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  businessName: string;
+}
+
+// Forgot Password (prepared for future implementation)
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
