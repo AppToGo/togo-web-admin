@@ -42,6 +42,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   onClose: () => void;
   onToggleCollapse: () => void;
+  onMenuClick?: () => void;
 }
 
 export function Sidebar({
@@ -49,6 +50,7 @@ export function Sidebar({
   isCollapsed,
   onClose,
   onToggleCollapse,
+  onMenuClick,
 }: SidebarProps) {
   const pathname = usePathname();
   const user = useCurrentUser();
@@ -78,7 +80,7 @@ export function Sidebar({
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center shrink-0 shadow-card">
+            <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center flex-shrink-0 shadow-card">
               <span className="text-white font-bold text-sm">T</span>
             </div>
             {!isCollapsed && (
@@ -132,24 +134,28 @@ export function Sidebar({
           </button>
         </div>
 
-        {/* User section */}
+        {/* Bottom section - User with notifications */}
         <div
           className={cn(
             "absolute bottom-0 left-0 right-0 border-t border-slate-100/50",
             isCollapsed ? "p-2" : "p-4"
           )}
         >
+          {/* User section with notifications */}
           <div
             className={cn(
               "flex items-center rounded-card bg-slate-50/80",
               isCollapsed ? "justify-center p-2" : "gap-3 px-4 py-3"
             )}
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-indigo-purple flex items-center justify-center shrink-0">
+            {/* Avatar */}
+            <div className="w-10 h-10 rounded-full bg-gradient-indigo-purple flex items-center justify-center flex-shrink-0">
               <span className="text-white font-medium text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </span>
             </div>
+
+            {/* User info */}
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">
@@ -160,7 +166,20 @@ export function Sidebar({
                 </p>
               </div>
             )}
+
+            {/* Notifications - right side */}
+            <button
+              className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white rounded-full transition-colors flex-shrink-0"
+              title="Notificaciones"
+            >
+              <BellIcon className={cn("w-5 h-5", isCollapsed && "w-4 h-4")} />
+              {/* Notification badge with count */}
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1 rounded-full ring-2 ring-slate-50/80">
+                3
+              </span>
+            </button>
           </div>
+
           {!isCollapsed && (
             <Button
               variant="ghost"
@@ -269,6 +288,24 @@ function SettingsIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
       />
     </svg>
   );

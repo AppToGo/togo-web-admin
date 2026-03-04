@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Sidebar } from "./Sidebar";
-import { Header } from "./Header";
 import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
@@ -12,14 +11,6 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
-
-  const handleMenuClick = () => {
-    if (window.innerWidth < 1024) {
-      setSidebarOpen(!sidebarOpen);
-    } else {
-      setSidebarCollapsed(!sidebarCollapsed);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-soft">
@@ -31,26 +22,53 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
+      {/* Mobile menu button - shown when sidebar is closed */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className={cn(
+          "fixed top-4 left-4 z-30 lg:hidden",
+          "w-10 h-10 rounded-card glass",
+          "flex items-center justify-center",
+          "text-slate-600 hover:text-slate-900",
+          "transition-all duration-300",
+          sidebarOpen && "opacity-0 pointer-events-none"
+        )}
+        aria-label="Abrir menú"
+      >
+        <MenuIcon className="w-5 h-5" />
+      </button>
+
       {/* Main content area */}
       <div
         className={cn(
-          "flex flex-col min-h-screen",
+          "min-h-screen flex flex-col",
           "transition-all duration-300",
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
         )}
       >
-        {/* Header - Fixed */}
-        <Header
-          onMenuClick={handleMenuClick}
-          isSidebarOpen={sidebarOpen}
-          isSidebarCollapsed={sidebarCollapsed}
-        />
-
-        {/* Page content - with padding for fixed header */}
-        <main className="flex-1 px-4 pb-4 sm:px-6 sm:pb-6 pt-20">
-          <div className="max-w-screen-2xl mx-auto">{children}</div>
+        {/* Page content */}
+        <main className="flex-1 flex flex-col p-4 sm:p-6">
+          <div className="flex-1 flex flex-col max-w-screen-2xl w-full mx-auto">{children}</div>
         </main>
       </div>
     </div>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 6h16M4 12h16M4 18h16"
+      />
+    </svg>
   );
 }

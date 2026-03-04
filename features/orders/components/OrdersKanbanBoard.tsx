@@ -56,23 +56,18 @@ export function OrdersKanbanBoard() {
   }
 
   return (
-    <div className={mainContainerVariants({ variant: "default" })}>
-      <div className="flex flex-col lg:flex-row">
+    <div
+      className={cn(
+        "rounded-card-xl flex flex-col",
+        "bg-white/30 backdrop-blur-xl border border-white/40"
+      )}
+    >
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0">
         {/* Main Kanban Area */}
-        <div className="flex-1 min-w-0 p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Gestión de Órdenes
-            </h2>
-            <p className="text-slate-500 mt-1">
-              Arrastra órdenes entre columnas para cambiar su estado
-            </p>
-          </div>
-
+        <div className="flex-1 min-w-0 py-3 pl-3 pr-0 flex flex-col min-h-0">
           {/* Kanban Columns */}
-          <div className="overflow-x-auto pb-4 -mx-6 px-6">
-            <div className="flex gap-5 min-w-max">
+          <div className="overflow-x-auto pb-4 pr-3 flex-1 min-h-0">
+            <div className="flex gap-5 min-w-max h-full">
               {columns.map((column, index) => {
                 const headerColors = [
                   { color: "gray" as const, dot: "bg-gray-400" },
@@ -104,7 +99,7 @@ export function OrdersKanbanBoard() {
         <div className="hidden lg:block w-px bg-linear-to-b from-transparent via-slate-200 to-transparent" />
 
         {/* Right Sidebar */}
-        <div className="w-full lg:w-80 shrink-0 p-6 space-y-6 glass-light">
+        <div className="w-full lg:w-60 shrink-0 p-6 space-y-6 bg-white rounded-tr-4xl rounded-br-4xl">
           {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
           {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
         </div>

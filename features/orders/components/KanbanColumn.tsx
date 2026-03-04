@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { cn } from "@/lib/utils";
 import { OrderCard } from "./OrderCard";
 import type { Order, OrderStatus } from "../types";
 import { STATUS_LABELS } from "../utils/order-status.utils";
@@ -35,7 +36,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   dotColor = "bg-gray-400",
 }: KanbanColumnProps) {
   return (
-    <div className={kanbanColumnVariants({ background: "default" })}>
+    <div className={cn(kanbanColumnVariants({ background: "default" }), "h-[calc(100vh-200px)]")}>
       {/* Header de la columna */}
       <div className={columnHeaderColorVariants({ color: headerColor })}>
         <div className="flex items-center justify-between">
@@ -50,7 +51,7 @@ export const KanbanColumn = memo(function KanbanColumn({
       </div>
 
       {/* Contenedor de tarjetas */}
-      <div className="flex-1 overflow-y-auto space-y-3 max-h-[calc(100vh-340px)] scrollbar-thin">
+      <div className="flex-1 overflow-y-auto space-y-3 min-h-0 scrollbar-thin">
         {isLoading ? (
           <>
             <KanbanCardSkeleton />

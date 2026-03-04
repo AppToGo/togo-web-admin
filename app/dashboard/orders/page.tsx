@@ -5,13 +5,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { OrdersKanbanBoard } from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Gradientes para avatares
-const AVATAR_GRADIENTS = [
-  "bg-gradient-pink-purple",
-  "bg-gradient-purple-indigo",
-  "bg-gradient-blue-cyan",
-];
+import { SearchIcon } from "lucide-react";
 
 function OrdersLoading() {
   return (
@@ -48,38 +42,35 @@ export default function OrdersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-6 flex-1 min-h-0">
+        {/* Header con título y buscador */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Homepage Design
+              Gestión de Órdenes
             </h1>
             <p className="text-slate-500 mt-1 text-sm">
-              Gestiona los pedidos de tu negocio
+              Administra y supervisa todas las órdenes de tu negocio
             </p>
           </div>
 
-          {/* Avatares del equipo */}
-          <div className="flex -space-x-2">
-            {AVATAR_GRADIENTS.map((gradient, i) => (
-              <div
-                key={i}
-                className={`w-10 h-10 rounded-full ${gradient} ring-2 ring-white flex items-center justify-center text-white text-xs font-medium`}
-              >
-                {["JD", "MK", "SL"][i]}
-              </div>
-            ))}
-            <div className="w-10 h-10 rounded-full bg-slate-100 ring-2 ring-white flex items-center justify-center text-slate-500 text-xs font-medium">
-              +
-            </div>
+          {/* Buscador */}
+          <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-75">
+            <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
+            <input
+              type="text"
+              placeholder="Buscar órdenes..."
+              className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
+            />
           </div>
         </div>
 
-        {/* Orders Board */}
-        <Suspense fallback={<OrdersLoading />}>
-          <OrdersKanbanBoard />
-        </Suspense>
+        {/* Orders Board - ocupa el resto del espacio */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          <Suspense fallback={<OrdersLoading />}>
+            <OrdersKanbanBoard />
+          </Suspense>
+        </div>
       </div>
     </DashboardLayout>
   );
