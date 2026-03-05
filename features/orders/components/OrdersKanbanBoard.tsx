@@ -6,15 +6,53 @@ import { KanbanColumn } from "./KanbanColumn";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 import { useOrdersByStatus, useUpdateOrderStatus } from "../hooks/useOrders";
-import type { OrderStatus } from "../types";
+import type { Order, OrderStatus } from "../types";
 import { getKanbanColumns } from "../utils/order-status.utils";
 import { kanbanColumnVariants, columnHeaderColorVariants } from "../styles";
+import type { CardViewMode } from "./OrderCard";
 
-export function OrdersKanbanBoard() {
+interface OrdersKanbanBoardProps {
+  searchQuery?: string;
+  cardViewMode?: CardViewMode;
+}
+
+function formatOrderNumber(id: string): string {
+  return `#${id.slice(0, 6).toUpperCase()}`;
+}
+
+function filterOrdersBySearch(orders: Order[] | undefined, query: string): Order[] {
+  if (!orders || !query.trim()) return orders || [];
+  
+  const lowerQuery = query.toLowerCase();
+  return orders.filter((order) => {
+    const orderNumber = formatOrderNumber(order.id).toLowerCase();
+    const customerName = order.customer?.name?.toLowerCase() || "";
+    const productNames = order.items?.map((i) => i.productName.toLowerCase()).join(" ") || "";
+    
+    return (
+      orderNumber.includes(lowerQuery) ||
+      customerName.includes(lowerQuery) ||
+      productNames.includes(lowerQuery)
+    );
+  });
+}
+
+export function OrdersKanbanBoard({ searchQuery = "", cardViewMode = "card" }: OrdersKanbanBoardProps) {
   const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus();
   const updateStatus = useUpdateOrderStatus();
 
   const columns = useMemo(() => getKanbanColumns(), []);
+  
+  // Filtrar órdenes por búsqueda
+  const filteredOrdersByStatus = useMemo(() => {
+    if (!ordersByStatus || !searchQuery.trim()) return ordersByStatus;
+    
+    const filtered: Record<OrderStatus, Order[]> = {} as any;
+    Object.entries(ordersByStatus).forEach(([status, statusOrders]) => {
+      filtered[status as OrderStatus] = filterOrdersBySearch(statusOrders, searchQuery);
+    });
+    return filtered;
+  }, [ordersByStatus, searchQuery]);
 
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
@@ -83,11 +121,12 @@ export function OrdersKanbanBoard() {
                     key={column.id}
                     status={column.id}
                     title={column.title}
-                    orders={ordersByStatus?.[column.id] || []}
+                    orders={filteredOrdersByStatus?.[column.id] || []}
                     onStatusChange={handleStatusChange}
                     isLoading={isLoading}
                     headerColor={headerStyle.color}
                     dotColor={headerStyle.dot}
+                    viewMode={cardViewMode}
                   />
                 );
               })}

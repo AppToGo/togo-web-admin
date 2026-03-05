@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronUp,
   CreditCard,
-  MapPin,
   Store,
   Home,
   Utensils,
@@ -30,12 +29,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { OrderDetail } from "./OrderDetail";
 
+export type CardViewMode = "card" | "list";
+
 interface OrderCardProps {
   order: Order;
   onStatusChange?: (orderId: string, newStatus: string) => void;
   badgeVariant?: string;
   currentStatus?: string;
   dragColor?: string;
+  viewMode?: CardViewMode;
 }
 
 // Función para formatear el ID como número de orden
@@ -54,7 +56,6 @@ function formatPaymentMethod(method?: string): string {
     wallet: "Billetera",
     dataphone: "Datáfono",
   };
-  // Convertir a minúsculas para comparación case-insensitive
   return methods[method.toLowerCase()] || method;
 }
 
@@ -65,24 +66,24 @@ function formatPaymentStatus(status?: string): string {
     paid: "Pagado",
     pending: "Pendiente",
   };
-  // Convertir a minúsculas para comparación case-insensitive
   return statuses[status.toLowerCase()] || status;
 }
 
-// Tipo de orden basado en la fuente
-// En el backend, cuando se crea la orden:
-// - Si hay userId → OPERATOR (creado por operador)
-// - Si no hay userId → WHATSAPP (creado por cliente vía WhatsApp)
-//
-// Lógica:
-// - Con dirección → DOMICILIO
-// - Sin dirección + source=WHATSAPP → PARA RECOGER
-// - Sin dirección + source=OPERATOR → EN MESA
+// Función para formatear la hora
+function formatOrderTime(date: Date | string): string {
+  const d = new Date(date);
+  return d.toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
+// Tipo de orden basado en la fuente
 function getOrderTypeInfo(order: Order & { source?: string }): {
   label: string;
   icon: React.ReactNode;
   variant: string;
+  isDelivery: boolean;
 } {
   // Si tiene dirección → Domicilio
   if (order.addressId) {
@@ -90,6 +91,7 @@ function getOrderTypeInfo(order: Order & { source?: string }): {
       label: "Domicilio",
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
+      isDelivery: true,
     };
   }
 
@@ -99,6 +101,7 @@ function getOrderTypeInfo(order: Order & { source?: string }): {
       label: "En mesa",
       icon: <Utensils className="w-3 h-3" />,
       variant: "emerald",
+      isDelivery: false,
     };
   }
 
@@ -107,7 +110,107 @@ function getOrderTypeInfo(order: Order & { source?: string }): {
     label: "Recoger",
     icon: <Store className="w-3 h-3" />,
     variant: "amber",
+    isDelivery: false,
   };
+}
+
+// Componente para vista compacta de lista
+function OrderListItem({
+  order,
+  onClick,
+  dragColor = "indigo",
+  isDragging = false,
+  onDragStart,
+  onDragEnd,
+}: {
+  order: Order;
+  onClick: () => void;
+  dragColor?: string;
+  isDragging?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
+}) {
+  const orderNumber = formatOrderNumber(order.id);
+  const orderType = getOrderTypeInfo(order as Order & { source?: string });
+  const orderTime = formatOrderTime(order.createdAt);
+  const fee = order.deliveryType === "DELIVERY" ? order.deliveryFee || 0 : 0;
+
+  // Mapa de colores para el ring de drag
+  const dragRingColors: Record<string, string> = {
+    gray: "ring-gray-400",
+    blue: "ring-blue-400",
+    purple: "ring-purple-400",
+    green: "ring-emerald-400",
+    orange: "ring-orange-400",
+    pink: "ring-pink-400",
+    amber: "ring-amber-400",
+    cyan: "ring-cyan-400",
+    indigo: "ring-indigo-400",
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onClick={onClick}
+      className={cn(
+        "p-3 bg-white rounded-card",
+        "border border-slate-100 hover:border-slate-200",
+        "hover:shadow-card transition-all duration-200 cursor-grab active:cursor-grabbing",
+        isDragging &&
+          `opacity-60 rotate-1 scale-[1.02] shadow-lg ring-2 ${dragRingColors[dragColor] || dragRingColors.indigo}`
+      )}
+    >
+      {/* Header: Número de orden y Total */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-bold text-slate-900 text-base">
+          {orderNumber}
+        </span>
+        <span className="font-bold text-slate-900 text-lg">
+          {formatCurrency(order.totalAmount + fee)}
+        </span>
+      </div>
+
+      {/* Footer: Tipo, Domicilio, Hora y Estado de pago */}
+      <div className="flex items-center gap-2 text-xs">
+        {/* Hora */}
+        <div className="flex items-center gap-1 text-slate-400">
+          <Clock className="w-3 h-3" />
+          {orderTime}
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Tipo de orden */}
+        <span
+          className={categoryBadgeVariants({
+            variant: orderType.variant as any,
+          })}
+        >
+          {orderType.icon}
+          <span>{orderType.label}</span>
+        </span>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Estado de pago */}
+
+        <div
+          className={categoryBadgeVariants({
+            variant: order.paymentStatus === "PAID" ? "green" : "amber",
+          })}
+        >
+          <HandCoins className="w-3 h-3" />
+          <span className="ml-1">
+            {formatPaymentStatus(order.paymentStatus)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Componente para mostrar items con "ver más" y desglose de totales
@@ -204,7 +307,7 @@ function OrderItemsList({
         <div className="flex items-center justify-between pt-1 border-t border-slate-100/50">
           <span className="text-xs font-medium text-slate-600">Total</span>
           <span className="font-bold text-slate-900 text-sm">
-            {formatCurrency(totalAmount)}
+            {formatCurrency(fee + totalAmount)}
           </span>
         </div>
       </div>
@@ -218,6 +321,7 @@ export const OrderCard = memo(function OrderCard({
   badgeVariant = "slate",
   currentStatus,
   dragColor = "indigo",
+  viewMode = "card",
 }: OrderCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
@@ -259,7 +363,7 @@ export const OrderCard = memo(function OrderCard({
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("orderId", order.id);
     e.dataTransfer.setData("fromStatus", currentStatus || "");
-    
+
     // Agregar una imagen personalizada o efecto visual
     e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
   };
@@ -268,6 +372,36 @@ export const OrderCard = memo(function OrderCard({
     setIsDragging(false);
   };
 
+  // Si es vista de lista, renderizar el componente compacto
+  if (viewMode === "list") {
+    return (
+      <>
+        <OrderListItem
+          order={order}
+          onClick={() => setIsDetailOpen(true)}
+          dragColor={dragColor}
+          isDragging={isDragging}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        />
+
+        {/* Dialog de detalle */}
+        <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+          <DialogContent className="bg-white/90 backdrop-blur-lg">
+            <DialogHeader>
+              <DialogTitle>Detalle de Orden</DialogTitle>
+            </DialogHeader>
+            <OrderDetail
+              orderId={order.id}
+              onClose={() => setIsDetailOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  // Vista de card (default)
   return (
     <>
       <div
@@ -277,25 +411,54 @@ export const OrderCard = memo(function OrderCard({
         className={cn(
           kanbanCardVariants({ elevation: "default" }),
           "animate-cardEnter hover:animate-cardHover cursor-grab active:cursor-grabbing transition-all duration-200",
-          isDragging && `opacity-50 rotate-2 scale-105 shadow-xl ring-2 ${dragRingColors[dragColor] || dragRingColors.indigo}`
+          isDragging &&
+            `opacity-50 rotate-2 scale-105 shadow-xl ring-2 ${
+              dragRingColors[dragColor] || dragRingColors.indigo
+            }`
         )}
         onClick={() => setIsDetailOpen(true)}
       >
-        {/* Header: Número de orden, tipo y estado */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+        {/* Header: Número de orden, dirección (si es domicilio) y tipo */}
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1">
             <span className="font-bold text-slate-900 text-sm">
               {orderNumber}
             </span>
-          </div>
-          <span
-            className={categoryBadgeVariants({
+            <span
+              className={categoryBadgeVariants({
               variant: orderType.variant as any,
             })}
           >
             {orderType.icon}
             {orderType.label}
           </span>
+        </div>
+
+          {/* Dirección si es domicilio */}
+          {orderType.isDelivery && order.address && (
+            <div className="flex items-start gap-1 text-xs text-slate-500 mt-1">
+              <svg 
+                className="w-3 h-3 mt-0.5 shrink-0" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                />
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" 
+                />
+              </svg>
+              <span className="line-clamp-2">{order.address.addressText}</span>
+            </div>
+          )}
         </div>
 
         {/* Items de la orden con total incluido */}
@@ -305,8 +468,7 @@ export const OrderCard = memo(function OrderCard({
             totalAmount={order.totalAmount}
             deliveryFee={order.deliveryFee}
             isDelivery={
-              order.deliveryType === "DELIVERY" ||
-              orderType.label === "Domicilio"
+              order.deliveryType === "DELIVERY" || orderType.isDelivery
             }
           />
         </div>
@@ -322,15 +484,14 @@ export const OrderCard = memo(function OrderCard({
             <span>{formatPaymentMethod(order.paymentMethod)}</span>
           </div>
           <div
-            className={cn(
-              "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium",
-              order.paymentStatus === "PAID"
-                ? "text-green-700 bg-green-100"
-                : "text-amber-700 bg-amber-100"
-            )}
+            className={categoryBadgeVariants({
+              variant: order.paymentStatus === "PAID" ? "green" : "amber",
+            })}
           >
             <HandCoins className="w-3 h-3" />
-            <span>{formatPaymentStatus(order.paymentStatus)}</span>
+            <span className="ml-1">
+              {formatPaymentStatus(order.paymentStatus)}
+            </span>
           </div>
         </div>
       </div>
