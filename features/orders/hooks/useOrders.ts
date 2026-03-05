@@ -14,6 +14,8 @@ import {
   getOrderById,
   updateOrderStatus,
   getOrderStatusHistory,
+  updateOrderPaymentStatus,
+  type UpdatePaymentStatusRequest,
 } from "../services/order.service";
 import type {
   Order,
@@ -220,6 +222,79 @@ export function useUpdateOrderStatus() {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.history(orderId) });
+    },
+  });
+}
+
+/**
+ * Hook para actualizar el estado de pago de una orden
+ *
+ * Implementa optimistic UI con rollback automático
+ */
+export function useUpdateOrderPaymentStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      orderId,
+      data,
+    }: {
+      orderId: string;
+      data: UpdatePaymentStatusRequest;
+    }) => updateOrderPaymentStatus(orderId, data),
+
+    // Optimistic update
+    onMutate: async ({ orderId, data }) => {
+      // Cancelar queries en vuelo
+      await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
+
+      // Guardar estado anterior para rollback
+      const previousOrders = queryClient.getQueryData<Order[]>(
+        ORDERS_KEYS.lists()
+      );
+      const previousOrder = queryClient.getQueryData<Order>(
+        ORDERS_KEYS.detail(orderId)
+      );
+
+      // Actualizar lista de órdenes
+      queryClient.setQueriesData<Order[]>(
+        { queryKey: ORDERS_KEYS.lists() },
+        (old: Order[] | undefined) => {
+          if (!old) return old;
+          return old.map((order) =>
+            order.id === orderId
+              ? { ...order, paymentStatus: data.paymentStatus }
+              : order
+          );
+        }
+      );
+
+      // Actualizar detalle de orden
+      queryClient.setQueryData<Order>(ORDERS_KEYS.detail(orderId), (old) => {
+        if (!old) return old;
+        return { ...old, paymentStatus: data.paymentStatus };
+      });
+
+      return { previousOrders, previousOrder };
+    },
+
+    // Rollback en error
+    onError: (_err, { orderId }, context) => {
+      if (context?.previousOrders) {
+        queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
+      }
+      if (context?.previousOrder) {
+        queryClient.setQueryData(
+          ORDERS_KEYS.detail(orderId),
+          context.previousOrder
+        );
+      }
+    },
+
+    // Revalidar después de la mutación
+    onSettled: (_data, _error, { orderId }) => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
     },
   });
 }

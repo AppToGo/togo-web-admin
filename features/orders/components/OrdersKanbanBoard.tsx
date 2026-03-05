@@ -1,14 +1,24 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
+
+import {
+  ColumnVisibilityBar,
+  type ColumnVisibilityConfig,
+} from "./ColumnVisibilityBar";
+
 import { useOrdersByStatus, useUpdateOrderStatus } from "../hooks/useOrders";
 import type { Order, OrderStatus } from "../types";
-import { getKanbanColumns } from "../utils/order-status.utils";
-import { kanbanColumnVariants, columnHeaderColorVariants } from "../styles";
+import {
+  getKanbanColumns,
+  getPaymentMethodLabel,
+  getPaymentStatusLabel,
+  getDeliveryTypeLabel,
+} from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
 
 interface OrdersKanbanBoardProps {
@@ -22,41 +32,90 @@ function formatOrderNumber(id: string): string {
   return `#${id.slice(0, 6).toUpperCase()}`;
 }
 
-function filterOrdersBySearch(orders: Order[] | undefined, query: string): Order[] {
+function filterOrdersBySearch(
+  orders: Order[] | undefined,
+  query: string
+): Order[] {
   if (!orders || !query.trim()) return orders || [];
-  
+
   const lowerQuery = query.toLowerCase();
   return orders.filter((order) => {
     const orderNumber = formatOrderNumber(order.id).toLowerCase();
     const customerName = order.customer?.name?.toLowerCase() || "";
-    const productNames = order.items?.map((i) => i.productName.toLowerCase()).join(" ") || "";
-    
+    const productNames =
+      order.items?.map((i) => i.productName.toLowerCase()).join(" ") || "";
+    const address = order.address?.addressText?.toLowerCase() || "";
+
+    // Buscar por valores formateados (lo que ve el usuario en UI)
+    const paymentMethodLabel = getPaymentMethodLabel(order.paymentMethod)
+      .toLowerCase();
+    const paymentStatusLabel = getPaymentStatusLabel(order.paymentStatus)
+      .toLowerCase();
+    const deliveryTypeLabel = getDeliveryTypeLabel(order.deliveryType)
+      .toLowerCase();
+
+    // También buscar por valores crudos (para compatibilidad)
+    const paymentMethodRaw = order.paymentMethod?.toLowerCase() || "";
+    const paymentStatusRaw = order.paymentStatus?.toLowerCase() || "";
+    const deliveryTypeRaw = order.deliveryType?.toLowerCase() || "";
+
     return (
       orderNumber.includes(lowerQuery) ||
       customerName.includes(lowerQuery) ||
-      productNames.includes(lowerQuery)
+      productNames.includes(lowerQuery) ||
+      address.includes(lowerQuery) ||
+      paymentMethodLabel.includes(lowerQuery) ||
+      paymentStatusLabel.includes(lowerQuery) ||
+      deliveryTypeLabel.includes(lowerQuery) ||
+      paymentMethodRaw.includes(lowerQuery) ||
+      paymentStatusRaw.includes(lowerQuery) ||
+      deliveryTypeRaw.includes(lowerQuery)
     );
   });
 }
 
-export function OrdersKanbanBoard({ 
-  searchQuery = "", 
+export function OrdersKanbanBoard({
+  searchQuery = "",
   cardViewMode = "card",
   dateFrom,
   dateTo,
 }: OrdersKanbanBoardProps) {
-  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({ dateFrom, dateTo });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [columnVisibility, setColumnVisibility] =
+    useState<ColumnVisibilityConfig>({
+      CONFIRMED: true,
+      IN_PROGRESS: true,
+      ON_THE_WAY: true,
+      COMPLETED: true,
+    });
+  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({
+    dateFrom,
+    dateTo,
+  });
   const updateStatus = useUpdateOrderStatus();
 
-  const columns = useMemo(() => getKanbanColumns(), []);
-  
+  const allColumns = useMemo(() => getKanbanColumns(), []);
+
+  // Filter columns based on visibility
+  const columns = useMemo(() => {
+    return allColumns.filter((column) => {
+      const key = column.id as keyof ColumnVisibilityConfig;
+      return columnVisibility[key] ?? true;
+    });
+  }, [allColumns, columnVisibility]);
+
+  const visibleColumnCount = columns.length;
+
   // Filtrar órdenes por búsqueda
   const filteredOrdersByStatus = useMemo(() => {
     if (!ordersByStatus || !searchQuery.trim()) return ordersByStatus;
-    
+
     const filtered: Record<OrderStatus, Order[]> = {} as any;
     Object.entries(ordersByStatus).forEach(([status, statusOrders]) => {
-      filtered[status as OrderStatus] = filterOrdersBySearch(statusOrders, searchQuery);
+      filtered[status as OrderStatus] = filterOrdersBySearch(
+        statusOrders,
+        searchQuery
+      );
     });
     return filtered;
   }, [ordersByStatus, searchQuery]);
@@ -101,82 +160,85 @@ export function OrdersKanbanBoard({
   }
 
   return (
-    <div
-      className={cn(
-        "rounded-card-xl flex flex-col",
-        "bg-white/30 backdrop-blur-xl border border-white/40"
-      )}
-    >
-      <div className="flex flex-col lg:flex-row flex-1 min-h-0">
+    <>
+      <div
+        className={cn(
+          "relative rounded-card-xl flex flex-row min-h-0 flex-1",
+          "bg-white/30 backdrop-blur-xl border border-white/40"
+        )}
+      >
         {/* Main Kanban Area */}
-        <div className="flex-1 min-w-0 py-3 pl-3 pr-0 flex flex-col min-h-0">
-          {/* Kanban Columns */}
-          <div className="overflow-x-auto pb-4 pr-3 flex-1 min-h-0">
-            <div className="flex gap-5 min-w-max h-full">
-              {columns.map((column, index) => {
-                const headerColors = [
-                  { color: "gray" as const, dot: "bg-gray-400" },
-                  { color: "blue" as const, dot: "bg-blue-400" },
-                  { color: "purple" as const, dot: "bg-purple-400" },
-                  { color: "green" as const, dot: "bg-emerald-400" },
-                  { color: "pink" as const, dot: "bg-pink-400" },
-                ];
-                const headerStyle = headerColors[index % headerColors.length];
-
-                return (
-                  <KanbanColumn
-                    key={column.id}
-                    status={column.id}
-                    title={column.title}
-                    orders={filteredOrdersByStatus?.[column.id] || []}
-                    onStatusChange={handleStatusChange}
-                    isLoading={isLoading}
-                    headerColor={headerStyle.color}
-                    dotColor={headerStyle.dot}
-                    viewMode={cardViewMode}
-                  />
-                );
-              })}
-              <div
-                className={cn(
-                  kanbanColumnVariants({ background: "default" }),
-                  "h-[calc(100vh-200px)]"
-                )}
-              >
-                {/* Header de la columna */}
-                <div className={columnHeaderColorVariants({ color: "pink" })}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full bg-pink-400`} />
-                      <h3 className="font-semibold text-sm text-slate-700">
-                        Operación en curso
-                      </h3>
-                    </div>
-                    <span className="text-xs font-medium text-slate-500 bg-white/70 px-2 py-0.5 rounded-full">
-                      {orders?.length || 0}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Contenedor de tarjetas */}
-                <div>
-                  {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
-                  {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
-                </div>
-              </div>
+        <div
+          className={cn(
+            "flex-1 min-w-0 py-3 pl-3 flex flex-col min-h-0 transition-all duration-300 pr-3"
+          )}
+        >
+          {/* Kanban Columns - Container adaptativo */}
+          <div className="overflow-x-auto pb-4 flex-1 min-h-0 scrollbar-thin">
+            <div
+              className="flex gap-5 h-full"
+              style={{
+                // Si hay pocas columnas, usar ancho completo; si no, scroll horizontal
+                minWidth:
+                  visibleColumnCount <= 4
+                    ? "100%"
+                    : `${visibleColumnCount * 320}px`,
+              }}
+            >
+              {columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  status={column.id}
+                  orders={filteredOrdersByStatus?.[column.id] || []}
+                  onStatusChange={handleStatusChange}
+                  isLoading={isLoading}
+                  viewMode={cardViewMode}
+                  // Distribuir ancho igualitariamente entre columnas visibles
+                  flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
+                  minWidth={320}
+                />
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Sidebar separator */}
-        {/* <div className="hidden lg:block w-px bg-linear-to-b from-transparent via-slate-200 to-transparent" /> */}
+        {/* Right Sidebar - Statistics */}
+        <div
+          className={cn(
+            "shrink-0 transition-all duration-300 ease-in-out border-l border-white/40 overflow-hidden",
+            isSidebarOpen ? "w-72 opacity-100" : "w-0 opacity-0 border-l-0"
+          )}
+        >
+          {/* Inner container with fixed width to prevent content squishing during animation */}
+          <div className="w-72 p-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-pink-400" />
+                <h3 className="font-semibold text-sm text-slate-700">
+                  Operación en curso
+                </h3>
+              </div>
+              <span className="text-xs font-medium text-slate-500 bg-white/70 px-2 py-0.5 rounded-full">
+                {orders?.length || 0}
+              </span>
+            </div>
 
-        {/* Right Sidebar */}
-        {/* <div className="w-full lg:w-60 shrink-0 p-6 space-y-6 bg-white rounded-tr-4xl rounded-br-4xl">
-          {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
-          {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
-        </div> */}
+            {/* Stats Content */}
+            <div className="space-y-4">
+              {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
+              {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Column Visibility Floating Bar */}
+      <ColumnVisibilityBar
+        onVisibilityChange={setColumnVisibility}
+        isSidebarOpen={isSidebarOpen}
+        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
+    </>
   );
 }

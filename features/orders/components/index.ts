@@ -5,6 +5,7 @@ export { OrderCard, type CardViewMode } from "./OrderCard";
 export { OrderDetail } from "./OrderDetail";
 export { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 export { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
+export { ColumnVisibilityBar, type ColumnVisibilityConfig } from "./ColumnVisibilityBar";
 
 // Export styles
 export * from "../styles";

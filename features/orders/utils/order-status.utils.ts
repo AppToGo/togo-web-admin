@@ -260,14 +260,16 @@ export function formatCurrency(amount: number): string {
 
 /**
  * Obtener columna del Kanban para un estado
+ * Usa la configuración centralizada de KANBAN_COLUMN_CONFIG
  */
 export function getKanbanColumns(): { id: OrderStatus; title: string }[] {
-  return [
-    { id: "CONFIRMED", title: "Nuevas" },
-    { id: "IN_PROGRESS", title: "En proceso" },
-    { id: "ON_THE_WAY", title: "En camino" },
-    { id: "COMPLETED", title: "Completadas" },
-  ];
+  // Importar dinámicamente para evitar dependencias circulares
+  const { DEFAULT_KANBAN_STATUSES, getColumnConfig } = require("../config/kanban-columns.config");
+  
+  return DEFAULT_KANBAN_STATUSES.map((status: OrderStatus) => ({
+    id: status,
+    title: getColumnConfig(status).title,
+  }));
 }
 
 /**
@@ -288,4 +290,41 @@ export function getPaymentStatusColor(status: PaymentStatus): {
  */
 export function getPaymentStatusLabel(status: PaymentStatus): string {
   return status === "PAID" ? "Pagado" : "Pendiente";
+}
+
+// Labels para métodos de pago
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  CASH: "Efectivo",
+  CREDIT_CARD: "Tarjeta de crédito",
+  DEBIT_CARD: "Tarjeta de débito",
+  TRANSFER: "Transferencia",
+  NEQUI: "Nequi",
+  DAVIPLATA: "Daviplata",
+  PSE: "PSE",
+  PAYPAL: "PayPal",
+  MERCADOPAGO: "MercadoPago",
+  OTHER: "Otro",
+};
+
+/**
+ * Etiqueta del método de pago
+ */
+export function getPaymentMethodLabel(method: string | undefined): string {
+  if (!method) return "No especificado";
+  return PAYMENT_METHOD_LABELS[method] || method;
+}
+
+// Labels para tipos de entrega
+export const DELIVERY_TYPE_LABELS: Record<string, string> = {
+  DELIVERY: "Domicilio",
+  PICKUP: "Recoger",
+  DINE_IN: "A la mesa",
+};
+
+/**
+ * Etiqueta del tipo de entrega
+ */
+export function getDeliveryTypeLabel(type: string | undefined): string {
+  if (!type) return "No especificado";
+  return DELIVERY_TYPE_LABELS[type] || type;
 }

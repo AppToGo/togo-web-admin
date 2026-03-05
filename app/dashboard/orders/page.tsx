@@ -108,7 +108,7 @@ export default function OrdersPage() {
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
                   type="text"
-                  placeholder="Buscar órdenes..."
+                  placeholder="Buscar por orden, cliente, dirección, pago, tipo..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
@@ -209,7 +209,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Orders Board - ocupa el resto del espacio */}
+        {/* Orders Board */}
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Indicador de filtro activo */}
           {hasDateFilter && (

@@ -3,12 +3,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const iconButtonVariants = cva(
-  "flex items-center justify-center transition-all duration-200 w-10 h-10 rounded-icon bg-white border-0",
+  "flex items-center justify-center transition-all duration-200 w-10 h-10 rounded-icon bg-white border-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200",
   {
     variants: {
       state: {
-        active: "text-indigo-600 ",
-        inactive: "text-slate-500 hover:text-slate-700",
+        active: "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50",
+        inactive: "text-slate-500 hover:text-slate-700 hover:bg-slate-50",
       },
     },
     defaultVariants: {

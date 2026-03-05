@@ -16,7 +16,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 export const kanbanCardVariants = cva(
   // Base styles - usando utilidades personalizadas
-  "relative bg-white rounded-card p-4 cursor-pointer transition-all duration-200",
+  "relative bg-white rounded-card p-3 cursor-pointer transition-all duration-200",
   {
     variants: {
       // Elevación/sombra de la tarjeta
@@ -91,7 +91,7 @@ export type CategoryBadgeVariantProps = VariantProps<
 // ============================================================================
 
 export const kanbanColumnVariants = cva(
-  "flex flex-col rounded-3xl min-w-[300px] w-[300px] shrink-0 p-4",
+  "flex flex-col rounded-3xl shrink-0 p-4",
   {
     variants: {
       // Fondo de la columna

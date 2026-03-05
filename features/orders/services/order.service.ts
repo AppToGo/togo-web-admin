@@ -107,3 +107,22 @@ export async function getOrderStatusHistory(
 export async function deleteOrder(orderId: string): Promise<void> {
   await apiClient.delete(`${getBaseUrl()}/${orderId}`);
 }
+
+/**
+ * Actualizar el estado de pago de una orden
+ */
+export interface UpdatePaymentStatusRequest {
+  paymentStatus: "PENDING" | "PAID";
+  changeNotes?: string;
+}
+
+export async function updateOrderPaymentStatus(
+  orderId: string,
+  request: UpdatePaymentStatusRequest
+): Promise<Order> {
+  const { data } = await apiClient.patch<Order>(
+    `${getBaseUrl()}/${orderId}/payment-status`,
+    request
+  );
+  return data;
+}

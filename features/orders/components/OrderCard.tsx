@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, useRef, useEffect } from "react";
 import {
   Clock,
   ChevronDown,
@@ -10,13 +10,18 @@ import {
   Home,
   Utensils,
   HandCoins,
+  Check,
+  Banknote,
+  ArrowLeftRight,
+  Wallet,
 } from "lucide-react";
-import type { Order, OrderItem } from "../types";
+import type { Order, OrderItem, PaymentStatus } from "../types";
 import {
   formatCurrency,
   getTimeElapsed,
   canCompleteOrder,
   STATUS_LABELS,
+  getPaymentStatusLabel,
 } from "../utils/order-status.utils";
 import { kanbanCardVariants, categoryBadgeVariants } from "../styles";
 import { cn } from "@/lib/utils";
@@ -28,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { OrderDetail } from "./OrderDetail";
+import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 
 export type CardViewMode = "card" | "list";
 
@@ -38,6 +44,156 @@ interface OrderCardProps {
   currentStatus?: string;
   dragColor?: string;
   viewMode?: CardViewMode;
+}
+
+// Icono de método de pago con tooltip
+function PaymentMethodIcon({ method }: { method?: string }) {
+  const getIconAndLabel = () => {
+    if (!method) return { icon: CreditCard, label: "No especificado" };
+    const lower = method.toLowerCase();
+    if (lower === "cash")
+      return { icon: Banknote, label: "Efectivo" };
+    if (lower.includes("card") || lower === "dataphone")
+      return { icon: CreditCard, label: "Tarjeta" };
+    if (lower === "transfer")
+      return { icon: ArrowLeftRight, label: "Transferencia" };
+    if (lower === "wallet")
+      return { icon: Wallet, label: "Billetera" };
+    return { icon: CreditCard, label: method };
+  };
+
+  const { icon: Icon, label } = getIconAndLabel();
+
+  return (
+    <div className="group relative">
+      <Icon className="w-3.5 h-3.5 text-slate-400" />
+      {/* Tooltip */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+// Componente para editar el estado de pago rápidamente
+function PaymentStatusEditor({
+  orderId,
+  currentStatus,
+  paymentMethod,
+}: {
+  orderId: string;
+  currentStatus: PaymentStatus;
+  paymentMethod?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const updatePaymentStatus = useUpdateOrderPaymentStatus();
+
+  // Cerrar al hacer click fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const handleSelect = useCallback(
+    (newStatus: PaymentStatus) => {
+      if (newStatus !== currentStatus) {
+        updatePaymentStatus.mutate({
+          orderId,
+          data: {
+            paymentStatus: newStatus,
+            changeNotes:
+              newStatus === "PAID"
+                ? "Pago confirmado desde panel admin"
+                : "Pago marcado como pendiente",
+          },
+        });
+      }
+      setIsOpen(false);
+    },
+    [currentStatus, orderId, updatePaymentStatus]
+  );
+
+  const handleToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setIsOpen((prev) => !prev);
+    },
+    []
+  );
+
+  // Solo mostrar la opción opuesta
+  const oppositeOption: PaymentStatus =
+    currentStatus === "PAID" ? "PENDING" : "PAID";
+  const oppositeLabel = oppositeOption === "PAID" ? "Marcar pagado" : "Marcar pendiente";
+  const oppositeVariant = oppositeOption === "PAID" ? "green" : "amber";
+
+  return (
+    <div ref={containerRef} className="relative">
+      {/* Badge clickeable de estado con icono de método de pago DENTRO */}
+      <button
+        onClick={handleToggle}
+        className={cn(
+          categoryBadgeVariants({
+            variant: currentStatus === "PAID" ? "green" : "amber",
+          }),
+          "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
+        )}
+      >
+        {/* Icono de método de pago con tooltip - DENTRO del badge */}
+        <PaymentMethodIcon method={paymentMethod} />
+        <span>{getPaymentStatusLabel(currentStatus)}</span>
+        <ChevronDown className="w-3 h-3 opacity-60" />
+      </button>
+
+      {/* Dropdown con solo la opción opuesta - z-index extremo para no quedar oculto */}
+      {isOpen && (
+        <div
+          className={cn(
+            "fixed z-[9999] mt-1 min-w-[130px]",
+            "bg-white rounded-card shadow-card-lg border border-slate-100",
+            "py-1 animate-in fade-in zoom-in-95 duration-100"
+          )}
+          style={{
+            top: containerRef.current 
+              ? containerRef.current.getBoundingClientRect().bottom + 4 
+              : 0,
+            left: containerRef.current 
+              ? containerRef.current.getBoundingClientRect().right - 130 
+              : 0,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => handleSelect(oppositeOption)}
+            className={cn(
+              "w-full flex items-center gap-2 px-3 py-2 text-xs",
+              "hover:bg-slate-50 transition-colors",
+              "text-left"
+            )}
+          >
+            <span
+              className={cn(
+                "w-2 h-2 rounded-full",
+                oppositeVariant === "green" ? "bg-green-500" : "bg-amber-500"
+              )}
+            />
+            <span className="flex-1 text-slate-700">{oppositeLabel}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Función para formatear el ID como número de orden
@@ -222,18 +378,11 @@ function OrderListItem({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Estado de pago */}
-
-        <div
-          className={categoryBadgeVariants({
-            variant: order.paymentStatus === "PAID" ? "green" : "amber",
-          })}
-        >
-          <HandCoins className="w-3 h-3" />
-          <span className="ml-1">
-            {formatPaymentStatus(order.paymentStatus)}
-          </span>
-        </div>
+        {/* Estado de pago - Editable */}
+        <PaymentStatusEditor
+          orderId={order.id}
+          currentStatus={order.paymentStatus}
+        />
       </div>
     </div>
   );
@@ -499,26 +648,18 @@ export const OrderCard = memo(function OrderCard({
           />
         </div>
 
-        {/* Footer: Metadata (tiempo, método de pago, estado de pago) */}
+        {/* Footer: Metadata (tiempo y pago combinado) */}
         <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
             <span>{timeElapsed}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <CreditCard className="w-3 h-3" />
-            <span>{formatPaymentMethod(order.paymentMethod)}</span>
-          </div>
-          <div
-            className={categoryBadgeVariants({
-              variant: order.paymentStatus === "PAID" ? "green" : "amber",
-            })}
-          >
-            <HandCoins className="w-3 h-3" />
-            <span className="ml-1">
-              {formatPaymentStatus(order.paymentStatus)}
-            </span>
-          </div>
+          {/* Método de pago (icono) + Estado de pago editable */}
+          <PaymentStatusEditor
+            orderId={order.id}
+            paymentMethod={order.paymentMethod}
+            currentStatus={order.paymentStatus}
+          />
         </div>
       </div>
 

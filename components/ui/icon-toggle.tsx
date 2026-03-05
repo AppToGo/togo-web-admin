@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const iconToggleVariants = cva(
-  "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
+  "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 cursor-pointer",
   {
     variants: {
       state: {

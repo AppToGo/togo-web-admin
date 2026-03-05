@@ -14,6 +14,7 @@
     "styles:debug": "DEBUG=tailwindcss npm run dev"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-query-devtools": "^5.91.3",
@@ -21,17 +22,19 @@
     "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.576.0",
     "next": "16.1.6",
     "postcss": "^8.5.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "socket.io-client": "^4.8.3",
-    "tailwindcss": "^4.2.1",
     "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
