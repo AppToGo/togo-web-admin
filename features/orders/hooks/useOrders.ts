@@ -27,7 +27,7 @@ const ORDERS_KEYS = {
   all: ["orders"] as const,
   lists: () => [...ORDERS_KEYS.all, "list"] as const,
   list: (filters: GetOrdersParams) =>
-    [...ORDERS_KEYS.lists(), filters] as const,
+    [...ORDERS_KEYS.lists(), JSON.stringify(filters)] as const,
   details: () => [...ORDERS_KEYS.all, "detail"] as const,
   detail: (id: string) => [...ORDERS_KEYS.details(), id] as const,
   history: (id: string) => [...ORDERS_KEYS.detail(id), "history"] as const,
@@ -61,11 +61,16 @@ export function useOrders(params?: GetOrdersParams) {
   });
 }
 
+interface UseOrdersByStatusParams {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 /**
  * Hook para obtener órdenes agrupadas por estado (para Kanban)
  */
-export function useOrdersByStatus() {
-  const { data: orders, ...rest } = useOrders();
+export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
+  const { data: orders, ...rest } = useOrders(params);
 
   const ordersByStatus = useMemo(() => {
     if (!orders) return {} as Record<OrderStatus, Order[]>;

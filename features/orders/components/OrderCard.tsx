@@ -162,6 +162,32 @@ function OrderListItem({
           `opacity-60 rotate-1 scale-[1.02] shadow-lg ring-2 ${dragRingColors[dragColor] || dragRingColors.indigo}`
       )}
     >
+      {/* Dirección si es domicilio */}
+      {orderType.isDelivery && order.address && (
+        <div className="flex items-start gap-1 text-xs text-slate-500">
+          <svg
+            className="w-3 h-3 mt-0.5 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+          <span className="line-clamp-2">{order.address.addressText}</span>
+        </div>
+      )}
+
       {/* Header: Número de orden y Total */}
       <div className="flex items-center justify-between mb-2">
         <span className="font-bold text-slate-900 text-base">
@@ -426,34 +452,34 @@ export const OrderCard = memo(function OrderCard({
             </span>
             <span
               className={categoryBadgeVariants({
-              variant: orderType.variant as any,
-            })}
-          >
-            {orderType.icon}
-            {orderType.label}
-          </span>
-        </div>
+                variant: orderType.variant as any,
+              })}
+            >
+              {orderType.icon}
+              {orderType.label}
+            </span>
+          </div>
 
           {/* Dirección si es domicilio */}
           {orderType.isDelivery && order.address && (
             <div className="flex items-start gap-1 text-xs text-slate-500 mt-1">
-              <svg 
-                className="w-3 h-3 mt-0.5 shrink-0" 
-                fill="none" 
-                viewBox="0 0 24 24" 
+              <svg
+                className="w-3 h-3 mt-0.5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                 />
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
               <span className="line-clamp-2">{order.address.addressText}</span>

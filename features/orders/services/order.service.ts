@@ -36,10 +36,21 @@ function getBaseUrl(): string {
  * Obtener todas las órdenes del negocio actual
  */
 export async function getOrders(params?: GetOrdersParams): Promise<Order[]> {
+  // Construir query params solo con valores definidos
+  const queryParams: Record<string, string> = {};
+  
+  if (params?.status) {
+    queryParams.status = params.status;
+  }
+  if (params?.dateFrom) {
+    queryParams.dateFrom = params.dateFrom;
+  }
+  if (params?.dateTo) {
+    queryParams.dateTo = params.dateTo;
+  }
+  
   const { data } = await apiClient.get<Order[]>(getBaseUrl(), {
-    params: {
-      status: params?.status,
-    },
+    params: queryParams,
   });
   return data;
 }

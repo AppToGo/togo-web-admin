@@ -155,12 +155,12 @@
   /* ==========================================================================
      CUSTOM BORDER RADIUS
      ========================================================================== */
-  --radius-card: 1rem;        /* 16px */
-  --radius-card-lg: 1.5rem;   /* 24px - rounded-2xl */
-  --radius-card-xl: 2rem;     /* 32px - rounded-3xl */
-  --radius-badge: 9999px;     /* full */
-  --radius-icon: 0.75rem;     /* 12px */
-  --radius-avatar: 9999px;    /* full */
+  --radius-card: 1rem; /* 16px */
+  --radius-card-lg: 1.5rem; /* 24px - rounded-2xl */
+  --radius-card-xl: 2rem; /* 32px - rounded-3xl */
+  --radius-badge: 9999px; /* full */
+  --radius-icon: 0.75rem; /* 12px */
+  --radius-avatar: 9999px; /* full */
 
   /* ==========================================================================
      BACKDROP BLUR VALUES
@@ -185,9 +185,24 @@
   --gradient-slate-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 
   /* Background gradients */
-  --gradient-bg-soft: linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 50%, #fff7ed 100%);
-  --gradient-bg-cool: linear-gradient(135deg, #eff6ff 0%, #eef2ff 50%, #f5f3ff 100%);
-  --gradient-bg-warm: linear-gradient(135deg, #fff7ed 0%, #fffbeb 50%, #fefce8 100%);
+  --gradient-bg-soft: linear-gradient(
+    135deg,
+    #fdf2f8 0%,
+    #f5f3ff 50%,
+    #fff7ed 100%
+  );
+  --gradient-bg-cool: linear-gradient(
+    135deg,
+    #eff6ff 0%,
+    #eef2ff 50%,
+    #f5f3ff 100%
+  );
+  --gradient-bg-warm: linear-gradient(
+    135deg,
+    #fff7ed 0%,
+    #fffbeb 50%,
+    #fefce8 100%
+  );
 
   /* ==========================================================================
      ANIMATIONS
@@ -216,7 +231,11 @@
   body {
     background-color: #f8fafc;
     color: #0f172a;
-    font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+    font-family:
+      var(--font-geist-sans),
+      system-ui,
+      -apple-system,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -323,6 +342,15 @@
   .rounded-card-xl {
     border-radius: var(--radius-card-xl);
   }
+  .rounded-badge {
+    border-radius: var(--radius-badge);
+  }
+  .rounded-icon {
+    border-radius: var(--radius-icon);
+  }
+  .rounded-avatar {
+    border-radius: var(--radius-avatar);
+  }
 
   /* Line clamp utilities */
   .line-clamp-1 {
@@ -357,118 +385,140 @@
 @layer utilities {
   /* Fade animations */
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes fadeInUp {
-    from { 
-      opacity: 0; 
-      transform: translateY(10px); 
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
   @keyframes fadeInDown {
-    from { 
-      opacity: 0; 
-      transform: translateY(-10px); 
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
     }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
   @keyframes fadeInScale {
-    from { 
-      opacity: 0; 
-      transform: scale(0.95); 
+    from {
+      opacity: 0;
+      transform: scale(0.95);
     }
-    to { 
-      opacity: 1; 
-      transform: scale(1); 
+    to {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 
   /* Slide animations */
   @keyframes slideInRight {
-    from { 
-      opacity: 0; 
-      transform: translateX(20px); 
+    from {
+      opacity: 0;
+      transform: translateX(20px);
     }
-    to { 
-      opacity: 1; 
-      transform: translateX(0); 
+    to {
+      opacity: 1;
+      transform: translateX(0);
     }
   }
 
   @keyframes slideInLeft {
-    from { 
-      opacity: 0; 
-      transform: translateX(-20px); 
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
     }
-    to { 
-      opacity: 1; 
-      transform: translateX(0); 
+    to {
+      opacity: 1;
+      transform: translateX(0);
     }
   }
 
   /* Card animations for Kanban */
   @keyframes cardEnter {
-    from { 
-      opacity: 0; 
-      transform: translateY(20px) scale(0.95); 
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
     }
-    to { 
-      opacity: 1; 
-      transform: translateY(0) scale(1); 
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 
   @keyframes cardHover {
-    from { 
-      transform: translateY(0) scale(1); 
+    from {
+      transform: translateY(0) scale(1);
     }
-    to { 
-      transform: translateY(-4px) scale(1.01); 
+    to {
+      transform: translateY(-4px) scale(1.01);
     }
   }
 
   @keyframes cardDrag {
-    from { 
-      transform: rotate(0deg) scale(1); 
+    from {
+      transform: rotate(0deg) scale(1);
     }
-    to { 
-      transform: rotate(2deg) scale(1.02); 
+    to {
+      transform: rotate(2deg) scale(1.02);
     }
   }
 
   /* Progress bar animation */
   @keyframes progressFill {
-    from { width: 0%; }
-    to { width: var(--progress-width, 100%); }
+    from {
+      width: 0%;
+    }
+    to {
+      width: var(--progress-width, 100%);
+    }
   }
 
   /* Pulse subtle animation */
   @keyframes pulseSubtle {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
   }
 
   /* Shimmer effect for loading */
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
 
   /* Bounce subtle */
   @keyframes bounceSubtle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
   }
 
   /* Animation utility classes */
@@ -513,7 +563,12 @@
   }
 
   .animate-shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
@@ -528,27 +583,61 @@
     opacity: 0;
   }
 
-  .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-  .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-  .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
-  .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
-  .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
-  .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
-  .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+  .stagger-children > *:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .stagger-children > *:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  .stagger-children > *:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+  .stagger-children > *:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+  .stagger-children > *:nth-child(5) {
+    animation-delay: 0.25s;
+  }
+  .stagger-children > *:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+  .stagger-children > *:nth-child(7) {
+    animation-delay: 0.35s;
+  }
+  .stagger-children > *:nth-child(8) {
+    animation-delay: 0.4s;
+  }
 
   /* Animation durations */
-  .duration-75 { animation-duration: 75ms; }
-  .duration-100 { animation-duration: 100ms; }
-  .duration-150 { animation-duration: 150ms; }
-  .duration-200 { animation-duration: 200ms; }
-  .duration-300 { animation-duration: 300ms; }
-  .duration-500 { animation-duration: 500ms; }
-  .duration-700 { animation-duration: 700ms; }
+  .duration-75 {
+    animation-duration: 75ms;
+  }
+  .duration-100 {
+    animation-duration: 100ms;
+  }
+  .duration-150 {
+    animation-duration: 150ms;
+  }
+  .duration-200 {
+    animation-duration: 200ms;
+  }
+  .duration-300 {
+    animation-duration: 300ms;
+  }
+  .duration-500 {
+    animation-duration: 500ms;
+  }
+  .duration-700 {
+    animation-duration: 700ms;
+  }
 
   /* Animation timing functions */
-  .ease-smooth { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-  .ease-bounce { animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+  .ease-smooth {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .ease-bounce {
+    animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
 }
 
 /* ============================================================================

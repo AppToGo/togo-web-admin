@@ -14,6 +14,8 @@ import type { CardViewMode } from "./OrderCard";
 interface OrdersKanbanBoardProps {
   searchQuery?: string;
   cardViewMode?: CardViewMode;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 function formatOrderNumber(id: string): string {
@@ -37,8 +39,13 @@ function filterOrdersBySearch(orders: Order[] | undefined, query: string): Order
   });
 }
 
-export function OrdersKanbanBoard({ searchQuery = "", cardViewMode = "card" }: OrdersKanbanBoardProps) {
-  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus();
+export function OrdersKanbanBoard({ 
+  searchQuery = "", 
+  cardViewMode = "card",
+  dateFrom,
+  dateTo,
+}: OrdersKanbanBoardProps) {
+  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({ dateFrom, dateTo });
   const updateStatus = useUpdateOrderStatus();
 
   const columns = useMemo(() => getKanbanColumns(), []);

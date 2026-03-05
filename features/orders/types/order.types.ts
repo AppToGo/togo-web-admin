@@ -101,6 +101,8 @@ export interface GetOrdersParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 // Respuesta paginada de órdenes
