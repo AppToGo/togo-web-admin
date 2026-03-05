@@ -107,14 +107,13 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
 
   const nextStatuses: OrderStatus[] = [
     "IN_PROGRESS",
-    "READY",
     "ON_THE_WAY",
     "COMPLETED",
   ].filter((s) => s !== order.status) as OrderStatus[];
 
   return (
     <div className="space-y-6">
-      {/* Header: Estado y Total */}
+      {/* Header: Estado, Tipo de entrega y Total */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`w-3 h-3 rounded-full ${statusColors.dot}`} />
@@ -124,6 +123,22 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
               {STATUS_LABELS[order.status]}
             </p>
           </div>
+        </div>
+        {/* Tipo de entrega */}
+        <div className="text-center">
+          <p className="text-sm text-slate-500">Entrega</p>
+          <p className="font-medium text-slate-900">
+            {order.deliveryType === 'DELIVERY' || order.addressId
+              ? 'Domicilio'
+              : order.deliveryType === 'PICKUP'
+              ? 'Recoger'
+              : 'En mesa'}
+          </p>
+          {(order.deliveryType === 'DELIVERY' || order.addressId) && order.deliveryFee && order.deliveryFee > 0 && (
+            <p className="text-xs text-slate-500">
+              Domicilio: {formatCurrency(order.deliveryFee)}
+            </p>
+          )}
         </div>
         <div className="text-right">
           <p className="text-sm text-slate-500">Total</p>
@@ -202,11 +217,29 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
                 </p>
               </div>
             ))}
-            <div className="flex items-center justify-between p-3 bg-slate-100 border-t border-slate-200">
-              <p className="font-semibold text-slate-900">Total</p>
-              <p className="font-bold text-slate-900">
-                {formatCurrency(order.totalAmount)}
-              </p>
+            {/* Desglose de totales */}
+            <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-1">
+              {/* Subtotal */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Subtotal</span>
+                <span className="text-slate-700">
+                  {formatCurrency(order.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0))}
+                </span>
+              </div>
+              {/* Domicilio (solo si aplica) */}
+              {(order.deliveryType === 'DELIVERY' || order.addressId) && order.deliveryFee && order.deliveryFee > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600">Domicilio</span>
+                  <span className="text-slate-700">{formatCurrency(order.deliveryFee)}</span>
+                </div>
+              )}
+              {/* Total */}
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                <p className="font-semibold text-slate-900">Total</p>
+                <p className="font-bold text-slate-900">
+                  {formatCurrency(order.totalAmount)}
+                </p>
+              </div>
             </div>
           </div>
         </div>

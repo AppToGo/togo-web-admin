@@ -8,10 +8,10 @@ import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 import { useOrdersByStatus, useUpdateOrderStatus } from "../hooks/useOrders";
 import type { OrderStatus } from "../types";
 import { getKanbanColumns } from "../utils/order-status.utils";
-import { mainContainerVariants } from "../styles";
+import { kanbanColumnVariants, columnHeaderColorVariants } from "../styles";
 
 export function OrdersKanbanBoard() {
-  const { ordersByStatus, isLoading, error } = useOrdersByStatus();
+  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus();
   const updateStatus = useUpdateOrderStatus();
 
   const columns = useMemo(() => getKanbanColumns(), []);
@@ -91,18 +91,45 @@ export function OrdersKanbanBoard() {
                   />
                 );
               })}
+              <div
+                className={cn(
+                  kanbanColumnVariants({ background: "default" }),
+                  "h-[calc(100vh-200px)]"
+                )}
+              >
+                {/* Header de la columna */}
+                <div className={columnHeaderColorVariants({ color: "pink" })}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full bg-pink-400`} />
+                      <h3 className="font-semibold text-sm text-slate-700">
+                        Operación en curso
+                      </h3>
+                    </div>
+                    <span className="text-xs font-medium text-slate-500 bg-white/70 px-2 py-0.5 rounded-full">
+                      {orders?.length || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Contenedor de tarjetas */}
+                <div>
+                  {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
+                  {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Sidebar separator */}
-        <div className="hidden lg:block w-px bg-linear-to-b from-transparent via-slate-200 to-transparent" />
+        {/* <div className="hidden lg:block w-px bg-linear-to-b from-transparent via-slate-200 to-transparent" /> */}
 
         {/* Right Sidebar */}
-        <div className="w-full lg:w-60 shrink-0 p-6 space-y-6 bg-white rounded-tr-4xl rounded-br-4xl">
+        {/* <div className="w-full lg:w-60 shrink-0 p-6 space-y-6 bg-white rounded-tr-4xl rounded-br-4xl">
           {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
           {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
-        </div>
+        </div> */}
       </div>
     </div>
   );

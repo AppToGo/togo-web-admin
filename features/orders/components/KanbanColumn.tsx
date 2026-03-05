@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { OrderCard } from "./OrderCard";
 import type { Order, OrderStatus } from "../types";
@@ -26,6 +26,19 @@ interface KanbanColumnProps {
   dotColor?: string;
 }
 
+// Mapa de colores para drag over según el headerColor
+const dragOverColors: Record<string, { ring: string; bg: string; border: string; text: string; lightBg: string; dot: string }> = {
+  gray: { ring: "ring-gray-400", bg: "bg-gray-50/30", border: "border-gray-300", text: "text-gray-600", lightBg: "bg-gray-100/30", dot: "bg-gray-400" },
+  blue: { ring: "ring-blue-400", bg: "bg-blue-50/30", border: "border-blue-300", text: "text-blue-600", lightBg: "bg-blue-100/30", dot: "bg-blue-400" },
+  purple: { ring: "ring-purple-400", bg: "bg-purple-50/30", border: "border-purple-300", text: "text-purple-600", lightBg: "bg-purple-100/30", dot: "bg-purple-400" },
+  green: { ring: "ring-emerald-400", bg: "bg-emerald-50/30", border: "border-emerald-300", text: "text-emerald-600", lightBg: "bg-emerald-100/30", dot: "bg-emerald-400" },
+  orange: { ring: "ring-orange-400", bg: "bg-orange-50/30", border: "border-orange-300", text: "text-orange-600", lightBg: "bg-orange-100/30", dot: "bg-orange-400" },
+  pink: { ring: "ring-pink-400", bg: "bg-pink-50/30", border: "border-pink-300", text: "text-pink-600", lightBg: "bg-pink-100/30", dot: "bg-pink-400" },
+  amber: { ring: "ring-amber-400", bg: "bg-amber-50/30", border: "border-amber-300", text: "text-amber-600", lightBg: "bg-amber-100/30", dot: "bg-amber-400" },
+  cyan: { ring: "ring-cyan-400", bg: "bg-cyan-50/30", border: "border-cyan-300", text: "text-cyan-600", lightBg: "bg-cyan-100/30", dot: "bg-cyan-400" },
+  indigo: { ring: "ring-indigo-400", bg: "bg-indigo-50/30", border: "border-indigo-300", text: "text-indigo-600", lightBg: "bg-indigo-100/30", dot: "bg-indigo-400" },
+};
+
 export const KanbanColumn = memo(function KanbanColumn({
   status,
   title,
@@ -35,8 +48,45 @@ export const KanbanColumn = memo(function KanbanColumn({
   headerColor = "gray",
   dotColor = "bg-gray-400",
 }: KanbanColumnProps) {
+  const [isDragOver, setIsDragOver] = useState(false);
+  
+  // Obtener colores para drag over según el headerColor
+  const colors = dragOverColors[headerColor] || dragOverColors.gray;
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const orderId = e.dataTransfer.getData("orderId");
+    const fromStatus = e.dataTransfer.getData("fromStatus");
+    
+    if (orderId && fromStatus !== status) {
+      // Llamar al callback para cambiar el estado
+      onStatusChange?.(orderId, status);
+    }
+  }, [status, onStatusChange]);
+
   return (
-    <div className={cn(kanbanColumnVariants({ background: "default" }), "h-[calc(100vh-200px)]")}>
+    <div 
+      className={cn(
+        kanbanColumnVariants({ background: "default" }), 
+        "h-[calc(100vh-200px)] transition-all duration-200",
+        isDragOver && `ring-2 ${colors.ring} ring-offset-2 ${colors.bg}`
+      )}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {/* Header de la columna */}
       <div className={columnHeaderColorVariants({ color: headerColor })}>
         <div className="flex items-center justify-between">
@@ -44,14 +94,22 @@ export const KanbanColumn = memo(function KanbanColumn({
             <div className={`w-2 h-2 rounded-full ${dotColor}`} />
             <h3 className="font-semibold text-sm text-slate-700">{title}</h3>
           </div>
-          <span className="text-xs font-medium text-slate-500 bg-white/70 px-2 py-0.5 rounded-full">
+          <span className={cn(
+            "text-xs font-medium px-2 py-0.5 rounded-full transition-colors",
+            isDragOver 
+              ? `${colors.lightBg} ${colors.text}` 
+              : "bg-white/70 text-slate-500"
+          )}>
             {orders.length}
           </span>
         </div>
       </div>
 
       {/* Contenedor de tarjetas */}
-      <div className="flex-1 overflow-y-auto space-y-3 min-h-0 scrollbar-thin">
+      <div className={cn(
+        "flex-1 overflow-y-auto space-y-3 min-h-0 scrollbar-thin transition-colors duration-200 rounded-lg p-1",
+        isDragOver && colors.lightBg
+      )}>
         {isLoading ? (
           <>
             <KanbanCardSkeleton />
@@ -59,11 +117,27 @@ export const KanbanColumn = memo(function KanbanColumn({
             <KanbanCardSkeleton />
           </>
         ) : orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 rounded-card bg-slate-100 flex items-center justify-center mb-3">
-              <div className={`w-4 h-4 rounded-full ${dotColor} opacity-30`} />
+          <div className={cn(
+            "flex flex-col items-center justify-center py-8 text-center rounded-card transition-colors duration-200 border-2 border-dashed",
+            isDragOver 
+              ? `border-${headerColor}-300 bg-${headerColor}-50/50` 
+              : "border-slate-200"
+          )}>
+            <div className={cn(
+              "w-12 h-12 rounded-card flex items-center justify-center mb-3 transition-colors",
+              isDragOver ? colors.lightBg.replace('/30', '') : "bg-slate-100"
+            )}>
+              <div className={cn(
+                "w-4 h-4 rounded-full transition-colors",
+                isDragOver ? colors.dot : `${dotColor} opacity-30`
+              )} />
             </div>
-            <p className="text-sm text-slate-400">Sin órdenes</p>
+            <p className={cn(
+              "text-sm transition-colors",
+              isDragOver ? `${colors.text} font-medium` : "text-slate-400"
+            )}>
+              {isDragOver ? "Suelta aquí" : "Sin órdenes"}
+            </p>
           </div>
         ) : (
           orders.map((order) => (
@@ -72,6 +146,8 @@ export const KanbanColumn = memo(function KanbanColumn({
               order={order}
               onStatusChange={onStatusChange}
               badgeVariant={getBadgeVariant(status)}
+              currentStatus={status}
+              dragColor={headerColor}
             />
           ))
         )}
@@ -102,7 +178,6 @@ function getBadgeVariant(status: OrderStatus): string {
   const variants: Record<string, string> = {
     CONFIRMED: "blue",
     IN_PROGRESS: "purple",
-    READY: "green",
     ON_THE_WAY: "orange",
     COMPLETED: "pink",
   };

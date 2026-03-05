@@ -1,19 +1,25 @@
 "use client";
 
 import { memo, useCallback, useState } from "react";
-import { Clock, Calendar, MessageSquare, Paperclip } from "lucide-react";
-import type { Order } from "../types";
+import {
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  MapPin,
+  Store,
+  Home,
+  Utensils,
+  HandCoins,
+} from "lucide-react";
+import type { Order, OrderItem } from "../types";
 import {
   formatCurrency,
   getTimeElapsed,
   canCompleteOrder,
   STATUS_LABELS,
 } from "../utils/order-status.utils";
-import {
-  kanbanCardVariants,
-  categoryBadgeVariants,
-  avatarVariants,
-} from "../styles";
+import { kanbanCardVariants, categoryBadgeVariants } from "../styles";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -28,40 +34,198 @@ interface OrderCardProps {
   order: Order;
   onStatusChange?: (orderId: string, newStatus: string) => void;
   badgeVariant?: string;
+  currentStatus?: string;
+  dragColor?: string;
 }
 
-// Gradientes de avatar predefinidos
-const AVATAR_GRADIENTS = [
-  "bg-gradient-pink-purple",
-  "bg-gradient-purple-indigo",
-  "bg-gradient-blue-cyan",
-  "bg-gradient-emerald-teal",
-  "bg-gradient-orange-amber",
-];
+// Función para formatear el ID como número de orden
+function formatOrderNumber(id: string): string {
+  return `#${id.slice(0, 6).toUpperCase()}`;
+}
+
+// Función para formatear el método de pago
+function formatPaymentMethod(method?: string): string {
+  if (!method) return "No especificado";
+  const methods: Record<string, string> = {
+    cash: "Efectivo",
+    credit_card: "Tarjeta crédito",
+    debit_card: "Tarjeta débito",
+    transfer: "Transferencia",
+    wallet: "Billetera",
+    dataphone: "Datáfono",
+  };
+  // Convertir a minúsculas para comparación case-insensitive
+  return methods[method.toLowerCase()] || method;
+}
+
+// Función para formatear el estado de pago
+function formatPaymentStatus(status?: string): string {
+  if (!status) return "Desconocido";
+  const statuses: Record<string, string> = {
+    paid: "Pagado",
+    pending: "Pendiente",
+  };
+  // Convertir a minúsculas para comparación case-insensitive
+  return statuses[status.toLowerCase()] || status;
+}
+
+// Tipo de orden basado en la fuente
+// En el backend, cuando se crea la orden:
+// - Si hay userId → OPERATOR (creado por operador)
+// - Si no hay userId → WHATSAPP (creado por cliente vía WhatsApp)
+//
+// Lógica:
+// - Con dirección → DOMICILIO
+// - Sin dirección + source=WHATSAPP → PARA RECOGER
+// - Sin dirección + source=OPERATOR → EN MESA
+
+function getOrderTypeInfo(order: Order & { source?: string }): {
+  label: string;
+  icon: React.ReactNode;
+  variant: string;
+} {
+  // Si tiene dirección → Domicilio
+  if (order.addressId) {
+    return {
+      label: "Domicilio",
+      icon: <Home className="w-3 h-3" />,
+      variant: "blue",
+    };
+  }
+
+  // Sin dirección + source OPERATOR → En mesa (creado por operador)
+  if (order.source === "OPERATOR") {
+    return {
+      label: "En mesa",
+      icon: <Utensils className="w-3 h-3" />,
+      variant: "emerald",
+    };
+  }
+
+  // Sin dirección + source WHATSAPP o no definido → Para recoger
+  return {
+    label: "Recoger",
+    icon: <Store className="w-3 h-3" />,
+    variant: "amber",
+  };
+}
+
+// Componente para mostrar items con "ver más" y desglose de totales
+function OrderItemsList({
+  items,
+  totalAmount,
+  deliveryFee,
+  isDelivery,
+}: {
+  items?: OrderItem[];
+  totalAmount: number;
+  deliveryFee?: number;
+  isDelivery?: boolean;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  const MAX_ITEMS = 2;
+
+  // Calcular subtotal
+  const subtotal =
+    items?.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) || 0;
+  const fee = isDelivery ? deliveryFee || 0 : 0;
+
+  if (!items || items.length === 0) {
+    return (
+      <div className="space-y-1">
+        <p className="text-xs text-slate-400 italic">Sin productos</p>
+        <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100">
+          <span className="text-xs font-medium text-slate-600">Total</span>
+          <span className="font-bold text-slate-900 text-sm">
+            {formatCurrency(totalAmount)}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const displayItems = showAll ? items : items.slice(0, MAX_ITEMS);
+  const hasMore = items.length > MAX_ITEMS;
+
+  return (
+    <div className="space-y-1">
+      {displayItems.map((item) => (
+        <div
+          key={item.id}
+          className="flex items-center justify-between text-xs"
+        >
+          <span
+            className="text-slate-600 truncate flex-1"
+            title={item.productName}
+          >
+            {item.quantity}x {item.productName}
+          </span>
+          <span className="text-slate-700 font-medium ml-2">
+            {formatCurrency(item.unitPrice * item.quantity)}
+          </span>
+        </div>
+      ))}
+      {hasMore && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowAll(!showAll);
+          }}
+          className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 font-medium mt-1"
+        >
+          {showAll ? (
+            <>
+              <ChevronUp className="w-3 h-3" />
+              Ver menos
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-3 h-3" />
+              Ver {items.length - MAX_ITEMS} más
+            </>
+          )}
+        </button>
+      )}
+      {/* Desglose de totales */}
+      <div className="space-y-1 pt-2 mt-2 border-t border-slate-100">
+        {/* Subtotal */}
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-500">Subtotal</span>
+          <span className="text-slate-600">{formatCurrency(subtotal)}</span>
+        </div>
+        {/* Domicilio (solo si aplica) */}
+        {isDelivery && fee > 0 && (
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500">Domicilio</span>
+            <span className="text-slate-600">{formatCurrency(fee)}</span>
+          </div>
+        )}
+        {/* Total */}
+        <div className="flex items-center justify-between pt-1 border-t border-slate-100/50">
+          <span className="text-xs font-medium text-slate-600">Total</span>
+          <span className="font-bold text-slate-900 text-sm">
+            {formatCurrency(totalAmount)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export const OrderCard = memo(function OrderCard({
   order,
   onStatusChange,
   badgeVariant = "slate",
+  currentStatus,
+  dragColor = "indigo",
 }: OrderCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const customerName = order.customer?.name || "Cliente";
-  const itemsCount = order.items?.length || 0;
+  const orderNumber = formatOrderNumber(order.id);
   const timeElapsed = getTimeElapsed(order.createdAt);
-
-  // Generar iniciales para el avatar
-  const initials = customerName
-    .split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
-  // Seleccionar gradiente basado en el nombre
-  const avatarGradient =
-    AVATAR_GRADIENTS[customerName.length % AVATAR_GRADIENTS.length];
+  const orderType = getOrderTypeInfo(order as Order & { source?: string });
 
   const handleCompleteClick = useCallback(
     (e: React.MouseEvent) => {
@@ -76,83 +240,104 @@ export const OrderCard = memo(function OrderCard({
     [order, onStatusChange]
   );
 
+  // Mapa de colores para el ring de drag
+  const dragRingColors: Record<string, string> = {
+    gray: "ring-gray-400",
+    blue: "ring-blue-400",
+    purple: "ring-purple-400",
+    green: "ring-emerald-400",
+    orange: "ring-orange-400",
+    pink: "ring-pink-400",
+    amber: "ring-amber-400",
+    cyan: "ring-cyan-400",
+    indigo: "ring-indigo-400",
+  };
+
+  // Event handlers para drag and drop
+  const handleDragStart = (e: React.DragEvent) => {
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("orderId", order.id);
+    e.dataTransfer.setData("fromStatus", currentStatus || "");
+    
+    // Agregar una imagen personalizada o efecto visual
+    e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
     <>
       <div
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         className={cn(
           kanbanCardVariants({ elevation: "default" }),
-          "animate-cardEnter hover:animate-cardHover"
+          "animate-cardEnter hover:animate-cardHover cursor-grab active:cursor-grabbing transition-all duration-200",
+          isDragging && `opacity-50 rotate-2 scale-105 shadow-xl ring-2 ${dragRingColors[dragColor] || dragRingColors.indigo}`
         )}
         onClick={() => setIsDetailOpen(true)}
       >
-        {/* Badge de categoría */}
+        {/* Header: Número de orden, tipo y estado */}
         <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-900 text-sm">
+              {orderNumber}
+            </span>
+          </div>
           <span
-            className={categoryBadgeVariants({ variant: badgeVariant as any })}
+            className={categoryBadgeVariants({
+              variant: orderType.variant as any,
+            })}
           >
-            {STATUS_LABELS[order.status]}
+            {orderType.icon}
+            {orderType.label}
           </span>
-          <button
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-icon hover:bg-slate-100 transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="6" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="12" cy="18" r="2" />
-            </svg>
-          </button>
         </div>
 
-        {/* Título/Nombre del cliente */}
-        <h4 className="font-semibold text-slate-800 text-sm mb-2 line-clamp-2">
-          {customerName}
-        </h4>
+        {/* Items de la orden con total incluido */}
+        <div className="mb-3">
+          <OrderItemsList
+            items={order.items}
+            totalAmount={order.totalAmount}
+            deliveryFee={order.deliveryFee}
+            isDelivery={
+              order.deliveryType === "DELIVERY" ||
+              orderType.label === "Domicilio"
+            }
+          />
+        </div>
 
-        {/* Metadata */}
-        <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
+        {/* Footer: Metadata (tiempo, método de pago, estado de pago) */}
+        <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
           <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
+            <Clock className="w-3 h-3" />
             <span>{timeElapsed}</span>
           </div>
           <div className="flex items-center gap-1">
-            <MessageSquare className="w-3 h-3" />
-            <span>{itemsCount}</span>
+            <CreditCard className="w-3 h-3" />
+            <span>{formatPaymentMethod(order.paymentMethod)}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Paperclip className="w-3 h-3" />
-            <span>{order.paymentStatus === "PAID" ? "1" : "0"}</span>
-          </div>
-        </div>
-
-        {/* Footer: Avatar y precio */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100/80">
-          {/* Avatar con iniciales */}
           <div
             className={cn(
-              avatarVariants({ size: "default" }),
-              avatarGradient,
-              "flex items-center justify-center text-white text-xs font-medium"
+              "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xxs font-medium",
+              order.paymentStatus === "PAID"
+                ? "text-green-700 bg-green-100"
+                : "text-amber-700 bg-amber-100"
             )}
           >
-            {initials}
-          </div>
-
-          {/* Precio */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">
-              {order.paymentStatus === "PAID" ? "Pagado" : "Pendiente"}
-            </span>
-            <span className="font-bold text-slate-900 text-sm">
-              {formatCurrency(order.totalAmount)}
-            </span>
+            <HandCoins className="w-3 h-3" />
+            <span>{formatPaymentStatus(order.paymentStatus)}</span>
           </div>
         </div>
       </div>
 
       {/* Dialog de detalle */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-white/90 backdrop-blur-lg">
           <DialogHeader>
             <DialogTitle>Detalle de Orden</DialogTitle>
           </DialogHeader>
@@ -165,7 +350,7 @@ export const OrderCard = memo(function OrderCard({
 
       {/* Alert de pago pendiente */}
       <Dialog open={showPaymentAlert} onOpenChange={setShowPaymentAlert}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm bg-white">
           <div className="flex flex-col items-center text-center p-4">
             <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
               <svg

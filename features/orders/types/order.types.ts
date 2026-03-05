@@ -1,27 +1,27 @@
 /**
  * Order Feature Types
- * 
+ *
  * Tipado estricto para toda la feature de órdenes.
  * Basado en los DTOs del backend.
  */
 
 // Enums del backend
-export type OrderStatus = 
-  | 'DRAFT'
-  | 'CONFIRMED'
-  | 'PAYMENT_PENDING'
-  | 'PAID'
-  | 'IN_PROGRESS'
-  | 'READY'
-  | 'ON_THE_WAY'
-  | 'COMPLETED'
-  | 'CANCELLED'
-  | 'ABANDONED';
+export type OrderStatus =
+  | "DRAFT"
+  | "CONFIRMED"
+  | "PAYMENT_PENDING"
+  | "PAID"
+  | "IN_PROGRESS"
+  | "READY"
+  | "ON_THE_WAY"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "ABANDONED";
 
-export type PaymentStatus = 'PENDING' | 'PAID';
+export type PaymentStatus = "PENDING" | "PAID";
 
-export type ConfirmationSource = 'CUSTOMER' | 'OPERATOR' | 'SYSTEM';
-export type ConfirmationChannel = 'WHATSAPP' | 'BACKOFFICE' | 'API' | 'SYSTEM';
+export type ConfirmationSource = "CUSTOMER" | "OPERATOR" | "SYSTEM";
+export type ConfirmationChannel = "WHATSAPP" | "BACKOFFICE" | "API" | "SYSTEM";
 
 // Información del cliente
 export interface CustomerInfo {
@@ -68,6 +68,9 @@ export interface Order {
   addressId?: string;
   assignedDeliveryId?: string;
   businessId: string;
+  source?: "WHATSAPP" | "OPERATOR" | "WEB_CATALOG";
+  deliveryType?: "DELIVERY" | "PICKUP" | "DINE_IN";
+  deliveryFee?: number;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -97,7 +100,7 @@ export interface GetOrdersParams {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 // Respuesta paginada de órdenes
@@ -140,7 +143,7 @@ export interface OrderMetrics {
 // Actividad reciente
 export interface RecentActivity {
   id: string;
-  type: 'status_change' | 'new_order' | 'payment_received' | 'cancelled';
+  type: "status_change" | "new_order" | "payment_received" | "cancelled";
   orderId: string;
   orderNumber?: string;
   customerName?: string;

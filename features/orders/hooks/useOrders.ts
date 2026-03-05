@@ -248,7 +248,6 @@ export function useOrderMetrics() {
     const inProgressStatuses: OrderStatus[] = [
       "PAID",
       "IN_PROGRESS",
-      "READY",
       "ON_THE_WAY",
     ];
 
@@ -317,7 +316,7 @@ function getStatusLabel(status: OrderStatus): string {
     CONFIRMED: "Confirmada",
     PAYMENT_PENDING: "Pago pendiente",
     PAID: "Pagada",
-    IN_PROGRESS: "En preparación",
+    IN_PROGRESS: "En proceso",
     READY: "Lista",
     ON_THE_WAY: "En camino",
     COMPLETED: "Completada",

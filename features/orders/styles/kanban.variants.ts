@@ -53,7 +53,7 @@ export type KanbanCardVariantProps = VariantProps<typeof kanbanCardVariants>;
 // ============================================================================
 
 export const categoryBadgeVariants = cva(
-  "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
+  "inline-flex items-center px-2.5 py-1 rounded-full text-xxs font-medium",
   {
     variants: {
       variant: {
@@ -91,7 +91,7 @@ export type CategoryBadgeVariantProps = VariantProps<
 // ============================================================================
 
 export const kanbanColumnVariants = cva(
-  "flex flex-col rounded-3xl min-w-[300px] w-[300px] flex-shrink-0",
+  "flex flex-col rounded-3xl min-w-[300px] w-[300px] shrink-0 p-4",
   {
     variants: {
       // Fondo de la columna
@@ -217,7 +217,7 @@ export type MetricsCardVariantProps = VariantProps<typeof metricsCardVariants>;
 // ============================================================================
 
 export const activityIconVariants = cva(
-  "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+  "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
   {
     variants: {
       variant: {

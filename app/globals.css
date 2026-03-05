@@ -343,6 +343,12 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Extra small text utility (10px) for badges and compact labels */
+  .text-xxs {
+    font-size: 10px;
+    line-height: 1;
+  }
 }
 
 /* ============================================================================

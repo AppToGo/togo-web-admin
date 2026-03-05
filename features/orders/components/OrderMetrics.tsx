@@ -37,9 +37,6 @@ export const OrderMetrics = memo(function OrderMetrics() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <h3 className="font-semibold text-slate-900 text-base">Task Progress</h3>
-
       {/* Progress Bars */}
       <div className="space-y-4">
         {progressItems.map((item) => (

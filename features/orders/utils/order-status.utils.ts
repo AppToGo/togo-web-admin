@@ -82,7 +82,7 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   CONFIRMED: "Confirmada",
   PAYMENT_PENDING: "Pago pendiente",
   PAID: "Pagada",
-  IN_PROGRESS: "En preparación",
+  IN_PROGRESS: "En proceso",
   READY: "Lista",
   ON_THE_WAY: "En camino",
   COMPLETED: "Completada",
@@ -96,7 +96,7 @@ export const STATUS_DESCRIPTIONS: Record<OrderStatus, string> = {
   CONFIRMED: "Orden confirmada por el cliente",
   PAYMENT_PENDING: "Esperando confirmación de pago",
   PAID: "Pago recibido y confirmado",
-  IN_PROGRESS: "Preparando los productos",
+  IN_PROGRESS: "Orden en proceso de preparación",
   READY: "Orden lista para entrega/recogida",
   ON_THE_WAY: "En camino a la dirección del cliente",
   COMPLETED: "Orden entregada y completada",
@@ -125,13 +125,12 @@ export const FINAL_STATUSES: OrderStatus[] = [
   "ABANDONED",
 ];
 
-// Estados activos (en progreso)
+// Estados activos (en progreso) - excluyendo READY del Kanban
 export const ACTIVE_STATUSES: OrderStatus[] = [
   "CONFIRMED",
   "PAYMENT_PENDING",
   "PAID",
   "IN_PROGRESS",
-  "READY",
   "ON_THE_WAY",
 ];
 
@@ -265,9 +264,8 @@ export function formatCurrency(amount: number): string {
 export function getKanbanColumns(): { id: OrderStatus; title: string }[] {
   return [
     { id: "CONFIRMED", title: "Nuevas" },
-    { id: "IN_PROGRESS", title: "En Preparación" },
-    { id: "READY", title: "Listas" },
-    { id: "ON_THE_WAY", title: "En Camino" },
+    { id: "IN_PROGRESS", title: "En proceso" },
+    { id: "ON_THE_WAY", title: "En camino" },
     { id: "COMPLETED", title: "Completadas" },
   ];
 }

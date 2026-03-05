@@ -80,7 +80,7 @@ export function Sidebar({
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center flex-shrink-0 shadow-card">
+            <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center shrink-0 shadow-card">
               <span className="text-white font-bold text-sm">T</span>
             </div>
             {!isCollapsed && (
@@ -149,7 +149,7 @@ export function Sidebar({
             )}
           >
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-indigo-purple flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-indigo-purple flex items-center justify-center shrink-0">
               <span className="text-white font-medium text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </span>
@@ -169,12 +169,12 @@ export function Sidebar({
 
             {/* Notifications - right side */}
             <button
-              className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white rounded-full transition-colors flex-shrink-0"
+              className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white rounded-full transition-colors shrink-0"
               title="Notificaciones"
             >
               <BellIcon className={cn("w-5 h-5", isCollapsed && "w-4 h-4")} />
               {/* Notification badge with count */}
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1 rounded-full ring-2 ring-slate-50/80">
+              <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 flex items-center justify-center bg-red-500 text-white text-xxs font-bold px-1 rounded-full ring-2 ring-slate-50/80">
                 3
               </span>
             </button>
