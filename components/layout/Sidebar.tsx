@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 
 // Navigation items
 const navigation = [
@@ -88,6 +89,9 @@ export function Sidebar({
             )}
           </Link>
         </div>
+
+        {/* Business Selector (solo SUPER_ADMIN) */}
+        {!isCollapsed && <BusinessSelector />}
 
         {/* Navigation */}
         <nav className="p-3 space-y-1">

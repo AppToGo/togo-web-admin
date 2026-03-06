@@ -50,11 +50,7 @@ export function useOrders(params?: GetOrdersParams & { businessId?: string }) {
   const { user } = useAuthStore.getState();
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const hasBusinessId = !!user?.businessId;
-  const hasSelectedBusiness = !!params?.businessId;
-  
-  // Habilitar la consulta si:
-  // - Es SUPER_ADMIN y ha seleccionado un negocio, O
-  // - Tiene un businessId asignado
+  const hasSelectedBusiness = params?.businessId !== undefined;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
 
   return useQuery({

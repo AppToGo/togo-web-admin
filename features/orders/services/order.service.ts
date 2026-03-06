@@ -50,7 +50,10 @@ function getBaseUrl(businessId?: string): string {
 
 /**
  * Obtener todas las órdenes del negocio actual
- * SUPER_ADMIN puede pasar businessId para ver órdenes de cualquier negocio
+ * SUPER_ADMIN puede pasar businessId:
+ * - undefined: usa el businessId del usuario (fallback)
+ * - "": trae órdenes de TODOS los negocios (endpoint /admin/orders)
+ * - "xxx": trae órdenes de un negocio específico
  */
 export async function getOrders(
   params?: GetOrdersParams & { businessId?: string }
@@ -66,6 +69,14 @@ export async function getOrders(
   }
   if (params?.dateTo) {
     queryParams.dateTo = params.dateTo;
+  }
+
+  // Si businessId es "" (string vacío), es SUPER_ADMIN pidiendo TODOS
+  if (params?.businessId === "") {
+    const { data } = await apiClient.get<Order[]>("/admin/orders", {
+      params: queryParams,
+    });
+    return data;
   }
 
   const { data } = await apiClient.get<Order[]>(getBaseUrl(params?.businessId), {
@@ -104,13 +115,10 @@ export async function getAllOrders(
 
 /**
  * Obtener lista de negocios (solo SUPER_ADMIN)
+ * Endpoint: GET /v1/businesses
  */
 export async function getBusinesses(): Promise<Business[]> {
-  if (!isSuperAdmin()) {
-    throw new Error("Solo SUPER_ADMIN puede ver todos los negocios");
-  }
-
-  const { data } = await apiClient.get<Business[]>("/admin/businesses");
+  const { data } = await apiClient.get<Business[]>("/businesses");
   return data;
 }
 

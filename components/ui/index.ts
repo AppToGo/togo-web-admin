@@ -43,3 +43,13 @@ export {
 export { Switch } from "./switch"
 
 export { Popover, PopoverTrigger, PopoverContent } from "./popover"
+
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./dialog"
+
+export { Calendar } from "./calendar"
+export type { DateRange } from "./calendar"

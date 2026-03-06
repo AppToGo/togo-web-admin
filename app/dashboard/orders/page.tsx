@@ -5,15 +5,41 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { OrdersKanbanBoard } from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SearchIcon, LayoutGrid, List, Calendar, X, Filter, Check, Clock, Home, Store } from "lucide-react";
+import {
+  SearchIcon,
+  LayoutGrid,
+  List,
+  X,
+  Filter,
+  Check,
+  Clock,
+  Home,
+  Store,
+  CalendarDays,
+} from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { IconToggle } from "@/components/ui/icon-toggle";
-import { IconButton } from "@/components/ui/icon-button";
 import { Switch } from "@/components/ui/switch";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useHasBusiness, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
-import { useBusinesses } from "@/features/orders/hooks/useOrders";
-import type { Business } from "@/types";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, DateRange } from "@/components/ui/calendar";
+import {
+  useHasBusiness,
+  useIsSuperAdmin,
+} from "@/features/auth/stores/auth.store";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 
 type CardViewMode = "card" | "list";
 
@@ -76,18 +102,23 @@ export default function OrdersPage() {
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
-  const { data: businesses, isLoading: isLoadingBusinesses } = useBusinesses();
-  
+  const selectedBusinessId = useEffectiveBusinessId();
+
   const [cardViewMode, setCardViewMode] = useState<CardViewMode>("card");
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // Para SUPER_ADMIN, permite seleccionar un negocio
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string>("");
 
-  // Filtros de fecha - por defecto solo el día de hoy
-  const [dateFrom, setDateFrom] = useState<string>(getTodayString());
-  const [dateTo, setDateTo] = useState<string>(getTodayString());
-  const [showDateFilter, setShowDateFilter] = useState(false);
+  // Estados de filtros de fecha
+  const [useDateRange, setUseDateRange] = useState(false);
+  const [useTodayOnly, setUseTodayOnly] = useState(true);
+  const [showCalendarDialog, setShowCalendarDialog] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: new Date(),
+  });
+
+  // Convertir DateRange a strings para la API
+  const dateFrom = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "";
+  const dateTo = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : dateFrom;
 
   // Filtros adicionales
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<{
@@ -100,23 +131,25 @@ export default function OrdersPage() {
     pickup: boolean;
   }>({ delivery: true, pickup: true });
 
-  // Verificar si hay filtros activos (diferentes de los valores por defecto)
-  const today = getTodayString();
-  const hasDateFilter = dateFrom !== today || dateTo !== today;
-  const hasPaymentFilter = !paymentStatusFilter.paid || !paymentStatusFilter.pending;
-  const hasDeliveryFilter = !deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup;
+  // Verificar si hay filtros activos
+  const hasDateFilter = useDateRange || !useTodayOnly;
+  const hasPaymentFilter =
+    !paymentStatusFilter.paid || !paymentStatusFilter.pending;
+  const hasDeliveryFilter =
+    !deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup;
   const hasAnyFilter = hasDateFilter || hasPaymentFilter || hasDeliveryFilter;
 
   // Limpiar filtros de fecha
   const clearDateFilter = () => {
-    setDateFrom(getTodayString());
-    setDateTo(getTodayString());
+    const today = new Date();
+    setDateRange({ from: today, to: today });
+    setUseTodayOnly(true);
+    setUseDateRange(false);
   };
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
-    setDateFrom(getTodayString());
-    setDateTo(getTodayString());
+    clearDateFilter();
     setPaymentStatusFilter({ paid: true, pending: true });
     setDeliveryTypeFilter({ delivery: true, pickup: true });
   };
@@ -140,8 +173,8 @@ export default function OrdersPage() {
             No tienes un negocio asignado
           </h2>
           <p className="text-slate-500 text-center max-w-md mb-6">
-            Para ver las órdenes, necesitas tener un negocio asignado a tu cuenta.
-            Contacta al administrador del sistema.
+            Para ver las órdenes, necesitas tener un negocio asignado a tu
+            cuenta. Contacta al administrador del sistema.
           </p>
         </div>
       </DashboardLayout>
@@ -197,26 +230,134 @@ export default function OrdersPage() {
                     )}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-72 p-0 overflow-hidden">
+                <PopoverContent
+                  align="end"
+                  className="w-auto p-0 overflow-hidden"
+                >
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                     <h3 className="font-semibold text-sm text-slate-900">
                       Filtros
                     </h3>
-                    {(hasPaymentFilter || hasDeliveryFilter) && (
+                    {(hasPaymentFilter ||
+                      hasDeliveryFilter ||
+                      hasDateFilter) && (
                       <button
                         onClick={() => {
                           setPaymentStatusFilter({ paid: true, pending: true });
-                          setDeliveryTypeFilter({ delivery: true, pickup: true });
+                          setDeliveryTypeFilter({
+                            delivery: true,
+                            pickup: true,
+                          });
+                          clearDateFilter();
                         }}
                         className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                       >
-                        Limpiar
+                        Limpiar todo
                       </button>
                     )}
                   </div>
 
-                  <div className="p-4 space-y-5">
+                  <div className="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
+                    {/* Filtro por fecha - Solo hoy */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        Fecha
+                      </h4>
+                      <div className="space-y-2">
+                        {/* Solo hoy */}
+                        <label className="flex items-center justify-between cursor-pointer group">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                                useTodayOnly && !useDateRange
+                                  ? "bg-indigo-100"
+                                  : "bg-slate-100"
+                              )}
+                            >
+                              <CalendarDays
+                                className={cn(
+                                  "w-4 h-4 transition-colors",
+                                  useTodayOnly && !useDateRange
+                                    ? "text-indigo-600"
+                                    : "text-slate-600"
+                                )}
+                              />
+                            </div>
+                            <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                              Solo hoy
+                            </span>
+                          </div>
+                          <Switch
+                            checked={useTodayOnly && !useDateRange}
+                            onCheckedChange={(checked) => {
+                              setUseTodayOnly(checked);
+                              if (checked) {
+                                setUseDateRange(false);
+                                const today = new Date();
+                                setDateRange({ from: today, to: today });
+                              }
+                            }}
+                          />
+                        </label>
+
+                        {/* Rango de fechas */}
+                        <label className="flex items-center justify-between cursor-pointer group">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
+                                useDateRange ? "bg-indigo-100" : "bg-slate-100"
+                              )}
+                            >
+                              <CalendarDays
+                                className={cn(
+                                  "w-4 h-4 transition-colors",
+                                  useDateRange
+                                    ? "text-indigo-600"
+                                    : "text-slate-600"
+                                )}
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                                Rango de fechas
+                              </span>
+                              {useDateRange && dateRange?.from && (
+                                <span className="text-xs text-slate-500">
+                                  {format(dateRange.from, "dd MMM", {
+                                    locale: es,
+                                  })}
+                                  {dateRange.to &&
+                                    dateRange.to !== dateRange.from &&
+                                    ` - ${format(dateRange.to, "dd MMM", { locale: es })}`}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <Switch
+                            checked={useDateRange}
+                            onCheckedChange={(checked) => {
+                              setUseDateRange(checked);
+                              if (checked) {
+                                setUseTodayOnly(false);
+                                setShowCalendarDialog(true);
+                              } else {
+                                setUseTodayOnly(true);
+                                const today = new Date();
+                                setDateRange({ from: today, to: today });
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Separador */}
+                    <div className="h-px bg-slate-100" />
+
                     {/* Filtro por estado de pago */}
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -235,7 +376,10 @@ export default function OrdersPage() {
                           <Switch
                             checked={paymentStatusFilter.paid}
                             onCheckedChange={(checked) =>
-                              setPaymentStatusFilter((prev) => ({ ...prev, paid: checked }))
+                              setPaymentStatusFilter((prev) => ({
+                                ...prev,
+                                paid: checked,
+                              }))
                             }
                           />
                         </label>
@@ -251,7 +395,10 @@ export default function OrdersPage() {
                           <Switch
                             checked={paymentStatusFilter.pending}
                             onCheckedChange={(checked) =>
-                              setPaymentStatusFilter((prev) => ({ ...prev, pending: checked }))
+                              setPaymentStatusFilter((prev) => ({
+                                ...prev,
+                                pending: checked,
+                              }))
                             }
                           />
                         </label>
@@ -279,7 +426,10 @@ export default function OrdersPage() {
                           <Switch
                             checked={deliveryTypeFilter.delivery}
                             onCheckedChange={(checked) =>
-                              setDeliveryTypeFilter((prev) => ({ ...prev, delivery: checked }))
+                              setDeliveryTypeFilter((prev) => ({
+                                ...prev,
+                                delivery: checked,
+                              }))
                             }
                           />
                         </label>
@@ -295,7 +445,10 @@ export default function OrdersPage() {
                           <Switch
                             checked={deliveryTypeFilter.pickup}
                             onCheckedChange={(checked) =>
-                              setDeliveryTypeFilter((prev) => ({ ...prev, pickup: checked }))
+                              setDeliveryTypeFilter((prev) => ({
+                                ...prev,
+                                pickup: checked,
+                              }))
                             }
                           />
                         </label>
@@ -304,79 +457,6 @@ export default function OrdersPage() {
                   </div>
                 </PopoverContent>
               </Popover>
-
-              {/* Botón de filtro de fecha */}
-              <div className="relative">
-                <IconButton
-                  onClick={() => setShowDateFilter(!showDateFilter)}
-                  state={
-                    showDateFilter || hasDateFilter ? "active" : "inactive"
-                  }
-                  title="Filtrar por fecha"
-                >
-                  <Calendar className="w-4 h-4" />
-                </IconButton>
-
-                {/* Dropdown de filtro de fecha */}
-                {showDateFilter && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-card-lg shadow-card-lg border border-slate-100 p-4 z-50">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium text-slate-900">
-                        Filtrar por fecha
-                      </h3>
-                      <button
-                        onClick={() => setShowDateFilter(false)}
-                        className="text-slate-400 hover:text-slate-600"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">
-                          Desde
-                        </label>
-                        <input
-                          type="date"
-                          value={dateFrom}
-                          onChange={(e) => setDateFrom(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">
-                          Hasta
-                        </label>
-                        <input
-                          type="date"
-                          value={dateTo}
-                          onChange={(e) => setDateTo(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
-                      <button
-                        onClick={() => {
-                          clearDateFilter();
-                          setShowDateFilter(false);
-                        }}
-                        className="flex-1 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                      >
-                        Hoy
-                      </button>
-                      <button
-                        onClick={() => setShowDateFilter(false)}
-                        className="flex-1 px-3 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-                      >
-                        Aplicar
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* Toggle de vista de cards */}
               <div className="flex items-center bg-white rounded-card p-1 shrink-0">
@@ -406,26 +486,35 @@ export default function OrdersPage() {
             <div className="flex items-center justify-end gap-2 text-xs text-slate-500 mb-1.5">
               <span>
                 Mostrando órdenes:{" "}
-                {dateFrom !== getTodayString() || dateTo !== getTodayString() ? (
+                {hasDateFilter ? (
                   <strong className="text-slate-700 ml-2">
-                    {dateFrom ? formatDisplayDate(dateFrom) : "Inicio"}
-                    {dateFrom === dateTo
-                      ? ""
-                      : " - " + (dateTo ? formatDisplayDate(dateTo) : "Hoy")}
+                    {dateRange?.from &&
+                      format(dateRange.from, "dd MMM", { locale: es })}
+                    {dateRange?.to &&
+                      dateRange.to !== dateRange.from &&
+                      ` - ${format(dateRange.to, "dd MMM", { locale: es })}`}
                   </strong>
                 ) : (
                   <strong className="text-slate-700 ml-2">Hoy</strong>
                 )}
                 {hasPaymentFilter && (
                   <span className="ml-2">
-                    {paymentStatusFilter.paid && !paymentStatusFilter.pending && "• Solo pagadas"}
-                    {!paymentStatusFilter.paid && paymentStatusFilter.pending && "• Solo pendientes"}
+                    {paymentStatusFilter.paid &&
+                      !paymentStatusFilter.pending &&
+                      "• Solo pagadas"}
+                    {!paymentStatusFilter.paid &&
+                      paymentStatusFilter.pending &&
+                      "• Solo pendientes"}
                   </span>
                 )}
                 {hasDeliveryFilter && (
                   <span className="ml-2">
-                    {deliveryTypeFilter.delivery && !deliveryTypeFilter.pickup && "• A domicilio"}
-                    {!deliveryTypeFilter.delivery && deliveryTypeFilter.pickup && "• Recoger en tienda"}
+                    {deliveryTypeFilter.delivery &&
+                      !deliveryTypeFilter.pickup &&
+                      "• A domicilio"}
+                    {!deliveryTypeFilter.delivery &&
+                      deliveryTypeFilter.pickup &&
+                      "• Recoger en tienda"}
                   </span>
                 )}
               </span>
@@ -437,42 +526,83 @@ export default function OrdersPage() {
               </button>
             </div>
           )}
-          {/* Selector de negocio para SUPER_ADMIN */}
-          {isSuperAdmin && (
-            <div className="flex items-center justify-end gap-2 mb-2">
-              <span className="text-sm text-slate-500">Negocio:</span>
-              {isLoadingBusinesses ? (
-                <Skeleton className="h-9 w-48" />
-              ) : (
-                <select
-                  value={selectedBusinessId}
-                  onChange={(e) => setSelectedBusinessId(e.target.value)}
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
-                >
-                  <option value="">Seleccionar negocio...</option>
-                  {businesses?.map((business: Business) => (
-                    <option key={business.id} value={business.id}>
-                      {business.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
-
           <Suspense fallback={<OrdersLoading />}>
             <OrdersKanbanBoard
               searchQuery={searchQuery}
               cardViewMode={cardViewMode}
               dateFrom={dateFrom}
               dateTo={dateTo}
-              businessId={isSuperAdmin ? selectedBusinessId : undefined}
+              businessId={selectedBusinessId || undefined}
               paymentStatusFilter={paymentStatusFilter}
               deliveryTypeFilter={deliveryTypeFilter}
             />
           </Suspense>
         </div>
       </div>
+
+      {/* Dialog del calendario para seleccionar rango */}
+      <Dialog open={showCalendarDialog} onOpenChange={setShowCalendarDialog}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Seleccionar rango de fechas</DialogTitle>
+          </DialogHeader>
+          <div className="px-6 pb-6">
+            <Card className="border-0 shadow-none bg-transparent">
+              <CardContent className="p-0 flex justify-center">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={1}
+                />
+              </CardContent>
+            </Card>
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100/50">
+              <div className="text-sm text-slate-600">
+                {dateRange?.from ? (
+                  dateRange?.to ? (
+                    <>
+                      <span className="font-medium text-slate-900">
+                        {format(dateRange.from, "dd MMMM yyyy", { locale: es })}
+                      </span>{" "}
+                      hasta{" "}
+                      <span className="font-medium text-slate-900">
+                        {format(dateRange.to, "dd MMMM yyyy", { locale: es })}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-medium text-slate-900">
+                      {format(dateRange.from, "dd MMMM yyyy", { locale: es })}
+                    </span>
+                  )
+                ) : (
+                  "Selecciona un rango de fechas"
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    setDateRange({ from: today, to: today });
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 rounded-card transition-colors"
+                >
+                  Hoy
+                </button>
+                <button
+                  onClick={() => setShowCalendarDialog(false)}
+                  disabled={!dateRange?.from}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-card transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
