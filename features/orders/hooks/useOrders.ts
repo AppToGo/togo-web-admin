@@ -10,6 +10,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useBusinessStore } from "@/features/business/stores/business.store";
 import {
   getOrders,
   getOrderById,
@@ -140,9 +141,15 @@ export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
  * @param enabled - Si la query está habilitada
  */
 export function useOrder(orderId: string | null, enabled: boolean = true) {
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  
+  // Determinar el businessId efectivo
+  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+
   return useQuery({
-    queryKey: ORDERS_KEYS.detail(orderId || ""),
-    queryFn: () => getOrderById(orderId!),
+    queryKey: [...ORDERS_KEYS.detail(orderId || ""), effectiveBusinessId],
+    queryFn: () => getOrderById(orderId!, effectiveBusinessId),
     enabled: !!orderId && enabled,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -155,9 +162,15 @@ export function useOrder(orderId: string | null, enabled: boolean = true) {
  * @param orderId - ID de la orden
  */
 export function useOrderHistory(orderId: string | null) {
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  
+  // Determinar el businessId efectivo
+  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+
   return useQuery({
-    queryKey: ORDERS_KEYS.history(orderId || ""),
-    queryFn: () => getOrderStatusHistory(orderId!),
+    queryKey: [...ORDERS_KEYS.history(orderId || ""), effectiveBusinessId],
+    queryFn: () => getOrderStatusHistory(orderId!, effectiveBusinessId),
     enabled: !!orderId,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -171,6 +184,11 @@ export function useOrderHistory(orderId: string | null) {
  */
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  
+  // Determinar el businessId efectivo
+  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
 
   return useMutation({
     mutationFn: ({
@@ -179,7 +197,7 @@ export function useUpdateOrderStatus() {
     }: {
       orderId: string;
       data: UpdateOrderStatusRequest;
-    }) => updateOrderStatus(orderId, data),
+    }) => updateOrderStatus(orderId, data, effectiveBusinessId),
 
     // Optimistic update
     onMutate: async ({ orderId, data }) => {
@@ -243,6 +261,11 @@ export function useUpdateOrderStatus() {
  */
 export function useUpdateOrderPaymentStatus() {
   const queryClient = useQueryClient();
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  
+  // Determinar el businessId efectivo
+  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
 
   return useMutation({
     mutationFn: ({
@@ -251,7 +274,7 @@ export function useUpdateOrderPaymentStatus() {
     }: {
       orderId: string;
       data: UpdatePaymentStatusRequest;
-    }) => updateOrderPaymentStatus(orderId, data),
+    }) => updateOrderPaymentStatus(orderId, data, effectiveBusinessId),
 
     // Optimistic update
     onMutate: async ({ orderId, data }) => {
