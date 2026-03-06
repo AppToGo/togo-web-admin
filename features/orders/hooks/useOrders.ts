@@ -9,12 +9,14 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
 import {
   getOrders,
   getOrderById,
   updateOrderStatus,
   getOrderStatusHistory,
   updateOrderPaymentStatus,
+  getBusinesses,
   type UpdatePaymentStatusRequest,
 } from "../services/order.service";
 import type {
@@ -44,12 +46,23 @@ const GC_TIME = 5 * 60 * 1000; // 5 minutos
  *
  * @param params - Filtros y paginación
  */
-export function useOrders(params?: GetOrdersParams) {
+export function useOrders(params?: GetOrdersParams & { businessId?: string }) {
+  const { user } = useAuthStore.getState();
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const hasBusinessId = !!user?.businessId;
+  const hasSelectedBusiness = !!params?.businessId;
+  
+  // Habilitar la consulta si:
+  // - Es SUPER_ADMIN y ha seleccionado un negocio, O
+  // - Tiene un businessId asignado
+  const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
+
   return useQuery({
     queryKey: ORDERS_KEYS.list(params || {}),
     queryFn: () => getOrders(params),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
+    enabled: isEnabled,
     retry: (failureCount, error) => {
       // No reintentar en errores 401 o 403
       if (error instanceof Error) {
@@ -66,6 +79,7 @@ export function useOrders(params?: GetOrdersParams) {
 interface UseOrdersByStatusParams {
   dateFrom?: string;
   dateTo?: string;
+  businessId?: string; // Para SUPER_ADMIN que puede ver cualquier negocio
 }
 
 /**
@@ -404,4 +418,19 @@ function getStatusLabel(status: OrderStatus): string {
     ABANDONED: "Abandonada",
   };
   return labels[status] || status;
+}
+
+// Query key para negocios
+const BUSINESSES_KEY = ["businesses"];
+
+/**
+ * Hook para obtener lista de negocios (solo SUPER_ADMIN)
+ */
+export function useBusinesses() {
+  return useQuery({
+    queryKey: BUSINESSES_KEY,
+    queryFn: () => getBusinesses(),
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
 }

@@ -26,6 +26,15 @@ interface OrdersKanbanBoardProps {
   cardViewMode?: CardViewMode;
   dateFrom?: string;
   dateTo?: string;
+  businessId?: string; // Para SUPER_ADMIN
+  paymentStatusFilter?: {
+    paid: boolean;
+    pending: boolean;
+  };
+  deliveryTypeFilter?: {
+    delivery: boolean;
+    pickup: boolean;
+  };
 }
 
 function formatOrderNumber(id: string): string {
@@ -79,6 +88,9 @@ export function OrdersKanbanBoard({
   cardViewMode = "card",
   dateFrom,
   dateTo,
+  businessId,
+  paymentStatusFilter = { paid: true, pending: true },
+  deliveryTypeFilter = { delivery: true, pickup: true },
 }: OrdersKanbanBoardProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [columnVisibility, setColumnVisibility] =
@@ -91,6 +103,7 @@ export function OrdersKanbanBoard({
   const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({
     dateFrom,
     dateTo,
+    businessId,
   });
   const updateStatus = useUpdateOrderStatus();
 
@@ -106,19 +119,45 @@ export function OrdersKanbanBoard({
 
   const visibleColumnCount = columns.length;
 
-  // Filtrar órdenes por búsqueda
+  // Filtrar órdenes por búsqueda y filtros adicionales
   const filteredOrdersByStatus = useMemo(() => {
-    if (!ordersByStatus || !searchQuery.trim()) return ordersByStatus;
+    if (!ordersByStatus) return ordersByStatus;
 
     const filtered: Record<OrderStatus, Order[]> = {} as any;
     Object.entries(ordersByStatus).forEach(([status, statusOrders]) => {
-      filtered[status as OrderStatus] = filterOrdersBySearch(
-        statusOrders,
-        searchQuery
-      );
+      let result = statusOrders;
+
+      // Filtro por búsqueda
+      if (searchQuery.trim()) {
+        result = filterOrdersBySearch(result, searchQuery);
+      }
+
+      // Filtro por estado de pago
+      if (!paymentStatusFilter.paid || !paymentStatusFilter.pending) {
+        result = result.filter((order) => {
+          if (order.paymentStatus === "PAID" && !paymentStatusFilter.paid) return false;
+          if (order.paymentStatus === "PENDING" && !paymentStatusFilter.pending) return false;
+          return true;
+        });
+      }
+
+      // Filtro por tipo de envío
+      if (!deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup) {
+        result = result.filter((order) => {
+          // Usar deliveryType si está disponible, sino usar addressId como fallback
+          const isDelivery = order.deliveryType 
+            ? order.deliveryType === "DELIVERY"
+            : !!order.addressId;
+          if (isDelivery && !deliveryTypeFilter.delivery) return false;
+          if (!isDelivery && !deliveryTypeFilter.pickup) return false;
+          return true;
+        });
+      }
+
+      filtered[status as OrderStatus] = result;
     });
     return filtered;
-  }, [ordersByStatus, searchQuery]);
+  }, [ordersByStatus, searchQuery, paymentStatusFilter, deliveryTypeFilter]);
 
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {

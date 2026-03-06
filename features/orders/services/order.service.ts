@@ -3,10 +3,12 @@
  *
  * Servicios para consumir los endpoints de órdenes del backend.
  * El businessId se obtiene del store de autenticación (viene del JWT).
+ * SUPER_ADMIN puede especificar un businessId para ver órdenes de cualquier negocio.
  */
 
 import apiClient from "@/services/api.service";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import type { Business } from "@/types";
 import type {
   Order,
   OrderStatusHistory,
@@ -16,29 +18,46 @@ import type {
 
 /**
  * Obtener el businessId del usuario autenticado
+ * Para SUPER_ADMIN, retorna null (debe especificar businessId manualmente)
  */
-function getBusinessId(): string {
+function getBusinessId(): string | null {
   const { user } = useAuthStore.getState();
-  if (!user?.businessId) {
+  if (!user?.businessId && user?.role !== "SUPER_ADMIN") {
     throw new Error("Usuario no tiene un negocio asignado");
   }
-  return user.businessId;
+  return user?.businessId || null;
+}
+
+/**
+ * Verificar si el usuario es SUPER_ADMIN
+ */
+function isSuperAdmin(): boolean {
+  const { user } = useAuthStore.getState();
+  return user?.role === "SUPER_ADMIN";
 }
 
 /**
  * Construir la URL base para órdenes
+ * SUPER_ADMIN puede especificar un businessId diferente
  */
-function getBaseUrl(): string {
-  return `/businesses/${getBusinessId()}/orders`;
+function getBaseUrl(businessId?: string): string {
+  const effectiveBusinessId = businessId || getBusinessId();
+  if (!effectiveBusinessId) {
+    throw new Error("Se requiere un businessId para consultar órdenes");
+  }
+  return `/businesses/${effectiveBusinessId}/orders`;
 }
 
 /**
  * Obtener todas las órdenes del negocio actual
+ * SUPER_ADMIN puede pasar businessId para ver órdenes de cualquier negocio
  */
-export async function getOrders(params?: GetOrdersParams): Promise<Order[]> {
+export async function getOrders(
+  params?: GetOrdersParams & { businessId?: string }
+): Promise<Order[]> {
   // Construir query params solo con valores definidos
   const queryParams: Record<string, string> = {};
-  
+
   if (params?.status) {
     queryParams.status = params.status;
   }
@@ -48,18 +67,61 @@ export async function getOrders(params?: GetOrdersParams): Promise<Order[]> {
   if (params?.dateTo) {
     queryParams.dateTo = params.dateTo;
   }
-  
-  const { data } = await apiClient.get<Order[]>(getBaseUrl(), {
+
+  const { data } = await apiClient.get<Order[]>(getBaseUrl(params?.businessId), {
     params: queryParams,
   });
   return data;
 }
 
 /**
+ * Obtener todas las órdenes de todos los negocios (solo SUPER_ADMIN)
+ */
+export async function getAllOrders(
+  params?: Omit<GetOrdersParams, "businessId">
+): Promise<Order[]> {
+  if (!isSuperAdmin()) {
+    throw new Error("Solo SUPER_ADMIN puede ver todas las órdenes");
+  }
+
+  const queryParams: Record<string, string> = {};
+
+  if (params?.status) {
+    queryParams.status = params.status;
+  }
+  if (params?.dateFrom) {
+    queryParams.dateFrom = params.dateFrom;
+  }
+  if (params?.dateTo) {
+    queryParams.dateTo = params.dateTo;
+  }
+
+  const { data } = await apiClient.get<Order[]>("/admin/orders", {
+    params: queryParams,
+  });
+  return data;
+}
+
+/**
+ * Obtener lista de negocios (solo SUPER_ADMIN)
+ */
+export async function getBusinesses(): Promise<Business[]> {
+  if (!isSuperAdmin()) {
+    throw new Error("Solo SUPER_ADMIN puede ver todos los negocios");
+  }
+
+  const { data } = await apiClient.get<Business[]>("/admin/businesses");
+  return data;
+}
+
+/**
  * Obtener una orden específica por ID
  */
-export async function getOrderById(orderId: string): Promise<Order> {
-  const { data } = await apiClient.get<Order>(`${getBaseUrl()}/${orderId}`);
+export async function getOrderById(
+  orderId: string,
+  businessId?: string
+): Promise<Order> {
+  const { data } = await apiClient.get<Order>(`${getBaseUrl(businessId)}/${orderId}`);
   return data;
 }
 
@@ -67,10 +129,11 @@ export async function getOrderById(orderId: string): Promise<Order> {
  * Obtener órdenes de un cliente específico
  */
 export async function getOrdersByCustomer(
-  customerId: string
+  customerId: string,
+  businessId?: string
 ): Promise<Order[]> {
   const { data } = await apiClient.get<Order[]>(
-    `${getBaseUrl()}/customer/${customerId}`
+    `${getBaseUrl(businessId)}/customer/${customerId}`
   );
   return data;
 }
@@ -80,10 +143,11 @@ export async function getOrdersByCustomer(
  */
 export async function updateOrderStatus(
   orderId: string,
-  request: UpdateOrderStatusRequest
+  request: UpdateOrderStatusRequest,
+  businessId?: string
 ): Promise<Order> {
   const { data } = await apiClient.patch<Order>(
-    `${getBaseUrl()}/${orderId}/status`,
+    `${getBaseUrl(businessId)}/${orderId}/status`,
     request
   );
   return data;
@@ -93,10 +157,11 @@ export async function updateOrderStatus(
  * Obtener el historial de cambios de estado de una orden
  */
 export async function getOrderStatusHistory(
-  orderId: string
+  orderId: string,
+  businessId?: string
 ): Promise<OrderStatusHistory[]> {
   const { data } = await apiClient.get<OrderStatusHistory[]>(
-    `${getBaseUrl()}/${orderId}/history`
+    `${getBaseUrl(businessId)}/${orderId}/history`
   );
   return data;
 }
@@ -104,8 +169,8 @@ export async function getOrderStatusHistory(
 /**
  * Eliminar una orden (solo para OWNER/ADMIN o estados DRAFT/CANCELLED)
  */
-export async function deleteOrder(orderId: string): Promise<void> {
-  await apiClient.delete(`${getBaseUrl()}/${orderId}`);
+export async function deleteOrder(orderId: string, businessId?: string): Promise<void> {
+  await apiClient.delete(`${getBaseUrl(businessId)}/${orderId}`);
 }
 
 /**
@@ -118,10 +183,11 @@ export interface UpdatePaymentStatusRequest {
 
 export async function updateOrderPaymentStatus(
   orderId: string,
-  request: UpdatePaymentStatusRequest
+  request: UpdatePaymentStatusRequest,
+  businessId?: string
 ): Promise<Order> {
   const { data } = await apiClient.patch<Order>(
-    `${getBaseUrl()}/${orderId}/payment-status`,
+    `${getBaseUrl(businessId)}/${orderId}/payment-status`,
     request
   );
   return data;

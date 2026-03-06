@@ -241,8 +241,12 @@ function getOrderTypeInfo(order: Order & { source?: string }): {
   variant: string;
   isDelivery: boolean;
 } {
-  // Si tiene dirección → Domicilio
-  if (order.addressId) {
+  // Usar deliveryType si está disponible, sino usar addressId como fallback
+  const isDelivery = order.deliveryType 
+    ? order.deliveryType === "DELIVERY"
+    : !!order.addressId;
+  
+  if (isDelivery) {
     return {
       label: "Domicilio",
       icon: <Home className="w-3 h-3" />,

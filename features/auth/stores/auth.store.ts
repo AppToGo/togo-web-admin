@@ -237,6 +237,14 @@ export function useHasBusiness(): boolean {
 }
 
 /**
+ * Check if user is SUPER_ADMIN
+ */
+export function useIsSuperAdmin(): boolean {
+  const user = useCurrentUser();
+  return user?.role === "SUPER_ADMIN";
+}
+
+/**
  * Get access token for API calls
  * This should only be used by the API service
  */

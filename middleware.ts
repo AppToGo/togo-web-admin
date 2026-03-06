@@ -67,8 +67,12 @@ export function middleware(request: NextRequest) {
   console.log("[Middleware] Is public route:", isPublicRoute);
   console.log("[Middleware] Is auth route:", isAuthRoute);
 
+  // Check if there's a redirect parameter (indicates coming from auth failure)
+  const hasRedirectParam = request.nextUrl.searchParams.has("redirect");
+
   // 1. Authenticated user trying to access auth route -> redirect to dashboard
-  if (hasCookie && isAuthRoute) {
+  // BUT: Allow access if there's a redirect param (user was sent here due to auth failure)
+  if (hasCookie && isAuthRoute && !hasRedirectParam) {
     console.log("[Middleware] Has cookie + auth route -> redirect to dashboard");
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
