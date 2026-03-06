@@ -33,7 +33,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, DateRange } from "@/components/ui/calendar";
 import {
   useHasBusiness,
@@ -547,18 +546,14 @@ export default function OrdersPage() {
             <DialogTitle>Seleccionar rango de fechas</DialogTitle>
           </DialogHeader>
           <div className="px-6 pb-6">
-            <Card className="border-0 shadow-none bg-transparent">
-              <CardContent className="p-0 flex justify-center">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={setDateRange}
-                  numberOfMonths={1}
-                />
-              </CardContent>
-            </Card>
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange?.from}
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={1}
+            />
             <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100/50">
               <div className="text-sm text-slate-600">
                 {dateRange?.from ? (

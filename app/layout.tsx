@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "react-day-picker/dist/style.css";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/features/auth/components/AuthProvider";
 
@@ -16,7 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Togo Admin - Automatización de Pedidos",
-  description: "Dashboard administrativo para la gestión de pedidos por WhatsApp",
+  description:
+    "Dashboard administrativo para la gestión de pedidos por WhatsApp",
 };
 
 export default function RootLayout({
@@ -31,9 +33,7 @@ export default function RootLayout({
       >
         <Providers>
           {/* AuthProvider handles session restoration on page load */}
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
         </Providers>
       </body>
     </html>
