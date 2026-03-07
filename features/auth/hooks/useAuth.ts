@@ -12,9 +12,11 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { LoginCredentials, RegisterRequest } from "@/types/auth.types";
 import { login as loginApi } from "@/features/auth/services/auth.service";
+import { extractErrorMessage } from "@/lib/error.utils";
 
 /**
  * Hook for login mutation
@@ -58,10 +60,12 @@ export function useLogin() {
     onSuccess: (data) => {
       console.log("[useLogin] Setting auth data and redirecting...");
       setAuthData(data);
+      toast.success("¡Bienvenido! Inicio de sesión exitoso");
       router.push("/dashboard");
     },
     onError: (error) => {
       console.error("[useLogin] Login error:", error);
+      toast.error(extractErrorMessage(error, "Error al iniciar sesión"));
     },
   });
 }
@@ -104,11 +108,14 @@ export function useLogout() {
       // Clear auth state
       clearAuth();
       
+      toast.success("Sesión cerrada correctamente");
+      
       // Redirect to login
       router.push("/login");
     },
-    onError: async () => {
+    onError: async (error) => {
       console.log("[useLogout] Error, forcing cleanup...");
+      toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
       // Even if API fails, clear local state
       await fetch("/api/auth/clear-cookie", { 
         method: "POST",
@@ -149,6 +156,12 @@ export function useForgotPassword() {
       // Mock success
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return { message: "Password reset email sent" };
+    },
+    onSuccess: () => {
+      toast.success("Te hemos enviado un correo con las instrucciones");
+    },
+    onError: (error) => {
+      toast.error(extractErrorMessage(error, "Error al solicitar recuperación de contraseña"));
     },
   });
 }

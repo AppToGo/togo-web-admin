@@ -9,6 +9,11 @@ import {
   CreditCard,
   Package,
   StickyNote,
+  Store,
+  Home,
+  Utensils,
+  AlertTriangle,
+  ChevronDown,
 } from "lucide-react";
 import {
   useOrder,
@@ -17,48 +22,175 @@ import {
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
 import {
-  STATUS_COLORS,
   STATUS_LABELS,
   formatCurrency,
   formatOrderDate,
   canCompleteOrder,
 } from "../utils/order-status.utils";
 import { categoryBadgeVariants } from "../styles";
+import { toast } from "sonner";
+import { extractErrorMessage } from "@/lib/error.utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { PaymentStatusEditor } from "./OrderCard";
+import { getColumnVariant } from "../config/kanban-columns.config";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
 
 interface OrderDetailProps {
   orderId: string;
   onClose?: () => void;
 }
 
+// Tipo de orden con icono y color
+function getOrderTypeInfo(order: {
+  deliveryType?: string;
+  addressId?: string | null;
+  source?: string;
+}): {
+  label: string;
+  icon: React.ReactNode;
+  variant: string;
+} {
+  const isDelivery = order.deliveryType
+    ? order.deliveryType === "DELIVERY"
+    : !!order.addressId;
+
+  if (isDelivery) {
+    return {
+      label: "Domicilio",
+      icon: <Home className="w-3 h-3" />,
+      variant: "blue",
+    };
+  }
+
+  if (order.source === "OPERATOR") {
+    return {
+      label: "En mesa",
+      icon: <Utensils className="w-3 h-3" />,
+      variant: "emerald",
+    };
+  }
+
+  return {
+    label: "Recoger",
+    icon: <Store className="w-3 h-3" />,
+    variant: "amber",
+  };
+}
+
+// Función para formatear el ID como número de orden
+function formatOrderNumber(id: string): string {
+  return `#${id.slice(0, 6).toUpperCase()}`;
+}
+
+// Componente para cambiar estado de orden (similar a PaymentStatusEditor)
+function OrderStatusEditor({
+  orderId,
+  currentStatus,
+  onStatusChange,
+}: {
+  orderId: string;
+  currentStatus: OrderStatus;
+  onStatusChange: (status: OrderStatus) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const variant = getColumnVariant(currentStatus);
+
+  const handleSelect = useCallback(
+    (newStatus: OrderStatus) => {
+      if (newStatus !== currentStatus) {
+        onStatusChange(newStatus);
+      }
+      setIsOpen(false);
+    },
+    [currentStatus, onStatusChange]
+  );
+
+  // Estados disponibles para cambiar (excluyendo el actual y DRAFT)
+  const availableStatuses: OrderStatus[] = [
+    "CONFIRMED",
+    "IN_PROGRESS",
+    "READY",
+    "ON_THE_WAY",
+    "COMPLETED",
+    "CANCELLED",
+  ].filter((s) => s !== currentStatus) as OrderStatus[];
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            categoryBadgeVariants({ variant: variant as any }),
+            "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 text-xs"
+          )}
+        >
+          <span>{STATUS_LABELS[currentStatus]}</span>
+          <ChevronDown className="w-3 h-3 opacity-60" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="min-w-[160px] z-[9999]"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        {availableStatuses.map((status) => (
+          <DropdownMenuItem
+            key={status}
+            onSelect={() => handleSelect(status)}
+            className="flex items-center gap-2 text-xs cursor-pointer"
+          >
+            <span
+              className={cn(
+                "w-2 h-2 rounded-full",
+                getColumnVariant(status) === "blue" && "bg-blue-500",
+                getColumnVariant(status) === "purple" && "bg-purple-500",
+                getColumnVariant(status) === "orange" && "bg-orange-500",
+                getColumnVariant(status) === "emerald" && "bg-emerald-500",
+                getColumnVariant(status) === "pink" && "bg-pink-500",
+                getColumnVariant(status) === "gray" && "bg-slate-500"
+              )}
+            />
+            <span className="text-slate-700">{STATUS_LABELS[status]}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
-  const { data: history, isLoading: isLoadingHistory } =
-    useOrderHistory(orderId);
+  const { data: history } = useOrderHistory(orderId);
   const updateStatus = useUpdateOrderStatus();
-  const [showPaymentAlert, setShowPaymentAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+  const [showNoStockDialog, setShowNoStockDialog] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
+  const { user } = useAuthStore();
+
+  // Verificar permisos para ver historial
+  const canViewHistory =
+    user?.role === "OWNER" ||
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN";
 
   const handleStatusChange = useCallback(
     (newStatus: OrderStatus) => {
-      if (!order) return;
+      if (!order || newStatus === order.status) return;
 
       if (newStatus === "COMPLETED") {
         const validation = canCompleteOrder(order);
         if (!validation.valid) {
-          setAlertMessage(
-            validation.message || "No se puede completar la orden"
-          );
-          setShowPaymentAlert(true);
+          toast.error(validation.message || "No se puede completar la orden");
           return;
         }
       }
@@ -75,9 +207,44 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
     [order, orderId, updateStatus, onClose]
   );
 
-  const statusColors = useMemo(() => {
-    if (!order) return STATUS_COLORS.DRAFT;
-    return STATUS_COLORS[order.status];
+  const handleNoStock = useCallback((item: OrderItem) => {
+    setSelectedItem(item);
+    setShowNoStockDialog(true);
+  }, []);
+
+  const confirmNoStock = useCallback(() => {
+    if (!selectedItem || !order?.customer?.phoneNumber) return;
+
+    const message = `Hola, lamentamos informarte que el producto "${selectedItem.productName}" no está disponible en este momento para tu orden ${formatOrderNumber(order.id)}. Te ofrecemos disculpas y alternativas.`;
+
+    const phone = order.customer.phoneNumber.replace(/\D/g, "");
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+
+    toast.success("WhatsApp abierto con el mensaje para el cliente");
+
+    setShowNoStockDialog(false);
+    setSelectedItem(null);
+  }, [selectedItem, order]);
+
+  // Calcular totales incluyendo domicilio
+  const { subtotal, deliveryFee, total } = useMemo(() => {
+    if (!order) return { subtotal: 0, deliveryFee: 0, total: 0 };
+
+    const itemsTotal =
+      order.items?.reduce(
+        (sum, item) => sum + item.unitPrice * item.quantity,
+        0
+      ) || 0;
+
+    const isDelivery = order.deliveryType === "DELIVERY" || !!order.addressId;
+    const fee = isDelivery ? order.deliveryFee || 0 : 0;
+
+    return {
+      subtotal: itemsTotal,
+      deliveryFee: fee,
+      total: itemsTotal + fee,
+    };
   }, [order]);
 
   if (isLoadingOrder) {
@@ -105,46 +272,56 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
     );
   }
 
-  const nextStatuses: OrderStatus[] = [
-    "IN_PROGRESS",
-    "ON_THE_WAY",
-    "COMPLETED",
-  ].filter((s) => s !== order.status) as OrderStatus[];
+  const orderType = getOrderTypeInfo(order);
 
   return (
     <div className="space-y-6">
-      {/* Header: Estado, Tipo de entrega y Total */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${statusColors.dot}`} />
-          <div>
-            <p className="text-sm text-slate-500">Estado</p>
-            <p className={`font-semibold ${statusColors.text}`}>
-              {STATUS_LABELS[order.status]}
-            </p>
+      {/* Header: Número de orden, Estado, Tipo y Total */}
+      <div className="flex items-start justify-between">
+        {/* Izquierda: Número, badges de estado y tipo */}
+        <div className="flex flex-col gap-2">
+          {/* Número de orden */}
+          <span className="text-xl font-bold text-slate-900">
+            {formatOrderNumber(order.id)}
+          </span>
+
+          {/* Badges debajo del número */}
+          <div
+            className="flex items-center gap-2"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Badge de estado cliqueable */}
+            <OrderStatusEditor
+              orderId={order.id}
+              currentStatus={order.status}
+              onStatusChange={handleStatusChange}
+            />
+
+            {/* Badge de tipo (domicilio/recoger/en mesa) */}
+            <span
+              className={cn(
+                categoryBadgeVariants({ variant: orderType.variant as any }),
+                "text-xs"
+              )}
+            >
+              {orderType.icon}
+              <span>{orderType.label}</span>
+            </span>
           </div>
         </div>
-        {/* Tipo de entrega */}
-        <div className="text-center">
-          <p className="text-sm text-slate-500">Entrega</p>
-          <p className="font-medium text-slate-900">
-            {order.deliveryType === 'DELIVERY' || order.addressId
-              ? 'Domicilio'
-              : order.deliveryType === 'PICKUP'
-              ? 'Recoger'
-              : 'En mesa'}
-          </p>
-          {(order.deliveryType === 'DELIVERY' || order.addressId) && order.deliveryFee && order.deliveryFee > 0 && (
-            <p className="text-xs text-slate-500">
-              Domicilio: {formatCurrency(order.deliveryFee)}
-            </p>
-          )}
-        </div>
+
+        {/* Derecha: Total */}
         <div className="text-right">
           <p className="text-sm text-slate-500">Total</p>
           <p className="text-2xl font-bold text-slate-900">
-            {formatCurrency(order.totalAmount)}
+            {formatCurrency(total)}
           </p>
+          {deliveryFee > 0 && (
+            <p className="text-xs text-slate-500">
+              Incluye domicilio: {formatCurrency(deliveryFee)}
+            </p>
+          )}
         </div>
       </div>
 
@@ -157,14 +334,17 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
           Cliente
         </h4>
         <div className="bg-slate-50 rounded-card p-4 space-y-2">
-          <p className="font-medium text-slate-900">
-            {order.customer?.name || "No disponible"}
-          </p>
+          {order.customer?.name ? (
+            <p className="font-medium text-slate-900">{order.customer.name}</p>
+          ) : null}
           {order.customer?.phoneNumber && (
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <Phone className="w-4 h-4" />
               {order.customer.phoneNumber}
             </div>
+          )}
+          {!order.customer?.name && !order.customer?.phoneNumber && (
+            <p className="text-sm text-slate-500">Información no disponible</p>
           )}
         </div>
       </div>
@@ -202,7 +382,7 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
                     : ""
                 }`}
               >
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-slate-900 text-sm">
                     {item.quantity}x {item.productName}
                   </p>
@@ -212,63 +392,47 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
                     </p>
                   )}
                 </div>
-                <p className="font-medium text-slate-900 text-sm">
-                  {formatCurrency(item.unitPrice * item.quantity)}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-slate-900 text-sm">
+                    {formatCurrency(item.unitPrice * item.quantity)}
+                  </p>
+                  {/* Icono sutil para indicar falta de stock */}
+                  <button
+                    onClick={() => handleNoStock(item)}
+                    className="text-slate-300 hover:text-amber-500 transition-colors"
+                    title="Indicar falta de disponibilidad"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
             {/* Desglose de totales */}
             <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-1">
-              {/* Subtotal */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">Subtotal</span>
                 <span className="text-slate-700">
-                  {formatCurrency(order.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0))}
+                  {formatCurrency(subtotal)}
                 </span>
               </div>
-              {/* Domicilio (solo si aplica) */}
-              {(order.deliveryType === 'DELIVERY' || order.addressId) && order.deliveryFee && order.deliveryFee > 0 && (
+              {deliveryFee > 0 && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-600">Domicilio</span>
-                  <span className="text-slate-700">{formatCurrency(order.deliveryFee)}</span>
+                  <span className="text-slate-700">
+                    {formatCurrency(deliveryFee)}
+                  </span>
                 </div>
               )}
-              {/* Total */}
               <div className="flex items-center justify-between pt-1 border-t border-slate-200">
                 <p className="font-semibold text-slate-900">Total</p>
                 <p className="font-bold text-slate-900">
-                  {formatCurrency(order.totalAmount)}
+                  {formatCurrency(total)}
                 </p>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Información de pago */}
-      <div className="space-y-3">
-        <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-          <CreditCard className="w-4 h-4" />
-          Información de pago
-        </h4>
-        <div className="flex items-center gap-4">
-          <Badge
-            variant="secondary"
-            className={
-              order.paymentStatus === "PAID"
-                ? "bg-green-100 text-green-700"
-                : "bg-amber-100 text-amber-700"
-            }
-          >
-            {order.paymentStatus === "PAID" ? "Pagado" : "Pendiente"}
-          </Badge>
-          {order.paymentMethod && (
-            <span className="text-sm text-slate-600">
-              Método: {order.paymentMethod}
-            </span>
-          )}
-        </div>
-      </div>
 
       {/* Notas */}
       {order.notes && (
@@ -283,8 +447,32 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
         </div>
       )}
 
-      {/* Historial de cambios */}
-      {history && history.length > 0 && (
+      {/* Información de pago */}
+      <div className="space-y-3">
+        <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+          <CreditCard className="w-4 h-4" />
+          Información de pago
+        </h4>
+        <div
+          className="flex items-center gap-4"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <PaymentStatusEditor
+            orderId={order.id}
+            paymentMethod={order.paymentMethod}
+            currentStatus={order.paymentStatus}
+          />
+          {order.paymentMethod && (
+            <span className="text-sm text-slate-600">
+              Método: {order.paymentMethod}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Historial de cambios - Solo para usuarios con permisos */}
+      {canViewHistory && history && history.length > 0 && (
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Clock className="w-4 h-4" />
@@ -317,72 +505,37 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
         </div>
       )}
 
-      {/* Acciones de estado */}
-      {nextStatuses.length > 0 && (
-        <>
-          <Separator />
-          <div className="space-y-3">
-            <h4 className="font-semibold text-slate-900">Cambiar estado</h4>
-            <div className="flex flex-wrap gap-2">
-              {nextStatuses.map((status) => (
-                <Button
-                  key={status}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleStatusChange(status)}
-                  disabled={updateStatus.isPending}
-                  className={
-                    status === "COMPLETED"
-                      ? "border-green-500 text-green-600"
-                      : ""
-                  }
-                >
-                  {STATUS_LABELS[status]}
-                </Button>
-              ))}
+      {/* Dialog para confirmar falta de stock */}
+      <Dialog open={showNoStockDialog} onOpenChange={setShowNoStockDialog}>
+        <DialogContent className="sm:max-w-100 bg-white">
+          <div className="flex flex-col items-center text-center p-5">
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Producto sin disponibilidad
+            </h3>
+            <p className="text-sm text-slate-500 mb-6">
+              ¿Confirmas que <strong>{selectedItem?.productName}</strong> no
+              está disponible? Esto enviará una notificación al cliente por
+              WhatsApp.
+            </p>
+            <div className="flex gap-3 w-full">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleStatusChange("CANCELLED")}
-                disabled={updateStatus.isPending}
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                variant="slate-outline"
+                onClick={() => setShowNoStockDialog(false)}
+                className="flex-1"
               >
                 Cancelar
               </Button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Alert de pago pendiente */}
-      <Dialog open={showPaymentAlert} onOpenChange={setShowPaymentAlert}>
-        <DialogContent className="max-w-sm">
-          <div className="flex flex-col items-center text-center p-4">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-              <svg
-                className="w-6 h-6 text-amber-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+              <Button
+                variant="amber"
+                onClick={confirmNoStock}
+                className="flex-1"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
+                Confirmar
+              </Button>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              Acción no permitida
-            </h3>
-            <p className="text-sm text-slate-500 mb-4">{alertMessage}</p>
-            <Button
-              onClick={() => setShowPaymentAlert(false)}
-              className="w-full"
-            >
-              Entendido
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

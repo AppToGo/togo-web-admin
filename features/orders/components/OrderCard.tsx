@@ -23,26 +23,21 @@ import {
 import { kanbanCardVariants, categoryBadgeVariants } from "../styles";
 import { cn } from "@/lib/utils";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { OrderDetail } from "./OrderDetail";
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
+import { toast } from "sonner";
+import { extractErrorMessage } from "@/lib/error.utils";
 
 export type CardViewMode = "card" | "list";
 
 interface OrderCardProps {
   order: Order;
   onStatusChange?: (orderId: string, newStatus: string) => void;
+  onClick?: () => void;
   badgeVariant?: string;
   currentStatus?: string;
   dragColor?: string;
@@ -78,7 +73,7 @@ function PaymentMethodIcon({ method }: { method?: string }) {
 
 // Componente para editar el estado de pago con DropdownMenu de shadcn
 // NOTA: El backend no permite transición de PAID a PENDING, solo PENDING a PAID
-function PaymentStatusEditor({
+export function PaymentStatusEditor({
   orderId,
   currentStatus,
   paymentMethod,
@@ -135,7 +130,7 @@ function PaymentStatusEditor({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <button
             onClick={(e) => e.stopPropagation()}
@@ -150,7 +145,7 @@ function PaymentStatusEditor({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="min-w-35"
+          className="min-w-[140px] z-[9999]"
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <DropdownMenuItem
@@ -468,13 +463,12 @@ function OrderItemsList({
 export const OrderCard = memo(function OrderCard({
   order,
   onStatusChange,
+  onClick,
   badgeVariant = "slate",
   currentStatus,
   dragColor = "indigo",
   viewMode = "card",
 }: OrderCardProps) {
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [showPaymentAlert, setShowPaymentAlert] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const orderNumber = formatOrderNumber(order.id);
@@ -486,13 +480,17 @@ export const OrderCard = memo(function OrderCard({
       e.stopPropagation();
       const validation = canCompleteOrder(order);
       if (!validation.valid) {
-        setShowPaymentAlert(true);
+        toast.error(validation.message || "No se puede completar la orden");
         return;
       }
       onStatusChange?.(order.id, "COMPLETED");
     },
     [order, onStatusChange]
   );
+
+  const handleCardClick = useCallback(() => {
+    onClick?.();
+  }, [onClick]);
 
   // Mapa de colores para el ring de drag
   const dragRingColors: Record<string, string> = {
@@ -525,29 +523,14 @@ export const OrderCard = memo(function OrderCard({
   // Si es vista de lista, renderizar el componente compacto
   if (viewMode === "list") {
     return (
-      <>
-        <OrderListItem
-          order={order}
-          onClick={() => setIsDetailOpen(true)}
-          dragColor={dragColor}
-          isDragging={isDragging}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        />
-
-        {/* Dialog de detalle */}
-        <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="bg-white/90 backdrop-blur-lg">
-            <DialogHeader>
-              <DialogTitle>Detalle de Orden</DialogTitle>
-            </DialogHeader>
-            <OrderDetail
-              orderId={order.id}
-              onClose={() => setIsDetailOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      </>
+      <OrderListItem
+        order={order}
+        onClick={handleCardClick}
+        dragColor={dragColor}
+        isDragging={isDragging}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      />
     );
   }
 
@@ -566,7 +549,7 @@ export const OrderCard = memo(function OrderCard({
               dragRingColors[dragColor] || dragRingColors.indigo
             }`
         )}
-        onClick={() => setIsDetailOpen(true)}
+        onClick={handleCardClick}
       >
         {/* Header: Número de orden, dirección (si es domicilio) y tipo */}
         <div className="mb-3">
@@ -638,54 +621,6 @@ export const OrderCard = memo(function OrderCard({
         </div>
       </div>
 
-      {/* Dialog de detalle */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="bg-white/90 backdrop-blur-lg">
-          <DialogHeader>
-            <DialogTitle>Detalle de Orden</DialogTitle>
-          </DialogHeader>
-          <OrderDetail
-            orderId={order.id}
-            onClose={() => setIsDetailOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Alert de pago pendiente */}
-      <Dialog open={showPaymentAlert} onOpenChange={setShowPaymentAlert}>
-        <DialogContent className="max-w-sm bg-white">
-          <div className="flex flex-col items-center text-center p-4">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-              <svg
-                className="w-6 h-6 text-amber-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              No se puede completar
-            </h3>
-            <p className="text-sm text-slate-500 mb-4">
-              Esta orden tiene el pago pendiente. Debes confirmar el pago antes
-              de marcarla como completada.
-            </p>
-            <Button
-              onClick={() => setShowPaymentAlert(false)}
-              className="w-full"
-            >
-              Entendido
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 });

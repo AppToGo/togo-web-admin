@@ -72,13 +72,24 @@ apiClient.interceptors.request.use(
 );
 
 // ============================================================================
-// RESPONSE INTERCEPTOR
-// Handles 401 errors with GLOBAL synchronization
+// RESPONSE INTERCEPTOR - Error messages extraction
+// Extracts user-friendly error messages from backend response
 // ============================================================================
 
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    // Extract user-friendly error message from backend response
+    if (error.response?.data) {
+      const data = error.response.data as any;
+      // Use backend error message if available
+      if (data.message && !error.message.includes("Request failed")) {
+        error.message = data.message;
+      } else if (data.error && !error.message.includes("Request failed")) {
+        error.message = data.error;
+      }
+    }
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };

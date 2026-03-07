@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
+import { OrderDetail } from "./OrderDetail";
 
 import {
   ColumnVisibilityBar,
@@ -20,6 +21,12 @@ import {
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface OrdersKanbanBoardProps {
   searchQuery?: string;
@@ -100,6 +107,10 @@ export function OrdersKanbanBoard({
       ON_THE_WAY: true,
       COMPLETED: true,
     });
+  // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const isDetailOpen = !!selectedOrderId;
+  
   const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({
     dateFrom,
     dateTo,
@@ -169,6 +180,14 @@ export function OrdersKanbanBoard({
     [updateStatus]
   );
 
+  const handleOrderClick = useCallback((orderId: string) => {
+    setSelectedOrderId(orderId);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedOrderId(null);
+  }, []);
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -230,6 +249,7 @@ export function OrdersKanbanBoard({
                   status={column.id}
                   orders={filteredOrdersByStatus?.[column.id] || []}
                   onStatusChange={handleStatusChange}
+                  onOrderClick={handleOrderClick}
                   isLoading={isLoading}
                   viewMode={cardViewMode}
                   // Distribuir ancho igualitariamente entre columnas visibles
@@ -278,6 +298,25 @@ export function OrdersKanbanBoard({
         isSidebarOpen={isSidebarOpen}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
+
+      {/* Dialog de detalle de orden - Un solo dialog para todas las órdenes */}
+      <Dialog open={isDetailOpen} onOpenChange={(open) => !open && handleCloseDetail()}>
+        <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+            <DialogTitle className="text-lg font-semibold text-slate-900">
+              Detalle de Orden
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4">
+            {selectedOrderId && (
+              <OrderDetail
+                orderId={selectedOrderId}
+                onClose={handleCloseDetail}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

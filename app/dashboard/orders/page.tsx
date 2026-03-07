@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { OrdersKanbanBoard } from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   SearchIcon,
   LayoutGrid,
@@ -577,22 +578,23 @@ export default function OrdersPage() {
                 )}
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     const today = new Date();
                     setDateRange({ from: today, to: today });
                   }}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 rounded-card transition-colors"
                 >
                   Hoy
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="sm"
                   onClick={() => setShowCalendarDialog(false)}
                   disabled={!dateRange?.from}
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-card transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                 >
                   Aplicar
-                </button>
+                </Button>
               </div>
             </div>
           </div>

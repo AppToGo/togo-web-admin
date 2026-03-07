@@ -13,13 +13,28 @@ const buttonVariants = cva(
         default:
           "bg-primary text-primary-foreground shadow hover:bg-primary/90",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+          "bg-red-500 text-white shadow-sm hover:bg-red-600",
+        "destructive-outline":
+          "border border-red-300 bg-white text-red-600 shadow-sm hover:bg-red-50",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // System-specific variants
+        amber:
+          "bg-amber-500 text-white shadow-sm hover:bg-amber-600",
+        "amber-outline":
+          "border border-amber-300 bg-white text-amber-600 shadow-sm hover:bg-amber-50",
+        green:
+          "bg-emerald-500 text-white shadow-sm hover:bg-emerald-600",
+        "green-outline":
+          "border border-emerald-300 bg-white text-emerald-600 shadow-sm hover:bg-emerald-50",
+        slate:
+          "bg-slate-500 text-white shadow-sm hover:bg-slate-600",
+        "slate-outline":
+          "border border-slate-300 bg-white text-slate-600 shadow-sm hover:bg-slate-50",
       },
       size: {
         default: "h-9 px-4 py-2",

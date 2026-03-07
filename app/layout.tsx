@@ -4,6 +4,7 @@ import "./globals.css";
 import "react-day-picker/dist/style.css";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/features/auth/components/AuthProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <Providers>
           {/* AuthProvider handles session restoration on page load */}
           <AuthProvider>{children}</AuthProvider>
+          <Toaster position="top-right" richColors closeButton />
         </Providers>
       </body>
     </html>

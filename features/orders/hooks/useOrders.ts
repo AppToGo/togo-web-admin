@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
+import { toast } from "sonner";
 import {
   getOrders,
   getOrderById,
@@ -26,6 +27,7 @@ import type {
   UpdateOrderStatusRequest,
   GetOrdersParams,
 } from "../types";
+import { extractErrorMessage } from "@/lib/error.utils";
 
 // Query keys para mantener consistencia
 const ORDERS_KEYS = {
@@ -233,7 +235,7 @@ export function useUpdateOrderStatus() {
     },
 
     // Rollback en error
-    onError: (_err, { orderId }, context) => {
+    onError: (err, { orderId }, context) => {
       if (context?.previousOrders) {
         queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
       }
@@ -243,6 +245,14 @@ export function useUpdateOrderStatus() {
           context.previousOrder
         );
       }
+      // Extraer mensaje de error del backend
+      const errorMessage = extractErrorMessage(err, "No se pudo actualizar el estado de la orden");
+      toast.error(errorMessage);
+    },
+
+    // Éxito
+    onSuccess: (_data, { data }) => {
+      toast.success(`Estado actualizado a "${data.status}"`);
     },
 
     // Revalidar después de la mutación
@@ -312,7 +322,7 @@ export function useUpdateOrderPaymentStatus() {
     },
 
     // Rollback en error
-    onError: (_err, { orderId }, context) => {
+    onError: (err, { orderId }, context) => {
       if (context?.previousOrders) {
         queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
       }
@@ -322,6 +332,14 @@ export function useUpdateOrderPaymentStatus() {
           context.previousOrder
         );
       }
+      // Extraer mensaje de error del backend
+      const errorMessage = extractErrorMessage(err, "No se pudo actualizar el estado de pago");
+      toast.error(errorMessage);
+    },
+
+    // Éxito
+    onSuccess: (_data) => {
+      toast.success("Estado de pago actualizado");
     },
 
     // Revalidar después de la mutación

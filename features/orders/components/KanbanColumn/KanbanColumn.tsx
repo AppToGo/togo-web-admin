@@ -26,6 +26,7 @@ export interface KanbanColumnProps {
   status: OrderStatus;
   orders: Order[];
   onStatusChange?: (orderId: string, newStatus: string) => void;
+  onOrderClick?: (orderId: string) => void;
   isLoading?: boolean;
   viewMode?: CardViewMode;
   flexBasis?: string;
@@ -36,6 +37,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   status,
   orders,
   onStatusChange,
+  onOrderClick,
   isLoading,
   viewMode = "card",
   flexBasis,
@@ -91,7 +93,9 @@ export const KanbanColumn = memo(function KanbanColumn({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={dotVariants({ status })} />
-            <h3 className="font-semibold text-sm text-slate-700">{config.title}</h3>
+            <h3 className="font-semibold text-sm text-slate-700">
+              {config.title}
+            </h3>
           </div>
           <span
             className={cn(
@@ -155,6 +159,7 @@ export const KanbanColumn = memo(function KanbanColumn({
               key={order.id}
               order={order}
               onStatusChange={onStatusChange}
+              onClick={() => onOrderClick?.(order.id)}
               currentStatus={status}
               viewMode={viewMode}
             />
@@ -162,7 +167,7 @@ export const KanbanColumn = memo(function KanbanColumn({
         )}
       </div>
 
-      {/* Botón Add Card */}
+      {/* Botón Add Orden */}
       <button className="mt-3 w-full py-3 text-sm text-slate-500 hover:text-slate-700 hover:bg-white/60 rounded-card transition-colors flex items-center justify-center gap-1">
         <svg
           className="w-4 h-4"
@@ -177,7 +182,7 @@ export const KanbanColumn = memo(function KanbanColumn({
             d="M12 4v16m8-8H4"
           />
         </svg>
-        Add Card
+        Add Orden
       </button>
     </div>
   );
