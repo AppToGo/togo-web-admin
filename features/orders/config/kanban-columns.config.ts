@@ -110,6 +110,7 @@ export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
 export const DEFAULT_KANBAN_STATUSES: OrderStatus[] = [
   "CONFIRMED",
   "IN_PROGRESS",
+  "READY",
   "ON_THE_WAY",
   "COMPLETED",
 ];
