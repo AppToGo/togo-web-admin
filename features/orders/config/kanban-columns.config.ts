@@ -1,14 +1,19 @@
 /**
  * Kanban Columns Configuration
  *
- * Configuración centralizada de estilos por status de orden.
- * Define los estilos como parte del dominio, no de la UI.
+ * Configuración centralizada de columnas Kanban.
+ * Los colores y estilos se obtienen automáticamente desde el Theme System.
+ * 
+ * @see features/orders/theme/order-status.theme.ts - Fuente única de verdad para colores
  */
 
 import type { OrderStatus } from "../types";
+import { STATUS_THEME, getStatusLabel, getStatusDescription } from "../theme";
 
+/** Variante de columna para compatibilidad con código existente */
 export type ColumnVariant = "gray" | "blue" | "purple" | "orange" | "emerald" | "pink";
 
+/** Configuración de una columna */
 export interface ColumnConfig {
   title: string;
   variant: ColumnVariant;
@@ -16,58 +21,76 @@ export interface ColumnConfig {
 }
 
 /**
+ * Mapeo de nombres de color del theme a variantes de columna
+ * Para mantener compatibilidad con código existente
+ */
+const COLOR_TO_VARIANT: Record<string, ColumnVariant> = {
+  gray: "gray",
+  blue: "blue",
+  indigo: "blue",
+  teal: "emerald",
+  purple: "purple",
+  amber: "orange",
+  cyan: "blue",
+  emerald: "emerald",
+  pink: "pink",
+  slate: "gray",
+};
+
+/**
  * Configuración de columnas Kanban por estado de orden
+ * Generada automáticamente desde STATUS_THEME
  */
 export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
   DRAFT: {
-    title: "Borrador",
-    variant: "gray",
-    description: "Órdenes en borrador",
+    title: getStatusLabel("DRAFT"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.DRAFT.color],
+    description: getStatusDescription("DRAFT"),
   },
   CONFIRMED: {
-    title: "Confirmada",
-    variant: "blue",
-    description: "Órdenes confirmadas",
+    title: getStatusLabel("CONFIRMED"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.CONFIRMED.color],
+    description: getStatusDescription("CONFIRMED"),
   },
   PAYMENT_PENDING: {
-    title: "Pago pendiente",
-    variant: "blue",
-    description: "Órdenes esperando pago",
+    title: getStatusLabel("PAYMENT_PENDING"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.PAYMENT_PENDING.color],
+    description: getStatusDescription("PAYMENT_PENDING"),
   },
   PAID: {
-    title: "Pagada",
-    variant: "purple",
-    description: "Órdenes pagadas",
+    title: getStatusLabel("PAID"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.PAID.color],
+    description: getStatusDescription("PAID"),
   },
   IN_PROGRESS: {
-    title: "En proceso",
-    variant: "purple",
-    description: "Órdenes en preparación",
+    title: getStatusLabel("IN_PROGRESS"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.IN_PROGRESS.color],
+    description: getStatusDescription("IN_PROGRESS"),
   },
   READY: {
-    title: "Lista",
-    variant: "orange",
-    description: "Órdenes listas para entrega",
+    title: getStatusLabel("READY"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.READY.color],
+    description: getStatusDescription("READY"),
   },
   ON_THE_WAY: {
-    title: "En camino",
-    variant: "orange",
-    description: "Órdenes en entrega",
+    title: getStatusLabel("ON_THE_WAY"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.ON_THE_WAY.color],
+    description: getStatusDescription("ON_THE_WAY"),
   },
   COMPLETED: {
-    title: "Completada",
-    variant: "emerald",
-    description: "Órdenes completadas",
+    title: getStatusLabel("COMPLETED"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.COMPLETED.color],
+    description: getStatusDescription("COMPLETED"),
   },
   CANCELLED: {
-    title: "Cancelada",
-    variant: "pink",
-    description: "Órdenes canceladas",
+    title: getStatusLabel("CANCELLED"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.CANCELLED.color],
+    description: getStatusDescription("CANCELLED"),
   },
   ABANDONED: {
-    title: "Abandonada",
-    variant: "gray",
-    description: "Órdenes abandonadas",
+    title: getStatusLabel("ABANDONED"),
+    variant: COLOR_TO_VARIANT[STATUS_THEME.ABANDONED.color],
+    description: getStatusDescription("ABANDONED"),
   },
 };
 
@@ -90,9 +113,10 @@ export function getColumnConfig(status: OrderStatus): ColumnConfig {
 
 /**
  * Obtiene el título de una columna por su status
+ * Alias para compatibilidad, usa getStatusLabel del theme
  */
 export function getColumnTitle(status: OrderStatus): string {
-  return KANBAN_COLUMN_CONFIG[status].title;
+  return getStatusLabel(status);
 }
 
 /**

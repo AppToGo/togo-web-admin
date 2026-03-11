@@ -5,89 +5,32 @@
  * - Colores y estilos por estado
  * - Transiciones permitidas
  * - Validaciones de negocio
+ * 
+ * NOTA: Los colores se obtienen automáticamente desde el Theme System.
+ * @see features/orders/theme/order-status.theme.ts
  */
 
 import type { OrderStatus, PaymentStatus } from "../types";
+import { 
+  STATUS_COLORS as THEME_STATUS_COLORS,
+  getStatusLabel as getThemeStatusLabel,
+} from "../theme";
 
-// Colores por estado para el UI
-export const STATUS_COLORS: Record<
-  OrderStatus,
-  { bg: string; border: string; text: string; dot: string }
-> = {
-  DRAFT: {
-    bg: "bg-slate-50",
-    border: "border-slate-200",
-    text: "text-slate-700",
-    dot: "bg-slate-400",
-  },
-  CONFIRMED: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-700",
-    dot: "bg-blue-500",
-  },
-  PAYMENT_PENDING: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-700",
-    dot: "bg-amber-500",
-  },
-  PAID: {
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    text: "text-emerald-700",
-    dot: "bg-emerald-500",
-  },
-  IN_PROGRESS: {
-    bg: "bg-violet-50",
-    border: "border-violet-200",
-    text: "text-violet-700",
-    dot: "bg-violet-500",
-  },
-  READY: {
-    bg: "bg-cyan-50",
-    border: "border-cyan-200",
-    text: "text-cyan-700",
-    dot: "bg-cyan-500",
-  },
-  ON_THE_WAY: {
-    bg: "bg-indigo-50",
-    border: "border-indigo-200",
-    text: "text-indigo-700",
-    dot: "bg-indigo-500",
-  },
-  COMPLETED: {
-    bg: "bg-green-50",
-    border: "border-green-200",
-    text: "text-green-700",
-    dot: "bg-green-500",
-  },
-  CANCELLED: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-700",
-    dot: "bg-red-500",
-  },
-  ABANDONED: {
-    bg: "bg-gray-50",
-    border: "border-gray-200",
-    text: "text-gray-600",
-    dot: "bg-gray-400",
-  },
-};
+// Re-exportar STATUS_COLORS desde el theme (mantiene compatibilidad hacia atrás)
+export const STATUS_COLORS = THEME_STATUS_COLORS;
 
-// Etiquetas en español
+// Etiquetas en español - re-exportadas desde el theme
 export const STATUS_LABELS: Record<OrderStatus, string> = {
-  DRAFT: "Borrador",
-  CONFIRMED: "Confirmada",
-  PAYMENT_PENDING: "Pago pendiente",
-  PAID: "Pagada",
-  IN_PROGRESS: "En proceso",
-  READY: "Lista",
-  ON_THE_WAY: "En camino",
-  COMPLETED: "Completada",
-  CANCELLED: "Cancelada",
-  ABANDONED: "Abandonada",
+  DRAFT: getThemeStatusLabel("DRAFT"),
+  CONFIRMED: getThemeStatusLabel("CONFIRMED"),
+  PAYMENT_PENDING: getThemeStatusLabel("PAYMENT_PENDING"),
+  PAID: getThemeStatusLabel("PAID"),
+  IN_PROGRESS: getThemeStatusLabel("IN_PROGRESS"),
+  READY: getThemeStatusLabel("READY"),
+  ON_THE_WAY: getThemeStatusLabel("ON_THE_WAY"),
+  COMPLETED: getThemeStatusLabel("COMPLETED"),
+  CANCELLED: getThemeStatusLabel("CANCELLED"),
+  ABANDONED: getThemeStatusLabel("ABANDONED"),
 };
 
 // Descripciones cortas para tooltips

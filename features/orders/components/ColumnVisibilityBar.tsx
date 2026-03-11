@@ -4,9 +4,19 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
 import { Eye, EyeOff, PanelRight, PanelRightClose } from "lucide-react";
+import { generateColumnColors, generateColumnLabels } from "../theme";
+import type { OrderStatus } from "../types";
 
 const COOKIE_KEY_VISIBILITY = "kanban-column-visibility";
 const COOKIE_KEY_SIDEBAR = "kanban-sidebar-open";
+
+// Estados visibles en el Kanban (mismo orden que DEFAULT_KANBAN_STATUSES)
+const KANBAN_STATUSES: OrderStatus[] = [
+  "CONFIRMED",
+  "IN_PROGRESS",
+  "ON_THE_WAY",
+  "COMPLETED",
+];
 
 export interface ColumnVisibilityConfig {
   CONFIRMED: boolean;
@@ -15,19 +25,13 @@ export interface ColumnVisibilityConfig {
   COMPLETED: boolean;
 }
 
-const COLUMN_LABELS: Record<keyof ColumnVisibilityConfig, string> = {
-  CONFIRMED: "Nuevas",
-  IN_PROGRESS: "En proceso",
-  ON_THE_WAY: "En camino",
-  COMPLETED: "Completadas",
-};
+// Labels generados automáticamente desde el theme
+const COLUMN_LABELS: Record<keyof ColumnVisibilityConfig, string> = 
+  generateColumnLabels(KANBAN_STATUSES) as Record<keyof ColumnVisibilityConfig, string>;
 
-const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> = {
-  CONFIRMED: "bg-blue-500",
-  IN_PROGRESS: "bg-purple-500",
-  ON_THE_WAY: "bg-indigo-500",
-  COMPLETED: "bg-emerald-500",
-};
+// Colores generados automáticamente desde el theme
+const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> = 
+  generateColumnColors(KANBAN_STATUSES) as Record<keyof ColumnVisibilityConfig, string>;
 
 const defaultVisibility: ColumnVisibilityConfig = {
   CONFIRMED: true,
