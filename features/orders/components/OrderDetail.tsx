@@ -14,6 +14,7 @@ import {
   Utensils,
   AlertTriangle,
   ChevronDown,
+  Check,
 } from "lucide-react";
 import {
   useOrder,
@@ -29,7 +30,7 @@ import {
 } from "../utils/order-status.utils";
 import { categoryBadgeVariants } from "../styles";
 import { toast } from "sonner";
-import { extractErrorMessage } from "@/lib/error.utils";
+
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,7 +116,9 @@ function OrderStatusEditor({
     [currentStatus, onStatusChange]
   );
 
-  // Estados disponibles para cambiar (excluyendo el actual y DRAFT)
+  // Estados disponibles (incluyendo el actual para mostrarlo en su posición)
+  // Orden lógico del flujo: CONFIRMED → IN_PROGRESS → READY → ON_THE_WAY → COMPLETED
+  // CANCELLED se muestra al final como opción de excepción
   const availableStatuses: OrderStatus[] = [
     "CONFIRMED",
     "IN_PROGRESS",
@@ -123,7 +126,7 @@ function OrderStatusEditor({
     "ON_THE_WAY",
     "COMPLETED",
     "CANCELLED",
-  ].filter((s) => s !== currentStatus) as OrderStatus[];
+  ];
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
@@ -144,26 +147,45 @@ function OrderStatusEditor({
         className="min-w-[160px] z-[9999]"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        {availableStatuses.map((status) => (
-          <DropdownMenuItem
-            key={status}
-            onSelect={() => handleSelect(status)}
-            className="flex items-center gap-2 text-xs cursor-pointer"
-          >
-            <span
+        {availableStatuses.map((status) => {
+          const isCurrent = status === currentStatus;
+          return (
+            <DropdownMenuItem
+              key={status}
+              onSelect={() => handleSelect(status)}
+              disabled={isCurrent}
               className={cn(
-                "w-2 h-2 rounded-full",
-                getColumnVariant(status) === "blue" && "bg-blue-500",
-                getColumnVariant(status) === "purple" && "bg-purple-500",
-                getColumnVariant(status) === "orange" && "bg-orange-500",
-                getColumnVariant(status) === "emerald" && "bg-emerald-500",
-                getColumnVariant(status) === "pink" && "bg-pink-500",
-                getColumnVariant(status) === "gray" && "bg-slate-500"
+                "flex items-center gap-2 text-xs",
+                isCurrent
+                  ? "opacity-50 cursor-not-allowed bg-slate-50"
+                  : "cursor-pointer"
               )}
-            />
-            <span className="text-slate-700">{STATUS_LABELS[status]}</span>
-          </DropdownMenuItem>
-        ))}
+            >
+              <span
+                className={cn(
+                  "w-2 h-2 rounded-full",
+                  getColumnVariant(status) === "blue" && "bg-blue-500",
+                  getColumnVariant(status) === "purple" && "bg-purple-500",
+                  getColumnVariant(status) === "orange" && "bg-orange-500",
+                  getColumnVariant(status) === "emerald" && "bg-emerald-500",
+                  getColumnVariant(status) === "pink" && "bg-pink-500",
+                  getColumnVariant(status) === "gray" && "bg-slate-500"
+                )}
+              />
+              <span
+                className={cn(
+                  "flex-1",
+                  isCurrent ? "text-slate-500 font-medium" : "text-slate-700"
+                )}
+              >
+                {STATUS_LABELS[status]}
+              </span>
+              {isCurrent && (
+                <Check className="w-3.5 h-3.5 text-slate-400" />
+              )}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

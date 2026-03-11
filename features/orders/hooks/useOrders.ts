@@ -27,7 +27,7 @@ import type {
   UpdateOrderStatusRequest,
   GetOrdersParams,
 } from "../types";
-import { extractErrorMessage } from "@/lib/error.utils";
+import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
 // Query keys para mantener consistencia
 const ORDERS_KEYS = {
@@ -246,8 +246,8 @@ export function useUpdateOrderStatus() {
         );
       }
       // Extraer mensaje de error del backend
-      const errorMessage = extractErrorMessage(err, "No se pudo actualizar el estado de la orden");
-      toast.error(errorMessage);
+      const errorMessage = getHumanizedErrorMessage(err);
+      toast.error(errorMessage || "No se pudo actualizar el estado de la orden");
     },
 
     // Éxito
@@ -333,8 +333,8 @@ export function useUpdateOrderPaymentStatus() {
         );
       }
       // Extraer mensaje de error del backend
-      const errorMessage = extractErrorMessage(err, "No se pudo actualizar el estado de pago");
-      toast.error(errorMessage);
+      const errorMessage = getHumanizedErrorMessage(err);
+      toast.error(errorMessage || "No se pudo actualizar el estado de pago");
     },
 
     // Éxito
