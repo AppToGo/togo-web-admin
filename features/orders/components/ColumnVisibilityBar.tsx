@@ -14,6 +14,7 @@ const COOKIE_KEY_SIDEBAR = "kanban-sidebar-open";
 const KANBAN_STATUSES: OrderStatus[] = [
   "CONFIRMED",
   "IN_PROGRESS",
+  "READY",
   "ON_THE_WAY",
   "COMPLETED",
 ];
@@ -21,6 +22,7 @@ const KANBAN_STATUSES: OrderStatus[] = [
 export interface ColumnVisibilityConfig {
   CONFIRMED: boolean;
   IN_PROGRESS: boolean;
+  READY: boolean;
   ON_THE_WAY: boolean;
   COMPLETED: boolean;
 }
@@ -36,6 +38,7 @@ const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> =
 const defaultVisibility: ColumnVisibilityConfig = {
   CONFIRMED: true,
   IN_PROGRESS: true,
+  READY: true,
   ON_THE_WAY: true,
   COMPLETED: true,
 };
