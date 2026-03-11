@@ -7,7 +7,7 @@
 
 import { cva } from "class-variance-authority";
 import type { OrderStatus } from "../../types";
-import { STATUS_THEME, getStatusTokens } from "../order-status.theme";
+import { STATUS_THEME, COLOR_PALETTE, getStatusTokens } from "../order-status.theme";
 
 /** Helper para generar variantes por estado */
 function generateStatusVariants<T>(
@@ -193,12 +193,15 @@ export const emptyStateIconDragOverVariants = cva("", {
 
 /**
  * Variantes de texto para el estado vacío
+ * Usa COLOR_PALETTE directamente para evitar parsing frágil de strings
  */
 export const emptyStateTextVariants = cva("text-sm transition-colors", {
   variants: {
-    status: generateStatusVariants((_, tokens) => 
-      `text-${tokens.dot.split('-')[1]}-400`
-    ),
+    status: (Object.keys(STATUS_THEME) as OrderStatus[]).reduce((acc, status) => {
+      const colorName = STATUS_THEME[status].color;
+      acc[status] = `text-${COLOR_PALETTE[colorName][400]}`;
+      return acc;
+    }, {} as Record<OrderStatus, string>),
   },
   defaultVariants: {
     status: "DRAFT",

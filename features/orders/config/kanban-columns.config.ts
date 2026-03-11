@@ -21,20 +21,30 @@ export interface ColumnConfig {
 }
 
 /**
- * Mapeo de nombres de color del theme a variantes de columna
- * Para mantener compatibilidad con código existente
+ * Mapeo de nombres de color del theme a variantes de columna legacy
+ * 
+ * NOTA: Este mapeo es INTENCIONAL para mantener compatibilidad con código existente.
+ * El theme system usa una paleta más amplia de colores (indigo, teal, cyan, amber)
+ * pero las variantes de ColumnVariant son limitadas para compatibilidad backward.
+ * 
+ * Mapeos:
+ * - indigo → blue (ambos son azules)
+ * - teal → emerald (ambos son verdes azulados)
+ * - cyan → blue (cian es un azul claro)
+ * - amber → orange (ámbar es un naranja dorado)
+ * - slate → gray (pizarra es un gris azulado)
  */
 const COLOR_TO_VARIANT: Record<string, ColumnVariant> = {
   gray: "gray",
   blue: "blue",
-  indigo: "blue",
-  teal: "emerald",
+  indigo: "blue",    // Mapeado a blue para compatibilidad
+  teal: "emerald",   // Mapeado a emerald para compatibilidad
   purple: "purple",
-  amber: "orange",
-  cyan: "blue",
+  amber: "orange",   // Mapeado a orange para compatibilidad
+  cyan: "blue",      // Mapeado a blue para compatibilidad
   emerald: "emerald",
   pink: "pink",
-  slate: "gray",
+  slate: "gray",     // Mapeado a gray para compatibilidad
 };
 
 /**
