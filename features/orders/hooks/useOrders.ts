@@ -357,15 +357,27 @@ export function useOrderMetrics() {
   const { data: orders } = useOrders();
 
   return useMemo(() => {
+    // Inicializar valores por defecto
+    const defaultResult = {
+      totalOrders: 0,
+      pendingOrders: 0,
+      inProgressOrders: 0,
+      completedToday: 0,
+      totalRevenue: 0,
+      subtotalRevenue: 0,
+      deliveryRevenue: 0,
+      averageOrderValue: 0,
+      ordersByStatus: {
+        CONFIRMED: 0,
+        IN_PROGRESS: 0,
+        READY: 0,
+        ON_THE_WAY: 0,
+        COMPLETED: 0,
+      } as Record<"CONFIRMED" | "IN_PROGRESS" | "READY" | "ON_THE_WAY" | "COMPLETED", number>,
+    };
+
     if (!orders) {
-      return {
-        totalOrders: 0,
-        pendingOrders: 0,
-        inProgressOrders: 0,
-        completedToday: 0,
-        totalRevenue: 0,
-        averageOrderValue: 0,
-      };
+      return defaultResult;
     }
 
     const today = new Date();
@@ -392,10 +404,26 @@ export function useOrderMetrics() {
       (o) => o.status === "COMPLETED" && new Date(o.updatedAt) >= today
     );
 
-    const totalRevenue = completedToday.reduce(
+    // Conteo por estado para las barras de progreso
+    const ordersByStatus = {
+      CONFIRMED: orders.filter((o) => o.status === "CONFIRMED").length,
+      IN_PROGRESS: orders.filter((o) => o.status === "IN_PROGRESS").length,
+      READY: orders.filter((o) => o.status === "READY").length,
+      ON_THE_WAY: orders.filter((o) => o.status === "ON_THE_WAY").length,
+      COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
+    };
+
+    // Ingresos detallados (solo órdenes completadas hoy)
+    const subtotalRevenue = completedToday.reduce(
       (sum, o) => sum + o.totalAmount,
       0
     );
+    const deliveryRevenue = completedToday.reduce(
+      (sum, o) => sum + (o.deliveryFee || 0),
+      0
+    );
+    const totalRevenue = subtotalRevenue + deliveryRevenue;
+    
     const averageOrderValue =
       completedToday.length > 0 ? totalRevenue / completedToday.length : 0;
 
@@ -405,7 +433,10 @@ export function useOrderMetrics() {
       inProgressOrders: inProgressOrders.length,
       completedToday: completedToday.length,
       totalRevenue,
+      subtotalRevenue,
+      deliveryRevenue,
       averageOrderValue,
+      ordersByStatus,
     };
   }, [orders]);
 }

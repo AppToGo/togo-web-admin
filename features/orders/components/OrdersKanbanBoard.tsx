@@ -63,12 +63,15 @@ function filterOrdersBySearch(
     const address = order.address?.addressText?.toLowerCase() || "";
 
     // Buscar por valores formateados (lo que ve el usuario en UI)
-    const paymentMethodLabel = getPaymentMethodLabel(order.paymentMethod)
-      .toLowerCase();
-    const paymentStatusLabel = getPaymentStatusLabel(order.paymentStatus)
-      .toLowerCase();
-    const deliveryTypeLabel = getDeliveryTypeLabel(order.deliveryType)
-      .toLowerCase();
+    const paymentMethodLabel = getPaymentMethodLabel(
+      order.paymentMethod
+    ).toLowerCase();
+    const paymentStatusLabel = getPaymentStatusLabel(
+      order.paymentStatus
+    ).toLowerCase();
+    const deliveryTypeLabel = getDeliveryTypeLabel(
+      order.deliveryType
+    ).toLowerCase();
 
     // También buscar por valores crudos (para compatibilidad)
     const paymentMethodRaw = order.paymentMethod?.toLowerCase() || "";
@@ -104,13 +107,14 @@ export function OrdersKanbanBoard({
     useState<ColumnVisibilityConfig>({
       CONFIRMED: true,
       IN_PROGRESS: true,
+      READY: true,
       ON_THE_WAY: true,
       COMPLETED: true,
     });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
-  
+
   const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({
     dateFrom,
     dateTo,
@@ -146,8 +150,10 @@ export function OrdersKanbanBoard({
       // Filtro por estado de pago
       if (!paymentStatusFilter.paid || !paymentStatusFilter.pending) {
         result = result.filter((order) => {
-          if (order.paymentStatus === "PAID" && !paymentStatusFilter.paid) return false;
-          if (order.paymentStatus === "PENDING" && !paymentStatusFilter.pending) return false;
+          if (order.paymentStatus === "PAID" && !paymentStatusFilter.paid)
+            return false;
+          if (order.paymentStatus === "PENDING" && !paymentStatusFilter.pending)
+            return false;
           return true;
         });
       }
@@ -156,7 +162,7 @@ export function OrdersKanbanBoard({
       if (!deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup) {
         result = result.filter((order) => {
           // Usar deliveryType si está disponible, sino usar addressId como fallback
-          const isDelivery = order.deliveryType 
+          const isDelivery = order.deliveryType
             ? order.deliveryType === "DELIVERY"
             : !!order.addressId;
           if (isDelivery && !deliveryTypeFilter.delivery) return false;
@@ -264,12 +270,13 @@ export function OrdersKanbanBoard({
         {/* Right Sidebar - Statistics */}
         <div
           className={cn(
-            "shrink-0 transition-all duration-300 ease-in-out border-l border-white/40 overflow-hidden",
+            "shrink-0 transition-all duration-300 ease-in-out border-l border-white/40",
+            "flex flex-col",
             isSidebarOpen ? "w-72 opacity-100" : "w-0 opacity-0 border-l-0"
           )}
         >
-          {/* Inner container with fixed width to prevent content squishing during animation */}
-          <div className="w-72 p-4">
+          {/* Inner container with scroll */}
+          <div className="w-72 p-4 overflow-y-auto flex-1">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -300,7 +307,10 @@ export function OrdersKanbanBoard({
       />
 
       {/* Dialog de detalle de orden - Un solo dialog para todas las órdenes */}
-      <Dialog open={isDetailOpen} onOpenChange={(open) => !open && handleCloseDetail()}>
+      <Dialog
+        open={isDetailOpen}
+        onOpenChange={(open) => !open && handleCloseDetail()}
+      >
         <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
             <DialogTitle className="text-lg font-semibold text-slate-900">
