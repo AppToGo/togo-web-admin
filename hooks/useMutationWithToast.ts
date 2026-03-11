@@ -3,6 +3,7 @@
 import { useCallback } from "react"
 import { toast } from "sonner"
 import { UseMutationResult } from "@tanstack/react-query"
+import { getHumanizedErrorMessage } from "@/lib/error.utils"
 
 interface ToastMutationOptions<TData, TError, TVariables> {
   successMessage?: string | ((data: TData, variables: TVariables) => string)
@@ -98,8 +99,8 @@ export async function withToast<T>(
     onSuccess?.(result)
     return result
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ha ocurrido un error"
-    toast.error(errorMessage || message)
+    const humanizedMessage = getHumanizedErrorMessage(error)
+    toast.error(errorMessage || humanizedMessage)
     onError?.(error as Error)
     return undefined
   }
