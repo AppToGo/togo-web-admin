@@ -27,8 +27,8 @@ const COLUMN_LABELS: Record<keyof ColumnVisibilityConfig, string> = {
 const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> = {
   CONFIRMED: "bg-blue-500",
   IN_PROGRESS: "bg-purple-500",
-  READY: "bg-orange-500",
-  ON_THE_WAY: "bg-indigo-500",
+  READY: "bg-amber-500",
+  ON_THE_WAY: "bg-cyan-500",
   COMPLETED: "bg-emerald-500",
 };
 

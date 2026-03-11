@@ -27,34 +27,34 @@ export const STATUS_COLORS: Record<
     dot: "bg-blue-500",
   },
   PAYMENT_PENDING: {
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    text: "text-indigo-700",
+    dot: "bg-indigo-500",
+  },
+  PAID: {
+    bg: "bg-teal-50",
+    border: "border-teal-200",
+    text: "text-teal-700",
+    dot: "bg-teal-500",
+  },
+  IN_PROGRESS: {
+    bg: "bg-purple-50",
+    border: "border-purple-200",
+    text: "text-purple-700",
+    dot: "bg-purple-500",
+  },
+  READY: {
     bg: "bg-amber-50",
     border: "border-amber-200",
     text: "text-amber-700",
     dot: "bg-amber-500",
   },
-  PAID: {
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    text: "text-emerald-700",
-    dot: "bg-emerald-500",
-  },
-  IN_PROGRESS: {
-    bg: "bg-violet-50",
-    border: "border-violet-200",
-    text: "text-violet-700",
-    dot: "bg-violet-500",
-  },
-  READY: {
+  ON_THE_WAY: {
     bg: "bg-cyan-50",
     border: "border-cyan-200",
     text: "text-cyan-700",
     dot: "bg-cyan-500",
-  },
-  ON_THE_WAY: {
-    bg: "bg-indigo-50",
-    border: "border-indigo-200",
-    text: "text-indigo-700",
-    dot: "bg-indigo-500",
   },
   COMPLETED: {
     bg: "bg-green-50",

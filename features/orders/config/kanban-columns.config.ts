@@ -7,7 +7,7 @@
 
 import type { OrderStatus } from "../types";
 
-export type ColumnVariant = "gray" | "blue" | "purple" | "orange" | "emerald" | "pink";
+export type ColumnVariant = "gray" | "blue" | "purple" | "amber" | "orange" | "cyan" | "emerald" | "pink" | "teal";
 
 export interface ColumnConfig {
   title: string;
@@ -31,12 +31,12 @@ export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
   },
   PAYMENT_PENDING: {
     title: "Pago pendiente",
-    variant: "blue",
+    variant: "indigo",
     description: "Órdenes esperando pago",
   },
   PAID: {
     title: "Pagada",
-    variant: "purple",
+    variant: "teal",
     description: "Órdenes pagadas",
   },
   IN_PROGRESS: {
@@ -46,12 +46,12 @@ export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
   },
   READY: {
     title: "Lista",
-    variant: "orange",
+    variant: "amber",
     description: "Órdenes listas para entrega",
   },
   ON_THE_WAY: {
     title: "En camino",
-    variant: "orange",
+    variant: "cyan",
     description: "Órdenes en entrega",
   },
   COMPLETED: {
