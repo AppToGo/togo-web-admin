@@ -11,6 +11,7 @@ const COOKIE_KEY_SIDEBAR = "kanban-sidebar-open";
 export interface ColumnVisibilityConfig {
   CONFIRMED: boolean;
   IN_PROGRESS: boolean;
+  READY: boolean;
   ON_THE_WAY: boolean;
   COMPLETED: boolean;
 }
@@ -18,6 +19,7 @@ export interface ColumnVisibilityConfig {
 const COLUMN_LABELS: Record<keyof ColumnVisibilityConfig, string> = {
   CONFIRMED: "Nuevas",
   IN_PROGRESS: "En proceso",
+  READY: "Lista",
   ON_THE_WAY: "En camino",
   COMPLETED: "Completadas",
 };
@@ -25,6 +27,7 @@ const COLUMN_LABELS: Record<keyof ColumnVisibilityConfig, string> = {
 const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> = {
   CONFIRMED: "bg-blue-500",
   IN_PROGRESS: "bg-purple-500",
+  READY: "bg-orange-500",
   ON_THE_WAY: "bg-indigo-500",
   COMPLETED: "bg-emerald-500",
 };
@@ -32,6 +35,7 @@ const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> = {
 const defaultVisibility: ColumnVisibilityConfig = {
   CONFIRMED: true,
   IN_PROGRESS: true,
+  READY: true,
   ON_THE_WAY: true,
   COMPLETED: true,
 };

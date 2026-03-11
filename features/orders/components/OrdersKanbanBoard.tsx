@@ -104,6 +104,7 @@ export function OrdersKanbanBoard({
     useState<ColumnVisibilityConfig>({
       CONFIRMED: true,
       IN_PROGRESS: true,
+      READY: true,
       ON_THE_WAY: true,
       COMPLETED: true,
     });
