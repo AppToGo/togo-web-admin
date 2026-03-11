@@ -30,7 +30,7 @@ import {
 } from "../utils/order-status.utils";
 import { categoryBadgeVariants } from "../styles";
 import { toast } from "sonner";
-import { extractErrorMessage } from "@/lib/error.utils";
+
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";

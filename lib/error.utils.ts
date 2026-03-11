@@ -50,7 +50,7 @@ export function extractErrorMessage(err: unknown, defaultMessage: string): strin
 export const FRIENDLY_ERROR_MESSAGES: Record<string, string> = {
   // Errores de órdenes
   "Order not found": "No pudimos encontrar esta orden. Por favor, verifica e intenta de nuevo.",
-  "Cannot complete order": "No se puede completar la orden",
+  "Cannot complete order": "No se puede completar la orden.",
   "Invalid status transition": "No se puede cambiar a este estado desde el estado actual.",
   
   // Errores de transición de estado
@@ -60,16 +60,16 @@ export const FRIENDLY_ERROR_MESSAGES: Record<string, string> = {
   // Errores de stock/pagos
   "Insufficient stock": "No hay suficiente stock disponible para este producto.",
   "Payment failed": "El pago no pudo ser procesado. Intenta con otro método.",
-  "Invalid payment status transition": "No se puede cambiar el estado de pago de esta manera",
+  "Invalid payment status transition": "No se puede cambiar el estado de pago de esta manera.",
   
   // Errores de permisos
   "Unauthorized": "No tienes permisos para realizar esta acción.",
-  "Forbidden": "Acceso denegado",
+  "Forbidden": "Acceso denegado.",
   
   // Errores de red/servidor
   "Network Error": "Hubo un problema de conexión. Verifica tu internet e intenta de nuevo.",
-  "Timeout": "La operación tardó demasiado. Intenta de nuevo",
-  "Bad Request": "Solicitud inválida",
+  "Timeout": "La operación tardó demasiado. Intenta de nuevo.",
+  "Bad Request": "Solicitud inválida.",
   "Request failed": "No pudimos completar la acción. Intenta de nuevo más tarde.",
   
   // Errores genéricos
