@@ -386,8 +386,9 @@ export function useOrderMetrics() {
       return defaultResult;
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Fecha de hoy en UTC para comparar correctamente con updatedAt del servidor
+    const now = new Date();
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 
     const pendingStatuses: OrderStatus[] = [
       "DRAFT",
@@ -407,7 +408,7 @@ export function useOrderMetrics() {
       inProgressStatuses.includes(o.status)
     );
     const completedToday = orders.filter(
-      (o) => o.status === "COMPLETED" && new Date(o.updatedAt) >= today
+      (o) => o.status === "COMPLETED" && new Date(o.updatedAt) >= todayUTC
     );
 
     // Conteo por estado para las barras de progreso
@@ -429,6 +430,20 @@ export function useOrderMetrics() {
       0
     );
     const totalRevenue = subtotalRevenue + deliveryRevenue;
+    
+    // DEBUG: Verificar cálculo de ingresos
+    console.log("=== DEBUG useOrderMetrics ===");
+    console.log("Today (midnight):", today.toISOString());
+    console.log("Total orders:", orders.length);
+    console.log("Completed today count:", completedToday.length);
+    console.log("Completed today orders:", completedToday.map(o => ({ 
+      id: o.id.slice(-6), 
+      totalAmount: o.totalAmount, 
+      deliveryFee: o.deliveryFee,
+      updatedAt: o.updatedAt 
+    })));
+    console.log("Subtotal:", subtotalRevenue, "Delivery:", deliveryRevenue, "Total:", totalRevenue);
+    console.log("============================");
     
     const averageOrderValue =
       completedToday.length > 0 ? totalRevenue / completedToday.length : 0;

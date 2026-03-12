@@ -39,7 +39,7 @@ export const OrderMetrics = memo(function OrderMetrics() {
       count: metrics.ordersByStatus.COMPLETED,
       variant: "emerald" as const,
     },
-  ];
+  ].filter(item => item.count > 0);
 
   // Calcular el máximo para la barra de progreso proporcional
   const maxCount = Math.max(...progressItems.map((item) => item.count), 1);
