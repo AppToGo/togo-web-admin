@@ -73,7 +73,7 @@ export const OrderMetrics = memo(function OrderMetrics() {
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
           <span className="text-sm font-medium text-white/80">
-            Ingresos hoy
+            Ingresos
           </span>
         </div>
         
@@ -100,7 +100,7 @@ export const OrderMetrics = memo(function OrderMetrics() {
         
         {/* Conteo de órdenes */}
         <p className="text-xs text-white/60 mt-3">
-          {metrics.completedToday} órdenes completadas
+          {metrics.paidOrdersCount} órdenes pagadas
         </p>
       </div>
     </div>

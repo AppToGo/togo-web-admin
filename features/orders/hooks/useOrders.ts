@@ -376,6 +376,7 @@ export function useOrderMetrics() {
       pendingOrders: 0,
       inProgressOrders: 0,
       completedToday: 0,
+      paidOrdersCount: 0,
       totalRevenue: 0,
       subtotalRevenue: 0,
       deliveryRevenue: 0,
@@ -434,51 +435,37 @@ export function useOrderMetrics() {
       COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
     };
 
-    // DEBUG: Verificación de tipos y datos
-    console.log("=== DEBUG useOrderMetrics ===");
-    console.log("Total orders:", orders.length);
-    console.log("All orders statuses:", orders.map(o => o.status));
-    console.log("All completed orders:", orders.filter(o => o.status === "COMPLETED").length);
-    console.log("Date filter - todayUTC:", todayUTC.toISOString());
-    console.log("Date filter - tomorrowUTC:", tomorrowUTC.toISOString());
-    console.log("Completed with date filter:", completedToday.length);
-    
-    // Verificar tipos de datos de montos
-    if (orders.length > 0) {
-      const sampleOrder = orders.find(o => o.totalAmount !== undefined);
-      if (sampleOrder) {
-        console.log("Sample order totalAmount:", sampleOrder.totalAmount, "type:", typeof sampleOrder.totalAmount);
-        console.log("Sample order deliveryFee:", sampleOrder.deliveryFee, "type:", typeof sampleOrder.deliveryFee);
-      }
-    }
+    // Ingresos: calcular de órdenes con status PAID (no COMPLETED)
+    // Todas las órdenes PAID cuentan para ingresos, sin filtro de fecha
+    const paidOrders = orders.filter((o) => o.status === "PAID");
 
-    // Ingresos detallados (solo órdenes completadas hoy)
+    // Subtotal: suma de totalAmount de órdenes PAID
     // NOTA: El backend envía los montos como strings (Decimal), forzar conversión a número
-    const subtotalRevenue = completedToday.reduce(
+    const subtotalRevenue = paidOrders.reduce(
       (sum, o) => sum + (Number(o.totalAmount) || 0),
       0
     );
-    const deliveryRevenue = completedToday.reduce(
-      (sum, o) => sum + (Number(o.deliveryFee) || 0),
+
+    // Delivery: suma de deliveryFee de órdenes PAID que sean domicilio
+    const deliveryRevenue = paidOrders.reduce(
+      (sum, o) => {
+        const isDelivery = o.deliveryType === "DELIVERY" || !!o.addressId;
+        return sum + (isDelivery ? (Number(o.deliveryFee) || 0) : 0);
+      },
       0
     );
+
     const totalRevenue = subtotalRevenue + deliveryRevenue;
 
-    console.log(
-      "Revenues - Subtotal:", subtotalRevenue,
-      "Delivery:", deliveryRevenue,
-      "Total:", totalRevenue
-    );
-    console.log("============================");
-
     const averageOrderValue =
-      completedToday.length > 0 ? totalRevenue / completedToday.length : 0;
+      paidOrders.length > 0 ? totalRevenue / paidOrders.length : 0;
 
     return {
       totalOrders: orders.length,
       pendingOrders: pendingOrders.length,
       inProgressOrders: inProgressOrders.length,
       completedToday: completedToday.length,
+      paidOrdersCount: paidOrders.length,
       totalRevenue,
       subtotalRevenue,
       deliveryRevenue,
