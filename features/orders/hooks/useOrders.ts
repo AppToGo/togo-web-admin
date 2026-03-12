@@ -354,7 +354,13 @@ export function useUpdateOrderPaymentStatus() {
  * Hook para calcular métricas del dashboard
  */
 export function useOrderMetrics() {
-  const { data: orders } = useOrders();
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  
+  // Determinar el businessId efectivo (igual que otros hooks)
+  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+  
+  const { data: orders } = useOrders({ businessId: effectiveBusinessId });
 
   return useMemo(() => {
     // Inicializar valores por defecto
@@ -445,7 +451,13 @@ export function useOrderMetrics() {
  * Hook para obtener actividad reciente
  */
 export function useRecentActivity() {
-  const { data: orders } = useOrders();
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  
+  // Determinar el businessId efectivo (igual que otros hooks)
+  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+  
+  const { data: orders } = useOrders({ businessId: effectiveBusinessId });
 
   return useMemo(() => {
     if (!orders) return [];
