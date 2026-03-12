@@ -145,9 +145,10 @@ export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
 export function useOrder(orderId: string | null, enabled: boolean = true) {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
-  
+
   // Determinar el businessId efectivo
-  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
 
   return useQuery({
     queryKey: [...ORDERS_KEYS.detail(orderId || ""), effectiveBusinessId],
@@ -166,9 +167,10 @@ export function useOrder(orderId: string | null, enabled: boolean = true) {
 export function useOrderHistory(orderId: string | null) {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
-  
+
   // Determinar el businessId efectivo
-  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
 
   return useQuery({
     queryKey: [...ORDERS_KEYS.history(orderId || ""), effectiveBusinessId],
@@ -188,9 +190,10 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
-  
+
   // Determinar el businessId efectivo
-  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
 
   return useMutation({
     mutationFn: ({
@@ -247,7 +250,9 @@ export function useUpdateOrderStatus() {
       }
       // Extraer mensaje de error del backend
       const errorMessage = getHumanizedErrorMessage(err);
-      toast.error(errorMessage || "No se pudo actualizar el estado de la orden");
+      toast.error(
+        errorMessage || "No se pudo actualizar el estado de la orden"
+      );
     },
 
     // Éxito
@@ -273,9 +278,10 @@ export function useUpdateOrderPaymentStatus() {
   const queryClient = useQueryClient();
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
-  
+
   // Determinar el businessId efectivo
-  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
 
   return useMutation({
     mutationFn: ({
@@ -356,10 +362,11 @@ export function useUpdateOrderPaymentStatus() {
 export function useOrderMetrics() {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
-  
+
   // Determinar el businessId efectivo (igual que otros hooks)
-  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
-  
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
+
   const { data: orders } = useOrders({ businessId: effectiveBusinessId });
 
   return useMemo(() => {
@@ -379,7 +386,10 @@ export function useOrderMetrics() {
         READY: 0,
         ON_THE_WAY: 0,
         COMPLETED: 0,
-      } as Record<"CONFIRMED" | "IN_PROGRESS" | "READY" | "ON_THE_WAY" | "COMPLETED", number>,
+      } as Record<
+        "CONFIRMED" | "IN_PROGRESS" | "READY" | "ON_THE_WAY" | "COMPLETED",
+        number
+      >,
     };
 
     if (!orders) {
@@ -388,7 +398,11 @@ export function useOrderMetrics() {
 
     // Fecha de hoy en UTC para comparar correctamente con updatedAt del servidor
     const now = new Date();
-    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const todayUTC = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+    );
+    const tomorrowUTC = new Date(todayUTC);
+    tomorrowUTC.setDate(tomorrowUTC.getDate() + 1);
 
     const pendingStatuses: OrderStatus[] = [
       "DRAFT",
@@ -408,7 +422,7 @@ export function useOrderMetrics() {
       inProgressStatuses.includes(o.status)
     );
     const completedToday = orders.filter(
-      (o) => o.status === "COMPLETED" && new Date(o.updatedAt) >= todayUTC
+      (o) => o.status === "COMPLETED" && new Date(o.updatedAt) >= todayUTC && new Date(o.updatedAt) < tomorrowUTC
     );
 
     // Conteo por estado para las barras de progreso
@@ -420,31 +434,43 @@ export function useOrderMetrics() {
       COMPLETED: orders.filter((o) => o.status === "COMPLETED").length,
     };
 
+    // DEBUG: Verificación de tipos y datos
+    console.log("=== DEBUG useOrderMetrics ===");
+    console.log("Total orders:", orders.length);
+    console.log("All orders statuses:", orders.map(o => o.status));
+    console.log("All completed orders:", orders.filter(o => o.status === "COMPLETED").length);
+    console.log("Date filter - todayUTC:", todayUTC.toISOString());
+    console.log("Date filter - tomorrowUTC:", tomorrowUTC.toISOString());
+    console.log("Completed with date filter:", completedToday.length);
+    
+    // Verificar tipos de datos de montos
+    if (orders.length > 0) {
+      const sampleOrder = orders.find(o => o.totalAmount !== undefined);
+      if (sampleOrder) {
+        console.log("Sample order totalAmount:", sampleOrder.totalAmount, "type:", typeof sampleOrder.totalAmount);
+        console.log("Sample order deliveryFee:", sampleOrder.deliveryFee, "type:", typeof sampleOrder.deliveryFee);
+      }
+    }
+
     // Ingresos detallados (solo órdenes completadas hoy)
+    // NOTA: El backend envía los montos como strings (Decimal), forzar conversión a número
     const subtotalRevenue = completedToday.reduce(
-      (sum, o) => sum + o.totalAmount,
+      (sum, o) => sum + (Number(o.totalAmount) || 0),
       0
     );
     const deliveryRevenue = completedToday.reduce(
-      (sum, o) => sum + (o.deliveryFee || 0),
+      (sum, o) => sum + (Number(o.deliveryFee) || 0),
       0
     );
     const totalRevenue = subtotalRevenue + deliveryRevenue;
-    
-    // DEBUG: Verificar cálculo de ingresos
-    console.log("=== DEBUG useOrderMetrics ===");
-    console.log("Today (midnight):", today.toISOString());
-    console.log("Total orders:", orders.length);
-    console.log("Completed today count:", completedToday.length);
-    console.log("Completed today orders:", completedToday.map(o => ({ 
-      id: o.id.slice(-6), 
-      totalAmount: o.totalAmount, 
-      deliveryFee: o.deliveryFee,
-      updatedAt: o.updatedAt 
-    })));
-    console.log("Subtotal:", subtotalRevenue, "Delivery:", deliveryRevenue, "Total:", totalRevenue);
+
+    console.log(
+      "Revenues - Subtotal:", subtotalRevenue,
+      "Delivery:", deliveryRevenue,
+      "Total:", totalRevenue
+    );
     console.log("============================");
-    
+
     const averageOrderValue =
       completedToday.length > 0 ? totalRevenue / completedToday.length : 0;
 
@@ -468,10 +494,11 @@ export function useOrderMetrics() {
 export function useRecentActivity() {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
-  
+
   // Determinar el businessId efectivo (igual que otros hooks)
-  const effectiveBusinessId = selectedBusinessId || user?.businessId || undefined;
-  
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
+
   const { data: orders } = useOrders({ businessId: effectiveBusinessId });
 
   return useMemo(() => {
