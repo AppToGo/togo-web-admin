@@ -41,47 +41,24 @@ const ACTIVITY_VARIANTS = {
 export const RecentActivity = memo(function RecentActivity() {
   const activities = useRecentActivity();
 
-  // Datos de ejemplo para el diseño
-  const demoActivities = [
-    {
-      id: "1",
-      type: "document_uploaded" as const,
-      description: "Andrea uploaded 3 documents",
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    },
-    {
-      id: "2",
-      type: "comment" as const,
-      description: "Karen leave some comments",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    },
-    {
-      id: "3",
-      type: "edit" as const,
-      description: "Karen change project descriptions",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-    },
-    {
-      id: "4",
-      type: "document_uploaded" as const,
-      description: "Andrea uploaded 3 documents",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-    },
-    {
-      id: "5",
-      type: "comment" as const,
-      description: "Karen leave some comments",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    },
-  ];
+  // Si no hay actividades, no mostrar nada (o mostrar mensaje vacío opcional)
+  if (activities.length === 0) {
+    return (
+      <div className="py-6 text-center">
+        <p className="text-sm text-slate-400">
+          No hay actividad reciente
+        </p>
+      </div>
+    );
+  }
 
-  const displayActivities =
-    activities.length > 0 ? activities.slice(0, 5) : demoActivities;
+  // Mostrar máximo 5 actividades
+  const displayActivities = activities.slice(0, 5);
 
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-slate-900 text-base">
-        Recent Activity
+        Actividad reciente
       </h3>
 
       <div className="space-y-3">

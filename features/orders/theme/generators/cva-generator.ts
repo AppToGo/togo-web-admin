@@ -133,11 +133,11 @@ export const counterTextDragOverVariants = cva(
  * Variantes para el estado vacío de la columna
  */
 export const emptyStateVariants = cva(
-  "flex flex-col items-center justify-center py-8 text-center rounded-card transition-colors duration-200 border-2 border-dashed",
+  "flex flex-col items-center justify-center py-8 text-center rounded-card transition-colors duration-200 border-2 border-dashed border-slate-200/70",
   {
     variants: {
-      status: generateStatusVariants((_, tokens) => 
-        tokens.border
+      status: generateStatusVariants(() => 
+        "" // Usar el color por defecto slate suave
       ),
     },
     defaultVariants: {

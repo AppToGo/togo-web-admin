@@ -6,4 +6,6 @@ export {
   updateOrderStatus,
   getOrderStatusHistory,
   deleteOrder,
+  getOrderMetrics,
 } from './order.service';
+export type { UpdatePaymentStatusRequest } from './order.service';

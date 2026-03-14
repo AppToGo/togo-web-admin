@@ -4,6 +4,9 @@ import { Suspense, useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { OrdersKanbanBoard } from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
+import { DateRangeFilter } from "@/features/filters/components";
+import { useDateFilterStore, useDateFilterPreset } from "@/features/filters/stores";
+import { useDateFilterParams } from "@/features/filters/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +19,6 @@ import {
   Clock,
   Home,
   Store,
-  CalendarDays,
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -28,13 +30,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Calendar, DateRange } from "@/components/ui/calendar";
 import {
   useHasBusiness,
   useIsSuperAdmin,
@@ -71,32 +66,7 @@ function OrdersLoading() {
   );
 }
 
-// Obtener fecha de hoy en formato YYYY-MM-DD (usando zona horaria local)
-function getTodayString(): string {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
-// Formatear fecha YYYY-MM-DD para mostrar al usuario (sin problemas de zona horaria)
-// La fecha se interpreta como fecha local, no UTC
-function formatDisplayDate(dateString: string): string {
-  if (!dateString) return "";
-
-  // Dividir la fecha YYYY-MM-DD
-  const [year, month, day] = dateString.split("-").map(Number);
-
-  // Crear fecha usando componentes locales (evita problemas de UTC)
-  const date = new Date(year, month - 1, day);
-
-  return date.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export default function OrdersPage() {
   useAuthGuard();
@@ -104,23 +74,15 @@ export default function OrdersPage() {
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
 
+  // Filtros globales de fecha
+  const dateParams = useDateFilterParams();
+  const datePreset = useDateFilterPreset();
+  const { range: dateRange } = useDateFilterStore();
+
   const [cardViewMode, setCardViewMode] = useState<CardViewMode>("card");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estados de filtros de fecha
-  const [useDateRange, setUseDateRange] = useState(false);
-  const [useTodayOnly, setUseTodayOnly] = useState(true);
-  const [showCalendarDialog, setShowCalendarDialog] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: new Date(),
-  });
-
-  // Convertir DateRange a strings para la API
-  const dateFrom = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "";
-  const dateTo = dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : dateFrom;
-
-  // Filtros adicionales
+  // Filtros adicionales (locales)
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<{
     paid: boolean;
     pending: boolean;
@@ -132,33 +94,28 @@ export default function OrdersPage() {
   }>({ delivery: true, pickup: true });
 
   // Verificar si hay filtros activos
-  const hasDateFilter = useDateRange || !useTodayOnly;
+  const isCustomDate = datePreset === "custom";
   const hasPaymentFilter =
     !paymentStatusFilter.paid || !paymentStatusFilter.pending;
   const hasDeliveryFilter =
     !deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup;
-  const hasAnyFilter = hasDateFilter || hasPaymentFilter || hasDeliveryFilter;
-
-  // Limpiar filtros de fecha
-  const clearDateFilter = () => {
-    const today = new Date();
-    setDateRange({ from: today, to: today });
-    setUseTodayOnly(true);
-    setUseDateRange(false);
-  };
+  const hasAnyFilter = isCustomDate || hasPaymentFilter || hasDeliveryFilter;
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
-    clearDateFilter();
     setPaymentStatusFilter({ paid: true, pending: true });
     setDeliveryTypeFilter({ delivery: true, pickup: true });
+    // Resetear a "today" si está en custom
+    if (datePreset === "custom") {
+      useDateFilterStore.getState().setPreset("today");
+    }
   };
 
-  // Contar filtros activos
+  // Contar filtros activos (solo los locales, el de fecha global es siempre "activo")
   const activeFiltersCount = [
     hasPaymentFilter,
     hasDeliveryFilter,
-    dateFrom !== getTodayString() || dateTo !== getTodayString(),
+    isCustomDate,
   ].filter(Boolean).length;
 
   // Para usuarios normales sin negocio, mostrar error
@@ -239,9 +196,7 @@ export default function OrdersPage() {
                     <h3 className="font-semibold text-sm text-slate-900">
                       Filtros
                     </h3>
-                    {(hasPaymentFilter ||
-                      hasDeliveryFilter ||
-                      hasDateFilter) && (
+                    {(hasPaymentFilter || hasDeliveryFilter || isCustomDate) && (
                       <button
                         onClick={() => {
                           setPaymentStatusFilter({ paid: true, pending: true });
@@ -249,7 +204,9 @@ export default function OrdersPage() {
                             delivery: true,
                             pickup: true,
                           });
-                          clearDateFilter();
+                          if (datePreset === "custom") {
+                            useDateFilterStore.getState().setPreset("today");
+                          }
                         }}
                         className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                       >
@@ -259,100 +216,16 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
-                    {/* Filtro por fecha - Solo hoy */}
+                    {/* Filtro global de fecha */}
                     <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-                        <CalendarDays className="w-3.5 h-3.5" />
-                        Fecha
+                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Período de fechas
                       </h4>
-                      <div className="space-y-2">
-                        {/* Solo hoy */}
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                                useTodayOnly && !useDateRange
-                                  ? "bg-indigo-100"
-                                  : "bg-slate-100"
-                              )}
-                            >
-                              <CalendarDays
-                                className={cn(
-                                  "w-4 h-4 transition-colors",
-                                  useTodayOnly && !useDateRange
-                                    ? "text-indigo-600"
-                                    : "text-slate-600"
-                                )}
-                              />
-                            </div>
-                            <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              Solo hoy
-                            </span>
-                          </div>
-                          <Switch
-                            checked={useTodayOnly && !useDateRange}
-                            onCheckedChange={(checked) => {
-                              setUseTodayOnly(checked);
-                              if (checked) {
-                                setUseDateRange(false);
-                                const today = new Date();
-                                setDateRange({ from: today, to: today });
-                              }
-                            }}
-                          />
-                        </label>
-
-                        {/* Rango de fechas */}
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                                useDateRange ? "bg-indigo-100" : "bg-slate-100"
-                              )}
-                            >
-                              <CalendarDays
-                                className={cn(
-                                  "w-4 h-4 transition-colors",
-                                  useDateRange
-                                    ? "text-indigo-600"
-                                    : "text-slate-600"
-                                )}
-                              />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                                Rango de fechas
-                              </span>
-                              {useDateRange && dateRange?.from && (
-                                <span className="text-xs text-slate-500">
-                                  {format(dateRange.from, "dd MMM", {
-                                    locale: es,
-                                  })}
-                                  {dateRange.to &&
-                                    dateRange.to !== dateRange.from &&
-                                    ` - ${format(dateRange.to, "dd MMM", { locale: es })}`}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <Switch
-                            checked={useDateRange}
-                            onCheckedChange={(checked) => {
-                              setUseDateRange(checked);
-                              if (checked) {
-                                setUseTodayOnly(false);
-                                setShowCalendarDialog(true);
-                              } else {
-                                setUseTodayOnly(true);
-                                const today = new Date();
-                                setDateRange({ from: today, to: today });
-                              }
-                            }}
-                          />
-                        </label>
-                      </div>
+                      <DateRangeFilter
+                        variant="compact"
+                        showPresets={true}
+                        availablePresets={["today", "yesterday", "week", "last7days", "month", "custom"]}
+                      />
                     </div>
 
                     {/* Separador */}
@@ -482,21 +355,9 @@ export default function OrdersPage() {
         {/* Orders Board */}
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Indicador de filtros activos */}
-          {(hasDateFilter || hasAnyFilter) && (
+          {(hasAnyFilter) && (
             <div className="flex items-center justify-end gap-2 text-xs text-slate-500 mb-1.5">
               <span>
-                Mostrando órdenes:{" "}
-                {hasDateFilter ? (
-                  <strong className="text-slate-700 ml-2">
-                    {dateRange?.from &&
-                      format(dateRange.from, "dd MMM", { locale: es })}
-                    {dateRange?.to &&
-                      dateRange.to !== dateRange.from &&
-                      ` - ${format(dateRange.to, "dd MMM", { locale: es })}`}
-                  </strong>
-                ) : (
-                  <strong className="text-slate-700 ml-2">Hoy</strong>
-                )}
                 {hasPaymentFilter && (
                   <span className="ml-2">
                     {paymentStatusFilter.paid &&
@@ -530,8 +391,8 @@ export default function OrdersPage() {
             <OrdersKanbanBoard
               searchQuery={searchQuery}
               cardViewMode={cardViewMode}
-              dateFrom={dateFrom}
-              dateTo={dateTo}
+              dateFrom={dateParams.dateFrom}
+              dateTo={dateParams.dateTo}
               businessId={selectedBusinessId || undefined}
               paymentStatusFilter={paymentStatusFilter}
               deliveryTypeFilter={deliveryTypeFilter}
@@ -540,66 +401,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Dialog del calendario para seleccionar rango */}
-      <Dialog open={showCalendarDialog} onOpenChange={setShowCalendarDialog}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>Seleccionar rango de fechas</DialogTitle>
-          </DialogHeader>
-          <div className="px-6 pb-6">
-            <Calendar
-              initialFocus
-              mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
-              onSelect={setDateRange}
-              numberOfMonths={1}
-            />
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100/50">
-              <div className="text-sm text-slate-600">
-                {dateRange?.from ? (
-                  dateRange?.to ? (
-                    <>
-                      <span className="font-medium text-slate-900">
-                        {format(dateRange.from, "dd MMMM yyyy", { locale: es })}
-                      </span>{" "}
-                      hasta{" "}
-                      <span className="font-medium text-slate-900">
-                        {format(dateRange.to, "dd MMMM yyyy", { locale: es })}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-medium text-slate-900">
-                      {format(dateRange.from, "dd MMMM yyyy", { locale: es })}
-                    </span>
-                  )
-                ) : (
-                  "Selecciona un rango de fechas"
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const today = new Date();
-                    setDateRange({ from: today, to: today });
-                  }}
-                >
-                  Hoy
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setShowCalendarDialog(false)}
-                  disabled={!dateRange?.from}
-                >
-                  Aplicar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </DashboardLayout>
   );
 }

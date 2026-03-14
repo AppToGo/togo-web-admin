@@ -5,6 +5,12 @@ export {
   useOrder,
   useOrderHistory,
   useUpdateOrderStatus,
-  useOrderMetrics,
   useRecentActivity,
 } from './useOrders';
+
+// Nuevos hooks de métricas basados en el endpoint /metrics
+export {
+  useOrderMetrics,
+  useDashboardMetrics,
+  useDetailedMetrics,
+} from './useOrderMetrics';
