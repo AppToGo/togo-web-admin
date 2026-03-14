@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
+import { useDateFilterParams } from "@/features/filters/hooks/useDateFilterQuery";
 import { toast } from "sonner";
 import {
   getOrders,
@@ -47,18 +48,28 @@ const GC_TIME = 5 * 60 * 1000; // 5 minutos
 /**
  * Hook para obtener todas las órdenes
  *
+ * Usa automáticamente los filtros de fecha globales del store.
+ * Los parámetros de fecha en `params` sobreescriben los filtros globales.
+ *
  * @param params - Filtros y paginación
  */
 export function useOrders(params?: GetOrdersParams & { businessId?: string }) {
+  const dateParams = useDateFilterParams();
   const { user } = useAuthStore.getState();
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = params?.businessId !== undefined;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
 
+  // Merge de parámetros: filtros globales tienen prioridad base
+  const mergedParams = {
+    ...dateParams,
+    ...params,
+  };
+
   return useQuery({
-    queryKey: ORDERS_KEYS.list(params || {}),
-    queryFn: () => getOrders(params),
+    queryKey: ORDERS_KEYS.list(mergedParams),
+    queryFn: () => getOrders(mergedParams),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: isEnabled,
@@ -79,13 +90,28 @@ interface UseOrdersByStatusParams {
   dateFrom?: string;
   dateTo?: string;
   businessId?: string; // Para SUPER_ADMIN que puede ver cualquier negocio
+  skipDateFilter?: boolean; // Si es true, no usa los filtros globales de fecha
 }
 
 /**
  * Hook para obtener órdenes agrupadas por estado (para Kanban)
+ *
+ * Por defecto usa los filtros de fecha globales.
+ * Si se pasa `skipDateFilter: true`, ignora los filtros globales.
+ * Si se pasan `dateFrom`/`dateTo`, sobreescriben los filtros globales.
  */
 export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
-  const { data: orders, ...rest } = useOrders(params);
+  const dateParams = useDateFilterParams();
+
+  // Construir params finales
+  const finalParams = params?.skipDateFilter
+    ? params
+    : {
+        ...dateParams,
+        ...params,
+      };
+
+  const { data: orders, ...rest } = useOrders(finalParams);
 
   const ordersByStatus = useMemo(() => {
     if (!orders) return {} as Record<OrderStatus, Order[]>;

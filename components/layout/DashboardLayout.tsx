@@ -14,7 +14,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gradient-soft">
-      {/* Sidebar */}
+      {/* Sidebar izquierdo (menú) */}
       <Sidebar
         isOpen={sidebarOpen}
         isCollapsed={sidebarCollapsed}

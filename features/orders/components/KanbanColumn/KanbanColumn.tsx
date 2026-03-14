@@ -167,23 +167,6 @@ export const KanbanColumn = memo(function KanbanColumn({
         )}
       </div>
 
-      {/* Botón Add Orden */}
-      <button className="mt-3 w-full py-3 text-sm text-slate-500 hover:text-slate-700 hover:bg-white/60 rounded-card transition-colors flex items-center justify-center gap-1">
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        Add Orden
-      </button>
     </div>
   );
 });

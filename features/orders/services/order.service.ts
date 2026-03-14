@@ -15,6 +15,7 @@ import type {
   GetOrdersParams,
   UpdateOrderStatusRequest,
 } from "../types";
+import type { OrderMetricsResponse, GetOrderMetricsParams } from "../types/order-metrics.types";
 
 /**
  * Obtener el businessId del usuario autenticado
@@ -197,6 +198,29 @@ export async function updateOrderPaymentStatus(
   const { data } = await apiClient.patch<Order>(
     `${getBaseUrl(businessId)}/${orderId}/payment-status`,
     request
+  );
+  return data;
+}
+
+/**
+ * Obtener métricas de órdenes del negocio
+ * Endpoint: GET /businesses/:businessId/orders/metrics
+ */
+export async function getOrderMetrics(
+  params?: GetOrderMetricsParams
+): Promise<OrderMetricsResponse> {
+  const effectiveBusinessId = params?.businessId || getBusinessId();
+  if (!effectiveBusinessId) {
+    throw new Error("Se requiere un businessId para consultar métricas");
+  }
+
+  const queryParams: Record<string, string> = {};
+  if (params?.dateFrom) queryParams.dateFrom = params.dateFrom;
+  if (params?.dateTo) queryParams.dateTo = params.dateTo;
+
+  const { data } = await apiClient.get<OrderMetricsResponse>(
+    `/businesses/${effectiveBusinessId}/orders/metrics`,
+    { params: queryParams }
   );
   return data;
 }

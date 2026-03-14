@@ -79,7 +79,7 @@ const DialogContent = React.forwardRef<
       className={cn(
         // Estilos del proyecto: glass + bordes redondeados
         "relative glass-strong rounded-card-xl",
-        "border border-white/40 shadow-card-xl",
+        "border border-white/40 shadow-card-lg",
         "flex flex-col max-h-[85vh]",
         "animate-in fade-in zoom-in-95 duration-200",
         className
@@ -147,4 +147,19 @@ const DialogTitle = React.forwardRef<
 ));
 DialogTitle.displayName = "DialogTitle";
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle };
+const DialogDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn(
+      "text-sm text-slate-500",
+      className
+    )}
+    {...props}
+  />
+));
+DialogDescription.displayName = "DialogDescription";
+
+export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription };

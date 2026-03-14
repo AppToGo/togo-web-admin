@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useCurrentUser, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
@@ -23,7 +23,7 @@ const navigation = [
   },
   {
     name: "Productos",
-    href: "/products",
+    href: "/dashboard/catalog",
     icon: PackageIcon,
   },
   {
@@ -35,6 +35,15 @@ const navigation = [
     name: "Configuración",
     href: "/settings",
     icon: SettingsIcon,
+  },
+];
+
+// Admin navigation (Super Admin only)
+const adminNavigation = [
+  {
+    name: "Catálogo Global",
+    href: "/admin/global-products",
+    icon: GlobeIcon,
   },
 ];
 
@@ -55,6 +64,7 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const user = useCurrentUser();
+  const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
 
   return (
@@ -121,6 +131,46 @@ export function Sidebar({
             );
           })}
         </nav>
+
+        {/* Admin Navigation (Super Admin only) */}
+        {isSuperAdmin && (
+          <>
+            {!isCollapsed && (
+              <div className="px-4 pt-4 pb-2">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Administración
+                </p>
+              </div>
+            )}
+            <nav className="px-3 pb-3 space-y-1">
+              {adminNavigation.map((item) => {
+                const isActive = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                      isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
+                      isActive
+                        ? "bg-purple-50 text-purple-600"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    )}
+                    title={isCollapsed ? item.name : undefined}
+                  >
+                    <item.icon
+                      className={cn(
+                        "w-5 h-5 shrink-0",
+                        isActive ? "text-purple-600" : "text-slate-400"
+                      )}
+                    />
+                    {!isCollapsed && <span>{item.name}</span>}
+                  </Link>
+                );
+              })}
+            </nav>
+          </>
+        )}
 
         {/* Toggle collapse button (desktop only) */}
         <div className="absolute top-20 -right-3 hidden lg:block">
@@ -343,6 +393,24 @@ function ChevronIcon({ className }: { className?: string }) {
       strokeWidth={2}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+      />
     </svg>
   );
 }

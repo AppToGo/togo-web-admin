@@ -49,7 +49,58 @@ export {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "./dialog"
 
 export { Calendar } from "./calendar"
 export type { DateRange } from "./calendar"
+
+export { Label } from "./label"
+
+export { Textarea } from "./textarea"
+
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "./tabs"
+
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+} from "./select"
+
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./alert-dialog"
+
+export { Skeleton } from "./skeleton"
+
+export { Progress } from "./progress"
+
+export { Alert, AlertTitle, AlertDescription } from "./alert"
+
+export { Separator } from "./separator"
+
+export { ScrollArea } from "./scroll-area"
+
+export { IconButton } from "./icon-button"
+
+export { IconToggle } from "./icon-toggle"
