@@ -20,8 +20,7 @@ import {
   Home,
   Store,
 } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { IconToggle } from "@/components/ui/icon-toggle";
 import { Switch } from "@/components/ui/switch";
@@ -66,9 +65,10 @@ function OrdersLoading() {
   );
 }
 
-
-
 export default function OrdersPage() {
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
+  
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
@@ -127,11 +127,10 @@ export default function OrdersPage() {
             <Store className="w-8 h-8 text-amber-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            No tienes un negocio asignado
+            {t("noBusiness.title")}
           </h2>
           <p className="text-slate-500 text-center max-w-md mb-6">
-            Para ver las órdenes, necesitas tener un negocio asignado a tu
-            cuenta. Contacta al administrador del sistema.
+            {t("noBusiness.description")}
           </p>
         </div>
       </DashboardLayout>
@@ -145,10 +144,10 @@ export default function OrdersPage() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Gestión de Órdenes
+              {t("title")}
             </h1>
             <p className="text-slate-500 mt-1 text-sm">
-              Administra y supervisa todas las órdenes de tu negocio
+              {t("subtitle")}
             </p>
           </div>
 
@@ -160,7 +159,7 @@ export default function OrdersPage() {
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
                   type="text"
-                  placeholder="Buscar por orden, cliente, dirección, pago, tipo..."
+                  placeholder={t("search.placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
@@ -177,7 +176,7 @@ export default function OrdersPage() {
                         ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
                         : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
-                    title="Filtros"
+                    title={tc("buttons.filter")}
                   >
                     <Filter className="w-4 h-4" />
                     {activeFiltersCount > 0 && (
@@ -194,7 +193,7 @@ export default function OrdersPage() {
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                     <h3 className="font-semibold text-sm text-slate-900">
-                      Filtros
+                      {t("filters.title")}
                     </h3>
                     {(hasPaymentFilter || hasDeliveryFilter || isCustomDate) && (
                       <button
@@ -210,7 +209,7 @@ export default function OrdersPage() {
                         }}
                         className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                       >
-                        Limpiar todo
+                        {tc("buttons.clearAll")}
                       </button>
                     )}
                   </div>
@@ -219,7 +218,7 @@ export default function OrdersPage() {
                     {/* Filtro global de fecha */}
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                        Período de fechas
+                        {t("filters.dateRange")}
                       </h4>
                       <DateRangeFilter
                         variant="compact"
@@ -234,7 +233,7 @@ export default function OrdersPage() {
                     {/* Filtro por estado de pago */}
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                        Estado de pago
+                        {t("filters.paymentStatus.title")}
                       </h4>
                       <div className="space-y-2">
                         <label className="flex items-center justify-between cursor-pointer group">
@@ -243,7 +242,7 @@ export default function OrdersPage() {
                               <Check className="w-4 h-4 text-emerald-600" />
                             </div>
                             <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              Pagado
+                              {t("filters.paymentStatus.paid")}
                             </span>
                           </div>
                           <Switch
@@ -262,7 +261,7 @@ export default function OrdersPage() {
                               <Clock className="w-4 h-4 text-amber-600" />
                             </div>
                             <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              Pendiente
+                              {t("filters.paymentStatus.pending")}
                             </span>
                           </div>
                           <Switch
@@ -284,7 +283,7 @@ export default function OrdersPage() {
                     {/* Filtro por tipo de envío */}
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                        Tipo de envío
+                        {t("filters.deliveryType.title")}
                       </h4>
                       <div className="space-y-2">
                         <label className="flex items-center justify-between cursor-pointer group">
@@ -293,7 +292,7 @@ export default function OrdersPage() {
                               <Home className="w-4 h-4 text-blue-600" />
                             </div>
                             <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              A domicilio
+                              {t("filters.deliveryType.delivery")}
                             </span>
                           </div>
                           <Switch
@@ -312,7 +311,7 @@ export default function OrdersPage() {
                               <Store className="w-4 h-4 text-purple-600" />
                             </div>
                             <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              Recoger en tienda
+                              {t("filters.deliveryType.pickup")}
                             </span>
                           </div>
                           <Switch
@@ -336,14 +335,14 @@ export default function OrdersPage() {
                 <IconToggle
                   onClick={() => setCardViewMode("card")}
                   state={cardViewMode === "card" ? "active" : "inactive"}
-                  title="Vista de tarjetas"
+                  title={t("view.card")}
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </IconToggle>
                 <IconToggle
                   onClick={() => setCardViewMode("list")}
                   state={cardViewMode === "list" ? "active" : "inactive"}
-                  title="Vista de lista"
+                  title={t("view.list")}
                 >
                   <List className="w-4 h-4" />
                 </IconToggle>
@@ -362,20 +361,20 @@ export default function OrdersPage() {
                   <span className="ml-2">
                     {paymentStatusFilter.paid &&
                       !paymentStatusFilter.pending &&
-                      "• Solo pagadas"}
+                      t("filters.activeFilters.paidOnly")}
                     {!paymentStatusFilter.paid &&
                       paymentStatusFilter.pending &&
-                      "• Solo pendientes"}
+                      t("filters.activeFilters.pendingOnly")}
                   </span>
                 )}
                 {hasDeliveryFilter && (
                   <span className="ml-2">
                     {deliveryTypeFilter.delivery &&
                       !deliveryTypeFilter.pickup &&
-                      "• A domicilio"}
+                      t("filters.activeFilters.deliveryOnly")}
                     {!deliveryTypeFilter.delivery &&
                       deliveryTypeFilter.pickup &&
-                      "• Recoger en tienda"}
+                      t("filters.activeFilters.pickupOnly")}
                   </span>
                 )}
               </span>
@@ -383,7 +382,7 @@ export default function OrdersPage() {
                 onClick={clearAllFilters}
                 className="text-indigo-600 hover:text-indigo-700 font-medium"
               >
-                Limpiar filtros
+                {t("filters.clear")}
               </button>
             </div>
           )}

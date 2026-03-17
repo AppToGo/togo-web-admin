@@ -6,12 +6,15 @@ import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useDashboardMetrics } from "@/features/orders/hooks/useOrderMetrics";
 import { DateRangeFilter } from "@/features/filters/components";
-import { useDateFilterPreset } from "@/features/filters/stores";
-import { formatCurrency } from "@/features/orders/utils/order-status.utils";
+import { useDateFilterStore, useDateFilterPreset } from "@/features/filters/stores";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
+  
   // Client-side auth protection
   useAuthGuard();
 
@@ -30,27 +33,26 @@ export default function DashboardPage() {
   const revenueTrend = metrics ? getTrend(metrics.revenueGrowth) : "neutral";
 
   // Formatear descripciones de tendencia
-  const formatTrendDescription = (growth: number, label: string): string => {
-    if (growth > 0) return `+${growth.toFixed(1)}% vs período anterior`;
-    if (growth < 0) return `${growth.toFixed(1)}% vs período anterior`;
-    return label;
+  const formatTrendDescription = (growth: number): string => {
+    const trendText = t("trend." + (growth > 0 ? "up" : growth < 0 ? "down" : "neutral"));
+    return trendText.replace("{value}", Math.abs(growth).toFixed(1));
   };
 
   // Labels dinámicos según el período seleccionado
   const getPeriodLabel = () => {
     switch (currentPreset) {
       case "today":
-        return { orders: "Pedidos hoy", revenue: "Ingresos hoy" };
+        return { orders: t("stats.ordersToday.title"), revenue: t("stats.revenueToday.title") };
       case "yesterday":
-        return { orders: "Pedidos ayer", revenue: "Ingresos ayer" };
+        return { orders: t("stats.ordersYesterday.title"), revenue: t("stats.revenueYesterday.title") };
       case "week":
       case "last7days":
-        return { orders: "Pedidos (7 días)", revenue: "Ingresos (7 días)" };
+        return { orders: t("stats.ordersWeek.title"), revenue: t("stats.revenueWeek.title") };
       case "month":
-        return { orders: "Pedidos (mes)", revenue: "Ingresos (mes)" };
+        return { orders: t("stats.ordersMonth.title"), revenue: t("stats.revenueMonth.title") };
       case "custom":
       default:
-        return { orders: "Pedidos", revenue: "Ingresos" };
+        return { orders: t("stats.ordersToday.title"), revenue: t("stats.revenueToday.title") };
     }
   };
 
@@ -63,15 +65,15 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
-              ¡Hola, {user?.name || "Usuario"}!
+              {t("greeting", { name: user?.name || tc("empty.title") })}
             </h2>
             <p className="text-slate-500 mt-1">
               {user?.businessName ? (
                 <>
-                  Bienvenido a <span className="font-medium text-slate-700">{user.businessName}</span>. Aquí podrás gestionar tus pedidos y productos.
+                  {t("welcome.withBusiness", { businessName: user.businessName })}
                 </>
               ) : (
-                "Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos."
+                t("welcome.withoutBusiness")
               )}
             </p>
           </div>
@@ -100,8 +102,8 @@ export default function DashboardPage() {
                 value={metrics?.ordersToday.toString() || "0"}
                 description={
                   metrics && metrics.ordersToday > 0
-                    ? `${metrics.ordersCompletedToday} completados`
-                    : "Sin pedidos"
+                    ? t("stats.ordersToday.description", { count: metrics.ordersCompletedToday })
+                    : t("stats.ordersToday.none")
                 }
                 icon={ShoppingBagIcon}
                 trend={ordersTrend}
@@ -112,35 +114,35 @@ export default function DashboardPage() {
                 value={formatCurrency(metrics?.revenueToday || 0)}
                 description={
                   metrics
-                    ? formatTrendDescription(
-                        metrics.revenueGrowth,
-                        "Sin ventas"
-                      )
-                    : "Sin ventas"
+                    ? formatTrendDescription(metrics.revenueGrowth)
+                    : t("stats.revenueToday.none")
                 }
                 icon={CurrencyIcon}
                 trend={revenueTrend}
                 trendValue={metrics?.revenueGrowth}
               />
               <StatCard
-                title="Total órdenes"
+                title={t("stats.totalOrders.title")}
                 value={metrics?.totalOrders.toString() || "0"}
                 description={
                   metrics
-                    ? `${metrics.paidOrders} pagadas · ${metrics.pendingOrders} pendientes`
-                    : "Sin órdenes"
+                    ? t("stats.totalOrders.description", {
+                        paid: metrics.paidOrders,
+                        pending: metrics.pendingOrders,
+                      })
+                    : t("stats.totalOrders.none")
                 }
                 icon={PackageIcon}
                 trend="neutral"
               />
               <StatCard
-                title="Ticket promedio"
+                title={t("stats.averageTicket.title")}
                 value={
                   metrics && metrics.paidOrders > 0
                     ? formatCurrency(metrics.revenueToday / metrics.paidOrders)
                     : formatCurrency(0)
                 }
-                description="Por orden pagada"
+                description={t("stats.averageTicket.description")}
                 icon={TrendingUpIcon}
                 trend="neutral"
               />
@@ -151,17 +153,17 @@ export default function DashboardPage() {
         {/* Recent activity placeholder */}
         <Card>
           <CardHeader>
-            <CardTitle>Actividad reciente</CardTitle>
+            <CardTitle>{t("activity.title")}</CardTitle>
             <CardDescription>
-              Tus últimas acciones y pedidos aparecerán aquí
+              {t("activity.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-12 text-slate-400">
               <EmptyStateIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-sm">No hay actividad reciente</p>
+              <p className="text-sm">{t("activity.empty")}</p>
               <p className="text-xs mt-1">
-                Los pedidos y acciones aparecerán aquí
+                {t("activity.emptyDescription")}
               </p>
             </div>
           </CardContent>
@@ -182,6 +184,8 @@ interface StatCardProps {
 }
 
 function StatCard({ title, value, description, icon: Icon, trend, trendValue }: StatCardProps) {
+  const t = useTranslations("dashboard");
+  
   const trendColors = {
     up: "text-green-600 bg-green-50",
     down: "text-red-600 bg-red-50",
@@ -235,6 +239,16 @@ function StatCardSkeleton() {
       </CardContent>
     </Card>
   );
+}
+
+// Helper function to format currency
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 // Icons

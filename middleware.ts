@@ -1,28 +1,33 @@
 /**
  * Next.js Middleware
- * 
- * Handles route protection and authentication redirects
- * 
+ *
+ * Handles i18n routing and authentication redirects
+ *
  * SECURITY MODEL:
  * - Reads refresh token from httpOnly cookie (togo_refresh_token)
  * - Access token is NOT checked here (it's in memory, client-side only)
  * - This provides SSR protection while keeping access token secure
- * 
- * Public routes: /login, /register, /forgot-password
+ *
+ * Public routes: /:locale/login, /:locale/register, /:locale/forgot-password
  * Protected routes: All others
- * 
+ *
  * NOTE: This middleware runs in Edge Runtime and only checks cookie existence,
  * not token validity. Token validation happens client-side in AuthProvider.
  */
 
+import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { routing } from "./i18n/routing";
 
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
 
 // Routes that should redirect to dashboard if already authenticated
 const AUTH_ROUTES = ["/login", "/register"];
+
+// Create i18n middleware
+const intlMiddleware = createMiddleware(routing);
 
 export const config = {
   matcher: [
@@ -51,18 +56,31 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Extract locale from path (e.g., /es/login -> es)
+  const localeMatch = pathname.match(/^\/([^\/]+)(\/.*)?$/);
+  const locale = localeMatch ? localeMatch[1] : null;
+  const pathWithoutLocale = localeMatch && localeMatch[2] ? localeMatch[2] : "/";
+
+  console.log("[Middleware] Locale:", locale);
+  console.log("[Middleware] Path without locale:", pathWithoutLocale);
+
   // Read refresh token from httpOnly cookie
   const refreshToken = request.cookies.get("togo_refresh_token")?.value;
   const hasCookie = !!refreshToken;
 
   console.log("[Middleware] Cookie present:", hasCookie);
-  console.log("[Middleware] Cookie value:", refreshToken ? "[exists]" : "[none]");
-
-  // Check route types
-  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
-    pathname.startsWith(route)
+  console.log(
+    "[Middleware] Cookie value:",
+    refreshToken ? "[exists]" : "[none]"
   );
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+
+  // Check route types (using path without locale)
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    pathWithoutLocale.startsWith(route)
+  );
+  const isAuthRoute = AUTH_ROUTES.some((route) =>
+    pathWithoutLocale.startsWith(route)
+  );
 
   console.log("[Middleware] Is public route:", isPublicRoute);
   console.log("[Middleware] Is auth route:", isAuthRoute);
@@ -72,19 +90,26 @@ export function middleware(request: NextRequest) {
 
   // 1. Authenticated user trying to access auth route -> redirect to dashboard
   // BUT: Allow access if there's a redirect param (user was sent here due to auth failure)
-  if (hasCookie && isAuthRoute && !hasRedirectParam) {
-    console.log("[Middleware] Has cookie + auth route -> redirect to dashboard");
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (hasCookie && isAuthRoute && !hasRedirectParam && locale) {
+    console.log(
+      "[Middleware] Has cookie + auth route -> redirect to dashboard"
+    );
+    return NextResponse.redirect(
+      new URL(`/${locale}/dashboard`, request.url)
+    );
   }
 
   // 2. Non-authenticated user trying to access protected route -> redirect to login
-  if (!hasCookie && !isPublicRoute) {
-    console.log("[Middleware] No cookie + protected route -> redirect to login");
-    const loginUrl = new URL("/login", request.url);
+  if (!hasCookie && !isPublicRoute && locale) {
+    console.log(
+      "[Middleware] No cookie + protected route -> redirect to login"
+    );
+    const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  console.log("[Middleware] Allowing request");
-  return NextResponse.next();
+  // 3. Handle i18n routing
+  console.log("[Middleware] Processing i18n routing");
+  return intlMiddleware(request);
 }

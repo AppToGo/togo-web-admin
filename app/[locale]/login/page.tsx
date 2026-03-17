@@ -1,10 +1,14 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { LoginForm } from "@/features/auth/components/LoginForm";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50 p-6">
       <div className="w-full max-w-md">
@@ -14,10 +18,10 @@ export default function LoginPage() {
             <span className="text-white font-bold text-2xl">T</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
-            Bienvenido a Togo
+            {t("welcomeTitle")}
           </h1>
           <p className="text-slate-500">
-            Inicia sesión en tu cuenta
+            {t("welcomeSubtitle")}
           </p>
         </div>
 
@@ -25,10 +29,10 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <h2 className="text-xl font-semibold text-slate-900 mb-2">
-              Iniciar sesión
+              {t("title")}
             </h2>
             <p className="text-slate-500 text-sm">
-              Ingresa tus credenciales para acceder al dashboard
+              {t("subtitle")}
             </p>
           </div>
           
@@ -37,14 +41,19 @@ export default function LoginPage() {
 
         {/* Register link */}
         <p className="text-center text-slate-500 text-sm mt-8">
-          ¿No tienes una cuenta?{" "}
+          {t("noAccount")}{" "}
           <Link
             href="/register"
             className="text-indigo-500 hover:text-indigo-600 font-medium hover:underline"
           >
-            Regístrate aquí
+            {t("registerLink")}
           </Link>
         </p>
+
+        {/* Language Switcher */}
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher />
+        </div>
       </div>
     </div>
   );

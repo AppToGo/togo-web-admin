@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -139,22 +140,24 @@ function GlobalCatalogLoading() {
 // ============================================================================
 
 function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
+  const t = useTranslations("catalog");
+  const tc = useTranslations("common");
+
   return (
     <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
         <Package className="w-8 h-8 text-slate-400" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 mb-2">
-        No tienes productos aún
+        {t("products.empty.title")}
       </h3>
       <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
-        Comienza creando productos personalizados o activando productos desde el
-        catálogo global de TOGO.
+        {t("products.empty.message")}
       </p>
       <div className="flex justify-center gap-3">
         <Button onClick={onCreate} variant="outline">
           <Plus className="w-4 h-4 mr-2" />
-          Crear producto
+          {tc("buttons.create")}
         </Button>
       </div>
     </div>
@@ -162,16 +165,18 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
 }
 
 function EmptyGlobalCatalogState() {
+  const t = useTranslations("catalog");
+
   return (
     <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
         <Grid3X3 className="w-8 h-8 text-slate-400" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 mb-2">
-        Catálogo completo
+        {t("globalCatalog.empty.title")}
       </h3>
       <p className="text-sm text-slate-500 max-w-sm mx-auto">
-        Has activado todos los productos disponibles del catálogo global.
+        {t("globalCatalog.empty.message")}
       </p>
     </div>
   );
@@ -182,6 +187,9 @@ function EmptyGlobalCatalogState() {
 // ============================================================================
 
 export default function CatalogPage() {
+  const t = useTranslations("catalog");
+  const tc = useTranslations("common");
+  
   useAuthGuard();
   const router = useRouter();
   const hasBusiness = useHasBusiness();
@@ -257,11 +265,10 @@ export default function CatalogPage() {
             <Store className="w-8 h-8 text-amber-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            No tienes un negocio asignado
+            {t("noBusiness.title")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            Para gestionar productos, necesitas tener un negocio asignado a tu
-            cuenta. Contacta al administrador del sistema.
+            {t("noBusiness.description")}
           </p>
         </div>
       </DashboardLayout>
@@ -275,10 +282,10 @@ export default function CatalogPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Catálogo de Productos
+              {t("title")}
             </h1>
             <p className="text-slate-500 mt-1">
-              Gestiona tus productos y explora el catálogo global
+              {t("subtitle")}
             </p>
           </div>
 
@@ -288,7 +295,7 @@ export default function CatalogPage() {
               className="bg-indigo-600 hover:bg-indigo-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Crear Producto
+              {t("products.create")}
             </Button>
           </div>
         </div>
@@ -298,7 +305,7 @@ export default function CatalogPage() {
           <TabsList className="bg-white border border-slate-200 p-1">
             <TabsTrigger value="my-products" className="gap-2">
               <Package className="w-4 h-4" />
-              Mis Productos
+              {t("tabs.products")}
               {products.length > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 text-xs bg-slate-100 text-slate-600 rounded-full">
                   {products.length}
@@ -307,7 +314,7 @@ export default function CatalogPage() {
             </TabsTrigger>
             <TabsTrigger value="global-catalog" className="gap-2">
               <Grid3X3 className="w-4 h-4" />
-              Catálogo TOGO
+              {t("globalCatalog.title")}
               {globalProducts.length > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 text-xs bg-indigo-100 text-indigo-600 rounded-full">
                   {globalProducts.length}
@@ -316,7 +323,7 @@ export default function CatalogPage() {
             </TabsTrigger>
             <TabsTrigger value="categories" className="gap-2">
               <Tags className="w-4 h-4" />
-              Categorías
+              {t("tabs.categories")}
             </TabsTrigger>
           </TabsList>
 
@@ -328,7 +335,7 @@ export default function CatalogPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
-                  placeholder="Buscar productos..."
+                  placeholder={t("products.search")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -341,10 +348,10 @@ export default function CatalogPage() {
                 onValueChange={setSelectedCategory}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Todas las categorías" />
+                  <SelectValue placeholder={t("products.filters.all")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas las categorías</SelectItem>
+                  <SelectItem value="all">{t("products.filters.all")}</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
@@ -356,12 +363,12 @@ export default function CatalogPage() {
               {/* Status Filter */}
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Estado" />
+                  <SelectValue placeholder={tc("status.active")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="active">Activos</SelectItem>
-                  <SelectItem value="inactive">Inactivos</SelectItem>
+                  <SelectItem value="all">{t("products.filters.all")}</SelectItem>
+                  <SelectItem value="active">{tc("status.active")}</SelectItem>
+                  <SelectItem value="inactive">{tc("status.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -427,7 +434,7 @@ export default function CatalogPage() {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Buscar en el catálogo global..."
+                placeholder={t("globalCatalog.search")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -491,9 +498,9 @@ export default function CatalogPage() {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Crear Producto Personalizado</DialogTitle>
+            <DialogTitle>{t("products.create")}</DialogTitle>
             <DialogDescription>
-              Crea un producto nuevo para tu catálogo
+              {t("products.createDescription")}
             </DialogDescription>
           </DialogHeader>
           <ProductForm
@@ -512,9 +519,9 @@ export default function CatalogPage() {
       >
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar Producto</DialogTitle>
+            <DialogTitle>{t("products.edit")}</DialogTitle>
             <DialogDescription>
-              Modifica los detalles del producto
+              {t("products.editDescription")}
             </DialogDescription>
           </DialogHeader>
           <ProductForm

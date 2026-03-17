@@ -1,0 +1,122 @@
+{
+  "title": "Order Management",
+  "subtitle": "Manage and supervise all your business orders",
+  "newOrders": "New orders",
+  "noBusiness": {
+    "title": "You don't have a business assigned",
+    "description": "To view orders, you need to have a business assigned to your account. Contact the system administrator."
+  },
+  "search": {
+    "placeholder": "Search by order, customer, address, payment, type..."
+  },
+  "view": {
+    "card": "Card view",
+    "list": "List view"
+  },
+  "filters": {
+    "title": "Filters",
+    "clear": "Clear filters",
+    "dateRange": "Date range",
+    "paymentStatus": {
+      "title": "Payment status",
+      "paid": "Paid",
+      "pending": "Pending"
+    },
+    "deliveryType": {
+      "title": "Delivery type",
+      "delivery": "Delivery",
+      "pickup": "Pickup"
+    },
+    "activeFilters": {
+      "paidOnly": "• Paid only",
+      "pendingOnly": "• Pending only",
+      "deliveryOnly": "• Delivery",
+      "pickupOnly": "• Pickup"
+    }
+  },
+  "status": {
+    "PENDING": "Pending",
+    "CONFIRMED": "Confirmed",
+    "PREPARING": "Preparing",
+    "READY": "Ready",
+    "DELIVERING": "Out for delivery",
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled",
+    "ACCEPTED": "Accepted",
+    "REJECTED": "Rejected"
+  },
+  "actions": {
+    "accept": "Accept",
+    "reject": "Reject",
+    "prepare": "Prepare",
+    "ready": "Mark ready",
+    "deliver": "Deliver",
+    "view": "View details",
+    "print": "Print",
+    "cancel": "Cancel order",
+    "reopen": "Reopen order"
+  },
+  "kanban": {
+    "newOrders": "New orders",
+    "inProgress": "In preparation",
+    "ready": "Ready",
+    "delivered": "Delivered"
+  },
+  "columns": {
+    "orderNumber": "Order #",
+    "customer": "Customer",
+    "items": "Items",
+    "total": "Total",
+    "status": "Status",
+    "date": "Date",
+    "actions": "Actions",
+    "payment": "Payment",
+    "delivery": "Delivery"
+  },
+  "card": {
+    "items": "{count} item(s)",
+    "delivery": {
+      "delivery": "Delivery",
+      "pickup": "Pickup"
+    },
+    "payment": {
+      "paid": "Paid",
+      "pending": "Pending"
+    }
+  },
+  "detail": {
+    "title": "Order Details",
+    "orderNumber": "Order #{number}",
+    "customerInfo": "Customer information",
+    "orderInfo": "Order information",
+    "items": "Items",
+    "notes": "Notes",
+    "history": "History",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery fee",
+    "discount": "Discount",
+    "tax": "Tax"
+  },
+  "notifications": {
+    "newOrder": "New order received!",
+    "orderUpdated": "Order updated",
+    "orderCancelled": "Order cancelled",
+    "orderAccepted": "Order accepted",
+    "orderRejected": "Order rejected",
+    "orderReady": "Order ready",
+    "orderDelivered": "Order delivered"
+  },
+  "empty": {
+    "title": "No orders",
+    "description": "Orders will appear here when customers place them"
+  },
+  "metrics": {
+    "title": "Metrics",
+    "totalOrders": "Total orders",
+    "completedOrders": "Completed",
+    "cancelledOrders": "Cancelled",
+    "averageTime": "Average time",
+    "totalRevenue": "Total revenue"
+  }
+}

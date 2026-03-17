@@ -3,11 +3,14 @@
 import * as React from "react";
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRegister } from "@/features/auth/hooks/useAuth";
 
 export function RegisterForm() {
+  const t = useTranslations("auth.register");
+  
   const register = useRegister();
   const [formData, setFormData] = useState({
     name: "",
@@ -29,8 +32,8 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
-        label="Nombre completo"
-        placeholder="Juan Pérez"
+        label={t("name.label")}
+        placeholder={t("name.placeholder")}
         value={formData.name}
         onChange={(e) =>
           setFormData({ ...formData, name: e.target.value })
@@ -39,8 +42,8 @@ export function RegisterForm() {
       />
 
       <Input
-        label="Nombre del negocio"
-        placeholder="Mi Restaurante"
+        label={t("businessName.label")}
+        placeholder={t("businessName.placeholder")}
         value={formData.businessName}
         onChange={(e) =>
           setFormData({ ...formData, businessName: e.target.value })
@@ -49,9 +52,9 @@ export function RegisterForm() {
       />
 
       <Input
-        label="Correo electrónico"
+        label={t("email.label")}
         type="email"
-        placeholder="tu@empresa.com"
+        placeholder={t("email.placeholder")}
         value={formData.email}
         onChange={(e) =>
           setFormData({ ...formData, email: e.target.value })
@@ -60,33 +63,33 @@ export function RegisterForm() {
       />
 
       <Input
-        label="Teléfono"
+        label={t("phone.label")}
         type="tel"
-        placeholder="+573001234567"
+        placeholder={t("phone.placeholder")}
         value={formData.phoneNumber}
         onChange={(e) =>
           setFormData({ ...formData, phoneNumber: e.target.value })
         }
         required
-        helperText="Formato internacional: +57XXXXXXXXXX"
+        helperText={t("phone.helper")}
       />
 
       <Input
-        label="Contraseña"
+        label={t("password.label")}
         type="password"
-        placeholder="••••••••"
+        placeholder={t("password.placeholder")}
         value={formData.password}
         onChange={(e) =>
           setFormData({ ...formData, password: e.target.value })
         }
         required
-        helperText="Mínimo 8 caracteres"
+        helperText={t("password.helper")}
       />
 
       <Input
-        label="Confirmar contraseña"
+        label={t("confirmPassword.label")}
         type="password"
-        placeholder="••••••••"
+        placeholder={t("confirmPassword.placeholder")}
         value={formData.confirmPassword}
         onChange={(e) =>
           setFormData({ ...formData, confirmPassword: e.target.value })
@@ -95,7 +98,7 @@ export function RegisterForm() {
         error={
           formData.confirmPassword &&
           formData.password !== formData.confirmPassword
-            ? "Las contraseñas no coinciden"
+            ? t("passwordMismatch")
             : undefined
         }
       />
@@ -106,16 +109,16 @@ export function RegisterForm() {
         isLoading={register.isPending}
         disabled={register.isPending}
       >
-        Crear cuenta
+        {register.isPending ? t("creatingAccount") : t("submit")}
       </Button>
 
       <p className="text-center text-sm text-slate-500">
-        ¿Ya tienes una cuenta?{" "}
+        {t("hasAccount")}{" "}
         <Link
           href="/login"
           className="text-[#6366F1] hover:text-[#5558E0] hover:underline font-medium"
         >
-          Inicia sesión
+          {t("loginLink")}
         </Link>
       </p>
     </form>

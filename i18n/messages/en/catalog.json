@@ -1,0 +1,105 @@
+{
+  "title": "Catalog",
+  "subtitle": "Manage your products and categories",
+  "products": {
+    "title": "Products",
+    "create": "Create product",
+    "edit": "Edit product",
+    "delete": "Delete product",
+    "import": "Import products",
+    "search": "Search products...",
+    "noProducts": "No products",
+    "noProductsDescription": "Start by adding your first product to the catalog",
+    "name": "Name",
+    "description": "Description",
+    "price": "Price",
+    "category": "Category",
+    "image": "Image",
+    "stock": "Stock",
+    "sku": "SKU",
+    "barcode": "Barcode",
+    "available": "Available",
+    "featured": "Featured",
+    "form": {
+      "nameLabel": "Product name",
+      "namePlaceholder": "Ex: Classic Burger",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe your product...",
+      "priceLabel": "Price",
+      "categoryLabel": "Category",
+      "selectCategory": "Select category",
+      "imageLabel": "Product image",
+      "uploadImage": "Upload image",
+      "changeImage": "Change image",
+      "stockLabel": "Available stock",
+      "skuLabel": "SKU (internal code)",
+      "barcodeLabel": "Barcode"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "create": "Create category",
+    "edit": "Edit category",
+    "delete": "Delete category",
+    "name": "Name",
+    "description": "Description",
+    "icon": "Icon",
+    "color": "Color",
+    "productsCount": "{count} products",
+    "noCategories": "No categories",
+    "form": {
+      "nameLabel": "Category name",
+      "namePlaceholder": "Ex: Beverages",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this category..."
+    }
+  },
+  "globalCatalog": {
+    "title": "Global Catalog",
+    "subtitle": "Manage the global product catalog",
+    "stats": {
+      "totalProducts": "Total products",
+      "activeProducts": "Active products",
+      "categories": "Categories",
+      "businessesUsing": "Businesses using"
+    },
+    "import": {
+      "title": "Import products",
+      "description": "Bulk import products from an Excel file",
+      "downloadTemplate": "Download template",
+      "uploadFile": "Upload file",
+      "processing": "Processing file...",
+      "success": "Products imported successfully"
+    }
+  },
+  "actions": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "addProduct": "Add product",
+    "editProduct": "Edit",
+    "deleteProduct": "Delete",
+    "duplicate": "Duplicate",
+    "preview": "Preview"
+  },
+  "dialogs": {
+    "delete": {
+      "title": "Delete product?",
+      "description": "This action cannot be undone. The product \"{name}\" will be permanently deleted.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "activate": {
+      "title": "Activate product?",
+      "description": "The product \"{name}\" will be available to customers.",
+      "confirm": "Activate",
+      "cancel": "Cancel"
+    }
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "lowStock": "Low stock"
+  }
+}
