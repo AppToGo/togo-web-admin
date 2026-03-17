@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import {
   useCurrentUser,
@@ -12,45 +11,7 @@ import {
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-
-// Navigation items
-const getNavigation = (t: (key: string) => string) => [
-  {
-    name: t("sidebar.dashboard"),
-    href: "/dashboard",
-    icon: LayoutDashboardIcon,
-  },
-  {
-    name: t("sidebar.orders"),
-    href: "/dashboard/orders",
-    icon: ShoppingBagIcon,
-  },
-  {
-    name: t("sidebar.catalog"),
-    href: "/dashboard/catalog",
-    icon: PackageIcon,
-  },
-  {
-    name: t("sidebar.customers"),
-    href: "/customers",
-    icon: UsersIcon,
-  },
-  {
-    name: t("sidebar.settings"),
-    href: "/settings",
-    icon: SettingsIcon,
-  },
-];
-
-// Admin navigation (Super Admin only)
-const getAdminNavigation = (t: (key: string) => string) => [
-  {
-    name: t("sidebar.globalCatalog"),
-    href: "/admin/global-products",
-    icon: GlobeIcon,
-  },
-];
+import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -69,14 +30,48 @@ export function Sidebar({
 }: SidebarProps) {
   const t = useTranslations("navigation");
   const tc = useTranslations("common");
-  
   const pathname = usePathname();
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
-  
-  const navigation = getNavigation(t);
-  const adminNavigation = getAdminNavigation(t);
+
+  // Navigation items with translation keys
+  const navigation = [
+    {
+      name: t("sidebar.dashboard"),
+      href: "/dashboard",
+      icon: LayoutDashboardIcon,
+    },
+    {
+      name: t("sidebar.orders"),
+      href: "/dashboard/orders",
+      icon: ShoppingBagIcon,
+    },
+    {
+      name: t("sidebar.catalog"),
+      href: "/dashboard/catalog",
+      icon: PackageIcon,
+    },
+    {
+      name: t("sidebar.customers"),
+      href: "/customers",
+      icon: UsersIcon,
+    },
+    {
+      name: t("sidebar.settings"),
+      href: "/settings",
+      icon: SettingsIcon,
+    },
+  ];
+
+  // Admin navigation (Super Admin only)
+  const adminNavigation = [
+    {
+      name: t("sidebar.globalCatalog"),
+      href: "/admin/global-products",
+      icon: GlobeIcon,
+    },
+  ];
 
   return (
     <>
@@ -190,7 +185,7 @@ export function Sidebar({
           <button
             onClick={onToggleCollapse}
             className="w-6 h-6 rounded-full bg-white shadow-card border border-slate-100 text-slate-600 flex items-center justify-center hover:text-indigo-600 hover:border-indigo-200 transition-all"
-            title={isCollapsed ? t("sidebar.expandMenu") : t("sidebar.collapseMenu")}
+            title={isCollapsed ? tc("buttons.expandMenu") : tc("buttons.collapseMenu")}
           >
             <ChevronIcon
               className={cn(
@@ -210,8 +205,8 @@ export function Sidebar({
         >
           {/* Language Switcher */}
           {!isCollapsed && (
-            <div className="mb-3">
-              <LanguageSwitcher variant="ghost" size="sm" showLabel={false} />
+            <div className="mb-3 flex justify-center">
+              <LanguageSwitcherButtons />
             </div>
           )}
 

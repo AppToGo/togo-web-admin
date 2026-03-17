@@ -1,10 +1,16 @@
 {
   "title": "Catálogo",
   "subtitle": "Gestiona tus productos y categorías",
+  "tabs": {
+    "products": "Mis Productos",
+    "categories": "Categorías"
+  },
   "products": {
     "title": "Productos",
     "create": "Crear producto",
+    "createDescription": "Crea un producto nuevo para tu catálogo",
     "edit": "Editar producto",
+    "editDescription": "Modifica los detalles del producto",
     "delete": "Eliminar producto",
     "import": "Importar productos",
     "search": "Buscar productos...",
@@ -20,6 +26,11 @@
     "barcode": "Código de barras",
     "available": "Disponible",
     "featured": "Destacado",
+    "filters": {
+      "all": "Todos",
+      "category": "Categoría",
+      "status": "Estado"
+    },
     "form": {
       "nameLabel": "Nombre del producto",
       "namePlaceholder": "Ej: Hamburguesa Clásica",
@@ -34,6 +45,10 @@
       "stockLabel": "Stock disponible",
       "skuLabel": "SKU (código interno)",
       "barcodeLabel": "Código de barras"
+    },
+    "empty": {
+      "title": "No tienes productos aún",
+      "message": "Comienza creando productos personalizados o activando productos desde el catálogo global de TOGO."
     }
   },
   "categories": {
@@ -57,6 +72,7 @@
   "globalCatalog": {
     "title": "Catálogo Global",
     "subtitle": "Gestiona el catálogo de productos global",
+    "search": "Buscar en el catálogo global...",
     "stats": {
       "totalProducts": "Total productos",
       "activeProducts": "Productos activos",
@@ -70,6 +86,10 @@
       "uploadFile": "Subir archivo",
       "processing": "Procesando archivo...",
       "success": "Productos importados exitosamente"
+    },
+    "empty": {
+      "title": "Catálogo completo",
+      "message": "Has activado todos los productos disponibles del catálogo global."
     }
   },
   "actions": {
@@ -101,5 +121,9 @@
     "inStock": "En stock",
     "outOfStock": "Agotado",
     "lowStock": "Stock bajo"
+  },
+  "noBusiness": {
+    "title": "No tienes un negocio asignado",
+    "description": "Para gestionar productos, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
   }
 }

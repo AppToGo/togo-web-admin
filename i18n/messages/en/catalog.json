@@ -1,10 +1,16 @@
 {
   "title": "Catalog",
   "subtitle": "Manage your products and categories",
+  "tabs": {
+    "products": "My Products",
+    "categories": "Categories"
+  },
   "products": {
     "title": "Products",
     "create": "Create product",
+    "createDescription": "Create a new product for your catalog",
     "edit": "Edit product",
+    "editDescription": "Modify product details",
     "delete": "Delete product",
     "import": "Import products",
     "search": "Search products...",
@@ -20,6 +26,11 @@
     "barcode": "Barcode",
     "available": "Available",
     "featured": "Featured",
+    "filters": {
+      "all": "All",
+      "category": "Category",
+      "status": "Status"
+    },
     "form": {
       "nameLabel": "Product name",
       "namePlaceholder": "Ex: Classic Burger",
@@ -34,6 +45,10 @@
       "stockLabel": "Available stock",
       "skuLabel": "SKU (internal code)",
       "barcodeLabel": "Barcode"
+    },
+    "empty": {
+      "title": "You don't have products yet",
+      "message": "Start by creating custom products or activating products from the TOGO global catalog."
     }
   },
   "categories": {
@@ -57,6 +72,7 @@
   "globalCatalog": {
     "title": "Global Catalog",
     "subtitle": "Manage the global product catalog",
+    "search": "Search in global catalog...",
     "stats": {
       "totalProducts": "Total products",
       "activeProducts": "Active products",
@@ -70,6 +86,10 @@
       "uploadFile": "Upload file",
       "processing": "Processing file...",
       "success": "Products imported successfully"
+    },
+    "empty": {
+      "title": "Catalog complete",
+      "message": "You have activated all available products from the global catalog."
     }
   },
   "actions": {
@@ -101,5 +121,9 @@
     "inStock": "In stock",
     "outOfStock": "Out of stock",
     "lowStock": "Low stock"
+  },
+  "noBusiness": {
+    "title": "You don't have a business assigned",
+    "description": "To manage products, you need to have a business assigned to your account. Contact the system administrator."
   }
 }
