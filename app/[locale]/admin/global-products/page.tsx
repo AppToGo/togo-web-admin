@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import { Plus, Search, LayoutGrid, List, Filter, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
