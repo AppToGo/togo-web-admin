@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { AlertTriangle, Store } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,8 @@ export function DeleteProductDialog({
   onConfirm,
   isLoading,
 }: DeleteProductDialogProps) {
+  const t = useTranslations("adminCatalog");
+  const tCommon = useTranslations("common");
   const activationCount = product?._count?.businessProducts || 0;
 
   return (
@@ -45,40 +48,39 @@ export function DeleteProductDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-500" />
-            ¿Eliminar producto global?
+            {t("dialogs.delete.title")}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                Estás a punto de eliminar <strong>{product?.name}</strong> (SKU: {product?.sku}).
+                {t("dialogs.delete.description", { name: product?.name ?? "", sku: product?.sku ?? "" })}
               </p>
               
               {activationCount > 0 ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-amber-800">
                     <Store className="w-4 h-4" />
-                    <span className="font-medium">Advertencia importante</span>
+                    <span className="font-medium">{tCommon("importantWarning")}</span>
                   </div>
                   <p className="text-sm text-amber-700 mt-1">
-                    Este producto está activado en <strong>{activationCount} negocios</strong>.
-                    Al eliminarlo, se eliminará de todos los catálogos de negocios.
+                    {t("dialogs.delete.warning", { count: activationCount })}
                   </p>
                 </div>
               ) : (
                 <p className="text-sm text-slate-500">
-                  Este producto no está activado en ningún negocio.
+                  {t("dialogs.delete.notActivated")}
                 </p>
               )}
 
               <p className="text-sm text-red-600">
-                Esta acción no se puede deshacer.
+                {tCommon("actions.cannotUndo")}
               </p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose} disabled={isLoading}>
-            Cancelar
+            {tCommon("buttons.cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
@@ -88,7 +90,7 @@ export function DeleteProductDialog({
             disabled={isLoading}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
-            {isLoading ? "Eliminando..." : "Eliminar"}
+            {isLoading ? tCommon("status.deleting") : tCommon("buttons.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
