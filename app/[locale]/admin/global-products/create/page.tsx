@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { ArrowLeft, Package } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -12,6 +11,7 @@ import {
   useCreateGlobalProduct,
   useIndustries,
   useIndustryCategories,
+  useAdminCatalogTranslations,
 } from "@/features/admin/catalog/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { CreateGlobalProductDto, UpdateGlobalProductDto } from "@/features/admin/catalog/types";
@@ -25,7 +25,7 @@ export default function CreateGlobalProductPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
-  const t = useTranslations();
+  const { admin, common, catalog } = useAdminCatalogTranslations();
 
   // Form state for industry selection
   const [selectedIndustryId, setSelectedIndustryId] = useState<string>("");
@@ -66,10 +66,10 @@ export default function CreateGlobalProductPage() {
             <Package className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("common.errors.accessDenied")}
+            {common('errors.accessDenied')}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {t("adminCatalog.superAdminOnly")}
+            {admin('superAdminOnly')}
           </p>
         </div>
       </DashboardLayout>
@@ -86,10 +86,10 @@ export default function CreateGlobalProductPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {t("adminCatalog.newGlobalProduct")}
+              {admin('newGlobalProduct')}
             </h1>
             <p className="text-slate-500">
-              {t("adminCatalog.createProductDescription")}
+              {admin('createProductDescription')}
             </p>
           </div>
         </div>
@@ -97,9 +97,9 @@ export default function CreateGlobalProductPage() {
         {/* Form Card */}
         <Card className="max-w-3xl">
           <CardHeader>
-            <CardTitle>{t("adminCatalog.productInformation")}</CardTitle>
+            <CardTitle>{admin('productInformation')}</CardTitle>
             <CardDescription>
-              {t("adminCatalog.productDetailsDescription")}
+              {admin('productDetailsDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -124,20 +124,20 @@ export default function CreateGlobalProductPage() {
         {/* Tips Card */}
         <Card className="max-w-3xl bg-slate-50 border-slate-200">
           <CardHeader>
-            <CardTitle className="text-base">{t("adminCatalog.tips")}</CardTitle>
+            <CardTitle className="text-base">{admin('tips')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-slate-600">
             <p>
-              <strong>{t("catalog.products.sku")}:</strong> {t("adminCatalog.skuTip")}
+              <strong>{catalog('products.sku')}:</strong> {admin('skuTip')}
             </p>
             <p>
-              <strong>{t("adminCatalog.industry")}:</strong> {t("adminCatalog.industryTip")}
+              <strong>{admin('industry')}:</strong> {admin('industryTip')}
             </p>
             <p>
-              <strong>{t("catalog.products.image")}:</strong> {t("adminCatalog.imageTip")}
+              <strong>{catalog('products.image')}:</strong> {admin('imageTip')}
             </p>
             <p>
-              <strong>{t("adminCatalog.attributes")}:</strong> {t("adminCatalog.attributesTip")}
+              <strong>{admin('attributes')}:</strong> {admin('attributesTip')}
             </p>
           </CardContent>
         </Card>

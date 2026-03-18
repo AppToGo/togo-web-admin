@@ -39,7 +39,7 @@ export function AdminGlobalProductCard({
   onToggleStatus,
   viewMode = "grid",
 }: AdminGlobalProductCardProps) {
-  const t = useTranslations("adminCatalog");
+  const t = useTranslations('admin-catalog');
   const tCommon = useTranslations("common");
   const activationCount = product._count?.businessProducts || 0;
 

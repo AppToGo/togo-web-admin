@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import {
   ArrowLeft,
   Upload,
@@ -52,7 +52,7 @@ export default function ImportGlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
-  const t = useTranslations();
+  const { admin, common, catalog } = useAdminCatalogTranslations();
 
   // State
   const [currentStep, setCurrentStep] = useState<ImportStep>("upload");
@@ -82,9 +82,9 @@ export default function ImportGlobalProductsPage() {
       });
 
       // Validation
-      if (!data.sku) errors.push(t("validation.skuRequired"));
-      if (!data.name) errors.push(t("validation.nameRequired"));
-      if (!data.industryid) errors.push(t("validation.industryIdRequired"));
+      if (!data.sku) errors.push(admin('validation.skuRequired'));
+      if (!data.name) errors.push(admin('validation.nameRequired'));
+      if (!data.industryid) errors.push(admin('validation.industryIdRequired'));
 
       rows.push({
         row: i,
@@ -100,7 +100,7 @@ export default function ImportGlobalProductsPage() {
   // Handle file selection
   const handleFileSelect = (selectedFile: File) => {
     if (selectedFile.type !== "text/csv" && !selectedFile.name.endsWith(".csv")) {
-      alert(t("validation.selectCsvFile"));
+      alert(admin('validation.selectCsvFile'));
       return;
     }
 
@@ -155,10 +155,10 @@ export default function ImportGlobalProductsPage() {
             <Upload className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("common.errors.accessDenied")}
+            {common('errors.accessDenied')}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {t("adminCatalog.superAdminOnly")}
+            {admin('superAdminOnly')}
           </p>
         </div>
       </DashboardLayout>
@@ -170,10 +170,10 @@ export default function ImportGlobalProductsPage() {
   const invalidRows = parsedData.filter((row) => !row.isValid);
 
   const steps = [
-    { id: "upload", label: t("common.steps.uploadFile") },
-    { id: "preview", label: t("common.steps.preview") },
-    { id: "importing", label: t("common.steps.importing") },
-    { id: "results", label: t("common.steps.results") },
+    { id: "upload", label: common('steps.uploadFile') },
+    { id: "preview", label: common('steps.preview') },
+    { id: "importing", label: common('steps.importing') },
+    { id: "results", label: common('steps.results') },
   ];
 
   return (
@@ -186,10 +186,10 @@ export default function ImportGlobalProductsPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {t("adminCatalog.importProducts")}
+              {admin('importProducts')}
             </h1>
             <p className="text-slate-500">
-              {t("adminCatalog.importDescription")}
+              {admin('importDescription')}
             </p>
           </div>
         </div>
@@ -231,9 +231,9 @@ export default function ImportGlobalProductsPage() {
         {currentStep === "upload" && (
           <Card>
             <CardHeader>
-              <CardTitle>{t("adminCatalog.uploadCsvFile")}</CardTitle>
+              <CardTitle>{admin('uploadCsvFile')}</CardTitle>
               <CardDescription>
-                {t("adminCatalog.csvColumnsDescription")}
+                {admin('csvColumnsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -253,7 +253,7 @@ export default function ImportGlobalProductsPage() {
               >
                 <FileSpreadsheet className="w-12 h-12 mx-auto mb-4 text-slate-400" />
                 <p className="text-lg font-medium text-slate-700 mb-2">
-                  {t("adminCatalog.dragDropCsv")}
+                  {admin('dragDropCsv')}
                 </p>
                 <p className="text-sm text-slate-500 mb-4">o</p>
                 <input
@@ -265,7 +265,7 @@ export default function ImportGlobalProductsPage() {
                 />
                 <label htmlFor="csv-upload">
                   <Button variant="outline" className="cursor-pointer" asChild>
-                    <span>{t("common.buttons.selectFile")}</span>
+                    <span>{common('buttons.selectFile')}</span>
                   </Button>
                 </label>
               </div>
@@ -274,27 +274,27 @@ export default function ImportGlobalProductsPage() {
               <div className="bg-slate-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-slate-700">{t("adminCatalog.noFormatQuestion")}</p>
+                    <p className="font-medium text-slate-700">{admin('noFormatQuestion')}</p>
                     <p className="text-sm text-slate-500">
-                      {t("adminCatalog.downloadTemplateDescription")}
+                      {admin('downloadTemplateDescription')}
                     </p>
                   </div>
                   <Button variant="outline" onClick={handleDownloadTemplate}>
                     <Download className="w-4 h-4 mr-2" />
-                    {t("common.buttons.downloadTemplate")}
+                    {common('buttons.downloadTemplate')}
                   </Button>
                 </div>
               </div>
 
               {/* Instructions */}
               <div className="space-y-2">
-                <p className="font-medium text-slate-700">{t("common.instructions")}:</p>
+                <p className="font-medium text-slate-700">{common('instructions')}:</p>
                 <ul className="text-sm text-slate-600 space-y-1 list-disc list-inside">
-                  <li>{t("adminCatalog.csvFormatInstruction")}</li>
-                  <li>{t("adminCatalog.firstRowHeaders")}</li>
-                  <li>{t("adminCatalog.requiredFields")}</li>
-                  <li>{t("adminCatalog.skuUpdateNote")}</li>
-                  <li>{t("adminCatalog.maxRows")}</li>
+                  <li>{admin('csvFormatInstruction')}</li>
+                  <li>{admin('firstRowHeaders')}</li>
+                  <li>{admin('requiredFields')}</li>
+                  <li>{admin('skuUpdateNote')}</li>
+                  <li>{admin('maxRows')}</li>
                 </ul>
               </div>
             </CardContent>
@@ -307,24 +307,24 @@ export default function ImportGlobalProductsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>{t("common.steps.preview")}</CardTitle>
+                  <CardTitle>{common('steps.preview')}</CardTitle>
                   <CardDescription>
-                    {t("adminCatalog.reviewBeforeImport")}
+                    {admin('reviewBeforeImport')}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="default" className="bg-green-100 text-green-700">
                     <Check className="w-3 h-3 mr-1" />
                     {validRows.length === 1 
-                      ? t("adminCatalog.validCountOne") 
-                      : t("adminCatalog.validCount", { count: validRows.length })}
+                      ? admin('validCountOne') 
+                      : admin('validCount', { count: validRows.length })}
                   </Badge>
                   {invalidRows.length > 0 && (
                     <Badge variant="destructive">
                       <X className="w-3 h-3 mr-1" />
                       {invalidRows.length === 1 
-                        ? t("adminCatalog.errorsCountOne") 
-                        : t("adminCatalog.errorsCount", { count: invalidRows.length })}
+                        ? admin('errorsCountOne') 
+                        : admin('errorsCount', { count: invalidRows.length })}
                     </Badge>
                   )}
                 </div>
@@ -336,7 +336,7 @@ export default function ImportGlobalProductsPage() {
                 <Alert variant="destructive">
                   <AlertCircle className="w-4 h-4" />
                   <AlertDescription>
-                    {t("adminCatalog.errorsInRows", { count: invalidRows.length })}
+                    {admin('errorsInRows', { count: invalidRows.length })}
                   </AlertDescription>
                 </Alert>
               )}
@@ -347,11 +347,11 @@ export default function ImportGlobalProductsPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50 sticky top-0">
                       <tr>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.row")}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.sku")}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.name")}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.brand")}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.status")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.row')}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.sku')}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.name')}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.brand')}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -365,13 +365,13 @@ export default function ImportGlobalProductsPage() {
                             {row.isValid ? (
                               <Badge variant="default" className="bg-green-100 text-green-700">
                                 <Check className="w-3 h-3 mr-1" />
-                                {t("common.status.valid")}
+                                {common('status.valid')}
                               </Badge>
                             ) : (
                               <div className="flex flex-col gap-1">
                                 <Badge variant="destructive">
                                   <X className="w-3 h-3 mr-1" />
-                                  {t("common.status.error")}
+                                  {common('status.error')}
                                 </Badge>
                                 <span className="text-xs text-red-600">
                                   {row.errors.join(", ")}
@@ -394,7 +394,7 @@ export default function ImportGlobalProductsPage() {
               {/* Actions */}
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setCurrentStep("upload")}>
-                  {t("common.buttons.back")}
+                  {common('buttons.back')}
                 </Button>
                 <Button
                   onClick={handleImport}
@@ -402,8 +402,8 @@ export default function ImportGlobalProductsPage() {
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   {validRows.length === 1 
-                    ? t("adminCatalog.importCountProductsOne") 
-                    : t("adminCatalog.importCountProducts", { count: validRows.length })}
+                    ? admin('importCountProductsOne') 
+                    : admin('importCountProducts', { count: validRows.length })}
                 </Button>
               </div>
             </CardContent>
@@ -414,19 +414,19 @@ export default function ImportGlobalProductsPage() {
         {currentStep === "importing" && (
           <Card>
             <CardHeader>
-              <CardTitle>{t("adminCatalog.importingProducts")}</CardTitle>
+              <CardTitle>{admin('importingProducts')}</CardTitle>
               <CardDescription>
-                {t("adminCatalog.importingDescription")}
+                {admin('importingDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 py-8">
               <div className="flex flex-col items-center">
                 <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mb-4" />
                 <p className="text-lg font-medium text-slate-700">
-                  {t("common.status.processingFile")}
+                  {common('status.processingFile')}
                 </p>
                 <p className="text-sm text-slate-500">
-                  {t("common.doNotClosePage")}
+                  {common('doNotClosePage')}
                 </p>
               </div>
               <Progress value={45} className="w-full" />
@@ -438,9 +438,9 @@ export default function ImportGlobalProductsPage() {
         {currentStep === "results" && importResult && (
           <Card>
             <CardHeader>
-              <CardTitle>{t("adminCatalog.importCompleted")}</CardTitle>
+              <CardTitle>{admin('importCompleted')}</CardTitle>
               <CardDescription>
-                {t("adminCatalog.importSummary")}
+                {admin('importSummary')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -450,25 +450,25 @@ export default function ImportGlobalProductsPage() {
                   <p className="text-2xl font-bold text-slate-900">
                     {importResult.totalRows}
                   </p>
-                  <p className="text-sm text-slate-500">{t("common.fields.total")}</p>
+                  <p className="text-sm text-slate-500">{common('fields.total')}</p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-green-600">
                     {importResult.imported}
                   </p>
-                  <p className="text-sm text-green-600">{t("adminCatalog.imported")}</p>
+                  <p className="text-sm text-green-600">{admin('imported')}</p>
                 </div>
                 <div className="bg-amber-50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-amber-600">
                     {importResult.skipped}
                   </p>
-                  <p className="text-sm text-amber-600">{t("adminCatalog.skipped")}</p>
+                  <p className="text-sm text-amber-600">{admin('skipped')}</p>
                 </div>
                 <div className="bg-red-50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-red-600">
                     {importResult.failed}
                   </p>
-                  <p className="text-sm text-red-600">{t("common.status.failed")}</p>
+                  <p className="text-sm text-red-600">{common('status.failed')}</p>
                 </div>
               </div>
 
@@ -477,7 +477,7 @@ export default function ImportGlobalProductsPage() {
                 <Alert variant="destructive">
                   <AlertCircle className="w-4 h-4" />
                   <AlertDescription>
-                    {t("adminCatalog.someProductsFailed")}
+                    {admin('someProductsFailed')}
                   </AlertDescription>
                 </Alert>
               )}
@@ -487,9 +487,9 @@ export default function ImportGlobalProductsPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50">
                       <tr>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.row")}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.sku")}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.errors.error")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.row')}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.sku')}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('errors.error')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -513,7 +513,7 @@ export default function ImportGlobalProductsPage() {
                   variant="outline"
                   onClick={() => router.push("/admin/global-products")}
                 >
-                  {t("adminCatalog.viewCatalog")}
+                  {admin('viewCatalog')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -523,7 +523,7 @@ export default function ImportGlobalProductsPage() {
                     setImportResult(null);
                   }}
                 >
-                  {t("adminCatalog.importMoreProducts")}
+                  {admin('importMoreProducts')}
                 </Button>
               </div>
             </CardContent>

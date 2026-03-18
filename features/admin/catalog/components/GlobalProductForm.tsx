@@ -60,7 +60,7 @@ export function GlobalProductForm({
   isLoading,
 }: GlobalProductFormProps) {
   const isEditing = !!product;
-  const t = useTranslations("adminCatalog");
+  const t = useTranslations('admin-catalog');
   const tCommon = useTranslations("common");
   const tCatalog = useTranslations("catalog");
 
@@ -284,7 +284,7 @@ export function GlobalProductForm({
           id="description"
           value={formData.description}
           onChange={(e) => handleChange("description", e.target.value)}
-          placeholder={tCatalog("form.descriptionPlaceholder")}
+          placeholder={tCatalog("products.form.descriptionPlaceholder")}
           rows={3}
         />
       </div>
@@ -350,7 +350,7 @@ export function GlobalProductForm({
               id="image"
               value={formData.image}
               onChange={(e) => handleImageChange(e.target.value)}
-              placeholder={tCatalog("form.imageUrl")}
+              placeholder={tCatalog("products.form.imageUrl")}
             />
           </div>
           <div className="w-24 h-24 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
