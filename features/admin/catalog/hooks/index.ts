@@ -2,6 +2,8 @@
  * Admin Catalog Hooks
  */
 
+export { useAdminCatalogTranslations } from "./useAdminCatalogTranslations";
+
 export {
   // Query keys
   adminCatalogKeys,
