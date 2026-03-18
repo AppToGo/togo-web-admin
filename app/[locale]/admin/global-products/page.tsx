@@ -118,7 +118,7 @@ export default function GlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
-  const { admin, common } = useAdminCatalogTranslations();
+  const { admin, common, catalog } = useAdminCatalogTranslations();
 
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
