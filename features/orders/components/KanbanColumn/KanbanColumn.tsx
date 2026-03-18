@@ -2,6 +2,7 @@
 
 import { memo, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { OrderCard } from "../OrderCard";
 import type { Order, OrderStatus } from "../../types";
 import type { CardViewMode } from "../OrderCard";
@@ -43,6 +44,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   flexBasis,
   minWidth = 320,
 }: KanbanColumnProps) {
+  const t = useTranslations("orders");
   const [isDragOver, setIsDragOver] = useState(false);
 
   // Obtener configuración de la columna desde el dominio
@@ -94,7 +96,7 @@ export const KanbanColumn = memo(function KanbanColumn({
           <div className="flex items-center gap-2">
             <div className={dotVariants({ status })} />
             <h3 className="font-semibold text-sm text-slate-700">
-              {config.title}
+              {t(`status.${config.title}`)}
             </h3>
           </div>
           <span
@@ -166,7 +168,6 @@ export const KanbanColumn = memo(function KanbanColumn({
           ))
         )}
       </div>
-
     </div>
   );
 });
