@@ -3,11 +3,14 @@
 import * as React from "react";
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForgotPassword } from "@/features/auth/hooks/useAuth";
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("auth.forgotPassword");
+  
   const forgotPassword = useForgotPassword();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -40,15 +43,14 @@ export function ForgotPasswordForm() {
           </svg>
         </div>
         <h3 className="text-lg font-medium text-slate-900">
-          ¡Revisa tu correo!
+          {t("success.title")}
         </h3>
         <p className="text-sm text-slate-500">
-          Hemos enviado instrucciones para restablecer tu contraseña a{" "}
-          <strong>{email}</strong>
+          {t("success.message", { email })}
         </p>
         <Link href="/login">
           <Button variant="outline" className="w-full mt-4">
-            Volver al inicio de sesión
+            {t("backToLogin")}
           </Button>
         </Link>
       </div>
@@ -58,14 +60,13 @@ export function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <p className="text-sm text-slate-500">
-        Ingresa tu correo electrónico y te enviaremos instrucciones para
-        restablecer tu contraseña.
+        {t("instructions")}
       </p>
 
       <Input
-        label="Correo electrónico"
+        label={t("email.label")}
         type="email"
-        placeholder="tu@empresa.com"
+        placeholder={t("email.placeholder")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -77,16 +78,16 @@ export function ForgotPasswordForm() {
         isLoading={forgotPassword.isPending}
         disabled={forgotPassword.isPending}
       >
-        Enviar instrucciones
+        {forgotPassword.isPending ? t("sending") : t("submit")}
       </Button>
 
       <p className="text-center text-sm text-slate-500">
-        ¿Recordaste tu contraseña?{" "}
+        {t("remembered")}{" "}
         <Link
           href="/login"
           className="text-[#6366F1] hover:text-[#5558E0] hover:underline font-medium"
         >
-          Inicia sesión
+          {t("backToLogin")}
         </Link>
       </p>
     </form>

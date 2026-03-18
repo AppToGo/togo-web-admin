@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Edit, Trash2, MoreHorizontal, Store, Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,6 +39,8 @@ export function AdminGlobalProductCard({
   onToggleStatus,
   viewMode = "grid",
 }: AdminGlobalProductCardProps) {
+  const t = useTranslations("adminCatalog");
+  const tCommon = useTranslations("common");
   const activationCount = product._count?.businessProducts || 0;
 
   // Grid View
@@ -60,12 +63,12 @@ export function AdminGlobalProductCard({
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
-                  "https://placehold.co/400x300/e2e8f0/64748b?text=Sin+Imagen";
+                  "https://placehold.co/400x300/e2e8f0/64748b";
               }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-slate-400 text-sm">Sin imagen</span>
+              <span className="text-slate-400 text-sm">{tCommon("status.noImage")}</span>
             </div>
           )}
           
@@ -80,7 +83,7 @@ export function AdminGlobalProductCard({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-100"
               )}
             >
-              {product.isActive ? "Activo" : "Inactivo"}
+              {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
             </Badge>
           </div>
 
@@ -126,7 +129,7 @@ export function AdminGlobalProductCard({
                 className="data-[state=checked]:bg-green-500"
               />
               <span className="text-xs text-slate-500">
-                {product.isActive ? "Activo" : "Inactivo"}
+                {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
               </span>
             </div>
 
@@ -139,7 +142,7 @@ export function AdminGlobalProductCard({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit?.(product)}>
                   <Edit className="w-4 h-4 mr-2" />
-                  Editar
+                  {tCommon("buttons.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -147,7 +150,7 @@ export function AdminGlobalProductCard({
                   className="text-red-600 focus:text-red-600"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Eliminar
+                  {tCommon("buttons.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -176,12 +179,12 @@ export function AdminGlobalProductCard({
             className="w-full h-full object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).src =
-                "https://placehold.co/100x100/e2e8f0/64748b?text=Sin+Imagen";
+                "https://placehold.co/100x100/e2e8f0/64748b";
             }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-slate-400 text-xs">Sin imagen</span>
+            <span className="text-slate-400 text-xs">{tCommon("status.noImage")}</span>
           </div>
         )}
       </div>
@@ -198,7 +201,7 @@ export function AdminGlobalProductCard({
                 : "bg-slate-100 text-slate-600 hover:bg-slate-100"
             )}
           >
-            {product.isActive ? "Activo" : "Inactivo"}
+            {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
           </Badge>
           <p className="text-xs font-mono text-slate-500 flex-shrink-0">{product.sku}</p>
         </div>
@@ -221,7 +224,7 @@ export function AdminGlobalProductCard({
         <Store className="w-4 h-4 text-slate-400" />
         <div>
           <p className="text-lg font-semibold text-slate-900">{activationCount}</p>
-          <p className="text-xs text-slate-500">negocios</p>
+          <p className="text-xs text-slate-500">{t("businesses")}</p>
         </div>
       </div>
 

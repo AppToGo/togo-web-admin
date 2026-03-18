@@ -1,0 +1,53 @@
+{
+  "required": "Este campo es obligatorio",
+  "email": {
+    "invalid": "Ingresa un correo válido",
+    "required": "El correo electrónico es obligatorio"
+  },
+  "password": {
+    "required": "La contraseña es obligatoria",
+    "minLength": "La contraseña debe tener al menos {min} caracteres",
+    "maxLength": "La contraseña no puede tener más de {max} caracteres",
+    "match": "Las contraseñas no coinciden",
+    "weak": "La contraseña es muy débil. Incluye mayúsculas, minúsculas y números.",
+    "currentRequired": "Ingresa tu contraseña actual"
+  },
+  "name": {
+    "required": "El nombre es obligatorio",
+    "minLength": "El nombre debe tener al menos {min} caracteres",
+    "maxLength": "El nombre no puede tener más de {max} caracteres"
+  },
+  "phone": {
+    "invalid": "Ingresa un número de teléfono válido",
+    "required": "El teléfono es obligatorio"
+  },
+  "number": {
+    "invalid": "Ingresa un número válido",
+    "min": "El valor debe ser mayor o igual a {min}",
+    "max": "El valor debe ser menor o igual a {max}",
+    "positive": "El valor debe ser positivo"
+  },
+  "price": {
+    "invalid": "Ingresa un precio válido",
+    "min": "El precio debe ser mayor a 0",
+    "required": "El precio es obligatorio"
+  },
+  "url": {
+    "invalid": "Ingresa una URL válida"
+  },
+  "file": {
+    "tooLarge": "El archivo es muy grande (máximo {size})",
+    "invalidType": "Tipo de archivo no válido. Permitidos: {types}",
+    "required": "Debes seleccionar un archivo"
+  },
+  "date": {
+    "invalid": "Fecha no válida",
+    "future": "La fecha debe ser futura",
+    "past": "La fecha debe ser pasada",
+    "range": "La fecha está fuera del rango permitido"
+  },
+  "skuRequired": "SKU es requerido",
+  "nameRequired": "Nombre es requerido",
+  "industryIdRequired": "IndustryId es requerido",
+  "selectCsvFile": "Por favor selecciona un archivo CSV"
+}

@@ -58,26 +58,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // If we already have an access token in memory, we're good
     if (accessToken) {
-      console.log("[AuthProvider] Access token exists in memory, authenticated");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthProvider] Access token exists in memory, authenticated");
+      }
       setRestoreState("authenticated");
       return;
     }
 
     // If we're on a public route, don't try to restore (no loading state needed)
     if (isPublicRoute) {
-      console.log("[AuthProvider] On public route, skip restore");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthProvider] On public route, skip restore");
+      }
       setRestoreState("unauthenticated");
       return;
     }
 
     // If a global refresh is already in progress, wait for it
     if (isRefreshInProgress()) {
-      console.log("[AuthProvider] Refresh already in progress, waiting...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthProvider] Refresh already in progress, waiting...");
+      }
       return;
     }
 
     // Attempt to restore session
-    console.log("[AuthProvider] Attempting session restore...");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[AuthProvider] Attempting session restore...");
+    }
     
     async function restoreSession() {
       const token = await startGlobalRefresh(async () => {
@@ -90,15 +98,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.ok) {
             const data = await response.json();
             setAuthData(data);
-            console.log("[AuthProvider] Session restored successfully");
+            if (process.env.NODE_ENV === "development") {
+              console.log("[AuthProvider] Session restored successfully");
+            }
             return { success: true, token: data.access_token };
           } else if (response.status === 401) {
             // No valid session (no cookie or expired)
-            console.log("[AuthProvider] No valid session (401), redirecting to login");
+            if (process.env.NODE_ENV === "development") {
+              console.log("[AuthProvider] No valid session (401), redirecting to login");
+            }
             clearAuth();
             return { success: false, token: null };
           } else {
-            console.log("[AuthProvider] Refresh failed with status:", response.status);
+            if (process.env.NODE_ENV === "development") {
+              console.log("[AuthProvider] Refresh failed with status:", response.status);
+            }
             clearAuth();
             return { success: false, token: null };
           }
@@ -138,7 +152,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#6366f1 transparent #6366f1 #6366f1' }} />
-          <p className="text-sm" style={{ color: '#64748b' }}>Restaurando sesión...</p>
         </div>
       </div>
     );

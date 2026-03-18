@@ -1,14 +1,15 @@
 /**
  * Orders Hooks
  *
- * Hooks con React Query para manejar el estado de órdenes.
- * - Caching optimizado
- * - Revalidación automática
- * - Optimistic UI para cambios de estado
+ * Hooks with React Query for managing order state.
+ * - Optimized caching
+ * - Automatic revalidation
+ * - Optimistic UI for status changes
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
 import { useDateFilterParams } from "@/features/filters/hooks/useDateFilterQuery";
@@ -29,6 +30,7 @@ import type {
   GetOrdersParams,
 } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
+import { useStatusLabels } from "../utils/order-status.utils";
 
 // Query keys para mantener consistencia
 const ORDERS_KEYS = {
@@ -42,8 +44,8 @@ const ORDERS_KEYS = {
 };
 
 // Stale times configurables
-const STALE_TIME = 30 * 1000; // 30 segundos
-const GC_TIME = 5 * 60 * 1000; // 5 minutos
+const STALE_TIME = 30 * 1000; // 30 seconds
+const GC_TIME = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Hook para obtener todas las órdenes
@@ -208,16 +210,18 @@ export function useOrderHistory(orderId: string | null) {
 }
 
 /**
- * Hook para actualizar el estado de una orden
+ * Hook to update order status
  *
- * Implementa optimistic UI con rollback automático
+ * Implements optimistic UI with automatic rollback
  */
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
+  const t = useTranslations("orders");
+  const statusLabels = useStatusLabels();
 
-  // Determinar el businessId efectivo
+  // Determine effective businessId
   const effectiveBusinessId =
     selectedBusinessId || user?.businessId || undefined;
 
@@ -232,10 +236,10 @@ export function useUpdateOrderStatus() {
 
     // Optimistic update
     onMutate: async ({ orderId, data }) => {
-      // Cancelar queries en vuelo
+      // Cancel in-flight queries
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
 
-      // Guardar estado anterior para rollback
+      // Save previous state for rollback
       const previousOrders = queryClient.getQueryData<Order[]>(
         ORDERS_KEYS.lists()
       );
@@ -243,7 +247,7 @@ export function useUpdateOrderStatus() {
         ORDERS_KEYS.detail(orderId)
       );
 
-      // Actualizar lista de órdenes
+      // Update orders list
       queryClient.setQueriesData<Order[]>(
         { queryKey: ORDERS_KEYS.lists() },
         (old: Order[] | undefined) => {
@@ -254,7 +258,7 @@ export function useUpdateOrderStatus() {
         }
       );
 
-      // Actualizar detalle de orden
+      // Update order detail
       queryClient.setQueryData<Order>(ORDERS_KEYS.detail(orderId), (old) => {
         if (!old) return old;
         return { ...old, status: data.status };
@@ -263,7 +267,7 @@ export function useUpdateOrderStatus() {
       return { previousOrders, previousOrder };
     },
 
-    // Rollback en error
+    // Rollback on error
     onError: (err, { orderId }, context) => {
       if (context?.previousOrders) {
         queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
@@ -274,19 +278,18 @@ export function useUpdateOrderStatus() {
           context.previousOrder
         );
       }
-      // Extraer mensaje de error del backend
+      // Extract error message from backend
       const errorMessage = getHumanizedErrorMessage(err);
-      toast.error(
-        errorMessage || "No se pudo actualizar el estado de la orden"
-      );
+      toast.error(errorMessage || t("errors.updateStatusFailed"));
     },
 
-    // Éxito
+    // Success
     onSuccess: (_data, { data }) => {
-      toast.success(`Estado actualizado a "${data.status}"`);
+      const statusLabel = statusLabels[data.status];
+      toast.success(t("statusUpdated", { status: statusLabel }));
     },
 
-    // Revalidar después de la mutación
+    // Revalidate after mutation
     onSettled: (_data, _error, { orderId }) => {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
@@ -296,16 +299,17 @@ export function useUpdateOrderStatus() {
 }
 
 /**
- * Hook para actualizar el estado de pago de una orden
+ * Hook to update order payment status
  *
- * Implementa optimistic UI con rollback automático
+ * Implements optimistic UI with automatic rollback
  */
 export function useUpdateOrderPaymentStatus() {
   const queryClient = useQueryClient();
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
+  const t = useTranslations("orders");
 
-  // Determinar el businessId efectivo
+  // Determine effective businessId
   const effectiveBusinessId =
     selectedBusinessId || user?.businessId || undefined;
 
@@ -320,10 +324,10 @@ export function useUpdateOrderPaymentStatus() {
 
     // Optimistic update
     onMutate: async ({ orderId, data }) => {
-      // Cancelar queries en vuelo
+      // Cancel in-flight queries
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
 
-      // Guardar estado anterior para rollback
+      // Save previous state for rollback
       const previousOrders = queryClient.getQueryData<Order[]>(
         ORDERS_KEYS.lists()
       );
@@ -331,7 +335,7 @@ export function useUpdateOrderPaymentStatus() {
         ORDERS_KEYS.detail(orderId)
       );
 
-      // Actualizar lista de órdenes
+      // Update orders list
       queryClient.setQueriesData<Order[]>(
         { queryKey: ORDERS_KEYS.lists() },
         (old: Order[] | undefined) => {
@@ -344,7 +348,7 @@ export function useUpdateOrderPaymentStatus() {
         }
       );
 
-      // Actualizar detalle de orden
+      // Update order detail
       queryClient.setQueryData<Order>(ORDERS_KEYS.detail(orderId), (old) => {
         if (!old) return old;
         return { ...old, paymentStatus: data.paymentStatus };
@@ -353,7 +357,7 @@ export function useUpdateOrderPaymentStatus() {
       return { previousOrders, previousOrder };
     },
 
-    // Rollback en error
+    // Rollback on error
     onError: (err, { orderId }, context) => {
       if (context?.previousOrders) {
         queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
@@ -364,17 +368,17 @@ export function useUpdateOrderPaymentStatus() {
           context.previousOrder
         );
       }
-      // Extraer mensaje de error del backend
+      // Extract error message from backend
       const errorMessage = getHumanizedErrorMessage(err);
-      toast.error(errorMessage || "No se pudo actualizar el estado de pago");
+      toast.error(errorMessage || t("errors.updatePaymentFailed"));
     },
 
-    // Éxito
+    // Success
     onSuccess: (_data) => {
-      toast.success("Estado de pago actualizado");
+      toast.success(t("paymentStatusUpdated"));
     },
 
-    // Revalidar después de la mutación
+    // Revalidate after mutation
     onSettled: (_data, _error, { orderId }) => {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
@@ -383,13 +387,14 @@ export function useUpdateOrderPaymentStatus() {
 }
 
 /**
- * Hook para obtener actividad reciente
+ * Hook to get recent activity
  */
 export function useRecentActivity() {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
+  const t = useTranslations("orders");
 
-  // Determinar el businessId efectivo (igual que otros hooks)
+  // Determine effective businessId (same as other hooks)
   const effectiveBusinessId =
     selectedBusinessId || user?.businessId || undefined;
 
@@ -398,7 +403,7 @@ export function useRecentActivity() {
   return useMemo(() => {
     if (!orders) return [];
 
-    // Tomar las 10 órdenes más recientes
+    // Take the 10 most recent orders
     const recentOrders = [...orders]
       .sort(
         (a, b) =>
@@ -410,31 +415,14 @@ export function useRecentActivity() {
       id: order.id,
       type: "status_change" as const,
       orderId: order.id,
-      customerName: order.customer?.name || "Cliente desconocido",
-      description: `Orden #${order.id.slice(-6)} - ${getStatusLabel(order.status)}`,
+      customerName: order.customer?.name || t("unknownCustomer"),
+      description: t("orderNumber", { id: order.id.slice(-6) }),
       timestamp: new Date(order.updatedAt),
     }));
-  }, [orders]);
+  }, [orders, t]);
 }
 
-/**
- * Utilidad para obtener etiqueta legible de estado
- */
-function getStatusLabel(status: OrderStatus): string {
-  const labels: Record<OrderStatus, string> = {
-    DRAFT: "Borrador",
-    CONFIRMED: "Confirmada",
-    PAYMENT_PENDING: "Pago pendiente",
-    PAID: "Pagada",
-    IN_PROGRESS: "En proceso",
-    READY: "Lista",
-    ON_THE_WAY: "En camino",
-    COMPLETED: "Completada",
-    CANCELLED: "Cancelada",
-    ABANDONED: "Abandonada",
-  };
-  return labels[status] || status;
-}
+
 
 // Query key para negocios
 const BUSINESSES_KEY = ["businesses"];

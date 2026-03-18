@@ -2,6 +2,12 @@
  * Catalog Hooks
  */
 
+// Export translations hook and types
+export {
+  useCatalogTranslations,
+  type CatalogToastMessages,
+} from "./useCatalogTranslations";
+
 export {
   // Query keys
   catalogKeys,

@@ -58,28 +58,30 @@ export function generateColumnColors(statuses: OrderStatus[]): Record<string, st
 
 /**
  * Genera un mapping de labels para un conjunto de estados
+ * @deprecated Use useTranslations('orders.status') from next-intl instead
  */
 export function generateColumnLabels(statuses: OrderStatus[]): Record<string, string> {
+  // Returns status keys instead of labels - use translations in components
   return statuses.reduce((acc, status) => {
-    acc[status] = STATUS_THEME[status].label;
-  return acc;
+    acc[status] = status;
+    return acc;
   }, {} as Record<string, string>);
 }
 
 /**
  * Genera configuración de columna Kanban desde el theme
  * Compatible con KanbanColumn del tipo order.types.ts
+ * @deprecated Use translations for titles - this only returns status keys
  */
 export function generateKanbanColumnConfig() {
   const statuses = Object.keys(STATUS_THEME) as OrderStatus[];
   
   return statuses.map((status) => {
-    const config = STATUS_THEME[status];
     const tokens = getStatusTokens(status);
     
     return {
       id: status,
-      title: config.label,
+      title: status, // Return key instead of label - use t(`orders.status.${status}`) in components
       color: tokens.dot,
       bgColor: tokens.bg,
     };

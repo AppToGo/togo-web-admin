@@ -13,27 +13,37 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { refreshToken } = body;
 
-    console.log("[API /auth/set-cookie] Setting cookie...");
-    console.log("[API /auth/set-cookie] Token length:", refreshToken?.length);
-    console.log("[API /auth/set-cookie] Token format:");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[API /auth/set-cookie] Setting cookie...");
+      console.log("[API /auth/set-cookie] Token length:", refreshToken?.length);
+      console.log("[API /auth/set-cookie] Token format:");
+    }
     
     if (refreshToken) {
       // Check token format
       const parts = refreshToken.split('.');
-      console.log("[API /auth/set-cookie] Number of parts (separated by dots):", parts.length);
-      console.log("[API /auth/set-cookie] Part lengths:", parts.map((p: string) => p.length));
+      if (process.env.NODE_ENV === "development") {
+        console.log("[API /auth/set-cookie] Number of parts (separated by dots):", parts.length);
+        console.log("[API /auth/set-cookie] Part lengths:", parts.map((p: string) => p.length));
+      }
       
       // Backend format should be: jwt.header.jwt.payload.jwt.signature.randomString
       // So 4 parts: [jwtHeader, jwtPayload, jwtSignature, randomString]
       if (parts.length === 4) {
-        console.log("[API /auth/set-cookie] Token has expected format (JWT + random)");
+        if (process.env.NODE_ENV === "development") {
+          console.log("[API /auth/set-cookie] Token has expected format (JWT + random)");
+        }
       } else if (parts.length === 3) {
-        console.log("[API /auth/set-cookie] Token is standard JWT only (no random part)");
+        if (process.env.NODE_ENV === "development") {
+          console.log("[API /auth/set-cookie] Token is standard JWT only (no random part)");
+        }
       }
     }
 
     if (!refreshToken) {
-      console.log("[API /auth/set-cookie] ERROR: No refresh token provided");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[API /auth/set-cookie] ERROR: No refresh token provided");
+      }
       return NextResponse.json(
         { error: "Refresh token is required" },
         { status: 400 }
@@ -52,7 +62,9 @@ export async function POST(request: Request) {
       path: "/",
     });
 
-    console.log("[API /auth/set-cookie] Cookie set successfully");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[API /auth/set-cookie] Cookie set successfully");
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

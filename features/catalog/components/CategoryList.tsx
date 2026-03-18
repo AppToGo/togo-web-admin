@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Plus, Edit2, Trash2, Folder, Tag, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,8 @@ export function CategoryList({
   onDelete,
   isLoading = false,
 }: CategoryListProps) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<BusinessCategory | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<BusinessCategory | null>(null);
@@ -118,15 +121,15 @@ export function CategoryList({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-slate-900">
-            Categorías de Productos
+            {t("categories.title")}
           </h3>
           <p className="text-sm text-slate-500">
-            Organiza tus productos en categorías
+            {t("categories.subtitle")}
           </p>
         </div>
         <Button onClick={handleOpenCreate} disabled={isLoading}>
           <Plus className="w-4 h-4 mr-2" />
-          Nueva Categoría
+          {t("categories.new")}
         </Button>
       </div>
 
@@ -137,15 +140,14 @@ export function CategoryList({
             <Folder className="w-8 h-8 text-slate-400" />
           </div>
           <h4 className="text-lg font-medium text-slate-900 mb-2">
-            No hay categorías
+            {t("categories.noCategories")}
           </h4>
           <p className="text-sm text-slate-500 mb-4 max-w-sm mx-auto">
-            Crea categorías para organizar mejor tus productos y facilitar la
-            navegación de tus clientes.
+            {t("categories.emptyDescription")}
           </p>
           <Button onClick={handleOpenCreate} variant="outline">
             <Plus className="w-4 h-4 mr-2" />
-            Crear primera categoría
+            {t("categories.createFirst")}
           </Button>
         </div>
       )}
@@ -217,16 +219,16 @@ export function CategoryList({
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Nueva Categoría</DialogTitle>
+            <DialogTitle>{t("categories.new")}</DialogTitle>
             <DialogDescription>
-              Crea una categoría para organizar tus productos
+              {t("categories.createDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCreate} className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="category-name">
-                Nombre <span className="text-red-500">*</span>
+                {tCommon("fields.name")} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="category-name"
@@ -234,14 +236,14 @@ export function CategoryList({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
-                placeholder="Ej: Bebidas, Comida Rápida..."
+                placeholder={t("categories.namePlaceholder")}
                 disabled={isLoading}
                 autoFocus
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Color</Label>
+              <Label>{t("categories.color")}</Label>
               <div className="flex flex-wrap gap-2">
                 {PRESET_COLORS.map((color) => (
                   <button
@@ -269,14 +271,14 @@ export function CategoryList({
                 onClick={() => setIsCreateOpen(false)}
                 disabled={isLoading}
               >
-                Cancelar
+                {tCommon("buttons.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading || !formData.name.trim()}
                 isLoading={isLoading}
               >
-                Crear Categoría
+                {t("categories.create")}
               </Button>
             </div>
           </form>
@@ -290,16 +292,16 @@ export function CategoryList({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Categoría</DialogTitle>
+            <DialogTitle>{t("categories.edit")}</DialogTitle>
             <DialogDescription>
-              Modifica los datos de la categoría
+              {t("categories.editDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleUpdate} className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="edit-category-name">
-                Nombre <span className="text-red-500">*</span>
+                {tCommon("fields.name")} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="edit-category-name"
@@ -307,13 +309,13 @@ export function CategoryList({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
-                placeholder="Nombre de la categoría"
+                placeholder={t("categories.name")}
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Color</Label>
+              <Label>{t("categories.color")}</Label>
               <div className="flex flex-wrap gap-2">
                 {PRESET_COLORS.map((color) => (
                   <button
@@ -341,14 +343,14 @@ export function CategoryList({
                 onClick={() => setEditingCategory(null)}
                 disabled={isLoading}
               >
-                Cancelar
+                {tCommon("buttons.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading || !formData.name.trim()}
                 isLoading={isLoading}
               >
-                Guardar Cambios
+                {tCommon("buttons.saveChanges")}
               </Button>
             </div>
           </form>
@@ -364,28 +366,25 @@ export function CategoryList({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" />
-              Eliminar Categoría
+              {t("categories.delete")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar la categoría
-              &quot;{deletingCategory?.name}&quot;? Esta acción no se puede
-              deshacer.
+              {deletingCategory && t("categories.deleteDescription", { name: deletingCategory.name })}
               {deletingCategory && (
                 <p className="mt-2 text-amber-600">
-                  Nota: No podrás eliminar esta categoría si tiene productos
-                  asociados.
+                  {t("categories.deleteWarning")}
                 </p>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>{tCommon("buttons.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isLoading}
               className="bg-red-600 hover:bg-red-700"
             >
-              Eliminar
+              {tCommon("buttons.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

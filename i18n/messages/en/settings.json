@@ -1,0 +1,64 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your account and business settings",
+  "sections": {
+    "account": "Account",
+    "business": "Business",
+    "notifications": "Notifications",
+    "security": "Security",
+    "appearance": "Appearance",
+    "language": "Language"
+  },
+  "account": {
+    "title": "Account information",
+    "subtitle": "Manage your personal information",
+    "name": "Name",
+    "email": "Email address",
+    "phone": "Phone",
+    "role": "Role",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password"
+  },
+  "business": {
+    "title": "Business information",
+    "subtitle": "Configure your business data",
+    "name": "Business name",
+    "description": "Description",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Contact email",
+    "timezone": "Timezone",
+    "currency": "Currency"
+  },
+  "notifications": {
+    "title": "Notification preferences",
+    "subtitle": "Configure how you want to receive notifications",
+    "email": "Email notifications",
+    "push": "Push notifications",
+    "sms": "SMS notifications",
+    "newOrders": "New orders",
+    "orderUpdates": "Order updates",
+    "promotions": "Promotions and offers"
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Select your preferred language",
+    "current": "Current language",
+    "select": "Select language"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "subtitle": "Customize the application appearance",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "save": {
+    "button": "Save changes",
+    "success": "Changes saved successfully",
+    "error": "Error saving changes"
+  }
+}

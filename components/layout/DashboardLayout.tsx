@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +10,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const t = useTranslations("navigation");
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
@@ -33,7 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           "transition-all duration-300",
           sidebarOpen && "opacity-0 pointer-events-none"
         )}
-        aria-label="Abrir menú"
+        aria-label={t("sidebar.openMenu")}
       >
         <MenuIcon className="w-5 h-5" />
       </button>

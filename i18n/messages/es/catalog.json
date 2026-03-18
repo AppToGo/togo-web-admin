@@ -1,0 +1,173 @@
+{
+  "title": "Catálogo",
+  "inheritedFromCatalog": "Heredada de catálogo",
+  "inheritedFrom": "Heredado de: {name}",
+  "imageFallbackDescription": "Si no se especifica, se usará la imagen del catálogo global",
+  "inactiveProductsDescription": "Los productos inactivos no aparecen en el menú",
+  "customizeNameHint": "Puedes personalizar el nombre para tu negocio",
+  "activateProductNote": "Este producto se vinculará al catálogo global de TOGO. La imagen y descripción se heredarán automáticamente.",
+  "subtitle": "Gestiona tus productos y categorías",
+  "tabs": {
+    "products": "Mis Productos",
+    "categories": "Categorías"
+  },
+  "products": {
+    "title": "Productos",
+    "create": "Crear producto",
+    "createDescription": "Crea un producto nuevo para tu catálogo",
+    "edit": "Editar producto",
+    "editDescription": "Modifica los detalles del producto",
+    "delete": "Eliminar producto",
+    "import": "Importar productos",
+    "search": "Buscar productos...",
+    "noProducts": "No hay productos",
+    "noProductsDescription": "Comienza agregando tu primer producto al catálogo",
+    "name": "Nombre",
+    "description": "Descripción",
+    "price": "Precio",
+    "salePrice": "Precio de venta",
+    "suggestedPrice": "Precio sugerido",
+    "category": "Categoría",
+    "image": "Imagen",
+    "imageUrl": "URL de Imagen",
+    "imagePlaceholder": "https://ejemplo.com/imagen.jpg",
+    "stock": "Stock",
+    "stockOptional": "Stock (opcional)",
+    "activeProduct": "Producto activo",
+    "presentation": "Presentación: {unit}",
+    "sku": "SKU",
+    "barcode": "Código de barras",
+    "available": "Disponible",
+    "featured": "Destacado",
+    "filters": {
+      "all": "Todos",
+      "category": "Categoría",
+      "status": "Estado"
+    },
+    "form": {
+      "nameLabel": "Nombre del producto",
+      "namePlaceholder": "Ej: Hamburguesa Clásica",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe tu producto...",
+      "priceLabel": "Precio",
+      "categoryLabel": "Categoría",
+      "selectCategory": "Seleccionar categoría",
+      "imageLabel": "Imagen del producto",
+      "uploadImage": "Subir imagen",
+      "changeImage": "Cambiar imagen",
+      "stockLabel": "Stock disponible",
+      "skuLabel": "SKU (código interno)",
+      "barcodeLabel": "Código de barras",
+      "imageUrl": "URL de la imagen"
+    },
+    "empty": {
+      "title": "No tienes productos aún",
+      "message": "Comienza creando productos personalizados o activando productos desde el catálogo global de TOGO."
+    }
+  },
+  "categories": {
+    "title": "Categorías de Productos",
+    "subtitle": "Organiza tus productos en categorías",
+    "new": "Nueva Categoría",
+    "create": "Crear categoría",
+    "edit": "Editar categoría",
+    "delete": "Eliminar categoría",
+    "name": "Nombre",
+    "description": "Descripción",
+    "icon": "Ícono",
+    "color": "Color",
+    "productsCount": "{count} productos",
+    "noCategories": "No hay categorías",
+    "emptyDescription": "Crea categorías para organizar mejor tus productos y facilitar la navegación de tus clientes.",
+    "createFirst": "Crear primera categoría",
+    "editDescription": "Modifica los datos de la categoría",
+    "deleteDescription": "¿Estás seguro de que deseas eliminar la categoría \"{name}\"? Esta acción no se puede deshacer.",
+    "deleteWarning": "Nota: No podrás eliminar esta categoría si tiene productos asociados.",
+    "namePlaceholder": "Ej: Bebidas, Comida Rápida...",
+    "form": {
+      "nameLabel": "Nombre de la categoría",
+      "namePlaceholder": "Ej: Bebidas",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe la categoría..."
+    }
+  },
+  "globalCatalog": {
+    "title": "Catálogo Global",
+    "subtitle": "Gestiona el catálogo de productos global",
+    "search": "Buscar en el catálogo global...",
+    "stats": {
+      "totalProducts": "Total productos",
+      "activeProducts": "Productos activos",
+      "categories": "Categorías",
+      "businessesUsing": "Negocios usando"
+    },
+    "import": {
+      "title": "Importar productos",
+      "description": "Importa productos masivamente desde un archivo Excel",
+      "downloadTemplate": "Descargar plantilla",
+      "uploadFile": "Subir archivo",
+      "processing": "Procesando archivo...",
+      "success": "Productos importados exitosamente"
+    },
+    "empty": {
+      "title": "Catálogo completo",
+      "message": "Has activado todos los productos disponibles del catálogo global."
+    }
+  },
+  "actions": {
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "addProduct": "Agregar producto",
+    "editProduct": "Editar",
+    "deleteProduct": "Eliminar",
+    "duplicate": "Duplicar",
+    "preview": "Vista previa"
+  },
+  "dialogs": {
+    "delete": {
+      "title": "¿Eliminar producto?",
+      "description": "Esta acción no se puede deshacer. El producto \"{name}\" se eliminará permanentemente.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "activate": {
+      "title": "¿Activar producto?",
+      "description": "El producto \"{name}\" estará disponible para los clientes.",
+      "confirm": "Activar",
+      "cancel": "Cancelar"
+    }
+  },
+  "stock": {
+    "unlimited": "Sin límite",
+    "noControl": "Sin control"
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "inStock": "En stock",
+    "outOfStock": "Agotado",
+    "lowStock": "Stock bajo",
+    "lowStockCount": "Stock bajo: {count}",
+    "stockCount": "Stock: {count}",
+    "custom": "Personalizado"
+  },
+  "activateModal": {
+    "title": "Activar Producto",
+    "description": "Configura cómo aparecerá \"{name}\" en tu catálogo"
+  },
+  "noBusiness": {
+    "title": "No tienes un negocio asignado",
+    "description": "Para gestionar productos, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
+  },
+  "notifications": {
+    "productCreated": "Producto creado exitosamente",
+    "productUpdated": "Producto actualizado exitosamente",
+    "productDeleted": "Producto eliminado exitosamente",
+    "productActivated": "Producto activado",
+    "productDeactivated": "Producto desactivado",
+    "productActivatedInCatalog": "Producto activado en tu catálogo",
+    "categoryCreated": "Categoría creada exitosamente",
+    "categoryUpdated": "Categoría actualizada exitosamente",
+    "categoryDeleted": "Categoría eliminada exitosamente"
+  }
+}

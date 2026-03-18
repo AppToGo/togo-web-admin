@@ -33,12 +33,18 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      console.log("[useLogin] Calling login API...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogin] Calling login API...");
+      }
       const response = await loginApi(credentials);
-      console.log("[useLogin] Login successful, got refresh token");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogin] Login successful, got refresh token");
+      }
       
       // Store refresh token in httpOnly cookie
-      console.log("[useLogin] Calling set-cookie API...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogin] Calling set-cookie API...");
+      }
       const setCookieResponse = await fetch("/api/auth/set-cookie", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,7 +52,9 @@ export function useLogin() {
         credentials: "include", // CRITICAL: allows cookies to be set
       });
       
-      console.log("[useLogin] Set-cookie response status:", setCookieResponse.status);
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogin] Set-cookie response status:", setCookieResponse.status);
+      }
       
       if (!setCookieResponse.ok) {
         const errorData = await setCookieResponse.json();
@@ -54,11 +62,15 @@ export function useLogin() {
         throw new Error("Failed to set session cookie");
       }
       
-      console.log("[useLogin] Cookie set successfully");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogin] Cookie set successfully");
+      }
       return response;
     },
     onSuccess: (data) => {
-      console.log("[useLogin] Setting auth data and redirecting...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogin] Setting auth data and redirecting...");
+      }
       setAuthData(data);
       toast.success("¡Bienvenido! Inicio de sesión exitoso");
       router.push("/dashboard");
@@ -86,7 +98,9 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      console.log("[useLogout] Calling logout proxy...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogout] Calling logout proxy...");
+      }
       // Call backend logout - it should read from cookie or we pass dummy
       await fetch("/api/auth/logout-proxy", { 
         method: "POST",
@@ -94,14 +108,18 @@ export function useLogout() {
       });
     },
     onSuccess: async () => {
-      console.log("[useLogout] Clearing cookie...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogout] Clearing cookie...");
+      }
       // Clear cookie
       await fetch("/api/auth/clear-cookie", { 
         method: "POST",
         credentials: "include",
       });
       
-      console.log("[useLogout] Clearing cache and state...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogout] Clearing cache and state...");
+      }
       // Clear all queries from cache
       queryClient.clear();
       
@@ -114,7 +132,9 @@ export function useLogout() {
       router.push("/login");
     },
     onError: async (error) => {
-      console.log("[useLogout] Error, forcing cleanup...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[useLogout] Error, forcing cleanup...");
+      }
       toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
       // Even if API fails, clear local state
       await fetch("/api/auth/clear-cookie", { 
@@ -152,7 +172,9 @@ export function useForgotPassword() {
   return useMutation({
     mutationFn: async (email: string) => {
       // TODO: Implement when backend endpoint is ready
-      console.log("Forgot password requested for:", email);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Forgot password requested for:", email);
+      }
       // Mock success
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return { message: "Password reset email sent" };

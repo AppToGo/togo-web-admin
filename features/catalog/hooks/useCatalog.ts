@@ -1,6 +1,6 @@
 /**
  * Catalog Hooks
- * 
+ *
  * React Query hooks for catalog management
  */
 
@@ -24,6 +24,7 @@ import type {
   GlobalCatalogFilters,
 } from "../types/catalog.types";
 import * as catalogService from "../services/catalog.service";
+import type { CatalogToastMessages } from "./useCatalogTranslations";
 
 // ============================================================================
 // QUERY KEYS
@@ -83,15 +84,27 @@ export function useProduct(
 
 /**
  * Hook to create a custom product
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const createProduct = useCreateProduct(businessId, messages);
+ * ```
  */
-export function useCreateProduct(businessId: string) {
+export function useCreateProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: CreateCustomProductDto) =>
       catalogService.createCustomProduct(businessId, data),
     onSuccess: () => {
-      toast.success("Producto creado exitosamente");
+      toast.success(messages?.productCreated ?? "Producto creado exitosamente");
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),
       });
@@ -100,15 +113,31 @@ export function useCreateProduct(businessId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al crear el producto");
+      toast.error(
+        error.message ||
+          messages?.errorCreatingProduct ||
+          "Error al crear el producto"
+      );
     },
   });
 }
 
 /**
  * Hook to update a product
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const updateProduct = useUpdateProduct(businessId, messages);
+ * ```
  */
-export function useUpdateProduct(businessId: string) {
+export function useUpdateProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -120,7 +149,9 @@ export function useUpdateProduct(businessId: string) {
       data: UpdateProductDto;
     }) => catalogService.updateProduct(businessId, productId, data),
     onSuccess: (_, variables) => {
-      toast.success("Producto actualizado exitosamente");
+      toast.success(
+        messages?.productUpdated ?? "Producto actualizado exitosamente"
+      );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),
       });
@@ -129,22 +160,40 @@ export function useUpdateProduct(businessId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al actualizar el producto");
+      toast.error(
+        error.message ||
+          messages?.errorUpdatingProduct ||
+          "Error al actualizar el producto"
+      );
     },
   });
 }
 
 /**
  * Hook to delete a product
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const deleteProduct = useDeleteProduct(businessId, messages);
+ * ```
  */
-export function useDeleteProduct(businessId: string) {
+export function useDeleteProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (productId: string) =>
       catalogService.deleteProduct(businessId, productId),
     onSuccess: () => {
-      toast.success("Producto eliminado exitosamente");
+      toast.success(
+        messages?.productDeleted ?? "Producto eliminado exitosamente"
+      );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),
       });
@@ -153,15 +202,31 @@ export function useDeleteProduct(businessId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al eliminar el producto");
+      toast.error(
+        error.message ||
+          messages?.errorDeletingProduct ||
+          "Error al eliminar el producto"
+      );
     },
   });
 }
 
 /**
  * Hook to toggle product status
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const toggleStatus = useToggleProductStatus(businessId, messages);
+ * ```
  */
-export function useToggleProductStatus(businessId: string) {
+export function useToggleProductStatus(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -174,14 +239,20 @@ export function useToggleProductStatus(businessId: string) {
     }) => catalogService.toggleProductStatus(businessId, productId, isActive),
     onSuccess: (_, variables) => {
       toast.success(
-        variables.isActive ? "Producto activado" : "Producto desactivado"
+        variables.isActive
+          ? (messages?.productActivated ?? "Producto activado")
+          : (messages?.productDeactivated ?? "Producto desactivado")
       );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al cambiar el estado");
+      toast.error(
+        error.message ||
+          messages?.errorChangingStatus ||
+          "Error al cambiar el estado"
+      );
     },
   });
 }
@@ -208,15 +279,30 @@ export function useGlobalCatalog(
 
 /**
  * Hook to activate a global product
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const activateProduct = useActivateGlobalProduct(businessId, messages);
+ * ```
  */
-export function useActivateGlobalProduct(businessId: string) {
+export function useActivateGlobalProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: ActivateGlobalProductDto) =>
       catalogService.activateGlobalProduct(businessId, data),
     onSuccess: () => {
-      toast.success("Producto activado en tu catálogo");
+      toast.success(
+        messages?.productActivatedInCatalog ??
+          "Producto activado en tu catálogo"
+      );
       // Invalidate both lists
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),
@@ -229,7 +315,11 @@ export function useActivateGlobalProduct(businessId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al activar el producto");
+      toast.error(
+        error.message ||
+          messages?.errorActivatingProduct ||
+          "Error al activar el producto"
+      );
     },
   });
 }
@@ -271,29 +361,59 @@ export function useCategory(
 
 /**
  * Hook to create a category
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const createCategory = useCreateCategory(businessId, messages);
+ * ```
  */
-export function useCreateCategory(businessId: string) {
+export function useCreateCategory(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: CreateCategoryDto) =>
       catalogService.createCategory(businessId, data),
     onSuccess: () => {
-      toast.success("Categoría creada exitosamente");
+      toast.success(
+        messages?.categoryCreated ?? "Categoría creada exitosamente"
+      );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.categories(businessId),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al crear la categoría");
+      toast.error(
+        error.message ||
+          messages?.errorCreatingCategory ||
+          "Error al crear la categoría"
+      );
     },
   });
 }
 
 /**
  * Hook to update a category
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const updateCategory = useUpdateCategory(businessId, messages);
+ * ```
  */
-export function useUpdateCategory(businessId: string) {
+export function useUpdateCategory(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -305,7 +425,9 @@ export function useUpdateCategory(businessId: string) {
       data: UpdateCategoryDto;
     }) => catalogService.updateCategory(businessId, categoryId, data),
     onSuccess: () => {
-      toast.success("Categoría actualizada exitosamente");
+      toast.success(
+        messages?.categoryUpdated ?? "Categoría actualizada exitosamente"
+      );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.categories(businessId),
       });
@@ -314,28 +436,50 @@ export function useUpdateCategory(businessId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al actualizar la categoría");
+      toast.error(
+        error.message ||
+          messages?.errorUpdatingCategory ||
+          "Error al actualizar la categoría"
+      );
     },
   });
 }
 
 /**
  * Hook to delete a category
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const deleteCategory = useDeleteCategory(businessId, messages);
+ * ```
  */
-export function useDeleteCategory(businessId: string) {
+export function useDeleteCategory(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (categoryId: string) =>
       catalogService.deleteCategory(businessId, categoryId),
     onSuccess: () => {
-      toast.success("Categoría eliminada exitosamente");
+      toast.success(
+        messages?.categoryDeleted ?? "Categoría eliminada exitosamente"
+      );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.categories(businessId),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al eliminar la categoría");
+      toast.error(
+        error.message ||
+          messages?.errorDeletingCategory ||
+          "Error al eliminar la categoría"
+      );
     },
   });
 }
@@ -368,3 +512,6 @@ export function useCatalogStats(
     ...options,
   });
 }
+
+// Re-export the CatalogToastMessages type for convenience
+export type { CatalogToastMessages } from "./useCatalogTranslations";

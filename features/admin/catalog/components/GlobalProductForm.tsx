@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Check, X, AlertCircle, Plus, Trash2, ImagePlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +60,9 @@ export function GlobalProductForm({
   isLoading,
 }: GlobalProductFormProps) {
   const isEditing = !!product;
+  const t = useTranslations("adminCatalog");
+  const tCommon = useTranslations("common");
+  const tCatalog = useTranslations("catalog");
 
   // Form state
   const [formData, setFormData] = useState<CreateGlobalProductDto>({
@@ -217,9 +221,9 @@ export function GlobalProductForm({
       {/* Status Toggle */}
       <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
         <div>
-          <Label className="font-medium">Estado del producto</Label>
+          <Label className="font-medium">{t("productStatus")}</Label>
           <p className="text-sm text-slate-500">
-            {formData.isActive ? "Activo y visible" : "Inactivo y oculto"}
+            {formData.isActive ? t("activeVisible") : t("inactiveHidden")}
           </p>
         </div>
         <Switch
@@ -231,7 +235,7 @@ export function GlobalProductForm({
       {/* SKU Field */}
       <div className="space-y-2">
         <Label htmlFor="sku">
-          SKU <span className="text-red-500">*</span>
+          {tCatalog("products.sku")} <span className="text-red-500">*</span>
         </Label>
         <div className="relative">
           <Input
@@ -253,41 +257,41 @@ export function GlobalProductForm({
           )}
         </div>
         {skuTouched && !isCheckingSku && !skuCheck?.available && (
-          <p className="text-sm text-red-500">Este SKU ya existe</p>
+          <p className="text-sm text-red-500">{t("skuExists")}</p>
         )}
         <p className="text-xs text-slate-500">
-          Identificador único del producto (código de barras o referencia interna)
+          {t("skuDescription")}
         </p>
       </div>
 
       {/* Name Field */}
       <div className="space-y-2">
         <Label htmlFor="name">
-          Nombre <span className="text-red-500">*</span>
+          {tCommon("fields.name")} <span className="text-red-500">*</span>
         </Label>
         <Input
           id="name"
           value={formData.name}
           onChange={(e) => handleChange("name", e.target.value)}
-          placeholder="Ej: Coca Cola 350ml"
+          placeholder={tCatalog("products.form.namePlaceholder")}
         />
       </div>
 
       {/* Description Field */}
       <div className="space-y-2">
-        <Label htmlFor="description">Descripción</Label>
+        <Label htmlFor="description">{tCatalog("products.description")}</Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => handleChange("description", e.target.value)}
-          placeholder="Descripción detallada del producto..."
+          placeholder={tCatalog("form.descriptionPlaceholder")}
           rows={3}
         />
       </div>
 
       {/* Brand Field */}
       <div className="space-y-2">
-        <Label htmlFor="brand">Marca</Label>
+        <Label htmlFor="brand">{tCatalog("products.brand")}</Label>
         <Input
           id="brand"
           value={formData.brand}
@@ -300,11 +304,11 @@ export function GlobalProductForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="industry">
-            Industria <span className="text-red-500">*</span>
+            {t("industry")} <span className="text-red-500">*</span>
           </Label>
           <Select value={formData.industryId} onValueChange={handleIndustryChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecciona una industria" />
+              <SelectValue placeholder={t("selectIndustry")} />
             </SelectTrigger>
             <SelectContent>
               {industries.map((industry) => (
@@ -317,14 +321,14 @@ export function GlobalProductForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category">Categoría (opcional)</Label>
+          <Label htmlFor="category">{t("optionalCategory")}</Label>
           <Select
             value={formData.industryCategoryId}
             onValueChange={(value) => handleChange("industryCategoryId", value)}
             disabled={!formData.industryId || filteredCategories.length === 0}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecciona una categoría" />
+              <SelectValue placeholder={t("selectCategory")} />
             </SelectTrigger>
             <SelectContent>
               {filteredCategories.map((category) => (
@@ -339,14 +343,14 @@ export function GlobalProductForm({
 
       {/* Image Upload */}
       <div className="space-y-2">
-        <Label htmlFor="image">Imagen</Label>
+        <Label htmlFor="image">{tCatalog("products.image")}</Label>
         <div className="flex gap-4">
           <div className="flex-1">
             <Input
               id="image"
               value={formData.image}
               onChange={(e) => handleImageChange(e.target.value)}
-              placeholder="URL de la imagen"
+              placeholder={tCatalog("form.imageUrl")}
             />
           </div>
           <div className="w-24 h-24 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
@@ -367,29 +371,29 @@ export function GlobalProductForm({
       {/* Attributes Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Atributos adicionales</Label>
+          <Label>{t("additionalAttributes")}</Label>
           <Button type="button" variant="outline" size="sm" onClick={addAttribute}>
             <Plus className="w-4 h-4 mr-1" />
-            Agregar
+            {tCommon("buttons.add")}
           </Button>
         </div>
         
         {attributes.length === 0 && (
           <p className="text-sm text-slate-500">
-            Agrega atributos como: volumen, peso, color, etc.
+            {t("attributesHint")}
           </p>
         )}
 
         {attributes.map((attr, index) => (
           <div key={index} className="flex gap-2">
             <Input
-              placeholder="Atributo (ej: volumen)"
+              placeholder={t("attributePlaceholder")}
               value={attr.key}
               onChange={(e) => updateAttribute(index, "key", e.target.value)}
               className="flex-1"
             />
             <Input
-              placeholder="Valor (ej: 350ml)"
+              placeholder={t("valuePlaceholder")}
               value={attr.value}
               onChange={(e) => updateAttribute(index, "value", e.target.value)}
               className="flex-1"
@@ -412,8 +416,7 @@ export function GlobalProductForm({
         <Alert variant="warning" className="bg-amber-50 border-amber-200">
           <AlertCircle className="w-4 h-4 text-amber-600" />
           <AlertDescription className="text-amber-800">
-            <strong>Advertencia:</strong> Este producto está activado en{" "}
-            {product._count.businessProducts} negocios. Los cambios afectarán a todos ellos.
+            <strong>{tCommon("warning")}:</strong> {t("warningActivatedInBusinesses", { count: product._count.businessProducts })}
           </AlertDescription>
         </Alert>
       )}
@@ -421,10 +424,10 @@ export function GlobalProductForm({
       {/* Form Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-          Cancelar
+          {tCommon("buttons.cancel")}
         </Button>
         <Button type="submit" disabled={!canSubmit || isLoading} isLoading={isLoading}>
-          {isEditing ? "Guardar cambios" : "Crear producto"}
+          {isEditing ? tCommon("buttons.saveChanges") : tCatalog("products.create")}
         </Button>
       </div>
     </form>

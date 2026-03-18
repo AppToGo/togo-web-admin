@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   useOrder,
   useOrderHistory,
@@ -23,7 +24,7 @@ import {
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
 import {
-  STATUS_LABELS,
+  useStatusLabels,
   formatCurrency,
   formatOrderDate,
   canCompleteOrder,
@@ -51,8 +52,8 @@ interface OrderDetailProps {
   onClose?: () => void;
 }
 
-// Tipo de orden con icono y color
-function getOrderTypeInfo(order: {
+// Order type with icon and color - uses translations
+function useOrderTypeInfo(order: {
   deliveryType?: string;
   addressId?: string | null;
   source?: string;
@@ -61,13 +62,14 @@ function getOrderTypeInfo(order: {
   icon: React.ReactNode;
   variant: string;
 } {
+  const t = useTranslations("orders.deliveryTypes");
   const isDelivery = order.deliveryType
     ? order.deliveryType === "DELIVERY"
     : !!order.addressId;
 
   if (isDelivery) {
     return {
-      label: "Domicilio",
+      label: t("delivery"),
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
     };
@@ -75,14 +77,14 @@ function getOrderTypeInfo(order: {
 
   if (order.source === "OPERATOR") {
     return {
-      label: "En mesa",
+      label: t("table"),
       icon: <Utensils className="w-3 h-3" />,
       variant: "emerald",
     };
   }
 
   return {
-    label: "Recoger",
+    label: t("pickup"),
     icon: <Store className="w-3 h-3" />,
     variant: "amber",
   };
@@ -93,7 +95,7 @@ function formatOrderNumber(id: string): string {
   return `#${id.slice(0, 6).toUpperCase()}`;
 }
 
-// Componente para cambiar estado de orden (similar a PaymentStatusEditor)
+// Component to change order status (similar to PaymentStatusEditor)
 function OrderStatusEditor({
   orderId,
   currentStatus,
@@ -105,6 +107,7 @@ function OrderStatusEditor({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const variant = getColumnVariant(currentStatus);
+  const STATUS_LABELS = useStatusLabels();
 
   const handleSelect = useCallback(
     (newStatus: OrderStatus) => {
@@ -116,9 +119,9 @@ function OrderStatusEditor({
     [currentStatus, onStatusChange]
   );
 
-  // Estados disponibles (incluyendo el actual para mostrarlo en su posición)
-  // Orden lógico del flujo: CONFIRMED → IN_PROGRESS → READY → ON_THE_WAY → COMPLETED
-  // CANCELLED se muestra al final como opción de excepción
+  // Available statuses (including current to show it in its position)
+  // Logical flow: CONFIRMED → IN_PROGRESS → READY → ON_THE_WAY → COMPLETED
+  // CANCELLED is shown at the end as an exception option
   const availableStatuses: OrderStatus[] = [
     "CONFIRMED",
     "IN_PROGRESS",
@@ -198,6 +201,9 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
   const [showNoStockDialog, setShowNoStockDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
   const { user } = useAuthStore();
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
+  const STATUS_LABELS = useStatusLabels();
 
   // Verificar permisos para ver historial
   const canViewHistory =
@@ -212,7 +218,7 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
       if (newStatus === "COMPLETED") {
         const validation = canCompleteOrder(order);
         if (!validation.valid) {
-          toast.error(validation.message || "No se puede completar la orden");
+          toast.error(validation.message || t("errors.cannotComplete"));
           return;
         }
       }
@@ -237,17 +243,20 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
   const confirmNoStock = useCallback(() => {
     if (!selectedItem || !order?.customer?.phoneNumber) return;
 
-    const message = `Hola, lamentamos informarte que el producto "${selectedItem.productName}" no está disponible en este momento para tu orden ${formatOrderNumber(order.id)}. Te ofrecemos disculpas y alternativas.`;
+    const message = t("noStockDialog.messageTemplate", {
+      productName: selectedItem.productName,
+      orderNumber: formatOrderNumber(order.id),
+    });
 
     const phone = order.customer.phoneNumber.replace(/\D/g, "");
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
 
-    toast.success("WhatsApp abierto con el mensaje para el cliente");
+    toast.success(t("whatsappOpened"));
 
     setShowNoStockDialog(false);
     setSelectedItem(null);
-  }, [selectedItem, order]);
+  }, [selectedItem, order, t]);
 
   // Calcular totales incluyendo domicilio
   const { subtotal, deliveryFee, total } = useMemo(() => {
@@ -289,12 +298,12 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <p className="text-slate-500">No se encontró la orden</p>
+        <p className="text-slate-500">{t("orderNotFound")}</p>
       </div>
     );
   }
 
-  const orderType = getOrderTypeInfo(order);
+  const orderType = useOrderTypeInfo(order);
 
   return (
     <div className="space-y-6">
@@ -333,15 +342,15 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
           </div>
         </div>
 
-        {/* Derecha: Total */}
+        {/* Right: Total */}
         <div className="text-right">
-          <p className="text-sm text-slate-500">Total</p>
+          <p className="text-sm text-slate-500">{t("detail.total")}</p>
           <p className="text-2xl font-bold text-slate-900">
             {formatCurrency(total)}
           </p>
           {deliveryFee > 0 && (
             <p className="text-xs text-slate-500">
-              Incluye domicilio: {formatCurrency(deliveryFee)}
+              {t("includesDelivery", { fee: formatCurrency(deliveryFee) })}
             </p>
           )}
         </div>
@@ -349,11 +358,11 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
 
       <Separator />
 
-      {/* Información del Cliente */}
+      {/* Customer Information */}
       <div className="space-y-3">
         <h4 className="font-semibold text-slate-900 flex items-center gap-2">
           <User className="w-4 h-4" />
-          Cliente
+          {t("detail.customerInfo")}
         </h4>
         <div className="bg-slate-50 rounded-card p-4 space-y-2">
           {order.customer?.name ? (
@@ -366,17 +375,17 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
             </div>
           )}
           {!order.customer?.name && !order.customer?.phoneNumber && (
-            <p className="text-sm text-slate-500">Información no disponible</p>
+            <p className="text-sm text-slate-500">{tc("empty.infoNotAvailable")}</p>
           )}
         </div>
       </div>
 
-      {/* Dirección de Entrega */}
+      {/* Delivery Address */}
       {order.address && (
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            Dirección de entrega
+            {t("detail.deliveryAddress")}
           </h4>
           <div className="bg-slate-50 rounded-card p-4">
             <p className="font-medium text-slate-900">{order.address.label}</p>
@@ -387,12 +396,12 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
         </div>
       )}
 
-      {/* Items de la orden */}
+      {/* Order Items */}
       {order.items && order.items.length > 0 && (
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Package className="w-4 h-4" />
-            Productos ({order.items.length})
+            {t("detail.itemsCount", { count: order.items.length })}
           </h4>
           <div className="bg-slate-50 rounded-card overflow-hidden">
             {order.items.map((item: OrderItem, index: number) => (
@@ -418,35 +427,35 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
                   <p className="font-medium text-slate-900 text-sm">
                     {formatCurrency(item.unitPrice * item.quantity)}
                   </p>
-                  {/* Icono sutil para indicar falta de stock */}
+                  {/* Subtle icon to indicate out of stock */}
                   <button
                     onClick={() => handleNoStock(item)}
                     className="text-slate-300 hover:text-amber-500 transition-colors"
-                    title="Indicar falta de disponibilidad"
+                    title={t("markNoStock")}
                   >
                     <AlertTriangle className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             ))}
-            {/* Desglose de totales */}
+            {/* Totals breakdown */}
             <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Subtotal</span>
+                <span className="text-slate-600">{t("detail.subtotal")}</span>
                 <span className="text-slate-700">
                   {formatCurrency(subtotal)}
                 </span>
               </div>
               {deliveryFee > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Domicilio</span>
+                  <span className="text-slate-600">{t("detail.deliveryFee")}</span>
                   <span className="text-slate-700">
                     {formatCurrency(deliveryFee)}
                   </span>
                 </div>
               )}
               <div className="flex items-center justify-between pt-1 border-t border-slate-200">
-                <p className="font-semibold text-slate-900">Total</p>
+                <p className="font-semibold text-slate-900">{t("detail.total")}</p>
                 <p className="font-bold text-slate-900">
                   {formatCurrency(total)}
                 </p>
@@ -456,12 +465,12 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
         </div>
       )}
 
-      {/* Notas */}
+      {/* Notes */}
       {order.notes && (
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <StickyNote className="w-4 h-4" />
-            Notas
+            {t("detail.notes")}
           </h4>
           <div className="bg-amber-50 rounded-card p-4">
             <p className="text-sm text-amber-800">{order.notes}</p>
@@ -469,11 +478,11 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
         </div>
       )}
 
-      {/* Información de pago */}
+      {/* Payment Information */}
       <div className="space-y-3">
         <h4 className="font-semibold text-slate-900 flex items-center gap-2">
           <CreditCard className="w-4 h-4" />
-          Información de pago
+          {t("paymentInfo")}
         </h4>
         <div
           className="flex items-center gap-4"
@@ -487,18 +496,18 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
           />
           {order.paymentMethod && (
             <span className="text-sm text-slate-600">
-              Método: {order.paymentMethod}
+              {t("paymentMethod", { method: order.paymentMethod })}
             </span>
           )}
         </div>
       </div>
 
-      {/* Historial de cambios - Solo para usuarios con permisos */}
+      {/* Change History - Only for users with permissions */}
       {canViewHistory && history && history.length > 0 && (
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            Historial
+            {t("detail.history")}
           </h4>
           <div className="space-y-2">
             {history.slice(0, 5).map((entry) => (
@@ -510,7 +519,7 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
                   <span className="text-slate-600">
                     {entry.fromStatus
                       ? `${STATUS_LABELS[entry.fromStatus]} → ${STATUS_LABELS[entry.toStatus]}`
-                      : `Creado: ${STATUS_LABELS[entry.toStatus]}`}
+                      : t("history.created", { status: STATUS_LABELS[entry.toStatus] })}
                   </span>
                   {entry.notes && (
                     <p className="text-xs text-slate-400 mt-0.5">
@@ -527,7 +536,7 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
         </div>
       )}
 
-      {/* Dialog para confirmar falta de stock */}
+      {/* Dialog to confirm out of stock */}
       <Dialog open={showNoStockDialog} onOpenChange={setShowNoStockDialog}>
         <DialogContent className="sm:max-w-100 bg-white">
           <div className="flex flex-col items-center text-center p-5">
@@ -535,12 +544,10 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
               <AlertTriangle className="w-6 h-6 text-amber-600" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              Producto sin disponibilidad
+              {t("noStockDialog.title")}
             </h3>
             <p className="text-sm text-slate-500 mb-6">
-              ¿Confirmas que <strong>{selectedItem?.productName}</strong> no
-              está disponible? Esto enviará una notificación al cliente por
-              WhatsApp.
+              {t("noStockDialog.description", { productName: selectedItem?.productName || "" })}
             </p>
             <div className="flex gap-3 w-full">
               <Button
@@ -548,14 +555,14 @@ export function OrderDetail({ orderId, onClose }: OrderDetailProps) {
                 onClick={() => setShowNoStockDialog(false)}
                 className="flex-1"
               >
-                Cancelar
+                {tc("buttons.cancel")}
               </Button>
               <Button
                 variant="amber"
                 onClick={confirmNoStock}
                 className="flex-1"
               >
-                Confirmar
+                {tc("buttons.confirm")}
               </Button>
             </div>
           </div>

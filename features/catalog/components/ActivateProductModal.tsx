@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Package, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,8 @@ export function ActivateProductModal({
   onActivate,
   isLoading = false,
 }: ActivateProductModalProps) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -88,13 +91,14 @@ export function ActivateProductModal({
   // Validate form
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
+    const tValidation = useTranslations("common");
 
     if (!formData.name.trim()) {
-      newErrors.name = "El nombre es obligatorio";
+      newErrors.name = tCommon("validation.required");
     }
 
     if (!formData.price || parseFloat(formData.price) <= 0) {
-      newErrors.price = "El precio debe ser mayor a 0";
+      newErrors.price = tCommon("validation.priceGreaterThanZero");
     }
 
     setErrors(newErrors);
@@ -143,10 +147,10 @@ export function ActivateProductModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-600" />
-            Activar Producto
+            {t("activateModal.title")}
           </DialogTitle>
           <DialogDescription>
-            Configura cómo aparecerá &quot;{product.name}&quot; en tu catálogo
+            {t("activateModal.description", { name: product.name })}
           </DialogDescription>
         </DialogHeader>
 
@@ -168,21 +172,21 @@ export function ActivateProductModal({
               <p className="font-medium text-slate-900 truncate">
                 {product.name}
               </p>
-              <p className="text-xs text-slate-500">SKU: {product.sku}</p>
+              <p className="text-xs text-slate-500">{tCommon("fields.sku")}: {product.sku}</p>
             </div>
           </div>
 
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="activate-name">
-              Nombre <span className="text-red-500">*</span>
+              {t("products.name")} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="activate-name"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Nombre del producto"
+              placeholder={t("products.form.namePlaceholder")}
               disabled={isLoading}
               className={cn(errors.name && "border-red-500 focus-visible:ring-red-500")}
             />
@@ -193,14 +197,14 @@ export function ActivateProductModal({
               </p>
             )}
             <p className="text-xs text-slate-500">
-              Puedes personalizar el nombre para tu negocio
+              {t("customizeNameHint")}
             </p>
           </div>
 
           {/* Price */}
           <div className="space-y-2">
             <Label htmlFor="activate-price">
-              Precio de venta <span className="text-red-500">*</span>
+              {t("products.salePrice")} <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
@@ -229,7 +233,7 @@ export function ActivateProductModal({
             )}
             {product.basePrice && (
               <p className="text-xs text-slate-500">
-                Precio sugerido:{" "}
+                {t("products.suggestedPrice")}:{" "}
                 {new Intl.NumberFormat("es-CO", {
                   style: "currency",
                   currency: "COP",
@@ -242,7 +246,7 @@ export function ActivateProductModal({
           {/* Stock and Category */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="activate-stock">Stock</Label>
+              <Label htmlFor="activate-stock">{t("products.stock")}</Label>
               <Input
                 id="activate-stock"
                 name="stock"
@@ -250,13 +254,13 @@ export function ActivateProductModal({
                 inputMode="numeric"
                 value={formData.stock}
                 onChange={handleNumberChange}
-                placeholder="Sin límite"
+                placeholder={t("stock.unlimited")}
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activate-category">Categoría</Label>
+              <Label htmlFor="activate-category">{t("products.category")}</Label>
               <Select
                 value={formData.categoryId}
                 onValueChange={(value) =>
@@ -265,7 +269,7 @@ export function ActivateProductModal({
                 disabled={isLoading || categories.length === 0}
               >
                 <SelectTrigger id="activate-category">
-                  <SelectValue placeholder="Seleccionar" />
+                  <SelectValue placeholder={tCommon("actions.select")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
@@ -289,9 +293,7 @@ export function ActivateProductModal({
           {/* Info */}
           <div className="p-3 bg-blue-50 rounded-card text-xs text-blue-700">
             <p>
-              <strong>Nota:</strong> Este producto se vinculará al catálogo
-              global de TOGO. La imagen y descripción se heredarán
-              automáticamente.
+              <strong>{tCommon("notifications.info")}:</strong> {t("activateProductNote")}
             </p>
           </div>
 
@@ -303,14 +305,14 @@ export function ActivateProductModal({
               onClick={handleClose}
               disabled={isLoading}
             >
-              Cancelar
+              {tCommon("buttons.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !formData.name || !formData.price}
               isLoading={isLoading}
             >
-              Activar Producto
+              {t("activateModal.title")}
             </Button>
           </div>
         </form>

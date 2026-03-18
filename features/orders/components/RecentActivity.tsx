@@ -11,6 +11,7 @@ import {
   Edit3,
   Upload,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRecentActivity } from "../hooks/useOrders";
 import { getTimeElapsed } from "../utils/order-status.utils";
 import { activityIconVariants } from "../styles";
@@ -40,25 +41,27 @@ const ACTIVITY_VARIANTS = {
 
 export const RecentActivity = memo(function RecentActivity() {
   const activities = useRecentActivity();
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
 
-  // Si no hay actividades, no mostrar nada (o mostrar mensaje vacío opcional)
+  // If no activities, show empty message
   if (activities.length === 0) {
     return (
       <div className="py-6 text-center">
         <p className="text-sm text-slate-400">
-          No hay actividad reciente
+          {tc("empty.noActivity")}
         </p>
       </div>
     );
   }
 
-  // Mostrar máximo 5 actividades
+  // Show maximum 5 activities
   const displayActivities = activities.slice(0, 5);
 
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-slate-900 text-base">
-        Actividad reciente
+        {t("recentActivity")}
       </h3>
 
       <div className="space-y-3">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Upload, ImageIcon, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,8 @@ export function ProductForm({
   onCancel,
   isLoading = false,
 }: ProductFormProps) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const isEditing = !!product;
   const isFromTemplate = product?.isFromTemplate ?? false;
 
@@ -138,14 +141,14 @@ export function ProductForm({
               />
               {isFromTemplate && product?.globalProduct?.image && (
                 <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-1">
-                  Heredada de catálogo
+                  {t("inheritedFromCatalog")}
                 </div>
               )}
             </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
               <Package className="w-10 h-10 mb-1" />
-              <span className="text-xs">Sin imagen</span>
+              <span className="text-xs">{tCommon("status.noImage")}</span>
             </div>
           )}
         </div>
@@ -154,20 +157,20 @@ export function ProductForm({
       {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="name">
-          Nombre <span className="text-red-500">*</span>
+          {t("products.name")} <span className="text-red-500">*</span>
         </Label>
         <Input
           id="name"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          placeholder="Nombre del producto"
+          placeholder={t("products.form.namePlaceholder")}
           required
           disabled={isLoading}
         />
         {isFromTemplate && (
           <p className="text-xs text-blue-600">
-            Heredado de: {product?.globalProduct?.name}
+            {t("inheritedFrom", { name: product?.globalProduct?.name ?? "" })}
           </p>
         )}
       </div>
@@ -176,7 +179,7 @@ export function ProductForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="price">
-            Precio <span className="text-red-500">*</span>
+            {t("products.price")} <span className="text-red-500">*</span>
           </Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
@@ -198,7 +201,7 @@ export function ProductForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="stock">Stock (opcional)</Label>
+          <Label htmlFor="stock">{t("products.stockOptional")}</Label>
           <Input
             id="stock"
             name="stock"
@@ -206,7 +209,7 @@ export function ProductForm({
             inputMode="numeric"
             value={formData.stock}
             onChange={handleNumberChange}
-            placeholder="Sin límite"
+            placeholder={t("stock.unlimited")}
             disabled={isLoading}
           />
         </div>
@@ -214,7 +217,7 @@ export function ProductForm({
 
       {/* Category */}
       <div className="space-y-2">
-        <Label htmlFor="category">Categoría</Label>
+        <Label htmlFor="category">{t("products.category")}</Label>
         <Select
           value={formData.categoryId}
           onValueChange={(value) =>
@@ -223,12 +226,12 @@ export function ProductForm({
           disabled={isLoading || categories.length === 0}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Seleccionar categoría" />
+            <SelectValue placeholder={t("products.form.selectCategory")} />
           </SelectTrigger>
           <SelectContent>
             {categories.length === 0 ? (
               <SelectItem value="" disabled>
-                No hay categorías
+                {t("categories.noCategories")}
               </SelectItem>
             ) : (
               categories.map((category) => (
@@ -249,13 +252,13 @@ export function ProductForm({
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">Descripción</Label>
+        <Label htmlFor="description">{t("products.description")}</Label>
         <Textarea
           id="description"
           name="description"
           value={formData.description}
           onChange={handleChange}
-          placeholder="Descripción del producto..."
+          placeholder={t("products.form.descriptionPlaceholder")}
           rows={3}
           disabled={isLoading}
         />
@@ -263,19 +266,19 @@ export function ProductForm({
 
       {/* Image URL */}
       <div className="space-y-2">
-        <Label htmlFor="image">URL de Imagen</Label>
+        <Label htmlFor="image">{t("products.imageUrl")}</Label>
         <Input
           id="image"
           name="image"
           type="url"
           value={formData.image}
           onChange={handleImageChange}
-          placeholder="https://ejemplo.com/imagen.jpg"
+          placeholder={t("products.imagePlaceholder")}
           disabled={isLoading}
         />
         {isFromTemplate && !formData.image && (
           <p className="text-xs text-slate-500">
-            Si no se especifica, se usará la imagen del catálogo global
+            {t("imageFallbackDescription")}
           </p>
         )}
       </div>
@@ -284,10 +287,10 @@ export function ProductForm({
       <div className="flex items-center justify-between p-4 bg-slate-50 rounded-card">
         <div>
           <Label htmlFor="isActive" className="font-medium">
-            Producto activo
+            {t("products.activeProduct")}
           </Label>
           <p className="text-xs text-slate-500">
-            Los productos inactivos no aparecen en el menú
+            {t("inactiveProductsDescription")}
           </p>
         </div>
         <Switch
@@ -308,14 +311,14 @@ export function ProductForm({
           onClick={onCancel}
           disabled={isLoading}
         >
-          Cancelar
+          {tCommon("buttons.cancel")}
         </Button>
         <Button
           type="submit"
           disabled={isLoading || !formData.name || !formData.price}
           isLoading={isLoading}
         >
-          {isEditing ? "Guardar Cambios" : "Crear Producto"}
+          {isEditing ? tCommon("buttons.saveChanges") : t("products.create")}
         </Button>
       </div>
     </form>

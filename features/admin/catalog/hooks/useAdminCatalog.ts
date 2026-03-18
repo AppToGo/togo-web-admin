@@ -2,6 +2,8 @@
  * Admin Catalog Hooks
  * 
  * React Query hooks for Super Admin global product catalog management.
+ * 
+ * Translation keys are accessed via useTranslations('admin-catalog') internally.
  */
 
 import {
@@ -11,6 +13,7 @@ import {
   type UseQueryOptions,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type {
   GlobalProduct,
   GlobalProductStats,
@@ -79,12 +82,13 @@ export function useGlobalProduct(
  */
 export function useCreateGlobalProduct() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: (data: CreateGlobalProductDto) =>
       adminCatalogService.createGlobalProduct(data),
     onSuccess: () => {
-      toast.success("Producto global creado exitosamente");
+      toast.success(t("notifications.globalProductCreated"));
       queryClient.invalidateQueries({
         queryKey: adminCatalogKeys.products(),
       });
@@ -93,7 +97,7 @@ export function useCreateGlobalProduct() {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al crear el producto");
+      toast.error(error.message || t("errors.createProduct"));
     },
   });
 }
@@ -103,6 +107,7 @@ export function useCreateGlobalProduct() {
  */
 export function useUpdateGlobalProduct() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: ({
@@ -113,7 +118,7 @@ export function useUpdateGlobalProduct() {
       data: UpdateGlobalProductDto;
     }) => adminCatalogService.updateGlobalProduct(id, data),
     onSuccess: (_, variables) => {
-      toast.success("Producto global actualizado exitosamente");
+      toast.success(t("notifications.globalProductUpdated"));
       queryClient.invalidateQueries({
         queryKey: adminCatalogKeys.products(),
       });
@@ -122,7 +127,7 @@ export function useUpdateGlobalProduct() {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al actualizar el producto");
+      toast.error(error.message || t("errors.updateProduct"));
     },
   });
 }
@@ -132,11 +137,12 @@ export function useUpdateGlobalProduct() {
  */
 export function useDeleteGlobalProduct() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: (id: string) => adminCatalogService.deleteGlobalProduct(id),
     onSuccess: () => {
-      toast.success("Producto global eliminado exitosamente");
+      toast.success(t("notifications.globalProductDeleted"));
       queryClient.invalidateQueries({
         queryKey: adminCatalogKeys.products(),
       });
@@ -145,7 +151,7 @@ export function useDeleteGlobalProduct() {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al eliminar el producto");
+      toast.error(error.message || t("errors.deleteProduct"));
     },
   });
 }
@@ -155,20 +161,22 @@ export function useDeleteGlobalProduct() {
  */
 export function useToggleGlobalProductStatus() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       adminCatalogService.toggleGlobalProductStatus(id, isActive),
     onSuccess: (_, variables) => {
-      toast.success(
-        variables.isActive ? "Producto activado" : "Producto desactivado"
-      );
+      const successMessage = variables.isActive
+        ? t("notifications.productActivated")
+        : t("notifications.productDeactivated");
+      toast.success(successMessage);
       queryClient.invalidateQueries({
         queryKey: adminCatalogKeys.products(),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al cambiar el estado");
+      toast.error(error.message || t("errors.changeStatus"));
     },
   });
 }
@@ -267,19 +275,22 @@ export function useBrands(options?: UseQueryOptions<string[], Error>) {
  */
 export function useBulkImportProducts() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: (file: File) => adminCatalogService.bulkImportProducts(file),
-    onSuccess: (result) => {
+    onSuccess: (result: BulkImportResult) => {
       if (result.success) {
         toast.success(
-          `Importación completada: ${result.imported} productos importados`
+          t("notifications.importCompleted", { count: result.imported })
         );
         if (result.failed > 0) {
-          toast.error(`${result.failed} productos fallaron`);
+          toast.error(
+            t("notifications.productsFailed", { count: result.failed })
+          );
         }
       } else {
-        toast.error("La importación falló");
+        toast.error(t("notifications.importFailed"));
       }
       queryClient.invalidateQueries({
         queryKey: adminCatalogKeys.products(),
@@ -289,7 +300,7 @@ export function useBulkImportProducts() {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al importar productos");
+      toast.error(error.message || t("errors.importProducts"));
     },
   });
 }

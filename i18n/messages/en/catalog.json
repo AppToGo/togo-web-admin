@@ -1,0 +1,173 @@
+{
+  "title": "Catalog",
+  "inheritedFromCatalog": "Inherited from catalog",
+  "inheritedFrom": "Inherited from: {name}",
+  "imageFallbackDescription": "If not specified, the image from the global catalog will be used",
+  "inactiveProductsDescription": "Inactive products do not appear in the menu",
+  "customizeNameHint": "You can customize the name for your business",
+  "activateProductNote": "This product will be linked to the TOGO global catalog. Image and description will be inherited automatically.",
+  "subtitle": "Manage your products and categories",
+  "tabs": {
+    "products": "My Products",
+    "categories": "Categories"
+  },
+  "products": {
+    "title": "Products",
+    "create": "Create product",
+    "createDescription": "Create a new product for your catalog",
+    "edit": "Edit product",
+    "editDescription": "Modify product details",
+    "delete": "Delete product",
+    "import": "Import products",
+    "search": "Search products...",
+    "noProducts": "No products",
+    "noProductsDescription": "Start by adding your first product to the catalog",
+    "name": "Name",
+    "description": "Description",
+    "price": "Price",
+    "salePrice": "Sale price",
+    "suggestedPrice": "Suggested price",
+    "category": "Category",
+    "image": "Image",
+    "imageUrl": "Image URL",
+    "imagePlaceholder": "https://example.com/image.jpg",
+    "stock": "Stock",
+    "stockOptional": "Stock (optional)",
+    "activeProduct": "Active product",
+    "presentation": "Presentation: {unit}",
+    "sku": "SKU",
+    "barcode": "Barcode",
+    "available": "Available",
+    "featured": "Featured",
+    "filters": {
+      "all": "All",
+      "category": "Category",
+      "status": "Status"
+    },
+    "form": {
+      "nameLabel": "Product name",
+      "namePlaceholder": "Ex: Classic Burger",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe your product...",
+      "priceLabel": "Price",
+      "categoryLabel": "Category",
+      "selectCategory": "Select category",
+      "imageLabel": "Product image",
+      "uploadImage": "Upload image",
+      "changeImage": "Change image",
+      "stockLabel": "Available stock",
+      "skuLabel": "SKU (internal code)",
+      "barcodeLabel": "Barcode",
+      "imageUrl": "Image URL"
+    },
+    "empty": {
+      "title": "You don't have products yet",
+      "message": "Start by creating custom products or activating products from the TOGO global catalog."
+    }
+  },
+  "categories": {
+    "title": "Product Categories",
+    "subtitle": "Organize your products into categories",
+    "new": "New Category",
+    "create": "Create category",
+    "edit": "Edit category",
+    "delete": "Delete category",
+    "name": "Name",
+    "description": "Description",
+    "icon": "Icon",
+    "color": "Color",
+    "productsCount": "{count} products",
+    "noCategories": "No categories",
+    "emptyDescription": "Create categories to better organize your products and facilitate navigation for your customers.",
+    "createFirst": "Create first category",
+    "editDescription": "Modify the category data",
+    "deleteDescription": "Are you sure you want to delete the category \"{name}\"? This action cannot be undone.",
+    "deleteWarning": "Note: You cannot delete this category if it has associated products.",
+    "namePlaceholder": "Ex: Beverages, Fast Food...",
+    "form": {
+      "nameLabel": "Category name",
+      "namePlaceholder": "Ex: Beverages",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this category..."
+    }
+  },
+  "globalCatalog": {
+    "title": "Global Catalog",
+    "subtitle": "Manage the global product catalog",
+    "search": "Search in global catalog...",
+    "stats": {
+      "totalProducts": "Total products",
+      "activeProducts": "Active products",
+      "categories": "Categories",
+      "businessesUsing": "Businesses using"
+    },
+    "import": {
+      "title": "Import products",
+      "description": "Bulk import products from an Excel file",
+      "downloadTemplate": "Download template",
+      "uploadFile": "Upload file",
+      "processing": "Processing file...",
+      "success": "Products imported successfully"
+    },
+    "empty": {
+      "title": "Catalog complete",
+      "message": "You have activated all available products from the global catalog."
+    }
+  },
+  "actions": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "addProduct": "Add product",
+    "editProduct": "Edit",
+    "deleteProduct": "Delete",
+    "duplicate": "Duplicate",
+    "preview": "Preview"
+  },
+  "dialogs": {
+    "delete": {
+      "title": "Delete product?",
+      "description": "This action cannot be undone. The product \"{name}\" will be permanently deleted.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "activate": {
+      "title": "Activate product?",
+      "description": "The product \"{name}\" will be available to customers.",
+      "confirm": "Activate",
+      "cancel": "Cancel"
+    }
+  },
+  "stock": {
+    "unlimited": "Unlimited",
+    "noControl": "No control"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "lowStock": "Low stock",
+    "lowStockCount": "Low stock: {count}",
+    "stockCount": "Stock: {count}",
+    "custom": "Custom"
+  },
+  "activateModal": {
+    "title": "Activate Product",
+    "description": "Configure how \"{name}\" will appear in your catalog"
+  },
+  "noBusiness": {
+    "title": "You don't have a business assigned",
+    "description": "To manage products, you need to have a business assigned to your account. Contact the system administrator."
+  },
+  "notifications": {
+    "productCreated": "Product created successfully",
+    "productUpdated": "Product updated successfully",
+    "productDeleted": "Product deleted successfully",
+    "productActivated": "Product activated",
+    "productDeactivated": "Product deactivated",
+    "productActivatedInCatalog": "Product activated in your catalog",
+    "categoryCreated": "Category created successfully",
+    "categoryUpdated": "Category updated successfully",
+    "categoryDeleted": "Category deleted successfully"
+  }
+}

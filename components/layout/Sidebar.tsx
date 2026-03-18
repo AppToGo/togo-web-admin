@@ -1,51 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { useCurrentUser, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
+import {
+  useCurrentUser,
+  useIsSuperAdmin,
+} from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
-
-// Navigation items
-const navigation = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboardIcon,
-  },
-  {
-    name: "Pedidos",
-    href: "/dashboard/orders",
-    icon: ShoppingBagIcon,
-  },
-  {
-    name: "Productos",
-    href: "/dashboard/catalog",
-    icon: PackageIcon,
-  },
-  {
-    name: "Clientes",
-    href: "/customers",
-    icon: UsersIcon,
-  },
-  {
-    name: "Configuración",
-    href: "/settings",
-    icon: SettingsIcon,
-  },
-];
-
-// Admin navigation (Super Admin only)
-const adminNavigation = [
-  {
-    name: "Catálogo Global",
-    href: "/admin/global-products",
-    icon: GlobeIcon,
-  },
-];
+import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -62,10 +28,50 @@ export function Sidebar({
   onToggleCollapse,
   onMenuClick,
 }: SidebarProps) {
+  const t = useTranslations("navigation");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
+
+  // Navigation items with translation keys
+  const navigation = [
+    {
+      name: t("sidebar.dashboard"),
+      href: "/dashboard",
+      icon: LayoutDashboardIcon,
+    },
+    {
+      name: t("sidebar.orders"),
+      href: "/dashboard/orders",
+      icon: ShoppingBagIcon,
+    },
+    {
+      name: t("sidebar.catalog"),
+      href: "/dashboard/catalog",
+      icon: PackageIcon,
+    },
+    {
+      name: t("sidebar.customers"),
+      href: "/customers",
+      icon: UsersIcon,
+    },
+    {
+      name: t("sidebar.settings"),
+      href: "/settings",
+      icon: SettingsIcon,
+    },
+  ];
+
+  // Admin navigation (Super Admin only)
+  const adminNavigation = [
+    {
+      name: t("sidebar.globalCatalog"),
+      href: "/admin/global-products",
+      icon: GlobeIcon,
+    },
+  ];
 
   return (
     <>
@@ -138,7 +144,7 @@ export function Sidebar({
             {!isCollapsed && (
               <div className="px-4 pt-4 pb-2">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Administración
+                  {t("sidebar.administration")}
                 </p>
               </div>
             )}
@@ -151,7 +157,9 @@ export function Sidebar({
                     href={item.href}
                     className={cn(
                       "flex items-center rounded-card text-sm font-medium transition-all duration-200",
-                      isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
+                      isCollapsed
+                        ? "justify-center px-3 py-3"
+                        : "gap-3 px-4 py-3",
                       isActive
                         ? "bg-purple-50 text-purple-600"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -177,7 +185,7 @@ export function Sidebar({
           <button
             onClick={onToggleCollapse}
             className="w-6 h-6 rounded-full bg-white shadow-card border border-slate-100 text-slate-600 flex items-center justify-center hover:text-indigo-600 hover:border-indigo-200 transition-all"
-            title={isCollapsed ? "Expandir menú" : "Colapsar menú"}
+            title={isCollapsed ? tc("buttons.expandMenu") : tc("buttons.collapseMenu")}
           >
             <ChevronIcon
               className={cn(
@@ -195,6 +203,13 @@ export function Sidebar({
             isCollapsed ? "p-2" : "p-4"
           )}
         >
+          {/* Language Switcher */}
+          {!isCollapsed && (
+            <div className="mb-3 flex justify-center">
+              <LanguageSwitcherButtons />
+            </div>
+          )}
+
           {/* User section with notifications */}
           <div
             className={cn(
@@ -213,7 +228,7 @@ export function Sidebar({
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">
-                  {user?.name || "Usuario"}
+                  {user?.name || t("sidebar.user")}
                 </p>
                 <p className="text-xs text-slate-500 truncate">
                   {user?.email || ""}
@@ -224,7 +239,7 @@ export function Sidebar({
             {/* Notifications - right side */}
             <button
               className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white rounded-full transition-colors shrink-0"
-              title="Notificaciones"
+              title={t("sidebar.notifications")}
             >
               <BellIcon className={cn("w-5 h-5", isCollapsed && "w-4 h-4")} />
               {/* Notification badge with count */}
@@ -242,7 +257,7 @@ export function Sidebar({
               isLoading={logout.isPending}
             >
               <LogoutIcon className="w-4 h-4 mr-2" />
-              Cerrar sesión
+              {t("sidebar.logout")}
             </Button>
           )}
         </div>

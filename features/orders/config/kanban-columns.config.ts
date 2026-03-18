@@ -8,7 +8,7 @@
  */
 
 import type { OrderStatus } from "../types";
-import { STATUS_THEME, getStatusLabel, getStatusDescription } from "../theme";
+import { STATUS_THEME } from "../theme";
 
 /** Variante de columna para compatibilidad con código existente */
 export type ColumnVariant = "gray" | "blue" | "purple" | "orange" | "emerald" | "pink";
@@ -50,57 +50,60 @@ const COLOR_TO_VARIANT: Record<string, ColumnVariant> = {
 /**
  * Configuración de columnas Kanban por estado de orden
  * Generada automáticamente desde STATUS_THEME
+ * 
+ * NOTE: Titles are now status keys. Use useTranslations('orders.status') in components
+ * to get the translated labels: t(statusKey)
  */
 export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
   DRAFT: {
-    title: getStatusLabel("DRAFT"),
+    title: "DRAFT",
     variant: COLOR_TO_VARIANT[STATUS_THEME.DRAFT.color],
-    description: getStatusDescription("DRAFT"),
+    description: "DRAFT",
   },
   CONFIRMED: {
-    title: getStatusLabel("CONFIRMED"),
+    title: "CONFIRMED",
     variant: COLOR_TO_VARIANT[STATUS_THEME.CONFIRMED.color],
-    description: getStatusDescription("CONFIRMED"),
+    description: "CONFIRMED",
   },
   PAYMENT_PENDING: {
-    title: getStatusLabel("PAYMENT_PENDING"),
+    title: "PAYMENT_PENDING",
     variant: COLOR_TO_VARIANT[STATUS_THEME.PAYMENT_PENDING.color],
-    description: getStatusDescription("PAYMENT_PENDING"),
+    description: "PAYMENT_PENDING",
   },
   PAID: {
-    title: getStatusLabel("PAID"),
+    title: "PAID",
     variant: COLOR_TO_VARIANT[STATUS_THEME.PAID.color],
-    description: getStatusDescription("PAID"),
+    description: "PAID",
   },
   IN_PROGRESS: {
-    title: getStatusLabel("IN_PROGRESS"),
+    title: "IN_PROGRESS",
     variant: COLOR_TO_VARIANT[STATUS_THEME.IN_PROGRESS.color],
-    description: getStatusDescription("IN_PROGRESS"),
+    description: "IN_PROGRESS",
   },
   READY: {
-    title: getStatusLabel("READY"),
+    title: "READY",
     variant: COLOR_TO_VARIANT[STATUS_THEME.READY.color],
-    description: getStatusDescription("READY"),
+    description: "READY",
   },
   ON_THE_WAY: {
-    title: getStatusLabel("ON_THE_WAY"),
+    title: "ON_THE_WAY",
     variant: COLOR_TO_VARIANT[STATUS_THEME.ON_THE_WAY.color],
-    description: getStatusDescription("ON_THE_WAY"),
+    description: "ON_THE_WAY",
   },
   COMPLETED: {
-    title: getStatusLabel("COMPLETED"),
+    title: "COMPLETED",
     variant: COLOR_TO_VARIANT[STATUS_THEME.COMPLETED.color],
-    description: getStatusDescription("COMPLETED"),
+    description: "COMPLETED",
   },
   CANCELLED: {
-    title: getStatusLabel("CANCELLED"),
+    title: "CANCELLED",
     variant: COLOR_TO_VARIANT[STATUS_THEME.CANCELLED.color],
-    description: getStatusDescription("CANCELLED"),
+    description: "CANCELLED",
   },
   ABANDONED: {
-    title: getStatusLabel("ABANDONED"),
+    title: "ABANDONED",
     variant: COLOR_TO_VARIANT[STATUS_THEME.ABANDONED.color],
-    description: getStatusDescription("ABANDONED"),
+    description: "ABANDONED",
   },
 };
 
@@ -124,10 +127,11 @@ export function getColumnConfig(status: OrderStatus): ColumnConfig {
 
 /**
  * Obtiene el título de una columna por su status
- * Alias para compatibilidad, usa getStatusLabel del theme
+ * Returns the status key - use useTranslations('orders.status') in components
+ * @deprecated Use useTranslations('orders.status') with the status key instead
  */
 export function getColumnTitle(status: OrderStatus): string {
-  return getStatusLabel(status);
+  return status;
 }
 
 /**

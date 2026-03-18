@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useTranslations } from "next-intl";
 import { useDashboardMetrics } from "../hooks/useOrderMetrics";
 import { formatCurrency } from "../utils/order-status.utils";
 import {
@@ -11,59 +12,60 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const OrderMetrics = memo(function OrderMetrics() {
   const { raw: metrics, isLoading } = useDashboardMetrics();
+  const t = useTranslations("orders");
 
-  // Mostrar skeleton mientras carga
+  // Show skeleton while loading
   if (isLoading || !metrics) {
     return <OrderMetricsSkeleton />;
   }
 
-  // Datos por estado para las barras de progreso (del endpoint /metrics)
-  // Usamos los conteos del backend para mantener consistencia con el backend
+  // Data by status for progress bars (from /metrics endpoint)
+  // We use backend counts to maintain consistency
   const progressItems = [
     {
-      label: "Confirmadas",
+      label: t("status.CONFIRMED"),
       count: metrics.porEstadoOrden.CONFIRMED || 0,
       variant: "blue" as const,
     },
     {
-      label: "En proceso",
+      label: t("status.IN_PROGRESS"),
       count: metrics.porEstadoOrden.IN_PROGRESS || 0,
       variant: "purple" as const,
     },
     {
-      label: "Listas",
+      label: t("status.READY"),
       count: metrics.porEstadoOrden.READY || 0,
       variant: "amber" as const,
     },
     {
-      label: "En camino",
+      label: t("status.ON_THE_WAY"),
       count: metrics.porEstadoOrden.ON_THE_WAY || 0,
       variant: "cyan" as const,
     },
     {
-      label: "Completadas",
+      label: t("status.COMPLETED"),
       count: metrics.porEstadoOrden.COMPLETED || 0,
       variant: "emerald" as const,
     },
   ].filter(item => item.count > 0);
 
-  // Total de órdenes en los estados mostrados
+  // Total orders in displayed statuses
   const totalOrdersInProgress = progressItems.reduce((sum, item) => sum + item.count, 0);
 
-  // Usar el total como referencia para las barras (para mostrar proporción real)
+  // Use total as reference for bars (to show real proportion)
   const maxCount = totalOrdersInProgress > 0 ? totalOrdersInProgress : 1;
 
   return (
     <div className="space-y-6">
-      {/* Progress Bars - Estados del Kanban */}
+      {/* Progress Bars - Kanban Statuses */}
       <div className="space-y-3">
-        {/* Header con total */}
+        {/* Header with total */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-            Estados
+            {t("columns.status")}
           </span>
           <span className="text-xs text-slate-500">
-            {totalOrdersInProgress} {totalOrdersInProgress === 1 ? "orden" : "órdenes"}
+            {t("orderCount", { count: totalOrdersInProgress })}
           </span>
         </div>
 
@@ -86,39 +88,39 @@ export const OrderMetrics = memo(function OrderMetrics() {
         ))}
         {progressItems.length === 0 && (
           <p className="text-sm text-slate-400 text-center py-4">
-            No hay órdenes en proceso
+            {t("empty.noOrdersInProgress")}
           </p>
         )}
       </div>
 
-      {/* Revenue Card - Ingresos detallados */}
+      {/* Revenue Card - Detailed revenue */}
       <div className="bg-gradient-indigo-purple rounded-card-lg p-5 text-white">
-        {/* Pagado */}
+        {/* Paid */}
         <div className="mb-4">
           <p className="text-xs text-white/60 font-medium uppercase tracking-wide mb-1">
-            Pagado
+            {t("metrics.paid")}
           </p>
           <p className="text-2xl font-bold">
             {formatCurrency(metrics.recaudos.pagadas.total)}
           </p>
           <p className="text-xs text-white/50 mt-0.5">
-            {metrics.conteos.pagadas} {metrics.conteos.pagadas === 1 ? "orden" : "órdenes"}
+            {t("orderCount", { count: metrics.conteos.pagadas })}
           </p>
         </div>
 
-        {/* Separador */}
+        {/* Separator */}
         <div className="border-t border-white/20 my-3" />
 
-        {/* Pendiente de pago */}
+        {/* Pending payment */}
         <div>
           <p className="text-xs text-white/60 font-medium uppercase tracking-wide mb-1">
-            Pendiente de pago
+            {t("metrics.pendingPayment")}
           </p>
           <p className="text-xl font-semibold text-white/90">
             {formatCurrency(metrics.recaudos.pendientesPago.total)}
           </p>
           <p className="text-xs text-white/50 mt-0.5">
-            {metrics.conteos.pendientesPago} {metrics.conteos.pendientesPago === 1 ? "orden" : "órdenes"}
+            {t("orderCount", { count: metrics.conteos.pendientesPago })}
           </p>
         </div>
       </div>

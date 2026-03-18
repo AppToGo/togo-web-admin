@@ -33,8 +33,6 @@ export {
   withOpacity,
   getStatusConfig,
   getStatusColorName,
-  getStatusLabel,
-  getStatusDescription,
 } from "./order-status.theme";
 
 // === Generadores CVA ===

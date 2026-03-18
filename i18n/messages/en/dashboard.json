@@ -1,0 +1,76 @@
+{
+  "title": "Dashboard",
+  "greeting": "Hello, {name}!",
+  "welcome": {
+    "withBusiness": "Welcome to {businessName}. Here you can manage your orders and products.",
+    "withoutBusiness": "Welcome to your dashboard. Here you can manage your orders and products."
+  },
+  "stats": {
+    "ordersToday": {
+      "title": "Orders today",
+      "description": "{count} completed",
+      "none": "No orders"
+    },
+    "ordersYesterday": {
+      "title": "Orders yesterday",
+      "description": "{count} completed",
+      "none": "No orders"
+    },
+    "ordersWeek": {
+      "title": "Orders (7 days)",
+      "description": "{count} completed",
+      "none": "No orders"
+    },
+    "ordersMonth": {
+      "title": "Orders (month)",
+      "description": "{count} completed",
+      "none": "No orders"
+    },
+    "revenueToday": {
+      "title": "Revenue today",
+      "description": "{percentage}% vs previous period",
+      "none": "No sales"
+    },
+    "revenueYesterday": {
+      "title": "Revenue yesterday",
+      "description": "{percentage}% vs previous period",
+      "none": "No sales"
+    },
+    "revenueWeek": {
+      "title": "Revenue (7 days)",
+      "description": "{percentage}% vs previous period",
+      "none": "No sales"
+    },
+    "revenueMonth": {
+      "title": "Revenue (month)",
+      "description": "{percentage}% vs previous period",
+      "none": "No sales"
+    },
+    "totalOrders": {
+      "title": "Total orders",
+      "description": "{paid} paid · {pending} pending",
+      "none": "No orders"
+    },
+    "averageTicket": {
+      "title": "Average ticket",
+      "description": "Per paid order"
+    }
+  },
+  "trend": {
+    "up": "↑ {value}%",
+    "down": "↓ {value}%",
+    "neutral": "−"
+  },
+  "activity": {
+    "title": "Recent activity",
+    "description": "Your recent actions and orders will appear here",
+    "empty": "No recent activity",
+    "emptyDescription": "Orders and actions will appear here"
+  },
+  "errors": {
+    "noBusiness": {
+      "title": "You don't have a business assigned",
+      "description": "To view the dashboard, you need to have a business assigned to your account. Contact the system administrator."
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "required": "This field is required",
+  "email": {
+    "invalid": "Please enter a valid email",
+    "required": "Email is required"
+  },
+  "password": {
+    "required": "Password is required",
+    "minLength": "Password must be at least {min} characters",
+    "maxLength": "Password cannot be more than {max} characters",
+    "match": "Passwords do not match",
+    "weak": "Password is too weak. Include uppercase, lowercase, and numbers.",
+    "currentRequired": "Enter your current password"
+  },
+  "name": {
+    "required": "Name is required",
+    "minLength": "Name must be at least {min} characters",
+    "maxLength": "Name cannot be more than {max} characters"
+  },
+  "phone": {
+    "invalid": "Please enter a valid phone number",
+    "required": "Phone is required"
+  },
+  "number": {
+    "invalid": "Please enter a valid number",
+    "min": "Value must be greater than or equal to {min}",
+    "max": "Value must be less than or equal to {max}",
+    "positive": "Value must be positive"
+  },
+  "price": {
+    "invalid": "Please enter a valid price",
+    "min": "Price must be greater than 0",
+    "required": "Price is required"
+  },
+  "url": {
+    "invalid": "Please enter a valid URL"
+  },
+  "file": {
+    "tooLarge": "File is too large (maximum {size})",
+    "invalidType": "Invalid file type. Allowed: {types}",
+    "required": "You must select a file"
+  },
+  "date": {
+    "invalid": "Invalid date",
+    "future": "Date must be in the future",
+    "past": "Date must be in the past",
+    "range": "Date is outside the allowed range"
+  },
+  "skuRequired": "SKU is required",
+  "nameRequired": "Name is required",
+  "industryIdRequired": "IndustryId is required",
+  "selectCsvFile": "Please select a CSV file"
+}
