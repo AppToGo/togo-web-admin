@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import { Plus, Search, LayoutGrid, List, Filter, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -88,7 +89,7 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
 // ============================================================================
 
 function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
-  const t = useTranslations();
+  const { admin, catalog } = useAdminCatalogTranslations();
 
   return (
     <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-200">
@@ -96,14 +97,14 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
         <Filter className="w-8 h-8 text-slate-400" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 mb-2">
-        {t("admin-catalog.empty.noProductsFound")}
+        {admin('empty.noProductsFound')}
       </h3>
       <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
-        {t("admin-catalog.empty.adjustFilters")}
+        {admin('empty.adjustFilters')}
       </p>
       <Button onClick={onCreate}>
         <Plus className="w-4 h-4 mr-2" />
-        {t("catalog.products.create")}
+        {catalog('products.create')}
       </Button>
     </div>
   );
@@ -117,7 +118,7 @@ export default function GlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
-  const t = useTranslations();
+  const { admin, common } = useAdminCatalogTranslations();
 
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -213,10 +214,10 @@ export default function GlobalProductsPage() {
             <Filter className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("common.errors.accessDenied")}
+            {common('errors.accessDenied')}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {t("admin-catalog.superAdminOnly")}
+            {admin('superAdminOnly')}
           </p>
         </div>
       </DashboardLayout>
@@ -230,22 +231,22 @@ export default function GlobalProductsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {t("admin-catalog.title")}
+              {admin('title')}
             </h1>
-            <p className="text-slate-500 mt-1">{t("admin-catalog.subtitle")}</p>
+            <p className="text-slate-500 mt-1">{admin('subtitle')}</p>
           </div>
 
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleImport}>
               <Upload className="w-4 h-4 mr-2" />
-              {t("common.buttons.import")}
+              {common('buttons.import')}
             </Button>
             <Button
               onClick={handleCreate}
               className="bg-indigo-600 hover:bg-indigo-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              {t("admin-catalog.newProduct")}
+              {admin('newProduct')}
             </Button>
           </div>
         </div>
@@ -259,7 +260,7 @@ export default function GlobalProductsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder={t("admin-catalog.searchPlaceholder")}
+              placeholder={admin('searchPlaceholder')}
               value={filters.search || ""}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-9"
@@ -272,11 +273,11 @@ export default function GlobalProductsPage() {
             onValueChange={handleIndustryChange}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t("admin-catalog.allIndustries")} />
+              <SelectValue placeholder={admin('allIndustries')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                {t("admin-catalog.allIndustries")}
+                {admin('allIndustries')}
               </SelectItem>
               {industries.map((ind) => (
                 <SelectItem key={ind.id} value={ind.id}>
@@ -292,11 +293,11 @@ export default function GlobalProductsPage() {
             onValueChange={handleBrandChange}
           >
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder={t("admin-catalog.allBrands")} />
+              <SelectValue placeholder={admin('allBrands')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                {t("admin-catalog.allBrands")}
+                {admin('allBrands')}
               </SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand} value={brand}>
@@ -318,15 +319,15 @@ export default function GlobalProductsPage() {
             onValueChange={handleStatusChange}
           >
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder={t("common.fields.status")} />
+              <SelectValue placeholder={common('fields.status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("common.filters.all")}</SelectItem>
+              <SelectItem value="all">{common('filters.all')}</SelectItem>
               <SelectItem value="active">
-                {t("common.status.active")}
+                {common('status.active')}
               </SelectItem>
               <SelectItem value="inactive">
-                {t("common.status.inactive")}
+                {common('status.inactive')}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -361,7 +362,7 @@ export default function GlobalProductsPage() {
         {/* Results Count */}
         {!isLoadingProducts && productsData && (
           <p className="text-sm text-slate-500">
-            {t("common.pagination.showingOf", {
+            {common('pagination.showingOf', {
               count: productsData.data.length,
               total: productsData.meta.total,
             })}
@@ -408,10 +409,10 @@ export default function GlobalProductsPage() {
               }
               disabled={filters.page === 1}
             >
-              {t("common.pagination.previous")}
+              {common('pagination.previous')}
             </Button>
             <span className="text-sm text-slate-500">
-              {t("common.pagination.pageOf", {
+              {common('pagination.pageOf', {
                 page: filters.page ?? 1,
                 totalPages: productsData.meta.totalPages,
               })}
@@ -430,7 +431,7 @@ export default function GlobalProductsPage() {
               }
               disabled={filters.page === productsData.meta.totalPages}
             >
-              {t("common.pagination.next")}
+              {common('pagination.next')}
             </Button>
           </div>
         )}
