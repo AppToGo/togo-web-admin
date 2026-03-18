@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+
 import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import { ArrowLeft, Package, Store, AlertCircle, Clock } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -34,7 +34,6 @@ export default function EditGlobalProductPage() {
   const params = useParams();
   const isSuperAdmin = useIsSuperAdmin();
   const { admin, common, catalog } = useAdminCatalogTranslations();
-  const t = useTranslations('admin-catalog');
   const productId = params.id as string;
 
   // Data fetching
@@ -60,7 +59,7 @@ export default function EditGlobalProductPage() {
 
   // Format date
   const formatDate = (dateString?: string) => {
-    if (!dateString) return t("common.notApplicable");
+    if (!dateString) return common("notApplicable");
     return new Date(dateString).toLocaleDateString("es-ES", {
       year: "numeric",
       month: "long",
@@ -150,7 +149,7 @@ export default function EditGlobalProductPage() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-100"
                 )}
               >
-                {product.isActive ? t("common.status.active") : t("common.status.inactive")}
+                {product.isActive ? common("status.active") : common("status.inactive")}
               </Badge>
             </div>
             <p className="text-slate-500 font-mono text-sm">{product.sku}</p>
@@ -259,22 +258,22 @@ export default function EditGlobalProductPage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t("common.fields.created")}:</span>
+                  <span className="text-slate-500">{common("fields.created")}:</span>
                   <span className="text-slate-700">{formatDate(product.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t("common.fields.lastUpdated")}:</span>
+                  <span className="text-slate-500">{common("fields.lastUpdated")}:</span>
                   <span className="text-slate-700">{formatDate(product.updatedAt)}</span>
                 </div>
                 {product.createdBy && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">{t("common.fields.createdBy")}:</span>
+                    <span className="text-slate-500">{common("fields.createdBy")}:</span>
                     <span className="text-slate-700">{product.createdBy}</span>
                   </div>
                 )}
                 {product.updatedBy && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">{t("common.fields.updatedBy")}:</span>
+                    <span className="text-slate-500">{common("fields.updatedBy")}:</span>
                     <span className="text-slate-700">{product.updatedBy}</span>
                   </div>
                 )}
@@ -285,7 +284,7 @@ export default function EditGlobalProductPage() {
             {product.image && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">{t("common.preview")}</CardTitle>
+                  <CardTitle className="text-base">{common("preview")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="aspect-square rounded-lg overflow-hidden bg-slate-100">
@@ -295,7 +294,7 @@ export default function EditGlobalProductPage() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(t("common.status.noImage"))}`;
+                          `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(common("status.noImage"))}`;
                       }}
                     />
                   </div>
