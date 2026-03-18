@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Edit2, Trash2, Power, Package, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,8 @@ export function ProductCard({
   onToggleStatus,
   viewMode = "grid",
 }: ProductCardProps) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const [imageError, setImageError] = useState(false);
 
   const productImage = product.image || product.globalProduct?.image;
@@ -47,15 +50,15 @@ export function ProductCard({
   // Stock status
   const getStockStatus = () => {
     if (product.stock === null || product.stock === undefined) {
-      return { label: "Sin control", color: "text-slate-400" };
+      return { label: t("stock.noControl"), color: "text-slate-400" };
     }
     if (product.stock === 0) {
-      return { label: "Agotado", color: "text-red-500" };
+      return { label: t("status.outOfStock"), color: "text-red-500" };
     }
     if (product.stock <= 10) {
-      return { label: `Stock bajo: ${product.stock}`, color: "text-amber-500" };
+      return { label: t("status.lowStockCount", { count: product.stock }), color: "text-amber-500" };
     }
-    return { label: `Stock: ${product.stock}`, color: "text-emerald-600" };
+    return { label: t("status.stockCount", { count: product.stock }), color: "text-emerald-600" };
   };
 
   const stockStatus = getStockStatus();
@@ -90,12 +93,12 @@ export function ProductCard({
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {product.isFromTemplate && (
               <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
-                Catálogo
+                {t("title")}
               </span>
             )}
             {!product.isFromTemplate && (
               <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
-                Personalizado
+                {t("status.custom")}
               </span>
             )}
           </div>
@@ -110,7 +113,7 @@ export function ProductCard({
                   : "bg-slate-200 text-slate-600"
               )}
             >
-              {product.isActive ? "Activo" : "Inactivo"}
+              {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
             </span>
           </div>
         </div>
@@ -164,7 +167,7 @@ export function ProductCard({
                 size="icon"
                 className="h-8 w-8 bg-white/90 shadow-card-sm hover:bg-white"
               >
-                <span className="sr-only">Acciones</span>
+                <span className="sr-only">{tCommon("actions.actions")}</span>
                 <svg
                   className="w-4 h-4"
                   fill="currentColor"
@@ -179,20 +182,20 @@ export function ProductCard({
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit?.(product)}>
                 <Edit2 className="w-4 h-4 mr-2" />
-                Editar
+                {tCommon("buttons.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onToggleStatus?.(product, !product.isActive)}
               >
                 <Power className="w-4 h-4 mr-2" />
-                {product.isActive ? "Desactivar" : "Activar"}
+                {product.isActive ? t("actions.deactivate") : t("actions.activate")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete?.(product)}
                 className="text-red-600 focus:text-red-600"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Eliminar
+                {tCommon("buttons.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -233,11 +236,11 @@ export function ProductCard({
           <h3 className="font-semibold text-slate-900">{displayName}</h3>
           {product.isFromTemplate ? (
             <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded">
-              Catálogo
+              {t("title")}
             </span>
           ) : (
             <span className="px-1.5 py-0.5 text-[10px] bg-purple-100 text-purple-700 rounded">
-              Personalizado
+              {t("status.custom")}
             </span>
           )}
           <span
@@ -248,7 +251,7 @@ export function ProductCard({
                 : "bg-slate-200 text-slate-600"
             )}
           >
-            {product.isActive ? "Activo" : "Inactivo"}
+            {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
           </span>
         </div>
 

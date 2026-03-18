@@ -35,6 +35,9 @@
     "continue": "Continue",
     "accept": "Accept",
     "reject": "Reject",
+    "saveChanges": "Save changes",
+    "selectFile": "Select file",
+    "downloadTemplate": "Download template",
     "prepare": "Prepare",
     "markReady": "Mark ready",
     "deliver": "Deliver",
@@ -45,9 +48,31 @@
     "showMore": "Show more",
     "showLess": "Show less"
   },
+  "fields": {
+    "status": "Status",
+    "name": "Name",
+    "row": "Row",
+    "total": "Total",
+    "created": "Created",
+    "lastUpdated": "Last updated",
+    "createdBy": "Created by",
+    "updatedBy": "Updated by",
+    "sku": "SKU",
+    "brand": "Brand"
+  },
+  "filters": {
+    "all": "All"
+  },
+  "steps": {
+    "uploadFile": "Upload file",
+    "preview": "Preview",
+    "importing": "Importing",
+    "results": "Results"
+  },
   "status": {
     "loading": "Loading...",
     "loadingData": "Loading data...",
+    "noImage": "No image",
     "error": "Error",
     "success": "Success",
     "pending": "Pending",
@@ -61,7 +86,11 @@
     "confirmed": "Confirmed",
     "processing": "Processing",
     "paid": "Paid",
-    "unpaid": "Unpaid"
+    "unpaid": "Unpaid",
+    "deleting": "Deleting...",
+    "valid": "Valid",
+    "failed": "Failed",
+    "processingFile": "Processing file..."
   },
   "empty": {
     "title": "No data",
@@ -77,6 +106,8 @@
     "page": "Page",
     "of": "of",
     "showing": "Showing",
+    "showingOf": "Showing {count} of {total} products",
+    "pageOf": "Page {page} of {totalPages}",
     "results": "results",
     "perPage": "per page"
   },
@@ -121,8 +152,29 @@
     "notFound": "Page not found",
     "unauthorized": "Unauthorized",
     "forbidden": "Access denied",
+    "accessDenied": "Access denied",
     "serverError": "Server error",
     "tryAgain": "Try again",
-    "required": "This field is required"
-  }
+    "required": "This field is required",
+    "createFailed": "Failed to create",
+    "updateFailed": "Failed to update",
+    "deleteFailed": "Failed to delete",
+    "statusChangeFailed": "Failed to change status",
+    "importFailed": "Failed to import"
+  },
+  "warning": "Warning",
+  "importantWarning": "Important warning",
+  "actions": {
+    "actions": "Actions",
+    "select": "Select",
+    "cannotUndo": "This action cannot be undone."
+  },
+  "validation": {
+    "required": "Name is required",
+    "priceGreaterThanZero": "Price must be greater than 0"
+  },
+  "preview": "Preview",
+  "notApplicable": "N/A",
+  "instructions": "Instructions",
+  "doNotClosePage": "Please do not close this page"
 }

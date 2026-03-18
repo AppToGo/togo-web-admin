@@ -10,6 +10,7 @@
  * @see features/orders/theme/order-status.theme.ts
  */
 
+import { useTranslations } from "next-intl";
 import type { OrderStatus, PaymentStatus } from "../types";
 import { 
   STATUS_COLORS as THEME_STATUS_COLORS,
@@ -270,4 +271,25 @@ export const DELIVERY_TYPE_LABELS: Record<string, string> = {
 export function getDeliveryTypeLabel(type: string | undefined): string {
   if (!type) return "No especificado";
   return DELIVERY_TYPE_LABELS[type] || type;
+}
+
+/**
+ * Hook to get translated status labels
+ * Returns a Record of OrderStatus to translated string
+ */
+export function useStatusLabels(): Record<OrderStatus, string> {
+  const t = useTranslations("orders.status");
+  
+  return {
+    DRAFT: t("DRAFT"),
+    CONFIRMED: t("CONFIRMED"),
+    PAYMENT_PENDING: t("PAYMENT_PENDING"),
+    PAID: t("PAID"),
+    IN_PROGRESS: t("IN_PROGRESS"),
+    READY: t("READY"),
+    ON_THE_WAY: t("ON_THE_WAY"),
+    COMPLETED: t("COMPLETED"),
+    CANCELLED: t("CANCELLED"),
+    ABANDONED: t("ABANDONED"),
+  };
 }

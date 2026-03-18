@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, ImageOff, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Plus, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { GlobalProduct } from "../types/catalog.types";
@@ -15,6 +16,8 @@ export function GlobalProductCard({
   product,
   onActivate,
 }: GlobalProductCardProps) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -38,7 +41,7 @@ export function GlobalProductCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
             <Package className="w-12 h-12 text-slate-300 mb-2" />
-            <span className="text-xs text-slate-400">Sin imagen</span>
+            <span className="text-xs text-slate-400">{tCommon("status.noImage")}</span>
           </div>
         )}
 
@@ -65,7 +68,7 @@ export function GlobalProductCard({
       <div className="p-4">
         {/* SKU */}
         <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">
-          SKU: {product.sku}
+          {tCommon("fields.sku")}: {product.sku}
         </p>
 
         {/* Name */}
@@ -83,14 +86,14 @@ export function GlobalProductCard({
         {/* Unit */}
         {product.unit && (
           <p className="text-xs text-slate-400 mb-3">
-            Presentación: {product.unit}
+            {t("products.presentation", { unit: product.unit })}
           </p>
         )}
 
         {/* Suggested Price */}
         {product.basePrice && (
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-slate-500">Precio sugerido:</span>
+            <span className="text-xs text-slate-500">{t("products.suggestedPrice")}:</span>
             <span className="text-sm font-medium text-slate-700">
               {new Intl.NumberFormat("es-CO", {
                 style: "currency",
@@ -107,7 +110,7 @@ export function GlobalProductCard({
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Activar Producto
+          {t("activateModal.title")}
         </Button>
       </div>
     </div>

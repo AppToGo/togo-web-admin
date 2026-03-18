@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Store, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useIsSuperAdmin, useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useBusinesses } from "@/features/orders/hooks/useOrders";
@@ -18,6 +19,7 @@ import {
 import type { Business } from "@/types";
 
 export function BusinessSelector() {
+  const t = useTranslations();
   const isSuperAdmin = useIsSuperAdmin();
   const user = useCurrentUser();
   const { data: businesses, isLoading } = useBusinesses();
@@ -44,10 +46,10 @@ export function BusinessSelector() {
 
   const displayName =
     selectedBusinessId === ""
-      ? "Todos los negocios"
+      ? t("business.allBusinesses")
       : selectedBusiness?.name ||
         selectedBusinessName ||
-        "Seleccionar negocio...";
+        t("business.selectBusiness");
 
   return (
     <div className="px-3 py-2">
@@ -66,9 +68,9 @@ export function BusinessSelector() {
               <Store className="w-4 h-4 text-indigo-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-500 mb-0.5">Negocio</p>
+              <p className="text-xs text-slate-500 mb-0.5">{t("business.business")}</p>
               <p className="text-sm font-medium text-slate-800 truncate">
-                {isLoading ? "Cargando..." : displayName}
+                {isLoading ? t("common.status.loading") : displayName}
               </p>
             </div>
             <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
@@ -77,7 +79,7 @@ export function BusinessSelector() {
         <DropdownMenuContent align="start" className="w-64">
           {/* Opción "Todos los negocios" */}
           <DropdownMenuItem
-            onClick={() => setSelectedBusiness("", "Todos los negocios")}
+            onClick={() => setSelectedBusiness("", t("business.allBusinesses"))}
             className={cn(
               "cursor-pointer",
               effectiveBusinessId === "" && "bg-indigo-50 text-indigo-700"
@@ -86,7 +88,7 @@ export function BusinessSelector() {
             <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center mr-2">
               <span className="text-xs font-bold text-slate-600">*</span>
             </div>
-            <span className="font-medium">Todos los negocios</span>
+            <span className="font-medium">{t("business.allBusinesses")}</span>
           </DropdownMenuItem>
 
           {/* Separador */}
@@ -95,11 +97,11 @@ export function BusinessSelector() {
           {/* Lista de negocios */}
           {isLoading ? (
             <DropdownMenuItem disabled className="text-slate-400">
-              Cargando negocios...
+              {t("business.loadingBusinesses")}
             </DropdownMenuItem>
           ) : businesses?.length === 0 ? (
             <DropdownMenuItem disabled className="text-slate-400">
-              No hay negocios disponibles
+              {t("business.noBusinessesAvailable")}
             </DropdownMenuItem>
           ) : (
             businesses?.map((business: Business) => (

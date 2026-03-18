@@ -1,7 +1,8 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Package, Store, TrendingUp, AlertCircle, Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ArrowLeft, Package, Store, AlertCircle, Clock } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -31,6 +32,7 @@ export default function EditGlobalProductPage() {
   const router = useRouter();
   const params = useParams();
   const isSuperAdmin = useIsSuperAdmin();
+  const t = useTranslations();
   const productId = params.id as string;
 
   // Data fetching
@@ -56,7 +58,7 @@ export default function EditGlobalProductPage() {
 
   // Format date
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return t("common.notApplicable");
     return new Date(dateString).toLocaleDateString("es-ES", {
       year: "numeric",
       month: "long",
@@ -75,10 +77,10 @@ export default function EditGlobalProductPage() {
             <Package className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            Acceso denegado
+            {t("common.errors.accessDenied")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            Esta sección es solo para Super Administradores.
+            {t("adminCatalog.superAdminOnly")}
           </p>
         </div>
       </DashboardLayout>
@@ -112,13 +114,13 @@ export default function EditGlobalProductPage() {
             <Package className="w-8 h-8 text-slate-400" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            Producto no encontrado
+            {t("adminCatalog.productNotFound")}
           </h2>
           <p className="text-slate-500 text-center max-w-md mb-6">
-            El producto que buscas no existe o ha sido eliminado.
+            {t("adminCatalog.productNotFoundDescription")}
           </p>
           <Button onClick={() => router.push("/admin/global-products")}>
-            Volver al catálogo
+            {t("adminCatalog.backToCatalog")}
           </Button>
         </div>
       </DashboardLayout>
@@ -146,7 +148,7 @@ export default function EditGlobalProductPage() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-100"
                 )}
               >
-                {product.isActive ? "Activo" : "Inactivo"}
+                {product.isActive ? t("common.status.active") : t("common.status.inactive")}
               </Badge>
             </div>
             <p className="text-slate-500 font-mono text-sm">{product.sku}</p>
@@ -158,9 +160,9 @@ export default function EditGlobalProductPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Editar Producto</CardTitle>
+                <CardTitle>{t("catalog.products.edit")}</CardTitle>
                 <CardDescription>
-                  Modifica los detalles del producto global
+                  {t("adminCatalog.editProductDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -183,7 +185,7 @@ export default function EditGlobalProductPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Store className="w-4 h-4" />
-                  Uso en Negocios
+                  {t("adminCatalog.usageInBusinesses")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -198,7 +200,11 @@ export default function EditGlobalProductPage() {
                       <p className="text-4xl font-bold text-slate-900">
                         {stats?.totalActivations || 0}
                       </p>
-                      <p className="text-sm text-slate-500">negocios activaron este producto</p>
+                      <p className="text-sm text-slate-500">
+                        {stats?.totalActivations === 1 
+                          ? t("adminCatalog.businessesActivatedOne") 
+                          : t("adminCatalog.businessesActivated", { count: stats?.totalActivations || 0 })}
+                      </p>
                     </div>
 
                     {activationCount > 0 && (
@@ -208,7 +214,7 @@ export default function EditGlobalProductPage() {
                         {/* By Industry */}
                         <div>
                           <p className="text-sm font-medium text-slate-700 mb-2">
-                            Principalmente en:
+                            {t("adminCatalog.mainlyIn")}
                           </p>
                           <div className="space-y-2">
                             {stats?.byIndustry && Object.entries(stats.byIndustry)
@@ -236,8 +242,7 @@ export default function EditGlobalProductPage() {
               <Alert className="bg-amber-50 border-amber-200">
                 <AlertCircle className="w-4 h-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  <strong>Advertencia:</strong> Este producto está activado en{" "}
-                  {activationCount} negocios. Los cambios que realices afectarán a todos ellos.
+                  <strong>{t("common.warning")}:</strong> {t("adminCatalog.warningChangesAffectAll", { count: activationCount })}
                 </AlertDescription>
               </Alert>
             )}
@@ -247,27 +252,27 @@ export default function EditGlobalProductPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Información de Auditoría
+                  {t("adminCatalog.auditInfo")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Creado:</span>
+                  <span className="text-slate-500">{t("common.fields.created")}:</span>
                   <span className="text-slate-700">{formatDate(product.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Última actualización:</span>
+                  <span className="text-slate-500">{t("common.fields.lastUpdated")}:</span>
                   <span className="text-slate-700">{formatDate(product.updatedAt)}</span>
                 </div>
                 {product.createdBy && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Creado por:</span>
+                    <span className="text-slate-500">{t("common.fields.createdBy")}:</span>
                     <span className="text-slate-700">{product.createdBy}</span>
                   </div>
                 )}
                 {product.updatedBy && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Actualizado por:</span>
+                    <span className="text-slate-500">{t("common.fields.updatedBy")}:</span>
                     <span className="text-slate-700">{product.updatedBy}</span>
                   </div>
                 )}
@@ -278,7 +283,7 @@ export default function EditGlobalProductPage() {
             {product.image && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Vista Previa</CardTitle>
+                  <CardTitle className="text-base">{t("common.preview")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="aspect-square rounded-lg overflow-hidden bg-slate-100">
@@ -288,7 +293,7 @@ export default function EditGlobalProductPage() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          "https://placehold.co/400x400/e2e8f0/64748b?text=Sin+Imagen";
+                          `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(t("common.status.noImage"))}`;
                       }}
                     />
                   </div>

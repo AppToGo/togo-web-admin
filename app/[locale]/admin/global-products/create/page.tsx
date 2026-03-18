@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, Package } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -14,7 +15,7 @@ import {
 } from "@/features/admin/catalog/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { CreateGlobalProductDto, UpdateGlobalProductDto } from "@/features/admin/catalog/types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 // ============================================================================
 // COMPONENT
@@ -24,6 +25,7 @@ export default function CreateGlobalProductPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
+  const t = useTranslations();
 
   // Form state for industry selection
   const [selectedIndustryId, setSelectedIndustryId] = useState<string>("");
@@ -64,10 +66,10 @@ export default function CreateGlobalProductPage() {
             <Package className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            Acceso denegado
+            {t("common.errors.accessDenied")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            Esta sección es solo para Super Administradores.
+            {t("adminCatalog.superAdminOnly")}
           </p>
         </div>
       </DashboardLayout>
@@ -84,10 +86,10 @@ export default function CreateGlobalProductPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Nuevo Producto Global
+              {t("adminCatalog.newGlobalProduct")}
             </h1>
             <p className="text-slate-500">
-              Crea un nuevo producto para el catálogo global de TOGO
+              {t("adminCatalog.createProductDescription")}
             </p>
           </div>
         </div>
@@ -95,9 +97,9 @@ export default function CreateGlobalProductPage() {
         {/* Form Card */}
         <Card className="max-w-3xl">
           <CardHeader>
-            <CardTitle>Información del Producto</CardTitle>
+            <CardTitle>{t("adminCatalog.productInformation")}</CardTitle>
             <CardDescription>
-              Ingresa los detalles del producto. El SKU debe ser único.
+              {t("adminCatalog.productDetailsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -122,24 +124,20 @@ export default function CreateGlobalProductPage() {
         {/* Tips Card */}
         <Card className="max-w-3xl bg-slate-50 border-slate-200">
           <CardHeader>
-            <CardTitle className="text-base">Consejos</CardTitle>
+            <CardTitle className="text-base">{t("adminCatalog.tips")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-slate-600">
             <p>
-              <strong>SKU:</strong> Usa un código único que identifique claramente el producto.
-              Ejemplo: COCA-COLA-350ML, LECHE-ENTERA-1L
+              <strong>{t("catalog.products.sku")}:</strong> {t("adminCatalog.skuTip")}
             </p>
             <p>
-              <strong>Industria:</strong> Selecciona la industria correcta para que los negocios
-              puedan encontrar el producto fácilmente.
+              <strong>{t("adminCatalog.industry")}:</strong> {t("adminCatalog.industryTip")}
             </p>
             <p>
-              <strong>Imagen:</strong> Usa imágenes de buena calidad con fondo blanco o transparente.
-              Tamaño recomendado: 400x400 píxeles.
+              <strong>{t("catalog.products.image")}:</strong> {t("adminCatalog.imageTip")}
             </p>
             <p>
-              <strong>Atributos:</strong> Agrega atributos relevantes como volumen, peso, color,
-              sabor, etc. para facilitar la búsqueda.
+              <strong>{t("adminCatalog.attributes")}:</strong> {t("adminCatalog.attributesTip")}
             </p>
           </CardContent>
         </Card>

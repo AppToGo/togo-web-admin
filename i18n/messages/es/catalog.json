@@ -1,5 +1,11 @@
 {
   "title": "Catálogo",
+  "inheritedFromCatalog": "Heredada de catálogo",
+  "inheritedFrom": "Heredado de: {name}",
+  "imageFallbackDescription": "Si no se especifica, se usará la imagen del catálogo global",
+  "inactiveProductsDescription": "Los productos inactivos no aparecen en el menú",
+  "customizeNameHint": "Puedes personalizar el nombre para tu negocio",
+  "activateProductNote": "Este producto se vinculará al catálogo global de TOGO. La imagen y descripción se heredarán automáticamente.",
   "subtitle": "Gestiona tus productos y categorías",
   "tabs": {
     "products": "Mis Productos",
@@ -19,9 +25,16 @@
     "name": "Nombre",
     "description": "Descripción",
     "price": "Precio",
+    "salePrice": "Precio de venta",
+    "suggestedPrice": "Precio sugerido",
     "category": "Categoría",
     "image": "Imagen",
+    "imageUrl": "URL de Imagen",
+    "imagePlaceholder": "https://ejemplo.com/imagen.jpg",
     "stock": "Stock",
+    "stockOptional": "Stock (opcional)",
+    "activeProduct": "Producto activo",
+    "presentation": "Presentación: {unit}",
     "sku": "SKU",
     "barcode": "Código de barras",
     "available": "Disponible",
@@ -44,7 +57,8 @@
       "changeImage": "Cambiar imagen",
       "stockLabel": "Stock disponible",
       "skuLabel": "SKU (código interno)",
-      "barcodeLabel": "Código de barras"
+      "barcodeLabel": "Código de barras",
+      "imageUrl": "URL de la imagen"
     },
     "empty": {
       "title": "No tienes productos aún",
@@ -52,7 +66,9 @@
     }
   },
   "categories": {
-    "title": "Categorías",
+    "title": "Categorías de Productos",
+    "subtitle": "Organiza tus productos en categorías",
+    "new": "Nueva Categoría",
     "create": "Crear categoría",
     "edit": "Editar categoría",
     "delete": "Eliminar categoría",
@@ -62,6 +78,12 @@
     "color": "Color",
     "productsCount": "{count} productos",
     "noCategories": "No hay categorías",
+    "emptyDescription": "Crea categorías para organizar mejor tus productos y facilitar la navegación de tus clientes.",
+    "createFirst": "Crear primera categoría",
+    "editDescription": "Modifica los datos de la categoría",
+    "deleteDescription": "¿Estás seguro de que deseas eliminar la categoría \"{name}\"? Esta acción no se puede deshacer.",
+    "deleteWarning": "Nota: No podrás eliminar esta categoría si tiene productos asociados.",
+    "namePlaceholder": "Ej: Bebidas, Comida Rápida...",
     "form": {
       "nameLabel": "Nombre de la categoría",
       "namePlaceholder": "Ej: Bebidas",
@@ -115,15 +137,37 @@
       "cancel": "Cancelar"
     }
   },
+  "stock": {
+    "unlimited": "Sin límite",
+    "noControl": "Sin control"
+  },
   "status": {
     "active": "Activo",
     "inactive": "Inactivo",
     "inStock": "En stock",
     "outOfStock": "Agotado",
-    "lowStock": "Stock bajo"
+    "lowStock": "Stock bajo",
+    "lowStockCount": "Stock bajo: {count}",
+    "stockCount": "Stock: {count}",
+    "custom": "Personalizado"
+  },
+  "activateModal": {
+    "title": "Activar Producto",
+    "description": "Configura cómo aparecerá \"{name}\" en tu catálogo"
   },
   "noBusiness": {
     "title": "No tienes un negocio asignado",
     "description": "Para gestionar productos, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
+  },
+  "notifications": {
+    "productCreated": "Producto creado exitosamente",
+    "productUpdated": "Producto actualizado exitosamente",
+    "productDeleted": "Producto eliminado exitosamente",
+    "productActivated": "Producto activado",
+    "productDeactivated": "Producto desactivado",
+    "productActivatedInCatalog": "Producto activado en tu catálogo",
+    "categoryCreated": "Categoría creada exitosamente",
+    "categoryUpdated": "Categoría actualizada exitosamente",
+    "categoryDeleted": "Categoría eliminada exitosamente"
   }
 }

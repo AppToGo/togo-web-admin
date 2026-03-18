@@ -45,5 +45,9 @@
     "future": "La fecha debe ser futura",
     "past": "La fecha debe ser pasada",
     "range": "La fecha está fuera del rango permitido"
-  }
+  },
+  "skuRequired": "SKU es requerido",
+  "nameRequired": "Nombre es requerido",
+  "industryIdRequired": "IndustryId es requerido",
+  "selectCsvFile": "Por favor selecciona un archivo CSV"
 }

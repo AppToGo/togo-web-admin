@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Upload,
@@ -51,6 +52,7 @@ export default function ImportGlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
+  const t = useTranslations();
 
   // State
   const [currentStep, setCurrentStep] = useState<ImportStep>("upload");
@@ -80,9 +82,9 @@ export default function ImportGlobalProductsPage() {
       });
 
       // Validation
-      if (!data.sku) errors.push("SKU es requerido");
-      if (!data.name) errors.push("Nombre es requerido");
-      if (!data.industryid) errors.push("IndustryId es requerido");
+      if (!data.sku) errors.push(t("validation.skuRequired"));
+      if (!data.name) errors.push(t("validation.nameRequired"));
+      if (!data.industryid) errors.push(t("validation.industryIdRequired"));
 
       rows.push({
         row: i,
@@ -98,7 +100,7 @@ export default function ImportGlobalProductsPage() {
   // Handle file selection
   const handleFileSelect = (selectedFile: File) => {
     if (selectedFile.type !== "text/csv" && !selectedFile.name.endsWith(".csv")) {
-      alert("Por favor selecciona un archivo CSV");
+      alert(t("validation.selectCsvFile"));
       return;
     }
 
@@ -153,10 +155,10 @@ export default function ImportGlobalProductsPage() {
             <Upload className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            Acceso denegado
+            {t("common.errors.accessDenied")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            Esta sección es solo para Super Administradores.
+            {t("adminCatalog.superAdminOnly")}
           </p>
         </div>
       </DashboardLayout>
@@ -166,6 +168,13 @@ export default function ImportGlobalProductsPage() {
   // Count valid/invalid rows
   const validRows = parsedData.filter((row) => row.isValid);
   const invalidRows = parsedData.filter((row) => !row.isValid);
+
+  const steps = [
+    { id: "upload", label: t("common.steps.uploadFile") },
+    { id: "preview", label: t("common.steps.preview") },
+    { id: "importing", label: t("common.steps.importing") },
+    { id: "results", label: t("common.steps.results") },
+  ];
 
   return (
     <DashboardLayout>
@@ -177,22 +186,17 @@ export default function ImportGlobalProductsPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Importar Productos
+              {t("adminCatalog.importProducts")}
             </h1>
             <p className="text-slate-500">
-              Sube productos masivamente desde un archivo CSV
+              {t("adminCatalog.importDescription")}
             </p>
           </div>
         </div>
 
         {/* Step Indicator */}
         <div className="flex items-center gap-4">
-          {[
-            { id: "upload", label: "Subir archivo" },
-            { id: "preview", label: "Vista previa" },
-            { id: "importing", label: "Importando" },
-            { id: "results", label: "Resultados" },
-          ].map((step, index) => (
+          {steps.map((step, index) => (
             <div key={step.id} className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -227,10 +231,9 @@ export default function ImportGlobalProductsPage() {
         {currentStep === "upload" && (
           <Card>
             <CardHeader>
-              <CardTitle>Subir archivo CSV</CardTitle>
+              <CardTitle>{t("adminCatalog.uploadCsvFile")}</CardTitle>
               <CardDescription>
-                El archivo debe tener las columnas: sku, name, description, brand, industryId,
-                industryCategoryId, imageUrl
+                {t("adminCatalog.csvColumnsDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -250,7 +253,7 @@ export default function ImportGlobalProductsPage() {
               >
                 <FileSpreadsheet className="w-12 h-12 mx-auto mb-4 text-slate-400" />
                 <p className="text-lg font-medium text-slate-700 mb-2">
-                  Arrastra y suelta tu archivo CSV aquí
+                  {t("adminCatalog.dragDropCsv")}
                 </p>
                 <p className="text-sm text-slate-500 mb-4">o</p>
                 <input
@@ -262,7 +265,7 @@ export default function ImportGlobalProductsPage() {
                 />
                 <label htmlFor="csv-upload">
                   <Button variant="outline" className="cursor-pointer" asChild>
-                    <span>Seleccionar archivo</span>
+                    <span>{t("common.buttons.selectFile")}</span>
                   </Button>
                 </label>
               </div>
@@ -271,27 +274,27 @@ export default function ImportGlobalProductsPage() {
               <div className="bg-slate-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-slate-700">¿No tienes el formato?</p>
+                    <p className="font-medium text-slate-700">{t("adminCatalog.noFormatQuestion")}</p>
                     <p className="text-sm text-slate-500">
-                      Descarga la plantilla con el formato correcto
+                      {t("adminCatalog.downloadTemplateDescription")}
                     </p>
                   </div>
                   <Button variant="outline" onClick={handleDownloadTemplate}>
                     <Download className="w-4 h-4 mr-2" />
-                    Descargar plantilla
+                    {t("common.buttons.downloadTemplate")}
                   </Button>
                 </div>
               </div>
 
               {/* Instructions */}
               <div className="space-y-2">
-                <p className="font-medium text-slate-700">Instrucciones:</p>
+                <p className="font-medium text-slate-700">{t("common.instructions")}:</p>
                 <ul className="text-sm text-slate-600 space-y-1 list-disc list-inside">
-                  <li>El archivo debe estar en formato CSV (valores separados por comas)</li>
-                  <li>La primera fila debe contener los nombres de las columnas</li>
-                  <li>SKU, name e industryId son campos obligatorios</li>
-                  <li>Si un SKU ya existe, el producto será actualizado</li>
-                  <li>Máximo 1000 filas por archivo</li>
+                  <li>{t("adminCatalog.csvFormatInstruction")}</li>
+                  <li>{t("adminCatalog.firstRowHeaders")}</li>
+                  <li>{t("adminCatalog.requiredFields")}</li>
+                  <li>{t("adminCatalog.skuUpdateNote")}</li>
+                  <li>{t("adminCatalog.maxRows")}</li>
                 </ul>
               </div>
             </CardContent>
@@ -304,20 +307,24 @@ export default function ImportGlobalProductsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Vista previa</CardTitle>
+                  <CardTitle>{t("common.steps.preview")}</CardTitle>
                   <CardDescription>
-                    Revisa los datos antes de importar
+                    {t("adminCatalog.reviewBeforeImport")}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="default" className="bg-green-100 text-green-700">
                     <Check className="w-3 h-3 mr-1" />
-                    {validRows.length} válidos
+                    {validRows.length === 1 
+                      ? t("adminCatalog.validCountOne") 
+                      : t("adminCatalog.validCount", { count: validRows.length })}
                   </Badge>
                   {invalidRows.length > 0 && (
                     <Badge variant="destructive">
                       <X className="w-3 h-3 mr-1" />
-                      {invalidRows.length} con errores
+                      {invalidRows.length === 1 
+                        ? t("adminCatalog.errorsCountOne") 
+                        : t("adminCatalog.errorsCount", { count: invalidRows.length })}
                     </Badge>
                   )}
                 </div>
@@ -329,7 +336,7 @@ export default function ImportGlobalProductsPage() {
                 <Alert variant="destructive">
                   <AlertCircle className="w-4 h-4" />
                   <AlertDescription>
-                    Hay {invalidRows.length} filas con errores. Corrige el archivo antes de continuar.
+                    {t("adminCatalog.errorsInRows", { count: invalidRows.length })}
                   </AlertDescription>
                 </Alert>
               )}
@@ -340,11 +347,11 @@ export default function ImportGlobalProductsPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50 sticky top-0">
                       <tr>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Fila</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">SKU</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Nombre</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Marca</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Estado</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.row")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.sku")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.name")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.brand")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.status")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -358,13 +365,13 @@ export default function ImportGlobalProductsPage() {
                             {row.isValid ? (
                               <Badge variant="default" className="bg-green-100 text-green-700">
                                 <Check className="w-3 h-3 mr-1" />
-                                Válido
+                                {t("common.status.valid")}
                               </Badge>
                             ) : (
                               <div className="flex flex-col gap-1">
                                 <Badge variant="destructive">
                                   <X className="w-3 h-3 mr-1" />
-                                  Error
+                                  {t("common.status.error")}
                                 </Badge>
                                 <span className="text-xs text-red-600">
                                   {row.errors.join(", ")}
@@ -387,15 +394,16 @@ export default function ImportGlobalProductsPage() {
               {/* Actions */}
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setCurrentStep("upload")}>
-                  Volver
+                  {t("common.buttons.back")}
                 </Button>
                 <Button
                   onClick={handleImport}
                   disabled={validRows.length === 0 || importProducts.isPending}
-                  isLoading={importProducts.isPending}
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Importar {validRows.length} productos
+                  {validRows.length === 1 
+                    ? t("adminCatalog.importCountProductsOne") 
+                    : t("adminCatalog.importCountProducts", { count: validRows.length })}
                 </Button>
               </div>
             </CardContent>
@@ -406,19 +414,19 @@ export default function ImportGlobalProductsPage() {
         {currentStep === "importing" && (
           <Card>
             <CardHeader>
-              <CardTitle>Importando productos...</CardTitle>
+              <CardTitle>{t("adminCatalog.importingProducts")}</CardTitle>
               <CardDescription>
-                Esto puede tomar unos momentos dependiendo de la cantidad de productos
+                {t("adminCatalog.importingDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 py-8">
               <div className="flex flex-col items-center">
                 <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mb-4" />
                 <p className="text-lg font-medium text-slate-700">
-                  Procesando archivo...
+                  {t("common.status.processingFile")}
                 </p>
                 <p className="text-sm text-slate-500">
-                  Por favor no cierres esta página
+                  {t("common.doNotClosePage")}
                 </p>
               </div>
               <Progress value={45} className="w-full" />
@@ -430,9 +438,9 @@ export default function ImportGlobalProductsPage() {
         {currentStep === "results" && importResult && (
           <Card>
             <CardHeader>
-              <CardTitle>Importación completada</CardTitle>
+              <CardTitle>{t("adminCatalog.importCompleted")}</CardTitle>
               <CardDescription>
-                Resumen de la importación de productos
+                {t("adminCatalog.importSummary")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -442,25 +450,25 @@ export default function ImportGlobalProductsPage() {
                   <p className="text-2xl font-bold text-slate-900">
                     {importResult.totalRows}
                   </p>
-                  <p className="text-sm text-slate-500">Total</p>
+                  <p className="text-sm text-slate-500">{t("common.fields.total")}</p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-green-600">
                     {importResult.imported}
                   </p>
-                  <p className="text-sm text-green-600">Importados</p>
+                  <p className="text-sm text-green-600">{t("adminCatalog.imported")}</p>
                 </div>
                 <div className="bg-amber-50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-amber-600">
                     {importResult.skipped}
                   </p>
-                  <p className="text-sm text-amber-600">Omitidos</p>
+                  <p className="text-sm text-amber-600">{t("adminCatalog.skipped")}</p>
                 </div>
                 <div className="bg-red-50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-red-600">
                     {importResult.failed}
                   </p>
-                  <p className="text-sm text-red-600">Fallidos</p>
+                  <p className="text-sm text-red-600">{t("common.status.failed")}</p>
                 </div>
               </div>
 
@@ -469,7 +477,7 @@ export default function ImportGlobalProductsPage() {
                 <Alert variant="destructive">
                   <AlertCircle className="w-4 h-4" />
                   <AlertDescription>
-                    Algunos productos no pudieron ser importados. Revisa los detalles abajo.
+                    {t("adminCatalog.someProductsFailed")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -479,9 +487,9 @@ export default function ImportGlobalProductsPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50">
                       <tr>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Fila</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">SKU</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">Error</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.row")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.fields.sku")}</th>
+                        <th className="px-4 py-2 text-left font-medium text-slate-700">{t("common.errors.error")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -505,7 +513,7 @@ export default function ImportGlobalProductsPage() {
                   variant="outline"
                   onClick={() => router.push("/admin/global-products")}
                 >
-                  Ver catálogo
+                  {t("adminCatalog.viewCatalog")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -515,7 +523,7 @@ export default function ImportGlobalProductsPage() {
                     setImportResult(null);
                   }}
                 >
-                  Importar más productos
+                  {t("adminCatalog.importMoreProducts")}
                 </Button>
               </div>
             </CardContent>

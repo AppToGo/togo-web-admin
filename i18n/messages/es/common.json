@@ -6,6 +6,7 @@
   },
   "buttons": {
     "save": "Guardar",
+    "saveChanges": "Guardar Cambios",
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "edit": "Editar",
@@ -35,6 +36,8 @@
     "continue": "Continuar",
     "accept": "Aceptar",
     "reject": "Rechazar",
+    "selectFile": "Seleccionar archivo",
+    "downloadTemplate": "Descargar plantilla",
     "prepare": "Preparar",
     "markReady": "Marcar listo",
     "deliver": "Entregar",
@@ -45,9 +48,31 @@
     "showMore": "Mostrar más",
     "showLess": "Mostrar menos"
   },
+  "fields": {
+    "status": "Estado",
+    "name": "Nombre",
+    "row": "Fila",
+    "total": "Total",
+    "created": "Creado",
+    "lastUpdated": "Última actualización",
+    "createdBy": "Creado por",
+    "updatedBy": "Actualizado por",
+    "sku": "SKU",
+    "brand": "Marca"
+  },
+  "filters": {
+    "all": "Todos"
+  },
+  "steps": {
+    "uploadFile": "Subir archivo",
+    "preview": "Vista previa",
+    "importing": "Importando",
+    "results": "Resultados"
+  },
   "status": {
     "loading": "Cargando...",
     "loadingData": "Cargando datos...",
+    "noImage": "Sin imagen",
     "error": "Error",
     "success": "Éxito",
     "pending": "Pendiente",
@@ -61,7 +86,11 @@
     "confirmed": "Confirmado",
     "processing": "Procesando",
     "paid": "Pagado",
-    "unpaid": "No pagado"
+    "unpaid": "No pagado",
+    "deleting": "Eliminando...",
+    "valid": "Válido",
+    "failed": "Fallidos",
+    "processingFile": "Procesando archivo..."
   },
   "empty": {
     "title": "No hay datos",
@@ -77,6 +106,8 @@
     "page": "Página",
     "of": "de",
     "showing": "Mostrando",
+    "showingOf": "Mostrando {count} de {total} productos",
+    "pageOf": "Página {page} de {totalPages}",
     "results": "resultados",
     "perPage": "por página"
   },
@@ -121,8 +152,28 @@
     "notFound": "Página no encontrada",
     "unauthorized": "No autorizado",
     "forbidden": "Acceso denegado",
+    "accessDenied": "Acceso denegado",
     "serverError": "Error del servidor",
     "tryAgain": "Intentar de nuevo",
-    "required": "Este campo es obligatorio"
-  }
+    "required": "Este campo es obligatorio",
+    "createFailed": "Error al crear",
+    "updateFailed": "Error al actualizar",
+    "deleteFailed": "Error al eliminar",
+    "statusChangeFailed": "Error al cambiar el estado"
+  },
+  "warning": "Advertencia",
+  "importantWarning": "Advertencia importante",
+  "actions": {
+    "actions": "Acciones",
+    "select": "Seleccionar",
+    "cannotUndo": "Esta acción no se puede deshacer."
+  },
+  "validation": {
+    "required": "El nombre es obligatorio",
+    "priceGreaterThanZero": "El precio debe ser mayor a 0"
+  },
+  "preview": "Vista Previa",
+  "notApplicable": "N/A",
+  "instructions": "Instrucciones",
+  "doNotClosePage": "Por favor no cierres esta página"
 }

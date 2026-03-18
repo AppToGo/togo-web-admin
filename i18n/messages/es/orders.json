@@ -1,4 +1,36 @@
 {
+  "deliveryTypes": {
+    "delivery": "Domicilio",
+    "table": "En mesa",
+    "pickup": "Recoger"
+  },
+  "orderNotFound": "No se encontró la orden",
+  "includesDelivery": "Incluye domicilio: {{fee}}",
+  "itemsCount": "Productos ({{count}})",
+  "markNoStock": "Indicar falta de disponibilidad",
+  "paymentInfo": "Información de pago",
+  "paymentMethod": "Método: {{method}}",
+  "unknownCustomer": "Cliente desconocido",
+  "orderNumber": "Orden #{{id}}",
+  "orderCount": "{{count}} orden",
+  "orderCount_plural": "{{count}} órdenes",
+  "recentActivity": "Actividad reciente",
+  "whatsappOpened": "WhatsApp abierto con el mensaje para el cliente",
+  "statusUpdated": "Estado actualizado a \"{{status}}\"",
+  "paymentStatusUpdated": "Estado de pago actualizado",
+  "errors": {
+    "updateStatusFailed": "No se pudo actualizar el estado de la orden",
+    "updatePaymentFailed": "No se pudo actualizar el estado de pago",
+    "cannotComplete": "No se puede completar la orden"
+  },
+  "history": {
+    "created": "Creado: {{status}}"
+  },
+  "noStockDialog": {
+    "title": "Producto sin disponibilidad",
+    "description": "¿Confirmas que {{productName}} no está disponible? Esto enviará una notificación al cliente por WhatsApp.",
+    "messageTemplate": "Hola, lamentamos informarte que el producto \"{{productName}}\" no está disponible en este momento para tu orden {{orderNumber}}. Te ofrecemos disculpas y alternativas."
+  },
   "title": "Gestión de Órdenes",
   "subtitle": "Administra y supervisa todas las órdenes de tu negocio",
   "newOrders": "Nuevos pedidos",
@@ -35,13 +67,20 @@
     }
   },
   "status": {
+    "DRAFT": "Borrador",
+    "CONFIRMED": "Confirmada",
+    "PAYMENT_PENDING": "Pago pendiente",
+    "PAID": "Pagada",
+    "IN_PROGRESS": "En proceso",
+    "READY": "Lista",
+    "ON_THE_WAY": "En camino",
+    "COMPLETED": "Completada",
+    "CANCELLED": "Cancelada",
+    "ABANDONED": "Abandonada",
     "PENDING": "Pendiente",
-    "CONFIRMED": "Confirmado",
     "PREPARING": "En preparación",
-    "READY": "Listo",
     "DELIVERING": "En camino",
     "DELIVERED": "Entregado",
-    "CANCELLED": "Cancelado",
     "ACCEPTED": "Aceptado",
     "REJECTED": "Rechazado"
   },
@@ -87,9 +126,11 @@
   "detail": {
     "title": "Detalle del Pedido",
     "orderNumber": "Pedido #{number}",
-    "customerInfo": "Información del cliente",
+    "customerInfo": "Cliente",
+    "deliveryAddress": "Dirección de entrega",
     "orderInfo": "Información del pedido",
     "items": "Artículos",
+    "itemsCount": "Productos ({{count}})",
     "notes": "Notas",
     "history": "Historial",
     "total": "Total",
@@ -109,7 +150,8 @@
   },
   "empty": {
     "title": "No hay órdenes",
-    "description": "Las órdenes aparecerán aquí cuando los clientes realicen pedidos"
+    "description": "Las órdenes aparecerán aquí cuando los clientes realicen pedidos",
+    "noOrdersInProgress": "No hay órdenes en proceso"
   },
   "metrics": {
     "title": "Métricas",
@@ -117,6 +159,8 @@
     "completedOrders": "Completadas",
     "cancelledOrders": "Canceladas",
     "averageTime": "Tiempo promedio",
-    "totalRevenue": "Ingresos totales"
+    "totalRevenue": "Ingresos totales",
+    "paid": "Pagado",
+    "pendingPayment": "Pendiente de pago"
   }
 }
