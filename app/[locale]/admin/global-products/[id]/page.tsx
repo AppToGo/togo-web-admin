@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import { ArrowLeft, Package, Store, AlertCircle, Clock } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -32,7 +33,8 @@ export default function EditGlobalProductPage() {
   const router = useRouter();
   const params = useParams();
   const isSuperAdmin = useIsSuperAdmin();
-  const t = useTranslations();
+  const { admin, common, catalog } = useAdminCatalogTranslations();
+  const t = useTranslations('admin-catalog');
   const productId = params.id as string;
 
   // Data fetching
@@ -77,10 +79,10 @@ export default function EditGlobalProductPage() {
             <Package className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("common.errors.accessDenied")}
+            {common('errors.accessDenied')}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {t("adminCatalog.superAdminOnly")}
+            {admin('superAdminOnly')}
           </p>
         </div>
       </DashboardLayout>
@@ -114,13 +116,13 @@ export default function EditGlobalProductPage() {
             <Package className="w-8 h-8 text-slate-400" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("adminCatalog.productNotFound")}
+            {admin('productNotFound')}
           </h2>
           <p className="text-slate-500 text-center max-w-md mb-6">
-            {t("adminCatalog.productNotFoundDescription")}
+            {admin('productNotFoundDescription')}
           </p>
           <Button onClick={() => router.push("/admin/global-products")}>
-            {t("adminCatalog.backToCatalog")}
+            {admin('backToCatalog')}
           </Button>
         </div>
       </DashboardLayout>
@@ -160,9 +162,9 @@ export default function EditGlobalProductPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t("catalog.products.edit")}</CardTitle>
+                <CardTitle>{catalog('products.edit')}</CardTitle>
                 <CardDescription>
-                  {t("adminCatalog.editProductDescription")}
+                  {admin('editProductDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -185,7 +187,7 @@ export default function EditGlobalProductPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Store className="w-4 h-4" />
-                  {t("adminCatalog.usageInBusinesses")}
+                  {admin('usageInBusinesses')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -202,8 +204,8 @@ export default function EditGlobalProductPage() {
                       </p>
                       <p className="text-sm text-slate-500">
                         {stats?.totalActivations === 1 
-                          ? t("adminCatalog.businessesActivatedOne") 
-                          : t("adminCatalog.businessesActivated", { count: stats?.totalActivations || 0 })}
+                          ? admin('businessesActivatedOne') 
+                          : admin('businessesActivated', { count: stats?.totalActivations || 0 })}
                       </p>
                     </div>
 
@@ -214,7 +216,7 @@ export default function EditGlobalProductPage() {
                         {/* By Industry */}
                         <div>
                           <p className="text-sm font-medium text-slate-700 mb-2">
-                            {t("adminCatalog.mainlyIn")}
+                            {admin('mainlyIn')}
                           </p>
                           <div className="space-y-2">
                             {stats?.byIndustry && Object.entries(stats.byIndustry)
@@ -242,7 +244,7 @@ export default function EditGlobalProductPage() {
               <Alert className="bg-amber-50 border-amber-200">
                 <AlertCircle className="w-4 h-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  <strong>{t("common.warning")}:</strong> {t("adminCatalog.warningChangesAffectAll", { count: activationCount })}
+                  <strong>{common('warning')}:</strong> {admin('warningChangesAffectAll', { count: activationCount })}
                 </AlertDescription>
               </Alert>
             )}
@@ -252,7 +254,7 @@ export default function EditGlobalProductPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  {t("adminCatalog.auditInfo")}
+                  {admin('auditInfo')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
