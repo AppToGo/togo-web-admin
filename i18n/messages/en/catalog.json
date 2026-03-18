@@ -37,6 +37,7 @@
     "presentation": "Presentation: {unit}",
     "sku": "SKU",
     "barcode": "Barcode",
+    "brand": "Brand",
     "available": "Available",
     "featured": "Featured",
     "filters": {

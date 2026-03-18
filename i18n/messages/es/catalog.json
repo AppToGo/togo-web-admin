@@ -37,6 +37,7 @@
     "presentation": "Presentación: {unit}",
     "sku": "SKU",
     "barcode": "Código de barras",
+    "brand": "Marca",
     "available": "Disponible",
     "featured": "Destacado",
     "filters": {
