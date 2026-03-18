@@ -60,7 +60,7 @@ export function GlobalProductForm({
   isLoading,
 }: GlobalProductFormProps) {
   const isEditing = !!product;
-  const t = useTranslations("adminCatalog");
+  const t = useTranslations('admin-catalog');
   const tCommon = useTranslations("common");
   const tCatalog = useTranslations("catalog");
 
