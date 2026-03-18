@@ -64,6 +64,7 @@
   "optionalCategory": "Category (optional)",
   "selectCategory": "Select a category",
   "additionalAttributes": "Additional attributes",
+  "attributes": "Attributes",
   "attributesHint": "Add attributes like: volume, weight, color, etc.",
   "attributePlaceholder": "Attribute (e.g., volume)",
   "valuePlaceholder": "Value (e.g., 350ml)",
