@@ -26,18 +26,17 @@
     "UNKNOWN": "Desconocido"
   },
   "orderNotFound": "No se encontró la orden",
-  "includesDelivery": "Incluye domicilio: {{fee}}",
-  "itemsCount": "Productos ({{count}})",
+  "includesDelivery": "Incluye domicilio: {fee}",
+  "itemsCount": "Productos ({count})",
   "markNoStock": "Indicar falta de disponibilidad",
   "paymentInfo": "Información de pago",
-  "paymentMethod": "Método: {{method}}",
+  "paymentMethod": "Método: {method}",
   "unknownCustomer": "Cliente desconocido",
-  "orderNumber": "Orden #{{id}}",
-  "orderCount": "{{count}} orden",
-  "orderCount_plural": "{{count}} órdenes",
+  "orderNumber": "Orden #{id}",
+  "orderCount": "{count, plural, one {# orden} other {# órdenes}}",
   "recentActivity": "Actividad reciente",
   "whatsappOpened": "WhatsApp abierto con el mensaje para el cliente",
-  "statusUpdated": "Estado actualizado a \"{{status}}\"",
+  "statusUpdated": "Estado actualizado a \"{status}\"",
   "paymentStatusUpdated": "Estado de pago actualizado",
   "errors": {
     "updateStatusFailed": "No se pudo actualizar el estado de la orden",
@@ -52,12 +51,12 @@
     "invalidStatusTransition": "Transición de estado no válida"
   },
   "history": {
-    "created": "Creado: {{status}}"
+    "created": "Creado: {status}"
   },
   "noStockDialog": {
     "title": "Producto sin disponibilidad",
-    "description": "¿Confirmas que {{productName}} no está disponible? Esto enviará una notificación al cliente por WhatsApp.",
-    "messageTemplate": "Hola, lamentamos informarte que el producto \"{{productName}}\" no está disponible en este momento para tu orden {{orderNumber}}. Te ofrecemos disculpas y alternativas."
+    "description": "¿Confirmas que {productName} no está disponible? Esto enviará una notificación al cliente por WhatsApp.",
+    "messageTemplate": "Hola, lamentamos informarte que el producto \"{productName}\" no está disponible en este momento para tu orden {orderNumber}. Te ofrecemos disculpas y alternativas."
   },
   "title": "Gestión de Órdenes",
   "subtitle": "Administra y supervisa todas las órdenes de tu negocio",
@@ -124,7 +123,7 @@
     "reopen": "Reabrir orden",
     "confirmPayment": "Confirmar pago",
     "showLess": "Ver menos",
-    "showMore": "Ver {{count}} más"
+    "showMore": "Ver {count} más"
   },
   "kanban": {
     "newOrders": "Nuevos pedidos",
@@ -161,7 +160,7 @@
     "deliveryAddress": "Dirección de entrega",
     "orderInfo": "Información del pedido",
     "items": "Artículos",
-    "itemsCount": "Productos ({{count}})",
+    "itemsCount": "Productos ({count})",
     "notes": "Notas",
     "history": "Historial",
     "total": "Total",
