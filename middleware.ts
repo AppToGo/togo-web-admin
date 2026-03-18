@@ -38,11 +38,17 @@ export const config = {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  console.log("[Middleware] Path:", pathname);
+  // Development-only debug logging
+  const isDev = process.env.NODE_ENV === "development";
+  if (isDev) {
+    console.log("[Middleware] Path:", pathname);
+  }
 
   // Skip API routes
   if (pathname.startsWith("/api")) {
-    console.log("[Middleware] Skipping API route");
+    if (isDev) {
+      console.log("[Middleware] Skipping API route");
+    }
     return NextResponse.next();
   }
 
@@ -61,18 +67,22 @@ export function middleware(request: NextRequest) {
   const locale = localeMatch ? localeMatch[1] : null;
   const pathWithoutLocale = localeMatch && localeMatch[2] ? localeMatch[2] : "/";
 
-  console.log("[Middleware] Locale:", locale);
-  console.log("[Middleware] Path without locale:", pathWithoutLocale);
+  if (isDev) {
+    console.log("[Middleware] Locale:", locale);
+    console.log("[Middleware] Path without locale:", pathWithoutLocale);
+  }
 
   // Read refresh token from httpOnly cookie
   const refreshToken = request.cookies.get("togo_refresh_token")?.value;
   const hasCookie = !!refreshToken;
 
-  console.log("[Middleware] Cookie present:", hasCookie);
-  console.log(
-    "[Middleware] Cookie value:",
-    refreshToken ? "[exists]" : "[none]"
-  );
+  if (isDev) {
+    console.log("[Middleware] Cookie present:", hasCookie);
+    console.log(
+      "[Middleware] Cookie value:",
+      refreshToken ? "[exists]" : "[none]"
+    );
+  }
 
   // Check route types (using path without locale)
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
@@ -82,8 +92,10 @@ export function middleware(request: NextRequest) {
     pathWithoutLocale.startsWith(route)
   );
 
-  console.log("[Middleware] Is public route:", isPublicRoute);
-  console.log("[Middleware] Is auth route:", isAuthRoute);
+  if (isDev) {
+    console.log("[Middleware] Is public route:", isPublicRoute);
+    console.log("[Middleware] Is auth route:", isAuthRoute);
+  }
 
   // Check if there's a redirect parameter (indicates coming from auth failure)
   const hasRedirectParam = request.nextUrl.searchParams.has("redirect");
@@ -91,9 +103,11 @@ export function middleware(request: NextRequest) {
   // 1. Authenticated user trying to access auth route -> redirect to dashboard
   // BUT: Allow access if there's a redirect param (user was sent here due to auth failure)
   if (hasCookie && isAuthRoute && !hasRedirectParam && locale) {
-    console.log(
-      "[Middleware] Has cookie + auth route -> redirect to dashboard"
-    );
+    if (isDev) {
+      console.log(
+        "[Middleware] Has cookie + auth route -> redirect to dashboard"
+      );
+    }
     return NextResponse.redirect(
       new URL(`/${locale}/dashboard`, request.url)
     );
@@ -101,15 +115,19 @@ export function middleware(request: NextRequest) {
 
   // 2. Non-authenticated user trying to access protected route -> redirect to login
   if (!hasCookie && !isPublicRoute && locale) {
-    console.log(
-      "[Middleware] No cookie + protected route -> redirect to login"
-    );
+    if (isDev) {
+      console.log(
+        "[Middleware] No cookie + protected route -> redirect to login"
+      );
+    }
     const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // 3. Handle i18n routing
-  console.log("[Middleware] Processing i18n routing");
+  if (isDev) {
+    console.log("[Middleware] Processing i18n routing");
+  }
   return intlMiddleware(request);
 }

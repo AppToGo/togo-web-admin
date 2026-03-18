@@ -5,32 +5,35 @@
  */
 
 import { getRequestConfig } from "next-intl/server";
-import { Locale, defaultLocale } from "./config";
+import { Locale, defaultLocale, locales } from "./config";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // Determine the locale to use
   let locale = await requestLocale;
 
-  // Fallback to default locale if none specified
-  if (!locale) {
+  // Validate locale, fallback to default if invalid
+  if (!locale || !locales.includes(locale as Locale)) {
     locale = defaultLocale;
   }
 
+  // Now safe to cast after validation
+  const validLocale = locale as Locale;
+
   // Load all message namespaces for the locale
   const messages = {
-    ...(await import(`./messages/${locale}/common.json`)).default,
-    ...(await import(`./messages/${locale}/auth.json`)).default,
-    ...(await import(`./messages/${locale}/dashboard.json`)).default,
-    ...(await import(`./messages/${locale}/orders.json`)).default,
-    ...(await import(`./messages/${locale}/catalog.json`)).default,
-    ...(await import(`./messages/${locale}/settings.json`)).default,
-    ...(await import(`./messages/${locale}/navigation.json`)).default,
-    ...(await import(`./messages/${locale}/validation.json`)).default,
-    ...(await import(`./messages/${locale}/metadata.json`)).default,
+    ...(await import(`./messages/${validLocale}/common.json`)).default,
+    ...(await import(`./messages/${validLocale}/auth.json`)).default,
+    ...(await import(`./messages/${validLocale}/dashboard.json`)).default,
+    ...(await import(`./messages/${validLocale}/orders.json`)).default,
+    ...(await import(`./messages/${validLocale}/catalog.json`)).default,
+    ...(await import(`./messages/${validLocale}/settings.json`)).default,
+    ...(await import(`./messages/${validLocale}/navigation.json`)).default,
+    ...(await import(`./messages/${validLocale}/validation.json`)).default,
+    ...(await import(`./messages/${validLocale}/metadata.json`)).default,
   };
 
   return {
-    locale: locale as Locale,
+    locale: validLocale,
     messages,
     timeZone: "America/Bogota",
     now: new Date(),
