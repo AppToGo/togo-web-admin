@@ -1,16 +1,15 @@
 /**
- * Order Status Theme - ÚNICA FUENTE DE VERDAD
+ * Order Status Theme
  * 
- * Este archivo contiene la única fuente de verdad para todos los colores
- * y estilos relacionados con los estados de órdenes (OrderStatus).
+ * Central source of truth for order status colors and styles.
  * 
- * IMPORTANTE: No definir colores manualmente en otros archivos.
- * Usar siempre las funciones y constantes exportadas desde aquí.
+ * IMPORTANT: Do not define colors manually in other files.
+ * Always use the exported functions and constants from here.
  */
 
 import type { OrderStatus } from "../types";
 
-/** Nombres de colores disponibles en la paleta */
+/** Available color names in the palette */
 export type ColorName = 
   | "gray" | "blue" | "indigo" | "teal" | "purple" 
   | "amber" | "cyan" | "emerald" | "pink" | "slate";
@@ -41,30 +40,28 @@ export const COLOR_PALETTE: Record<ColorName, ColorScale> = {
   slate:   { 50: "slate-50", 100: "slate-100", 200: "slate-200", 300: "slate-300", 400: "slate-400", 500: "slate-500", 600: "slate-600", 700: "slate-700" },
 };
 
-/** Configuración de color para un estado */
+/** Color configuration for a status */
 export type StatusColorConfig = {
   color: ColorName;
-  label: string;
-  description: string;
 };
 
 /**
- * THEME PRINCIPAL: Configuración de colores por estado de orden
+ * MAIN THEME: Color configuration by order status
  * 
- * Esta es la ÚNICA fuente de verdad para asignar colores a estados.
- * Modificar aquí afecta automáticamente a toda la aplicación.
+ * This is the SINGLE source of truth for assigning colors to statuses.
+ * Modifying here automatically affects the entire application.
  */
 export const STATUS_THEME: Record<OrderStatus, StatusColorConfig> = {
-  DRAFT:           { color: "gray",    label: "Borrador",       description: "Órdenes en borrador" },
-  CONFIRMED:       { color: "blue",    label: "Confirmada",     description: "Órdenes confirmadas" },
-  PAYMENT_PENDING: { color: "indigo",  label: "Pago pendiente", description: "Órdenes esperando pago" },
-  PAID:            { color: "teal",    label: "Pagada",         description: "Órdenes pagadas" },
-  IN_PROGRESS:     { color: "purple",  label: "En proceso",     description: "Órdenes en preparación" },
-  READY:           { color: "amber",   label: "Lista",          description: "Órdenes listas para entrega" },
-  ON_THE_WAY:      { color: "cyan",    label: "En camino",      description: "Órdenes en entrega" },
-  COMPLETED:       { color: "emerald", label: "Completada",     description: "Órdenes completadas" },
-  CANCELLED:       { color: "pink",    label: "Cancelada",      description: "Órdenes canceladas" },
-  ABANDONED:       { color: "slate",   label: "Abandonada",     description: "Órdenes abandonadas" },
+  DRAFT:           { color: "gray" },
+  CONFIRMED:       { color: "blue" },
+  PAYMENT_PENDING: { color: "indigo" },
+  PAID:            { color: "teal" },
+  IN_PROGRESS:     { color: "purple" },
+  READY:           { color: "amber" },
+  ON_THE_WAY:      { color: "cyan" },
+  COMPLETED:       { color: "emerald" },
+  CANCELLED:       { color: "pink" },
+  ABANDONED:       { color: "slate" },
 };
 
 /** Tokens semánticos para construir clases CSS */
@@ -82,8 +79,8 @@ export type SemanticTokens = {
 };
 
 /**
- * Obtiene los tokens semánticos para un estado de orden
- * Usa el COLOR_PALETTE para construir las clases de Tailwind
+ * Gets semantic tokens for an order status
+ * Uses COLOR_PALETTE to build Tailwind classes
  */
 export function getStatusTokens(status: OrderStatus): SemanticTokens {
   const { color } = STATUS_THEME[status];
@@ -104,37 +101,25 @@ export function getStatusTokens(status: OrderStatus): SemanticTokens {
 }
 
 /**
- * Añade opacidad a una clase de Tailwind
- * Ej: withOpacity("bg-blue-500", 0.5) → "bg-blue-500/50"
+ * Adds opacity to a Tailwind class
+ * Ex: withOpacity("bg-blue-500", 0.5) → "bg-blue-500/50"
  */
 export function withOpacity(className: string, opacity: number): string {
   return `${className}/${Math.round(opacity * 100)}`;
 }
 
 /**
- * Obtiene la configuración completa de un estado
+ * Gets the full configuration for a status
  */
 export function getStatusConfig(status: OrderStatus): StatusColorConfig {
   return STATUS_THEME[status];
 }
 
 /**
- * Obtiene solo el nombre del color para un estado
+ * Gets only the color name for a status
  */
 export function getStatusColorName(status: OrderStatus): ColorName {
   return STATUS_THEME[status].color;
 }
 
-/**
- * Obtiene el label traducido para un estado
- */
-export function getStatusLabel(status: OrderStatus): string {
-  return STATUS_THEME[status].label;
-}
 
-/**
- * Obtiene la descripción para un estado
- */
-export function getStatusDescription(status: OrderStatus): string {
-  return STATUS_THEME[status].description;
-}

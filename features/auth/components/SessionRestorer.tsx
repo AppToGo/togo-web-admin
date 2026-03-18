@@ -58,7 +58,7 @@ export function SessionRestorer({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Restaurando sesión...</p>
+
         </div>
       </div>
     );

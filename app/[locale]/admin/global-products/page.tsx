@@ -3,14 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  Plus,
-  Search,
-  LayoutGrid,
-  List,
-  Filter,
-  Upload,
-} from "lucide-react";
+import { Plus, Search, LayoutGrid, List, Filter, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -96,17 +89,17 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
 
 function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
   const t = useTranslations();
-  
+
   return (
     <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-200">
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
         <Filter className="w-8 h-8 text-slate-400" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 mb-2">
-        {t("adminCatalog.empty.noProductsFound")}
+        {t("admin-catalog.empty.noProductsFound")}
       </h3>
       <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
-        {t("adminCatalog.empty.adjustFilters")}
+        {t("admin-catalog.empty.adjustFilters")}
       </p>
       <Button onClick={onCreate}>
         <Plus className="w-4 h-4 mr-2" />
@@ -134,10 +127,13 @@ export default function GlobalProductsPage() {
   });
 
   // Modal states
-  const [deletingProduct, setDeletingProduct] = useState<GlobalProduct | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<GlobalProduct | null>(
+    null
+  );
 
   // Data fetching
-  const { data: productsData, isLoading: isLoadingProducts } = useGlobalProducts(filters);
+  const { data: productsData, isLoading: isLoadingProducts } =
+    useGlobalProducts(filters);
   const { data: stats, isLoading: isLoadingStats } = useGlobalCatalogStats();
   const { data: industries = [] } = useIndustries();
   const { data: industryCategories = [] } = useIndustryCategories(
@@ -220,7 +216,7 @@ export default function GlobalProductsPage() {
             {t("common.errors.accessDenied")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {t("adminCatalog.superAdminOnly")}
+            {t("admin-catalog.superAdminOnly")}
           </p>
         </div>
       </DashboardLayout>
@@ -234,11 +230,9 @@ export default function GlobalProductsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {t("adminCatalog.title")}
+              {t("admin-catalog.title")}
             </h1>
-            <p className="text-slate-500 mt-1">
-              {t("adminCatalog.subtitle")}
-            </p>
+            <p className="text-slate-500 mt-1">{t("admin-catalog.subtitle")}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -246,9 +240,12 @@ export default function GlobalProductsPage() {
               <Upload className="w-4 h-4 mr-2" />
               {t("common.buttons.import")}
             </Button>
-            <Button onClick={handleCreate} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button
+              onClick={handleCreate}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
               <Plus className="w-4 h-4 mr-2" />
-              {t("adminCatalog.newProduct")}
+              {t("admin-catalog.newProduct")}
             </Button>
           </div>
         </div>
@@ -262,7 +259,7 @@ export default function GlobalProductsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder={t("adminCatalog.searchPlaceholder")}
+              placeholder={t("admin-catalog.searchPlaceholder")}
               value={filters.search || ""}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-9"
@@ -275,10 +272,12 @@ export default function GlobalProductsPage() {
             onValueChange={handleIndustryChange}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t("adminCatalog.allIndustries")} />
+              <SelectValue placeholder={t("admin-catalog.allIndustries")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("adminCatalog.allIndustries")}</SelectItem>
+              <SelectItem value="all">
+                {t("admin-catalog.allIndustries")}
+              </SelectItem>
               {industries.map((ind) => (
                 <SelectItem key={ind.id} value={ind.id}>
                   {ind.name}
@@ -293,10 +292,12 @@ export default function GlobalProductsPage() {
             onValueChange={handleBrandChange}
           >
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder={t("adminCatalog.allBrands")} />
+              <SelectValue placeholder={t("admin-catalog.allBrands")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("adminCatalog.allBrands")}</SelectItem>
+              <SelectItem value="all">
+                {t("admin-catalog.allBrands")}
+              </SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand} value={brand}>
                   {brand}
@@ -311,8 +312,8 @@ export default function GlobalProductsPage() {
               filters.isActive === undefined
                 ? "all"
                 : filters.isActive
-                ? "active"
-                : "inactive"
+                  ? "active"
+                  : "inactive"
             }
             onValueChange={handleStatusChange}
           >
@@ -321,8 +322,12 @@ export default function GlobalProductsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("common.filters.all")}</SelectItem>
-              <SelectItem value="active">{t("common.status.active")}</SelectItem>
-              <SelectItem value="inactive">{t("common.status.inactive")}</SelectItem>
+              <SelectItem value="active">
+                {t("common.status.active")}
+              </SelectItem>
+              <SelectItem value="inactive">
+                {t("common.status.inactive")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -356,9 +361,9 @@ export default function GlobalProductsPage() {
         {/* Results Count */}
         {!isLoadingProducts && productsData && (
           <p className="text-sm text-slate-500">
-            {t("common.pagination.showingOf", { 
-              count: productsData.data.length, 
-              total: productsData.meta.total 
+            {t("common.pagination.showingOf", {
+              count: productsData.data.length,
+              total: productsData.meta.total,
             })}
           </p>
         )}
@@ -406,9 +411,9 @@ export default function GlobalProductsPage() {
               {t("common.pagination.previous")}
             </Button>
             <span className="text-sm text-slate-500">
-              {t("common.pagination.pageOf", { 
-                page: filters.page ?? 1, 
-                totalPages: productsData.meta.totalPages 
+              {t("common.pagination.pageOf", {
+                page: filters.page ?? 1,
+                totalPages: productsData.meta.totalPages,
               })}
             </span>
             <Button

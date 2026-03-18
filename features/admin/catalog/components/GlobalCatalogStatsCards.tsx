@@ -24,7 +24,7 @@ export function GlobalCatalogStatsCards({
   stats,
   isLoading,
 }: GlobalCatalogStatsCardsProps) {
-  const t = useTranslations("adminCatalog");
+  const t = useTranslations("admin-catalog");
 
   if (isLoading) {
     return (
@@ -40,10 +40,11 @@ export function GlobalCatalogStatsCards({
   const totalProducts = stats?.totalProducts || 0;
   const activeProducts = stats?.activeProducts || 0;
   const inactiveProducts = stats?.inactiveProducts || 0;
-  const totalActivations = stats?.mostActivatedProducts.reduce(
-    (sum, p) => sum + p.activationCount,
-    0
-  ) || 0;
+  const totalActivations =
+    stats?.mostActivatedProducts.reduce(
+      (sum, p) => sum + p.activationCount,
+      0
+    ) || 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -52,10 +53,17 @@ export function GlobalCatalogStatsCards({
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">{t("stats.totalProducts")}</p>
-              <p className="text-3xl font-bold text-slate-900 mt-2">{totalProducts}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {t("stats.totalProducts")}
+              </p>
+              <p className="text-3xl font-bold text-slate-900 mt-2">
+                {totalProducts}
+              </p>
               <p className="text-xs text-slate-400 mt-1">
-                {t("stats.activeInactive", { active: activeProducts, inactive: inactiveProducts })}
+                {t("stats.activeInactive", {
+                  active: activeProducts,
+                  inactive: inactiveProducts,
+                })}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600">
@@ -70,7 +78,9 @@ export function GlobalCatalogStatsCards({
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">{t("stats.activationRate")}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {t("stats.activationRate")}
+              </p>
               <p className="text-3xl font-bold text-slate-900 mt-2">
                 {totalProducts > 0
                   ? Math.round((activeProducts / totalProducts) * 100)
@@ -93,7 +103,9 @@ export function GlobalCatalogStatsCards({
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">{t("stats.totalActivations")}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {t("stats.totalActivations")}
+              </p>
               <p className="text-3xl font-bold text-slate-900 mt-2">
                 {totalActivations.toLocaleString()}
               </p>
@@ -113,12 +125,16 @@ export function GlobalCatalogStatsCards({
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-500">{t("stats.mainIndustry")}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {t("stats.mainIndustry")}
+              </p>
               <p className="text-xl font-bold text-slate-900 mt-2 truncate">
                 {stats?.productsByIndustry[0]?.industryName || "N/A"}
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                {t("stats.productCount", { count: stats?.productsByIndustry[0]?.count || 0 })}
+                {t("stats.productCount", {
+                  count: stats?.productsByIndustry[0]?.count || 0,
+                })}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-purple-50 text-purple-600 flex-shrink-0 ml-3">

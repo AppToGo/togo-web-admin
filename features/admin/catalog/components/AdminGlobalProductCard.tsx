@@ -63,7 +63,7 @@ export function AdminGlobalProductCard({
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
-                  "https://placehold.co/400x300/e2e8f0/64748b?text=Sin+Imagen";
+                  "https://placehold.co/400x300/e2e8f0/64748b";
               }}
             />
           ) : (
@@ -179,7 +179,7 @@ export function AdminGlobalProductCard({
             className="w-full h-full object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).src =
-                "https://placehold.co/100x100/e2e8f0/64748b?text=Sin+Imagen";
+                "https://placehold.co/100x100/e2e8f0/64748b";
             }}
           />
         ) : (

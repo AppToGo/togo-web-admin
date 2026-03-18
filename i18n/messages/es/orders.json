@@ -2,7 +2,28 @@
   "deliveryTypes": {
     "delivery": "Domicilio",
     "table": "En mesa",
-    "pickup": "Recoger"
+    "pickup": "Recoger",
+    "DELIVERY": "Domicilio",
+    "PICKUP": "Recoger",
+    "DINE_IN": "A la mesa"
+  },
+  "paymentMethods": {
+    "CASH": "Efectivo",
+    "CREDIT_CARD": "Tarjeta de crédito",
+    "DEBIT_CARD": "Tarjeta de débito",
+    "TRANSFER": "Transferencia",
+    "NEQUI": "Nequi",
+    "DAVIPLATA": "Daviplata",
+    "PSE": "PSE",
+    "PAYPAL": "PayPal",
+    "MERCADOPAGO": "MercadoPago",
+    "OTHER": "Otro",
+    "NOT_SPECIFIED": "No especificado"
+  },
+  "paymentStatus": {
+    "PAID": "Pagado",
+    "PENDING": "Pendiente",
+    "UNKNOWN": "Desconocido"
   },
   "orderNotFound": "No se encontró la orden",
   "includesDelivery": "Incluye domicilio: {{fee}}",
@@ -21,7 +42,14 @@
   "errors": {
     "updateStatusFailed": "No se pudo actualizar el estado de la orden",
     "updatePaymentFailed": "No se pudo actualizar el estado de pago",
-    "cannotComplete": "No se puede completar la orden"
+    "cannotComplete": "No se puede completar la orden",
+    "alreadyCompleted": "La orden ya está completada",
+    "cannotCompleteCancelled": "No se puede completar una orden cancelada o abandonada",
+    "paymentPending": "No se puede completar la orden: el pago está pendiente",
+    "mustBeReadyOrOnTheWay": "La orden debe estar 'Lista' o 'En camino' para completarse",
+    "cannotCancelCompleted": "No se puede cancelar una orden que ya está completada",
+    "cannotCancelDelivered": "No se puede cancelar una orden que ya fue entregada",
+    "invalidStatusTransition": "Transición de estado no válida"
   },
   "history": {
     "created": "Creado: {{status}}"
@@ -93,7 +121,10 @@
     "view": "Ver detalle",
     "print": "Imprimir",
     "cancel": "Cancelar orden",
-    "reopen": "Reabrir orden"
+    "reopen": "Reabrir orden",
+    "confirmPayment": "Confirmar pago",
+    "showLess": "Ver menos",
+    "showMore": "Ver {{count}} más"
   },
   "kanban": {
     "newOrders": "Nuevos pedidos",
@@ -151,7 +182,11 @@
   "empty": {
     "title": "No hay órdenes",
     "description": "Las órdenes aparecerán aquí cuando los clientes realicen pedidos",
-    "noOrdersInProgress": "No hay órdenes en proceso"
+    "noOrdersInProgress": "No hay órdenes en proceso",
+    "noProducts": "Sin productos"
+  },
+  "paymentNotes": {
+    "confirmedFromAdmin": "Pago confirmado desde panel admin"
   },
   "metrics": {
     "title": "Métricas",

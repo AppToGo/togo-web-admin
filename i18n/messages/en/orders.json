@@ -2,7 +2,28 @@
   "deliveryTypes": {
     "delivery": "Delivery",
     "table": "Table",
-    "pickup": "Pickup"
+    "pickup": "Pickup",
+    "DELIVERY": "Delivery",
+    "PICKUP": "Pickup",
+    "DINE_IN": "Dine in"
+  },
+  "paymentMethods": {
+    "CASH": "Cash",
+    "CREDIT_CARD": "Credit Card",
+    "DEBIT_CARD": "Debit Card",
+    "TRANSFER": "Bank Transfer",
+    "NEQUI": "Nequi",
+    "DAVIPLATA": "Daviplata",
+    "PSE": "PSE",
+    "PAYPAL": "PayPal",
+    "MERCADOPAGO": "MercadoPago",
+    "OTHER": "Other",
+    "NOT_SPECIFIED": "Not specified"
+  },
+  "paymentStatus": {
+    "PAID": "Paid",
+    "PENDING": "Pending",
+    "UNKNOWN": "Unknown"
   },
   "orderNotFound": "Order not found",
   "includesDelivery": "Includes delivery: {{fee}}",
@@ -21,7 +42,14 @@
   "errors": {
     "updateStatusFailed": "Failed to update order status",
     "updatePaymentFailed": "Failed to update payment status",
-    "cannotComplete": "Cannot complete the order"
+    "cannotComplete": "Cannot complete the order",
+    "alreadyCompleted": "Order is already completed",
+    "cannotCompleteCancelled": "Cannot complete a cancelled or abandoned order",
+    "paymentPending": "Cannot complete the order: payment is pending",
+    "mustBeReadyOrOnTheWay": "Order must be 'Ready' or 'On the way' to be completed",
+    "cannotCancelCompleted": "Cannot cancel an order that is already completed",
+    "cannotCancelDelivered": "Cannot cancel an order that has already been delivered",
+    "invalidStatusTransition": "Invalid status transition"
   },
   "history": {
     "created": "Created: {{status}}"
@@ -93,7 +121,10 @@
     "view": "View details",
     "print": "Print",
     "cancel": "Cancel order",
-    "reopen": "Reopen order"
+    "reopen": "Reopen order",
+    "confirmPayment": "Confirm payment",
+    "showLess": "Show less",
+    "showMore": "Show {{count}} more"
   },
   "kanban": {
     "newOrders": "New orders",
@@ -151,7 +182,11 @@
   "empty": {
     "title": "No orders",
     "description": "Orders will appear here when customers place them",
-    "noOrdersInProgress": "No orders in progress"
+    "noOrdersInProgress": "No orders in progress",
+    "noProducts": "No products"
+  },
+  "paymentNotes": {
+    "confirmedFromAdmin": "Payment confirmed from admin panel"
   },
   "metrics": {
     "title": "Metrics",

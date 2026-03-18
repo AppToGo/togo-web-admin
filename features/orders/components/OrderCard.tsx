@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Clock,
   ChevronDown,
@@ -46,15 +47,16 @@ interface OrderCardProps {
 
 // Icono de método de pago con tooltip
 function PaymentMethodIcon({ method }: { method?: string }) {
+  const t = useTranslations("orders");
   const getIconAndLabel = () => {
-    if (!method) return { icon: CreditCard, label: "No especificado" };
+    if (!method) return { icon: CreditCard, label: t("paymentMethods.NOT_SPECIFIED") };
     const lower = method.toLowerCase();
-    if (lower === "cash") return { icon: Banknote, label: "Efectivo" };
+    if (lower === "cash") return { icon: Banknote, label: t("paymentMethods.CASH") };
     if (lower.includes("card") || lower === "dataphone")
-      return { icon: CreditCard, label: "Tarjeta" };
+      return { icon: CreditCard, label: t("paymentMethods.CREDIT_CARD") };
     if (lower === "transfer")
-      return { icon: ArrowLeftRight, label: "Transferencia" };
-    if (lower === "wallet") return { icon: Wallet, label: "Billetera" };
+      return { icon: ArrowLeftRight, label: t("paymentMethods.TRANSFER") };
+    if (lower === "wallet") return { icon: Wallet, label: t("paymentMethods.OTHER") };
     return { icon: CreditCard, label: method };
   };
 
@@ -82,6 +84,7 @@ export function PaymentStatusEditor({
   currentStatus: PaymentStatus;
   paymentMethod?: string;
 }) {
+  const t = useTranslations("orders");
   const [isOpen, setIsOpen] = useState(false);
   const updatePaymentStatus = useUpdateOrderPaymentStatus();
 
@@ -92,13 +95,13 @@ export function PaymentStatusEditor({
           orderId,
           data: {
             paymentStatus: newStatus,
-            changeNotes: "Pago confirmado desde panel admin",
+            changeNotes: t("paymentNotes.confirmedFromAdmin"),
           },
         });
       }
       setIsOpen(false);
     },
-    [currentStatus, orderId, updatePaymentStatus]
+    [currentStatus, orderId, updatePaymentStatus, t]
   );
 
   // Badge base con icono de método de pago
@@ -153,7 +156,7 @@ export function PaymentStatusEditor({
             className="flex items-center gap-2 text-xs cursor-pointer"
           >
             <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-slate-700">Confirmar pago</span>
+            <span className="text-slate-700">{t("actions.confirmPayment")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -166,41 +169,31 @@ function formatOrderNumber(id: string): string {
   return `#${id.slice(0, 6).toUpperCase()}`;
 }
 
-// Función para formatear el método de pago
-function formatPaymentMethod(method?: string): string {
-  if (!method) return "No especificado";
-  const methods: Record<string, string> = {
-    cash: "Efectivo",
-    credit_card: "Tarjeta crédito",
-    debit_card: "Tarjeta débito",
-    transfer: "Transferencia",
-    wallet: "Billetera",
-    dataphone: "Datáfono",
-  };
-  return methods[method.toLowerCase()] || method;
+// Función para formatear el método de pago - uses translations
+function formatPaymentMethod(method?: string, t?: ReturnType<typeof useTranslations>): string {
+  if (!method) return t?.("paymentMethods.NOT_SPECIFIED") || "NOT_SPECIFIED";
+  const key = method.toUpperCase();
+  return t?.(`paymentMethods.${key}`) || key;
 }
 
-// Función para formatear el estado de pago
-function formatPaymentStatus(status?: string): string {
-  if (!status) return "Desconocido";
-  const statuses: Record<string, string> = {
-    paid: "Pagado",
-    pending: "Pendiente",
-  };
-  return statuses[status.toLowerCase()] || status;
+// Función para formatear el estado de pago - uses translations
+function formatPaymentStatus(status?: string, t?: ReturnType<typeof useTranslations>): string {
+  if (!status) return t?.("paymentStatus.UNKNOWN") || "UNKNOWN";
+  const key = status.toUpperCase();
+  return t?.(`paymentStatus.${key}`) || key;
 }
 
 // Función para formatear la hora
 function formatOrderTime(date: Date | string): string {
   const d = new Date(date);
-  return d.toLocaleTimeString("es-ES", {
+  return d.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
 }
 
 // Tipo de orden basado en la fuente
-function getOrderTypeInfo(order: Order & { source?: string }): {
+function getOrderTypeInfo(order: Order & { source?: string }, t?: ReturnType<typeof useTranslations>): {
   label: string;
   icon: React.ReactNode;
   variant: string;
@@ -213,17 +206,17 @@ function getOrderTypeInfo(order: Order & { source?: string }): {
 
   if (isDelivery) {
     return {
-      label: "Domicilio",
+      label: t?.("deliveryTypes.DELIVERY") || "DELIVERY",
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
       isDelivery: true,
     };
   }
 
-  // Sin dirección + source OPERATOR → En mesa (creado por operador)
+  // No address + source OPERATOR → Table (created by operator)
   if (order.source === "OPERATOR") {
     return {
-      label: "En mesa",
+      label: t?.("deliveryTypes.table") || "Table",
       icon: <Utensils className="w-3 h-3" />,
       variant: "emerald",
       isDelivery: false,
@@ -232,7 +225,7 @@ function getOrderTypeInfo(order: Order & { source?: string }): {
 
   // Sin dirección + source WHATSAPP o no definido → Para recoger
   return {
-    label: "Recoger",
+    label: t?.("deliveryTypes.PICKUP") || "PICKUP",
     icon: <Store className="w-3 h-3" />,
     variant: "amber",
     isDelivery: false,
@@ -255,8 +248,9 @@ function OrderListItem({
   onDragStart?: (e: React.DragEvent) => void;
   onDragEnd?: () => void;
 }) {
+  const t = useTranslations("orders");
   const orderNumber = formatOrderNumber(order.id);
-  const orderType = getOrderTypeInfo(order as Order & { source?: string });
+  const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
   const orderTime = formatOrderTime(order.createdAt);
   const fee = order.deliveryType === "DELIVERY" ? order.deliveryFee || 0 : 0;
 
@@ -287,7 +281,7 @@ function OrderListItem({
           `opacity-60 rotate-1 scale-[1.02] shadow-lg ring-2 ${dragRingColors[dragColor] || dragRingColors.indigo}`
       )}
     >
-      {/* Dirección si es domicilio */}
+      {/* Delivery address */}
       {orderType.isDelivery && order.address && (
         <div className="flex items-start gap-1 text-xs text-slate-500">
           <svg
@@ -313,7 +307,7 @@ function OrderListItem({
         </div>
       )}
 
-      {/* Header: Número de orden y Total */}
+      {/* Header: Order number and Total */}
       <div className="flex items-center justify-between mb-2">
         <span className="font-bold text-slate-900 text-base">
           {orderNumber}
@@ -323,9 +317,9 @@ function OrderListItem({
         </span>
       </div>
 
-      {/* Footer: Tipo, Domicilio, Hora y Estado de pago */}
+      {/* Footer: Type, Delivery, Time and Payment status */}
       <div className="flex items-center gap-2 text-xs">
-        {/* Hora */}
+        {/* Time */}
         <div className="flex items-center gap-1 text-slate-400">
           <Clock className="w-3 h-3" />
           {orderTime}
@@ -334,7 +328,7 @@ function OrderListItem({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Tipo de orden */}
+        {/* Order type */}
         <span
           className={categoryBadgeVariants({
             variant: orderType.variant as any,
@@ -347,7 +341,7 @@ function OrderListItem({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Estado de pago - Editable */}
+        {/* Payment status - Editable */}
         <PaymentStatusEditor
           orderId={order.id}
           paymentMethod={order.paymentMethod}
@@ -370,6 +364,7 @@ function OrderItemsList({
   deliveryFee?: number;
   isDelivery?: boolean;
 }) {
+  const t = useTranslations("orders");
   const [showAll, setShowAll] = useState(false);
   const MAX_ITEMS = 2;
 
@@ -381,9 +376,9 @@ function OrderItemsList({
   if (!items || items.length === 0) {
     return (
       <div className="space-y-1">
-        <p className="text-xs text-slate-400 italic">Sin productos</p>
+        <p className="text-xs text-slate-400 italic">{t("empty.noProducts")}</p>
         <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100">
-          <span className="text-xs font-medium text-slate-600">Total</span>
+          <span className="text-xs font-medium text-slate-600">{t("detail.total")}</span>
           <span className="font-bold text-slate-900 text-sm">
             {formatCurrency(totalAmount)}
           </span>
@@ -424,33 +419,33 @@ function OrderItemsList({
           {showAll ? (
             <>
               <ChevronUp className="w-3 h-3" />
-              Ver menos
+              {t("actions.showLess")}
             </>
           ) : (
             <>
               <ChevronDown className="w-3 h-3" />
-              Ver {items.length - MAX_ITEMS} más
+              {t("actions.showMore", { count: items.length - MAX_ITEMS })}
             </>
           )}
         </button>
       )}
-      {/* Desglose de totales */}
+      {/* Total breakdown */}
       <div className="space-y-1 pt-2 mt-2 border-t border-slate-100">
         {/* Subtotal */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-500">Subtotal</span>
+          <span className="text-slate-500">{t("detail.subtotal")}</span>
           <span className="text-slate-600">{formatCurrency(subtotal)}</span>
         </div>
-        {/* Domicilio (solo si aplica) */}
+        {/* Delivery fee (if applicable) */}
         {isDelivery && fee > 0 && (
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500">Domicilio</span>
+            <span className="text-slate-500">{t("detail.deliveryFee")}</span>
             <span className="text-slate-600">{formatCurrency(fee)}</span>
           </div>
         )}
         {/* Total */}
         <div className="flex items-center justify-between pt-1 border-t border-slate-100/50">
-          <span className="text-xs font-medium text-slate-600">Total</span>
+          <span className="text-xs font-medium text-slate-600">{t("detail.total")}</span>
           <span className="font-bold text-slate-900 text-sm">
             {formatCurrency(fee + totalAmount)}
           </span>
@@ -469,23 +464,24 @@ export const OrderCard = memo(function OrderCard({
   dragColor = "indigo",
   viewMode = "card",
 }: OrderCardProps) {
+  const t = useTranslations("orders");
   const [isDragging, setIsDragging] = useState(false);
 
   const orderNumber = formatOrderNumber(order.id);
   const timeElapsed = getTimeElapsed(order.createdAt);
-  const orderType = getOrderTypeInfo(order as Order & { source?: string });
+  const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
 
   const handleCompleteClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       const validation = canCompleteOrder(order);
       if (!validation.valid) {
-        toast.error(validation.message || "No se puede completar la orden");
+        toast.error(validation.message ? t(`errors.${validation.message}`) : t("errors.cannotComplete"));
         return;
       }
       onStatusChange?.(order.id, "COMPLETED");
     },
-    [order, onStatusChange]
+    [order, onStatusChange, t]
   );
 
   const handleCardClick = useCallback(() => {
@@ -512,7 +508,7 @@ export const OrderCard = memo(function OrderCard({
     e.dataTransfer.setData("orderId", order.id);
     e.dataTransfer.setData("fromStatus", currentStatus || "");
 
-    // Agregar una imagen personalizada o efecto visual
+    // Add custom drag image or visual effect
     e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
   };
 
@@ -551,7 +547,7 @@ export const OrderCard = memo(function OrderCard({
         )}
         onClick={handleCardClick}
       >
-        {/* Header: Número de orden, dirección (si es domicilio) y tipo */}
+        {/* Header: Order number, address (if delivery) and type */}
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <span className="font-bold text-slate-900 text-sm">
@@ -567,7 +563,7 @@ export const OrderCard = memo(function OrderCard({
             </span>
           </div>
 
-          {/* Dirección si es domicilio */}
+          {/* Delivery address */}
           {orderType.isDelivery && order.address && (
             <div className="flex items-start gap-1 text-xs text-slate-500 mt-1">
               <svg
@@ -606,13 +602,13 @@ export const OrderCard = memo(function OrderCard({
           />
         </div>
 
-        {/* Footer: Metadata (tiempo y pago combinado) */}
+        {/* Footer: Metadata (time and payment combined) */}
         <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
             <span>{timeElapsed}</span>
           </div>
-          {/* Método de pago (icono) + Estado de pago editable */}
+          {/* Payment method (icon) + Editable payment status */}
           <PaymentStatusEditor
             orderId={order.id}
             paymentMethod={order.paymentMethod}

@@ -15,19 +15,25 @@ export async function POST() {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("togo_refresh_token")?.value;
 
-    console.log("[API /auth/refresh] Attempting refresh...");
-    console.log("[API /auth/refresh] Cookie present:", !!refreshToken);
+    if (process.env.NODE_ENV === "development") {
+      console.log("[API /auth/refresh] Attempting refresh...");
+      console.log("[API /auth/refresh] Cookie present:", !!refreshToken);
+    }
     
     if (!refreshToken) {
-      console.log("[API /auth/refresh] No refresh token in cookie");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[API /auth/refresh] No refresh token in cookie");
+      }
       return NextResponse.json(
         { error: "No refresh token found" },
         { status: 401 }
       );
     }
 
-    console.log("[API /auth/refresh] Token length:", refreshToken.length);
-    console.log("[API /auth/refresh] Calling backend...");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[API /auth/refresh] Token length:", refreshToken.length);
+      console.log("[API /auth/refresh] Calling backend...");
+    }
 
     // Call backend refresh endpoint with full token
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
@@ -38,11 +44,15 @@ export async function POST() {
       body: JSON.stringify({ refreshToken }),
     });
 
-    console.log("[API /auth/refresh] Backend status:", response.status);
+    if (process.env.NODE_ENV === "development") {
+      console.log("[API /auth/refresh] Backend status:", response.status);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.log("[API /auth/refresh] Backend error:", errorText);
+      if (process.env.NODE_ENV === "development") {
+        console.log("[API /auth/refresh] Backend error:", errorText);
+      }
       
       // Clear invalid cookie
       cookieStore.delete("togo_refresh_token");
@@ -53,7 +63,9 @@ export async function POST() {
     }
 
     const data = await response.json();
-    console.log("[API /auth/refresh] Success, new token received");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[API /auth/refresh] Success, new token received");
+    }
 
     // Update cookie with new refresh token
     cookieStore.set({

@@ -38,7 +38,7 @@ export function DeleteProductDialog({
   onConfirm,
   isLoading,
 }: DeleteProductDialogProps) {
-  const t = useTranslations("adminCatalog");
+  const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
   const activationCount = product?._count?.businessProducts || 0;
 
@@ -53,14 +53,19 @@ export function DeleteProductDialog({
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                {t("dialogs.delete.description", { name: product?.name ?? "", sku: product?.sku ?? "" })}
+                {t("dialogs.delete.description", {
+                  name: product?.name ?? "",
+                  sku: product?.sku ?? "",
+                })}
               </p>
-              
+
               {activationCount > 0 ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-amber-800">
                     <Store className="w-4 h-4" />
-                    <span className="font-medium">{tCommon("importantWarning")}</span>
+                    <span className="font-medium">
+                      {tCommon("importantWarning")}
+                    </span>
                   </div>
                   <p className="text-sm text-amber-700 mt-1">
                     {t("dialogs.delete.warning", { count: activationCount })}

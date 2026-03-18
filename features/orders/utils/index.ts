@@ -1,8 +1,6 @@
 // Export all utilities from the orders feature
 export {
-  STATUS_COLORS,
   STATUS_LABELS,
-  STATUS_DESCRIPTIONS,
   ALLOWED_TRANSITIONS,
   FINAL_STATUSES,
   ACTIVE_STATUSES,
@@ -18,4 +16,7 @@ export {
   getKanbanColumns,
   getPaymentStatusColor,
   getPaymentStatusLabel,
+  getPaymentMethodLabel,
+  getDeliveryTypeLabel,
+  useStatusLabels,
 } from './order-status.utils';
