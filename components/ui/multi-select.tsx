@@ -21,17 +21,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const multiSelectVariants = cva(
-  "flex w-full items-center justify-between min-h-[40px] h-auto transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
+  "flex h-11 w-full items-center justify-between px-3 py-2 text-sm text-slate-700 transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&>span]:text-left",
   {
     variants: {
       variant: {
-        default: "rounded-md border border-slate-200 bg-white",
+        default: "rounded-md border border-slate-200 bg-white shadow-none",
         ghost: "rounded-lg border-0 bg-transparent shadow-none",
-        outline: "rounded-lg border border-slate-200 bg-transparent shadow-none",
+        outline:
+          "rounded-lg border border-slate-200 bg-transparent shadow-none",
         elevated: "rounded-lg border border-slate-200 bg-white shadow-md",
-        primary: "rounded-lg border border-indigo-200 bg-white shadow-sm ring-1 ring-indigo-100",
+        primary:
+          "rounded-lg border border-indigo-200 bg-white shadow-sm ring-1 ring-indigo-100",
         kanban: "rounded-xl border bg-card text-card-foreground shadow",
-        error: "rounded-md border border-red-300 bg-white shadow-sm focus:ring-red-400",
+        error:
+          "rounded-md border border-red-300 bg-white shadow-sm focus:ring-red-400",
       },
     },
     defaultVariants: {
@@ -45,8 +48,9 @@ export interface MultiSelectOption {
   label: string;
 }
 
-export interface MultiSelectProps
-  extends VariantProps<typeof multiSelectVariants> {
+export interface MultiSelectProps extends VariantProps<
+  typeof multiSelectVariants
+> {
   options: MultiSelectOption[];
   value: string[];
   onChange: (value: string[]) => void;
@@ -103,7 +107,8 @@ export function MultiSelect({
           aria-expanded={open}
           className={cn(
             multiSelectVariants({ variant }),
-            value.length > 0 && "pr-8",
+            "hover:bg-white hover:text-slate-700 hover:border-slate-200",
+            value.length > 0 && "pr-4",
             className
           )}
           disabled={disabled}
@@ -114,11 +119,7 @@ export function MultiSelect({
             ) : (
               <>
                 {selectedLabels.slice(0, maxDisplay).map((label, i) => (
-                  <Badge
-                    key={value[i]}
-                    variant="secondary"
-                    className="mr-1"
-                  >
+                  <Badge key={value[i]} variant="secondary" className="mr-1">
                     {label}
                     <span
                       className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
@@ -149,7 +150,10 @@ export function MultiSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      <PopoverContent
+        className="w-[--radix-popover-trigger-width] p-0 z-[200] rounded-md border border-slate-200 bg-white shadow-lg"
+        align="start"
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
@@ -161,15 +165,17 @@ export function MultiSelect({
                   value={option.value}
                   onSelect={() => handleSelect(option.value)}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value.includes(option.value)
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                  {option.label}
+                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                    <Check
+                      className={cn(
+                        "h-4 w-4",
+                        value.includes(option.value)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                  </span>
+                  <span className="text-slate-700">{option.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
