@@ -45,7 +45,7 @@ export default function EditGlobalProductPage() {
   const { data: stats, isLoading: isLoadingStats } = useGlobalProductStats(productId);
   const { data: industries = [] } = useIndustries();
   const { data: industryCategories = [] } = useIndustryCategories({
-    industryId: selectedIndustryId || product?.industryId || undefined,
+    industryIds: selectedIndustryId || product?.industryId ? [selectedIndustryId || product?.industryId || ""] : undefined,
   });
 
   // Update selected industry when form changes

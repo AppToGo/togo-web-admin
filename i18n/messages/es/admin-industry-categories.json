@@ -11,12 +11,13 @@
   "filters": {
     "allIndustries": "Todas las industrias",
     "showInactive": "Mostrar inactivas",
-    "searchPlaceholder": "Buscar por nombre o slug..."
+    "searchPlaceholder": "Buscar por nombre o slug...",
+    "searchIndustries": "Buscar industrias..."
   },
   "table": {
     "icon": "Icono",
     "name": "Nombre",
-    "industry": "Industria",
+    "industries": "Industrias",
     "order": "Orden",
     "status": "Estado",
     "actions": "Acciones"
@@ -24,7 +25,7 @@
   "fields": {
     "name": "Nombre",
     "slug": "Slug",
-    "industry": "Industria",
+    "industries": "Industrias",
     "order": "Orden",
     "icon": "Icono",
     "color": "Color",
@@ -33,7 +34,8 @@
   "placeholders": {
     "name": "Ej: Refrescos",
     "slug": "Ej: refrescos",
-    "selectIndustry": "Selecciona una industria",
+    "selectIndustries": "Selecciona industrias",
+    "searchIndustries": "Buscar industrias...",
     "icon": "Ej: 🍕"
   },
   "helpers": {
@@ -72,7 +74,7 @@
   "validation": {
     "nameRequired": "El nombre es obligatorio",
     "slugRequired": "El slug es obligatorio",
-    "industryRequired": "La industria es obligatoria"
+    "industriesRequired": "Al menos una industria es obligatoria"
   },
   "notifications": {
     "categoryCreated": "Categoría creada exitosamente",

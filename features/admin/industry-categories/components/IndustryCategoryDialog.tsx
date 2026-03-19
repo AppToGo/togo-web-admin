@@ -14,13 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import type {
   IndustryCategory,
   CreateIndustryCategoryDto,
@@ -59,7 +53,7 @@ export function IndustryCategoryDialog({
   const [formData, setFormData] = useState<CreateIndustryCategoryDto>({
     name: "",
     slug: "",
-    industryId: "",
+    industryIds: [],
     order: 0,
     icon: "",
     color: "#6366f1",
@@ -73,7 +67,7 @@ export function IndustryCategoryDialog({
         setFormData({
           name: category.name,
           slug: category.slug,
-          industryId: category.industryId,
+          industryIds: category.industries?.map(ind => ind.id) || [],
           order: category.order,
           icon: category.icon || "",
           color: category.color || "#6366f1",
@@ -83,7 +77,7 @@ export function IndustryCategoryDialog({
         setFormData({
           name: "",
           slug: "",
-          industryId: "",
+          industryIds: [],
           order: 0,
           icon: "",
           color: "#6366f1",
@@ -118,13 +112,18 @@ export function IndustryCategoryDialog({
       toast.error(t("validation.slugRequired"));
       return;
     }
-    if (!formData.industryId) {
-      toast.error(t("validation.industryRequired"));
+    if (formData.industryIds.length === 0) {
+      toast.error(t("validation.industriesRequired"));
       return;
     }
 
     onSubmit(formData);
   };
+
+  const industryOptions = industries.map((ind) => ({
+    value: ind.id,
+    label: ind.name,
+  }));
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -167,28 +166,21 @@ export function IndustryCategoryDialog({
             <p className="text-xs text-slate-500">{t("helpers.slug")}</p>
           </div>
 
-          {/* Industry */}
+          {/* Industries */}
           <div className="space-y-2">
-            <Label htmlFor="industry" className="text-slate-700">
-              {t("fields.industry")} <span className="text-red-500">*</span>
+            <Label htmlFor="industries" className="text-slate-700">
+              {t("fields.industries")} <span className="text-red-500">*</span>
             </Label>
-            <Select
-              value={formData.industryId}
-              onValueChange={(value) =>
-                setFormData({ ...formData, industryId: value })
+            <MultiSelect
+              options={industryOptions}
+              value={formData.industryIds}
+              onChange={(value) =>
+                setFormData({ ...formData, industryIds: value })
               }
-            >
-              <SelectTrigger className="border-slate-200">
-                <SelectValue placeholder={t("placeholders.selectIndustry")} />
-              </SelectTrigger>
-              <SelectContent position="popper" className="z-[200]">
-                {industries.map((industry) => (
-                  <SelectItem key={industry.id} value={industry.id}>
-                    {industry.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder={t("placeholders.selectIndustries")}
+              searchPlaceholder={t("placeholders.searchIndustries")}
+              maxDisplay={2}
+            />
           </div>
 
           {/* Order */}
