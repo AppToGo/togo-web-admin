@@ -511,7 +511,7 @@ export async function getIndustries(): Promise<Industry[]> {
     return mockIndustries;
   }
 
-  const response = await apiClient.get<Industry[]>("/admin/industries");
+  const response = await apiClient.get<Industry[]>("/industries");
   return response.data;
 }
 
