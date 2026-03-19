@@ -115,6 +115,7 @@ export default function CreateGlobalProductPage() {
                 industryCategories={industryCategories}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
+                onIndustryChange={handleIndustryChange}
                 isLoading={createProduct.isPending}
               />
             )}
