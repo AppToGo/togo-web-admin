@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import { ArrowLeft, Package, Store, AlertCircle, Clock } from "lucide-react";
@@ -18,9 +19,9 @@ import {
   useGlobalProduct,
   useUpdateGlobalProduct,
   useIndustries,
-  useIndustryCategories,
   useGlobalProductStats,
 } from "@/features/admin/catalog/hooks";
+import { useIndustryCategories } from "@/features/admin/industry-categories/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { UpdateGlobalProductDto } from "@/features/admin/catalog/types";
 
@@ -36,13 +37,21 @@ export default function EditGlobalProductPage() {
   const { admin, common, catalog } = useAdminCatalogTranslations();
   const productId = params.id as string;
 
+  // Form state for industry selection
+  const [selectedIndustryId, setSelectedIndustryId] = useState<string>("");
+
   // Data fetching
   const { data: product, isLoading: isLoadingProduct } = useGlobalProduct(productId);
   const { data: stats, isLoading: isLoadingStats } = useGlobalProductStats(productId);
   const { data: industries = [] } = useIndustries();
-  const { data: industryCategories = [] } = useIndustryCategories(
-    product?.industryId || ""
-  );
+  const { data: industryCategories = [] } = useIndustryCategories({
+    industryId: selectedIndustryId || product?.industryId || undefined,
+  });
+
+  // Update selected industry when form changes
+  const handleIndustryChange = (industryId: string) => {
+    setSelectedIndustryId(industryId);
+  };
 
   // Mutation
   const updateProduct = useUpdateGlobalProduct();
@@ -173,6 +182,7 @@ export default function EditGlobalProductPage() {
                   industryCategories={industryCategories}
                   onSubmit={handleSubmit}
                   onCancel={handleCancel}
+                  onIndustryChange={handleIndustryChange}
                   isLoading={updateProduct.isPending}
                 />
               </CardContent>

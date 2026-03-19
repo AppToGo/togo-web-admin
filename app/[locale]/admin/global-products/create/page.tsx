@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import {
   useCreateGlobalProduct,
   useIndustries,
-  useIndustryCategories,
   useAdminCatalogTranslations,
 } from "@/features/admin/catalog/hooks";
+import { useIndustryCategories } from "@/features/admin/industry-categories/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { CreateGlobalProductDto, UpdateGlobalProductDto } from "@/features/admin/catalog/types";
 import { useState } from "react";
@@ -33,7 +33,7 @@ export default function CreateGlobalProductPage() {
   // Data fetching
   const { data: industries = [], isLoading: isLoadingIndustries } = useIndustries();
   const { data: industryCategories = [], isLoading: isLoadingCategories } =
-    useIndustryCategories(selectedIndustryId);
+    useIndustryCategories({ industryId: selectedIndustryId });
 
   // Mutation
   const createProduct = useCreateGlobalProduct();
@@ -95,7 +95,7 @@ export default function CreateGlobalProductPage() {
         </div>
 
         {/* Form Card */}
-        <Card className="max-w-3xl">
+        <Card>
           <CardHeader>
             <CardTitle>{admin('productInformation')}</CardTitle>
             <CardDescription>
@@ -115,6 +115,7 @@ export default function CreateGlobalProductPage() {
                 industryCategories={industryCategories}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
+                onIndustryChange={handleIndustryChange}
                 isLoading={createProduct.isPending}
               />
             )}
@@ -122,7 +123,7 @@ export default function CreateGlobalProductPage() {
         </Card>
 
         {/* Tips Card */}
-        <Card className="max-w-3xl bg-slate-50 border-slate-200">
+        <Card className="bg-slate-50 border-slate-200">
           <CardHeader>
             <CardTitle className="text-base">{admin('tips')}</CardTitle>
           </CardHeader>
