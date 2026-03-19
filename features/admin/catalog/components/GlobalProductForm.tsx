@@ -232,76 +232,68 @@ export function GlobalProductForm({
         />
       </div>
 
-      {/* SKU Field */}
-      <div className="space-y-2">
-        <Label htmlFor="sku">
-          {tCatalog("products.sku")} <span className="text-red-500">*</span>
-        </Label>
-        <div className="relative">
-          <Input
-            id="sku"
-            value={formData.sku}
-            onChange={(e) => handleSkuChange(e.target.value)}
-            onBlur={() => setSkuTouched(true)}
-            placeholder="Ej: COCA-COLA-350ML"
-            className={cn(
-              "uppercase",
-              skuTouched &&
-                !isCheckingSku &&
-                !skuCheck?.available &&
-                "border-red-500 focus-visible:ring-red-500"
+      {/* Form Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* SKU Field */}
+        <div className="space-y-2">
+          <Label htmlFor="sku">
+            {tCatalog("products.sku")} <span className="text-red-500">*</span>
+          </Label>
+          <div className="relative">
+            <Input
+              id="sku"
+              value={formData.sku}
+              onChange={(e) => handleSkuChange(e.target.value)}
+              onBlur={() => setSkuTouched(true)}
+              placeholder="Ej: COCA-COLA-350ML"
+              variant="noShadow"
+              className={cn(
+                "uppercase",
+                skuTouched &&
+                  !isCheckingSku &&
+                  !skuCheck?.available &&
+                  "border-red-500 focus-visible:ring-red-500"
+              )}
+            />
+            {skuTouched && !isCheckingSku && skuCheck?.available && formData.sku.length >= 3 && (
+              <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
             )}
-          />
-          {skuTouched && !isCheckingSku && skuCheck?.available && formData.sku.length >= 3 && (
-            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+          </div>
+          {skuTouched && !isCheckingSku && !skuCheck?.available && (
+            <p className="text-sm text-red-500">{t("skuExists")}</p>
           )}
+          <p className="text-xs text-slate-500">
+            {t("skuDescription")}
+          </p>
         </div>
-        {skuTouched && !isCheckingSku && !skuCheck?.available && (
-          <p className="text-sm text-red-500">{t("skuExists")}</p>
-        )}
-        <p className="text-xs text-slate-500">
-          {t("skuDescription")}
-        </p>
-      </div>
 
-      {/* Name Field */}
-      <div className="space-y-2">
-        <Label htmlFor="name">
-          {tCommon("fields.name")} <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => handleChange("name", e.target.value)}
-          placeholder={tCatalog("products.form.namePlaceholder")}
-        />
-      </div>
+        {/* Name Field */}
+        <div className="space-y-2">
+          <Label htmlFor="name">
+            {tCommon("fields.name")} <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder={tCatalog("products.form.namePlaceholder")}
+            variant="noShadow"
+          />
+        </div>
 
-      {/* Description Field */}
-      <div className="space-y-2">
-        <Label htmlFor="description">{tCatalog("products.description")}</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => handleChange("description", e.target.value)}
-          placeholder={tCatalog("products.form.descriptionPlaceholder")}
-          rows={3}
-        />
-      </div>
+        {/* Brand Field */}
+        <div className="space-y-2">
+          <Label htmlFor="brand">{tCatalog("products.brand")}</Label>
+          <Input
+            id="brand"
+            value={formData.brand}
+            onChange={(e) => handleChange("brand", e.target.value)}
+            placeholder="Ej: Coca Cola"
+            variant="noShadow"
+          />
+        </div>
 
-      {/* Brand Field */}
-      <div className="space-y-2">
-        <Label htmlFor="brand">{tCatalog("products.brand")}</Label>
-        <Input
-          id="brand"
-          value={formData.brand}
-          onChange={(e) => handleChange("brand", e.target.value)}
-          placeholder="Ej: Coca Cola"
-        />
-      </div>
-
-      {/* Industry & Category */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Industry Field */}
         <div className="space-y-2">
           <Label htmlFor="industry">
             {t("industry")} <span className="text-red-500">*</span>
@@ -320,6 +312,7 @@ export function GlobalProductForm({
           </Select>
         </div>
 
+        {/* Category Field */}
         <div className="space-y-2">
           <Label htmlFor="category">{t("optionalCategory")}</Label>
           <Select
@@ -339,36 +332,50 @@ export function GlobalProductForm({
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      {/* Image Upload */}
-      <div className="space-y-2">
-        <Label htmlFor="image">{tCatalog("products.image")}</Label>
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <Input
-              id="image"
-              value={formData.image}
-              onChange={(e) => handleImageChange(e.target.value)}
-              placeholder={tCatalog("products.form.imageUrl")}
-            />
-          </div>
-          <div className="w-24 h-24 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                onError={() => setImagePreview("")}
+        {/* Description Field - Full Width */}
+        <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-3">
+          <Label htmlFor="description">{tCatalog("products.description")}</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            placeholder={tCatalog("products.form.descriptionPlaceholder")}
+            rows={3}
+            variant="noShadow"
+          />
+        </div>
+
+        {/* Image Upload - Full Width */}
+        <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-3">
+          <Label htmlFor="image">{tCatalog("products.image")}</Label>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <Input
+                id="image"
+                value={formData.image}
+                onChange={(e) => handleImageChange(e.target.value)}
+                placeholder={tCatalog("products.form.imageUrl")}
+                variant="noShadow"
               />
-            ) : (
-              <ImagePlus className="w-8 h-8 text-slate-400" />
-            )}
+            </div>
+            <div className="w-24 h-24 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  onError={() => setImagePreview("")}
+                />
+              ) : (
+                <ImagePlus className="w-8 h-8 text-slate-400" />
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Attributes Section */}
+      {/* Attributes Section - Full Width */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label>{t("additionalAttributes")}</Label>
@@ -390,12 +397,14 @@ export function GlobalProductForm({
               placeholder={t("attributePlaceholder")}
               value={attr.key}
               onChange={(e) => updateAttribute(index, "key", e.target.value)}
+              variant="noShadow"
               className="flex-1"
             />
             <Input
               placeholder={t("valuePlaceholder")}
               value={attr.value}
               onChange={(e) => updateAttribute(index, "value", e.target.value)}
+              variant="noShadow"
               className="flex-1"
             />
             <Button

@@ -95,7 +95,7 @@ export default function CreateGlobalProductPage() {
         </div>
 
         {/* Form Card */}
-        <Card className="max-w-3xl">
+        <Card>
           <CardHeader>
             <CardTitle>{admin('productInformation')}</CardTitle>
             <CardDescription>
@@ -122,7 +122,7 @@ export default function CreateGlobalProductPage() {
         </Card>
 
         {/* Tips Card */}
-        <Card className="max-w-3xl bg-slate-50 border-slate-200">
+        <Card className="bg-slate-50 border-slate-200">
           <CardHeader>
             <CardTitle className="text-base">{admin('tips')}</CardTitle>
           </CardHeader>
