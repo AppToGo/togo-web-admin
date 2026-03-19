@@ -126,7 +126,11 @@ export default function IndustryCategoriesPage() {
   // ============================================================================
 
   const { data: industries = [] } = useIndustries();
-  const { data: categories = [], isLoading, error } = useIndustryCategories(filters);
+  const {
+    data: categories = [],
+    isLoading,
+    error,
+  } = useIndustryCategories(filters);
 
   // Filter categories by search query
   const filteredCategories = useMemo(() => {
@@ -310,8 +314,8 @@ export default function IndustryCategoriesPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               placeholder={t("filters.searchPlaceholder")}
@@ -320,7 +324,7 @@ export default function IndustryCategoriesPage() {
               className="pl-9"
             />
           </div>
-          <div className="flex-1 sm:max-w-xs">
+          <div className="w-full">
             <MultiSelect
               options={industryOptions}
               value={filters.industryIds || []}
@@ -335,7 +339,7 @@ export default function IndustryCategoriesPage() {
               maxDisplay={2}
             />
           </div>
-          <div className="flex items-center gap-2 sm:justify-end">
+          <div className="flex items-center gap-2 sm:ml-auto">
             <Switch
               id="show-inactive"
               checked={filters.includeInactive}

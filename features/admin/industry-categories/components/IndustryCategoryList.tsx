@@ -104,7 +104,11 @@ export function IndustryCategoryList({
                   {category.industries?.length > 0 ? (
                     <>
                       {category.industries.slice(0, 2).map((ind) => (
-                        <Badge key={ind.id} variant="outline" className="text-xs">
+                        <Badge
+                          key={ind.id}
+                          variant="outline"
+                          className="text-xs"
+                        >
                           {ind.name}
                         </Badge>
                       ))}
