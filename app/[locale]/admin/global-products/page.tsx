@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ViewToggle } from "@/components/ui/view-toggle";
 import { cn } from "@/lib/utils";
 import {
   useGlobalProducts,
@@ -51,7 +52,7 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
             key={i}
             className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-100"
           >
-            <Skeleton className="w-16 h-16 rounded-lg flex-shrink-0" />
+            <Skeleton className="w-16 h-16 rounded-lg shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-48" />
               <Skeleton className="h-4 w-32" />
@@ -70,7 +71,7 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
           key={i}
           className="bg-white rounded-xl p-4 border border-slate-100"
         >
-          <Skeleton className="aspect-[4/3] rounded-lg mb-4" />
+          <Skeleton className="aspect-4/3 rounded-lg mb-4" />
           <Skeleton className="h-5 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2 mb-4" />
           <div className="flex justify-between">
@@ -96,14 +97,14 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
         <Filter className="w-8 h-8 text-slate-400" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 mb-2">
-        {admin('empty.noProductsFound')}
+        {admin("empty.noProductsFound")}
       </h3>
       <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
-        {admin('empty.adjustFilters')}
+        {admin("empty.adjustFilters")}
       </p>
-      <Button onClick={onCreate}>
+      <Button variant="outline" onClick={onCreate}>
         <Plus className="w-4 h-4 mr-2" />
-        {catalog('products.create')}
+        {catalog("products.create")}
       </Button>
     </div>
   );
@@ -213,10 +214,10 @@ export default function GlobalProductsPage() {
             <Filter className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {common('errors.accessDenied')}
+            {common("errors.accessDenied")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {admin('superAdminOnly')}
+            {admin("superAdminOnly")}
           </p>
         </div>
       </DashboardLayout>
@@ -230,22 +231,19 @@ export default function GlobalProductsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {admin('title')}
+              {admin("title")}
             </h1>
-            <p className="text-slate-500 mt-1">{admin('subtitle')}</p>
+            <p className="text-slate-500 mt-1">{admin("subtitle")}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleImport}>
+            <Button variant="green" onClick={handleImport}>
               <Upload className="w-4 h-4 mr-2" />
-              {common('buttons.import')}
+              {common("buttons.import")}
             </Button>
-            <Button
-              onClick={handleCreate}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
+            <Button variant="default" onClick={handleCreate}>
               <Plus className="w-4 h-4 mr-2" />
-              {admin('newProduct')}
+              {admin("newProduct")}
             </Button>
           </div>
         </div>
@@ -259,7 +257,7 @@ export default function GlobalProductsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder={admin('searchPlaceholder')}
+              placeholder={admin("searchPlaceholder")}
               value={filters.search || ""}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-9"
@@ -271,13 +269,11 @@ export default function GlobalProductsPage() {
             value={filters.industryId || "all"}
             onValueChange={handleIndustryChange}
           >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={admin('allIndustries')} />
+            <SelectTrigger className="w-45">
+              <SelectValue placeholder={admin("allIndustries")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">
-                {admin('allIndustries')}
-              </SelectItem>
+              <SelectItem value="all">{admin("allIndustries")}</SelectItem>
               {industries.map((ind) => (
                 <SelectItem key={ind.id} value={ind.id}>
                   {ind.name}
@@ -291,13 +287,11 @@ export default function GlobalProductsPage() {
             value={filters.brand || "all"}
             onValueChange={handleBrandChange}
           >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder={admin('allBrands')} />
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder={admin("allBrands")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">
-                {admin('allBrands')}
-              </SelectItem>
+              <SelectItem value="all">{admin("allBrands")}</SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand} value={brand}>
                   {brand}
@@ -317,51 +311,30 @@ export default function GlobalProductsPage() {
             }
             onValueChange={handleStatusChange}
           >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder={common('fields.status')} />
+            <SelectTrigger className="w-35">
+              <SelectValue placeholder={common("fields.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{common('filters.all')}</SelectItem>
-              <SelectItem value="active">
-                {common('status.active')}
-              </SelectItem>
+              <SelectItem value="all">{common("filters.all")}</SelectItem>
+              <SelectItem value="active">{common("status.active")}</SelectItem>
               <SelectItem value="inactive">
-                {common('status.inactive')}
+                {common("status.inactive")}
               </SelectItem>
             </SelectContent>
           </Select>
 
           {/* View Toggle */}
-          <div className="flex items-center bg-white rounded-lg border border-slate-200 p-1">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={cn(
-                "p-2 rounded transition-colors",
-                viewMode === "grid"
-                  ? "bg-indigo-100 text-indigo-600"
-                  : "text-slate-500 hover:bg-slate-100"
-              )}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn(
-                "p-2 rounded transition-colors",
-                viewMode === "list"
-                  ? "bg-indigo-100 text-indigo-600"
-                  : "text-slate-500 hover:bg-slate-100"
-              )}
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
+          <ViewToggle
+            value={viewMode}
+            onChange={(value) => setViewMode(value as ViewMode)}
+            variant="bordered"
+          />
         </div>
 
         {/* Results Count */}
         {!isLoadingProducts && productsData && (
           <p className="text-sm text-slate-500">
-            {common('pagination.showingOf', {
+            {common("pagination.showingOf", {
               count: productsData.data.length,
               total: productsData.meta.total,
             })}
@@ -408,10 +381,10 @@ export default function GlobalProductsPage() {
               }
               disabled={filters.page === 1}
             >
-              {common('pagination.previous')}
+              {common("pagination.previous")}
             </Button>
             <span className="text-sm text-slate-500">
-              {common('pagination.pageOf', {
+              {common("pagination.pageOf", {
                 page: filters.page ?? 1,
                 totalPages: productsData.meta.totalPages,
               })}
@@ -430,7 +403,7 @@ export default function GlobalProductsPage() {
               }
               disabled={filters.page === productsData.meta.totalPages}
             >
-              {common('pagination.next')}
+              {common("pagination.next")}
             </Button>
           </div>
         )}

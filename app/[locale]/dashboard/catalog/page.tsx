@@ -39,6 +39,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ViewToggle } from "@/components/ui/view-toggle";
 import { cn } from "@/lib/utils";
 import {
   useMyProducts,
@@ -373,30 +374,11 @@ export default function CatalogPage() {
               </Select>
 
               {/* View Toggle */}
-              <div className="flex items-center bg-white rounded-lg border border-slate-200 p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={cn(
-                    "p-2 rounded transition-colors",
-                    viewMode === "grid"
-                      ? "bg-indigo-100 text-indigo-600"
-                      : "text-slate-500 hover:bg-slate-100"
-                  )}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "p-2 rounded transition-colors",
-                    viewMode === "list"
-                      ? "bg-indigo-100 text-indigo-600"
-                      : "text-slate-500 hover:bg-slate-100"
-                  )}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
+              <ViewToggle
+                value={viewMode}
+                onChange={(value) => setViewMode(value as ViewMode)}
+                variant="bordered"
+              />
             </div>
 
             {/* Products Content */}
