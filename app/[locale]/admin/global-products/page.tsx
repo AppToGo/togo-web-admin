@@ -332,7 +332,7 @@ export default function GlobalProductsPage() {
         </div>
 
         {/* Results Count */}
-        {!isLoadingProducts && productsData && (
+        {!isLoadingProducts && productsData?.data && (
           <p className="text-sm text-slate-500">
             {common("pagination.showingOf", {
               count: productsData.data.length,
