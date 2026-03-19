@@ -335,8 +335,8 @@ export default function GlobalProductsPage() {
         {!isLoadingProducts && productsData?.data && (
           <p className="text-sm text-slate-500">
             {common("pagination.showingOf", {
-              count: productsData.data.length,
-              total: productsData.meta.total,
+              count: productsData.data?.length,
+              total: productsData.meta?.total,
             })}
           </p>
         )}
@@ -344,7 +344,7 @@ export default function GlobalProductsPage() {
         {/* Products Grid/List */}
         {isLoadingProducts ? (
           <ProductsLoading viewMode={viewMode} />
-        ) : productsData?.data.length === 0 ? (
+        ) : productsData?.data?.length === 0 ? (
           <EmptyProductsState onCreate={handleCreate} />
         ) : (
           <div
@@ -368,7 +368,7 @@ export default function GlobalProductsPage() {
         )}
 
         {/* Pagination */}
-        {productsData && productsData.meta.totalPages > 1 && (
+        {productsData && productsData.meta?.totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-4">
             <Button
               variant="outline"
@@ -386,7 +386,7 @@ export default function GlobalProductsPage() {
             <span className="text-sm text-slate-500">
               {common("pagination.pageOf", {
                 page: filters.page ?? 1,
-                totalPages: productsData.meta.totalPages,
+                totalPages: productsData.meta?.totalPages,
               })}
             </span>
             <Button
@@ -396,12 +396,12 @@ export default function GlobalProductsPage() {
                 setFilters((prev) => ({
                   ...prev,
                   page: Math.min(
-                    productsData.meta.totalPages,
+                    productsData.meta?.totalPages,
                     (prev.page || 1) + 1
                   ),
                 }))
               }
-              disabled={filters.page === productsData.meta.totalPages}
+              disabled={filters.page === productsData.meta?.totalPages}
             >
               {common("pagination.next")}
             </Button>
