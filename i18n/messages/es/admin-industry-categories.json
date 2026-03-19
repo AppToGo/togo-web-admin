@@ -10,7 +10,8 @@
   },
   "filters": {
     "allIndustries": "Todas las industrias",
-    "showInactive": "Mostrar inactivas"
+    "showInactive": "Mostrar inactivas",
+    "searchPlaceholder": "Buscar por nombre o slug..."
   },
   "table": {
     "icon": "Icono",

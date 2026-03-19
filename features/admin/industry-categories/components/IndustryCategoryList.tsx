@@ -128,11 +128,6 @@ export function IndustryCategoryList({
                       ? t("status.active")
                       : t("status.inactive")}
                   </Badge>
-                  <Switch
-                    checked={category.isActive}
-                    onCheckedChange={() => onToggleStatus(category)}
-                    className="data-[state=checked]:bg-emerald-500"
-                  />
                 </div>
               </TableCell>
 

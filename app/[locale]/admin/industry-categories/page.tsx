@@ -181,7 +181,10 @@ export default function IndustryCategoriesPage() {
   };
 
   const handleToggleStatus = (category: IndustryCategory) => {
-    toggleStatus.mutate(category);
+    toggleStatus.mutate({
+      id: category.id,
+      isActive: !category.isActive,
+    });
   };
 
   const handleSubmit = (data: CreateIndustryCategoryDto) => {
@@ -280,62 +283,60 @@ export default function IndustryCategoriesPage() {
         </div>
 
         {/* Filters */}
-        <Card variant="outline" className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Buscar por nombre o slug..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="flex-1 sm:max-w-xs">
-              <Select
-                value={filters.industryId || "all"}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    industryId: value === "all" ? undefined : value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("filters.allIndustries")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {t("filters.allIndustries")}
-                  </SelectItem>
-                  {industries.map((industry) => (
-                    <SelectItem key={industry.id} value={industry.id}>
-                      {industry.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2 sm:justify-end">
-              <Switch
-                id="show-inactive"
-                checked={filters.includeInactive}
-                onCheckedChange={(checked) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    includeInactive: checked,
-                  }))
-                }
-              />
-              <Label
-                htmlFor="show-inactive"
-                className="text-sm text-slate-600 cursor-pointer"
-              >
-                {t("filters.showInactive")}
-              </Label>
-            </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder={t("filters.searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        </Card>
+          <div className="flex-1 sm:max-w-xs">
+            <Select
+              value={filters.industryId || "all"}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  industryId: value === "all" ? undefined : value,
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t("filters.allIndustries")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {t("filters.allIndustries")}
+                </SelectItem>
+                {industries.map((industry) => (
+                  <SelectItem key={industry.id} value={industry.id}>
+                    {industry.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2 sm:justify-end">
+            <Switch
+              id="show-inactive"
+              checked={filters.includeInactive}
+              onCheckedChange={(checked) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  includeInactive: checked,
+                }))
+              }
+            />
+            <Label
+              htmlFor="show-inactive"
+              className="text-sm text-slate-600 cursor-pointer"
+            >
+              {t("filters.showInactive")}
+            </Label>
+          </div>
+        </div>
 
         {/* List */}
         <Card>
