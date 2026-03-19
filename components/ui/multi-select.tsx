@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,17 +20,39 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 
+const multiSelectVariants = cva(
+  "flex w-full items-center justify-between min-h-[40px] h-auto transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "rounded-md border border-slate-200 bg-white",
+        ghost: "rounded-lg border-0 bg-transparent shadow-none",
+        outline: "rounded-lg border border-slate-200 bg-transparent shadow-none",
+        elevated: "rounded-lg border border-slate-200 bg-white shadow-md",
+        primary: "rounded-lg border border-indigo-200 bg-white shadow-sm ring-1 ring-indigo-100",
+        kanban: "rounded-xl border bg-card text-card-foreground shadow",
+        error: "rounded-md border border-red-300 bg-white shadow-sm focus:ring-red-400",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
 export interface MultiSelectOption {
   value: string;
   label: string;
 }
 
-interface MultiSelectProps {
+export interface MultiSelectProps
+  extends VariantProps<typeof multiSelectVariants> {
   options: MultiSelectOption[];
   value: string[];
   onChange: (value: string[]) => void;
   placeholder?: string;
   searchPlaceholder?: string;
+  emptyMessage?: string;
   maxDisplay?: number;
   className?: string;
   disabled?: boolean;
@@ -41,7 +64,9 @@ export function MultiSelect({
   onChange,
   placeholder = "Select options...",
   searchPlaceholder = "Search...",
+  emptyMessage = "No options found.",
   maxDisplay = 2,
+  variant,
   className,
   disabled,
 }: MultiSelectProps) {
@@ -77,7 +102,7 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between min-h-[40px] h-auto",
+            multiSelectVariants({ variant }),
             value.length > 0 && "pr-8",
             className
           )}
@@ -128,7 +153,7 @@ export function MultiSelect({
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
-            <CommandEmpty>No options found.</CommandEmpty>
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem

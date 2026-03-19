@@ -126,7 +126,7 @@ export default function IndustryCategoriesPage() {
   // ============================================================================
 
   const { data: industries = [] } = useIndustries();
-  const { data: categories = [], isLoading } = useIndustryCategories(filters);
+  const { data: categories = [], isLoading, error } = useIndustryCategories(filters);
 
   // Filter categories by search query
   const filteredCategories = useMemo(() => {
@@ -236,6 +236,31 @@ export default function IndustryCategoriesPage() {
           <p className="text-slate-500 text-center max-w-md">
             {t("accessDenied.description")}
           </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // ============================================================================
+  // ERROR STATE
+  // ============================================================================
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("error.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md mb-4">
+            {t("error.description")}
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            {t("buttons.retry")}
+          </Button>
         </div>
       </DashboardLayout>
     );

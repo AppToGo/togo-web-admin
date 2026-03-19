@@ -119,7 +119,7 @@ export async function getIndustryCategories(
 
   const params = new URLSearchParams();
   if (filters?.industryIds && filters.industryIds.length > 0) {
-    filters.industryIds.forEach(id => params.append("industryId", id));
+    filters.industryIds.forEach(id => params.append("industryId", encodeURIComponent(id)));
   }
   if (filters?.includeInactive) params.append("includeInactive", "true");
 

@@ -61,7 +61,8 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "deleting": "Deleting...",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "retry": "Retry"
   },
   "dialog": {
     "createTitle": "New Category",
@@ -96,5 +97,9 @@
   "accessDenied": {
     "title": "Access Denied",
     "description": "You don't have permission to access this section"
+  },
+  "error": {
+    "title": "Error loading categories",
+    "description": "There was an error loading the categories. Please try again."
   }
 }

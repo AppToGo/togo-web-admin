@@ -61,7 +61,8 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "deleting": "Eliminando...",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "retry": "Reintentar"
   },
   "dialog": {
     "createTitle": "Nueva Categoría",
@@ -96,5 +97,9 @@
   "accessDenied": {
     "title": "Acceso Denegado",
     "description": "No tienes permisos para acceder a esta sección"
+  },
+  "error": {
+    "title": "Error al cargar categorías",
+    "description": "Hubo un error al cargar las categorías. Por favor intenta de nuevo."
   }
 }
