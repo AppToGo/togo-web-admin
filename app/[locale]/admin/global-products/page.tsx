@@ -354,7 +354,7 @@ export default function GlobalProductsPage() {
                 : "space-y-3"
             )}
           >
-            {productsData?.data.map((product) => (
+            {productsData?.data?.map((product) => (
               <AdminGlobalProductCard
                 key={product.id}
                 product={product}

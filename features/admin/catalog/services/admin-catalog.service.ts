@@ -4,14 +4,14 @@
  * API service for Super Admin global product catalog management.
  * 
  * Backend endpoints:
- * - GET /api/v1/admin/global-products
- * - POST /api/v1/admin/global-products
- * - GET /api/v1/admin/global-products/:id
- * - PATCH /api/v1/admin/global-products/:id
- * - DELETE /api/v1/admin/global-products/:id
- * - GET /api/v1/admin/global-products/:id/stats
- * - POST /api/v1/admin/global-products/import
- * - GET /api/v1/admin/global-products/stats
+ * - GET /admin/global-products
+ * - POST /admin/global-products
+ * - GET /admin/global-products/:id
+ * - PATCH /admin/global-products/:id
+ * - DELETE /admin/global-products/:id
+ * - GET /admin/global-products/:id/stats
+ * - POST /admin/global-products/import
+ * - GET /admin/global-products/stats
  * - GET /api/v1/admin/industries
  * - GET /api/v1/admin/industries/:id/categories
  * 
@@ -185,7 +185,7 @@ const mockGlobalProducts: GlobalProduct[] = [
 
 /**
  * Get all global products with filters and pagination
- * GET /api/v1/admin/global-products
+ * GET /admin/global-products
  */
 export async function getGlobalProducts(
   filters?: GlobalProductFilters
@@ -245,14 +245,14 @@ export async function getGlobalProducts(
   if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
 
   const response = await apiClient.get<PaginatedGlobalProducts>(
-    `/api/v1/admin/global-products?${params}`
+    `/admin/global-products?${params}`
   );
   return response.data;
 }
 
 /**
  * Get a single global product by ID
- * GET /api/v1/admin/global-products/:id
+ * GET /admin/global-products/:id
  */
 export async function getGlobalProduct(id: string): Promise<GlobalProduct> {
   if (USE_MOCK) {
@@ -262,13 +262,13 @@ export async function getGlobalProduct(id: string): Promise<GlobalProduct> {
     return product;
   }
 
-  const response = await apiClient.get<GlobalProduct>(`/api/v1/admin/global-products/${id}`);
+  const response = await apiClient.get<GlobalProduct>(`/admin/global-products/${id}`);
   return response.data;
 }
 
 /**
  * Create a new global product
- * POST /api/v1/admin/global-products
+ * POST /admin/global-products
  */
 export async function createGlobalProduct(
   data: CreateGlobalProductDto
@@ -299,13 +299,13 @@ export async function createGlobalProduct(
     return newProduct;
   }
 
-  const response = await apiClient.post<GlobalProduct>("/api/v1/admin/global-products", data);
+  const response = await apiClient.post<GlobalProduct>("/admin/global-products", data);
   return response.data;
 }
 
 /**
  * Update a global product
- * PATCH /api/v1/admin/global-products/:id
+ * PATCH /admin/global-products/:id
  */
 export async function updateGlobalProduct(
   id: string,
@@ -342,13 +342,13 @@ export async function updateGlobalProduct(
     return mockGlobalProducts[index];
   }
 
-  const response = await apiClient.patch<GlobalProduct>(`/api/v1/admin/global-products/${id}`, data);
+  const response = await apiClient.patch<GlobalProduct>(`/admin/global-products/${id}`, data);
   return response.data;
 }
 
 /**
  * Delete a global product
- * DELETE /api/v1/admin/global-products/:id
+ * DELETE /admin/global-products/:id
  */
 export async function deleteGlobalProduct(id: string): Promise<void> {
   if (USE_MOCK) {
@@ -359,12 +359,12 @@ export async function deleteGlobalProduct(id: string): Promise<void> {
     return;
   }
 
-  await apiClient.delete(`/api/v1/admin/global-products/${id}`);
+  await apiClient.delete(`/admin/global-products/${id}`);
 }
 
 /**
  * Toggle global product status
- * PATCH /api/v1/admin/global-products/:id/status
+ * PATCH /admin/global-products/:id/status
  */
 export async function toggleGlobalProductStatus(
   id: string,
@@ -375,7 +375,7 @@ export async function toggleGlobalProductStatus(
 
 /**
  * Check if SKU is available
- * GET /api/v1/admin/global-products/check-sku
+ * GET /admin/global-products/check-sku
  */
 export async function checkSkuAvailability(
   sku: string,
@@ -394,7 +394,7 @@ export async function checkSkuAvailability(
   if (excludeId) params.append("excludeId", excludeId);
 
   const response = await apiClient.get<{ available: boolean }>(
-    `/api/v1/admin/global-products/check-sku?${params}`
+    `/admin/global-products/check-sku?${params}`
   );
   return response.data;
 }
@@ -405,7 +405,7 @@ export async function checkSkuAvailability(
 
 /**
  * Get global product usage statistics
- * GET /api/v1/admin/global-products/:id/stats
+ * GET /admin/global-products/:id/stats
  */
 export async function getGlobalProductStats(id: string): Promise<GlobalProductStats> {
   if (USE_MOCK) {
@@ -434,13 +434,13 @@ export async function getGlobalProductStats(id: string): Promise<GlobalProductSt
     };
   }
 
-  const response = await apiClient.get<GlobalProductStats>(`/api/v1/admin/global-products/${id}/stats`);
+  const response = await apiClient.get<GlobalProductStats>(`/admin/global-products/${id}/stats`);
   return response.data;
 }
 
 /**
  * Get global catalog statistics
- * GET /api/v1/admin/global-products/stats
+ * GET /admin/global-products/stats
  */
 export async function getGlobalCatalogStats(): Promise<GlobalCatalogStats> {
   if (USE_MOCK) {
@@ -493,7 +493,7 @@ export async function getGlobalCatalogStats(): Promise<GlobalCatalogStats> {
     };
   }
 
-  const response = await apiClient.get<GlobalCatalogStats>("/api/v1/admin/global-products/stats");
+  const response = await apiClient.get<GlobalCatalogStats>("/admin/global-products/stats");
   return response.data;
 }
 
@@ -533,7 +533,7 @@ export async function getIndustryCategories(industryId: string): Promise<Industr
 
 /**
  * Get all brands (from existing products)
- * GET /api/v1/admin/global-products/brands
+ * GET /admin/global-products/brands
  */
 export async function getBrands(): Promise<string[]> {
   if (USE_MOCK) {
@@ -545,7 +545,7 @@ export async function getBrands(): Promise<string[]> {
     return Array.from(brands).sort();
   }
 
-  const response = await apiClient.get<string[]>("/api/v1/admin/global-products/brands");
+  const response = await apiClient.get<string[]>("/admin/global-products/brands");
   return response.data;
 }
 
@@ -555,7 +555,7 @@ export async function getBrands(): Promise<string[]> {
 
 /**
  * Import products from CSV/Excel
- * POST /api/v1/admin/global-products/import
+ * POST /admin/global-products/import
  */
 export async function bulkImportProducts(file: File): Promise<BulkImportResult> {
   if (USE_MOCK) {
@@ -580,7 +580,7 @@ export async function bulkImportProducts(file: File): Promise<BulkImportResult> 
   formData.append("file", file);
 
   const response = await apiClient.post<BulkImportResult>(
-    "/api/v1/admin/global-products/import",
+    "/admin/global-products/import",
     formData,
     {
       headers: {
