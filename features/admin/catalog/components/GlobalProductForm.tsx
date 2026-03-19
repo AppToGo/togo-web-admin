@@ -86,7 +86,7 @@ export function GlobalProductForm({
   // Attributes state
   const [attributes, setAttributes] = useState<
     { key: string; value: string }[]
-  >([]);
+  >([{ key: "", value: "" }]);
 
   // Image preview
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -132,7 +132,20 @@ export function GlobalProductForm({
 
   // Handle form changes
   const handleChange = (field: keyof CreateGlobalProductDto, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const updates: Partial<CreateGlobalProductDto> = { [field]: value };
+      
+      // Auto-generate SKU from name
+      if (field === "name") {
+        const generatedSku = value
+          .toUpperCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^A-Z0-9-]/g, "");
+        updates.sku = generatedSku;
+      }
+      
+      return { ...prev, ...updates };
+    });
   };
 
   // Handle SKU change with validation
@@ -256,6 +269,18 @@ export function GlobalProductForm({
 
       {/* Form Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        {/* Name Field */}
+        <div className="space-y-2">
+          <Label htmlFor="name">
+            {tCommon("fields.name")} <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder={tCatalog("products.form.namePlaceholder")}
+          />
+        </div>
         {/* SKU Field */}
         <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-1">
           <Label htmlFor="sku">
@@ -272,7 +297,8 @@ export function GlobalProductForm({
                 "uppercase",
                 skuTouched &&
                   !isCheckingSku &&
-                  !skuCheck?.available &&
+                  skuCheck &&
+                  !skuCheck.available &&
                   "border-red-500 focus-visible:ring-red-500"
               )}
             />
@@ -283,23 +309,10 @@ export function GlobalProductForm({
                 <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
               )}
           </div>
-          {skuTouched && !isCheckingSku && !skuCheck?.available && (
+          {skuTouched && !isCheckingSku && skuCheck && !skuCheck.available && (
             <p className="text-sm text-red-500">{t("skuExists")}</p>
           )}
           <p className="text-xs text-slate-500">{t("skuDescription")}</p>
-        </div>
-
-        {/* Name Field */}
-        <div className="space-y-2">
-          <Label htmlFor="name">
-            {tCommon("fields.name")} <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            placeholder={tCatalog("products.form.namePlaceholder")}
-          />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -383,7 +396,7 @@ export function GlobalProductForm({
                 placeholder={tCatalog("products.form.imageUrl")}
               />
             </div>
-            <div className="w-24 h-24 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="w-11 h-11 bg-slate-100 rounded-sm flex items-center justify-center overflow-hidden">
               {imagePreview ? (
                 <img
                   src={imagePreview}
