@@ -104,3 +104,5 @@ export { ScrollArea } from "./scroll-area"
 export { IconButton } from "./icon-button"
 
 export { IconToggle } from "./icon-toggle"
+
+export { AutocompleteSelect } from "./autocomplete-select"
