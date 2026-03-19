@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IndustryCategoryActions } from "./IndustryCategoryActions";
 import type { IndustryCategory } from "../types/industry-category.types";
@@ -54,7 +53,7 @@ export function IndustryCategoryList({
             </TableHead>
             <TableHead className="text-slate-500">{t("table.name")}</TableHead>
             <TableHead className="text-slate-500">
-              {t("table.industry")}
+              {t("table.industries")}
             </TableHead>
             <TableHead className="text-center text-slate-500">
               {t("table.order")}
@@ -99,11 +98,26 @@ export function IndustryCategoryList({
                 <span className="text-xs text-slate-500">{category.slug}</span>
               </TableCell>
 
-              {/* Industry */}
+              {/* Industries */}
               <TableCell>
-                <span className="text-slate-700">
-                  {category.industry?.name || "-"}
-                </span>
+                <div className="flex flex-wrap gap-1">
+                  {category.industries?.length > 0 ? (
+                    <>
+                      {category.industries.slice(0, 2).map((ind) => (
+                        <Badge key={ind.id} variant="outline" className="text-xs">
+                          {ind.name}
+                        </Badge>
+                      ))}
+                      {category.industries.length > 2 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{category.industries.length - 2}
+                        </Badge>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-slate-400">-</span>
+                  )}
+                </div>
               </TableCell>
 
               {/* Order */}

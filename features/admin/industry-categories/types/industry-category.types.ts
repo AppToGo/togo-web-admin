@@ -12,11 +12,10 @@ export interface IndustryCategory {
   icon?: string;
   color?: string;
   isActive: boolean;
-  industryId: string;
-  industry?: {
+  industries: Array<{
     id: string;
     name: string;
-  };
+  }>;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -27,7 +26,7 @@ export interface IndustryCategory {
 export interface CreateIndustryCategoryDto {
   name: string;
   slug: string;
-  industryId: string;
+  industryIds: string[];
   order?: number;
   icon?: string;
   color?: string;
@@ -41,9 +40,10 @@ export interface UpdateIndustryCategoryDto {
   icon?: string;
   color?: string;
   isActive?: boolean;
+  industryIds?: string[];
 }
 
 export interface IndustryCategoryFilters {
-  industryId?: string;
+  industryIds?: string[];
   includeInactive?: boolean;
 }

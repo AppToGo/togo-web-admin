@@ -18,13 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -113,7 +107,7 @@ export default function IndustryCategoriesPage() {
   // ============================================================================
 
   const [filters, setFilters] = useState<{
-    industryId?: string;
+    industryIds?: string[];
     includeInactive?: boolean;
   }>({
     includeInactive: false,
@@ -132,7 +126,7 @@ export default function IndustryCategoriesPage() {
   // ============================================================================
 
   const { data: industries = [] } = useIndustries();
-  const { data: categories = [], isLoading } = useIndustryCategories(filters);
+  const { data: categories = [], isLoading, error } = useIndustryCategories(filters);
 
   // Filter categories by search query
   const filteredCategories = useMemo(() => {
@@ -144,6 +138,14 @@ export default function IndustryCategoriesPage() {
         cat.slug.toLowerCase().includes(query)
     );
   }, [categories, searchQuery]);
+
+  // Industry options for multi-select filter
+  const industryOptions = useMemo(() => {
+    return industries.map((ind) => ({
+      value: ind.id,
+      label: ind.name,
+    }));
+  }, [industries]);
 
   // ============================================================================
   // MUTATIONS
@@ -240,6 +242,31 @@ export default function IndustryCategoriesPage() {
   }
 
   // ============================================================================
+  // ERROR STATE
+  // ============================================================================
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("error.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md mb-4">
+            {t("error.description")}
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            {t("buttons.retry")}
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // ============================================================================
   // RENDER
   // ============================================================================
 
@@ -294,29 +321,19 @@ export default function IndustryCategoriesPage() {
             />
           </div>
           <div className="flex-1 sm:max-w-xs">
-            <Select
-              value={filters.industryId || "all"}
-              onValueChange={(value) =>
+            <MultiSelect
+              options={industryOptions}
+              value={filters.industryIds || []}
+              onChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
-                  industryId: value === "all" ? undefined : value,
+                  industryIds: value.length > 0 ? value : undefined,
                 }))
               }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("filters.allIndustries")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  {t("filters.allIndustries")}
-                </SelectItem>
-                {industries.map((industry) => (
-                  <SelectItem key={industry.id} value={industry.id}>
-                    {industry.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder={t("filters.allIndustries")}
+              searchPlaceholder={t("filters.searchIndustries")}
+              maxDisplay={2}
+            />
           </div>
           <div className="flex items-center gap-2 sm:justify-end">
             <Switch

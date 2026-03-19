@@ -47,8 +47,7 @@ const mockIndustryCategories: IndustryCategory[] = [
     icon: "🥤",
     color: "#ef4444",
     isActive: true,
-    industryId: "ind1",
-    industry: { id: "ind1", name: "Bebidas" },
+    industries: [{ id: "ind1", name: "Bebidas" }],
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
   },
@@ -60,8 +59,7 @@ const mockIndustryCategories: IndustryCategory[] = [
     icon: "🧃",
     color: "#f97316",
     isActive: true,
-    industryId: "ind1",
-    industry: { id: "ind1", name: "Bebidas" },
+    industries: [{ id: "ind1", name: "Bebidas" }],
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
   },
@@ -73,8 +71,7 @@ const mockIndustryCategories: IndustryCategory[] = [
     icon: "🍿",
     color: "#eab308",
     isActive: true,
-    industryId: "ind2",
-    industry: { id: "ind2", name: "Alimentos" },
+    industries: [{ id: "ind2", name: "Alimentos" }],
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
   },
@@ -86,8 +83,7 @@ const mockIndustryCategories: IndustryCategory[] = [
     icon: "🥫",
     color: "#22c55e",
     isActive: false,
-    industryId: "ind2",
-    industry: { id: "ind2", name: "Alimentos" },
+    industries: [{ id: "ind2", name: "Alimentos" }],
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
   },
@@ -108,8 +104,10 @@ export async function getIndustryCategories(
     await new Promise((resolve) => setTimeout(resolve, 200));
     let filtered = [...mockIndustryCategories];
     
-    if (filters?.industryId) {
-      filtered = filtered.filter((c) => c.industryId === filters.industryId);
+    if (filters?.industryIds && filters.industryIds.length > 0) {
+      filtered = filtered.filter((c) => 
+        c.industries.some(ind => filters.industryIds?.includes(ind.id))
+      );
     }
     
     if (!filters?.includeInactive) {
@@ -120,7 +118,9 @@ export async function getIndustryCategories(
   }
 
   const params = new URLSearchParams();
-  if (filters?.industryId) params.append("industryId", filters.industryId);
+  if (filters?.industryIds && filters.industryIds.length > 0) {
+    filters.industryIds.forEach(id => params.append("industryId", encodeURIComponent(id)));
+  }
   if (filters?.includeInactive) params.append("includeInactive", "true");
 
   const response = await apiClient.get<IndustryCategory[]>(
@@ -156,9 +156,13 @@ export async function createIndustryCategory(
     await new Promise((resolve) => setTimeout(resolve, 500));
     const newCategory: IndustryCategory = {
       id: `ic_${Date.now()}`,
-      ...data,
+      name: data.name,
+      slug: data.slug,
       order: data.order ?? 0,
+      icon: data.icon,
+      color: data.color,
       isActive: data.isActive ?? true,
+      industries: [], // Will be populated based on industryIds
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

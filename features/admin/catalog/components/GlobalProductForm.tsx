@@ -127,7 +127,7 @@ export function GlobalProductForm({
 
   // Filter categories by selected industry
   const filteredCategories = industryCategories.filter(
-    (cat) => cat.industryId === formData.industryId
+    (cat) => cat.industries.some(ind => ind.id === formData.industryId)
   );
 
   // Handle form changes

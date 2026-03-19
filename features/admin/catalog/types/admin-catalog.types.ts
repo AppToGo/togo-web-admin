@@ -24,16 +24,21 @@ export interface Industry {
 }
 
 /**
- * Industry Category - Subcategories within an industry
+ * Industry Category - Subcategories that can belong to multiple industries
  */
 export interface IndustryCategory {
   id: string;
-  industryId: string;
   name: string;
   slug: string;
   description?: string;
-  sortOrder: number;
+  order: number;
+  icon?: string;
+  color?: string;
   isActive: boolean;
+  industries: Array<{
+    id: string;
+    name: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

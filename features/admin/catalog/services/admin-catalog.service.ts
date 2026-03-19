@@ -55,10 +55,10 @@ const mockIndustries: Industry[] = [
 ];
 
 const mockIndustryCategories: IndustryCategory[] = [
-  { id: "cat1", industryId: "ind1", name: "Refrescos", slug: "refrescos", sortOrder: 1, isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "cat2", industryId: "ind1", name: "Jugos", slug: "jugos", sortOrder: 2, isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "cat3", industryId: "ind2", name: "Snacks", slug: "snacks", sortOrder: 1, isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "cat4", industryId: "ind2", name: "Abarrotes", slug: "abarrotes", sortOrder: 2, isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+  { id: "cat1", name: "Refrescos", slug: "refrescos", order: 1, isActive: true, industries: [{ id: "ind1", name: "Bebidas" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+  { id: "cat2", name: "Jugos", slug: "jugos", order: 2, isActive: true, industries: [{ id: "ind1", name: "Bebidas" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+  { id: "cat3", name: "Snacks", slug: "snacks", order: 1, isActive: true, industries: [{ id: "ind2", name: "Alimentos" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
+  { id: "cat4", name: "Abarrotes", slug: "abarrotes", order: 2, isActive: true, industries: [{ id: "ind2", name: "Alimentos" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
 ];
 
 const mockGlobalProducts: GlobalProduct[] = [
@@ -522,7 +522,7 @@ export async function getIndustries(): Promise<Industry[]> {
 export async function getIndustryCategories(industryId: string): Promise<IndustryCategory[]> {
   if (USE_MOCK) {
     await new Promise((resolve) => setTimeout(resolve, 200));
-    return mockIndustryCategories.filter((c) => c.industryId === industryId);
+    return mockIndustryCategories.filter((c) => c.industries.some(ind => ind.id === industryId));
   }
 
   const response = await apiClient.get<IndustryCategory[]>(
