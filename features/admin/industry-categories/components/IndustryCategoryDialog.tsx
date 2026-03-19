@@ -128,14 +128,14 @@ export function IndustryCategoryDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle className="text-slate-900">
             {isEditing ? t("dialog.editTitle") : t("dialog.createTitle")}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 py-4">
+        <form onSubmit={handleSubmit} className="space-y-5 p-6 py-4">
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-slate-700">
@@ -181,7 +181,7 @@ export function IndustryCategoryDialog({
               <SelectTrigger className="border-slate-200">
                 <SelectValue placeholder={t("placeholders.selectIndustry")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-[200]">
                 {industries.map((industry) => (
                   <SelectItem key={industry.id} value={industry.id}>
                     {industry.name}
@@ -241,7 +241,7 @@ export function IndustryCategoryDialog({
                 onChange={(e) =>
                   setFormData({ ...formData, color: e.target.value })
                 }
-                className="h-10 w-10 rounded-md border border-slate-200 cursor-pointer"
+                className="h-10 w-10 rounded-md overflow-hidden border border-slate-200 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none"
               />
               <Input
                 value={formData.color}
@@ -260,9 +260,7 @@ export function IndustryCategoryDialog({
               <Label htmlFor="isActive" className="text-slate-700">
                 {t("fields.isActive")}
               </Label>
-              <p className="text-xs text-slate-500">
-                {t("helpers.isActive")}
-              </p>
+              <p className="text-xs text-slate-500">{t("helpers.isActive")}</p>
             </div>
             <Switch
               id="isActive"
@@ -286,8 +284,8 @@ export function IndustryCategoryDialog({
               {isSubmitting
                 ? t("buttons.saving")
                 : isEditing
-                ? t("buttons.save")
-                : t("buttons.create")}
+                  ? t("buttons.save")
+                  : t("buttons.create")}
             </Button>
           </DialogFooter>
         </form>

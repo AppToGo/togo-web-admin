@@ -245,7 +245,7 @@ export async function getGlobalProducts(
   if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
 
   const response = await apiClient.get<PaginatedGlobalProducts>(
-    `/admin/global-products?${params}`
+    `/api/v1/admin/global-products?${params}`
   );
   return response.data;
 }
@@ -262,7 +262,7 @@ export async function getGlobalProduct(id: string): Promise<GlobalProduct> {
     return product;
   }
 
-  const response = await apiClient.get<GlobalProduct>(`/admin/global-products/${id}`);
+  const response = await apiClient.get<GlobalProduct>(`/api/v1/admin/global-products/${id}`);
   return response.data;
 }
 
@@ -299,7 +299,7 @@ export async function createGlobalProduct(
     return newProduct;
   }
 
-  const response = await apiClient.post<GlobalProduct>("/admin/global-products", data);
+  const response = await apiClient.post<GlobalProduct>("/api/v1/admin/global-products", data);
   return response.data;
 }
 
@@ -342,7 +342,7 @@ export async function updateGlobalProduct(
     return mockGlobalProducts[index];
   }
 
-  const response = await apiClient.patch<GlobalProduct>(`/admin/global-products/${id}`, data);
+  const response = await apiClient.patch<GlobalProduct>(`/api/v1/admin/global-products/${id}`, data);
   return response.data;
 }
 
@@ -359,7 +359,7 @@ export async function deleteGlobalProduct(id: string): Promise<void> {
     return;
   }
 
-  await apiClient.delete(`/admin/global-products/${id}`);
+  await apiClient.delete(`/api/v1/admin/global-products/${id}`);
 }
 
 /**
@@ -394,7 +394,7 @@ export async function checkSkuAvailability(
   if (excludeId) params.append("excludeId", excludeId);
 
   const response = await apiClient.get<{ available: boolean }>(
-    `/admin/global-products/check-sku?${params}`
+    `/api/v1/admin/global-products/check-sku?${params}`
   );
   return response.data;
 }
@@ -434,7 +434,7 @@ export async function getGlobalProductStats(id: string): Promise<GlobalProductSt
     };
   }
 
-  const response = await apiClient.get<GlobalProductStats>(`/admin/global-products/${id}/stats`);
+  const response = await apiClient.get<GlobalProductStats>(`/api/v1/admin/global-products/${id}/stats`);
   return response.data;
 }
 
@@ -493,7 +493,7 @@ export async function getGlobalCatalogStats(): Promise<GlobalCatalogStats> {
     };
   }
 
-  const response = await apiClient.get<GlobalCatalogStats>("/admin/global-products/stats");
+  const response = await apiClient.get<GlobalCatalogStats>("/api/v1/admin/global-products/stats");
   return response.data;
 }
 
@@ -545,7 +545,7 @@ export async function getBrands(): Promise<string[]> {
     return Array.from(brands).sort();
   }
 
-  const response = await apiClient.get<string[]>("/admin/global-products/brands");
+  const response = await apiClient.get<string[]>("/api/v1/admin/global-products/brands");
   return response.data;
 }
 
@@ -580,7 +580,7 @@ export async function bulkImportProducts(file: File): Promise<BulkImportResult> 
   formData.append("file", file);
 
   const response = await apiClient.post<BulkImportResult>(
-    "/admin/global-products/import",
+    "/api/v1/admin/global-products/import",
     formData,
     {
       headers: {

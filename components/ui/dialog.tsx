@@ -28,17 +28,17 @@ const Dialog = ({
   // Cerrar con Escape
   React.useEffect(() => {
     if (!open) return;
-    
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onOpenChange?.(false);
       }
     };
-    
+
     document.addEventListener("keydown", handleEscape);
     // Prevenir scroll del body cuando el dialog está abierto
     document.body.style.overflow = "hidden";
-    
+
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
@@ -58,9 +58,7 @@ const Dialog = ({
           onClick={handleClose}
         />
         {/* Content container */}
-        <div className="relative z-[101] w-full max-w-lg">
-          {children}
-        </div>
+        <div className="relative z-[101] w-full max-w-lg">{children}</div>
       </div>
     </DialogContext.Provider>,
     document.body
@@ -107,11 +105,9 @@ const DialogContent = React.forwardRef<
         </svg>
         <span className="sr-only">Cerrar</span>
       </button>
-      
+
       {/* Contenido */}
-      <div className="overflow-y-auto">
-        {children}
-      </div>
+      <div className="overflow-y-auto">{children}</div>
     </div>
   );
 });
@@ -138,10 +134,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn(
-      "text-lg font-semibold text-slate-900 pr-8",
-      className
-    )}
+    className={cn("text-lg font-semibold text-slate-900 pr-8", className)}
     {...props}
   />
 ));
@@ -151,14 +144,7 @@ const DialogDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn(
-      "text-sm text-slate-500",
-      className
-    )}
-    {...props}
-  />
+  <p ref={ref} className={cn("text-sm text-slate-500", className)} {...props} />
 ));
 DialogDescription.displayName = "DialogDescription";
 
@@ -177,4 +163,11 @@ const DialogFooter = ({
 );
 DialogFooter.displayName = "DialogFooter";
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter };
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+};
