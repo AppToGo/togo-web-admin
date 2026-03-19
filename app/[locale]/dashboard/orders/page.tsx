@@ -5,7 +5,10 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { OrdersKanbanBoard } from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
-import { useDateFilterStore, useDateFilterPreset } from "@/features/filters/stores";
+import {
+  useDateFilterStore,
+  useDateFilterPreset,
+} from "@/features/filters/stores";
 import { useDateFilterParams } from "@/features/filters/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -22,7 +25,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { IconToggle } from "@/components/ui/icon-toggle";
+import { ViewToggle } from "@/components/ui/view-toggle";
 import { Switch } from "@/components/ui/switch";
 import {
   Popover,
@@ -68,7 +71,7 @@ function OrdersLoading() {
 export default function OrdersPage() {
   const t = useTranslations("orders");
   const tc = useTranslations("common");
-  
+
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
@@ -143,12 +146,8 @@ export default function OrdersPage() {
         {/* Header con título, buscador, filtro de fecha y toggle de vista */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              {t("title")}
-            </h1>
-            <p className="text-slate-500 mt-1 text-sm">
-              {t("subtitle")}
-            </p>
+            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+            <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
           {/* Controles: Buscador, filtro de fecha y toggle de vista */}
@@ -195,7 +194,9 @@ export default function OrdersPage() {
                     <h3 className="font-semibold text-sm text-slate-900">
                       {t("filters.title")}
                     </h3>
-                    {(hasPaymentFilter || hasDeliveryFilter || isCustomDate) && (
+                    {(hasPaymentFilter ||
+                      hasDeliveryFilter ||
+                      isCustomDate) && (
                       <button
                         onClick={() => {
                           setPaymentStatusFilter({ paid: true, pending: true });
@@ -223,7 +224,14 @@ export default function OrdersPage() {
                       <DateRangeFilter
                         variant="compact"
                         showPresets={true}
-                        availablePresets={["today", "yesterday", "week", "last7days", "month", "custom"]}
+                        availablePresets={[
+                          "today",
+                          "yesterday",
+                          "week",
+                          "last7days",
+                          "month",
+                          "custom",
+                        ]}
                       />
                     </div>
 
@@ -331,22 +339,14 @@ export default function OrdersPage() {
               </Popover>
 
               {/* Toggle de vista de cards */}
-              <div className="flex items-center bg-white rounded-card p-1 shrink-0">
-                <IconToggle
-                  onClick={() => setCardViewMode("card")}
-                  state={cardViewMode === "card" ? "active" : "inactive"}
-                  title={t("view.card")}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </IconToggle>
-                <IconToggle
-                  onClick={() => setCardViewMode("list")}
-                  state={cardViewMode === "list" ? "active" : "inactive"}
-                  title={t("view.list")}
-                >
-                  <List className="w-4 h-4" />
-                </IconToggle>
-              </div>
+              <ViewToggle
+                value={cardViewMode}
+                onChange={(value) => setCardViewMode(value as CardViewMode)}
+                options={[
+                  { value: "card", icon: LayoutGrid, title: t("view.card") },
+                  { value: "list", icon: List, title: t("view.list") },
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -354,7 +354,7 @@ export default function OrdersPage() {
         {/* Orders Board */}
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Indicador de filtros activos */}
-          {(hasAnyFilter) && (
+          {hasAnyFilter && (
             <div className="flex items-center justify-end gap-2 text-xs text-slate-500 mb-1.5">
               <span>
                 {hasPaymentFilter && (
@@ -399,8 +399,6 @@ export default function OrdersPage() {
           </Suspense>
         </div>
       </div>
-
-
     </DashboardLayout>
   );
 }
