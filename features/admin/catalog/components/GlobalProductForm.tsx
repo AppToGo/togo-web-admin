@@ -255,9 +255,9 @@ export function GlobalProductForm({
       </div>
 
       {/* Form Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {/* SKU Field */}
-        <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-3">
+        <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-1">
           <Label htmlFor="sku">
             {tCatalog("products.sku")} <span className="text-red-500">*</span>
           </Label>
@@ -301,7 +301,8 @@ export function GlobalProductForm({
             placeholder={tCatalog("products.form.namePlaceholder")}
           />
         </div>
-
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Brand Field */}
         <div className="space-y-2">
           <Label htmlFor="brand">{tCatalog("products.brand")}</Label>

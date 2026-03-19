@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import {
   useCreateGlobalProduct,
   useIndustries,
-  useIndustryCategories,
   useAdminCatalogTranslations,
 } from "@/features/admin/catalog/hooks";
+import { useIndustryCategories } from "@/features/admin/industry-categories/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { CreateGlobalProductDto, UpdateGlobalProductDto } from "@/features/admin/catalog/types";
 import { useState } from "react";
@@ -33,7 +33,7 @@ export default function CreateGlobalProductPage() {
   // Data fetching
   const { data: industries = [], isLoading: isLoadingIndustries } = useIndustries();
   const { data: industryCategories = [], isLoading: isLoadingCategories } =
-    useIndustryCategories(selectedIndustryId);
+    useIndustryCategories({ industryId: selectedIndustryId });
 
   // Mutation
   const createProduct = useCreateGlobalProduct();
