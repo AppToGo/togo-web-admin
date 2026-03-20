@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -61,16 +60,22 @@ export function AutocompleteSelect({
       )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
+          <button
+            type="button"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between"
             disabled={disabled}
+            className={cn(
+              "flex h-11 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm",
+              "transition-colors hover:bg-slate-50",
+              "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              "[&>span]:line-clamp-1 [&>span]:text-left"
+            )}
           >
-            {selectedOption ? selectedOption.label : placeholder}
+            <span>{selectedOption ? selectedOption.label : placeholder}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
           <Command>

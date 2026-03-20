@@ -324,7 +324,6 @@ export function GlobalProductForm({
           {skuTouched && !isCheckingSku && skuCheck && !skuCheck.available && (
             <p className="text-sm text-red-500">{t("skuExists")}</p>
           )}
-          <p className="text-xs text-slate-500">{t("skuDescription")}</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -342,11 +341,7 @@ export function GlobalProductForm({
         {/* Industry Filter Field (solo UI - no se envía al backend) */}
         <div className="space-y-2">
           <Label htmlFor="industryFilter">
-            {t("industryFilter") || "Industria"}{" "}
-            <span className="text-slate-400 font-normal">
-              {" "}
-              ({t("filterContext") || "filtro"})
-            </span>
+            {t("industryFilter") || "Industria"}
           </Label>
           <Select
             value={selectedIndustryId}
@@ -379,7 +374,9 @@ export function GlobalProductForm({
             }
             placeholder={t("selectCategory")}
             searchPlaceholder={t("searchCategory") || "Buscar categoría..."}
-            emptyMessage={t("noCategoriesFound") || "No se encontraron categorías"}
+            emptyMessage={
+              t("noCategoriesFound") || "No se encontraron categorías"
+            }
             disabled={!selectedIndustryId || filteredCategories.length === 0}
             required
           />
