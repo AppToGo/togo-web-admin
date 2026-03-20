@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
 import { Plus, Search, LayoutGrid, List, Filter, Upload } from "lucide-react";
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ViewToggle } from "@/components/ui/view-toggle";
 import { cn } from "@/lib/utils";
@@ -138,22 +139,47 @@ export default function GlobalProductsPage() {
   const { data: stats, isLoading: isLoadingStats } = useGlobalCatalogStats();
   const { data: industries = [] } = useIndustries();
   const { data: industryCategories = [] } = useIndustryCategories(
-    deletingProduct?.industryId || ""
+    filters.industryIds || []
   );
 
   // Mutations
   const deleteProduct = useDeleteGlobalProduct();
   const toggleStatus = useToggleGlobalProductStatus();
 
+  // Industry options for multi-select
+  const industryOptions = useMemo(() => {
+    return industries.map((ind) => ({
+      value: ind.id,
+      label: ind.name,
+    }));
+  }, [industries]);
+
+  // Category options for multi-select
+  const categoryOptions = useMemo(() => {
+    return industryCategories.map((cat) => ({
+      value: cat.id,
+      label: cat.name,
+    }));
+  }, [industryCategories]);
+
   // Filter handlers
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, search: value, page: 1 }));
   };
 
-  const handleIndustryChange = (value: string) => {
+  const handleIndustriesChange = (values: string[]) => {
     setFilters((prev) => ({
       ...prev,
-      industryId: value === "all" ? undefined : value,
+      industryIds: values.length > 0 ? values : undefined,
+      industryCategoryIds: [], // Reset categories when industries change
+      page: 1,
+    }));
+  };
+
+  const handleCategoriesChange = (values: string[]) => {
+    setFilters((prev) => ({
+      ...prev,
+      industryCategoryIds: values.length > 0 ? values : undefined,
       page: 1,
     }));
   };
@@ -252,6 +278,7 @@ export default function GlobalProductsPage() {
         <GlobalCatalogStatsCards stats={stats} isLoading={isLoadingStats} />
 
         {/* Filters */}
+
         <div className="flex flex-col lg:flex-row gap-3">
           {/* Search */}
           <div className="relative flex-1">
@@ -264,23 +291,28 @@ export default function GlobalProductsPage() {
             />
           </div>
 
-          {/* Industry Filter */}
-          <Select
-            value={filters.industryId || "all"}
-            onValueChange={handleIndustryChange}
-          >
-            <SelectTrigger className="w-45">
-              <SelectValue placeholder={admin("allIndustries")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{admin("allIndustries")}</SelectItem>
-              {industries.map((ind) => (
-                <SelectItem key={ind.id} value={ind.id}>
-                  {ind.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Industry Multi-Select Filter */}
+          <MultiSelect
+            options={industryOptions}
+            value={filters.industryIds || []}
+            onChange={handleIndustriesChange}
+            placeholder={admin("allIndustries")}
+            searchPlaceholder={admin("searchCategory")}
+            maxDisplay={1}
+            className="w-48"
+          />
+
+          {/* Category Multi-Select Filter */}
+          <MultiSelect
+            options={categoryOptions}
+            value={filters.industryCategoryIds || []}
+            onChange={handleCategoriesChange}
+            placeholder={admin("allCategories") || admin("allIndustries")}
+            searchPlaceholder={admin("searchCategory")}
+            maxDisplay={1}
+            disabled={!filters.industryIds?.length}
+            className="w-48"
+          />
 
           {/* Brand Filter */}
           <Select

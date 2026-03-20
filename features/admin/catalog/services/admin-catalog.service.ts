@@ -201,8 +201,11 @@ export async function getGlobalProducts(
     let filtered = [...mockGlobalProducts];
 
     // Apply filters
-    if (filters?.industryId) {
-      filtered = filtered.filter((p) => p.industryId === filters.industryId);
+    if (filters?.industryIds?.length) {
+      filtered = filtered.filter((p) => p.industryId && filters.industryIds?.includes(p.industryId));
+    }
+    if (filters?.industryCategoryIds?.length) {
+      filtered = filtered.filter((p) => filters.industryCategoryIds?.includes(p.industryCategoryId));
     }
     if (filters?.brand) {
       filtered = filtered.filter((p) => p.brand === filters.brand);
@@ -238,7 +241,8 @@ export async function getGlobalProducts(
   }
 
   const params = new URLSearchParams();
-  if (filters?.industryId) params.append("industryId", filters.industryId);
+  if (filters?.industryIds?.length) params.append("industryIds", filters.industryIds.join(","));
+  if (filters?.industryCategoryIds?.length) params.append("industryCategoryIds", filters.industryCategoryIds.join(","));
   if (filters?.brand) params.append("brand", filters.brand);
   if (filters?.search) params.append("search", filters.search);
   if (filters?.isActive !== undefined)
@@ -521,16 +525,21 @@ export async function getIndustries(): Promise<Industry[]> {
 
 /**
  * Get industry categories
- * GET /api/v1/admin/industries/:id/categories
+ * GET /industry-categories?industryIds=
  */
-export async function getIndustryCategories(industryId: string): Promise<IndustryCategory[]> {
+export async function getIndustryCategories(industryIds: string[]): Promise<IndustryCategory[]> {
   if (USE_MOCK) {
     await new Promise((resolve) => setTimeout(resolve, 200));
-    return mockIndustryCategories.filter((c) => c.industries.some(ind => ind.id === industryId));
+    return mockIndustryCategories.filter((c) => 
+      c.industries.some(ind => industryIds.includes(ind.id))
+    );
   }
 
+  const params = new URLSearchParams();
+  if (industryIds.length) params.append("industryIds", industryIds.join(","));
+
   const response = await apiClient.get<IndustryCategory[]>(
-    `/admin/industries/${industryId}/categories`
+    `/industry-categories?${params}`
   );
   return response.data;
 }

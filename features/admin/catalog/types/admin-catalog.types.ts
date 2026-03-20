@@ -125,7 +125,8 @@ export interface UpdateGlobalProductDto {
  * Filters for global product lists
  */
 export interface GlobalProductFilters {
-  industryId?: string;
+  industryIds?: string[];
+  industryCategoryIds?: string[];
   brand?: string;
   search?: string; // Searches SKU and name
   isActive?: boolean;

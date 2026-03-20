@@ -39,7 +39,7 @@ export function AdminGlobalProductCard({
   onToggleStatus,
   viewMode = "grid",
 }: AdminGlobalProductCardProps) {
-  const t = useTranslations('admin-catalog');
+  const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
   const activationCount = product._count?.businessProducts || 0;
 
@@ -55,7 +55,7 @@ export function AdminGlobalProductCard({
         )}
       >
         {/* Image */}
-        <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+        <div className="aspect-4/3 bg-slate-100 relative overflow-hidden">
           {product.image ? (
             <img
               src={product.image}
@@ -68,10 +68,12 @@ export function AdminGlobalProductCard({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-slate-400 text-sm">{tCommon("status.noImage")}</span>
+              <span className="text-slate-400 text-sm">
+                {tCommon("status.noImage")}
+              </span>
             </div>
           )}
-          
+
           {/* Status Badge */}
           <div className="absolute top-2 left-2">
             <Badge
@@ -83,13 +85,18 @@ export function AdminGlobalProductCard({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-100"
               )}
             >
-              {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+              {product.isActive
+                ? tCommon("status.active")
+                : tCommon("status.inactive")}
             </Badge>
           </div>
 
           {/* Activation Count */}
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="text-xs bg-white/90 backdrop-blur">
+            <Badge
+              variant="secondary"
+              className="text-xs bg-white/90 backdrop-blur"
+            >
               <Store className="w-3 h-3 mr-1" />
               {activationCount}
             </Badge>
@@ -100,12 +107,12 @@ export function AdminGlobalProductCard({
         <div className="p-4">
           {/* SKU */}
           <p className="text-xs font-mono text-slate-500 mb-1">{product.sku}</p>
-          
+
           {/* Name */}
           <h3 className="font-semibold text-slate-900 line-clamp-2 mb-1">
             {product.name}
           </h3>
-          
+
           {/* Brand & Industry */}
           <div className="flex items-center gap-2 mb-3">
             {product.brand && (
@@ -125,11 +132,15 @@ export function AdminGlobalProductCard({
             <div className="flex items-center gap-2">
               <Switch
                 checked={product.isActive}
-                onCheckedChange={(checked) => onToggleStatus?.(product, checked)}
+                onCheckedChange={(checked) =>
+                  onToggleStatus?.(product, checked)
+                }
                 className="data-[state=checked]:bg-green-500"
               />
               <span className="text-xs text-slate-500">
-                {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+                {product.isActive
+                  ? tCommon("status.active")
+                  : tCommon("status.inactive")}
               </span>
             </div>
 
@@ -171,7 +182,7 @@ export function AdminGlobalProductCard({
       )}
     >
       {/* Image */}
-      <div className="w-16 h-16 rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden">
+      <div className="w-16 h-16 rounded-lg bg-slate-100 shrink-0 overflow-hidden">
         {product.image ? (
           <img
             src={product.image}
@@ -184,7 +195,9 @@ export function AdminGlobalProductCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-slate-400 text-xs">{tCommon("status.noImage")}</span>
+            <span className="text-slate-400 text-xs">
+              {tCommon("status.noImage")}
+            </span>
           </div>
         )}
       </div>
@@ -195,17 +208,23 @@ export function AdminGlobalProductCard({
           <Badge
             variant={product.isActive ? "default" : "secondary"}
             className={cn(
-              "text-xs flex-shrink-0",
+              "text-xs shrink-0",
               product.isActive
                 ? "bg-green-100 text-green-700 hover:bg-green-100"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-100"
             )}
           >
-            {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+            {product.isActive
+              ? tCommon("status.active")
+              : tCommon("status.inactive")}
           </Badge>
-          <p className="text-xs font-mono text-slate-500 flex-shrink-0">{product.sku}</p>
+          <p className="text-xs font-mono text-slate-500 shrink-0">
+            {product.sku}
+          </p>
         </div>
-        <h3 className="font-semibold text-slate-900 truncate mt-1">{product.name}</h3>
+        <h3 className="font-semibold text-slate-900 truncate mt-1">
+          {product.name}
+        </h3>
         <div className="flex items-center gap-2 mt-1">
           {product.brand && (
             <span className="text-xs text-slate-600">{product.brand}</span>
@@ -213,7 +232,9 @@ export function AdminGlobalProductCard({
           {product.industry && (
             <>
               <span className="text-slate-300">·</span>
-              <span className="text-xs text-indigo-600">{product.industry.name}</span>
+              <span className="text-xs text-indigo-600">
+                {product.industry.name}
+              </span>
             </>
           )}
         </div>
@@ -223,7 +244,9 @@ export function AdminGlobalProductCard({
       <div className="flex items-center gap-2 px-4 border-l">
         <Store className="w-4 h-4 text-slate-400" />
         <div>
-          <p className="text-lg font-semibold text-slate-900">{activationCount}</p>
+          <p className="text-lg font-semibold text-slate-900">
+            {activationCount}
+          </p>
           <p className="text-xs text-slate-500">{t("businesses")}</p>
         </div>
       </div>

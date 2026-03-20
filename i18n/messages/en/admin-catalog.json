@@ -14,6 +14,7 @@
   "attributesTip": "Add relevant attributes like volume, weight, color, flavor, etc. to facilitate search.",
   "searchPlaceholder": "Search by SKU or name...",
   "allIndustries": "All industries",
+  "allCategories": "All categories",
   "allBrands": "All brands",
   "superAdminOnly": "This section is for Super Administrators only.",
   "productNotFound": "Product not found",
