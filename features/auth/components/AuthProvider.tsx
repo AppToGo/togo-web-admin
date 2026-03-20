@@ -24,6 +24,7 @@ import {
   clearGlobalRefreshState,
   isRefreshInProgress 
 } from "@/services/auth-sync.service";
+import { routing } from "@/i18n/routing";
 
 type AuthRestoreState = "checking" | "authenticated" | "unauthenticated";
 
@@ -131,9 +132,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setRestoreState("authenticated");
       } else {
         setRestoreState("unauthenticated");
-        // Redirect to login with return URL
-        const loginUrl = new URL("/login", window.location.origin);
-        loginUrl.searchParams.set("redirect", pathname);
+        // Redirect to login with return URL (preserve locale)
+        const extractedLocale = pathname?.split('/')[1];
+        const locale = routing.locales.includes(extractedLocale as typeof routing.locales[number]) 
+          ? extractedLocale 
+          : routing.defaultLocale;
+        
+        // Validate redirect path to prevent open redirect attacks
+        const isValidRedirect = (path: string): boolean => {
+          return path.startsWith('/') && !path.startsWith('//') && !path.includes(':');
+        };
+        const redirectPath = pathname && isValidRedirect(pathname) ? pathname : `/${locale}/dashboard`;
+        
+        const loginUrl = new URL(`/${locale}/login`, window.location.origin);
+        loginUrl.searchParams.set("redirect", redirectPath);
         router.replace(loginUrl.toString());
       }
     }
