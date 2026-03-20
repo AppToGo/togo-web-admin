@@ -38,8 +38,8 @@ export const adminCatalogKeys = {
   product: (id: string) => [...adminCatalogKeys.products(), id] as const,
   productStats: (id: string) => [...adminCatalogKeys.product(id), "stats"] as const,
   industries: () => [...adminCatalogKeys.all, "industries"] as const,
-  industryCategories: (industryIdsKey: string) =>
-    [...adminCatalogKeys.industries(), industryIdsKey, "categories"] as const,
+  industryCategories: (industryIds: string[]) =>
+    [...adminCatalogKeys.industries(), JSON.stringify(industryIds), "categories"] as const,
   brands: () => [...adminCatalogKeys.all, "brands"] as const,
   stats: () => [...adminCatalogKeys.all, "stats"] as const,
 };
@@ -248,7 +248,7 @@ export function useIndustryCategories(
   options?: UseQueryOptions<IndustryCategory[], Error>
 ) {
   return useQuery({
-    queryKey: adminCatalogKeys.industryCategories(industryIds.join(',') || 'all'),
+    queryKey: adminCatalogKeys.industryCategories(industryIds),
     queryFn: () => adminCatalogService.getIndustryCategories(industryIds),
     enabled: industryIds.length > 0,
     ...options,
