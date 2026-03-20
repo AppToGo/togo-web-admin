@@ -61,7 +61,7 @@
   "skuDescription": "Identificador único del producto (código de barras o referencia interna)",
   "industry": "Industria",
   "selectIndustry": "Selecciona una industria",
-  "optionalCategory": "Categoría (opcional)",
+  "optionalCategory": "Categoría",
   "selectCategory": "Selecciona una categoría",
   "additionalAttributes": "Atributos adicionales",
   "attributes": "Atributos",
@@ -109,5 +109,10 @@
     "deleteProduct": "Error al eliminar el producto",
     "changeStatus": "Error al cambiar el estado",
     "importProducts": "Error al importar productos"
-  }
+  },
+  "industryFilter": "Industria",
+  "filterContext": "(filtro de búsqueda)",
+  "category": "Categoría",
+  "searchCategory": "Buscar categoría...",
+  "noCategoriesFound": "No se encontraron categorías"
 }

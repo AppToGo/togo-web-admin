@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { AutocompleteSelect } from "@/components/ui/autocomplete-select";
 import {
   Select,
   SelectContent,
@@ -16,13 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import type {
@@ -31,6 +25,7 @@ import type {
   UpdateGlobalProductDto,
   Industry,
   IndustryCategory,
+  GlobalProductFormState,
 } from "../types/admin-catalog.types";
 import { useCheckSkuAvailability } from "../hooks";
 
@@ -66,22 +61,23 @@ export function GlobalProductForm({
   const tCommon = useTranslations("common");
   const tCatalog = useTranslations("catalog");
 
-  // Form state
-  const [formData, setFormData] = useState<CreateGlobalProductDto>({
+  // Estado UI (no se envía al backend) - industria seleccionada como filtro
+  const [selectedIndustryId, setSelectedIndustryId] = useState<string>("");
+
+  // Estado del formulario (se envía al backend)
+  const [formData, setFormData] = useState<GlobalProductFormState>({
     sku: "",
     name: "",
     description: "",
     image: "",
     brand: "",
-    industryId: "",
-    industryCategoryId: "",
+    industryCategoryId: "", // obligatorio
     attributes: {},
     isActive: true,
   });
 
   // SKU validation state
   const [skuTouched, setSkuTouched] = useState(false);
-  const [skuChecking, setSkuChecking] = useState(false);
 
   // Attributes state
   const [attributes, setAttributes] = useState<
@@ -100,13 +96,20 @@ export function GlobalProductForm({
   // Initialize form with product data when editing
   useEffect(() => {
     if (product) {
+      // Encontrar la industria asociada a la categoría del producto
+      const productCategory = industryCategories.find(
+        (cat) => cat.id === product.industryCategoryId
+      );
+      const productIndustryId = productCategory?.industries[0]?.id || "";
+
+      setSelectedIndustryId(productIndustryId);
+
       setFormData({
         sku: product.sku,
         name: product.name,
         description: product.description || "",
         image: product.image || "",
         brand: product.brand || "",
-        industryId: product.industryId,
         industryCategoryId: product.industryCategoryId || "",
         attributes: product.attributes || {},
         isActive: product.isActive,
@@ -123,18 +126,18 @@ export function GlobalProductForm({
         );
       }
     }
-  }, [product]);
+  }, [product, industryCategories]);
 
   // Filter categories by selected industry
-  const filteredCategories = industryCategories.filter(
-    (cat) => cat.industries.some(ind => ind.id === formData.industryId)
+  const filteredCategories = industryCategories.filter((cat) =>
+    cat.industries.some((ind) => ind.id === selectedIndustryId)
   );
 
   // Handle form changes
-  const handleChange = (field: keyof CreateGlobalProductDto, value: any) => {
+  const handleChange = (field: keyof GlobalProductFormState, value: any) => {
     setFormData((prev) => {
-      const updates: Partial<CreateGlobalProductDto> = { [field]: value };
-      
+      const updates: Partial<GlobalProductFormState> = { [field]: value };
+
       // Auto-generate SKU from name
       if (field === "name") {
         const generatedSku = value
@@ -143,7 +146,7 @@ export function GlobalProductForm({
           .replace(/[^A-Z0-9-]/g, "");
         updates.sku = generatedSku;
       }
-      
+
       return { ...prev, ...updates };
     });
   };
@@ -154,11 +157,11 @@ export function GlobalProductForm({
     setSkuTouched(true);
   };
 
-  // Handle industry change - reset category
-  const handleIndustryChange = (value: string) => {
+  // Handle industry filter change - reset category
+  const handleIndustryFilterChange = (value: string) => {
+    setSelectedIndustryId(value);
     setFormData((prev) => ({
       ...prev,
-      industryId: value,
       industryCategoryId: "",
     }));
     // Llamar al callback del padre para cargar categorías
@@ -207,30 +210,37 @@ export function GlobalProductForm({
       {} as Record<string, string>
     );
 
-    const submitData = {
-      ...formData,
-      attributes: attributesObject,
+    // Preparar datos para enviar al backend (sin industryId, con industryCategoryId obligatorio)
+    const submitData: CreateGlobalProductDto = {
+      sku: formData.sku,
+      name: formData.name,
+      description: formData.description || undefined,
+      image: formData.image || undefined,
+      brand: formData.brand || undefined,
+      industryCategoryId: formData.industryCategoryId,
+      attributes:
+        Object.keys(attributesObject).length > 0 ? attributesObject : undefined,
+      isActive: formData.isActive,
     };
 
     // Remove empty fields for update
-    if (isEditing) {
+    if (isEditing && product) {
       const updateData: UpdateGlobalProductDto = {};
-      if (submitData.sku !== product?.sku) updateData.sku = submitData.sku;
-      if (submitData.name !== product?.name) updateData.name = submitData.name;
-      if (submitData.description !== product?.description)
+      if (submitData.sku !== product.sku) updateData.sku = submitData.sku;
+      if (submitData.name !== product.name) updateData.name = submitData.name;
+      if (submitData.description !== product.description)
         updateData.description = submitData.description;
-      if (submitData.image !== product?.image)
+      if (submitData.image !== product.image)
         updateData.image = submitData.image;
-      if (submitData.brand !== product?.brand)
+      if (submitData.brand !== product.brand)
         updateData.brand = submitData.brand;
-      if (submitData.industryId !== product?.industryId)
-        updateData.industryId = submitData.industryId;
-      if (submitData.industryCategoryId !== product?.industryCategoryId) {
-        updateData.industryCategoryId =
-          submitData.industryCategoryId || undefined;
+      if (submitData.industryCategoryId !== product.industryCategoryId) {
+        updateData.industryCategoryId = submitData.industryCategoryId;
       }
-      updateData.attributes = submitData.attributes;
-      if (submitData.isActive !== product?.isActive)
+      if (Object.keys(attributesObject).length > 0) {
+        updateData.attributes = attributesObject;
+      }
+      if (submitData.isActive !== product.isActive)
         updateData.isActive = submitData.isActive;
 
       onSubmit(updateData);
@@ -244,10 +254,12 @@ export function GlobalProductForm({
     !skuTouched || !isCheckingSku
       ? true
       : ((skuCheck as { available: boolean } | undefined)?.available ?? true);
+
+  // Validación: category ahora es OBLIGATORIO
   const canSubmit =
     formData.sku &&
     formData.name &&
-    formData.industryId &&
+    formData.industryCategoryId &&
     isSkuValid &&
     !isLoading;
 
@@ -312,7 +324,6 @@ export function GlobalProductForm({
           {skuTouched && !isCheckingSku && skuCheck && !skuCheck.available && (
             <p className="text-sm text-red-500">{t("skuExists")}</p>
           )}
-          <p className="text-xs text-slate-500">{t("skuDescription")}</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -327,14 +338,14 @@ export function GlobalProductForm({
           />
         </div>
 
-        {/* Industry Field */}
+        {/* Industry Filter Field (solo UI - no se envía al backend) */}
         <div className="space-y-2">
-          <Label htmlFor="industry">
-            {t("industry")} <span className="text-red-500">*</span>
+          <Label htmlFor="industryFilter">
+            {t("industryFilter") || "Industria"}
           </Label>
           <Select
-            value={formData.industryId}
-            onValueChange={handleIndustryChange}
+            value={selectedIndustryId}
+            onValueChange={handleIndustryFilterChange}
           >
             <SelectTrigger>
               <SelectValue placeholder={t("selectIndustry")} />
@@ -349,25 +360,26 @@ export function GlobalProductForm({
           </Select>
         </div>
 
-        {/* Category Field */}
+        {/* Category Field - Ahora es OBLIGATORIO y usa AutocompleteSelect */}
         <div className="space-y-2">
-          <Label htmlFor="category">{t("optionalCategory")}</Label>
-          <Select
+          <AutocompleteSelect
+            label={t("category") || "Categoría"}
+            options={filteredCategories.map((cat) => ({
+              value: cat.id,
+              label: cat.name,
+            }))}
             value={formData.industryCategoryId}
-            onValueChange={(value) => handleChange("industryCategoryId", value)}
-            disabled={!formData.industryId || filteredCategories.length === 0}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t("selectCategory")} />
-            </SelectTrigger>
-            <SelectContent>
-              {filteredCategories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, industryCategoryId: value }))
+            }
+            placeholder={t("selectCategory")}
+            searchPlaceholder={t("searchCategory") || "Buscar categoría..."}
+            emptyMessage={
+              t("noCategoriesFound") || "No se encontraron categorías"
+            }
+            disabled={!selectedIndustryId || filteredCategories.length === 0}
+            required
+          />
         </div>
 
         {/* Description Field - Full Width */}

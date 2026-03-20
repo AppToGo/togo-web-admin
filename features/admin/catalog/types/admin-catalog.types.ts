@@ -54,9 +54,9 @@ export interface GlobalProduct {
   description?: string;
   image?: string;
   brand?: string;
-  industryId: string;
+  industryId?: string; // Opcional - se deriva de industryCategoryId
   industry?: Industry;
-  industryCategoryId?: string;
+  industryCategoryId: string; // Ahora obligatorio
   industryCategory?: IndustryCategory;
   attributes?: Record<string, any>; // Flexible attributes (JSON)
   isActive: boolean;
@@ -100,8 +100,8 @@ export interface CreateGlobalProductDto {
   description?: string;
   image?: string;
   brand?: string;
-  industryId: string;
-  industryCategoryId?: string;
+  industryId?: string; // Opcional - se deriva de industryCategoryId en el backend
+  industryCategoryId: string; // Ahora obligatorio
   attributes?: Record<string, any>;
   isActive?: boolean;
 }
@@ -115,7 +115,7 @@ export interface UpdateGlobalProductDto {
   description?: string;
   image?: string;
   brand?: string;
-  industryId?: string;
+  industryId?: string; // Opcional - se deriva de industryCategoryId en el backend
   industryCategoryId?: string;
   attributes?: Record<string, any>;
   isActive?: boolean;
@@ -276,4 +276,22 @@ export interface ImageUploadProps {
   onFileSelect?: (file: File) => void;
   disabled?: boolean;
   previewClassName?: string;
+}
+
+// ============================================================================
+// FORM STATE TYPES
+// ============================================================================
+
+/**
+ * Form state for GlobalProductForm (internal UI state)
+ */
+export interface GlobalProductFormState {
+  sku: string;
+  name: string;
+  description: string;
+  image: string;
+  brand: string;
+  industryCategoryId: string;
+  attributes: Record<string, string>;
+  isActive: boolean;
 }

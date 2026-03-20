@@ -61,7 +61,7 @@
   "skuDescription": "Unique product identifier (barcode or internal reference)",
   "industry": "Industry",
   "selectIndustry": "Select an industry",
-  "optionalCategory": "Category (optional)",
+  "optionalCategory": "Category",
   "selectCategory": "Select a category",
   "additionalAttributes": "Additional attributes",
   "attributes": "Attributes",
@@ -109,5 +109,10 @@
     "deleteProduct": "Error deleting product",
     "changeStatus": "Error changing status",
     "importProducts": "Error importing products"
-  }
+  },
+  "industryFilter": "Industry",
+  "filterContext": "(search filter)",
+  "category": "Category",
+  "searchCategory": "Search category...",
+  "noCategoriesFound": "No categories found"
 }
