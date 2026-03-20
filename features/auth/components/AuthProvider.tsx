@@ -131,8 +131,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setRestoreState("authenticated");
       } else {
         setRestoreState("unauthenticated");
-        // Redirect to login with return URL
-        const loginUrl = new URL("/login", window.location.origin);
+        // Redirect to login with return URL (preserve locale)
+        const locale = pathname.split('/')[1] || 'es';
+        const loginUrl = new URL(`/${locale}/login`, window.location.origin);
         loginUrl.searchParams.set("redirect", pathname);
         router.replace(loginUrl.toString());
       }
