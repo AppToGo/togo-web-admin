@@ -131,7 +131,7 @@ export function MultiSelect({
                 ))}
                 {value.length > maxDisplay && (
                   <Badge variant="secondary">
-                    +{value.length - maxDisplay} more
+                    +{value.length - maxDisplay}
                   </Badge>
                 )}
               </>

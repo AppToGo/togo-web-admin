@@ -279,9 +279,9 @@ export default function GlobalProductsPage() {
 
         {/* Filters */}
 
-        <div className="flex flex-col lg:flex-row gap-3">
+        <div className="grid grid-cols-4 gap-4">
           {/* Search */}
-          <div className="relative flex-1">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               placeholder={admin("searchPlaceholder")}
@@ -290,77 +290,82 @@ export default function GlobalProductsPage() {
               className="pl-9"
             />
           </div>
+          <div className="col-span-3">
+            <div className="flex flex-col lg:flex-row gap-3">
+              {/* Industry Multi-Select Filter */}
+              <MultiSelect
+                options={industryOptions}
+                value={filters.industryIds || []}
+                onChange={handleIndustriesChange}
+                placeholder={admin("allIndustries")}
+                searchPlaceholder={admin("searchCategory")}
+                maxDisplay={1}
+                className="w-48 flex-1"
+              />
 
-          {/* Industry Multi-Select Filter */}
-          <MultiSelect
-            options={industryOptions}
-            value={filters.industryIds || []}
-            onChange={handleIndustriesChange}
-            placeholder={admin("allIndustries")}
-            searchPlaceholder={admin("searchCategory")}
-            maxDisplay={1}
-            className="w-48"
-          />
+              {/* Category Multi-Select Filter */}
+              <MultiSelect
+                options={categoryOptions}
+                value={filters.industryCategoryIds || []}
+                onChange={handleCategoriesChange}
+                placeholder={admin("allCategories") || admin("allIndustries")}
+                searchPlaceholder={admin("searchCategory")}
+                maxDisplay={1}
+                disabled={!filters.industryIds?.length}
+                className="w-48 flex-1"
+              />
 
-          {/* Category Multi-Select Filter */}
-          <MultiSelect
-            options={categoryOptions}
-            value={filters.industryCategoryIds || []}
-            onChange={handleCategoriesChange}
-            placeholder={admin("allCategories") || admin("allIndustries")}
-            searchPlaceholder={admin("searchCategory")}
-            maxDisplay={1}
-            disabled={!filters.industryIds?.length}
-            className="w-48"
-          />
+              {/* Brand Filter */}
+              <Select
+                value={filters.brand || "all"}
+                onValueChange={handleBrandChange}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={admin("allBrands")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{admin("allBrands")}</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand} value={brand}>
+                      {brand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-          {/* Brand Filter */}
-          <Select
-            value={filters.brand || "all"}
-            onValueChange={handleBrandChange}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={admin("allBrands")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{admin("allBrands")}</SelectItem>
-              {brands.map((brand) => (
-                <SelectItem key={brand} value={brand}>
-                  {brand}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              {/* Status Filter */}
+              <Select
+                value={
+                  filters.isActive === undefined
+                    ? "all"
+                    : filters.isActive
+                      ? "active"
+                      : "inactive"
+                }
+                onValueChange={handleStatusChange}
+              >
+                <SelectTrigger className="w-35">
+                  <SelectValue placeholder={common("fields.status")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{common("filters.all")}</SelectItem>
+                  <SelectItem value="active">
+                    {common("status.active")}
+                  </SelectItem>
+                  <SelectItem value="inactive">
+                    {common("status.inactive")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
-          {/* Status Filter */}
-          <Select
-            value={
-              filters.isActive === undefined
-                ? "all"
-                : filters.isActive
-                  ? "active"
-                  : "inactive"
-            }
-            onValueChange={handleStatusChange}
-          >
-            <SelectTrigger className="w-35">
-              <SelectValue placeholder={common("fields.status")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{common("filters.all")}</SelectItem>
-              <SelectItem value="active">{common("status.active")}</SelectItem>
-              <SelectItem value="inactive">
-                {common("status.inactive")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* View Toggle */}
-          <ViewToggle
-            value={viewMode}
-            onChange={(value) => setViewMode(value as ViewMode)}
-            variant="bordered"
-          />
+              {/* View Toggle */}
+              <ViewToggle
+                value={viewMode}
+                onChange={(value) => setViewMode(value as ViewMode)}
+                variant="bordered"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Results Count */}
