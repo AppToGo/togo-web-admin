@@ -20,7 +20,7 @@ import {
   useUpdateGlobalProduct,
   useIndustries,
   useGlobalProductStats,
-  useIndustryCategories,
+  useIndustryCategoriesByIds,
 } from "@/features/admin/catalog/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { UpdateGlobalProductDto } from "@/features/admin/catalog/types";
@@ -47,7 +47,7 @@ export default function EditGlobalProductPage() {
   const industryIdsForCategories = selectedIndustryId || product?.industryId 
     ? [selectedIndustryId || product?.industryId || ""] 
     : [];
-  const { data: industryCategories = [] } = useIndustryCategories(industryIdsForCategories);
+  const { data: industryCategories = [] } = useIndustryCategoriesByIds(industryIdsForCategories);
 
   // Update selected industry when form changes
   const handleIndustryChange = (industryId: string) => {

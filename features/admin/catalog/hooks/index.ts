@@ -20,7 +20,7 @@ export {
   useGlobalCatalogStats,
   // Industries
   useIndustries,
-  useIndustryCategories,
+  useIndustryCategoriesByIds,
   useBrands,
   // Bulk Import
   useBulkImportProducts,

@@ -26,7 +26,7 @@ import {
   useIndustries,
   useDeleteGlobalProduct,
   useToggleGlobalProductStatus,
-  useIndustryCategories,
+  useIndustryCategoriesByIds,
 } from "@/features/admin/catalog/hooks";
 import {
   AdminGlobalProductCard,
@@ -138,7 +138,7 @@ export default function GlobalProductsPage() {
     useGlobalProducts(filters);
   const { data: stats, isLoading: isLoadingStats } = useGlobalCatalogStats();
   const { data: industries = [] } = useIndustries();
-  const { data: industryCategories = [] } = useIndustryCategories(
+  const { data: industryCategories = [] } = useIndustryCategoriesByIds(
     filters.industryIds || []
   );
 

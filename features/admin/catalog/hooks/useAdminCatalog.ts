@@ -241,9 +241,9 @@ export function useIndustries(options?: UseQueryOptions<Industry[], Error>) {
 }
 
 /**
- * Hook to fetch industry categories
+ * Hook to fetch industry categories by industry IDs
  */
-export function useIndustryCategories(
+export function useIndustryCategoriesByIds(
   industryIds: string[],
   options?: UseQueryOptions<IndustryCategory[], Error>
 ) {
