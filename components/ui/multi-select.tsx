@@ -151,7 +151,7 @@ export function MultiSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0 z-[200] rounded-md border border-slate-200 bg-white shadow-lg"
+        className="w-[--radix-popover-trigger-width] p-0 z-200 rounded-md border border-slate-200 bg-white shadow-lg"
         align="start"
       >
         <Command>
