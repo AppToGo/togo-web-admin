@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useId } from "react";
 
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -34,27 +35,41 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, helperText, error, variant, ...props }, ref) => {
+  ({ className, type, label, helperText, error, variant, id: providedId, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = providedId || generatedId;
+    const helperId = helperText ? `${inputId}-helper` : undefined;
+    const errorId = error ? `${inputId}-error` : undefined;
+    const ariaDescribedBy = errorId || helperId;
+    
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label 
+            htmlFor={inputId}
+            className="mb-1.5 block text-sm font-medium text-slate-700"
+          >
             {label}
           </label>
         )}
         <input
+          id={inputId}
           type={type}
           className={cn(
             inputVariants({ variant: error ? "error" : variant }),
             className
           )}
           ref={ref}
+          aria-invalid={!!error}
+          aria-describedby={ariaDescribedBy}
           {...props}
         />
         {helperText && !error && (
-          <p className="mt-1 text-xs text-slate-500">{helperText}</p>
+          <p id={helperId} className="mt-1 text-xs text-slate-500">{helperText}</p>
         )}
-        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+        {error && (
+          <p id={errorId} className="mt-1 text-xs text-red-500">{error}</p>
+        )}
       </div>
     );
   }
