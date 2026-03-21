@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -26,30 +33,37 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { BusinessCategory } from "../types/catalog.types";
 
+// Industry category option type
+interface IndustryCategoryOption {
+  id: string;
+  name: string;
+}
+
 interface CategoryListProps {
   categories: BusinessCategory[];
-  onCreate: (data: { name: string; color: string }) => void;
-  onUpdate: (id: string, data: { name: string; color: string }) => void;
+  industryCategories: IndustryCategoryOption[];
+  onCreate: (data: {
+    name: string;
+    slug: string;
+    industryCategoryId: string;
+    description?: string;
+  }) => void;
+  onUpdate: (
+    id: string,
+    data: {
+      name: string;
+      slug: string;
+      industryCategoryId: string;
+      description?: string;
+    }
+  ) => void;
   onDelete: (id: string) => void;
   isLoading?: boolean;
 }
 
-// Preset colors for categories
-const PRESET_COLORS = [
-  "#3b82f6", // Blue
-  "#8b5cf6", // Purple
-  "#ec4899", // Pink
-  "#f97316", // Orange
-  "#eab308", // Yellow
-  "#22c55e", // Green
-  "#06b6d4", // Cyan
-  "#ef4444", // Red
-  "#6366f1", // Indigo
-  "#84cc16", // Lime
-];
-
 export function CategoryList({
   categories,
+  industryCategories,
   onCreate,
   onUpdate,
   onDelete,
@@ -64,12 +78,29 @@ export function CategoryList({
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    color: PRESET_COLORS[0],
+    slug: "",
+    industryCategoryId: "",
+    description: "",
   });
+
+  // Generate slug from name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+      .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with hyphens
+      .replace(/^-+|-+$/g, ""); // Trim hyphens
+  };
 
   // Reset form
   const resetForm = () => {
-    setFormData({ name: "", color: PRESET_COLORS[0] });
+    setFormData({
+      name: "",
+      slug: "",
+      industryCategoryId: "",
+      description: "",
+    });
   };
 
   // Open create dialog
@@ -80,16 +111,35 @@ export function CategoryList({
 
   // Open edit dialog
   const handleOpenEdit = (category: BusinessCategory) => {
-    setFormData({ name: category.name, color: category.color || PRESET_COLORS[0] });
+    setFormData({
+      name: category.name,
+      slug: category.slug,
+      industryCategoryId: category.industryCategoryId,
+      description: category.description || "",
+    });
     setEditingCategory(category);
+  };
+
+  // Handle name change and auto-generate slug if empty
+  const handleNameChange = (name: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      name,
+      slug: prev.slug || generateSlug(name),
+    }));
   };
 
   // Handle create
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim() || !formData.slug.trim() || !formData.industryCategoryId) return;
 
-    onCreate({ name: formData.name.trim(), color: formData.color });
+    onCreate({
+      name: formData.name.trim(),
+      slug: formData.slug.trim(),
+      industryCategoryId: formData.industryCategoryId,
+      description: formData.description.trim() || undefined,
+    });
     setIsCreateOpen(false);
     resetForm();
   };
@@ -97,11 +147,19 @@ export function CategoryList({
   // Handle update
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCategory || !formData.name.trim()) return;
+    if (
+      !editingCategory ||
+      !formData.name.trim() ||
+      !formData.slug.trim() ||
+      !formData.industryCategoryId
+    )
+      return;
 
     onUpdate(editingCategory.id, {
       name: formData.name.trim(),
-      color: formData.color,
+      slug: formData.slug.trim(),
+      industryCategoryId: formData.industryCategoryId,
+      description: formData.description.trim() || undefined,
     });
     setEditingCategory(null);
     resetForm();
@@ -123,9 +181,7 @@ export function CategoryList({
           <h3 className="text-lg font-semibold text-slate-900">
             {t("categories.title")}
           </h3>
-          <p className="text-sm text-slate-500">
-            {t("categories.subtitle")}
-          </p>
+          <p className="text-sm text-slate-500">{t("categories.subtitle")}</p>
         </div>
         <Button onClick={handleOpenCreate} disabled={isLoading}>
           <Plus className="w-4 h-4 mr-2" />
@@ -152,66 +208,99 @@ export function CategoryList({
         </div>
       )}
 
-      {/* Categories Grid */}
+      {/* Categories Table */}
       {categories.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              className={cn(
-                "group relative p-4 bg-white rounded-card-lg",
-                "border border-slate-100 shadow-card-sm",
-                "hover:shadow-card transition-all duration-200"
-              )}
-            >
-              <div className="flex items-start gap-3">
-                {/* Color indicator */}
-                <div
-                  className="w-10 h-10 rounded-card flex-shrink-0 flex items-center justify-center"
-                  style={{ backgroundColor: `${category.color}20` }}
-                >
-                  <Tag
-                    className="w-5 h-5"
-                    style={{ color: category.color }}
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-slate-900 truncate">
-                    {category.name}
-                  </h4>
-                  {category.description && (
-                    <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">
-                      {category.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleOpenEdit(category)}
-                    disabled={isLoading}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-red-600 hover:text-red-700"
-                    onClick={() => setDeletingCategory(category)}
-                    disabled={isLoading}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="border rounded-card-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 border-b">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium text-slate-700">
+                  {tCommon("fields.name")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-slate-700">
+                  Slug
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-slate-700">
+                  {t("categories.industryCategory")}
+                </th>
+                <th className="px-4 py-3 text-center font-medium text-slate-700">
+                  {tCommon("fields.status")}
+                </th>
+                <th className="px-4 py-3 text-right font-medium text-slate-700">
+                  {tCommon("fields.actions")}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {categories.map((category) => (
+                <tr key={category.id} className="bg-white hover:bg-slate-50">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-slate-400" />
+                      <span className="font-medium text-slate-900">
+                        {category.name}
+                      </span>
+                    </div>
+                    {category.description && (
+                      <p className="text-xs text-slate-500 mt-0.5 ml-6">
+                        {category.description}
+                      </p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs bg-slate-100 px-2 py-1 rounded">
+                      {category.slug}
+                    </code>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-slate-600">
+                      {category.industryCategoryName ||
+                        industryCategories.find(
+                          (ic) => ic.id === category.industryCategoryId
+                        )?.name ||
+                        category.industryCategoryId}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span
+                      className={cn(
+                        "inline-flex px-2 py-1 text-xs rounded-full",
+                        category.isActive
+                          ? "bg-green-100 text-green-700"
+                          : "bg-slate-100 text-slate-600"
+                      )}
+                    >
+                      {category.isActive
+                        ? tCommon("status.active")
+                        : tCommon("status.inactive")}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleOpenEdit(category)}
+                        disabled={isLoading}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-600 hover:text-red-700"
+                        onClick={() => setDeletingCategory(category)}
+                        disabled={isLoading}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -233,9 +322,7 @@ export function CategoryList({
               <Input
                 id="category-name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
+                onChange={(e) => handleNameChange(e.target.value)}
                 placeholder={t("categories.namePlaceholder")}
                 disabled={isLoading}
                 autoFocus
@@ -243,25 +330,66 @@ export function CategoryList({
             </div>
 
             <div className="space-y-2">
-              <Label>{t("categories.color")}</Label>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, color }))
-                    }
-                    className={cn(
-                      "w-8 h-8 rounded-full transition-all",
-                      formData.color === color
-                        ? "ring-2 ring-offset-2 ring-slate-400 scale-110"
-                        : "hover:scale-105"
-                    )}
-                    style={{ backgroundColor: color }}
+              <Label htmlFor="category-slug">
+                Slug <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="category-slug"
+                value={formData.slug}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, slug: e.target.value }))
+                }
+                placeholder="mi-categoria"
+                disabled={isLoading}
+              />
+              <p className="text-xs text-slate-500">
+                {t("categories.slugHelp")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category-industry">
+                {t("categories.industryCategory")}{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.industryCategoryId}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, industryCategoryId: value }))
+                }
+                disabled={isLoading}
+              >
+                <SelectTrigger id="category-industry">
+                  <SelectValue
+                    placeholder={t("categories.selectIndustryCategory")}
                   />
-                ))}
-              </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {industryCategories.map((ic) => (
+                    <SelectItem key={ic.id} value={ic.id}>
+                      {ic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category-description">
+                {tCommon("fields.description")}
+              </Label>
+              <Input
+                id="category-description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder={t("categories.descriptionPlaceholder")}
+                disabled={isLoading}
+              />
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
@@ -275,7 +403,12 @@ export function CategoryList({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || !formData.name.trim()}
+                disabled={
+                  isLoading ||
+                  !formData.name.trim() ||
+                  !formData.slug.trim() ||
+                  !formData.industryCategoryId
+                }
                 isLoading={isLoading}
               >
                 {t("categories.create")}
@@ -309,31 +442,69 @@ export function CategoryList({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
-                placeholder={t("categories.name")}
+                placeholder={t("categories.namePlaceholder")}
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>{t("categories.color")}</Label>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, color }))
-                    }
-                    className={cn(
-                      "w-8 h-8 rounded-full transition-all",
-                      formData.color === color
-                        ? "ring-2 ring-offset-2 ring-slate-400 scale-110"
-                        : "hover:scale-105"
-                    )}
-                    style={{ backgroundColor: color }}
+              <Label htmlFor="edit-category-slug">
+                Slug <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="edit-category-slug"
+                value={formData.slug}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, slug: e.target.value }))
+                }
+                placeholder="mi-categoria"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-category-industry">
+                {t("categories.industryCategory")}{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.industryCategoryId}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, industryCategoryId: value }))
+                }
+                disabled={isLoading}
+              >
+                <SelectTrigger id="edit-category-industry">
+                  <SelectValue
+                    placeholder={t("categories.selectIndustryCategory")}
                   />
-                ))}
-              </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {industryCategories.map((ic) => (
+                    <SelectItem key={ic.id} value={ic.id}>
+                      {ic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-category-description">
+                {tCommon("fields.description")}
+              </Label>
+              <Input
+                id="edit-category-description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder={t("categories.descriptionPlaceholder")}
+                disabled={isLoading}
+              />
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
@@ -347,7 +518,12 @@ export function CategoryList({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || !formData.name.trim()}
+                disabled={
+                  isLoading ||
+                  !formData.name.trim() ||
+                  !formData.slug.trim() ||
+                  !formData.industryCategoryId
+                }
                 isLoading={isLoading}
               >
                 {tCommon("buttons.saveChanges")}
@@ -369,7 +545,8 @@ export function CategoryList({
               {t("categories.delete")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {deletingCategory && t("categories.deleteDescription", { name: deletingCategory.name })}
+              {deletingCategory &&
+                t("categories.deleteDescription", { name: deletingCategory.name })}
               {deletingCategory && (
                 <p className="mt-2 text-amber-600">
                   {t("categories.deleteWarning")}
@@ -378,7 +555,9 @@ export function CategoryList({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>{tCommon("buttons.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>
+              {tCommon("buttons.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isLoading}

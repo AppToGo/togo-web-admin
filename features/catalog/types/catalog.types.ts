@@ -83,18 +83,18 @@ export interface BusinessProduct {
 
 /**
  * BusinessCategory - Categories defined by each business
- * Businesses can create their own category structure
+ * Aligned with backend BusinessCategory model
  */
 export interface BusinessCategory {
   id: string;
-  businessId: string;
   name: string;
-  description?: string;
-  color?: string; // Hex color for UI
-  icon?: string; // Icon identifier
-  parentId?: string | null; // For hierarchical categories
-  sortOrder: number;
+  description: string | null;
+  slug: string; // URL-friendly identifier
+  industryCategoryId: string; // Reference to IndustryCategory
+  industryCategoryName?: string; // Optional display name
+  businessId: string;
   isActive: boolean;
+  order: number; // Renamed from sortOrder
   createdAt: string;
   updatedAt: string;
 }
@@ -169,24 +169,25 @@ export interface UpdateProductDto {
 
 /**
  * DTO for creating a category
+ * Aligned with backend CreateBusinessCategoryDto
  */
 export interface CreateCategoryDto {
   name: string;
   description?: string;
-  color?: string;
-  icon?: string;
-  parentId?: string;
+  slug: string;
+  industryCategoryId: string;
 }
 
 /**
  * DTO for updating a category
+ * Aligned with backend UpdateBusinessCategoryDto
  */
 export interface UpdateCategoryDto {
   name?: string;
   description?: string;
-  color?: string;
-  icon?: string;
-  sortOrder?: number;
+  slug?: string;
+  industryCategoryId?: string;
+  order?: number;
   isActive?: boolean;
 }
 

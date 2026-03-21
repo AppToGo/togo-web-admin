@@ -53,6 +53,7 @@ import {
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
+  useIndustryCategories,
 } from "@/features/catalog/hooks";
 import {
   ProductCard,
@@ -236,10 +237,15 @@ export default function CatalogPage() {
     error: categoriesError,
   } = useCategories(businessId);
 
+  const {
+    data: industryCategoriesData,
+    isLoading: isLoadingIndustryCategories,
+  } = useIndustryCategories();
   // Ensure data is always an array (handles API errors and unexpected responses)
   const products = Array.isArray(productsData) ? productsData : [];
   const globalProducts = Array.isArray(globalProductsData) ? globalProductsData : [];
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
+  const industryCategories = Array.isArray(industryCategoriesData) ? industryCategoriesData : [];
 
   // Mutations
   const createProduct = useCreateProduct(businessId);
@@ -503,16 +509,24 @@ export default function CatalogPage() {
             ) : (
               <CategoryList
                 categories={categories}
+                industryCategories={industryCategories}
                 onCreate={(data) =>
                   createCategory.mutate({
                     name: data.name,
-                    color: data.color,
+                    slug: data.slug,
+                    industryCategoryId: data.industryCategoryId,
+                    description: data.description,
                   })
                 }
                 onUpdate={(id, data) =>
                   updateCategory.mutate({
                     categoryId: id,
-                    data: { name: data.name, color: data.color },
+                    data: {
+                      name: data.name,
+                      slug: data.slug,
+                      industryCategoryId: data.industryCategoryId,
+                      description: data.description,
+                    },
                   })
                 }
                 onDelete={(id) => deleteCategory.mutate(id)}

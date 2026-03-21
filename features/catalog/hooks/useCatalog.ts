@@ -23,6 +23,7 @@ import type {
   ProductFilters,
   GlobalCatalogFilters,
 } from "../types/catalog.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import * as catalogService from "../services/catalog.service";
 import type { CatalogToastMessages } from "./useCatalogTranslations";
 
@@ -42,6 +43,8 @@ export const catalogKeys = {
     [...catalogKeys.all, "categories", businessId] as const,
   category: (businessId: string, categoryId: string) =>
     [...catalogKeys.categories(businessId), categoryId] as const,
+  industryCategories: () =>
+    [...catalogKeys.all, "industry-categories"] as const,
   stats: (businessId: string) =>
     [...catalogKeys.all, "stats", businessId] as const,
 };
@@ -355,6 +358,19 @@ export function useCategory(
     queryKey: catalogKeys.category(businessId, categoryId),
     queryFn: () => catalogService.getCategoryById(businessId, categoryId),
     enabled: !!businessId && !!categoryId,
+    ...options,
+  });
+}
+
+/**
+ * Hook to fetch all industry categories
+ */
+export function useIndustryCategories(
+  options?: UseQueryOptions<IndustryCategory[], Error>
+) {
+  return useQuery({
+    queryKey: catalogKeys.industryCategories(),
+    queryFn: () => catalogService.getIndustryCategories(),
     ...options,
   });
 }

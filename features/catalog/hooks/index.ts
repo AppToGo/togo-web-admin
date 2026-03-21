@@ -27,6 +27,8 @@ export {
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
+  // Industry Categories
+  useIndustryCategories,
   // Stats
   useCatalogStats,
 } from "./useCatalog";

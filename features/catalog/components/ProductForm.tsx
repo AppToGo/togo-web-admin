@@ -236,13 +236,7 @@ export function ProductForm({
             ) : (
               categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: category.color || "#94a3b8" }}
-                    />
-                    {category.name}
-                  </div>
+                  {category.name}
                 </SelectItem>
               ))
             )}
