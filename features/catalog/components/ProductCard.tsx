@@ -147,10 +147,7 @@ export function ProductCard({
 
           {product.category && (
             <div className="flex items-center gap-1.5">
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: product.category.color || "#94a3b8" }}
-              />
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
               <span className="text-xs text-slate-500">
                 {product.category.name}
               </span>
@@ -259,12 +256,7 @@ export function ProductCard({
           {displayBrand && <span>{displayBrand}</span>}
           {product.category && (
             <span className="flex items-center gap-1">
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  backgroundColor: product.category.color || "#94a3b8",
-                }}
-              />
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
               {product.category.name}
             </span>
           )}

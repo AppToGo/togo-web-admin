@@ -503,16 +503,24 @@ export default function CatalogPage() {
             ) : (
               <CategoryList
                 categories={categories}
+                industryCategories={[]} // TODO: Fetch from API when available
                 onCreate={(data) =>
                   createCategory.mutate({
                     name: data.name,
-                    color: data.color,
+                    slug: data.slug,
+                    industryCategoryId: data.industryCategoryId,
+                    description: data.description,
                   })
                 }
                 onUpdate={(id, data) =>
                   updateCategory.mutate({
                     categoryId: id,
-                    data: { name: data.name, color: data.color },
+                    data: {
+                      name: data.name,
+                      slug: data.slug,
+                      industryCategoryId: data.industryCategoryId,
+                      description: data.description,
+                    },
                   })
                 }
                 onDelete={(id) => deleteCategory.mutate(id)}

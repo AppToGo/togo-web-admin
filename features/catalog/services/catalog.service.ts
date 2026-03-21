@@ -236,41 +236,41 @@ export async function activateGlobalProduct(
 
 /**
  * Get all categories for a business
- * GET /api/v1/businesses/:businessId/categories
+ * GET /api/v1/businesses/:businessId/business-categories
  */
 export async function getCategories(
   businessId: string
 ): Promise<BusinessCategory[]> {
   const response = await apiClient.get<BusinessCategory[]>(
-    `/businesses/${businessId}/categories`
+    `/businesses/${businessId}/business-categories`
   );
   return response.data;
 }
 
 /**
  * Get a single category by ID
- * GET /api/v1/businesses/:businessId/categories/:id
+ * GET /api/v1/businesses/:businessId/business-categories/:id
  */
 export async function getCategoryById(
   businessId: string,
   categoryId: string
 ): Promise<BusinessCategory> {
   const response = await apiClient.get<BusinessCategory>(
-    `/businesses/${businessId}/categories/${categoryId}`
+    `/businesses/${businessId}/business-categories/${categoryId}`
   );
   return response.data;
 }
 
 /**
  * Create a new category
- * POST /api/v1/businesses/:businessId/categories
+ * POST /api/v1/businesses/:businessId/business-categories
  */
 export async function createCategory(
   businessId: string,
   data: CreateCategoryDto
 ): Promise<BusinessCategory> {
   const response = await apiClient.post<BusinessCategory>(
-    `/businesses/${businessId}/categories`,
+    `/businesses/${businessId}/business-categories`,
     data
   );
   return response.data;
@@ -278,7 +278,7 @@ export async function createCategory(
 
 /**
  * Update a category
- * PATCH /api/v1/businesses/:businessId/categories/:id
+ * PATCH /api/v1/businesses/:businessId/business-categories/:id
  */
 export async function updateCategory(
   businessId: string,
@@ -286,7 +286,7 @@ export async function updateCategory(
   data: UpdateCategoryDto
 ): Promise<BusinessCategory> {
   const response = await apiClient.patch<BusinessCategory>(
-    `/businesses/${businessId}/categories/${categoryId}`,
+    `/businesses/${businessId}/business-categories/${categoryId}`,
     data
   );
   return response.data;
@@ -294,13 +294,13 @@ export async function updateCategory(
 
 /**
  * Delete a category
- * DELETE /api/v1/businesses/:businessId/categories/:id
+ * DELETE /api/v1/businesses/:businessId/business-categories/:id
  */
 export async function deleteCategory(
   businessId: string,
   categoryId: string
 ): Promise<void> {
-  await apiClient.delete(`/businesses/${businessId}/categories/${categoryId}`);
+  await apiClient.delete(`/businesses/${businessId}/business-categories/${categoryId}`);
 }
 
 // ============================================================================
