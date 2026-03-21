@@ -100,7 +100,8 @@
     "industryCategory": "Categoría de Industria",
     "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
     "selectIndustryCategory": "Selecciona una categoría de industria",
-    "descriptionPlaceholder": "Descripción opcional de la categoría"
+    "descriptionPlaceholder": "Descripción opcional de la categoría",
+    "createDescription": "Crea una nueva categoria para tu catalogo"
   },
   "globalCatalog": {
     "error": {

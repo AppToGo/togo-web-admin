@@ -24,6 +24,8 @@ export interface CatalogToastMessages {
   categoryCreated: string;
   categoryUpdated: string;
   categoryDeleted: string;
+  categoryActivated: string;
+  categoryDeactivated: string;
   errorCreatingProduct: string;
   errorUpdatingProduct: string;
   errorDeletingProduct: string;
@@ -49,6 +51,8 @@ export function useCatalogTranslations(): CatalogToastMessages {
     categoryCreated: t("notifications.categoryCreated"),
     categoryUpdated: t("notifications.categoryUpdated"),
     categoryDeleted: t("notifications.categoryDeleted"),
+    categoryActivated: t("notifications.categoryActivated"),
+    categoryDeactivated: t("notifications.categoryDeactivated"),
 
     // Error messages
     errorCreatingProduct: tCommon("errors.createFailed"),

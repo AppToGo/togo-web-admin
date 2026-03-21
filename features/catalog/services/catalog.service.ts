@@ -304,6 +304,18 @@ export async function deleteCategory(
   await apiClient.delete(`/businesses/${businessId}/business-categories/${categoryId}`);
 }
 
+/**
+ * Toggle category active status
+ * Convenience method that calls updateCategory
+ */
+export async function toggleCategoryStatus(
+  businessId: string,
+  categoryId: string,
+  isActive: boolean
+): Promise<BusinessCategory> {
+  return updateCategory(businessId, categoryId, { isActive });
+}
+
 // ============================================================================
 // INDUSTRY CATEGORIES API
 // ============================================================================

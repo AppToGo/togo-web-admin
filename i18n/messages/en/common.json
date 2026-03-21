@@ -58,7 +58,9 @@
     "createdBy": "Created by",
     "updatedBy": "Updated by",
     "sku": "SKU",
-    "brand": "Brand"
+    "brand": "Brand",
+    "description": "Description",
+    "actions": "Actions"
   },
   "filters": {
     "all": "All"

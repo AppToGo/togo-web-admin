@@ -2,11 +2,20 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Edit2, Trash2, Folder, Tag, AlertCircle } from "lucide-react";
+import { Plus, Folder, Tag, AlertCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -31,7 +40,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { BusinessCategory } from "../types/catalog.types";
+import { CategoryActions } from "./CategoryActions";
+import type { BusinessCategory, CategoryFilters } from "../types/catalog.types";
 
 // Industry category option type
 interface IndustryCategoryOption {
@@ -58,6 +68,7 @@ interface CategoryListProps {
     }
   ) => void;
   onDelete: (id: string) => void;
+  onToggleStatus: (id: string, isActive: boolean) => void;
   isLoading?: boolean;
 }
 
@@ -67,13 +78,25 @@ export function CategoryList({
   onCreate,
   onUpdate,
   onDelete,
+  onToggleStatus,
   isLoading = false,
 }: CategoryListProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
+  
+  // Filters state
+  const [filters, setFilters] = useState<CategoryFilters>({
+    name: "",
+    isActive: null,
+    industryCategoryId: "",
+  });
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<BusinessCategory | null>(null);
-  const [deletingCategory, setDeletingCategory] = useState<BusinessCategory | null>(null);
+  const [editingCategory, setEditingCategory] =
+    useState<BusinessCategory | null>(null);
+  const [deletingCategory, setDeletingCategory] =
+    useState<BusinessCategory | null>(null);
+  const isEditing = !!editingCategory;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -83,14 +106,43 @@ export function CategoryList({
     description: "",
   });
 
+  // Filter categories locally
+  const filteredCategories = categories.filter((cat) => {
+    const matchesName =
+      !filters.name ||
+      cat.name.toLowerCase().includes(filters.name.toLowerCase());
+    const matchesStatus =
+      filters.isActive === null || filters.isActive === undefined
+        ? true
+        : cat.isActive === filters.isActive;
+    const matchesIndustry =
+      !filters.industryCategoryId ||
+      cat.industryCategoryId === filters.industryCategoryId;
+    return matchesName && matchesStatus && matchesIndustry;
+  });
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      name: "",
+      isActive: null,
+      industryCategoryId: "",
+    });
+  };
+
+  // Check if any filter is active
+  const hasActiveFilters =
+    filters.name || filters.isActive !== null || filters.industryCategoryId;
+
   // Generate slug from name
   const generateSlug = (name: string): string => {
     return name
       .toLowerCase()
+      .trim()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
-      .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with hyphens
-      .replace(/^-+|-+$/g, ""); // Trim hyphens
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   };
 
   // Reset form
@@ -120,19 +172,27 @@ export function CategoryList({
     setEditingCategory(category);
   };
 
-  // Handle name change and auto-generate slug if empty
+  // Auto-generate slug from name
   const handleNameChange = (name: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      name,
-      slug: prev.slug || generateSlug(name),
-    }));
+    const newFormData = { ...formData, name };
+    if (!isEditing) {
+      const expectedSlug = generateSlug(formData.name);
+      if (!formData.slug || formData.slug === expectedSlug) {
+        newFormData.slug = generateSlug(name);
+      }
+    }
+    setFormData(newFormData);
   };
 
   // Handle create
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.slug.trim() || !formData.industryCategoryId) return;
+    if (
+      !formData.name.trim() ||
+      !formData.slug.trim() ||
+      !formData.industryCategoryId
+    )
+      return;
 
     onCreate({
       name: formData.name.trim(),
@@ -173,6 +233,11 @@ export function CategoryList({
     setDeletingCategory(null);
   };
 
+  // Handle toggle status
+  const handleToggleStatus = (category: BusinessCategory) => {
+    onToggleStatus(category.id, !category.isActive);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -187,6 +252,104 @@ export function CategoryList({
           <Plus className="w-4 h-4 mr-2" />
           {t("categories.new")}
         </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+        <div className="flex flex-wrap gap-4 items-end">
+          {/* Name filter */}
+          <div className="flex-1 min-w-[200px]">
+            <Label htmlFor="filter-name" className="text-sm font-medium text-slate-700 mb-1.5 block">
+              {tCommon("fields.name")}
+            </Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                id="filter-name"
+                value={filters.name}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, name: e.target.value }))
+                }
+                placeholder={tCommon("search.placeholder")}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          {/* Status filter */}
+          <div className="w-[180px]">
+            <Label htmlFor="filter-status" className="text-sm font-medium text-slate-700 mb-1.5 block">
+              {tCommon("fields.status")}
+            </Label>
+            <Select
+              value={filters.isActive === null || filters.isActive === undefined ? "all" : filters.isActive.toString()}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  isActive: value === "all" ? null : value === "true",
+                }))
+              }
+            >
+              <SelectTrigger id="filter-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tCommon("filters.all")}</SelectItem>
+                <SelectItem value="true">{tCommon("status.active")}</SelectItem>
+                <SelectItem value="false">{tCommon("status.inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Industry Category filter */}
+          <div className="w-[220px]">
+            <Label htmlFor="filter-industry" className="text-sm font-medium text-slate-700 mb-1.5 block">
+              {t("categories.industryCategory")}
+            </Label>
+            <Select
+              value={filters.industryCategoryId || "all"}
+              onValueChange={(value) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  industryCategoryId: value === "all" ? "" : value,
+                }))
+              }
+            >
+              <SelectTrigger id="filter-industry">
+                <SelectValue placeholder={t("categories.selectIndustryCategory")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tCommon("filters.all")}</SelectItem>
+                {industryCategories.map((ic) => (
+                  <SelectItem key={ic.id} value={ic.id}>
+                    {ic.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Clear filters */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-slate-500 hover:text-slate-700"
+            >
+              <X className="w-4 h-4 mr-1" />
+              {tCommon("filters.clear")}
+            </Button>
+          )}
+        </div>
+
+        {/* Results count */}
+        <div className="text-sm text-slate-500">
+          {filteredCategories.length}{" "}
+          {filteredCategories.length === 1
+            ? t("categories.result")
+            : t("categories.results")}
+        </div>
       </div>
 
       {/* Empty State */}
@@ -208,33 +371,54 @@ export function CategoryList({
         </div>
       )}
 
+      {/* No results after filtering */}
+      {categories.length > 0 && filteredCategories.length === 0 && (
+        <div className="text-center py-12 bg-slate-50 rounded-card-lg">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+            <Search className="w-8 h-8 text-slate-400" />
+          </div>
+          <h4 className="text-lg font-medium text-slate-900 mb-2">
+            {t("categories.noResults")}
+          </h4>
+          <p className="text-sm text-slate-500 mb-4">
+            {t("categories.noResultsDescription")}
+          </p>
+          <Button onClick={clearFilters} variant="outline">
+            <X className="w-4 h-4 mr-2" />
+            {tCommon("filters.clear")}
+          </Button>
+        </div>
+      )}
+
       {/* Categories Table */}
-      {categories.length > 0 && (
-        <div className="border rounded-card-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium text-slate-700">
+      {filteredCategories.length > 0 && (
+        <div className="rounded-lg border border-slate-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50 hover:bg-slate-50">
+                <TableHead className="text-slate-500">
                   {tCommon("fields.name")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-slate-700">
-                  Slug
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-slate-700">
+                </TableHead>
+                <TableHead className="text-slate-500">Slug</TableHead>
+                <TableHead className="text-slate-500">
                   {t("categories.industryCategory")}
-                </th>
-                <th className="px-4 py-3 text-center font-medium text-slate-700">
+                </TableHead>
+                <TableHead className="text-center text-slate-500">
                   {tCommon("fields.status")}
-                </th>
-                <th className="px-4 py-3 text-right font-medium text-slate-700">
+                </TableHead>
+                <TableHead className="text-right text-slate-500">
                   {tCommon("fields.actions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {categories.map((category) => (
-                <tr key={category.id} className="bg-white hover:bg-slate-50">
-                  <td className="px-4 py-3">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCategories.map((category) => (
+                <TableRow
+                  key={category.id}
+                  className="hover:bg-slate-50 transition-colors"
+                >
+                  {/* Name */}
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <Tag className="w-4 h-4 text-slate-400" />
                       <span className="font-medium text-slate-900">
@@ -246,13 +430,17 @@ export function CategoryList({
                         {category.description}
                       </p>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+
+                  {/* Slug */}
+                  <TableCell>
                     <code className="text-xs bg-slate-100 px-2 py-1 rounded">
                       {category.slug}
                     </code>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+
+                  {/* Industry Category */}
+                  <TableCell>
                     <span className="text-slate-600">
                       {category.industryCategoryName ||
                         industryCategories.find(
@@ -260,47 +448,37 @@ export function CategoryList({
                         )?.name ||
                         category.industryCategoryId}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span
+                  </TableCell>
+
+                  {/* Status */}
+                  <TableCell className="text-center">
+                    <Badge
+                      variant="secondary"
                       className={cn(
-                        "inline-flex px-2 py-1 text-xs rounded-full",
                         category.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-slate-100 text-slate-600"
+                          ? "bg-green-100 text-green-700 hover:bg-green-100"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-100"
                       )}
                     >
                       {category.isActive
                         ? tCommon("status.active")
                         : tCommon("status.inactive")}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleOpenEdit(category)}
-                        disabled={isLoading}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600 hover:text-red-700"
-                        onClick={() => setDeletingCategory(category)}
-                        disabled={isLoading}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
+                    </Badge>
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell className="text-right">
+                    <CategoryActions
+                      category={category}
+                      onEdit={handleOpenEdit}
+                      onDelete={setDeletingCategory}
+                      onToggleStatus={handleToggleStatus}
+                    />
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -314,7 +492,7 @@ export function CategoryList({
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreate} className="space-y-4 mt-4">
+          <form onSubmit={handleCreate} className="space-y-4 mt-4 p-7">
             <div className="space-y-2">
               <Label htmlFor="category-name">
                 {tCommon("fields.name")} <span className="text-red-500">*</span>
@@ -355,7 +533,10 @@ export function CategoryList({
               <Select
                 value={formData.industryCategoryId}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, industryCategoryId: value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    industryCategoryId: value,
+                  }))
                 }
                 disabled={isLoading}
               >
@@ -470,7 +651,10 @@ export function CategoryList({
               <Select
                 value={formData.industryCategoryId}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, industryCategoryId: value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    industryCategoryId: value,
+                  }))
                 }
                 disabled={isLoading}
               >
@@ -546,7 +730,9 @@ export function CategoryList({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {deletingCategory &&
-                t("categories.deleteDescription", { name: deletingCategory.name })}
+                t("categories.deleteDescription", {
+                  name: deletingCategory.name,
+                })}
               {deletingCategory && (
                 <p className="mt-2 text-amber-600">
                   {t("categories.deleteWarning")}
