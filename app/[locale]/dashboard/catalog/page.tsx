@@ -241,7 +241,6 @@ export default function CatalogPage() {
     data: industryCategoriesData,
     isLoading: isLoadingIndustryCategories,
   } = useIndustryCategories();
-
   // Ensure data is always an array (handles API errors and unexpected responses)
   const products = Array.isArray(productsData) ? productsData : [];
   const globalProducts = Array.isArray(globalProductsData) ? globalProductsData : [];
