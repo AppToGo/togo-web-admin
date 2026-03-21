@@ -96,7 +96,11 @@
       "namePlaceholder": "Ej: Bebidas",
       "descriptionLabel": "Descripción",
       "descriptionPlaceholder": "Describe la categoría..."
-    }
+    },
+    "industryCategory": "Categoría de Industria",
+    "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
+    "selectIndustryCategory": "Selecciona una categoría de industria",
+    "descriptionPlaceholder": "Descripción opcional de la categoría"
   },
   "globalCatalog": {
     "error": {

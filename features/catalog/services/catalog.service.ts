@@ -36,6 +36,7 @@ import type {
   ProductFilters,
   GlobalCatalogFilters,
 } from "../types/catalog.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { PaginatedResponse } from "@/types";
 
 // ============================================================================
@@ -301,6 +302,19 @@ export async function deleteCategory(
   categoryId: string
 ): Promise<void> {
   await apiClient.delete(`/businesses/${businessId}/business-categories/${categoryId}`);
+}
+
+// ============================================================================
+// INDUSTRY CATEGORIES API
+// ============================================================================
+
+/**
+ * Get all industry categories (active only)
+ * GET /api/v1/industry-categories
+ */
+export async function getIndustryCategories(): Promise<IndustryCategory[]> {
+  const response = await apiClient.get<IndustryCategory[]>("/industry-categories");
+  return response.data;
 }
 
 // ============================================================================

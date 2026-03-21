@@ -96,7 +96,11 @@
       "namePlaceholder": "Ex: Beverages",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Describe this category..."
-    }
+    },
+    "industryCategory": "Industry Category",
+    "slugHelp": "URL-friendly identifier for the category (e.g.: soft-drinks)",
+    "selectIndustryCategory": "Select an industry category",
+    "descriptionPlaceholder": "Optional category description"
   },
   "globalCatalog": {
     "error": {
