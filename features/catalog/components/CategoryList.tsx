@@ -496,7 +496,7 @@ export function CategoryList({
 
       {/* Create/Edit Dialog */}
       <Dialog 
-        open={editingCategory !== undefined} 
+        open={editingCategory !== null} 
         onOpenChange={(open) => !open && closeModal()}
       >
         <DialogContent className="sm:max-w-md">
