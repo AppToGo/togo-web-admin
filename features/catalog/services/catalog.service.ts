@@ -24,6 +24,7 @@
 
 import apiClient from "@/services/api.service";
 import type {
+  PaginatedGlobalCatalog,
   GlobalProduct,
   BusinessProduct,
   BusinessCategory,
@@ -200,13 +201,19 @@ export async function toggleProductStatus(
 export async function getGlobalCatalog(
   businessId: string,
   filters?: GlobalCatalogFilters
-): Promise<GlobalProduct[]> {
+): Promise<PaginatedGlobalCatalog> {
   const params = new URLSearchParams();
   if (filters?.search) params.append("search", filters.search);
-  if (filters?.category) params.append("category", filters.category);
+  // Categorías seleccionadas (CSV)
+  // Nota: El backend automáticamente filtra por la industria del negocio
+  if (filters?.industryCategoryIds) {
+    params.append("industryCategoryIds", filters.industryCategoryIds);
+  }
   if (filters?.brand) params.append("brand", filters.brand);
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.limit) params.append("limit", filters.limit.toString());
 
-  const response = await apiClient.get<GlobalProduct[]>(
+  const response = await apiClient.get<PaginatedGlobalCatalog>(
     `/businesses/${businessId}/global-catalog?${params}`
   );
   return response.data;

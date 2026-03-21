@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Dialog,
   DialogContent,
@@ -86,7 +87,7 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
             key={i}
             className="flex items-center gap-4 p-4 bg-white rounded-card border border-slate-100"
           >
-            <Skeleton className="w-16 h-16 rounded-card flex-shrink-0" />
+            <Skeleton className="w-16 h-16 rounded-card shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-48" />
               <Skeleton className="h-4 w-32" />
@@ -126,7 +127,7 @@ function GlobalCatalogLoading() {
           key={i}
           className="bg-white rounded-card-lg overflow-hidden border border-slate-100"
         >
-          <Skeleton className="aspect-[4/3]" />
+          <Skeleton className="aspect-4/3" />
           <div className="p-4 space-y-3">
             <Skeleton className="h-4 w-16" />
             <Skeleton className="h-5 w-3/4" />
@@ -192,7 +193,7 @@ function EmptyGlobalCatalogState() {
 export default function CatalogPage() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
-  
+
   useAuthGuard();
   const router = useRouter();
   const hasBusiness = useHasBusiness();
@@ -207,33 +208,57 @@ export default function CatalogPage() {
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(null);
-  const [activatingProduct, setActivatingProduct] = useState<GlobalProduct | null>(null);
+  const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(
+    null
+  );
+  const [activatingProduct, setActivatingProduct] =
+    useState<GlobalProduct | null>(null);
+
+  // Global catalog filters and pagination
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+  const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<
+    string[]
+  >([]);
+  const [selectedBrand, setSelectedBrand] = useState<string>("all");
+  const [globalPage, setGlobalPage] = useState(1);
+  const [globalViewMode, setGlobalViewMode] = useState<ViewMode>("grid");
+  const GLOBAL_PAGE_SIZE = 12;
 
   // Data fetching
-  const { 
-    data: productsData, 
+  const {
+    data: productsData,
     isLoading: isLoadingProducts,
     error: productsError,
-  } = useMyProducts(
-    businessId,
-    {
-      search: searchQuery || undefined,
-      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-      isActive: statusFilter === "active" ? true : statusFilter === "inactive" ? false : undefined,
-    }
-  );
+  } = useMyProducts(businessId, {
+    search: searchQuery || undefined,
+    categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+    isActive:
+      statusFilter === "active"
+        ? true
+        : statusFilter === "inactive"
+          ? false
+          : undefined,
+  });
 
-  const { 
-    data: globalProductsData, 
+  const {
+    data: globalProductsData,
     isLoading: isLoadingGlobal,
     error: globalProductsError,
   } = useGlobalCatalog(businessId, {
-    search: searchQuery || undefined,
+    search: globalSearchQuery || undefined,
+    // Selected categories as CSV string
+    // Nota: El backend automáticamente filtra por la industria del negocio
+    industryCategoryIds:
+      selectedIndustryCategories.length > 0
+        ? selectedIndustryCategories.join(",")
+        : undefined,
+    brand: selectedBrand === "all" ? undefined : selectedBrand,
+    page: globalPage,
+    limit: GLOBAL_PAGE_SIZE,
   });
 
-  const { 
-    data: categoriesData, 
+  const {
+    data: categoriesData,
     isLoading: isLoadingCategories,
     error: categoriesError,
   } = useCategories(businessId);
@@ -244,9 +269,12 @@ export default function CatalogPage() {
   } = useIndustryCategories();
   // Ensure data is always an array (handles API errors and unexpected responses)
   const products = Array.isArray(productsData) ? productsData : [];
-  const globalProducts = Array.isArray(globalProductsData) ? globalProductsData : [];
+  const globalProducts = globalProductsData?.items || [];
+  const globalMeta = globalProductsData?.meta;
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
-  const industryCategories = Array.isArray(industryCategoriesData) ? industryCategoriesData : [];
+  const industryCategories = Array.isArray(industryCategoriesData)
+    ? industryCategoriesData
+    : [];
 
   // Mutations
   const createProduct = useCreateProduct(businessId);
@@ -260,13 +288,17 @@ export default function CatalogPage() {
   const toggleCategory = useToggleCategoryStatus(businessId);
 
   // Handlers
-  const handleCreateProduct = (data: CreateCustomProductDto | UpdateProductDto) => {
+  const handleCreateProduct = (
+    data: CreateCustomProductDto | UpdateProductDto
+  ) => {
     createProduct.mutate(data as CreateCustomProductDto, {
       onSuccess: () => setIsCreateModalOpen(false),
     });
   };
 
-  const handleUpdateProduct = (data: CreateCustomProductDto | UpdateProductDto) => {
+  const handleUpdateProduct = (
+    data: CreateCustomProductDto | UpdateProductDto
+  ) => {
     if (!editingProduct) return;
     updateProduct.mutate(
       { productId: editingProduct.id, data: data as UpdateProductDto },
@@ -305,12 +337,8 @@ export default function CatalogPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              {t("title")}
-            </h1>
-            <p className="text-slate-500 mt-1">
-              {t("subtitle")}
-            </p>
+            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+            <p className="text-slate-500 mt-1">{t("subtitle")}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -375,7 +403,9 @@ export default function CatalogPage() {
                   <SelectValue placeholder={t("products.filters.all")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("products.filters.all")}</SelectItem>
+                  <SelectItem value="all">
+                    {t("products.filters.all")}
+                  </SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
@@ -390,9 +420,13 @@ export default function CatalogPage() {
                   <SelectValue placeholder={tc("status.active")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("products.filters.all")}</SelectItem>
+                  <SelectItem value="all">
+                    {t("products.filters.all")}
+                  </SelectItem>
                   <SelectItem value="active">{tc("status.active")}</SelectItem>
-                  <SelectItem value="inactive">{tc("status.inactive")}</SelectItem>
+                  <SelectItem value="inactive">
+                    {tc("status.inactive")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
@@ -416,7 +450,9 @@ export default function CatalogPage() {
                   {t("products.error.title") || "Error loading products"}
                 </h3>
                 <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
-                  {productsError instanceof Error ? productsError.message : "An unexpected error occurred"}
+                  {productsError instanceof Error
+                    ? productsError.message
+                    : "An unexpected error occurred"}
                 </p>
               </div>
             ) : products.length === 0 ? (
@@ -447,20 +483,81 @@ export default function CatalogPage() {
 
           {/* Catálogo TOGO Tab */}
           <TabsContent value="global-catalog" className="space-y-4">
-            {/* Search */}
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder={t("globalCatalog.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+            {/* Filters */}
+            <div className="flex flex-col lg:flex-row gap-3">
+              {/* Search */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder={t("globalCatalog.search")}
+                  value={globalSearchQuery}
+                  onChange={(e) => {
+                    setGlobalSearchQuery(e.target.value);
+                    setGlobalPage(1);
+                  }}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Industry Category Filter - MultiSelect */}
+              <MultiSelect
+                options={industryCategories.map((ic) => ({
+                  value: ic.id,
+                  label: ic.name,
+                }))}
+                value={selectedIndustryCategories}
+                onChange={(value) => {
+                  setSelectedIndustryCategories(value);
+                  setGlobalPage(1);
+                }}
+                placeholder={
+                  t("globalCatalog.filters.category") || "Categorías"
+                }
+                searchPlaceholder={tc("buttons.search") || "Buscar..."}
+                emptyMessage={tc("empty.noResults") || "Sin resultados"}
+                maxDisplay={1}
+                className="w-full sm:w-60"
+              />
+
+              {/* Brand Filter - Select */}
+              <Select
+                value={selectedBrand}
+                onValueChange={(value) => {
+                  setSelectedBrand(value);
+                  setGlobalPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-45">
+                  <SelectValue
+                    placeholder={t("globalCatalog.filters.brand") || "Marca"}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    {tc("filters.all") || "Todas"}
+                  </SelectItem>
+                  {Array.from(
+                    new Set(globalProducts.map((p) => p.brand).filter(Boolean))
+                  )
+                    .sort()
+                    .map((brand) => (
+                      <SelectItem key={brand} value={brand as string}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+
+              {/* View Toggle */}
+              <ViewToggle
+                value={globalViewMode}
+                onChange={(value) => setGlobalViewMode(value as ViewMode)}
               />
             </div>
 
-            {/* Global Products Grid */}
+            {/* Global Products */}
             {isLoadingGlobal ? (
-              <GlobalCatalogLoading />
+              <ProductsLoading viewMode={globalViewMode} />
             ) : globalProductsError ? (
               <div className="text-center py-16 bg-red-50 rounded-card-lg border border-red-200">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
@@ -470,20 +567,98 @@ export default function CatalogPage() {
                   {t("globalCatalog.error.title") || "Error loading catalog"}
                 </h3>
                 <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
-                  {globalProductsError instanceof Error ? globalProductsError.message : "An unexpected error occurred"}
+                  {globalProductsError instanceof Error
+                    ? globalProductsError.message
+                    : "An unexpected error occurred"}
                 </p>
               </div>
             ) : globalProducts.length === 0 ? (
               <EmptyGlobalCatalogState />
+            ) : globalViewMode === "list" ? (
+              <div className="space-y-3">
+                {globalProducts.map((product: GlobalProduct) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-4 p-4 bg-white rounded-card border border-slate-100 hover:shadow-sm transition-shadow"
+                  >
+                    {/* Product Image */}
+                    <div className="w-16 h-16 rounded-card flex-shrink-0 bg-slate-100 overflow-hidden">
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-6 h-6 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-slate-900 truncate">
+                        {product.name}
+                      </h4>
+                      <p className="text-sm text-slate-500">
+                        {product.brand || "Sin marca"} • {product.sku}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActivatingProduct(product)}
+                    >
+                      <Store className="w-4 h-4 mr-2" />
+                      {t("globalCatalog.activate")}
+                    </Button>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {globalProducts.map((product) => (
+                {globalProducts.map((product: GlobalProduct) => (
                   <GlobalProductCard
                     key={product.id}
                     product={product}
                     onActivate={setActivatingProduct}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {globalMeta && globalMeta.totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGlobalPage((prev) => Math.max(1, prev - 1))}
+                  disabled={globalPage === 1}
+                >
+                  {tc("pagination.previous")}
+                </Button>
+                <span className="text-sm text-slate-500">
+                  {tc("pagination.pageOf", {
+                    page: globalPage,
+                    totalPages: globalMeta.totalPages,
+                  })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setGlobalPage((prev) =>
+                      Math.min(globalMeta.totalPages, prev + 1)
+                    )
+                  }
+                  disabled={globalPage === globalMeta.totalPages}
+                >
+                  {tc("pagination.next")}
+                </Button>
               </div>
             )}
           </TabsContent>
@@ -505,7 +680,9 @@ export default function CatalogPage() {
                   {t("categories.error.title") || "Error loading categories"}
                 </h3>
                 <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
-                  {categoriesError instanceof Error ? categoriesError.message : "An unexpected error occurred"}
+                  {categoriesError instanceof Error
+                    ? categoriesError.message
+                    : "An unexpected error occurred"}
                 </p>
               </div>
             ) : (

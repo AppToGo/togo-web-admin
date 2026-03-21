@@ -30,6 +30,8 @@ export {
   useToggleCategoryStatus,
   // Industry Categories
   useIndustryCategories,
+  // Business
+  useBusiness,
   // Stats
   useCatalogStats,
 } from "./useCatalog";
