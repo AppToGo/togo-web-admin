@@ -210,7 +210,7 @@ export interface ProductFilters {
  */
 export interface GlobalCatalogFilters {
   search?: string;
-  category?: string;
+  industryCategoryId?: string;
   brand?: string;
 }
 

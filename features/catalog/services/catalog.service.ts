@@ -203,7 +203,7 @@ export async function getGlobalCatalog(
 ): Promise<GlobalProduct[]> {
   const params = new URLSearchParams();
   if (filters?.search) params.append("search", filters.search);
-  if (filters?.category) params.append("category", filters.category);
+  if (filters?.industryCategoryId) params.append("industryCategoryId", filters.industryCategoryId);
   if (filters?.brand) params.append("brand", filters.brand);
 
   const response = await apiClient.get<GlobalProduct[]>(

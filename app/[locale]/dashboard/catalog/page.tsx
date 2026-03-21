@@ -205,6 +205,11 @@ export default function CatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  // Global catalog filters (separate from my products)
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+  const [selectedIndustryCategory, setSelectedIndustryCategory] = useState<string>("all");
+  const [selectedBrand, setSelectedBrand] = useState<string>("all");
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(null);
@@ -229,7 +234,9 @@ export default function CatalogPage() {
     isLoading: isLoadingGlobal,
     error: globalProductsError,
   } = useGlobalCatalog(businessId, {
-    search: searchQuery || undefined,
+    search: globalSearchQuery || undefined,
+    industryCategoryId: selectedIndustryCategory === "all" ? undefined : selectedIndustryCategory,
+    brand: selectedBrand === "all" ? undefined : selectedBrand,
   });
 
   const { 
@@ -447,15 +454,54 @@ export default function CatalogPage() {
 
           {/* Catálogo TOGO Tab */}
           <TabsContent value="global-catalog" className="space-y-4">
-            {/* Search */}
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder={t("globalCatalog.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder={t("globalCatalog.search")}
+                  value={globalSearchQuery}
+                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Industry Category Filter */}
+              <Select
+                value={selectedIndustryCategory}
+                onValueChange={setSelectedIndustryCategory}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder={t("filters.industryCategory")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{tc("filters.all")}</SelectItem>
+                  {industryCategories.map((ic) => (
+                    <SelectItem key={ic.id} value={ic.id}>
+                      {ic.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Brand Filter */}
+              <Select
+                value={selectedBrand}
+                onValueChange={setSelectedBrand}
+              >
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder={t("filters.brand")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{tc("filters.all")}</SelectItem>
+                  {Array.from(new Set(globalProducts.map(p => p.brand).filter(Boolean))).map((brand) => (
+                    <SelectItem key={brand} value={brand as string}>
+                      {brand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Global Products Grid */}

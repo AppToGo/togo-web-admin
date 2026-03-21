@@ -191,5 +191,9 @@
     "categoryDeleted": "Category deleted successfully",
     "categoryActivated": "Category activated successfully",
     "categoryDeactivated": "Category deactivated successfully"
+  },
+  "filters": {
+    "industryCategory": "Industry Category",
+    "brand": "Brand"
   }
 }
