@@ -12,6 +12,9 @@
     "categories": "Categorías"
   },
   "products": {
+    "error": {
+      "title": "Error al cargar productos"
+    },
     "title": "Productos",
     "create": "Crear producto",
     "createDescription": "Crea un producto nuevo para tu catálogo",
@@ -67,6 +70,9 @@
     }
   },
   "categories": {
+    "error": {
+      "title": "Error al cargar categorías"
+    },
     "title": "Categorías de Productos",
     "subtitle": "Organiza tus productos en categorías",
     "new": "Nueva Categoría",
@@ -93,6 +99,9 @@
     }
   },
   "globalCatalog": {
+    "error": {
+      "title": "Error al cargar el catálogo"
+    },
     "title": "Catálogo Global",
     "subtitle": "Gestiona el catálogo de productos global",
     "search": "Buscar en el catálogo global...",
