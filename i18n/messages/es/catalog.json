@@ -187,6 +187,8 @@
     "productActivatedInCatalog": "Producto activado en tu catálogo",
     "categoryCreated": "Categoría creada exitosamente",
     "categoryUpdated": "Categoría actualizada exitosamente",
-    "categoryDeleted": "Categoría eliminada exitosamente"
+    "categoryDeleted": "Categoría eliminada exitosamente",
+    "categoryActivated": "Categoría activada exitosamente",
+    "categoryDeactivated": "Categoría desactivada exitosamente"
   }
 }

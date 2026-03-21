@@ -97,11 +97,11 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Describe this category..."
     },
-    "industryCategory": "Categoría de Industria",
-    "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
-    "selectIndustryCategory": "Selecciona una categoría de industria",
-    "descriptionPlaceholder": "Descripción opcional de la categoría",
-    "createDescription": "Crea una nueva categoria para tu catalogo",
+    "industryCategory": "Industry Category",
+    "slugHelp": "URL-friendly identifier for the category (e.g.: beverages-soft-drinks)",
+    "selectIndustryCategory": "Select an industry category",
+    "descriptionPlaceholder": "Optional category description",
+    "createDescription": "Create a new category for your catalog",
     "noResults": "No results found",
     "noResultsDescription": "Try adjusting your filters or clear them to see all categories",
     "result": "result",
@@ -187,6 +187,8 @@
     "productActivatedInCatalog": "Product activated in your catalog",
     "categoryCreated": "Category created successfully",
     "categoryUpdated": "Category updated successfully",
-    "categoryDeleted": "Category deleted successfully"
+    "categoryDeleted": "Category deleted successfully",
+    "categoryActivated": "Category activated successfully",
+    "categoryDeactivated": "Category deactivated successfully"
   }
 }
