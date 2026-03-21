@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -83,14 +84,14 @@ export function CategoryList({
 }: CategoryListProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
-  
+
   // Filters state
   const [filters, setFilters] = useState<CategoryFilters>({
     name: "",
     isActive: null,
     industryCategoryId: "",
   });
-  
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] =
     useState<BusinessCategory | null>(null);
@@ -255,34 +256,44 @@ export function CategoryList({
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
-        <div className="flex flex-wrap gap-4 items-end">
-          {/* Name filter */}
-          <div className="flex-1 min-w-[200px]">
-            <Label htmlFor="filter-name" className="text-sm font-medium text-slate-700 mb-1.5 block">
-              {tCommon("fields.name")}
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                id="filter-name"
-                value={filters.name}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder={tCommon("search.placeholder")}
-                className="pl-9"
-              />
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-x-4">
+        {/* Name filter */}
+        <div className="flex flex-col col-span-2">
+          <Label
+            htmlFor="filter-name"
+            className="text-sm font-medium text-slate-700 mb-1.5 block"
+          >
+            {tCommon("fields.name")}
+          </Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              id="filter-name"
+              value={filters.name}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, name: e.target.value }))
+              }
+              placeholder={tCommon("search.placeholder")}
+              className="pl-9"
+            />
           </div>
+        </div>
 
+        <div className="col-span-3 gap-4 flex items-end">
           {/* Status filter */}
-          <div className="w-[180px]">
-            <Label htmlFor="filter-status" className="text-sm font-medium text-slate-700 mb-1.5 block">
+          <div className="flex-1 flex-col">
+            <Label
+              htmlFor="filter-status"
+              className="text-sm font-medium text-slate-700 mb-1.5 block"
+            >
               {tCommon("fields.status")}
             </Label>
             <Select
-              value={filters.isActive === null || filters.isActive === undefined ? "all" : filters.isActive.toString()}
+              value={
+                filters.isActive === null || filters.isActive === undefined
+                  ? "all"
+                  : filters.isActive.toString()
+              }
               onValueChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
@@ -296,14 +307,19 @@ export function CategoryList({
               <SelectContent>
                 <SelectItem value="all">{tCommon("filters.all")}</SelectItem>
                 <SelectItem value="true">{tCommon("status.active")}</SelectItem>
-                <SelectItem value="false">{tCommon("status.inactive")}</SelectItem>
+                <SelectItem value="false">
+                  {tCommon("status.inactive")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Industry Category filter */}
-          <div className="w-[220px]">
-            <Label htmlFor="filter-industry" className="text-sm font-medium text-slate-700 mb-1.5 block">
+          <div className="flex-1 flex-col">
+            <Label
+              htmlFor="filter-industry"
+              className="text-sm font-medium text-slate-700 mb-1.5 block"
+            >
               {t("categories.industryCategory")}
             </Label>
             <Select
@@ -316,7 +332,9 @@ export function CategoryList({
               }
             >
               <SelectTrigger id="filter-industry">
-                <SelectValue placeholder={t("categories.selectIndustryCategory")} />
+                <SelectValue
+                  placeholder={t("categories.selectIndustryCategory")}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{tCommon("filters.all")}</SelectItem>
@@ -332,10 +350,10 @@ export function CategoryList({
           {/* Clear filters */}
           {hasActiveFilters && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={clearFilters}
-              className="text-slate-500 hover:text-slate-700"
+              className="w-40 h-10 flex-none"
             >
               <X className="w-4 h-4 mr-1" />
               {tCommon("filters.clear")}
@@ -344,7 +362,7 @@ export function CategoryList({
         </div>
 
         {/* Results count */}
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-slate-500 pt-1 pl-2">
           {filteredCategories.length}{" "}
           {filteredCategories.length === 1
             ? t("categories.result")
@@ -392,94 +410,96 @@ export function CategoryList({
 
       {/* Categories Table */}
       {filteredCategories.length > 0 && (
-        <div className="rounded-lg border border-slate-200 overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50">
-                <TableHead className="text-slate-500">
-                  {tCommon("fields.name")}
-                </TableHead>
-                <TableHead className="text-slate-500">Slug</TableHead>
-                <TableHead className="text-slate-500">
-                  {t("categories.industryCategory")}
-                </TableHead>
-                <TableHead className="text-center text-slate-500">
-                  {tCommon("fields.status")}
-                </TableHead>
-                <TableHead className="text-right text-slate-500">
-                  {tCommon("fields.actions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCategories.map((category) => (
-                <TableRow
-                  key={category.id}
-                  className="hover:bg-slate-50 transition-colors"
-                >
-                  {/* Name */}
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-slate-400" />
-                      <span className="font-medium text-slate-900">
-                        {category.name}
-                      </span>
-                    </div>
-                    {category.description && (
-                      <p className="text-xs text-slate-500 mt-0.5 ml-6">
-                        {category.description}
-                      </p>
-                    )}
-                  </TableCell>
-
-                  {/* Slug */}
-                  <TableCell>
-                    <code className="text-xs bg-slate-100 px-2 py-1 rounded">
-                      {category.slug}
-                    </code>
-                  </TableCell>
-
-                  {/* Industry Category */}
-                  <TableCell>
-                    <span className="text-slate-600">
-                      {category.industryCategoryName ||
-                        industryCategories.find(
-                          (ic) => ic.id === category.industryCategoryId
-                        )?.name ||
-                        category.industryCategoryId}
-                    </span>
-                  </TableCell>
-
-                  {/* Status */}
-                  <TableCell className="text-center">
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        category.isActive
-                          ? "bg-green-100 text-green-700 hover:bg-green-100"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-100"
-                      )}
-                    >
-                      {category.isActive
-                        ? tCommon("status.active")
-                        : tCommon("status.inactive")}
-                    </Badge>
-                  </TableCell>
-
-                  {/* Actions */}
-                  <TableCell className="text-right">
-                    <CategoryActions
-                      category={category}
-                      onEdit={handleOpenEdit}
-                      onDelete={setDeletingCategory}
-                      onToggleStatus={handleToggleStatus}
-                    />
-                  </TableCell>
+        <Card>
+          <div className="rounded-lg border border-slate-200 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                  <TableHead className="text-slate-500">
+                    {tCommon("fields.name")}
+                  </TableHead>
+                  <TableHead className="text-slate-500">Slug</TableHead>
+                  <TableHead className="text-slate-500">
+                    {t("categories.industryCategory")}
+                  </TableHead>
+                  <TableHead className="text-center text-slate-500">
+                    {tCommon("fields.status")}
+                  </TableHead>
+                  <TableHead className="text-right text-slate-500">
+                    {tCommon("fields.actions")}
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredCategories.map((category) => (
+                  <TableRow
+                    key={category.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    {/* Name */}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-slate-400" />
+                        <span className="font-medium text-slate-900">
+                          {category.name}
+                        </span>
+                      </div>
+                      {category.description && (
+                        <p className="text-xs text-slate-500 mt-0.5 ml-6">
+                          {category.description}
+                        </p>
+                      )}
+                    </TableCell>
+
+                    {/* Slug */}
+                    <TableCell>
+                      <code className="text-xs bg-slate-100 px-2 py-1 rounded">
+                        {category.slug}
+                      </code>
+                    </TableCell>
+
+                    {/* Industry Category */}
+                    <TableCell>
+                      <span className="text-slate-600">
+                        {category.industryCategoryName ||
+                          industryCategories.find(
+                            (ic) => ic.id === category.industryCategoryId
+                          )?.name ||
+                          category.industryCategoryId}
+                      </span>
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          category.isActive
+                            ? "bg-green-100 text-green-700 hover:bg-green-100"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-100"
+                        )}
+                      >
+                        {category.isActive
+                          ? tCommon("status.active")
+                          : tCommon("status.inactive")}
+                      </Badge>
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className="text-right">
+                      <CategoryActions
+                        category={category}
+                        onEdit={handleOpenEdit}
+                        onDelete={setDeletingCategory}
+                        onToggleStatus={handleToggleStatus}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
       )}
 
       {/* Create Dialog */}
