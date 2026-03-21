@@ -12,6 +12,9 @@
     "categories": "Categories"
   },
   "products": {
+    "error": {
+      "title": "Error loading products"
+    },
     "title": "Products",
     "create": "Create product",
     "createDescription": "Create a new product for your catalog",
@@ -67,6 +70,9 @@
     }
   },
   "categories": {
+    "error": {
+      "title": "Error loading categories"
+    },
     "title": "Product Categories",
     "subtitle": "Organize your products into categories",
     "new": "New Category",
@@ -93,6 +99,9 @@
     }
   },
   "globalCatalog": {
+    "error": {
+      "title": "Error loading catalog"
+    },
     "title": "Global Catalog",
     "subtitle": "Manage the global product catalog",
     "search": "Search in global catalog...",

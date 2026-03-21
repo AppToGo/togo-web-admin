@@ -209,7 +209,11 @@ export default function CatalogPage() {
   const [activatingProduct, setActivatingProduct] = useState<GlobalProduct | null>(null);
 
   // Data fetching
-  const { data: products = [], isLoading: isLoadingProducts } = useMyProducts(
+  const { 
+    data: productsData, 
+    isLoading: isLoadingProducts,
+    error: productsError,
+  } = useMyProducts(
     businessId,
     {
       search: searchQuery || undefined,
@@ -218,13 +222,24 @@ export default function CatalogPage() {
     }
   );
 
-  const { data: globalProducts = [], isLoading: isLoadingGlobal } =
-    useGlobalCatalog(businessId, {
-      search: searchQuery || undefined,
-    });
+  const { 
+    data: globalProductsData, 
+    isLoading: isLoadingGlobal,
+    error: globalProductsError,
+  } = useGlobalCatalog(businessId, {
+    search: searchQuery || undefined,
+  });
 
-  const { data: categories = [], isLoading: isLoadingCategories } =
-    useCategories(businessId);
+  const { 
+    data: categoriesData, 
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+  } = useCategories(businessId);
+
+  // Ensure data is always an array (handles API errors and unexpected responses)
+  const products = Array.isArray(productsData) ? productsData : [];
+  const globalProducts = Array.isArray(globalProductsData) ? globalProductsData : [];
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutations
   const createProduct = useCreateProduct(businessId);
@@ -384,6 +399,18 @@ export default function CatalogPage() {
             {/* Products Content */}
             {isLoadingProducts ? (
               <ProductsLoading viewMode={viewMode} />
+            ) : productsError ? (
+              <div className="text-center py-16 bg-red-50 rounded-card-lg border border-red-200">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                  <Package className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-red-900 mb-2">
+                  {t("products.error.title") || "Error loading products"}
+                </h3>
+                <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
+                  {productsError instanceof Error ? productsError.message : "An unexpected error occurred"}
+                </p>
+              </div>
             ) : products.length === 0 ? (
               <EmptyProductsState onCreate={() => setIsCreateModalOpen(true)} />
             ) : (
@@ -426,6 +453,18 @@ export default function CatalogPage() {
             {/* Global Products Grid */}
             {isLoadingGlobal ? (
               <GlobalCatalogLoading />
+            ) : globalProductsError ? (
+              <div className="text-center py-16 bg-red-50 rounded-card-lg border border-red-200">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                  <Grid3X3 className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-red-900 mb-2">
+                  {t("globalCatalog.error.title") || "Error loading catalog"}
+                </h3>
+                <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
+                  {globalProductsError instanceof Error ? globalProductsError.message : "An unexpected error occurred"}
+                </p>
+              </div>
             ) : globalProducts.length === 0 ? (
               <EmptyGlobalCatalogState />
             ) : (
@@ -448,6 +487,18 @@ export default function CatalogPage() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <Skeleton key={i} className="h-24 rounded-card-lg" />
                 ))}
+              </div>
+            ) : categoriesError ? (
+              <div className="text-center py-16 bg-red-50 rounded-card-lg border border-red-200">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                  <Tags className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-red-900 mb-2">
+                  {t("categories.error.title") || "Error loading categories"}
+                </h3>
+                <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
+                  {categoriesError instanceof Error ? categoriesError.message : "An unexpected error occurred"}
+                </p>
               </div>
             ) : (
               <CategoryList
