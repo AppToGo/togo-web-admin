@@ -98,9 +98,14 @@
       "descriptionPlaceholder": "Describe this category..."
     },
     "industryCategory": "Industry Category",
-    "slugHelp": "URL-friendly identifier for the category (e.g.: soft-drinks)",
+    "slugHelp": "URL-friendly identifier for the category (e.g.: beverages-soft-drinks)",
     "selectIndustryCategory": "Select an industry category",
-    "descriptionPlaceholder": "Optional category description"
+    "descriptionPlaceholder": "Optional category description",
+    "createDescription": "Create a new category for your catalog",
+    "noResults": "No results found",
+    "noResultsDescription": "Try adjusting your filters or clear them to see all categories",
+    "result": "result",
+    "results": "results"
   },
   "globalCatalog": {
     "error": {
@@ -182,6 +187,8 @@
     "productActivatedInCatalog": "Product activated in your catalog",
     "categoryCreated": "Category created successfully",
     "categoryUpdated": "Category updated successfully",
-    "categoryDeleted": "Category deleted successfully"
+    "categoryDeleted": "Category deleted successfully",
+    "categoryActivated": "Category activated successfully",
+    "categoryDeactivated": "Category deactivated successfully"
   }
 }

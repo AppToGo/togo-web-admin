@@ -53,6 +53,7 @@ import {
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
+  useToggleCategoryStatus,
   useIndustryCategories,
 } from "@/features/catalog/hooks";
 import {
@@ -256,6 +257,7 @@ export default function CatalogPage() {
   const createCategory = useCreateCategory(businessId);
   const updateCategory = useUpdateCategory(businessId);
   const deleteCategory = useDeleteCategory(businessId);
+  const toggleCategory = useToggleCategoryStatus(businessId);
 
   // Handlers
   const handleCreateProduct = (data: CreateCustomProductDto | UpdateProductDto) => {
@@ -530,10 +532,14 @@ export default function CatalogPage() {
                   })
                 }
                 onDelete={(id) => deleteCategory.mutate(id)}
+                onToggleStatus={(id, isActive) =>
+                  toggleCategory.mutate({ categoryId: id, isActive })
+                }
                 isLoading={
                   createCategory.isPending ||
                   updateCategory.isPending ||
-                  deleteCategory.isPending
+                  deleteCategory.isPending ||
+                  toggleCategory.isPending
                 }
               />
             )}

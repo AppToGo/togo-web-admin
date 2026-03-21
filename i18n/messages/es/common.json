@@ -58,10 +58,13 @@
     "createdBy": "Creado por",
     "updatedBy": "Actualizado por",
     "sku": "SKU",
-    "brand": "Marca"
+    "brand": "Marca",
+    "description": "Descripción",
+    "actions": "Acciones"
   },
   "filters": {
-    "all": "Todos"
+    "all": "Todos",
+    "clear": "Limpiar filtros"
   },
   "steps": {
     "uploadFile": "Subir archivo",
@@ -166,7 +169,12 @@
   "actions": {
     "actions": "Acciones",
     "select": "Seleccionar",
-    "cannotUndo": "Esta acción no se puede deshacer."
+    "cannotUndo": "Esta acción no se puede deshacer.",
+    "openMenu": "Abrir menú",
+    "edit": "Editar",
+    "deactivate": "Desactivar",
+    "activate": "Activar",
+    "delete": "Eliminar"
   },
   "validation": {
     "required": "El nombre es obligatorio",
@@ -175,5 +183,8 @@
   "preview": "Vista Previa",
   "notApplicable": "N/A",
   "instructions": "Instrucciones",
-  "doNotClosePage": "Por favor no cierres esta página"
+  "doNotClosePage": "Por favor no cierres esta página",
+  "search": {
+    "placeholder": "Buscar..."
+  }
 }

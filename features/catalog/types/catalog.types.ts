@@ -214,6 +214,15 @@ export interface GlobalCatalogFilters {
   brand?: string;
 }
 
+/**
+ * Filters for category lists
+ */
+export interface CategoryFilters {
+  name?: string;
+  isActive?: boolean | null; // null = todos
+  industryCategoryId?: string;
+}
+
 // ============================================================================
 // UI COMPONENT PROP TYPES
 // ============================================================================

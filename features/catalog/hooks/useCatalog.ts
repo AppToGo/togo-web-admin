@@ -500,6 +500,52 @@ export function useDeleteCategory(
   });
 }
 
+/**
+ * Hook to toggle category status
+ *
+ * @param businessId - The business ID
+ * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
+ *
+ * @example
+ * ```tsx
+ * const messages = useCatalogTranslations();
+ * const toggleStatus = useToggleCategoryStatus(businessId, messages);
+ * ```
+ */
+export function useToggleCategoryStatus(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      categoryId,
+      isActive,
+    }: {
+      categoryId: string;
+      isActive: boolean;
+    }) => catalogService.toggleCategoryStatus(businessId, categoryId, isActive),
+    onSuccess: (_, variables) => {
+      toast.success(
+        variables.isActive
+          ? (messages?.categoryActivated ?? "Categoría activada")
+          : (messages?.categoryDeactivated ?? "Categoría desactivada")
+      );
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.categories(businessId),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          messages?.errorChangingStatus ||
+          "Error al cambiar el estado"
+      );
+    },
+  });
+}
+
 // ============================================================================
 // STATS HOOKS
 // ============================================================================

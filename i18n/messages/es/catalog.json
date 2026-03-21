@@ -100,7 +100,12 @@
     "industryCategory": "Categoría de Industria",
     "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
     "selectIndustryCategory": "Selecciona una categoría de industria",
-    "descriptionPlaceholder": "Descripción opcional de la categoría"
+    "descriptionPlaceholder": "Descripción opcional de la categoría",
+    "createDescription": "Crea una nueva categoria para tu catalogo",
+    "noResults": "No se encontraron resultados",
+    "noResultsDescription": "Intenta ajustar tus filtros o límpialos para ver todas las categorías",
+    "result": "resultado",
+    "results": "resultados"
   },
   "globalCatalog": {
     "error": {
@@ -182,6 +187,8 @@
     "productActivatedInCatalog": "Producto activado en tu catálogo",
     "categoryCreated": "Categoría creada exitosamente",
     "categoryUpdated": "Categoría actualizada exitosamente",
-    "categoryDeleted": "Categoría eliminada exitosamente"
+    "categoryDeleted": "Categoría eliminada exitosamente",
+    "categoryActivated": "Categoría activada exitosamente",
+    "categoryDeactivated": "Categoría desactivada exitosamente"
   }
 }

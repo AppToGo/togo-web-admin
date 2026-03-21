@@ -58,10 +58,13 @@
     "createdBy": "Created by",
     "updatedBy": "Updated by",
     "sku": "SKU",
-    "brand": "Brand"
+    "brand": "Brand",
+    "description": "Description",
+    "actions": "Actions"
   },
   "filters": {
-    "all": "All"
+    "all": "All",
+    "clear": "Clear filters"
   },
   "steps": {
     "uploadFile": "Upload file",
@@ -167,7 +170,12 @@
   "actions": {
     "actions": "Actions",
     "select": "Select",
-    "cannotUndo": "This action cannot be undone."
+    "cannotUndo": "This action cannot be undone.",
+    "openMenu": "Open menu",
+    "edit": "Edit",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "delete": "Delete"
   },
   "validation": {
     "required": "Name is required",
@@ -176,5 +184,8 @@
   "preview": "Preview",
   "notApplicable": "N/A",
   "instructions": "Instructions",
-  "doNotClosePage": "Please do not close this page"
+  "doNotClosePage": "Please do not close this page",
+  "search": {
+    "placeholder": "Search..."
+  }
 }

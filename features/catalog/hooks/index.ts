@@ -27,6 +27,7 @@ export {
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
+  useToggleCategoryStatus,
   // Industry Categories
   useIndustryCategories,
   // Stats
