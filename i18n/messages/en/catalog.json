@@ -101,7 +101,11 @@
     "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
     "selectIndustryCategory": "Selecciona una categoría de industria",
     "descriptionPlaceholder": "Descripción opcional de la categoría",
-    "createDescription": "Crea una nueva categoria para tu catalogo"
+    "createDescription": "Crea una nueva categoria para tu catalogo",
+    "noResults": "No results found",
+    "noResultsDescription": "Try adjusting your filters or clear them to see all categories",
+    "result": "result",
+    "results": "results"
   },
   "globalCatalog": {
     "error": {
