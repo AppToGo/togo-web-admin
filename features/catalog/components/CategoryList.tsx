@@ -92,7 +92,8 @@ export function CategoryList({
     industryCategoryId: "",
   });
 
-    const [editingCategory, setEditingCategory] =
+    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] =
     useState<BusinessCategory | null>(null);
   const [deletingCategory, setDeletingCategory] =
     useState<BusinessCategory | null>(null);
@@ -159,6 +160,7 @@ export function CategoryList({
   const handleOpenCreate = () => {
     resetForm();
     setEditingCategory(null);
+    setIsModalOpen(true);
   };
 
   // Open edit dialog
@@ -170,6 +172,7 @@ export function CategoryList({
       description: category.description || "",
     });
     setEditingCategory(category);
+    setIsModalOpen(true);
   };
 
   // Auto-generate slug from name
@@ -214,6 +217,7 @@ export function CategoryList({
 
   // Close modal and reset
   const closeModal = () => {
+    setIsModalOpen(false);
     setEditingCategory(null);
     resetForm();
   };
@@ -496,7 +500,7 @@ export function CategoryList({
 
       {/* Create/Edit Dialog */}
       <Dialog 
-        open={editingCategory !== null} 
+        open={isModalOpen} 
         onOpenChange={(open) => !open && closeModal()}
       >
         <DialogContent className="sm:max-w-md">
