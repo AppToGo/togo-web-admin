@@ -105,7 +105,8 @@
     "noResults": "No se encontraron resultados",
     "noResultsDescription": "Intenta ajustar tus filtros o límpialos para ver todas las categorías",
     "result": "resultado",
-    "results": "resultados"
+    "results": "resultados",
+    "slugDisabled": "El slug no se puede editar después de la creación"
   },
   "globalCatalog": {
     "error": {
