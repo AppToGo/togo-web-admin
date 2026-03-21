@@ -484,9 +484,9 @@ export default function CatalogPage() {
           {/* Catálogo TOGO Tab */}
           <TabsContent value="global-catalog" className="space-y-4">
             {/* Filters */}
-            <div className="flex flex-col lg:flex-row gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               {/* Search */}
-              <div className="relative flex-1 max-w-md">
+              <div className="relative col-span-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   placeholder={t("globalCatalog.search")}
@@ -498,61 +498,72 @@ export default function CatalogPage() {
                   className="pl-9"
                 />
               </div>
-
-              {/* Industry Category Filter - MultiSelect */}
-              <MultiSelect
-                options={industryCategories.map((ic) => ({
-                  value: ic.id,
-                  label: ic.name,
-                }))}
-                value={selectedIndustryCategories}
-                onChange={(value) => {
-                  setSelectedIndustryCategories(value);
-                  setGlobalPage(1);
-                }}
-                placeholder={
-                  t("globalCatalog.filters.category") || "Categorías"
-                }
-                searchPlaceholder={tc("buttons.search") || "Buscar..."}
-                emptyMessage={tc("empty.noResults") || "Sin resultados"}
-                maxDisplay={1}
-                className="w-full sm:w-60"
-              />
-
-              {/* Brand Filter - Select */}
-              <Select
-                value={selectedBrand}
-                onValueChange={(value) => {
-                  setSelectedBrand(value);
-                  setGlobalPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full sm:w-45">
-                  <SelectValue
-                    placeholder={t("globalCatalog.filters.brand") || "Marca"}
+              <div className="relative col-span-2 gap-4 flex flex-row">
+                <div className="relative flex-1 ">
+                  {/* Industry Category Filter - MultiSelect */}
+                  <MultiSelect
+                    options={industryCategories.map((ic) => ({
+                      value: ic.id,
+                      label: ic.name,
+                    }))}
+                    value={selectedIndustryCategories}
+                    onChange={(value) => {
+                      setSelectedIndustryCategories(value);
+                      setGlobalPage(1);
+                    }}
+                    placeholder={
+                      t("globalCatalog.filters.category") || "Categorías"
+                    }
+                    searchPlaceholder={tc("buttons.search") || "Buscar..."}
+                    emptyMessage={tc("empty.noResults") || "Sin resultados"}
+                    maxDisplay={1}
+                    className="w-full"
                   />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {tc("filters.all") || "Todas"}
-                  </SelectItem>
-                  {Array.from(
-                    new Set(globalProducts.map((p) => p.brand).filter(Boolean))
-                  )
-                    .sort()
-                    .map((brand) => (
-                      <SelectItem key={brand} value={brand as string}>
-                        {brand}
+                </div>
+                <div className="flex-1">
+                  {/* Brand Filter - Select */}
+                  <Select
+                    value={selectedBrand}
+                    onValueChange={(value) => {
+                      setSelectedBrand(value);
+                      setGlobalPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={
+                          t("globalCatalog.filters.brand") || "Marca"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        {tc("filters.all") || "Todas"}
                       </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+                      {Array.from(
+                        new Set(
+                          globalProducts.map((p) => p.brand).filter(Boolean)
+                        )
+                      )
+                        .sort()
+                        .map((brand) => (
+                          <SelectItem key={brand} value={brand as string}>
+                            {brand}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               {/* View Toggle */}
-              <ViewToggle
-                value={globalViewMode}
-                onChange={(value) => setGlobalViewMode(value as ViewMode)}
-              />
+              <div className="col-span-1 flex justify-end">
+                <ViewToggle
+                  value={globalViewMode}
+                  onChange={(value) => setGlobalViewMode(value as ViewMode)}
+                  className="w-19"
+                />
+              </div>
             </div>
 
             {/* Global Products */}
