@@ -1,9 +1,9 @@
 /**
  * Catalog Service
- * 
+ *
  * API service for product catalog management.
  * Integrated with real backend API.
- * 
+ *
  * Backend endpoints:
  * - GET /api/v1/businesses/:businessId/products
  * - POST /api/v1/businesses/:businessId/products
@@ -15,7 +15,7 @@
  * - GET /api/v1/businesses/:businessId/categories
  * - GET/POST/PATCH/DELETE /api/v1/businesses/:businessId/categories/:id
  * - GET /api/v1/businesses/:businessId/catalog/stats
- * 
+ *
  * Error Handling:
  * - Uses apiClient interceptors for auth (401 redirects)
  * - Error messages extracted from backend responses
@@ -139,7 +139,9 @@ export async function createCustomProduct(
 ): Promise<BusinessProduct> {
   // Convert simple DTO to backend format if needed
   const backendData =
-    "slug" in data ? data : convertSimpleToBackendDto(data as CreateSimpleProductDto);
+    "slug" in data
+      ? data
+      : convertSimpleToBackendDto(data as CreateSimpleProductDto);
 
   const response = await apiClient.post<BusinessProduct>(
     `/businesses/${businessId}/products`,
@@ -243,7 +245,7 @@ export async function getCategories(
   businessId: string
 ): Promise<BusinessCategory[]> {
   const response = await apiClient.get<BusinessCategory[]>(
-    `/businesses/${businessId}/business-categories`
+    `/businesses/${businessId}/business-categories?includeInactive=true`
   );
   return response.data;
 }
@@ -271,7 +273,7 @@ export async function createCategory(
   data: CreateCategoryDto
 ): Promise<BusinessCategory> {
   const response = await apiClient.post<BusinessCategory>(
-    `/businesses/${businessId}/business-categories`,
+    `/businesses/${businessId}/business-categories?includeInactive=true`,
     data
   );
   return response.data;
@@ -301,7 +303,9 @@ export async function deleteCategory(
   businessId: string,
   categoryId: string
 ): Promise<void> {
-  await apiClient.delete(`/businesses/${businessId}/business-categories/${categoryId}`);
+  await apiClient.delete(
+    `/businesses/${businessId}/business-categories/${categoryId}`
+  );
 }
 
 /**
@@ -325,7 +329,9 @@ export async function toggleCategoryStatus(
  * GET /api/v1/industry-categories
  */
 export async function getIndustryCategories(): Promise<IndustryCategory[]> {
-  const response = await apiClient.get<IndustryCategory[]>("/industry-categories");
+  const response = await apiClient.get<IndustryCategory[]>(
+    "/industry-categories"
+  );
   return response.data;
 }
 
@@ -344,6 +350,8 @@ export async function getCatalogStats(businessId: string): Promise<{
   customProducts: number;
   categoriesCount: number;
 }> {
-  const response = await apiClient.get(`/businesses/${businessId}/catalog/stats`);
+  const response = await apiClient.get(
+    `/businesses/${businessId}/catalog/stats`
+  );
   return response.data;
 }
