@@ -105,7 +105,8 @@
     "noResults": "No results found",
     "noResultsDescription": "Try adjusting your filters or clear them to see all categories",
     "result": "result",
-    "results": "results"
+    "results": "results",
+    "slugDisabled": "Slug cannot be edited after creation"
   },
   "globalCatalog": {
     "error": {

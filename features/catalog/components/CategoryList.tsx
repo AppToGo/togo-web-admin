@@ -92,8 +92,7 @@ export function CategoryList({
     industryCategoryId: "",
   });
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingCategory, setEditingCategory] =
+    const [editingCategory, setEditingCategory] =
     useState<BusinessCategory | null>(null);
   const [deletingCategory, setDeletingCategory] =
     useState<BusinessCategory | null>(null);
@@ -159,7 +158,7 @@ export function CategoryList({
   // Open create dialog
   const handleOpenCreate = () => {
     resetForm();
-    setIsCreateOpen(true);
+    setEditingCategory(null);
   };
 
   // Open edit dialog
@@ -185,8 +184,8 @@ export function CategoryList({
     setFormData(newFormData);
   };
 
-  // Handle create
-  const handleCreate = (e: React.FormEvent) => {
+  // Handle submit (create or update)
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !formData.name.trim() ||
@@ -195,33 +194,26 @@ export function CategoryList({
     )
       return;
 
-    onCreate({
-      name: formData.name.trim(),
-      slug: formData.slug.trim(),
-      industryCategoryId: formData.industryCategoryId,
-      description: formData.description.trim() || undefined,
-    });
-    setIsCreateOpen(false);
-    resetForm();
+    if (isEditing && editingCategory) {
+      onUpdate(editingCategory.id, {
+        name: formData.name.trim(),
+        slug: formData.slug.trim(),
+        industryCategoryId: formData.industryCategoryId,
+        description: formData.description.trim() || undefined,
+      });
+    } else {
+      onCreate({
+        name: formData.name.trim(),
+        slug: formData.slug.trim(),
+        industryCategoryId: formData.industryCategoryId,
+        description: formData.description.trim() || undefined,
+      });
+    }
+    closeModal();
   };
 
-  // Handle update
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      !editingCategory ||
-      !formData.name.trim() ||
-      !formData.slug.trim() ||
-      !formData.industryCategoryId
-    )
-      return;
-
-    onUpdate(editingCategory.id, {
-      name: formData.name.trim(),
-      slug: formData.slug.trim(),
-      industryCategoryId: formData.industryCategoryId,
-      description: formData.description.trim() || undefined,
-    });
+  // Close modal and reset
+  const closeModal = () => {
     setEditingCategory(null);
     resetForm();
   };
@@ -502,17 +494,24 @@ export function CategoryList({
         </Card>
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      {/* Create/Edit Dialog */}
+      <Dialog 
+        open={editingCategory !== undefined} 
+        onOpenChange={(open) => !open && closeModal()}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("categories.new")}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? t("categories.edit") : t("categories.new")}
+            </DialogTitle>
             <DialogDescription>
-              {t("categories.createDescription")}
+              {isEditing 
+                ? t("categories.editDescription") 
+                : t("categories.createDescription")}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreate} className="space-y-4 mt-4 p-7">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4 p-7">
             <div className="space-y-2">
               <Label htmlFor="category-name">
                 {tCommon("fields.name")} <span className="text-red-500">*</span>
@@ -538,11 +537,16 @@ export function CategoryList({
                   setFormData((prev) => ({ ...prev, slug: e.target.value }))
                 }
                 placeholder="mi-categoria"
-                disabled={isLoading}
+                disabled={isLoading || isEditing}
               />
               <p className="text-xs text-slate-500">
                 {t("categories.slugHelp")}
               </p>
+              {isEditing && (
+                <p className="text-xs text-amber-600">
+                  {t("categories.slugDisabled")}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -597,7 +601,7 @@ export function CategoryList({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={closeModal}
                 disabled={isLoading}
               >
                 {tCommon("buttons.cancel")}
@@ -612,125 +616,7 @@ export function CategoryList({
                 }
                 isLoading={isLoading}
               >
-                {t("categories.create")}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog
-        open={!!editingCategory}
-        onOpenChange={() => setEditingCategory(null)}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("categories.edit")}</DialogTitle>
-            <DialogDescription>
-              {t("categories.editDescription")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleUpdate} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-category-name">
-                {tCommon("fields.name")} <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="edit-category-name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder={t("categories.namePlaceholder")}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-category-slug">
-                Slug <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="edit-category-slug"
-                value={formData.slug}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                }
-                placeholder="mi-categoria"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-category-industry">
-                {t("categories.industryCategory")}{" "}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.industryCategoryId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    industryCategoryId: value,
-                  }))
-                }
-                disabled={isLoading}
-              >
-                <SelectTrigger id="edit-category-industry">
-                  <SelectValue
-                    placeholder={t("categories.selectIndustryCategory")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {industryCategories.map((ic) => (
-                    <SelectItem key={ic.id} value={ic.id}>
-                      {ic.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-category-description">
-                {tCommon("fields.description")}
-              </Label>
-              <Input
-                id="edit-category-description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                placeholder={t("categories.descriptionPlaceholder")}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEditingCategory(null)}
-                disabled={isLoading}
-              >
-                {tCommon("buttons.cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  isLoading ||
-                  !formData.name.trim() ||
-                  !formData.slug.trim() ||
-                  !formData.industryCategoryId
-                }
-                isLoading={isLoading}
-              >
-                {tCommon("buttons.saveChanges")}
+                {isEditing ? tCommon("buttons.saveChanges") : t("categories.create")}
               </Button>
             </div>
           </form>
