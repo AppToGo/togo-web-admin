@@ -60,6 +60,7 @@ export function CustomersTable({
   onSortChange,
 }: CustomersTableProps) {
   const t = useTranslations("customers");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -227,7 +228,7 @@ export function CustomersTable({
       {/* Paginación */}
       <div className="flex items-center justify-between px-2">
         <div className="text-sm text-slate-500">
-          {t("pagination.showing", {
+          {tc("pagination.showing", {
             from: (pagination.page - 1) * pagination.limit + 1,
             to: Math.min(pagination.page * pagination.limit, pagination.total),
             total: pagination.total,
@@ -251,11 +252,11 @@ export function CustomersTable({
             disabled={!pagination.hasPreviousPage}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            {t("pagination.previous")}
+            {tc("pagination.previous")}
           </Button>
 
           <span className="text-sm text-slate-600 px-2">
-            {t("pagination.page", {
+            {tc("pagination.page", {
               page: pagination.page,
               total: pagination.totalPages,
             })}
@@ -267,7 +268,7 @@ export function CustomersTable({
             onClick={() => onPageChange(pagination.page + 1)}
             disabled={!pagination.hasNextPage}
           >
-            {t("pagination.next")}
+            {tc("pagination.next")}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
           <Button

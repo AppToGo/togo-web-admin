@@ -1,0 +1,102 @@
+{
+  "title": "Gestión de Clientes",
+  "subtitle": "Administra y conoce a tus clientes",
+
+  "table": {
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "totalOrders": "Pedidos",
+    "totalSpent": "Total gastado",
+    "lastOrder": "Última compra",
+    "actions": "Acciones",
+    "noName": "Sin nombre",
+    "selectAll": "Seleccionar todos",
+    "spent": "gastado",
+    "viewDetails": "Ver detalle",
+    "selectRow": "Seleccionar fila",
+    "columns": {
+      "orders": "pedidos",
+      "phone": "Teléfono"
+    }
+  },
+
+  "metrics": {
+    "totalCustomers": "Total clientes",
+    "newCustomers": "Nuevos clientes",
+    "frequentCustomers": "Clientes frecuentes",
+    "averageOrderValue": "Ticket promedio"
+  },
+
+  "topCustomers": {
+    "byFrequency": "Top 10 - Más frecuentes",
+    "bySpending": "Top 10 - Más gastaron",
+    "orders": "pedidos",
+    "spent": "gastado",
+    "noData": "No hay datos",
+    "noDataDescription": "No encontramos datos para este periodo."
+  },
+
+  "detail": {
+    "title": "Detalle del Cliente",
+    "information": "Información",
+    "metrics": "Métricas",
+    "orderHistory": "Historial de pedidos",
+    "notes": "Notas",
+    "customerSince": "Cliente desde",
+    "averageFrequency": "Frecuencia promedio",
+    "favoriteProducts": "Productos favoritos",
+    "noOrders": "Sin pedidos",
+    "whatsapp": "Abrir WhatsApp"
+  },
+
+  "customerMetrics": {
+    "totalSpent": "Total gastado",
+    "totalOrders": "Total pedidos",
+    "averageOrder": "Ticket promedio",
+    "frequency": "Frecuencia",
+    "days": "días",
+    "ordersPerMonth": "pedidos/mes"
+  },
+
+  "selection": {
+    "selected": "{count} cliente(s) seleccionado(s)",
+    "selectAll": "Seleccionar todos",
+    "clearSelection": "Limpiar selección",
+    "selectAllPages": "Seleccionar todos los {total} clientes"
+  },
+
+  "filters": {
+    "searchPlaceholder": "Buscar por nombre o teléfono...",
+    "dateRange": "Rango de fechas",
+    "hasOrders": "Con pedidos",
+    "noOrders": "Sin pedidos"
+  },
+
+  "segments": {
+    "NEW": "Nuevo",
+    "ACTIVE": "Activo",
+    "VIP": "VIP",
+    "AT_RISK": "En riesgo",
+    "LOST": "Perdido"
+  },
+
+  "empty": {
+    "title": "No hay clientes",
+    "description": "Los clientes aparecerán aquí cuando realicen su primera compra"
+  },
+
+  "notifications": {
+    "loadError": "Error al cargar clientes",
+    "updateSuccess": "Cliente actualizado",
+    "updateError": "Error al actualizar cliente"
+  },
+
+  "pagination": {
+    "showing": "Mostrando {from} a {to} de {total} clientes"
+  },
+
+  "noBusiness": {
+    "title": "No hay clientes"
+  }
+}

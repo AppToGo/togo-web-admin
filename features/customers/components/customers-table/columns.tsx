@@ -14,7 +14,9 @@ function formatRelativeDate(date: Date | string | null): string {
   if (!date) return "-";
   const d = new Date(date);
   const now = new Date();
-  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(
+    (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   if (diffDays === 0) return "Hoy";
   if (diffDays === 1) return "Ayer";
@@ -70,7 +72,7 @@ export function useCustomerColumns({
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="h-8 px-2 -ml-2"
         >
-          {t("table.columns.name")}
+          {t("table.name")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -96,7 +98,7 @@ export function useCustomerColumns({
     // Teléfono (columna separada para sorting)
     {
       accessorKey: "phoneNumber",
-      header: t("table.columns.phone"),
+      header: t("table.phone"),
       cell: () => null, // Se muestra en la columna de nombre
       enableHiding: true,
     },
@@ -130,7 +132,7 @@ export function useCustomerColumns({
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="h-8 px-2 -ml-2"
         >
-          {t("table.columns.spent")}
+          {t("table.spent")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -149,7 +151,7 @@ export function useCustomerColumns({
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="h-8 px-2 -ml-2"
         >
-          {t("table.columns.lastOrder")}
+          {t("table.lastOrder")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -162,15 +164,10 @@ export function useCustomerColumns({
     // Acciones
     {
       id: "actions",
-      header: () => <span className="sr-only">{t("table.columns.actions")}</span>,
+      header: () => <span className="sr-only">{t("table.actions")}</span>,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0">
             <Link href={`/dashboard/customers/${row.original.id}`}>
               <ExternalLink className="h-4 w-4" />
               <span className="sr-only">{t("table.viewDetails")}</span>
