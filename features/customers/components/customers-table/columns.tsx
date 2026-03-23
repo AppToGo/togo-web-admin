@@ -2,12 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Phone, User, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { CustomerWithMetrics } from "../../types";
-import Link from "next/link";
 
 // Helper para formatear fechas relativas
 function formatRelativeDate(date: Date | string | null): string {
@@ -39,6 +39,7 @@ export function useCustomerColumns({
   isAllSelected,
 }: ColumnsProps): ColumnDef<CustomerWithMetrics>[] {
   const t = useTranslations("customers");
+  const router = useRouter();
 
   return [
     // Checkbox de selección
@@ -167,11 +168,14 @@ export function useCustomerColumns({
       header: () => <span className="sr-only">{t("table.actions")}</span>,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0">
-            <Link href={`/dashboard/customers/${row.original.id}`}>
-              <ExternalLink className="h-4 w-4" />
-              <span className="sr-only">{t("table.viewDetails")}</span>
-            </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => router.push(`/dashboard/customers/${row.original.id}`)}
+          >
+            <ExternalLink className="h-4 w-4" />
+            <span className="sr-only">{t("table.viewDetails")}</span>
           </Button>
         </div>
       ),
