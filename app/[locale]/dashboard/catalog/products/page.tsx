@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Search, Package } from "lucide-react";
+import { Plus, Search, Package, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -147,7 +147,25 @@ export default function ProductsPage() {
   const tc = useTranslations("common");
 
   useAuthGuard();
-  const businessId = useEffectiveBusinessId() || "biz1";
+  const businessId = useEffectiveBusinessId();
+
+  if (!businessId) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+            <Store className="w-8 h-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("noBusiness.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("noBusiness.description")}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   // Estados
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
