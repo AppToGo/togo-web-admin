@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Search, Package, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -177,6 +177,15 @@ export default function ProductsPage() {
     null
   );
 
+  // Paginación
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, selectedCategory, statusFilter]);
+
   // Hooks
   const {
     data: productsData,
@@ -191,11 +200,29 @@ export default function ProductsPage() {
         : statusFilter === "inactive"
           ? false
           : undefined,
+    page,
+    limit: pageSize,
   });
 
   const { data: categoriesData } = useCategories(businessId);
 
-  const products = Array.isArray(productsData) ? productsData : [];
+  // Handle backend response format: { items, limit, page, total }
+  const products = productsData?.items || [];
+  const total = productsData?.total || 0;
+  const currentPage = productsData?.page || 1;
+  const limit = productsData?.limit || pageSize;
+
+  // Calculate totalPages locally since backend doesn't send it
+  const totalPages = Math.ceil(total / limit);
+
+  // Build meta object to match expected format
+  const meta = total > 0 ? {
+    total,
+    page: currentPage,
+    limit,
+    totalPages,
+  } : undefined;
+
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutaciones
@@ -322,6 +349,31 @@ export default function ProductsPage() {
                 }
               />
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {meta && meta.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              disabled={page === 1}
+            >
+              {tc("pagination.previous")}
+            </Button>
+            <span className="text-sm text-slate-500">
+              {tc("pagination.pageOf", { page, totalPages: meta.totalPages })}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
+              disabled={page >= meta.totalPages}
+            >
+              {tc("pagination.next")}
+            </Button>
           </div>
         )}
       </div>
