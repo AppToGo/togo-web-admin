@@ -43,7 +43,7 @@
     "metrics": "Metrics",
     "orderHistory": "Order history",
     "notes": "Notes",
-    "notesPlaceholder": "Add notes about this customer..."
+    "notesPlaceholder": "Add notes about this customer...",
     "customerSince": "Customer since",
     "averageFrequency": "Average frequency",
     "favoriteProducts": "Favorite products",
