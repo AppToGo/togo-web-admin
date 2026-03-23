@@ -56,13 +56,20 @@ export function ProductCard({
       return { label: t("status.outOfStock"), color: "text-red-500" };
     }
     if (product.stock <= 10) {
-      return { label: t("status.lowStockCount", { count: product.stock }), color: "text-amber-500" };
+      return {
+        label: t("status.lowStockCount", { count: product.stock }),
+        color: "text-amber-500",
+      };
     }
-    return { label: t("status.stockCount", { count: product.stock }), color: "text-emerald-600" };
+    return {
+      label: t("status.stockCount", { count: product.stock }),
+      color: "text-emerald-600",
+    };
   };
 
   const stockStatus = getStockStatus();
 
+  console.log("product", product);
   // Grid view
   if (viewMode === "grid") {
     return (
@@ -113,7 +120,9 @@ export function ProductCard({
                   : "bg-slate-200 text-slate-600"
               )}
             >
-              {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+              {product.isActive
+                ? tCommon("status.active")
+                : tCommon("status.inactive")}
             </span>
           </div>
         </div>
@@ -185,7 +194,9 @@ export function ProductCard({
                 onClick={() => onToggleStatus?.(product, !product.isActive)}
               >
                 <Power className="w-4 h-4 mr-2" />
-                {product.isActive ? t("actions.deactivate") : t("actions.activate")}
+                {product.isActive
+                  ? t("actions.deactivate")
+                  : t("actions.activate")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete?.(product)}
@@ -248,7 +259,9 @@ export function ProductCard({
                 : "bg-slate-200 text-slate-600"
             )}
           >
-            {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+            {product.isActive
+              ? tCommon("status.active")
+              : tCommon("status.inactive")}
           </span>
         </div>
 
