@@ -225,12 +225,9 @@ export interface ProductFilters {
  */
 export interface PaginatedBusinessProducts {
   items: BusinessProduct[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  total: number;
+  page: number;
+  limit: number;
 }
 
 /**
