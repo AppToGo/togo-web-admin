@@ -25,6 +25,7 @@
 import apiClient from "@/services/api.service";
 import type {
   PaginatedGlobalCatalog,
+  PaginatedBusinessProducts,
   GlobalProduct,
   BusinessProduct,
   BusinessCategory,
@@ -82,7 +83,7 @@ const USE_MOCK = false;
 export async function getMyProducts(
   businessId: string,
   filters?: ProductFilters
-): Promise<BusinessProduct[]> {
+): Promise<PaginatedBusinessProducts> {
   const params = new URLSearchParams();
   if (filters?.search) params.append("search", filters.search);
   if (filters?.categoryId) params.append("categoryId", filters.categoryId);
@@ -90,8 +91,10 @@ export async function getMyProducts(
     params.append("isActive", String(filters.isActive));
   if (filters?.isFromTemplate !== undefined)
     params.append("isFromTemplate", String(filters.isFromTemplate));
+  if (filters?.page) params.append("page", String(filters.page));
+  if (filters?.limit) params.append("limit", String(filters.limit));
 
-  const response = await apiClient.get<BusinessProduct[]>(
+  const response = await apiClient.get<PaginatedBusinessProducts>(
     `/businesses/${businessId}/products?${params}`
   );
   return response.data;

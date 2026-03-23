@@ -23,6 +23,7 @@ import type {
   ProductFilters,
   GlobalCatalogFilters,
   PaginatedGlobalCatalog,
+  PaginatedBusinessProducts,
 } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { Business } from "@/types";
@@ -64,7 +65,7 @@ export const catalogKeys = {
 export function useMyProducts(
   businessId: string,
   filters?: ProductFilters,
-  options?: UseQueryOptions<BusinessProduct[], Error>
+  options?: UseQueryOptions<PaginatedBusinessProducts, Error>
 ) {
   return useQuery({
     queryKey: [...catalogKeys.products(businessId), filters],

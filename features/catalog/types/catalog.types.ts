@@ -216,6 +216,21 @@ export interface ProductFilters {
   categoryId?: string;
   isActive?: boolean;
   isFromTemplate?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * Paginated response for business products
+ */
+export interface PaginatedBusinessProducts {
+  items: BusinessProduct[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 /**
