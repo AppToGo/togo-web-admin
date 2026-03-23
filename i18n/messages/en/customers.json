@@ -48,7 +48,18 @@
     "averageFrequency": "Average frequency",
     "favoriteProducts": "Favorite products",
     "noOrders": "No orders",
-    "whatsapp": "Open WhatsApp"
+    "whatsapp": "Open WhatsApp",
+    "noAddresses": "No Addresses",
+    "orders": "Orders",
+    "basicInfo": "Basic Info",
+    "addresses": "Addresses",
+    "fields": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "registered": "Registered",
+      "addresses": "Addresses"
+    }
   },
 
   "customerMetrics": {

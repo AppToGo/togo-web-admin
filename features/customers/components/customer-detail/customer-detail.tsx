@@ -20,7 +20,11 @@ import {
   BarChart3,
   Save,
 } from "lucide-react";
-import { useCustomer, useCustomerMetrics, useCustomerOrders } from "../../hooks";
+import {
+  useCustomer,
+  useCustomerMetrics,
+  useCustomerOrders,
+} from "../../hooks";
 import { CustomerMetricsCard } from "../customer-metrics/customer-metrics-card";
 import { CustomerOrdersTable } from "./customer-orders-table";
 import { formatCurrency } from "@/lib/utils";
@@ -40,13 +44,17 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   const [notes, setNotes] = useState("");
 
   // Queries
-  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(customerId);
+  const { data: customer, isLoading: isLoadingCustomer } =
+    useCustomer(customerId);
   const { data: metrics, isLoading: isLoadingMetrics } = useCustomerMetrics(
     customerId,
     activeTab === "metrics"
   );
-  const { data: orders, meta: ordersMeta, isLoading: isLoadingOrders } =
-    useCustomerOrders(customerId, 1, 10, activeTab === "orders");
+  const {
+    data: orders,
+    meta: ordersMeta,
+    isLoading: isLoadingOrders,
+  } = useCustomerOrders(customerId, 1, 10, activeTab === "orders");
 
   // Mutación
   const updateCustomer = useUpdateCustomer();
@@ -127,19 +135,23 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:inline-flex">
           <TabsTrigger value="info" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("detail.tabs.info")}</span>
+            <span className="hidden sm:inline">{t("detail.information")}</span>
           </TabsTrigger>
           <TabsTrigger value="metrics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("detail.tabs.metrics")}</span>
+            <span className="hidden sm:inline">{t("detail.metrics")}</span>
           </TabsTrigger>
           <TabsTrigger value="orders" className="flex items-center gap-2">
             <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("detail.tabs.orders")}</span>
+            <span className="hidden sm:inline">{t("detail.orders")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -174,9 +186,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
                     <label className="text-sm font-medium text-slate-500">
                       {t("detail.fields.email")}
                     </label>
-                    <p className="text-slate-900">
-                      {customer.email || "-"}
-                    </p>
+                    <p className="text-slate-900">{customer.email || "-"}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-slate-500">
@@ -241,7 +251,9 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
               <Textarea
                 placeholder={t("detail.notesPlaceholder")}
                 value={notes || customer.notes || ""}
-                onChange={(e) => setNotes(e.target.value.slice(0, MAX_NOTES_LENGTH))}
+                onChange={(e) =>
+                  setNotes(e.target.value.slice(0, MAX_NOTES_LENGTH))
+                }
                 maxLength={MAX_NOTES_LENGTH}
                 rows={4}
               />
