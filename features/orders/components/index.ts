@@ -1,5 +1,6 @@
 // Export all components from the orders feature
 export { OrdersKanbanBoard } from "./OrdersKanbanBoard";
+export { OrderStatusBadge } from "./order-status-badge";
 export { KanbanColumn } from "./KanbanColumn";
 export { OrderCard, PaymentStatusEditor, type CardViewMode } from "./OrderCard";
 export { OrderDetail } from "./OrderDetail";
