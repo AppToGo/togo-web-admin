@@ -32,7 +32,7 @@ import type { GlobalProduct, ActivateGlobalProductDto } from "@/features/catalog
 
 type ViewMode = "grid" | "list";
 
-const GLOBAL_PAGE_SIZE = 12;
+const globalPageSize = 12;
 
 // ============================================================================
 // LOADING SKELETON
@@ -149,7 +149,7 @@ export default function GlobalCatalogPage() {
     industryCategoryIds: selectedIndustryCategories.length > 0 ? selectedIndustryCategories.join(",") : undefined,
     brand: selectedBrand === "all" ? undefined : selectedBrand,
     page: globalPage,
-    limit: GLOBAL_PAGE_SIZE,
+    limit: globalPageSize,
   });
 
   const { data: industryCategoriesData } = useIndustryCategories();

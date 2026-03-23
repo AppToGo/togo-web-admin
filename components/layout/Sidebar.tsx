@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -278,7 +279,7 @@ function CollapsibleNavItem({
   isAdmin,
   onMenuClick,
 }: CollapsibleNavItemProps) {
-  const [isExpanded, setIsExpanded] = React.useState(() => {
+  const [isExpanded, setIsExpanded] = useState(() => {
     // Auto-expand if a child is active
     if (item.children) {
       return item.children.some((child) => pathname.startsWith(child.href));
