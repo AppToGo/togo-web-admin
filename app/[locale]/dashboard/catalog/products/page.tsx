@@ -206,18 +206,23 @@ export default function ProductsPage() {
 
   const { data: categoriesData } = useCategories(businessId);
 
-  // Handle both paginated response and simple array (backward compatibility)
-  const isPaginated = productsData && 'items' in productsData;
-  const products = isPaginated ? productsData.items : (Array.isArray(productsData) ? productsData : []);
-  const meta = isPaginated ? productsData.meta : undefined;
+  // Handle backend response format: { items, limit, page, total }
+  const products = productsData?.items || [];
+  const total = productsData?.total || 0;
+  const currentPage = productsData?.page || 1;
+  const limit = productsData?.limit || pageSize;
 
-  // Debug log (remove after verification)
-  console.log('[Products Debug]', {
-    isPaginated,
-    productsCount: products.length,
-    meta,
-    productsDataType: Array.isArray(productsData) ? 'array' : typeof productsData,
-  });
+  // Calculate totalPages locally since backend doesn't send it
+  const totalPages = Math.ceil(total / limit);
+
+  // Build meta object to match expected format
+  const meta = total > 0 ? {
+    total,
+    page: currentPage,
+    limit,
+    totalPages,
+  } : undefined;
+
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutaciones
@@ -347,13 +352,6 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* Debug info - remove after testing */}
-        {meta && (
-          <div className="text-xs text-slate-400 text-center py-2">
-            Debug: Page {meta.page} of {meta.totalPages} | Total: {meta.total} | Showing: {products.length}
-          </div>
-        )}
-
         {/* Pagination */}
         {meta && meta.totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-4">
@@ -372,7 +370,7 @@ export default function ProductsPage() {
               variant="outline"
               size="sm"
               onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
-              disabled={page === meta.totalPages}
+              disabled={page >= meta.totalPages}
             >
               {tc("pagination.next")}
             </Button>
