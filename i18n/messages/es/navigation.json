@@ -13,7 +13,9 @@
     "notifications": "Notificaciones",
     "expandMenu": "Expandir menú",
     "collapseMenu": "Colapsar menú",
-    "openMenu": "Abrir menú"
+    "openMenu": "Abrir menú",
+    "myProducts": "Mis Productos",
+    "categories": "Mis Categorias"
   },
   "breadcrumbs": {
     "home": "Inicio",
