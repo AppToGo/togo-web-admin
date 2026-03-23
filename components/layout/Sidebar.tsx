@@ -183,7 +183,11 @@ export function Sidebar({
           <button
             onClick={onToggleCollapse}
             className="w-6 h-6 rounded-full bg-white shadow-card border border-slate-100 text-slate-600 flex items-center justify-center hover:text-indigo-600 hover:border-indigo-200 transition-all"
-            title={isCollapsed ? tc("buttons.expandMenu") : tc("buttons.collapseMenu")}
+            title={
+              isCollapsed
+                ? tc("buttons.expandMenu")
+                : tc("buttons.collapseMenu")
+            }
           >
             <ChevronIcon
               className={cn(
@@ -267,21 +271,21 @@ export function Sidebar({
 // Helper to remove locale prefix and trailing slashes for comparison
 function normalizePath(path: string): string {
   const localeList = locales as unknown as string[];
-  const parts = path.split('/');
+  const parts = path.split("/");
   let normalized;
-  
+
   // Remove locale
   if (parts[1] && localeList.includes(parts[1])) {
-    normalized = '/' + parts.slice(2).join('/') || '/';
+    normalized = "/" + parts.slice(2).join("/") || "/";
   } else {
     normalized = path;
   }
-  
+
   // Remove trailing slash (except for root)
-  if (normalized.endsWith('/') && normalized.length > 1) {
+  if (normalized.endsWith("/") && normalized.length > 1) {
     normalized = normalized.slice(0, -1);
   }
-  
+
   return normalized;
 }
 
@@ -301,13 +305,14 @@ function CollapsibleNavItem({
   isAdmin,
   onMenuClick,
 }: CollapsibleNavItemProps) {
-
   const normalizedPathname = normalizePath(pathname);
 
   const [isExpanded, setIsExpanded] = useState(() => {
     // Auto-expand if a child is active
     if (item.children) {
-      return item.children.some((child) => normalizedPathname.startsWith(normalizePath(child.href)));
+      return item.children.some((child) =>
+        normalizedPathname.startsWith(normalizePath(child.href))
+      );
     }
     return false;
   });
@@ -316,16 +321,22 @@ function CollapsibleNavItem({
 
   // Determine active states
   const normalizedItemHref = normalizePath(item.href);
-  const isParentActive = normalizedPathname === normalizedItemHref || normalizedPathname.startsWith(`${normalizedItemHref}/`);
+  const isParentActive =
+    normalizedPathname === normalizedItemHref ||
+    normalizedPathname.startsWith(`${normalizedItemHref}/`);
   const isAnyChildActive = hasChildren
-    ? item.children!.some((child) => normalizedPathname === normalizePath(child.href))
+    ? item.children!.some(
+        (child) => normalizedPathname === normalizePath(child.href)
+      )
     : false;
 
   // If no children, render as simple Link
   if (!hasChildren) {
-    const isActive = normalizedItemHref === "/dashboard" 
-      ? normalizedPathname === "/dashboard"
-      : normalizedPathname === normalizedItemHref || normalizedPathname.startsWith(`${normalizedItemHref}/`);
+    const isActive =
+      normalizedItemHref === "/dashboard"
+        ? normalizedPathname === "/dashboard"
+        : normalizedPathname === normalizedItemHref ||
+          normalizedPathname.startsWith(`${normalizedItemHref}/`);
     return (
       <Link
         href={item.href}
@@ -430,9 +441,10 @@ function CollapsibleNavItem({
 
       {/* Children items */}
       {isExpanded && (
-        <div className="space-y-1 pl-12">
+        <div className="space-y-1 pl-4">
           {item.children!.map((child) => {
-            const isThisChildActive = normalizedPathname === normalizePath(child.href);
+            const isThisChildActive =
+              normalizedPathname === normalizePath(child.href);
             return (
               <Link
                 key={child.name}

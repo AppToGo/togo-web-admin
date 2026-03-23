@@ -33,9 +33,9 @@ export function ProductCard({
   const [imageError, setImageError] = useState(false);
 
   const productImage = product.image || product.globalProduct?.image;
-  const displayName = product.name;
+  const displayName = product.customName || product.globalProduct?.name;
   const displayDescription =
-    product.description || product.globalProduct?.description;
+    product.customDescription || product.globalProduct?.description;
   const displayBrand = product.globalProduct?.brand;
 
   // Format price as currency
@@ -75,7 +75,7 @@ export function ProductCard({
     return (
       <div
         className={cn(
-          "group relative bg-white rounded-card-lg p-4 shadow-card",
+          "group relative bg-white rounded-card-lg p-4 shadow-card flex flex-col",
           "hover:shadow-card-md transition-all duration-200",
           "border border-slate-100",
           !product.isActive && "opacity-60 grayscale-[0.3]"
@@ -98,12 +98,12 @@ export function ProductCard({
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isFromTemplate && (
+            {product.globalProductId && (
               <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
                 {t("title")}
               </span>
             )}
-            {!product.isFromTemplate && (
+            {!product.globalProductId && (
               <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
                 {t("status.custom")}
               </span>
@@ -128,8 +128,10 @@ export function ProductCard({
         </div>
 
         {/* Content */}
-        <div className="space-y-2">
-          <h3 className="font-semibold text-slate-900 line-clamp-1">
+        <div className="space-y-2 flex flex-col flex-1">
+          <h3
+            className={`${displayBrand ? "mb-0" : ""} "font-semibold text-slate-900 line-clamp-1"`}
+          >
             {displayName}
           </h3>
 
@@ -142,6 +144,8 @@ export function ProductCard({
               {displayDescription}
             </p>
           )}
+
+          <div className="flex-1"></div>
 
           <div className="pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between">
