@@ -80,12 +80,12 @@ export function Sidebar({
     },
     {
       name: t("sidebar.customers"),
-      href: "/customers",
+      href: "/dashboard/customers",
       icon: UsersIcon,
     },
     {
       name: t("sidebar.settings"),
-      href: "/settings",
+      href: "/dashboard/settings",
       icon: SettingsIcon,
     },
   ];
