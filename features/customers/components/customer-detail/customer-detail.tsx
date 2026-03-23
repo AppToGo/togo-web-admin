@@ -31,6 +31,8 @@ interface CustomerDetailProps {
   customerId: string;
 }
 
+const MAX_NOTES_LENGTH = 1000;
+
 export function CustomerDetail({ customerId }: CustomerDetailProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
@@ -239,9 +241,13 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
               <Textarea
                 placeholder={t("detail.notesPlaceholder")}
                 value={notes || customer.notes || ""}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value.slice(0, MAX_NOTES_LENGTH))}
+                maxLength={MAX_NOTES_LENGTH}
                 rows={4}
               />
+              <div className="text-xs text-slate-500 mt-1 text-right">
+                {(notes || customer.notes || "").length}/{MAX_NOTES_LENGTH}
+              </div>
               <div className="flex justify-end">
                 <Button
                   onClick={handleSaveNotes}

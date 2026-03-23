@@ -12,8 +12,8 @@
     "actions": "Actions",
     "noName": "No name",
     "selectAll": "Select all",
-    "spent": "gastado",
-    "viewDetails": "Ver detalle",
+    "spent": "spent",
+    "viewDetails": "View details",
     "selectRow": "Select row",
     "columns": {
       "orders": "Orders",
@@ -34,7 +34,7 @@
     "orders": "orders",
     "spent": "spent",
     "noData": "No data",
-    "noDataDescription": "No encontramos datos para este periodo."
+    "noDataDescription": "We couldn't find data for this period. Try a different date range."
   },
 
   "detail": {
@@ -43,6 +43,7 @@
     "metrics": "Metrics",
     "orderHistory": "Order history",
     "notes": "Notes",
+    "notesPlaceholder": "Add notes about this customer..."
     "customerSince": "Customer since",
     "averageFrequency": "Average frequency",
     "favoriteProducts": "Favorite products",
@@ -97,6 +98,13 @@
   },
 
   "noBusiness": {
-    "title": "No hay clientes"
+    "title": "No customers"
+  },
+
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "weeksAgo": "{{count}} weeks ago"
   }
 }

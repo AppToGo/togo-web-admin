@@ -43,6 +43,7 @@
     "metrics": "Métricas",
     "orderHistory": "Historial de pedidos",
     "notes": "Notas",
+    "notesPlaceholder": "Agrega notas sobre este cliente...",
     "customerSince": "Cliente desde",
     "averageFrequency": "Frecuencia promedio",
     "favoriteProducts": "Productos favoritos",
@@ -98,5 +99,12 @@
 
   "noBusiness": {
     "title": "No hay clientes"
+  },
+
+  "dates": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "daysAgo": "Hace {{count}} días",
+    "weeksAgo": "Hace {{count}} semanas"
   }
 }

@@ -10,7 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { CustomerWithMetrics } from "../../types";
 
 // Helper para formatear fechas relativas
-function formatRelativeDate(date: Date | string | null): string {
+function formatRelativeDate(date: Date | string | null, t: any): string {
   if (!date) return "-";
   const d = new Date(date);
   const now = new Date();
@@ -18,10 +18,10 @@ function formatRelativeDate(date: Date | string | null): string {
     (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  if (diffDays === 0) return "Hoy";
-  if (diffDays === 1) return "Ayer";
-  if (diffDays < 7) return `Hace ${diffDays} días`;
-  if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
+  if (diffDays === 0) return t("dates.today");
+  if (diffDays === 1) return t("dates.yesterday");
+  if (diffDays < 7) return t("dates.daysAgo", { count: diffDays });
+  if (diffDays < 30) return t("dates.weeksAgo", { count: Math.floor(diffDays / 7) });
   return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
@@ -158,7 +158,7 @@ export function useCustomerColumns({
       ),
       cell: ({ row }) => (
         <span className="text-slate-600">
-          {formatRelativeDate(row.original.lastOrderDate)}
+          {formatRelativeDate(row.original.lastOrderDate, t)}
         </span>
       ),
     },
