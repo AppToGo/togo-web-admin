@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -28,6 +28,7 @@ export function CustomerOrdersTable({
 }: CustomerOrdersTableProps) {
   const t = useTranslations("customers");
   const to = useTranslations("orders");
+  const router = useRouter();
 
   if (orders.length === 0) {
     return (
@@ -100,13 +101,16 @@ export function CustomerOrdersTable({
                   {formatCurrency(order.totalAmount)}
                 </TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0">
-                    <Link href={`/dashboard/orders?orderId=${order.id}`}>
-                      <ExternalLink className="h-4 w-4" />
-                      <span className="sr-only">
-                        {t("detail.orders.viewOrder")}
-                      </span>
-                    </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => router.push(`/dashboard/orders?orderId=${order.id}`)}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t("detail.orders.viewOrder")}
+                    </span>
                   </Button>
                 </TableCell>
               </TableRow>

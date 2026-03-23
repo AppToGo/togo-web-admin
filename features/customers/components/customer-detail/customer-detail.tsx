@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ const MAX_NOTES_LENGTH = 1000;
 export function CustomerDetail({ customerId }: CustomerDetailProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("info");
   const [notes, setNotes] = useState("");
 
@@ -104,11 +106,13 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/customers">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {tc("buttons.back")}
-            </Link>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => router.push("/dashboard/customers")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {tc("buttons.back")}
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
@@ -121,16 +125,13 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
           </div>
         </div>
 
-        <Button variant="outline" size="sm" asChild>
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2"
-          >
-            <MessageCircle className="h-4 w-4 text-green-600" />
-            {t("detail.whatsapp")}
-          </a>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => window.open(whatsappLink, '_blank', 'noopener,noreferrer')}
+        >
+          <MessageCircle className="h-4 w-4 text-green-600" />
+          {t("detail.whatsapp")}
         </Button>
       </div>
 
