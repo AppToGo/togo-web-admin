@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
+import { locales } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 import {
   useCurrentUser,
@@ -263,6 +264,27 @@ export function Sidebar({
   );
 }
 
+// Helper to remove locale prefix and trailing slashes for comparison
+function normalizePath(path: string): string {
+  const localeList = locales as unknown as string[];
+  const parts = path.split('/');
+  let normalized;
+  
+  // Remove locale
+  if (parts[1] && localeList.includes(parts[1])) {
+    normalized = '/' + parts.slice(2).join('/') || '/';
+  } else {
+    normalized = path;
+  }
+  
+  // Remove trailing slash (except for root)
+  if (normalized.endsWith('/') && normalized.length > 1) {
+    normalized = normalized.slice(0, -1);
+  }
+  
+  return normalized;
+}
+
 // Collapsible Navigation Item Component
 interface CollapsibleNavItemProps {
   item: NavigationItem;
@@ -279,10 +301,13 @@ function CollapsibleNavItem({
   isAdmin,
   onMenuClick,
 }: CollapsibleNavItemProps) {
+
+  const normalizedPathname = normalizePath(pathname);
+
   const [isExpanded, setIsExpanded] = useState(() => {
     // Auto-expand if a child is active
     if (item.children) {
-      return item.children.some((child) => pathname.startsWith(child.href));
+      return item.children.some((child) => normalizedPathname.startsWith(normalizePath(child.href)));
     }
     return false;
   });
@@ -290,14 +315,17 @@ function CollapsibleNavItem({
   const hasChildren = item.children && item.children.length > 0;
 
   // Determine active states
-  const isParentActive = pathname.startsWith(item.href);
-  const isChildActive = hasChildren
-    ? item.children!.some((child) => pathname === child.href)
+  const normalizedItemHref = normalizePath(item.href);
+  const isParentActive = normalizedPathname === normalizedItemHref || normalizedPathname.startsWith(`${normalizedItemHref}/`);
+  const isAnyChildActive = hasChildren
+    ? item.children!.some((child) => normalizedPathname === normalizePath(child.href))
     : false;
 
   // If no children, render as simple Link
   if (!hasChildren) {
-    const isActive = pathname === item.href || pathname.startsWith(item.href);
+    const isActive = normalizedItemHref === "/dashboard" 
+      ? normalizedPathname === "/dashboard"
+      : normalizedPathname === normalizedItemHref || normalizedPathname.startsWith(`${normalizedItemHref}/`);
     return (
       <Link
         href={item.href}
@@ -369,7 +397,7 @@ function CollapsibleNavItem({
         className={cn(
           "w-full flex items-center rounded-card text-sm font-medium transition-all duration-200",
           "gap-3 px-4 py-3",
-          isParentActive || isChildActive
+          isParentActive || isAnyChildActive
             ? isAdmin
               ? "bg-purple-50 text-purple-600"
               : "bg-indigo-50 text-indigo-600"
@@ -379,7 +407,7 @@ function CollapsibleNavItem({
         <item.icon
           className={cn(
             "w-5 h-5 shrink-0",
-            isParentActive || isChildActive
+            isParentActive || isAnyChildActive
               ? isAdmin
                 ? "text-purple-600"
                 : "text-indigo-600"
@@ -391,7 +419,7 @@ function CollapsibleNavItem({
           className={cn(
             "w-4 h-4 shrink-0 transition-transform duration-200",
             isExpanded ? "rotate-180" : "",
-            isParentActive || isChildActive
+            isParentActive || isAnyChildActive
               ? isAdmin
                 ? "text-purple-600"
                 : "text-indigo-600"
@@ -404,7 +432,7 @@ function CollapsibleNavItem({
       {isExpanded && (
         <div className="space-y-1 pl-12">
           {item.children!.map((child) => {
-            const isChildActive = pathname === child.href;
+            const isThisChildActive = normalizedPathname === normalizePath(child.href);
             return (
               <Link
                 key={child.name}
@@ -413,7 +441,7 @@ function CollapsibleNavItem({
                 className={cn(
                   "flex items-center rounded-card text-sm font-medium transition-all duration-200",
                   "gap-3 px-4 py-2.5",
-                  isChildActive
+                  isThisChildActive
                     ? isAdmin
                       ? "bg-purple-50/50 text-purple-600"
                       : "bg-indigo-50/50 text-indigo-600"
@@ -423,7 +451,7 @@ function CollapsibleNavItem({
                 <child.icon
                   className={cn(
                     "w-4 h-4 shrink-0",
-                    isChildActive
+                    isThisChildActive
                       ? isAdmin
                         ? "text-purple-600"
                         : "text-indigo-600"
