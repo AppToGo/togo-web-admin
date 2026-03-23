@@ -8,7 +8,7 @@ import {
   SortingState,
   flexRender,
 } from "@tanstack/react-table";
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
@@ -77,9 +77,9 @@ export function CustomersTable({
   const selectedCount = useSelectedCustomerCount();
 
   // Actualizar total de items cuando cambia
-  useState(() => {
+  useEffect(() => {
     setTotalItems(pagination.total);
-  });
+  }, [pagination.total, setTotalItems]);
 
   // Manejar selección de todos los items visibles
   const handleSelectAll = useCallback(() => {
