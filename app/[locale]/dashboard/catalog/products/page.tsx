@@ -206,8 +206,18 @@ export default function ProductsPage() {
 
   const { data: categoriesData } = useCategories(businessId);
 
-  const products = productsData?.items || [];
-  const meta = productsData?.meta;
+  // Handle both paginated response and simple array (backward compatibility)
+  const isPaginated = productsData && 'items' in productsData;
+  const products = isPaginated ? productsData.items : (Array.isArray(productsData) ? productsData : []);
+  const meta = isPaginated ? productsData.meta : undefined;
+
+  // Debug log (remove after verification)
+  console.log('[Products Debug]', {
+    isPaginated,
+    productsCount: products.length,
+    meta,
+    productsDataType: Array.isArray(productsData) ? 'array' : typeof productsData,
+  });
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutaciones
@@ -334,6 +344,13 @@ export default function ProductsPage() {
                 }
               />
             ))}
+          </div>
+        )}
+
+        {/* Debug info - remove after testing */}
+        {meta && (
+          <div className="text-xs text-slate-400 text-center py-2">
+            Debug: Page {meta.page} of {meta.totalPages} | Total: {meta.total} | Showing: {products.length}
           </div>
         )}
 
