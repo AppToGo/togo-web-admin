@@ -1,0 +1,121 @@
+{
+  "title": "Customer Management",
+  "subtitle": "Manage and get to know your customers",
+
+  "table": {
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "totalOrders": "Orders",
+    "totalSpent": "Total spent",
+    "lastOrder": "Last purchase",
+    "actions": "Actions",
+    "noName": "No name",
+    "selectAll": "Select all",
+    "spent": "spent",
+    "viewDetails": "View details",
+    "selectRow": "Select row",
+    "columns": {
+      "orders": "Orders",
+      "phone": "Phone"
+    }
+  },
+
+  "metrics": {
+    "totalCustomers": "Total customers",
+    "newCustomers": "New customers",
+    "frequentCustomers": "Frequent customers",
+    "averageOrderValue": "Average ticket"
+  },
+
+  "topCustomers": {
+    "byFrequency": "Top 10 - Most frequent",
+    "bySpending": "Top 10 - Highest spenders",
+    "orders": "orders",
+    "spent": "spent",
+    "noData": "No data",
+    "noDataDescription": "We couldn't find data for this period. Try a different date range."
+  },
+
+  "detail": {
+    "title": "Customer Details",
+    "information": "Information",
+    "metrics": "Metrics",
+    "orderHistory": "Order history",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes about this customer...",
+    "customerSince": "Customer since",
+    "averageFrequency": "Average frequency",
+    "favoriteProducts": "Favorite products",
+    "noOrders": "No orders",
+    "whatsapp": "Open WhatsApp",
+    "noAddresses": "No Addresses",
+    "orders": "Orders",
+    "basicInfo": "Basic Info",
+    "addresses": "Addresses",
+    "fields": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "registered": "Registered",
+      "addresses": "Addresses"
+    }
+  },
+
+  "customerMetrics": {
+    "totalSpent": "Total spent",
+    "totalOrders": "Total orders",
+    "averageOrder": "Average ticket",
+    "frequency": "Frequency",
+    "days": "days",
+    "ordersPerMonth": "orders/month"
+  },
+
+  "selection": {
+    "selected": "{count} customer(s) selected",
+    "selectAll": "Select all",
+    "clearSelection": "Clear selection",
+    "selectAllPages": "Select all {total} customers"
+  },
+
+  "filters": {
+    "searchPlaceholder": "Search by name or phone...",
+    "dateRange": "Date range",
+    "hasOrders": "With orders",
+    "noOrders": "Without orders"
+  },
+
+  "segments": {
+    "NEW": "New",
+    "ACTIVE": "Active",
+    "VIP": "VIP",
+    "AT_RISK": "At risk",
+    "LOST": "Lost"
+  },
+
+  "empty": {
+    "title": "No customers",
+    "description": "Customers will appear here when they make their first purchase"
+  },
+
+  "notifications": {
+    "loadError": "Error loading customers",
+    "updateSuccess": "Customer updated",
+    "updateError": "Error updating customer"
+  },
+
+  "pagination": {
+    "showing": "Showing {from} to {to} of {total} customers"
+  },
+
+  "noBusiness": {
+    "title": "No customers"
+  },
+
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "weeksAgo": "{{count}} weeks ago"
+  }
+}
