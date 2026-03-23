@@ -106,7 +106,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
                 return (
                   <Link
-                    key={customer.id}
+                    key={customer.id || index}
                     href={`/dashboard/customers/${customer.id}`}
                     className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors group"
                   >
@@ -172,7 +172,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
                 return (
                   <Link
-                    key={customer.id}
+                    key={customer.id || index}
                     href={`/dashboard/customers/${customer.id}`}
                     className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors group"
                   >
