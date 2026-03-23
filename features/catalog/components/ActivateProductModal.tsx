@@ -91,7 +91,6 @@ export function ActivateProductModal({
   // Validate form
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const tValidation = useTranslations("common");
 
     if (!formData.name.trim()) {
       newErrors.name = tCommon("validation.required");
