@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
+import { locales } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 import {
   useCurrentUser,
@@ -263,6 +264,27 @@ export function Sidebar({
   );
 }
 
+// Helper to remove locale prefix and trailing slashes for comparison
+function normalizePath(path: string): string {
+  const localeList = locales as unknown as string[];
+  const parts = path.split('/');
+  let normalized;
+  
+  // Remove locale
+  if (parts[1] && localeList.includes(parts[1])) {
+    normalized = '/' + parts.slice(2).join('/') || '/';
+  } else {
+    normalized = path;
+  }
+  
+  // Remove trailing slash (except for root)
+  if (normalized.endsWith('/') && normalized.length > 1) {
+    normalized = normalized.slice(0, -1);
+  }
+  
+  return normalized;
+}
+
 // Collapsible Navigation Item Component
 interface CollapsibleNavItemProps {
   item: NavigationItem;
@@ -279,26 +301,6 @@ function CollapsibleNavItem({
   isAdmin,
   onMenuClick,
 }: CollapsibleNavItemProps) {
-  // Helper to remove locale prefix and trailing slashes for comparison
-  const normalizePath = (path: string): string => {
-    const locales = ['es', 'en', 'pt'];
-    const parts = path.split('/');
-    let normalized;
-    
-    // Remove locale
-    if (parts[1] && locales.includes(parts[1])) {
-      normalized = '/' + parts.slice(2).join('/') || '/';
-    } else {
-      normalized = path;
-    }
-    
-    // Remove trailing slash (except for root)
-    if (normalized.endsWith('/') && normalized.length > 1) {
-      normalized = normalized.slice(0, -1);
-    }
-    
-    return normalized;
-  };
 
   const normalizedPathname = normalizePath(pathname);
 
