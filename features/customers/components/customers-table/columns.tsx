@@ -21,7 +21,8 @@ function formatRelativeDate(date: Date | string | null, t: any): string {
   if (diffDays === 0) return t("dates.today");
   if (diffDays === 1) return t("dates.yesterday");
   if (diffDays < 7) return t("dates.daysAgo", { count: diffDays });
-  if (diffDays < 30) return t("dates.weeksAgo", { count: Math.floor(diffDays / 7) });
+  if (diffDays < 30)
+    return t("dates.weeksAgo", { count: Math.floor(diffDays / 7) });
   return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
@@ -96,13 +97,6 @@ export function useCustomerColumns({
         );
       },
     },
-    // Teléfono (columna separada para sorting)
-    {
-      accessorKey: "phoneNumber",
-      header: t("table.phone"),
-      cell: () => null, // Se muestra en la columna de nombre
-      enableHiding: true,
-    },
     // Total de pedidos
     {
       accessorKey: "totalOrders",
@@ -145,7 +139,7 @@ export function useCustomerColumns({
     },
     // Último pedido
     {
-      accessorKey: "lastOrderDate",
+      accessorKey: "lastOrderAt",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -158,7 +152,7 @@ export function useCustomerColumns({
       ),
       cell: ({ row }) => (
         <span className="text-slate-600">
-          {formatRelativeDate(row.original.lastOrderDate, t)}
+          {formatRelativeDate(row.original.lastOrderAt, t)}
         </span>
       ),
     },
@@ -172,7 +166,9 @@ export function useCustomerColumns({
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={() => router.push(`/dashboard/customers/${row.original.id}`)}
+            onClick={() =>
+              router.push(`/dashboard/customers/${row.original.id}`)
+            }
           >
             <ExternalLink className="h-4 w-4" />
             <span className="sr-only">{t("table.viewDetails")}</span>

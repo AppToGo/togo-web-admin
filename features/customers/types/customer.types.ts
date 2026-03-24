@@ -67,7 +67,7 @@ export interface CustomerMetrics {
 export interface CustomerWithMetrics extends Customer {
   totalOrders: number;
   totalSpent: number;
-  lastOrderDate: Date | null;
+  lastOrderAt: Date | null;
 }
 
 /**
@@ -78,7 +78,13 @@ export interface GetCustomersParams {
   limit?: number;
   dateFrom?: string; // YYYY-MM-DD
   dateTo?: string; // YYYY-MM-DD
-  sortBy?: "name" | "phoneNumber" | "totalOrders" | "totalSpent" | "lastOrderDate" | "createdAt";
+  sortBy?:
+    | "name"
+    | "phoneNumber"
+    | "totalOrders"
+    | "totalSpent"
+    | "lastOrderDate"
+    | "createdAt";
   sortOrder?: "asc" | "desc";
 }
 
@@ -104,7 +110,7 @@ export interface PaginatedCustomersResponse {
  * Cliente top por frecuencia (número de pedidos)
  */
 export interface TopCustomerByFrequency {
-  id: string;
+  customerId: string;
   name: string | null;
   phoneNumber: string;
   totalOrders: number;
@@ -114,10 +120,10 @@ export interface TopCustomerByFrequency {
  * Cliente top por gasto (monto total)
  */
 export interface TopCustomerBySpending {
-  id: string;
+  customerId: string;
   name: string | null;
   phoneNumber: string;
-  totalSpent: number;
+  value: number;
 }
 
 /**

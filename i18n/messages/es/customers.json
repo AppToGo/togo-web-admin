@@ -125,7 +125,7 @@
   "dates": {
     "today": "Hoy",
     "yesterday": "Ayer",
-    "daysAgo": "Hace {{count}} días",
-    "weeksAgo": "Hace {{count}} semanas"
+    "daysAgo": "Hace {count} días",
+    "weeksAgo": "Hace {count} semanas"
   }
 }

@@ -106,8 +106,8 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
                 return (
                   <Link
-                    key={customer.id || index}
-                    href={`/dashboard/customers/${customer.id}`}
+                    key={customer.customerId || index}
+                    href={`/dashboard/customers/${customer.customerId}`}
                     className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
@@ -172,8 +172,8 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
                 return (
                   <Link
-                    key={customer.id || index}
-                    href={`/dashboard/customers/${customer.id}`}
+                    key={customer.customerId || index}
+                    href={`/dashboard/customers/${customer.customerId}`}
                     className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
@@ -197,7 +197,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold text-emerald-600">
-                        {formatCurrency(customer.totalSpent)}
+                        {formatCurrency(customer.value)}
                       </span>
                       <ExternalLink className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
