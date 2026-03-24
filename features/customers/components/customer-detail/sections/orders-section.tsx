@@ -14,7 +14,7 @@ interface OrdersSectionProps {
 
 export function OrdersSection({ customerId }: OrdersSectionProps) {
   const t = useTranslations("customers");
-  const { ref, shouldLoad } = useLazySection("orders");
+  const { ref, shouldLoad } = useLazySection(customerId, "orders");
   
   const {
     data: orders,

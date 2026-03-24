@@ -3,7 +3,8 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useIntersectionObserver } from "./useIntersectionObserver";
 
-const getStorageKey = (sectionId: string) => `customer_section_loaded_${sectionId}`;
+const getStorageKey = (customerId: string, sectionId: string) => 
+  `customer_${customerId}_section_${sectionId}`;
 
 interface UseLazySectionReturn {
   ref: React.RefObject<HTMLDivElement | null>;
@@ -11,15 +12,15 @@ interface UseLazySectionReturn {
   isVisible: boolean;
 }
 
-export function useLazySection(sectionId: string): UseLazySectionReturn {
+export function useLazySection(customerId: string, sectionId: string): UseLazySectionReturn {
   const ref = useRef<HTMLDivElement | null>(null);
   
   // Check sessionStorage on mount
   const wasPreviouslyLoaded = typeof window !== "undefined" 
-    ? sessionStorage.getItem(getStorageKey(sectionId)) === "true"
+    ? sessionStorage.getItem(getStorageKey(customerId, sectionId)) === "true"
     : false;
 
-  const { isIntersecting, hasIntersected } = useIntersectionObserver(ref as React.RefObject<Element>, {
+  const { isIntersecting, hasIntersected } = useIntersectionObserver(ref, {
     threshold: 0.1,
     rootMargin: "100px",
     triggerOnce: true,
@@ -28,9 +29,9 @@ export function useLazySection(sectionId: string): UseLazySectionReturn {
   // Persist loaded state to sessionStorage
   useEffect(() => {
     if (hasIntersected && typeof window !== "undefined") {
-      sessionStorage.setItem(getStorageKey(sectionId), "true");
+      sessionStorage.setItem(getStorageKey(customerId, sectionId), "true");
     }
-  }, [hasIntersected, sectionId]);
+  }, [hasIntersected, customerId, sectionId]);
 
   // shouldLoad is true if previously loaded or currently intersecting
   const shouldLoad = wasPreviouslyLoaded || hasIntersected;

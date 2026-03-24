@@ -19,7 +19,7 @@ interface MetricsSectionProps {
 
 export function MetricsSection({ customerId }: MetricsSectionProps) {
   const t = useTranslations("customers");
-  const { ref, shouldLoad } = useLazySection("metrics");
+  const { ref, shouldLoad } = useLazySection(customerId, "metrics");
   
   const { data: metrics, isLoading } = useCustomerMetrics(
     customerId,

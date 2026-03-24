@@ -12,7 +12,7 @@ import { OrdersSection } from "./sections/orders-section";
 import { FavoritesSection } from "./sections/favorites-section";
 
 interface CustomerUnifiedLayoutProps {
-  customer: Customer;
+  customer: Customer | null;
   customerId: string;
   notes: string;
   onNotesChange: (notes: string) => void;
@@ -34,6 +34,36 @@ export function CustomerUnifiedLayout({
   const tc = useTranslations("common");
   const router = useRouter();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Fallback UI si no hay customer
+  if (!customer) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-6">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-slate-900">
+            {t("detail.notFound")}
+          </h2>
+          <p className="text-slate-500">{t("detail.notFoundDescription")}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/dashboard/customers")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {tc("buttons.back")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const hasPhoneNumber = Boolean(customer.phoneNumber?.trim());
+
+  const handleWhatsAppClick = () => {
+    if (hasPhoneNumber) {
+      window.open(whatsappLink, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
@@ -64,12 +94,12 @@ export function CustomerUnifiedLayout({
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              window.open(whatsappLink, "_blank", "noopener,noreferrer")
-            }
+            onClick={handleWhatsAppClick}
+            disabled={!hasPhoneNumber}
             className="shrink-0"
+            title={hasPhoneNumber ? t("detail.whatsapp") : t("detail.noPhoneNumber")}
           >
-            <MessageCircle className="h-4 w-4 text-green-600 mr-2" />
+            <MessageCircle className={`h-4 w-4 mr-2 ${hasPhoneNumber ? "text-green-600" : "text-slate-400"}`} />
             <span className="hidden sm:inline">{t("detail.whatsapp")}</span>
           </Button>
         </div>

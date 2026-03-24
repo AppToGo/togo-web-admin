@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { Customer } from "../../types";
 import { SidebarSkeleton } from "./skeletons/sidebar-skeleton";
+import { MAX_NOTES_LENGTH, MAX_VISIBLE_ADDRESSES } from "../../constants";
 
 interface CustomerSidebarProps {
   customer: Customer | null;
@@ -30,9 +31,6 @@ interface CustomerSidebarProps {
   isCollapsed?: boolean;
   onToggle?: () => void;
 }
-
-const MAX_NOTES_LENGTH = 1000;
-const MAX_VISIBLE_ADDRESSES = 3;
 
 export function CustomerSidebar({
   customer,
@@ -57,6 +55,24 @@ export function CustomerSidebar({
     [onNotesChange]
   );
 
+  // Memoizar fechas formateadas
+  const formattedDates = useMemo(() => {
+    if (!customer) return null;
+    
+    const formatDate = (date: Date | string | null) => {
+      if (!date) return "-";
+      return new Date(date).toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    };
+
+    return {
+      customerSince: formatDate(customer.createdAt),
+    };
+  }, [customer?.createdAt]);
+
   if (isLoading || !customer) {
     return (
       <div className="p-6">
@@ -70,16 +86,6 @@ export function CustomerSidebar({
     ? addresses
     : addresses.slice(0, MAX_VISIBLE_ADDRESSES);
   const hasMoreAddresses = addresses.length > MAX_VISIBLE_ADDRESSES;
-
-  // Formatear fechas con Intl
-  const formatDate = (date: Date | string | null) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   return (
     <div className="h-full flex flex-col">
@@ -139,7 +145,7 @@ export function CustomerSidebar({
               <div>
                 <p className="text-slate-500 text-xs">{t("detail.customerSince")}</p>
                 <p className="font-medium text-slate-900">
-                  {formatDate(customer.createdAt)}
+                  {formattedDates?.customerSince || "-"}
                 </p>
               </div>
             </div>

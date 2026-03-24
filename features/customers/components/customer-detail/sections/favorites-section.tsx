@@ -14,7 +14,7 @@ interface FavoritesSectionProps {
 
 export function FavoritesSection({ customerId }: FavoritesSectionProps) {
   const t = useTranslations("customers");
-  const { ref, shouldLoad } = useLazySection("favorites");
+  const { ref, shouldLoad } = useLazySection(customerId, "favorites");
   
   const { data: metrics, isLoading } = useCustomerMetrics(
     customerId,
@@ -37,7 +37,7 @@ export function FavoritesSection({ customerId }: FavoritesSectionProps) {
             <FavoritesSectionSkeleton />
           ) : favoriteProducts.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-4">
-              {t("detail.noOrders")}
+              {t("detail.noFavorites")}
             </p>
           ) : (
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">

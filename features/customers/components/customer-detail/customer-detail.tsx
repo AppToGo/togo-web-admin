@@ -1,35 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 import { useCustomer, useUpdateCustomer } from "../../hooks";
 import { CustomerUnifiedLayout } from "./customer-unified-layout";
-import { toast } from "sonner";
+import { MAX_NOTES_LENGTH } from "../../constants";
 
 interface CustomerDetailProps {
   customerId: string;
-}
-
-const MAX_NOTES_LENGTH = 1000;
-
-// Debounce helper
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
 }
 
 export function CustomerDetail({ customerId }: CustomerDetailProps) {
@@ -47,6 +29,20 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Mutación
   const updateCustomer = useUpdateCustomer();
 
+  // Guardar notas - memoizado para evitar recreaciones
+  const handleSaveNotes = useCallback(async () => {
+    if (!customer) return;
+    
+    try {
+      await updateCustomer.mutateAsync({
+        customerId,
+        data: { notes: debouncedNotes.slice(0, MAX_NOTES_LENGTH) },
+      });
+    } catch {
+      // Error ya manejado en el hook
+    }
+  }, [customer, customerId, debouncedNotes, updateCustomer]);
+
   // Initialize notes from customer data
   useEffect(() => {
     if (customer?.notes !== undefined) {
@@ -59,22 +55,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
     if (customer && debouncedNotes !== (customer.notes || "")) {
       handleSaveNotes();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedNotes, customer]);
-
-  // Guardar notas
-  const handleSaveNotes = async () => {
-    if (!customer) return;
-    
-    try {
-      await updateCustomer.mutateAsync({
-        customerId,
-        data: { notes: debouncedNotes.slice(0, MAX_NOTES_LENGTH) },
-      });
-    } catch {
-      // Error ya manejado en el hook
-    }
-  };
+  }, [debouncedNotes, customer, handleSaveNotes]);
 
   // Loading skeleton
   if (isLoadingCustomer) {
