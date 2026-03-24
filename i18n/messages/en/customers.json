@@ -58,11 +58,22 @@
     "favoriteProducts": "Favorite products",
     "noOrders": "No orders",
     "noOrdersDescription": "This customer has not placed any orders yet.",
+    "noFavorites": "No favorite products",
+    "noFavoritesDescription": "This customer doesn't have any favorite products yet.",
     "whatsapp": "Open WhatsApp",
+    "noPhoneNumber": "No phone number",
     "noAddresses": "No Addresses",
     "orders": "Orders",
     "basicInfo": "Basic Info",
     "addresses": "Addresses",
+    "notFound": "Customer not found",
+    "notFoundDescription": "We couldn't find this customer's information.",
+    "anonymous": "Anonymous customer",
+    "default": "Default",
+    "showLess": "Show less",
+    "showMore": "Show {count} more",
+    "customer": "Customer",
+    "customerInfo": "Customer information",
     "fields": {
       "name": "Name",
       "phone": "Phone",
@@ -112,6 +123,11 @@
     "loadError": "Error loading customers",
     "updateSuccess": "Customer updated",
     "updateError": "Error updating customer"
+  },
+
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
   },
 
   "pagination": {
