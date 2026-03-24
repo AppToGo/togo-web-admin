@@ -13,6 +13,19 @@ const cardVariants = cva("text-card-foreground", {
       primary:
         "border border-indigo-200 bg-white shadow-sm ring-1 ring-indigo-100 rounded-lg",
       kanban: "border bg-card text-card-foreground shadow rounded-xl",
+      // NUEVAS VARIANTES
+      glass:
+        "rounded-card-xl bg-white/30 backdrop-blur-xl border border-white/40 overflow-hidden",
+      "gradient-indigo":
+        "rounded-card-lg shadow-card bg-gradient-indigo-purple text-white overflow-hidden",
+      "gradient-emerald":
+        "rounded-card-lg shadow-card bg-gradient-emerald-teal text-white overflow-hidden",
+      "gradient-amber":
+        "rounded-card-lg shadow-card bg-gradient-orange-amber text-white overflow-hidden",
+      "gradient-blue":
+        "rounded-card-lg shadow-card bg-gradient-blue-cyan text-white overflow-hidden",
+      "gradient-purple":
+        "rounded-card-lg shadow-card bg-gradient-purple-indigo text-white overflow-hidden",
     },
   },
   defaultVariants: {
@@ -24,7 +37,19 @@ export interface CardProps
   extends
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {
-  variant?: "default" | "ghost" | "outline" | "elevated" | "primary" | "kanban";
+  variant?:
+    | "default"
+    | "ghost"
+    | "outline"
+    | "elevated"
+    | "primary"
+    | "kanban"
+    | "glass"
+    | "gradient-indigo"
+    | "gradient-emerald"
+    | "gradient-amber"
+    | "gradient-blue"
+    | "gradient-purple";
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
