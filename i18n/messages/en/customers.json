@@ -29,8 +29,10 @@
     "totalSpent": "Total spent",
     "totalOrders": "Total orders",
     "averageOrder": "Average order",
+    "averagePerOrder": "Average per order",
     "firstOrder": "First order",
     "favoriteProducts": "Favorite products",
+    "productsCount": "{count} products",
     "timesOrdered": "Times ordered",
     "totalSpentOnProduct": "Total spent on product",
     "lastOrderDate": "Last order date",
@@ -42,8 +44,11 @@
     "bySpending": "Top 10 - Highest spenders",
     "orders": "orders",
     "spent": "spent",
+    "count": "{count} customers",
     "noData": "No data",
-    "noDataDescription": "We couldn't find data for this period. Try a different date range."
+    "noDataDescription": "We couldn't find data for this period. Try a different date range.",
+    "noFrequencyData": "No frequency data",
+    "noSpendingData": "No spending data"
   },
 
   "detail": {

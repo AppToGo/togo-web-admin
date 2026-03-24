@@ -29,8 +29,10 @@
     "totalSpent": "Total gastado",
     "totalOrders": "Total pedidos",
     "averageOrder": "Ticket promedio",
+    "averagePerOrder": "Promedio por pedido",
     "firstOrder": "Primera compra",
     "favoriteProducts": "Productos favoritos",
+    "productsCount": "{count} productos",
     "timesOrdered": "Veces pedido",
     "totalSpentOnProduct": "Total gastado en producto",
     "lastOrderDate": "Última compra",
@@ -42,8 +44,11 @@
     "bySpending": "Top 10 - Más gastaron",
     "orders": "pedidos",
     "spent": "gastado",
+    "count": "{count} clientes",
     "noData": "No hay datos",
-    "noDataDescription": "No encontramos datos para este periodo."
+    "noDataDescription": "No encontramos datos para este periodo.",
+    "noFrequencyData": "No hay datos de frecuencia",
+    "noSpendingData": "No hay datos de gasto"
   },
 
   "detail": {

@@ -25,7 +25,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
     return (
       <div className="grid gap-6 md:grid-cols-1">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3 border-b border-slate-100">
             <Skeleton className="h-6 w-48" />
           </CardHeader>
           <CardContent className="space-y-4">
@@ -35,7 +35,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3 border-b border-slate-100">
             <Skeleton className="h-6 w-48" />
           </CardHeader>
           <CardContent className="space-y-4">
@@ -81,72 +81,76 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
   return (
     <div className="grid gap-6 md:grid-cols-1">
-      {/* Top por frecuencia */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Trophy className="h-5 w-5 text-amber-500" />
+      {/* Top por frecuencia - Header estandarizado como OrderMetrics */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-amber-500" />
             {t("topCustomers.byFrequency")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {metrics.topByFrequency.length > 0 ? (
-            <div className="space-y-2">
-              {metrics.topByFrequency.slice(0, 10).map((customer, index) => (
+          </span>
+          <span className="text-xs text-slate-500">
+            {t("topCustomers.count", { count: metrics.topByFrequency.length })}
+          </span>
+        </div>
+
+        {metrics.topByFrequency.length > 0 ? (
+          <div className="space-y-2">
+            {metrics.topByFrequency.slice(0, 10).map((customer, index) => (
+              <RankingItem
+                key={customer.customerId || index}
+                position={index + 1}
+                name={customer.name || t("table.anonymous")}
+                subtitle={customer.phoneNumber}
+                href={`/dashboard/customers/${customer.customerId}`}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-slate-500 text-center py-8">
+            {t("topCustomers.noFrequencyData")}
+          </p>
+        )}
+      </div>
+
+      {/* Top por gasto - Header estandarizado como OrderMetrics */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide flex items-center gap-2">
+            <DollarSign className="h-4 w-4 text-emerald-500" />
+            {t("topCustomers.bySpending")}
+          </span>
+          <span className="text-xs text-slate-500">
+            {t("topCustomers.count", { count: metrics.topBySpending.length })}
+          </span>
+        </div>
+
+        {metrics.topBySpending.length > 0 ? (
+          <div className="space-y-4">
+            {metrics.topBySpending.slice(0, 10).map((customer, index) => (
+              <div key={customer.customerId || index} className="space-y-2">
                 <RankingItem
-                  key={customer.customerId || index}
                   position={index + 1}
                   name={customer.name || t("table.anonymous")}
                   subtitle={customer.phoneNumber}
+                  value={formatCurrency(customer.value)}
                   href={`/dashboard/customers/${customer.customerId}`}
                 />
-              ))}
-            </div>
-          ) : (
-            <p className="text-slate-500 text-center py-8">
-              {t("topCustomers.noFrequencyData")}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Top por gasto */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <DollarSign className="h-5 w-5 text-emerald-500" />
-            {t("topCustomers.bySpending")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {metrics.topBySpending.length > 0 ? (
-            <div className="space-y-4">
-              {metrics.topBySpending.slice(0, 10).map((customer, index) => (
-                <div key={customer.customerId || index} className="space-y-2">
-                  <RankingItem
-                    position={index + 1}
-                    name={customer.name || t("table.anonymous")}
-                    subtitle={customer.phoneNumber}
-                    value={formatCurrency(customer.value)}
-                    href={`/dashboard/customers/${customer.customerId}`}
-                  />
-                  <ProgressBar
-                    value={customer.value}
-                    max={maxSpending}
-                    color="emerald"
-                    size="sm"
-                    className="ml-11"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-slate-500 text-center py-8">
-              {t("topCustomers.noSpendingData")}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                <ProgressBar
+                  value={customer.value}
+                  max={maxSpending}
+                  color="indigo"
+                  size="sm"
+                  className="ml-11"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-slate-500 text-center py-8">
+            {t("topCustomers.noSpendingData")}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
