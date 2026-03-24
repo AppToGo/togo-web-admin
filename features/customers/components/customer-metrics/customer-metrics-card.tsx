@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ShoppingCart,
   DollarSign,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { CustomerMetrics } from "../../types";
+import { MetricCard, RankingItem } from "@/shared/components/metrics";
 
 interface CustomerMetricsCardProps {
   metrics: CustomerMetrics;
@@ -21,27 +21,25 @@ interface CustomerMetricsCardProps {
 export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
   const t = useTranslations("customers");
 
-  const metricCards = [
+  // Definición de métricas usando el sistema estandarizado
+  const metricDefinitions = [
     {
       title: t("metrics.totalSpent"),
       value: formatCurrency(metrics.totalSpent),
       icon: DollarSign,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-100",
+      colorScheme: "emerald" as const,
     },
     {
       title: t("metrics.totalOrders"),
       value: metrics.totalOrders.toString(),
       icon: ShoppingCart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      colorScheme: "blue" as const,
     },
     {
       title: t("metrics.averageOrder"),
       value: formatCurrency(metrics.averageOrderValue),
       icon: TrendingUp,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      colorScheme: "purple" as const,
     },
     {
       title: t("metrics.firstOrder"),
@@ -52,73 +50,73 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
           })
         : "-",
       icon: Calendar,
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
+      colorScheme: "amber" as const,
     },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Métricas principales */}
+      {/* Métricas principales usando MetricCard */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metricCards.map((card) => (
-          <Card key={card.title}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    {card.title}
-                  </p>
-                  <p className="text-2xl font-bold text-slate-900 mt-2">
-                    {card.value}
-                  </p>
-                </div>
-                <div
-                  className={`w-12 h-12 rounded-full ${card.bgColor} flex items-center justify-center`}
-                >
-                  <card.icon className={`h-6 w-6 ${card.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {metricDefinitions.map((metric) => (
+          <MetricCard
+            key={metric.title}
+            title={metric.title}
+            value={metric.value}
+            icon={metric.icon}
+            colorScheme={metric.colorScheme}
+            size="md"
+          />
         ))}
       </div>
 
-      {/* Productos favoritos */}
+      {/* Métricas de revenue destacado con gradiente */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <MetricCard
+          title={t("metrics.totalSpent")}
+          value={formatCurrency(metrics.totalSpent)}
+          subtitle={t("metrics.totalOrders", { count: metrics.totalOrders })}
+          icon={DollarSign}
+          colorScheme="indigo"
+          isGradient
+          size="lg"
+        />
+        <MetricCard
+          title={t("metrics.averageOrder")}
+          value={formatCurrency(metrics.averageOrderValue)}
+          subtitle={t("metrics.averagePerOrder")}
+          icon={TrendingUp}
+          colorScheme="purple"
+          isGradient
+          size="lg"
+        />
+      </div>
+
+      {/* Productos favoritos usando RankingItem */}
       {metrics.favoriteProducts.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3 border-b border-slate-100">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Star className="h-5 w-5 text-amber-500" />
               {t("metrics.favoriteProducts")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-4">
+            <div className="space-y-2">
               {metrics.favoriteProducts.slice(0, 5).map((product, index) => (
                 <div
                   key={product.productId}
-                  className="flex items-center justify-between p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg bg-slate-50"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">
-                        {product.productName}
-                      </p>
-                      <div className="flex items-center gap-3 text-sm text-slate-500 mt-0.5">
-                        <span className="flex items-center gap-1">
-                          <Package className="h-3 w-3" />
-                          {t("metrics.timesOrdered", {
-                            count: product.totalQuantity,
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
+                  <RankingItem
+                    position={index + 1}
+                    name={product.productName}
+                    subtitle={t("metrics.timesOrdered", {
+                      count: product.totalQuantity,
+                    })}
+                    className="flex-1 bg-transparent hover:bg-transparent p-0"
+                  />
+                  <div className="text-right shrink-0 ml-4">
                     <p className="font-semibold text-slate-900">
                       {formatCurrency(product.totalSpent)}
                     </p>
@@ -177,3 +175,5 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
     </div>
   );
 }
+
+export default CustomerMetricsCard;

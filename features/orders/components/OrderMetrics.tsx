@@ -4,11 +4,8 @@ import { memo } from "react";
 import { useTranslations } from "next-intl";
 import { useDashboardMetrics } from "../hooks/useOrderMetrics";
 import { formatCurrency } from "../utils/order-status.utils";
-import {
-  progressBarVariants,
-  progressBarFillVariants,
-} from "../styles";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProgressBar, MetricCard } from "@/shared/components/metrics";
 
 export const OrderMetrics = memo(function OrderMetrics() {
   const { raw: metrics, isLoading } = useDashboardMetrics();
@@ -25,32 +22,35 @@ export const OrderMetrics = memo(function OrderMetrics() {
     {
       label: t("status.CONFIRMED"),
       count: metrics.porEstadoOrden.CONFIRMED || 0,
-      variant: "blue" as const,
+      color: "blue" as const,
     },
     {
       label: t("status.IN_PROGRESS"),
       count: metrics.porEstadoOrden.IN_PROGRESS || 0,
-      variant: "purple" as const,
+      color: "purple" as const,
     },
     {
       label: t("status.READY"),
       count: metrics.porEstadoOrden.READY || 0,
-      variant: "amber" as const,
+      color: "amber" as const,
     },
     {
       label: t("status.ON_THE_WAY"),
       count: metrics.porEstadoOrden.ON_THE_WAY || 0,
-      variant: "cyan" as const,
+      color: "cyan" as const,
     },
     {
       label: t("status.COMPLETED"),
       count: metrics.porEstadoOrden.COMPLETED || 0,
-      variant: "emerald" as const,
+      color: "emerald" as const,
     },
-  ].filter(item => item.count > 0);
+  ].filter((item) => item.count > 0);
 
   // Total orders in displayed statuses
-  const totalOrdersInProgress = progressItems.reduce((sum, item) => sum + item.count, 0);
+  const totalOrdersInProgress = progressItems.reduce(
+    (sum, item) => sum + item.count,
+    0
+  );
 
   // Use total as reference for bars (to show real proportion)
   const maxCount = totalOrdersInProgress > 0 ? totalOrdersInProgress : 1;
@@ -74,16 +74,19 @@ export const OrderMetrics = memo(function OrderMetrics() {
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm text-slate-600">{item.label}</span>
               <span className="text-sm font-medium text-slate-700">
-                {item.count} 
-                <span className="text-slate-400 font-normal"> / {totalOrdersInProgress}</span>
+                {item.count}
+                <span className="text-slate-400 font-normal">
+                  {" "}
+                  / {totalOrdersInProgress}
+                </span>
               </span>
             </div>
-            <div className={progressBarVariants({ size: "default" })}>
-              <div
-                className={progressBarFillVariants({ variant: item.variant })}
-                style={{ width: `${(item.count / maxCount) * 100}%` }}
-              />
-            </div>
+            <ProgressBar
+              value={item.count}
+              max={maxCount}
+              color={item.color}
+              size="md"
+            />
           </div>
         ))}
         {progressItems.length === 0 && (
@@ -93,36 +96,30 @@ export const OrderMetrics = memo(function OrderMetrics() {
         )}
       </div>
 
-      {/* Revenue Card - Detailed revenue */}
-      <div className="bg-gradient-indigo-purple rounded-card-lg p-5 text-white">
-        {/* Paid */}
-        <div className="mb-4">
-          <p className="text-xs text-white/60 font-medium uppercase tracking-wide mb-1">
-            {t("metrics.paid")}
-          </p>
-          <p className="text-2xl font-bold">
-            {formatCurrency(metrics.recaudos.pagadas.total)}
-          </p>
-          <p className="text-xs text-white/50 mt-0.5">
-            {t("orderCount", { count: metrics.conteos.pagadas })}
-          </p>
-        </div>
-
-        {/* Separator */}
-        <div className="border-t border-white/20 my-3" />
-
-        {/* Pending payment */}
-        <div>
-          <p className="text-xs text-white/60 font-medium uppercase tracking-wide mb-1">
-            {t("metrics.pendingPayment")}
-          </p>
-          <p className="text-xl font-semibold text-white/90">
-            {formatCurrency(metrics.recaudos.pendientesPago.total)}
-          </p>
-          <p className="text-xs text-white/50 mt-0.5">
-            {t("orderCount", { count: metrics.conteos.pendientesPago })}
-          </p>
-        </div>
+      {/* Revenue Card usando MetricCard con gradiente */}
+      <div className="space-y-3">
+        <MetricCard
+          title={t("metrics.paid")}
+          value={formatCurrency(metrics.recaudos.pagadas.total)}
+          subtitle={t("orderCount", { count: metrics.conteos.pagadas })}
+          colorScheme="indigo"
+          isGradient
+          size="md"
+        >
+          {/* Separator y pending payment */}
+          <div className="border-t border-white/20 my-3" />
+          <div>
+            <p className="text-xs text-white/60 font-medium uppercase tracking-wide mb-1">
+              {t("metrics.pendingPayment")}
+            </p>
+            <p className="text-xl font-semibold text-white/90">
+              {formatCurrency(metrics.recaudos.pendientesPago.total)}
+            </p>
+            <p className="text-xs text-white/50 mt-0.5">
+              {t("orderCount", { count: metrics.conteos.pendientesPago })}
+            </p>
+          </div>
+        </MetricCard>
       </div>
     </div>
   );
@@ -147,3 +144,5 @@ export function OrderMetricsSkeleton() {
     </div>
   );
 }
+
+export default OrderMetrics;
