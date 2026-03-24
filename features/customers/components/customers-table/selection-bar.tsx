@@ -62,7 +62,7 @@ export function SelectionBar({
           className="text-indigo-700 hover:text-indigo-800 hover:bg-indigo-100"
         >
           <X className="h-4 w-4 mr-1.5" />
-          {t("selection.clear")}
+          {t("selection.clearSelection")}
         </Button>
       </div>
     </div>

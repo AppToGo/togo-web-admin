@@ -104,8 +104,8 @@ export default function CustomersPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6 flex-1 min-h-0">
         {/* Header con título y filtro de fecha */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
-          <div>
+        <div className="grid grid-cols-6 gap-4">
+          <div className="col-span-5">
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Users className="h-6 w-6 text-indigo-600" />
               {t("title")}
@@ -113,34 +113,41 @@ export default function CustomersPage() {
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
-          <DateRangeFilter
-            variant="default"
-            availablePresets={[
-              "today",
-              "yesterday",
-              "week",
-              "last7days",
-              "month",
-              "custom",
-            ]}
-          />
+          <div className="col-span-1">
+            <DateRangeFilter
+              variant="default"
+              availablePresets={[
+                "today",
+                "yesterday",
+                "week",
+                "last7days",
+                "month",
+                "custom",
+              ]}
+            />
+          </div>
         </div>
 
-        {/* Top Customers Charts */}
-        <Suspense fallback={<Skeleton className="h-80" />}>
-          <TopCustomersCharts businessId={selectedBusinessId || undefined} />
-        </Suspense>
-
-        {/* Customers Table */}
-        <div className="flex-1 min-h-0">
-          <Suspense fallback={<CustomersLoading />}>
-            <CustomersTable
-              data={customers}
-              isLoading={isLoading}
-              pagination={pagination}
-              onPageChange={setPage}
-            />
-          </Suspense>
+        <div className="grid grid-cols-6 gap-4">
+          {/* Customers Table */}
+          <div className="col-span-4">
+            <Suspense fallback={<CustomersLoading />}>
+              <CustomersTable
+                data={customers}
+                isLoading={isLoading}
+                pagination={pagination}
+                onPageChange={setPage}
+              />
+            </Suspense>
+          </div>
+          {/* Top Customers Charts */}
+          <div className="col-span-2">
+            <Suspense fallback={<Skeleton className="h-80" />}>
+              <TopCustomersCharts
+                businessId={selectedBusinessId || undefined}
+              />
+            </Suspense>
+          </div>
         </div>
       </div>
     </DashboardLayout>

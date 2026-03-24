@@ -85,7 +85,8 @@
     "selected": "{count} cliente(s) seleccionado(s)",
     "selectAll": "Seleccionar todos",
     "clearSelection": "Limpiar selección",
-    "selectAllPages": "Seleccionar todos los {total} clientes"
+    "selectAllPages": "Seleccionar todos los {total} clientes",
+    "allSelected": "Seleccionaste todos los cliente."
   },
 
   "filters": {

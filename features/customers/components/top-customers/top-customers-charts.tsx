@@ -26,7 +26,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-1">
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
@@ -84,7 +84,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-1">
       {/* Top por frecuencia */}
       <Card>
         <CardHeader>
@@ -130,13 +130,6 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <ShoppingCart className="h-3 w-3" />
-                        {customer.totalOrders}
-                      </Badge>
                       <ExternalLink className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </Link>
@@ -174,7 +167,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
                   <Link
                     key={customer.customerId || index}
                     href={`/dashboard/customers/${customer.customerId}`}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors group"
+                    className="flex items-center justify-between py-3 rounded-lg hover:bg-slate-50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
                       <div

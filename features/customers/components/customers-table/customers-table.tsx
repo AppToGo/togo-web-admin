@@ -36,6 +36,7 @@ import {
 } from "../../stores/customer-selection.store";
 import type { CustomerWithMetrics } from "../../types";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface CustomersTableProps {
   data: CustomerWithMetrics[];
@@ -172,58 +173,60 @@ export function CustomersTable({
       />
 
       {/* Tabla */}
-      <div className="rounded-lg border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={headerGroup.id}
-                  className="bg-slate-50 hover:bg-slate-50"
-                >
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      style={{ width: header.getSize() }}
-                      className="text-slate-700 font-semibold"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className={cn(
-                    "cursor-pointer transition-colors",
-                    (selectedIds.has(row.original.id) || isAllSelected) &&
-                      "bg-indigo-50/50",
-                    "hover:bg-slate-50"
-                  )}
-                  onDoubleClick={() => handleRowDoubleClick(row.original.id)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      <Card>
+        <div className="rounded-lg border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow
+                    key={headerGroup.id}
+                    className="bg-slate-50 hover:bg-slate-50"
+                  >
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        style={{ width: header.getSize() }}
+                        className="text-slate-700 font-semibold"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      (selectedIds.has(row.original.id) || isAllSelected) &&
+                        "bg-indigo-50/50",
+                      "hover:bg-slate-50"
+                    )}
+                    onDoubleClick={() => handleRowDoubleClick(row.original.id)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Paginación */}
       <div className="flex items-center justify-between px-2">
