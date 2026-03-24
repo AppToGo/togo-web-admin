@@ -25,7 +25,16 @@
     "totalCustomers": "Total clientes",
     "newCustomers": "Nuevos clientes",
     "frequentCustomers": "Clientes frecuentes",
-    "averageOrderValue": "Ticket promedio"
+    "averageOrderValue": "Ticket promedio",
+    "totalSpent": "Total gastado",
+    "totalOrders": "Total pedidos",
+    "averageOrder": "Ticket promedio",
+    "firstOrder": "Primera compra",
+    "favoriteProducts": "Productos favoritos",
+    "timesOrdered": "Veces pedido",
+    "totalSpentOnProduct": "Total gastado en producto",
+    "lastOrderDate": "Última compra",
+    "customerSince": "Cliente desde"
   },
 
   "topCustomers": {
@@ -48,6 +57,7 @@
     "averageFrequency": "Frecuencia promedio",
     "favoriteProducts": "Productos favoritos",
     "noOrders": "Sin pedidos",
+    "noOrdersDescription": "Este cliente aún no ha realizado ningún pedido.",
     "whatsapp": "Abrir WhatsApp",
     "noAddresses": "Sin dirección",
     "orders": "pedidos",
