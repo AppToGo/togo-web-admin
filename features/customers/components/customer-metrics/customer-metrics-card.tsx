@@ -1,18 +1,16 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ShoppingCart,
   DollarSign,
   TrendingUp,
   Calendar,
   Star,
-  Package,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { CustomerMetrics } from "../../types";
-import { MetricCard, RankingItem } from "@/shared/components/metrics";
+import { MetricCard, RankingItem, ProgressBar } from "@/shared/components/metrics";
 
 interface CustomerMetricsCardProps {
   metrics: CustomerMetrics;
@@ -21,56 +19,56 @@ interface CustomerMetricsCardProps {
 export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
   const t = useTranslations("customers");
 
-  // Definición de métricas usando el sistema estandarizado
-  const metricDefinitions = [
-    {
-      title: t("metrics.totalSpent"),
-      value: formatCurrency(metrics.totalSpent),
-      icon: DollarSign,
-      colorScheme: "emerald" as const,
-    },
-    {
-      title: t("metrics.totalOrders"),
-      value: metrics.totalOrders.toString(),
-      icon: ShoppingCart,
-      colorScheme: "blue" as const,
-    },
-    {
-      title: t("metrics.averageOrder"),
-      value: formatCurrency(metrics.averageOrderValue),
-      icon: TrendingUp,
-      colorScheme: "purple" as const,
-    },
-    {
-      title: t("metrics.firstOrder"),
-      value: metrics.firstOrderDate
-        ? new Date(metrics.firstOrderDate).toLocaleDateString("es-ES", {
-            day: "numeric",
-            month: "short",
-          })
-        : "-",
-      icon: Calendar,
-      colorScheme: "amber" as const,
-    },
-  ];
+  // Calcular máximo para progress bars de productos
+  const maxProductSpent =
+    metrics.favoriteProducts.length > 0
+      ? Math.max(...metrics.favoriteProducts.map((p) => p.totalSpent))
+      : 1;
 
   return (
     <div className="space-y-6">
-      {/* Métricas principales usando MetricCard */}
+      {/* Métricas principales usando MetricCard CON gradiente (destacadas) */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metricDefinitions.map((metric) => (
-          <MetricCard
-            key={metric.title}
-            title={metric.title}
-            value={metric.value}
-            icon={metric.icon}
-            colorScheme={metric.colorScheme}
-            size="md"
-          />
-        ))}
+        <MetricCard
+          title={t("metrics.totalSpent")}
+          value={formatCurrency(metrics.totalSpent)}
+          icon={DollarSign}
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
+        />
+        <MetricCard
+          title={t("metrics.totalOrders")}
+          value={metrics.totalOrders.toString()}
+          icon={ShoppingCart}
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
+        />
+        <MetricCard
+          title={t("metrics.averageOrder")}
+          value={formatCurrency(metrics.averageOrderValue)}
+          icon={TrendingUp}
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
+        />
+        <MetricCard
+          title={t("metrics.firstOrder")}
+          value={metrics.firstOrderDate
+            ? new Date(metrics.firstOrderDate).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "short",
+              })
+            : "-"}
+          icon={Calendar}
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
+        />
       </div>
 
-      {/* Métricas de revenue destacado con gradiente */}
+      {/* Métricas de revenue destacado con gradiente indigo */}
       <div className="grid gap-4 md:grid-cols-2">
         <MetricCard
           title={t("metrics.totalSpent")}
@@ -78,36 +76,38 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
           subtitle={t("metrics.totalOrders", { count: metrics.totalOrders })}
           icon={DollarSign}
           colorScheme="indigo"
-          isGradient
-          size="lg"
+          variantType="gradient"
+          size="md"
         />
         <MetricCard
           title={t("metrics.averageOrder")}
           value={formatCurrency(metrics.averageOrderValue)}
           subtitle={t("metrics.averagePerOrder")}
           icon={TrendingUp}
-          colorScheme="purple"
-          isGradient
-          size="lg"
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
         />
       </div>
 
-      {/* Productos favoritos usando RankingItem */}
+      {/* Productos favoritos con header estandarizado */}
       {metrics.favoriteProducts.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Star className="h-5 w-5 text-amber-500" />
+        <div className="space-y-3">
+          {/* Header estandarizado con border-b y uppercase tracking-wide */}
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" />
               {t("metrics.favoriteProducts")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="space-y-2">
-              {metrics.favoriteProducts.slice(0, 5).map((product, index) => (
-                <div
-                  key={product.productId}
-                  className="flex items-center justify-between p-4 rounded-lg bg-slate-50"
-                >
+            </span>
+            <span className="text-xs text-slate-500">
+              {t("metrics.productsCount", { count: metrics.favoriteProducts.length })}
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {metrics.favoriteProducts.slice(0, 5).map((product, index) => (
+              <div key={product.productId} className="space-y-2">
+                <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50">
                   <RankingItem
                     position={index + 1}
                     name={product.productName}
@@ -125,52 +125,50 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
                     </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <ProgressBar
+                  value={product.totalSpent}
+                  max={maxProductSpent}
+                  color="purple"
+                  size="sm"
+                  className="ml-11"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Resumen adicional */}
+      {/* Resumen adicional con MetricCards con gradiente */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-slate-500">
-              {t("metrics.lastOrderDate")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg font-semibold">
-              {metrics.lastOrderDate
-                ? new Date(metrics.lastOrderDate).toLocaleDateString("es-ES", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : "-"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-slate-500">
-              {t("metrics.customerSince")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg font-semibold">
-              {metrics.firstOrderDate
-                ? new Date(metrics.firstOrderDate).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : "-"}
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title={t("metrics.lastOrderDate")}
+          value={metrics.lastOrderDate
+            ? new Date(metrics.lastOrderDate).toLocaleDateString("es-ES", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "-"}
+          icon={Calendar}
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
+        />
+        <MetricCard
+          title={t("metrics.customerSince")}
+          value={metrics.firstOrderDate
+            ? new Date(metrics.firstOrderDate).toLocaleDateString("es-ES", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "-"}
+          icon={Calendar}
+          colorScheme="indigo"
+          variantType="gradient"
+          size="md"
+        />
       </div>
     </div>
   );

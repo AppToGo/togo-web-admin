@@ -20,8 +20,8 @@ export interface MetricCardProps {
   icon?: LucideIcon;
   /** Esquema de color */
   colorScheme: "indigo" | "emerald" | "amber" | "blue" | "purple" | "slate";
-  /** Usar gradiente como fondo */
-  isGradient?: boolean;
+  /** Tipo de variante de card: glass (glassmorphism) o gradient (destacada) */
+  variantType?: "glass" | "gradient";
   /** Tamaño de la card */
   size?: "sm" | "md" | "lg";
   /** Mostrar borde en el header */
@@ -37,9 +37,28 @@ export interface MetricCardProps {
  *
  * Soporta:
  * - Múltiples esquemas de color
- * - Modo gradiente para métricas principales
+ * - Dos tipos de cards: glass (glassmorphism) y gradient (destacada)
  * - Icono con fondo coloreado
  * - Subtítulo descriptivo
+ *
+ * @example
+ * // Card normal (glassmorphism) - para contenido general
+ * <MetricCard
+ *   title="Total"
+ *   value="1,234"
+ *   variantType="glass"
+ *   size="md"
+ * />
+ *
+ * @example
+ * // Card destacada (gradiente) - para métricas importantes
+ * <MetricCard
+ *   title="Revenue"
+ *   value="$12,345"
+ *   variantType="gradient"
+ *   colorScheme="indigo"
+ *   size="md"
+ * />
  */
 export const MetricCard = memo(function MetricCard({
   title,
@@ -47,12 +66,14 @@ export const MetricCard = memo(function MetricCard({
   subtitle,
   icon: Icon,
   colorScheme,
-  isGradient = false,
+  variantType = "glass",
   size = "md",
   showHeaderBorder = false,
   className,
   children,
 }: MetricCardProps) {
+  // Glass cards use dark text, gradient cards use white text
+  const isGradient = variantType === "gradient";
   const textColorClass = isGradient ? "text-white" : "text-slate-900";
   const titleColorClass = isGradient
     ? "text-white/70"
@@ -67,7 +88,7 @@ export const MetricCard = memo(function MetricCard({
         metricCardVariants({
           colorScheme,
           size,
-          isGradient,
+          variantType,
           showHeaderBorder,
         }),
         className

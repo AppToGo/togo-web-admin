@@ -74,12 +74,39 @@ describe("MetricCard", () => {
         title="Total"
         value="$10K"
         colorScheme="indigo"
-        isGradient
+        variantType="gradient"
       />
     );
 
     const card = screen.getByText("Total").closest("div[class*='bg-gradient']");
     expect(card).toHaveClass("text-white");
+  });
+
+  it("applies glass variant by default", () => {
+    render(
+      <MetricCard
+        title="Total"
+        value="$10K"
+        colorScheme="indigo"
+      />
+    );
+
+    const card = screen.getByText("Total").closest("div[class*='bg-white/30']");
+    expect(card).toBeInTheDocument();
+  });
+
+  it("applies glass variant explicitly", () => {
+    render(
+      <MetricCard
+        title="Total"
+        value="$10K"
+        colorScheme="indigo"
+        variantType="glass"
+      />
+    );
+
+    const card = screen.getByText("Total").closest("div[class*='bg-white/30']");
+    expect(card).toBeInTheDocument();
   });
 
   it("renders children when provided", () => {

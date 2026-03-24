@@ -96,14 +96,14 @@ export const OrderMetrics = memo(function OrderMetrics() {
         )}
       </div>
 
-      {/* Revenue Card usando MetricCard con gradiente */}
+      {/* Revenue Card usando MetricCard con gradiente (destacada) */}
       <div className="space-y-3">
         <MetricCard
           title={t("metrics.paid")}
           value={formatCurrency(metrics.recaudos.pagadas.total)}
           subtitle={t("orderCount", { count: metrics.conteos.pagadas })}
           colorScheme="indigo"
-          isGradient
+          variantType="gradient"
           size="md"
         >
           {/* Separator y pending payment */}
@@ -136,7 +136,7 @@ export function OrderMetricsSkeleton() {
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-4 w-10" />
             </div>
-            <Skeleton className="h-1.5 w-full rounded-full" />
+            <Skeleton className="h-1.5 w-full rounded-card-lg" />
           </div>
         ))}
       </div>

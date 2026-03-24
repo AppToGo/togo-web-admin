@@ -32,21 +32,74 @@ describe("Metrics Variants", () => {
       expect(lg).toContain("p-6");
     });
 
+    it("should apply glass variant by default", () => {
+      const result = metricCardVariants({});
+      expect(result).toContain("rounded-card-xl");
+      expect(result).toContain("bg-white/30");
+      expect(result).toContain("backdrop-blur-xl");
+      expect(result).toContain("border-white/40");
+    });
+
+    it("should apply glass variant explicitly", () => {
+      const result = metricCardVariants({ variantType: "glass" });
+      expect(result).toContain("rounded-card-xl");
+      expect(result).toContain("bg-white/30");
+      expect(result).toContain("backdrop-blur-xl");
+      expect(result).toContain("border-white/40");
+    });
+
     it("should apply gradient variant for indigo", () => {
       const result = metricCardVariants({
-        isGradient: true,
+        variantType: "gradient",
         colorScheme: "indigo",
       });
       expect(result).toContain("bg-gradient-indigo-purple");
+      expect(result).toContain("rounded-card-lg");
+      expect(result).toContain("shadow-card");
       expect(result).toContain("text-white");
     });
 
-    it("should apply border for non-gradient with header", () => {
+    it("should apply gradient variant for emerald", () => {
       const result = metricCardVariants({
-        isGradient: false,
+        variantType: "gradient",
+        colorScheme: "emerald",
+      });
+      expect(result).toContain("bg-gradient-emerald-teal");
+      expect(result).toContain("text-white");
+    });
+
+    it("should apply gradient variant for amber", () => {
+      const result = metricCardVariants({
+        variantType: "gradient",
+        colorScheme: "amber",
+      });
+      expect(result).toContain("bg-gradient-orange-amber");
+      expect(result).toContain("text-white");
+    });
+
+    it("should apply gradient variant for blue", () => {
+      const result = metricCardVariants({
+        variantType: "gradient",
+        colorScheme: "blue",
+      });
+      expect(result).toContain("bg-gradient-blue-cyan");
+      expect(result).toContain("text-white");
+    });
+
+    it("should apply gradient variant for purple", () => {
+      const result = metricCardVariants({
+        variantType: "gradient",
+        colorScheme: "purple",
+      });
+      expect(result).toContain("bg-gradient-purple-indigo");
+      expect(result).toContain("text-white");
+    });
+
+    it("should apply border for glass variant with header", () => {
+      const result = metricCardVariants({
+        variantType: "glass",
         showHeaderBorder: true,
       });
-      expect(result).toContain("rounded-card-lg");
       expect(result).toContain("border-slate-100");
     });
   });

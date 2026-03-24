@@ -29,9 +29,9 @@ export const metricCardVariants = cva(
         md: "p-5",
         lg: "p-6",
       },
-      isGradient: {
-        true: "text-white",
-        false: "bg-white",
+      variantType: {
+        glass: "rounded-card-xl bg-white/30 backdrop-blur-xl border border-white/40",
+        gradient: "",
       },
       showHeaderBorder: {
         true: "",
@@ -39,48 +39,48 @@ export const metricCardVariants = cva(
       },
     },
     compoundVariants: [
-      // Gradient variants
+      // Gradient variants - applied when variantType="gradient"
       {
-        isGradient: true,
+        variantType: "gradient",
         colorScheme: "indigo",
-        class: "bg-gradient-indigo-purple",
+        class: "rounded-card-lg shadow-card bg-gradient-indigo-purple text-white",
       },
       {
-        isGradient: true,
+        variantType: "gradient",
         colorScheme: "emerald",
-        class: "bg-gradient-emerald-teal",
+        class: "rounded-card-lg shadow-card bg-gradient-emerald-teal text-white",
       },
       {
-        isGradient: true,
+        variantType: "gradient",
         colorScheme: "amber",
-        class: "bg-gradient-orange-amber",
+        class: "rounded-card-lg shadow-card bg-gradient-orange-amber text-white",
       },
       {
-        isGradient: true,
+        variantType: "gradient",
         colorScheme: "blue",
-        class: "bg-gradient-blue-cyan",
+        class: "rounded-card-lg shadow-card bg-gradient-blue-cyan text-white",
       },
       {
-        isGradient: true,
+        variantType: "gradient",
         colorScheme: "purple",
-        class: "bg-gradient-purple-indigo",
+        class: "rounded-card-lg shadow-card bg-gradient-purple-indigo text-white",
       },
       // Non-gradient variants with header border
       {
-        isGradient: false,
+        variantType: "glass",
         showHeaderBorder: true,
-        class: "rounded-card-lg border border-slate-100",
+        class: "border border-slate-100",
       },
       {
-        isGradient: false,
+        variantType: "glass",
         showHeaderBorder: false,
-        class: "rounded-card-lg shadow-card border border-slate-100",
+        class: "",
       },
     ],
     defaultVariants: {
       colorScheme: "indigo",
       size: "md",
-      isGradient: false,
+      variantType: "glass",
       showHeaderBorder: false,
     },
   }
