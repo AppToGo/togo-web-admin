@@ -65,6 +65,7 @@ export function CustomersTable({
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  console.log("pagination", pagination);
   // Store de selección
   const {
     selectedIds,
@@ -173,16 +174,13 @@ export function CustomersTable({
       />
 
       {/* Tabla */}
-      <Card>
-        <div className="rounded-lg border-slate-200 overflow-hidden">
+      <Card variant="glass">
+        <div className="rounded-lg hoverflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow
-                    key={headerGroup.id}
-                    className="bg-slate-50 hover:bg-slate-50"
-                  >
+                  <TableRow key={headerGroup.id} className="bg-white">
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
@@ -205,10 +203,10 @@ export function CustomersTable({
                   <TableRow
                     key={row.id}
                     className={cn(
-                      "cursor-pointer transition-colors",
+                      "cursor-default transition-colors",
                       (selectedIds.has(row.original.id) || isAllSelected) &&
                         "bg-indigo-50/50",
-                      "hover:bg-slate-50"
+                      "hover:bg-white"
                     )}
                     onDoubleClick={() => handleRowDoubleClick(row.original.id)}
                   >

@@ -87,7 +87,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
     <div className="grid gap-6 md:grid-cols-1">
       {/* Top por frecuencia */}
       <Card variant="glass">
-        <CardHeader className="pb-3 border-b border-white/20">
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Trophy className="h-5 w-5 text-amber-500" />
             {t("topCustomers.byFrequency")}
@@ -105,34 +105,39 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
                 const isTop3 = index < 3;
 
                 return (
-                  <Link
-                    key={customer.customerId || index}
-                    href={`/dashboard/customers/${customer.customerId}`}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex items-center justify-center w-8 h-8 rounded-full ${colors.bg} ${colors.text} font-semibold text-sm`}
-                      >
-                        {isTop3 ? (
-                          <Medal className={`h-4 w-4 ${colors.icon}`} />
-                        ) : (
-                          index + 1
-                        )}
+                  <>
+                    {index !== 0 && (
+                      <div className="w-full border-t border-slate-200/50"></div>
+                    )}
+                    <Link
+                      key={customer.customerId || index}
+                      href={`/dashboard/customers/${customer.customerId}`}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-white transition-colors group "
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex items-center justify-center w-8 h-8 rounded-full ${colors.bg} ${colors.text} font-semibold text-sm`}
+                        >
+                          {isTop3 ? (
+                            <Medal className={`h-4 w-4 ${colors.icon}`} />
+                          ) : (
+                            index + 1
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            {customer.name || t("table.anonymous")}
+                          </p>
+                          <p className="text-sm text-slate-500">
+                            {customer.phoneNumber}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                          {customer.name || t("table.anonymous")}
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          {customer.phoneNumber}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <ExternalLink className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <ExternalLink className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </Link>
+                    </Link>
+                  </>
                 );
               })}
             </div>
@@ -164,37 +169,42 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
                 const isTop3 = index < 3;
 
                 return (
-                  <Link
-                    key={customer.customerId || index}
-                    href={`/dashboard/customers/${customer.customerId}`}
-                    className="flex items-center justify-between py-3 rounded-lg hover:bg-slate-50 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex items-center justify-center w-8 h-8 rounded-full ${colors.bg} ${colors.text} font-semibold text-sm`}
-                      >
-                        {isTop3 ? (
-                          <Medal className={`h-4 w-4 ${colors.icon}`} />
-                        ) : (
-                          index + 1
-                        )}
+                  <>
+                    {index !== 0 && (
+                      <div className="w-full border-t border-slate-200/50"></div>
+                    )}
+                    <Link
+                      key={customer.customerId || index}
+                      href={`/dashboard/customers/${customer.customerId}`}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-white transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex items-center justify-center w-8 h-8 rounded-full ${colors.bg} ${colors.text} font-semibold text-sm`}
+                        >
+                          {isTop3 ? (
+                            <Medal className={`h-4 w-4 ${colors.icon}`} />
+                          ) : (
+                            index + 1
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            {customer.name || t("table.anonymous")}
+                          </p>
+                          <p className="text-sm text-slate-500">
+                            {customer.phoneNumber}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                          {customer.name || t("table.anonymous")}
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          {customer.phoneNumber}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-emerald-600">
+                          {formatCurrency(customer.value)}
+                        </span>
+                        <ExternalLink className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-emerald-600">
-                        {formatCurrency(customer.value)}
-                      </span>
-                      <ExternalLink className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </Link>
+                    </Link>
+                  </>
                 );
               })}
             </div>

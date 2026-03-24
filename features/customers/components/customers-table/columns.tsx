@@ -165,7 +165,7 @@ export function useCustomerColumns({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 cursor-pointer"
             onClick={() =>
               router.push(`/dashboard/customers/${row.original.id}`)
             }
