@@ -9,6 +9,7 @@ import {
   progressBarFillVariants,
 } from "../styles";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
 
 export const OrderMetrics = memo(function OrderMetrics() {
   const { raw: metrics, isLoading } = useDashboardMetrics();
@@ -94,13 +95,13 @@ export const OrderMetrics = memo(function OrderMetrics() {
       </div>
 
       {/* Revenue Card - Detailed revenue */}
-      <div className="bg-gradient-indigo-purple rounded-card-lg p-5 text-white">
+      <Card variant="gradient-indigo" className="p-5">
         {/* Paid */}
         <div className="mb-4">
           <p className="text-xs text-white/60 font-medium uppercase tracking-wide mb-1">
             {t("metrics.paid")}
           </p>
-          <p className="text-2xl font-bold">
+          <p className="text-2xl font-bold text-white">
             {formatCurrency(metrics.recaudos.pagadas.total)}
           </p>
           <p className="text-xs text-white/50 mt-0.5">
@@ -123,7 +124,7 @@ export const OrderMetrics = memo(function OrderMetrics() {
             {t("orderCount", { count: metrics.conteos.pendientesPago })}
           </p>
         </div>
-      </div>
+      </Card>
     </div>
   );
 });

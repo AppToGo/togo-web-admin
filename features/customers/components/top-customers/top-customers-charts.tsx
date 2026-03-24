@@ -27,21 +27,21 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-1">
-        <Card>
-          <CardHeader>
+        <Card variant="glass">
+          <CardHeader className="pb-3 border-b border-white/20">
             <Skeleton className="h-6 w-48" />
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-16 w-full" />
             ))}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
+        <Card variant="glass">
+          <CardHeader className="pb-3 border-b border-white/20">
             <Skeleton className="h-6 w-48" />
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-16 w-full" />
             ))}
@@ -67,7 +67,7 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
 
   if (!hasData) {
     return (
-      <Card>
+      <Card variant="glass">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
             <Users className="w-8 h-8 text-slate-400" />
@@ -86,14 +86,14 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-1">
       {/* Top por frecuencia */}
-      <Card>
-        <CardHeader>
+      <Card variant="glass">
+        <CardHeader className="pb-3 border-b border-white/20">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Trophy className="h-5 w-5 text-amber-500" />
             {t("topCustomers.byFrequency")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {metrics.topByFrequency.length > 0 ? (
             <div className="space-y-3">
               {metrics.topByFrequency.slice(0, 10).map((customer, index) => {
@@ -145,14 +145,14 @@ export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
       </Card>
 
       {/* Top por gasto */}
-      <Card>
-        <CardHeader>
+      <Card variant="glass">
+        <CardHeader className="pb-3 border-b border-white/20">
           <CardTitle className="flex items-center gap-2 text-lg">
             <DollarSign className="h-5 w-5 text-emerald-500" />
             {t("topCustomers.bySpending")}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {metrics.topBySpending.length > 0 ? (
             <div className="space-y-3">
               {metrics.topBySpending.slice(0, 10).map((customer, index) => {

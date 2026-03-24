@@ -26,22 +26,19 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
       title: t("metrics.totalSpent"),
       value: formatCurrency(metrics.totalSpent),
       icon: DollarSign,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-100",
+      variant: "gradient-emerald" as const,
     },
     {
       title: t("metrics.totalOrders"),
       value: metrics.totalOrders.toString(),
       icon: ShoppingCart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      variant: "gradient-blue" as const,
     },
     {
       title: t("metrics.averageOrder"),
       value: formatCurrency(metrics.averageOrderValue),
       icon: TrendingUp,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      variant: "gradient-purple" as const,
     },
     {
       title: t("metrics.firstOrder"),
@@ -52,8 +49,7 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
           })
         : "-",
       icon: Calendar,
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
+      variant: "gradient-amber" as const,
     },
   ];
 
@@ -62,21 +58,19 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
       {/* Métricas principales */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metricCards.map((card) => (
-          <Card key={card.title}>
+          <Card key={card.title} variant={card.variant}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">
+                  <p className="text-sm font-medium text-white/80">
                     {card.title}
                   </p>
-                  <p className="text-2xl font-bold text-slate-900 mt-2">
+                  <p className="text-2xl font-bold text-white mt-2">
                     {card.value}
                   </p>
                 </div>
-                <div
-                  className={`w-12 h-12 rounded-full ${card.bgColor} flex items-center justify-center`}
-                >
-                  <card.icon className={`h-6 w-6 ${card.color}`} />
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <card.icon className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -135,14 +129,14 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
 
       {/* Resumen adicional */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card variant="gradient-indigo">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-slate-500">
+            <CardTitle className="text-sm font-medium text-white/80">
               {t("metrics.lastOrderDate")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg font-semibold">
+            <p className="text-lg font-semibold text-white">
               {metrics.lastOrderDate
                 ? new Date(metrics.lastOrderDate).toLocaleDateString("es-ES", {
                     weekday: "long",
@@ -155,14 +149,14 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="gradient-indigo">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-slate-500">
+            <CardTitle className="text-sm font-medium text-white/80">
               {t("metrics.customerSince")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg font-semibold">
+            <p className="text-lg font-semibold text-white">
               {metrics.firstOrderDate
                 ? new Date(metrics.firstOrderDate).toLocaleDateString("es-ES", {
                     year: "numeric",
