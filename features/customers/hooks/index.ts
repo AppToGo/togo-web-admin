@@ -14,3 +14,7 @@ export {
 export { useUpdateCustomer } from "./useCustomerMutations";
 
 export { useGlobalCustomerMetrics } from "./useGlobalCustomerMetrics";
+
+// Nuevos hooks para lazy loading
+export { useIntersectionObserver } from "./useIntersectionObserver";
+export { useLazySection } from "./useLazySection";

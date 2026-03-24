@@ -227,62 +227,67 @@ export function CustomersTable({
       </Card>
 
       {/* Paginación */}
-      <div className="flex items-center justify-between px-2">
-        <div className="text-sm text-slate-500">
-          {tc("pagination.showing", {
-            from: (pagination.page - 1) * pagination.limit + 1,
-            to: Math.min(pagination.page * pagination.limit, pagination.total),
-            total: pagination.total,
-          })}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(1)}
-            disabled={!pagination.hasPreviousPage}
-            className="hidden sm:flex"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(pagination.page - 1)}
-            disabled={!pagination.hasPreviousPage}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            {tc("pagination.previous")}
-          </Button>
-
-          <span className="text-sm text-slate-600 px-2">
-            {tc("pagination.page", {
-              page: pagination.page,
-              total: pagination.totalPages,
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between px-2">
+          <div className="text-sm text-slate-500">
+            {tc("pagination.showing", {
+              from: (pagination.page - 1) * pagination.limit + 1,
+              to: Math.min(
+                pagination.page * pagination.limit,
+                pagination.total
+              ),
+              total: pagination.total,
             })}
-          </span>
+          </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(pagination.page + 1)}
-            disabled={!pagination.hasNextPage}
-          >
-            {tc("pagination.next")}
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(pagination.totalPages)}
-            disabled={!pagination.hasNextPage}
-            className="hidden sm:flex"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(1)}
+              disabled={!pagination.hasPreviousPage}
+              className="hidden sm:flex"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.page - 1)}
+              disabled={!pagination.hasPreviousPage}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              {tc("pagination.previous")}
+            </Button>
+
+            <span className="text-sm text-slate-600 px-2">
+              {tc("pagination.page", {
+                page: pagination.page,
+                total: pagination.totalPages,
+              })}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.page + 1)}
+              disabled={!pagination.hasNextPage}
+            >
+              {tc("pagination.next")}
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.totalPages)}
+              disabled={!pagination.hasNextPage}
+              className="hidden sm:flex"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
