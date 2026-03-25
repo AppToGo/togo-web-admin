@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,16 +10,13 @@ import {
   User,
   Phone,
   Mail,
-  MapPin,
   Calendar,
-  ChevronDown,
-  ChevronUp,
-  Building,
   StickyNote,
 } from "lucide-react";
 import type { Customer } from "../../types";
 import { SidebarSkeleton } from "./skeletons/sidebar-skeleton";
-import { MAX_NOTES_LENGTH, MAX_VISIBLE_ADDRESSES } from "../../constants";
+import { AddressList, type Address } from "./address-list";
+import { MAX_NOTES_LENGTH } from "../../constants";
 
 interface CustomerSidebarProps {
   customer: Customer | null;
@@ -44,7 +41,6 @@ export function CustomerSidebar({
 }: CustomerSidebarProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
-  const [showAllAddresses, setShowAllAddresses] = useState(false);
 
   // Debounce para guardar notas automáticamente
   const handleNotesChange = useCallback(
@@ -81,11 +77,7 @@ export function CustomerSidebar({
     );
   }
 
-  const addresses = customer.addresses || [];
-  const visibleAddresses = showAllAddresses
-    ? addresses
-    : addresses.slice(0, MAX_VISIBLE_ADDRESSES);
-  const hasMoreAddresses = addresses.length > MAX_VISIBLE_ADDRESSES;
+  const addresses: Address[] = customer.addresses || [];
 
   return (
     <div className="h-full flex flex-col">
@@ -151,66 +143,17 @@ export function CustomerSidebar({
             </div>
           </div>
 
-          {/* Direcciones */}
           {addresses.length > 0 && (
             <div className="pt-4 border-t border-slate-100">
-              <div className="flex items-center gap-2 mb-3">
-                <Building className="h-4 w-4 text-slate-400" />
-                <h3 className="font-medium text-slate-900 text-sm">
-                  {t("detail.addresses")}
-                </h3>
-                <span className="text-xs text-slate-400">
-                  ({addresses.length})
-                </span>
-              </div>
-              <div className="space-y-2">
-                {visibleAddresses.map((address) => (
-                  <div
-                    key={address.id}
-                    className="p-2.5 rounded-lg bg-slate-50 border border-slate-100"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-slate-900 text-sm">
-                        {address.label}
-                      </span>
-                      {address.isDefault && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-indigo-50 text-indigo-700 border-indigo-200"
-                        >
-                          {t("detail.default")}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-600 mt-1 flex items-start gap-1">
-                      <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                      {address.addressText}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              {hasMoreAddresses && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-2 text-slate-500"
-                  onClick={() => setShowAllAddresses(!showAllAddresses)}
-                >
-                  {showAllAddresses ? (
-                    <>
-                      <ChevronUp className="h-4 w-4 mr-1" />
-                      {t("detail.showLess")}
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4 mr-1" />
-                      {t("detail.showMore", {
-                        count: addresses.length - MAX_VISIBLE_ADDRESSES,
-                      })}
-                    </>
-                  )}
-                </Button>
-              )}
+              <AddressList
+                addresses={addresses}
+                translations={{
+                  title: t("detail.addresses"),
+                  defaultLabel: t("detail.default"),
+                  showMore: t("detail.showMore"),
+                  showLess: t("detail.showLess"),
+                }}
+              />
             </div>
           )}
 
