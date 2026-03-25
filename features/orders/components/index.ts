@@ -4,6 +4,7 @@ export { OrderStatusBadge } from "./order-status-badge";
 export { KanbanColumn } from "./KanbanColumn";
 export { OrderCard, PaymentStatusEditor, type CardViewMode } from "./OrderCard";
 export { OrderDetail } from "./OrderDetail";
+export { OrderDetailDialog } from "./OrderDetailDialog";
 export { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 export { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 export { ColumnVisibilityBar, type ColumnVisibilityConfig } from "./ColumnVisibilityBar";

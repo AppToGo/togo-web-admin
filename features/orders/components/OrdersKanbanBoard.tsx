@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
-import { OrderDetail } from "./OrderDetail";
+import { OrderDetailDialog } from "./OrderDetailDialog";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 
@@ -21,12 +21,7 @@ import {
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 
 interface OrdersKanbanBoardProps {
   searchQuery?: string;
@@ -317,26 +312,11 @@ export function OrdersKanbanBoard({
       />
 
       {/* Dialog de detalle de orden - Un solo dialog para todas las órdenes */}
-      <Dialog
-        open={isDetailOpen}
-        onOpenChange={(open) => !open && handleCloseDetail()}
-      >
-        <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="text-lg font-semibold text-slate-900">
-              Detalle de Orden
-            </DialogTitle>
-          </DialogHeader>
-          <div className="px-6 py-4">
-            {selectedOrderId && (
-              <OrderDetail
-                orderId={selectedOrderId}
-                onClose={handleCloseDetail}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <OrderDetailDialog
+        orderId={selectedOrderId || ""}
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+      />
     </>
   );
 }

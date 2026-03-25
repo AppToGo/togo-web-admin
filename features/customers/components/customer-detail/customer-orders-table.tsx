@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { OrderDetailDialog } from "@/features/orders/components/OrderDetailDialog";
 import {
   Table,
   TableBody,
@@ -28,7 +29,7 @@ export function CustomerOrdersTable({
 }: CustomerOrdersTableProps) {
   const t = useTranslations("customers");
   const to = useTranslations("orders");
-  const router = useRouter();
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   if (orders.length === 0) {
     return (
@@ -109,9 +110,7 @@ export function CustomerOrdersTable({
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
-                    onClick={() =>
-                      router.push(`/dashboard/orders?orderId=${order.orderId}`)
-                    }
+                    onClick={() => setSelectedOrderId(order.orderId)}
                   >
                     <ExternalLink className="h-4 w-4" />
                     <span className="sr-only">
@@ -133,6 +132,12 @@ export function CustomerOrdersTable({
           })}
         </p>
       )}
+
+      <OrderDetailDialog
+        orderId={selectedOrderId || ""}
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
     </div>
   );
 }

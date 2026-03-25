@@ -84,7 +84,7 @@ export function CustomerUnifiedLayout({
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-30  px-4 sm:px-6 py-4">
+      <header className="px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center">
             <Button
