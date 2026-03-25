@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useTranslations } from "next-intl";
-import dynamic from "next/dynamic";
-
-const OrderDetailDialog = dynamic(
-  () => import("@/features/orders/components/OrderDetailDialog").then((mod) => mod.OrderDetailDialog),
-  { ssr: false }
-);
+// Import directo desde el archivo (no desde barrel) para evitar problemas de contexto con next-intl
+import { OrderDetailDialog } from "@/features/orders/components/OrderDetailDialog";
 import {
   Table,
   TableBody,
@@ -138,13 +134,15 @@ export function CustomerOrdersTable({
         </p>
       )}
 
-      {/* Solo renderizar cuando hay orderId seleccionado */}
+      {/* Suspense boundary para evitar problemas de contexto con next-intl */}
       {selectedOrderId && (
-        <OrderDetailDialog
-          orderId={selectedOrderId}
-          isOpen={!!selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
-        />
+        <Suspense fallback={null}>
+          <OrderDetailDialog
+            orderId={selectedOrderId}
+            isOpen={!!selectedOrderId}
+            onClose={() => setSelectedOrderId(null)}
+          />
+        </Suspense>
       )}
     </div>
   );
