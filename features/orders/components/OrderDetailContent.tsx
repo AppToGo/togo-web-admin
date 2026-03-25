@@ -91,7 +91,8 @@ function getOrderTypeInfo(
 }
 
 // Función para formatear el ID como número de orden
-function formatOrderNumber(id: string): string {
+function formatOrderNumber(id: string | undefined): string {
+  if (!id) return "#------";
   return `#${id.slice(0, 6).toUpperCase()}`;
 }
 
@@ -247,7 +248,7 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
 
     const message = t("noStockDialog.messageTemplate")
       .replace('{productName}', selectedItem.productName)
-      .replace('{orderNumber}', formatOrderNumber(order.orderId));
+      .replace('{orderNumber}', formatOrderNumber(order?.orderId));
 
     const phone = order.customer.phoneNumber.replace(/\D/g, "");
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -314,7 +315,7 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
         <div className="flex flex-col gap-2">
           {/* Número de orden */}
           <span className="text-xl font-bold text-slate-900">
-            {formatOrderNumber(order.orderId)}
+            {order.orderId ? formatOrderNumber(order.orderId) : "#------"}
           </span>
 
           {/* Badges debajo del número */}
@@ -325,7 +326,7 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
           >
             {/* Badge de estado cliqueable */}
             <OrderStatusEditor
-              orderId={order.orderId}
+              orderId={order.orderId ?? ""}
               currentStatus={order.status}
               onStatusChange={handleStatusChange}
             />
@@ -491,7 +492,7 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
           onClick={(e) => e.stopPropagation()}
         >
           <PaymentStatusEditor
-            orderId={order.orderId}
+            orderId={order.orderId ?? ""}
             paymentMethod={order.paymentMethod}
             currentStatus={order.paymentStatus}
           />
