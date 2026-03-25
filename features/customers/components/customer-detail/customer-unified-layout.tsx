@@ -11,14 +11,15 @@ import {
   ChevronUp,
   Phone,
   Mail,
+  Calendar,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Customer } from "../../types";
-import { CustomerSidebar } from "./customer-sidebar";
 import { MetricsSection } from "./sections/metrics-section";
 import { OrdersSection } from "./sections/orders-section";
 import { FavoritesSection } from "./sections/favorites-section";
 import { AddressList, type Address } from "./address-list";
+import { useFormatDate } from "@/hooks/useFormatDate";
 
 interface CustomerUnifiedLayoutProps {
   customer: Customer | null;
@@ -43,6 +44,11 @@ export function CustomerUnifiedLayout({
   const tc = useTranslations("common");
   const router = useRouter();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Formatear fecha de creación del cliente
+  const customerSince = useFormatDate(customer?.createdAt, {
+    preset: "monthYear",
+  });
 
   // Fallback UI si no hay customer
   if (!customer) {
@@ -105,6 +111,13 @@ export function CustomerUnifiedLayout({
                       {customer.email}
                     </div>
                   )}
+                  {customerSince && (
+                    <div className="flex items-center justify-center gap-1 text-slate-500 text-sm mt-0.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {t("detail.customerSince")} :{" "}
+                      <span className="capitalize">{customerSince || "-"}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -130,17 +143,6 @@ export function CustomerUnifiedLayout({
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block w-80 border-r border-slate-200 bg-white overflow-hidden">
-          <CustomerSidebar
-            customer={customer}
-            notes={notes}
-            onNotesChange={onNotesChange}
-            onNotesSave={onNotesSave}
-            isSaving={isSavingNotes}
-          />
-        </aside>
-
         {/* Main area */}
         <main className="flex-1 overflow-y-auto bg-slate-50/50">
           <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
