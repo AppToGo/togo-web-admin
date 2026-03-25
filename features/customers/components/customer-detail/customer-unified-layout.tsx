@@ -14,11 +14,11 @@ import {
   Calendar,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { Customer } from "../../types";
+import type { Customer, CustomerAddress } from "../../types";
 import { MetricsSection } from "./sections/metrics-section";
 import { OrdersSection } from "./sections/orders-section";
 import { FavoritesSection } from "./sections/favorites-section";
-import { AddressList, type Address } from "./address-list";
+import { AddressList } from "./address-list";
 import { useFormatDate } from "@/hooks/useFormatDate";
 
 interface CustomerUnifiedLayoutProps {
@@ -73,7 +73,7 @@ export function CustomerUnifiedLayout({
   }
 
   const hasPhoneNumber = Boolean(customer.phoneNumber?.trim());
-  const addresses: Address[] = customer.addresses || [];
+  const addresses: CustomerAddress[] = customer.addresses || [];
 
   const handleWhatsAppClick = () => {
     if (hasPhoneNumber) {
