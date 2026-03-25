@@ -24,10 +24,7 @@ import {
   useUpdateOrderPaymentStatus,
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
-import {
-  formatCurrency,
-  canCompleteOrder,
-} from "../utils/order-status.utils";
+import { formatCurrency, canCompleteOrder } from "../utils/order-status.utils";
 import { categoryBadgeVariants } from "../styles";
 import { toast } from "sonner";
 
@@ -184,9 +181,7 @@ function OrderStatusEditor({
               >
                 {tStatus(status)}
               </span>
-              {isCurrent && (
-                <Check className="w-3.5 h-3.5 text-slate-400" />
-              )}
+              {isCurrent && <Check className="w-3.5 h-3.5 text-slate-400" />}
             </DropdownMenuItem>
           );
         })}
@@ -195,7 +190,10 @@ function OrderStatusEditor({
   );
 }
 
-export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps) {
+export function OrderDetailContent({
+  orderId,
+  onClose,
+}: OrderDetailContentProps) {
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
   const { data: history } = useOrderHistory(orderId);
   const updateStatus = useUpdateOrderStatus();
@@ -247,8 +245,8 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
     if (!selectedItem || !order?.customer?.phoneNumber) return;
 
     const message = t("noStockDialog.messageTemplate")
-      .replace('{productName}', selectedItem.productName)
-      .replace('{orderNumber}', formatOrderNumber(order?.orderId));
+      .replace("{productName}", selectedItem.productName)
+      .replace("{orderNumber}", formatOrderNumber(order?.orderId));
 
     const phone = order.customer.phoneNumber.replace(/\D/g, "");
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -352,7 +350,10 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
           </p>
           {deliveryFee > 0 && (
             <p className="text-xs text-slate-500">
-              {t("includesDelivery").replace('{fee}', formatCurrency(deliveryFee))}
+              {t("includesDelivery").replace(
+                "{fee}",
+                formatCurrency(deliveryFee)
+              )}
             </p>
           )}
         </div>
@@ -377,7 +378,9 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
             </div>
           )}
           {!order.customer?.name && !order.customer?.phoneNumber && (
-            <p className="text-sm text-slate-500">{tc("empty.infoNotAvailable")}</p>
+            <p className="text-sm text-slate-500">
+              {tc("empty.infoNotAvailable")}
+            </p>
           )}
         </div>
       </div>
@@ -403,7 +406,10 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Package className="w-4 h-4" />
-            {t("detail.itemsCount").replace('{count}', String(order.items.length))}
+            {t("detail.itemsCount").replace(
+              "{count}",
+              String(order.items.length)
+            )}
           </h4>
           <div className="bg-slate-50 rounded-card overflow-hidden">
             {order.items.map((item: OrderItem, index: number) => (
@@ -450,14 +456,18 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
               </div>
               {deliveryFee > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">{t("detail.deliveryFee")}</span>
+                  <span className="text-slate-600">
+                    {t("detail.deliveryFee")}
+                  </span>
                   <span className="text-slate-700">
                     {formatCurrency(deliveryFee)}
                   </span>
                 </div>
               )}
               <div className="flex items-center justify-between pt-1 border-t border-slate-200">
-                <p className="font-semibold text-slate-900">{t("detail.total")}</p>
+                <p className="font-semibold text-slate-900">
+                  {t("detail.total")}
+                </p>
                 <p className="font-bold text-slate-900">
                   {formatCurrency(total)}
                 </p>
@@ -498,7 +508,7 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
           />
           {order.paymentMethod && (
             <span className="text-sm text-slate-600">
-              {t("paymentMethod").replace('{method}', order.paymentMethod)}
+              {t("paymentMethod").replace("{method}", order.paymentMethod)}
             </span>
           )}
         </div>
@@ -521,7 +531,10 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
                   <span className="text-slate-600">
                     {entry.fromStatus
                       ? `${tStatus(entry.fromStatus)} → ${tStatus(entry.toStatus)}`
-                      : t("history.created").replace('{status}', tStatus(entry.toStatus))}
+                      : t("history.created").replace(
+                          "{status}",
+                          tStatus(entry.toStatus)
+                        )}
                   </span>
                   {entry.notes && (
                     <p className="text-xs text-slate-400 mt-0.5">
@@ -549,7 +562,10 @@ export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps
               {t("noStockDialog.title")}
             </h3>
             <p className="text-sm text-slate-500 mb-6">
-              {t("noStockDialog.description").replace('{productName}', selectedItem?.productName || "")}
+              {t("noStockDialog.description").replace(
+                "{productName}",
+                selectedItem?.productName || ""
+              )}
             </p>
             <div className="flex gap-3 w-full">
               <Button
