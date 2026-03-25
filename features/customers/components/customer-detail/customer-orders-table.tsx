@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { CustomerOrderDetailDialog } from "../customer-order-detail-dialog";
 import {
   Table,
   TableBody,
@@ -17,6 +16,7 @@ import { ExternalLink, Package } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { Order } from "@/features/orders/types";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
+import { OrderDetailDialog } from "@/features/orders/components/OrderDetailDialog";
 
 interface CustomerOrdersTableProps {
   orders: Order[];
@@ -137,12 +137,11 @@ export function CustomerOrdersTable({
         </p>
       )}
 
-      {/* Use CustomerOrderDetailDialog which provides its own translations */}
-      {/* Persistent mount para mantener el focus management correcto */}
-      <CustomerOrderDetailDialog
+      <OrderDetailDialog
         orderId={selectedOrderId || ""}
         isOpen={!!selectedOrderId}
         onClose={handleCloseDialog}
+        isReadOnly={true}
       />
     </div>
   );

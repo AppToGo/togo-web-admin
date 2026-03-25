@@ -44,6 +44,7 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 
 export interface OrderDetailContentProps {
   orderId: string;
+  isReadOnly?: boolean;
   onClose?: () => void;
 }
 
@@ -146,7 +147,7 @@ function OrderStatusEditor({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="min-w-[160px] z-9999"
+        className="min-w-40 z-9999"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {availableStatuses.map((status) => {
@@ -193,6 +194,7 @@ function OrderStatusEditor({
 
 export function OrderDetailContent({
   orderId,
+  isReadOnly = false,
   onClose,
 }: OrderDetailContentProps) {
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
@@ -434,13 +436,15 @@ export function OrderDetailContent({
                     {formatCurrency(item.unitPrice * item.quantity)}
                   </p>
                   {/* Subtle icon to indicate out of stock */}
-                  <button
-                    onClick={() => handleNoStock(item)}
-                    className="text-slate-300 hover:text-amber-500 transition-colors"
-                    title={t("markNoStock")}
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => handleNoStock(item)}
+                      className="text-slate-300 hover:text-amber-500 transition-colors"
+                      title={t("markNoStock")}
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 const OrderDetailContent = lazy(() =>
   import("./OrderDetailContent").then((mod) => ({
@@ -30,8 +31,8 @@ function OrderDetailSkeleton() {
 interface OrderDetailDialogProps {
   orderId: string;
   isOpen: boolean;
+  isReadOnly?: boolean;
   onClose: () => void;
-  title?: string;
 }
 
 /**
@@ -55,9 +56,10 @@ interface OrderDetailDialogProps {
 export const OrderDetailDialog = memo(function OrderDetailDialog({
   orderId,
   isOpen,
+  isReadOnly = false,
   onClose,
-  title = "Detalle de Orden",
 }: OrderDetailDialogProps) {
+  const t = useTranslations("orders");
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) onClose();
@@ -70,12 +72,16 @@ export const OrderDetailDialog = memo(function OrderDetailDialog({
       <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
           <DialogTitle className="text-lg font-semibold text-slate-900">
-            {title}
+            {t("detail.title")}
           </DialogTitle>
         </DialogHeader>
         <div className="px-6 py-4">
           <Suspense fallback={<OrderDetailSkeleton />}>
-            <OrderDetailContent orderId={orderId} onClose={onClose} />
+            <OrderDetailContent
+              orderId={orderId}
+              onClose={onClose}
+              isReadOnly={isReadOnly}
+            />
           </Suspense>
         </div>
       </DialogContent>
