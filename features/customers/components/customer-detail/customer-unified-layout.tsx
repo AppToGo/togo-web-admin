@@ -144,7 +144,7 @@ export function CustomerUnifiedLayout({
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Main area */}
-        <main className="flex-1 overflow-y-auto bg-slate-50/50">
+        <main className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
             {/* Mobile Sidebar Toggle */}
             <div className="lg:hidden">
