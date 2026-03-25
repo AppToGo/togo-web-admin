@@ -18,6 +18,7 @@ import { CustomerSidebar } from "./customer-sidebar";
 import { MetricsSection } from "./sections/metrics-section";
 import { OrdersSection } from "./sections/orders-section";
 import { FavoritesSection } from "./sections/favorites-section";
+import { AddressList, type Address } from "./address-list";
 
 interface CustomerUnifiedLayoutProps {
   customer: Customer | null;
@@ -66,6 +67,7 @@ export function CustomerUnifiedLayout({
   }
 
   const hasPhoneNumber = Boolean(customer.phoneNumber?.trim());
+  const addresses: Address[] = customer.addresses || [];
 
   const handleWhatsAppClick = () => {
     if (hasPhoneNumber) {
@@ -191,6 +193,19 @@ export function CustomerUnifiedLayout({
               {/* Favorites - Takes 1 column */}
               <div className="xl:col-span-1">
                 <FavoritesSection customerId={customerId} />
+                {addresses.length > 0 && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <AddressList
+                      addresses={addresses}
+                      translations={{
+                        title: t("detail.addresses"),
+                        defaultLabel: t("detail.default"),
+                        showMore: t("detail.showMore"),
+                        showLess: t("detail.showLess"),
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </section>
 

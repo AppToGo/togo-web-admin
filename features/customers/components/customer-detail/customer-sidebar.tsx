@@ -6,13 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  User,
-  Phone,
-  Mail,
-  Calendar,
-  StickyNote,
-} from "lucide-react";
+import { User, Phone, Mail, Calendar, StickyNote } from "lucide-react";
 import type { Customer } from "../../types";
 import { SidebarSkeleton } from "./skeletons/sidebar-skeleton";
 import { AddressList, type Address } from "./address-list";
@@ -54,7 +48,7 @@ export function CustomerSidebar({
   // Memoizar fechas formateadas
   const formattedDates = useMemo(() => {
     if (!customer) return null;
-    
+
     const formatDate = (date: Date | string | null) => {
       if (!date) return "-";
       return new Date(date).toLocaleDateString("es-ES", {
@@ -135,7 +129,9 @@ export function CustomerSidebar({
                 <Calendar className="h-4 w-4 text-blue-500" />
               </div>
               <div>
-                <p className="text-slate-500 text-xs">{t("detail.customerSince")}</p>
+                <p className="text-slate-500 text-xs">
+                  {t("detail.customerSince")}
+                </p>
                 <p className="font-medium text-slate-900">
                   {formattedDates?.customerSince || "-"}
                 </p>
