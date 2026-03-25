@@ -166,18 +166,6 @@ export function CustomerUnifiedLayout({
                   <ChevronDown className="h-4 w-4" />
                 )}
               </Button>
-
-              {isMobileSidebarOpen && (
-                <div className="mt-3 border rounded-lg bg-white overflow-hidden">
-                  <CustomerSidebar
-                    customer={customer}
-                    notes={notes}
-                    onNotesChange={onNotesChange}
-                    onNotesSave={onNotesSave}
-                    isSaving={isSavingNotes}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Metrics Grid - Full width */}
