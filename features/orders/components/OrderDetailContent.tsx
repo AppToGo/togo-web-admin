@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   useOrder,
   useOrderHistory,
@@ -43,22 +44,20 @@ import {
 import { getColumnVariant } from "../config/kanban-columns.config";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import { OrderDetailTranslations } from "./OrderDetailContainer";
 
 export interface OrderDetailContentProps {
   orderId: string;
   onClose?: () => void;
-  translations: OrderDetailTranslations;
 }
 
-// Order type with icon and color - receives translations as parameter
+// Order type with icon and color
 function getOrderTypeInfo(
   order: {
     deliveryType?: string;
     addressId?: string | null;
     source?: string;
   },
-  translations: OrderDetailTranslations
+  t: ReturnType<typeof useTranslations>
 ): {
   label: string;
   icon: React.ReactNode;
@@ -70,7 +69,7 @@ function getOrderTypeInfo(
 
   if (isDelivery) {
     return {
-      label: translations.deliveryTypes.delivery,
+      label: t("deliveryTypes.delivery"),
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
     };
@@ -78,14 +77,14 @@ function getOrderTypeInfo(
 
   if (order.source === "OPERATOR") {
     return {
-      label: translations.deliveryTypes.table,
+      label: t("deliveryTypes.table"),
       icon: <Utensils className="w-3 h-3" />,
       variant: "emerald",
     };
   }
 
   return {
-    label: translations.deliveryTypes.pickup,
+    label: t("deliveryTypes.pickup"),
     icon: <Store className="w-3 h-3" />,
     variant: "amber",
   };
@@ -101,15 +100,14 @@ function OrderStatusEditor({
   orderId,
   currentStatus,
   onStatusChange,
-  statusLabels,
 }: {
   orderId: string;
   currentStatus: OrderStatus;
   onStatusChange: (status: OrderStatus) => void;
-  statusLabels: Record<OrderStatus, string>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const variant = getColumnVariant(currentStatus);
+  const tStatus = useTranslations("orders.status");
 
   const handleSelect = useCallback(
     (newStatus: OrderStatus) => {
@@ -143,7 +141,7 @@ function OrderStatusEditor({
             "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 text-xs"
           )}
         >
-          <span>{statusLabels[currentStatus]}</span>
+          <span>{tStatus(currentStatus)}</span>
           <ChevronDown className="w-3 h-3 opacity-60" />
         </button>
       </DropdownMenuTrigger>
@@ -183,7 +181,7 @@ function OrderStatusEditor({
                   isCurrent ? "text-slate-500 font-medium" : "text-slate-700"
                 )}
               >
-                {statusLabels[status]}
+                {tStatus(status)}
               </span>
               {isCurrent && (
                 <Check className="w-3.5 h-3.5 text-slate-400" />
@@ -196,13 +194,18 @@ function OrderStatusEditor({
   );
 }
 
-export function OrderDetailContent({ orderId, onClose, translations }: OrderDetailContentProps) {
+export function OrderDetailContent({ orderId, onClose }: OrderDetailContentProps) {
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
   const { data: history } = useOrderHistory(orderId);
   const updateStatus = useUpdateOrderStatus();
   const [showNoStockDialog, setShowNoStockDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
   const { user } = useAuthStore();
+
+  // Translations
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
+  const tStatus = useTranslations("orders.status");
 
   // Verificar permisos para ver historial
   const canViewHistory =
@@ -217,8 +220,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
       if (newStatus === "COMPLETED") {
         const validation = canCompleteOrder(order);
         if (!validation.valid) {
-          const errorKey = validation.message?.split('.').pop() as keyof typeof translations.errors;
-          toast.error(translations.errors[errorKey] || translations.errors.cannotComplete);
+          toast.error(t("errors.cannotComplete"));
           return;
         }
       }
@@ -232,7 +234,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
         }
       );
     },
-    [order, orderId, updateStatus, onClose, translations]
+    [order, orderId, updateStatus, onClose, t]
   );
 
   const handleNoStock = useCallback((item: OrderItem) => {
@@ -243,7 +245,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
   const confirmNoStock = useCallback(() => {
     if (!selectedItem || !order?.customer?.phoneNumber) return;
 
-    const message = translations.noStockDialog.messageTemplate
+    const message = t("noStockDialog.messageTemplate")
       .replace('{productName}', selectedItem.productName)
       .replace('{orderNumber}', formatOrderNumber(order.orderId));
 
@@ -251,11 +253,11 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
 
-    toast.success(translations.whatsappOpened);
+    toast.success(t("whatsappOpened"));
 
     setShowNoStockDialog(false);
     setSelectedItem(null);
-  }, [selectedItem, order, translations]);
+  }, [selectedItem, order, t]);
 
   // Calcular totales incluyendo domicilio
   const { subtotal, deliveryFee, total } = useMemo(() => {
@@ -278,7 +280,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
   }, [order]);
 
   if (isLoadingOrder) {
-    return <OrderDetailSkeleton translations={translations} />;
+    return <OrderDetailSkeleton />;
   }
 
   if (!order) {
@@ -297,12 +299,12 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <p className="text-slate-500">{translations.orderNotFound}</p>
+        <p className="text-slate-500">{t("orderNotFound")}</p>
       </div>
     );
   }
 
-  const orderType = getOrderTypeInfo(order, translations);
+  const orderType = getOrderTypeInfo(order, t);
 
   return (
     <div className="space-y-6">
@@ -326,7 +328,6 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
               orderId={order.orderId}
               currentStatus={order.status}
               onStatusChange={handleStatusChange}
-              statusLabels={translations.status}
             />
 
             {/* Badge de tipo (domicilio/recoger/en mesa) */}
@@ -344,13 +345,13 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
 
         {/* Right: Total */}
         <div className="text-right">
-          <p className="text-sm text-slate-500">{translations.detail.total}</p>
+          <p className="text-sm text-slate-500">{t("detail.total")}</p>
           <p className="text-2xl font-bold text-slate-900">
             {formatCurrency(total)}
           </p>
           {deliveryFee > 0 && (
             <p className="text-xs text-slate-500">
-              {translations.includesDelivery.replace('{fee}', formatCurrency(deliveryFee))}
+              {t("includesDelivery").replace('{fee}', formatCurrency(deliveryFee))}
             </p>
           )}
         </div>
@@ -362,7 +363,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
       <div className="space-y-3">
         <h4 className="font-semibold text-slate-900 flex items-center gap-2">
           <User className="w-4 h-4" />
-          {translations.detail.customerInfo}
+          {t("detail.customerInfo")}
         </h4>
         <div className="bg-slate-50 rounded-card p-4 space-y-2">
           {order.customer?.name ? (
@@ -375,7 +376,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
             </div>
           )}
           {!order.customer?.name && !order.customer?.phoneNumber && (
-            <p className="text-sm text-slate-500">{translations.common.empty.infoNotAvailable}</p>
+            <p className="text-sm text-slate-500">{tc("empty.infoNotAvailable")}</p>
           )}
         </div>
       </div>
@@ -385,7 +386,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            {translations.detail.deliveryAddress}
+            {t("detail.deliveryAddress")}
           </h4>
           <div className="bg-slate-50 rounded-card p-4">
             <p className="font-medium text-slate-900">{order.address.label}</p>
@@ -401,7 +402,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Package className="w-4 h-4" />
-            {translations.detail.itemsCount.replace('{count}', String(order.items.length))}
+            {t("detail.itemsCount").replace('{count}', String(order.items.length))}
           </h4>
           <div className="bg-slate-50 rounded-card overflow-hidden">
             {order.items.map((item: OrderItem, index: number) => (
@@ -431,7 +432,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
                   <button
                     onClick={() => handleNoStock(item)}
                     className="text-slate-300 hover:text-amber-500 transition-colors"
-                    title={translations.markNoStock}
+                    title={t("markNoStock")}
                   >
                     <AlertTriangle className="w-4 h-4" />
                   </button>
@@ -441,21 +442,21 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
             {/* Totals breakdown */}
             <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">{translations.detail.subtotal}</span>
+                <span className="text-slate-600">{t("detail.subtotal")}</span>
                 <span className="text-slate-700">
                   {formatCurrency(subtotal)}
                 </span>
               </div>
               {deliveryFee > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">{translations.detail.deliveryFee}</span>
+                  <span className="text-slate-600">{t("detail.deliveryFee")}</span>
                   <span className="text-slate-700">
                     {formatCurrency(deliveryFee)}
                   </span>
                 </div>
               )}
               <div className="flex items-center justify-between pt-1 border-t border-slate-200">
-                <p className="font-semibold text-slate-900">{translations.detail.total}</p>
+                <p className="font-semibold text-slate-900">{t("detail.total")}</p>
                 <p className="font-bold text-slate-900">
                   {formatCurrency(total)}
                 </p>
@@ -470,7 +471,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <StickyNote className="w-4 h-4" />
-            {translations.detail.notes}
+            {t("detail.notes")}
           </h4>
           <div className="bg-amber-50 rounded-card p-4">
             <p className="text-sm text-amber-800">{order.notes}</p>
@@ -482,7 +483,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
       <div className="space-y-3">
         <h4 className="font-semibold text-slate-900 flex items-center gap-2">
           <CreditCard className="w-4 h-4" />
-          {translations.paymentInfo}
+          {t("paymentInfo")}
         </h4>
         <div
           className="flex items-center gap-4"
@@ -493,11 +494,10 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
             orderId={order.orderId}
             paymentMethod={order.paymentMethod}
             currentStatus={order.paymentStatus}
-            translations={translations}
           />
           {order.paymentMethod && (
             <span className="text-sm text-slate-600">
-              {translations.paymentMethod.replace('{method}', order.paymentMethod)}
+              {t("paymentMethod").replace('{method}', order.paymentMethod)}
             </span>
           )}
         </div>
@@ -508,7 +508,7 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            {translations.detail.history}
+            {t("detail.history")}
           </h4>
           <div className="space-y-2">
             {history.slice(0, 5).map((entry) => (
@@ -519,8 +519,8 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
                 <div>
                   <span className="text-slate-600">
                     {entry.fromStatus
-                      ? `${translations.status[entry.fromStatus]} → ${translations.status[entry.toStatus]}`
-                      : translations.history.created.replace('{status}', translations.status[entry.toStatus])}
+                      ? `${tStatus(entry.fromStatus)} → ${tStatus(entry.toStatus)}`
+                      : t("history.created").replace('{status}', tStatus(entry.toStatus))}
                   </span>
                   {entry.notes && (
                     <p className="text-xs text-slate-400 mt-0.5">
@@ -545,10 +545,10 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
               <AlertTriangle className="w-6 h-6 text-amber-600" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              {translations.noStockDialog.title}
+              {t("noStockDialog.title")}
             </h3>
             <p className="text-sm text-slate-500 mb-6">
-              {translations.noStockDialog.description.replace('{productName}', selectedItem?.productName || "")}
+              {t("noStockDialog.description").replace('{productName}', selectedItem?.productName || "")}
             </p>
             <div className="flex gap-3 w-full">
               <Button
@@ -556,14 +556,14 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
                 onClick={() => setShowNoStockDialog(false)}
                 className="flex-1"
               >
-                {translations.common.buttons.cancel}
+                {tc("buttons.cancel")}
               </Button>
               <Button
                 variant="amber"
                 onClick={confirmNoStock}
                 className="flex-1"
               >
-                {translations.common.buttons.confirm}
+                {tc("buttons.confirm")}
               </Button>
             </div>
           </div>
@@ -573,20 +573,19 @@ export function OrderDetailContent({ orderId, onClose, translations }: OrderDeta
   );
 }
 
-// PaymentStatusEditor component that receives translations
+// PaymentStatusEditor component
 function PaymentStatusEditor({
   orderId,
   currentStatus,
   paymentMethod,
-  translations,
 }: {
   orderId: string;
   currentStatus: import("../types").PaymentStatus;
   paymentMethod?: string;
-  translations: OrderDetailTranslations;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const updatePaymentStatus = useUpdateOrderPaymentStatus();
+  const t = useTranslations("orders");
 
   const handleSelect = useCallback(
     (newStatus: import("../types").PaymentStatus) => {
@@ -607,7 +606,7 @@ function PaymentStatusEditor({
   // Badge base con icono de método de pago
   const badgeContent = (
     <>
-      <span>{translations.paymentStatus[currentStatus]}</span>
+      <span>{t(`paymentStatus.${currentStatus}`)}</span>
     </>
   );
 
@@ -654,7 +653,7 @@ function PaymentStatusEditor({
             className="flex items-center gap-2 text-xs cursor-pointer"
           >
             <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-slate-700">{translations.paymentStatus.PAID}</span>
+            <span className="text-slate-700">{t("paymentStatus.PAID")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -662,7 +661,7 @@ function PaymentStatusEditor({
   );
 }
 
-function OrderDetailSkeleton({ translations }: { translations: OrderDetailTranslations }) {
+function OrderDetailSkeleton() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
