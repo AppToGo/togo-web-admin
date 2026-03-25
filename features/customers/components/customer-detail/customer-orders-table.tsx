@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { CustomerOrderDetailDialog } from "../customer-order-detail-dialog";
 import {
@@ -30,6 +30,10 @@ export function CustomerOrdersTable({
   const t = useTranslations("customers");
   const to = useTranslations("orders");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+  const handleCloseDialog = useCallback(() => {
+    setSelectedOrderId(null);
+  }, []);
 
   if (orders.length === 0) {
     return (
@@ -134,13 +138,12 @@ export function CustomerOrdersTable({
       )}
 
       {/* Use CustomerOrderDetailDialog which provides its own translations */}
-      {selectedOrderId && (
-        <CustomerOrderDetailDialog
-          orderId={selectedOrderId}
-          isOpen={!!selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
-        />
-      )}
+      {/* Persistent mount para mantener el focus management correcto */}
+      <CustomerOrderDetailDialog
+        orderId={selectedOrderId || ""}
+        isOpen={!!selectedOrderId}
+        onClose={handleCloseDialog}
+      />
     </div>
   );
 }
