@@ -311,12 +311,14 @@ export function OrdersKanbanBoard({
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
 
-      {/* Dialog de detalle de orden - Un solo dialog para todas las órdenes */}
-      <OrderDetailDialog
-        orderId={selectedOrderId || ""}
-        isOpen={isDetailOpen}
-        onClose={handleCloseDetail}
-      />
+      {/* Dialog de detalle de orden - Solo renderizar cuando hay orderId seleccionado */}
+      {selectedOrderId && (
+        <OrderDetailDialog
+          orderId={selectedOrderId}
+          isOpen={isDetailOpen}
+          onClose={handleCloseDetail}
+        />
+      )}
     </>
   );
 }

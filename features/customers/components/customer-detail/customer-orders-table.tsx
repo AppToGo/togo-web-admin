@@ -138,11 +138,14 @@ export function CustomerOrdersTable({
         </p>
       )}
 
-      <OrderDetailDialog
-        orderId={selectedOrderId || ""}
-        isOpen={!!selectedOrderId}
-        onClose={() => setSelectedOrderId(null)}
-      />
+      {/* Solo renderizar cuando hay orderId seleccionado */}
+      {selectedOrderId && (
+        <OrderDetailDialog
+          orderId={selectedOrderId}
+          isOpen={!!selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
+      )}
     </div>
   );
 }

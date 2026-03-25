@@ -30,7 +30,8 @@ export function OrderDetailDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="px-6 py-4">
-          {orderId && <OrderDetail orderId={orderId} onClose={onClose} />}
+          {/* SIEMPRE renderizar OrderDetail cuando el Dialog está abierto */}
+          <OrderDetail orderId={orderId} onClose={onClose} />
         </div>
       </DialogContent>
     </Dialog>
