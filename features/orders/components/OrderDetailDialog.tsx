@@ -1,18 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-// Import dinámico para evitar problemas de SSR/hidratación con next-intl
-const OrderDetail = dynamic(
-  () => import("./OrderDetail").then((mod) => mod.OrderDetail),
-  { ssr: false }
-);
+import { OrderDetail } from "./OrderDetail";
 
 interface OrderDetailDialogProps {
   orderId: string;

@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { OrderDetailDialog } from "@/features/orders/components/OrderDetailDialog";
+import dynamic from "next/dynamic";
+
+const OrderDetailDialog = dynamic(
+  () => import("@/features/orders/components/OrderDetailDialog").then((mod) => mod.OrderDetailDialog),
+  { ssr: false }
+);
 import {
   Table,
   TableBody,
