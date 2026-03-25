@@ -90,7 +90,8 @@ function getOrderTypeInfo(
 // Función para formatear el ID como número de orden
 function formatOrderNumber(id: string | undefined): string {
   if (!id) return "#------";
-  return `#${id.slice(0, 6).toUpperCase()}`;
+  console.log("Formatting order ID:", id);
+  return `#${id.slice(-6).toUpperCase()}`;
 }
 
 // Component to change order status (similar to PaymentStatusEditor)
@@ -145,7 +146,7 @@ function OrderStatusEditor({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="min-w-[160px] z-[9999]"
+        className="min-w-[160px] z-9999"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {availableStatuses.map((status) => {
@@ -246,7 +247,7 @@ export function OrderDetailContent({
 
     const message = t("noStockDialog.messageTemplate")
       .replace("{productName}", selectedItem.productName)
-      .replace("{orderNumber}", formatOrderNumber(order?.orderId));
+      .replace("{orderNumber}", formatOrderNumber(order?.id));
 
     const phone = order.customer.phoneNumber.replace(/\D/g, "");
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -313,7 +314,7 @@ export function OrderDetailContent({
         <div className="flex flex-col gap-2">
           {/* Número de orden */}
           <span className="text-xl font-bold text-slate-900">
-            {order.orderId ? formatOrderNumber(order.orderId) : "#------"}
+            {order.id ? formatOrderNumber(order.id) : "#------"}
           </span>
 
           {/* Badges debajo del número */}
@@ -324,7 +325,7 @@ export function OrderDetailContent({
           >
             {/* Badge de estado cliqueable */}
             <OrderStatusEditor
-              orderId={order.orderId ?? ""}
+              orderId={order.id ?? ""}
               currentStatus={order.status}
               onStatusChange={handleStatusChange}
             />
@@ -406,10 +407,7 @@ export function OrderDetailContent({
         <div className="space-y-3">
           <h4 className="font-semibold text-slate-900 flex items-center gap-2">
             <Package className="w-4 h-4" />
-            {t("detail.itemsCount").replace(
-              "{count}",
-              String(order.items.length)
-            )}
+            {t("detail.itemsCount", { count: order.items.length })}
           </h4>
           <div className="bg-slate-50 rounded-card overflow-hidden">
             {order.items.map((item: OrderItem, index: number) => (
@@ -502,7 +500,7 @@ export function OrderDetailContent({
           onClick={(e) => e.stopPropagation()}
         >
           <PaymentStatusEditor
-            orderId={order.orderId ?? ""}
+            orderId={order.id ?? ""}
             paymentMethod={order.paymentMethod}
             currentStatus={order.paymentStatus}
           />
@@ -562,10 +560,9 @@ export function OrderDetailContent({
               {t("noStockDialog.title")}
             </h3>
             <p className="text-sm text-slate-500 mb-6">
-              {t("noStockDialog.description").replace(
-                "{productName}",
-                selectedItem?.productName || ""
-              )}
+              {t("noStockDialog.description", {
+                productName: selectedItem?.productName || "",
+              })}
             </p>
             <div className="flex gap-3 w-full">
               <Button
@@ -662,7 +659,7 @@ function PaymentStatusEditor({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="min-w-[140px] z-[9999]"
+          className="min-w-35 z-9999"
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <DropdownMenuItem

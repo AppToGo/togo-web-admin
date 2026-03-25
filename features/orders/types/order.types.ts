@@ -56,7 +56,7 @@ export interface OrderItem {
 
 // Orden completa
 export interface Order {
-  orderId: string;
+  id: string;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod?: string;

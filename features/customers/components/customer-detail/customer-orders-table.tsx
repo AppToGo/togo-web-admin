@@ -79,10 +79,10 @@ export function CustomerOrdersTable({
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.orderId} className="hover:bg-slate-50">
+              <TableRow key={order.id} className="hover:bg-slate-50">
                 <TableCell>
                   <span className="font-mono text-sm">
-                    {order.orderId?.slice(-6).toUpperCase() || "N/A"}
+                    {order.id?.slice(-6).toUpperCase() || "N/A"}
                   </span>
                 </TableCell>
                 <TableCell>
@@ -114,7 +114,7 @@ export function CustomerOrdersTable({
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
-                    onClick={() => setSelectedOrderId(order.orderId)}
+                    onClick={() => setSelectedOrderId(order.id)}
                   >
                     <ExternalLink className="h-4 w-4" />
                     <span className="sr-only">
