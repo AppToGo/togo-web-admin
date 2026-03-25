@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-// Import directo desde el archivo (no desde barrel) para evitar problemas de contexto con next-intl
-import { OrderDetailDialog } from "@/features/orders/components/OrderDetailDialog";
+import { CustomerOrderDetailDialog } from "../customer-order-detail-dialog";
 import {
   Table,
   TableBody,
@@ -134,15 +133,13 @@ export function CustomerOrdersTable({
         </p>
       )}
 
-      {/* Suspense boundary para evitar problemas de contexto con next-intl */}
+      {/* Use CustomerOrderDetailDialog which provides its own translations */}
       {selectedOrderId && (
-        <Suspense fallback={null}>
-          <OrderDetailDialog
-            orderId={selectedOrderId}
-            isOpen={!!selectedOrderId}
-            onClose={() => setSelectedOrderId(null)}
-          />
-        </Suspense>
+        <CustomerOrderDetailDialog
+          orderId={selectedOrderId}
+          isOpen={!!selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
       )}
     </div>
   );
