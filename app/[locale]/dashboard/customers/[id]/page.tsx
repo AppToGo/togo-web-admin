@@ -65,7 +65,9 @@ function CustomerDetailLoading() {
   );
 }
 
-export default function CustomerDetailPage({ params }: CustomerDetailPageProps) {
+export default function CustomerDetailPage({
+  params,
+}: CustomerDetailPageProps) {
   const t = useTranslations("customers");
   useAuthGuard();
 
@@ -74,11 +76,9 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto">
-        <Suspense fallback={<CustomerDetailLoading />}>
-          <CustomerDetail customerId={id} />
-        </Suspense>
-      </div>
+      <Suspense fallback={<CustomerDetailLoading />}>
+        <CustomerDetail customerId={id} />
+      </Suspense>
     </DashboardLayout>
   );
 }

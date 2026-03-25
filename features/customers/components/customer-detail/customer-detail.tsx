@@ -18,7 +18,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
   const [notes, setNotes] = useState("");
-  
+
   // Debounce notes para auto-save
   const debouncedNotes = useDebounce(notes, 1000);
 
@@ -32,7 +32,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Guardar notas - memoizado para evitar recreaciones
   const handleSaveNotes = useCallback(async () => {
     if (!customer) return;
-    
+
     try {
       await updateCustomer.mutateAsync({
         customerId,
@@ -62,7 +62,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex flex-col">
         {/* Header skeleton */}
-        <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4">
+        <div className="grid grid-cols-6 gap-4 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-10" />
@@ -76,16 +76,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
         </div>
 
         {/* Content skeleton */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Sidebar skeleton */}
-          <div className="hidden lg:block w-80 border-r border-slate-200 bg-white p-6">
-            <div className="flex flex-col items-center space-y-4">
-              <Skeleton className="h-20 w-20 rounded-full" />
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-
+        <div className="flex-1 flex overflow-hidden gap-4">
           {/* Main skeleton */}
           <div className="flex-1 p-6 space-y-6">
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">

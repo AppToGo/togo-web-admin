@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp,
+  Phone,
+  Mail,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Customer } from "../../types";
 import { CustomerSidebar } from "./customer-sidebar";
@@ -68,26 +76,35 @@ export function CustomerUnifiedLayout({
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 sm:px-6 py-4">
+      <header className="sticky top-0 z-30  px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <Button
-              variant="outline"
+              variant="link"
               size="sm"
               onClick={() => router.push("/dashboard/customers")}
-              className="shrink-0"
+              className="shrink-0 cursor-pointer pl-0"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{tc("buttons.back")}</span>
+              <ArrowLeft className="h-4 w-4 mr-1" />
             </Button>
-
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
-                {customer.name || t("detail.anonymous")}
-              </h1>
-              <p className="text-sm text-slate-500 hidden sm:block">
-                {customer.phoneNumber}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
+                  {customer.name || t("detail.anonymous")}
+                </h1>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1 text-slate-500 text-sm mt-1">
+                    <Phone className="h-3.5 w-3.5" />
+                    {customer.phoneNumber}
+                  </div>
+                  {customer.email && (
+                    <div className="flex items-center justify-center gap-1 text-slate-500 text-sm mt-0.5">
+                      <Mail className="h-3.5 w-3.5" />
+                      {customer.email}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -97,9 +114,13 @@ export function CustomerUnifiedLayout({
             onClick={handleWhatsAppClick}
             disabled={!hasPhoneNumber}
             className="shrink-0"
-            title={hasPhoneNumber ? t("detail.whatsapp") : t("detail.noPhoneNumber")}
+            title={
+              hasPhoneNumber ? t("detail.whatsapp") : t("detail.noPhoneNumber")
+            }
           >
-            <MessageCircle className={`h-4 w-4 mr-2 ${hasPhoneNumber ? "text-green-600" : "text-slate-400"}`} />
+            <MessageCircle
+              className={`h-4 w-4 mr-2 ${hasPhoneNumber ? "text-green-600" : "text-slate-400"}`}
+            />
             <span className="hidden sm:inline">{t("detail.whatsapp")}</span>
           </Button>
         </div>
@@ -130,7 +151,8 @@ export function CustomerUnifiedLayout({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                    {customer.name?.charAt(0).toUpperCase() || customer.phoneNumber.charAt(0)}
+                    {customer.name?.charAt(0).toUpperCase() ||
+                      customer.phoneNumber.charAt(0)}
                   </span>
                   {t("detail.customerInfo")}
                 </span>
@@ -140,7 +162,7 @@ export function CustomerUnifiedLayout({
                   <ChevronDown className="h-4 w-4" />
                 )}
               </Button>
-              
+
               {isMobileSidebarOpen && (
                 <div className="mt-3 border rounded-lg bg-white overflow-hidden">
                   <CustomerSidebar
