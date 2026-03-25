@@ -58,6 +58,16 @@
     "favoriteProducts": "Favorite products",
     "noOrders": "No orders",
     "noOrdersDescription": "This customer has not placed any orders yet.",
+    "orders": {
+      "orderId": "Order #",
+      "date": "Date",
+      "status": "Status",
+      "payment": "Payment",
+      "amount": "Total",
+      "actions": "Actions",
+      "viewOrder": "View order",
+      "showing": "Showing {shown} of {total} orders"
+    },
     "noFavorites": "No favorite products",
     "noFavoritesDescription": "This customer doesn't have any favorite products yet.",
     "whatsapp": "Open WhatsApp",

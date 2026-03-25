@@ -15,16 +15,18 @@ interface OrdersSectionProps {
 export function OrdersSection({ customerId }: OrdersSectionProps) {
   const t = useTranslations("customers");
   const { ref, shouldLoad } = useLazySection(customerId, "orders");
-  
+
   const {
     data: orders,
     meta: ordersMeta,
     isLoading,
   } = useCustomerOrders(customerId, 1, 10, shouldLoad);
 
+  console.log("OrdersSection render", { orders, ordersMeta });
+
   return (
     <div ref={ref} className="h-full">
-      <Card className="h-full">
+      <Card variant="glass" className="h-full">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />

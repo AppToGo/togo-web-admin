@@ -31,8 +31,8 @@
     "averageOrder": "Ticket promedio",
     "firstOrder": "Primera compra",
     "favoriteProducts": "Productos favoritos",
-    "timesOrdered": "Veces pedido",
-    "totalSpentOnProduct": "Total gastado en producto",
+    "timesOrdered": "{count} veces pedido",
+    "totalSpentOnProduct": "Gastado",
     "lastOrderDate": "Última compra",
     "customerSince": "Cliente desde"
   },
@@ -45,7 +45,6 @@
     "noData": "No hay datos",
     "noDataDescription": "No encontramos datos para este periodo."
   },
-
   "detail": {
     "title": "Detalle del Cliente",
     "information": "Información",
@@ -58,6 +57,16 @@
     "favoriteProducts": "Productos favoritos",
     "noOrders": "Sin pedidos",
     "noOrdersDescription": "Este cliente aún no ha realizado ningún pedido.",
+    "ordersTable": {
+      "orderId": "Pedido #",
+      "date": "Fecha",
+      "status": "Estado",
+      "payment": "Pago",
+      "amount": "Total",
+      "actions": "Acciones",
+      "viewOrder": "Ver pedido",
+      "showing": "Mostrando {shown} de {total} pedidos"
+    },
     "noFavorites": "Sin productos favoritos",
     "noFavoritesDescription": "Este cliente aún no tiene productos favoritos.",
     "whatsapp": "Abrir WhatsApp",

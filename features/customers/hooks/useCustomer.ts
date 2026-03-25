@@ -104,9 +104,12 @@ export function useCustomerOrders(
 
   return {
     ...query,
-    data: query.data?.data ?? [],
-    meta: query.data?.meta,
+    data: query.data?.orders ?? [],
+    meta: {
+      limit: query.data?.limit,
+      page: query.data?.page,
+      total: query.data?.total,
+      totalPages: query.data?.totalPages,
+    },
   };
 }
-
-

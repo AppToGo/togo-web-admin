@@ -86,7 +86,9 @@ export async function getCustomerById(
   id: string,
   businessId?: string
 ): Promise<Customer> {
-  const { data } = await apiClient.get<Customer>(`${getBaseUrl(businessId)}/${id}`);
+  const { data } = await apiClient.get<Customer>(
+    `${getBaseUrl(businessId)}/${id}`
+  );
   return data;
 }
 

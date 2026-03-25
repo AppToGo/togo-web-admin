@@ -15,7 +15,7 @@ interface FavoritesSectionProps {
 export function FavoritesSection({ customerId }: FavoritesSectionProps) {
   const t = useTranslations("customers");
   const { ref, shouldLoad } = useLazySection(customerId, "favorites");
-  
+
   const { data: metrics, isLoading } = useCustomerMetrics(
     customerId,
     shouldLoad
@@ -23,9 +23,11 @@ export function FavoritesSection({ customerId }: FavoritesSectionProps) {
 
   const favoriteProducts = metrics?.favoriteProducts?.slice(0, 5) || [];
 
+  console.log("FavoritesSection render", { favoriteProducts });
+
   return (
     <div ref={ref}>
-      <Card>
+      <Card variant="glass">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
@@ -40,11 +42,11 @@ export function FavoritesSection({ customerId }: FavoritesSectionProps) {
               {t("detail.noFavorites")}
             </p>
           ) : (
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+            <div className="space-y-3  pr-1">
               {favoriteProducts.map((product, index) => (
                 <div
                   key={product.productId}
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-white transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-xs sm:text-sm">
@@ -52,7 +54,7 @@ export function FavoritesSection({ customerId }: FavoritesSectionProps) {
                     </div>
                     <div>
                       <p className="font-medium text-slate-900 text-sm">
-                        {product.productName}
+                        {product.name}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                         <Package className="h-3 w-3" />

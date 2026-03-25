@@ -36,7 +36,7 @@ export function MetricsSection({ customerId }: MetricsSectionProps) {
     },
     {
       title: t("metrics.averageOrder"),
-      value: metrics ? formatCurrency(metrics.averageOrderValue) : "-",
+      value: metrics ? formatCurrency(metrics.avgOrderValue) : "-",
       icon: TrendingUp,
       variant: "purple" as const,
     },
@@ -53,23 +53,6 @@ export function MetricsSection({ customerId }: MetricsSectionProps) {
     },
   ];
 
-  const getCardClasses = (variant: string) => {
-    // Glassmorphism style como la imagen: fondo translúcido con tinte de color
-    const baseClasses = "relative backdrop-blur-2xl ";
-    switch (variant) {
-      case "emerald":
-        return `${baseClasses} bg-gradient-to-br from-emerald-400/15 via-white/10 to-emerald-500/20`;
-      case "blue":
-        return `${baseClasses} bg-gradient-to-br from-blue-400/15 via-white/10 to-blue-500/20`;
-      case "purple":
-        return `${baseClasses} bg-gradient-to-br from-purple-400/15 via-white/10 to-purple-500/20`;
-      case "amber":
-        return `${baseClasses} bg-gradient-to-br from-amber-400/15 via-white/10 to-amber-500/20`;
-      default:
-        return `${baseClasses} bg-gradient-to-br from-slate-400/15 via-white/10 to-slate-500/20`;
-    }
-  };
-
   return (
     <div ref={ref} className="w-full">
       {isLoading || !metrics ? (
@@ -77,11 +60,7 @@ export function MetricsSection({ customerId }: MetricsSectionProps) {
       ) : (
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {metricCards.map((card) => (
-            <Card
-              key={card.title}
-              variant="glass"
-              className={getCardClasses(card.variant)}
-            >
+            <Card key={card.title} variant={`metrics-${card.variant}`}>
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>

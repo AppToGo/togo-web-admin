@@ -44,7 +44,7 @@ export interface CustomerAddress {
  */
 export interface FavoriteProduct {
   productId: string;
-  productName: string;
+  name: string;
   totalQuantity: number;
   totalSpent: number;
 }
@@ -55,7 +55,7 @@ export interface FavoriteProduct {
 export interface CustomerMetrics {
   totalOrders: number;
   totalSpent: number;
-  averageOrderValue: number;
+  avgOrderValue: number;
   firstOrderDate: Date | null;
   lastOrderDate: Date | null;
   favoriteProducts: FavoriteProduct[];
@@ -147,9 +147,10 @@ export interface UpdateCustomerRequest {
 /**
  * Respuesta paginada de órdenes (reutilizada de orders)
  */
-export interface PaginatedOrdersResponse {
-  data: Order[];
-  meta: PaginationMeta;
+export interface PaginatedOrdersResponse extends PaginationMeta {
+  orders: Order[];
+  customerId: string;
+  customerName: string | null;
 }
 
 /**

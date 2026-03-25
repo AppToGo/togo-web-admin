@@ -51,31 +51,33 @@ export function CustomerOrdersTable({
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead className="text-slate-700 font-semibold">
-                {t("detail.orders.orderId")}
+                {t("detail.ordersTable.orderId")}
               </TableHead>
               <TableHead className="text-slate-700 font-semibold">
-                {t("detail.orders.date")}
+                {t("detail.ordersTable.date")}
               </TableHead>
               <TableHead className="text-slate-700 font-semibold">
-                {t("detail.orders.status")}
+                {t("detail.ordersTable.status")}
               </TableHead>
               <TableHead className="text-slate-700 font-semibold">
-                {t("detail.orders.payment")}
+                {t("detail.ordersTable.payment")}
               </TableHead>
               <TableHead className="text-slate-700 font-semibold text-right">
-                {t("detail.orders.amount")}
+                {t("detail.ordersTable.amount")}
               </TableHead>
               <TableHead className="text-slate-700 font-semibold">
-                <span className="sr-only">{t("detail.orders.actions")}</span>
+                <span className="sr-only">
+                  {t("detail.ordersTable.actions")}
+                </span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-slate-50">
+              <TableRow key={order.orderId} className="hover:bg-slate-50">
                 <TableCell>
                   <span className="font-mono text-sm">
-                    #{order.id.slice(-6).toUpperCase()}
+                    {order.orderId?.slice(-6).toUpperCase() || "N/A"}
                   </span>
                 </TableCell>
                 <TableCell>
@@ -90,26 +92,30 @@ export function CustomerOrdersTable({
                 </TableCell>
                 <TableCell>
                   <Badge
-                    variant={order.paymentStatus === "PAID" ? "default" : "secondary"}
+                    variant={
+                      order.paymentStatus === "PAID" ? "default" : "secondary"
+                    }
                   >
                     {order.paymentStatus === "PAID"
-                      ? to("payment.paid")
-                      : to("payment.pending")}
+                      ? to("paymentStatus.PAID")
+                      : to("paymentStatus.PENDING")}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   {formatCurrency(order.totalAmount)}
                 </TableCell>
                 <TableCell>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-8 w-8 p-0"
-                    onClick={() => router.push(`/dashboard/orders?orderId=${order.id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/orders?orderId=${order.orderId}`)
+                    }
                   >
                     <ExternalLink className="h-4 w-4" />
                     <span className="sr-only">
-                      {t("detail.orders.viewOrder")}
+                      {t("detail.ordersTable.viewOrder")}
                     </span>
                   </Button>
                 </TableCell>
@@ -121,7 +127,7 @@ export function CustomerOrdersTable({
 
       {totalCount > orders.length && (
         <p className="text-sm text-slate-500 text-center">
-          {t("detail.orders.showing", {
+          {t("detail.ordersTable.showing", {
             shown: orders.length,
             total: totalCount,
           })}

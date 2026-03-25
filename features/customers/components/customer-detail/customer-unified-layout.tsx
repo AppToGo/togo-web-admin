@@ -185,15 +185,7 @@ export function CustomerUnifiedLayout({
                 <FavoritesSection customerId={customerId} />
                 {addresses.length > 0 && (
                   <div className="pt-4 border-t border-slate-100">
-                    <AddressList
-                      addresses={addresses}
-                      translations={{
-                        title: t("detail.addresses"),
-                        defaultLabel: t("detail.default"),
-                        showMore: t("detail.showMore"),
-                        showLess: t("detail.showLess"),
-                      }}
-                    />
+                    <AddressList addresses={addresses} />
                   </div>
                 )}
               </div>
