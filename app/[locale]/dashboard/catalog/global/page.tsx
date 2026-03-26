@@ -28,7 +28,10 @@ import {
   GlobalProductCard,
   ActivateProductModal,
 } from "@/features/catalog/components";
-import type { GlobalProduct, ActivateGlobalProductDto } from "@/features/catalog/types";
+import type {
+  GlobalProduct,
+  ActivateGlobalProductDto,
+} from "@/features/catalog/types";
 
 type ViewMode = "grid" | "list";
 
@@ -133,11 +136,14 @@ export default function GlobalCatalogPage() {
 
   // Estados
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
-  const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<string[]>([]);
+  const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<
+    string[]
+  >([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [globalPage, setGlobalPage] = useState(1);
   const [globalViewMode, setGlobalViewMode] = useState<ViewMode>("grid");
-  const [activatingProduct, setActivatingProduct] = useState<GlobalProduct | null>(null);
+  const [activatingProduct, setActivatingProduct] =
+    useState<GlobalProduct | null>(null);
 
   // Hooks
   const {
@@ -146,7 +152,10 @@ export default function GlobalCatalogPage() {
     error: globalProductsError,
   } = useGlobalCatalog(businessId, {
     search: globalSearchQuery || undefined,
-    industryCategoryIds: selectedIndustryCategories.length > 0 ? selectedIndustryCategories.join(",") : undefined,
+    industryCategoryIds:
+      selectedIndustryCategories.length > 0
+        ? selectedIndustryCategories.join(",")
+        : undefined,
     brand: selectedBrand === "all" ? undefined : selectedBrand,
     page: globalPage,
     limit: globalPageSize,
@@ -157,7 +166,9 @@ export default function GlobalCatalogPage() {
 
   const globalProducts = globalProductsData?.items || [];
   const globalMeta = globalProductsData?.meta;
-  const industryCategories = Array.isArray(industryCategoriesData) ? industryCategoriesData : [];
+  const industryCategories = Array.isArray(industryCategoriesData)
+    ? industryCategoriesData
+    : [];
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutaciones
@@ -176,7 +187,9 @@ export default function GlobalCatalogPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{t("globalCatalog.title")}</h1>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {t("globalCatalog.title")}
+            </h1>
             <p className="text-slate-500 mt-1">{t("globalCatalog.subtitle")}</p>
           </div>
         </div>
@@ -266,10 +279,10 @@ export default function GlobalCatalogPage() {
             {globalProducts.map((product: GlobalProduct) => (
               <div
                 key={product.id}
-                className="flex items-center gap-4 p-4 bg-white rounded-card border border-slate-100 hover:shadow-sm transition-shadow"
+                className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card  hover:shadow-sm transition-shadow"
               >
                 {/* Imagen */}
-                <div className="w-16 h-16 rounded-card flex-shrink-0 bg-slate-100 overflow-hidden">
+                <div className="w-16 h-16 rounded-card shrink-0 bg-slate-100 overflow-hidden">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -285,7 +298,9 @@ export default function GlobalCatalogPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-slate-900 truncate">{product.name}</h4>
+                  <h4 className="font-medium text-slate-900 truncate">
+                    {product.name}
+                  </h4>
                   <p className="text-sm text-slate-500">
                     {product.brand || "Sin marca"} • {product.sku}
                   </p>
@@ -336,7 +351,9 @@ export default function GlobalCatalogPage() {
               variant="outline"
               size="sm"
               onClick={() =>
-                setGlobalPage((prev) => Math.min(globalMeta.totalPages, prev + 1))
+                setGlobalPage((prev) =>
+                  Math.min(globalMeta.totalPages, prev + 1)
+                )
               }
               disabled={globalPage === globalMeta.totalPages}
             >

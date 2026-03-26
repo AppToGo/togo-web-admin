@@ -23,14 +23,13 @@ export function GlobalProductCard({
   return (
     <div
       className={cn(
-        "group relative bg-white rounded-card-lg overflow-hidden",
+        "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg overflow-hidden",
         "shadow-card hover:shadow-card-md",
-        "transition-all duration-200",
-        "border border-slate-100"
+        "transition-all duration-200"
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] bg-slate-50 overflow-hidden">
+      <div className="relative aspect-4/3 bg-slate-50 overflow-hidden">
         {product.image && !imageError ? (
           <img
             src={product.image}
@@ -41,7 +40,9 @@ export function GlobalProductCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
             <Package className="w-12 h-12 text-slate-300 mb-2" />
-            <span className="text-xs text-slate-400">{tCommon("status.noImage")}</span>
+            <span className="text-xs text-slate-400">
+              {tCommon("status.noImage")}
+            </span>
           </div>
         )}
 
@@ -93,7 +94,9 @@ export function GlobalProductCard({
         {/* Suggested Price */}
         {product.basePrice && (
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-slate-500">{t("products.suggestedPrice")}:</span>
+            <span className="text-xs text-slate-500">
+              {t("products.suggestedPrice")}:
+            </span>
             <span className="text-sm font-medium text-slate-700">
               {new Intl.NumberFormat("es-CO", {
                 style: "currency",

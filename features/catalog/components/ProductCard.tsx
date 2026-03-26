@@ -75,9 +75,8 @@ export function ProductCard({
     return (
       <div
         className={cn(
-          "group relative bg-white rounded-card-lg p-4 shadow-card flex flex-col",
+          "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg p-4 flex flex-col",
           "hover:shadow-card-md transition-all duration-200",
-          "border border-slate-100",
           !product.isActive && "opacity-60 grayscale-[0.3]"
         )}
       >
@@ -220,9 +219,8 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "group flex items-center gap-4 bg-white rounded-card p-4 shadow-card-sm",
+        "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4",
         "hover:shadow-card transition-all duration-200",
-        "border border-slate-100",
         !product.isActive && "opacity-60 grayscale-[0.3]"
       )}
     >
