@@ -107,6 +107,11 @@
     "upgrade": "Actualizar plan",
     "upgradeDescription": "Tu plan actual solo permite una sucursal. Actualiza para gestionar múltiples ubicaciones."
   },
+  "metrics": {
+    "ordersToday": "Pedidos hoy",
+    "pending": "Pendientes",
+    "revenueToday": "Recaudo hoy"
+  },
   "form": {
     "title": "Datos de la sucursal",
     "description": "Completa la información básica de la nueva sucursal",
