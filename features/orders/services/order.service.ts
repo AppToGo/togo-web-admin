@@ -228,6 +228,7 @@ export async function getOrderMetrics(
   const queryParams: Record<string, string> = {};
   if (params?.dateFrom) queryParams.dateFrom = params.dateFrom;
   if (params?.dateTo) queryParams.dateTo = params.dateTo;
+  if (params?.branchId) queryParams.branchId = params.branchId;
 
   const { data } = await apiClient.get<OrderMetricsResponse>(
     `/businesses/${effectiveBusinessId}/orders/metrics`,
