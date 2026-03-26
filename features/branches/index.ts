@@ -11,8 +11,24 @@ export * from "./types";
 // Utils
 export * from "./utils/branch-helpers";
 
-// TODO: Add the following exports when implemented:
-// - Components (BranchCard, BranchForm, BranchLimitIndicator)
-// - Hooks (useBranches, useBranch, useCreateBranch, useUpdateBranch, useCanCreateBranch)
-// - Services (branch.service)
-// - Constants
+// Components
+export { BranchCard } from "./components/branch-card";
+export { BranchForm } from "./components/branch-form";
+export { BranchLimitIndicator } from "./components/branch-limit-indicator";
+
+// Hooks
+export {
+  useBranches,
+  useBranch,
+  useCanCreateBranch,
+  useSelectedBranch,
+} from "./hooks/useBranches";
+export {
+  useCreateBranch,
+  useUpdateBranch,
+  useDeleteBranch,
+  useSetMainBranch,
+} from "./hooks/useBranchMutations";
+
+// Services
+export * from "./services/branch.service";

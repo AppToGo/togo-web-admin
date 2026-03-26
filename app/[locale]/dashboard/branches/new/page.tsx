@@ -8,7 +8,6 @@ import {
   useHasBusiness,
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
-import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,119 +18,12 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-import type {
-  CreateBranchRequest,
-  RoutingMode,
-} from "@/features/branches/types";
-
-// Placeholder BranchForm component - should be imported from features/branches/components
-interface BranchFormProps {
-  onSubmit: (data: CreateBranchRequest) => void;
-  onCancel: () => void;
-  isLoading?: boolean;
-}
-
-function BranchForm({ onSubmit, onCancel, isLoading }: BranchFormProps) {
-  const tc = useTranslations("common");
-  const [formData, setFormData] = useState<CreateBranchRequest>({
-    name: "",
-    slug: "",
-    code: "",
-    routingMode: "DEDICATED" as RoutingMode,
-    whatsappPhoneNumber: "",
-    whatsappPhoneNumberId: "",
-    address: "",
-    timezone: "America/Santiago",
-    currency: "CLP",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Nombre
-        </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Código
-        </label>
-        <input
-          type="text"
-          value={formData.code}
-          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Dirección
-        </label>
-        <input
-          type="text"
-          value={formData.address || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, address: e.target.value })
-          }
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-      </div>
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={isLoading} className="flex-1">
-          {isLoading ? tc("buttons.saving") : tc("buttons.save")}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          {tc("buttons.cancel")}
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-// Placeholder hook - should be imported from features/branches/hooks
-function useCreateBranch() {
-  const [isPending, setIsPending] = useState(false);
-
-  const mutate = async (
-    data: CreateBranchRequest & { businessId?: string },
-    options?: { onSuccess?: () => void; onError?: (error: Error) => void }
-  ) => {
-    setIsPending(true);
-    try {
-      // Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      options?.onSuccess?.();
-    } catch (error) {
-      options?.onError?.(error as Error);
-    } finally {
-      setIsPending(false);
-    }
-  };
-
-  return { mutate, isPending };
-}
-
-// Placeholder hook - should be imported from features/branches/hooks
-function useCanCreateBranch(_businessId?: string) {
-  return {
-    data: { allowed: true, current: 1, max: 3, remaining: 2 },
-    isLoading: false,
-  };
-}
+import type { CreateBranchRequest, UpdateBranchRequest } from "@/features/branches/types";
+import {
+  BranchForm,
+  useCreateBranch,
+  useCanCreateBranch,
+} from "@/features/branches";
 
 export default function CreateBranchPage() {
   const t = useTranslations("branches");
@@ -141,32 +33,22 @@ export default function CreateBranchPage() {
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
-  const selectedBusinessId = useEffectiveBusinessId();
 
   const createBranch = useCreateBranch();
-  const { data: canCreate, isLoading: isLoadingCanCreate } = useCanCreateBranch(
-    selectedBusinessId || undefined
-  );
+  const { data: canCreate, isLoading: isLoadingCanCreate } = useCanCreateBranch();
 
-  const handleSubmit = (data: CreateBranchRequest) => {
-    createBranch.mutate(
-      {
-        ...data,
-        businessId: selectedBusinessId || undefined,
+  const handleSubmit = (data: CreateBranchRequest | UpdateBranchRequest) => {
+    createBranch.mutate(data as CreateBranchRequest, {
+      onSuccess: () => {
+        router.push("/dashboard/branches");
       },
-      {
-        onSuccess: () => {
-          router.push("/dashboard/branches");
-        },
-      }
-    );
+    });
   };
 
   const handleCancel = () => {
     router.push("/dashboard/branches");
   };
 
-  // Check access for non-super-admin users without business
   if (!hasBusiness && !isSuperAdmin) {
     return (
       <DashboardLayout>
@@ -185,12 +67,10 @@ export default function CreateBranchPage() {
     );
   }
 
-  // Check if user can create more branches
-  if (!isLoadingCanCreate && !canCreate?.allowed) {
+  if (!isLoadingCanCreate && canCreate && !canCreate.allowed) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
-          {/* Header */}
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="w-5 h-5" />
@@ -214,8 +94,8 @@ export default function CreateBranchPage() {
                 </h3>
                 <p className="text-amber-700 max-w-md mb-4">
                   {t("limitReached.description", {
-                    current: canCreate?.current,
-                    max: canCreate?.max,
+                    current: canCreate.current,
+                    max: canCreate.max,
                   })}
                 </p>
                 <Button variant="outline" onClick={handleCancel}>

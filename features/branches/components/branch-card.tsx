@@ -33,12 +33,12 @@ const routingModeConfig: Record<
   { label: string; color: string; icon: typeof Route }
 > = {
   DEDICATED: {
-    label: "routingModes.dedicated",
+    label: "routingModes.DEDICATED.title",
     color: "bg-purple-100 text-purple-700 border-purple-200",
     icon: Smartphone,
   },
   SINGLE_NUMBER: {
-    label: "routingModes.singleNumber",
+    label: "routingModes.SINGLE_NUMBER.title",
     color: "bg-blue-100 text-blue-700 border-blue-200",
     icon: Route,
   },

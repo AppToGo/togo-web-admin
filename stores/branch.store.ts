@@ -120,38 +120,9 @@ export function getSelectedBranchId(): string | null {
 
 /**
  * Función helper para establecer el branch ID seleccionado
- * Útil para usar fuera de componentes React
+ * Útil para usar fuera de componentes React.
+ * Delega en el store para mantener una única fuente de verdad.
  */
 export function setSelectedBranchId(id: string | null, name?: string | null): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    const key = "togo-selected-branch";
-    const stored = localStorage.getItem(key);
-    let current: unknown;
-
-    if (stored) {
-      try {
-        current = JSON.parse(stored);
-      } catch {
-        // JSON inválido, empezar fresco
-        current = { state: {} };
-      }
-    } else {
-      current = { state: {} };
-    }
-
-    // Validar estructura existente o crear nueva
-    const validated = BranchStorageSchema.safeParse(current);
-    const state = validated.success
-      ? validated.data.state
-      : { selectedBranchId: null, selectedBranchName: null };
-
-    state.selectedBranchId = id;
-    state.selectedBranchName = name || null;
-
-    localStorage.setItem(key, JSON.stringify({ state }));
-  } catch {
-    // Ignore storage errors
-  }
+  useBranchStore.getState().setSelectedBranch(id, name);
 }

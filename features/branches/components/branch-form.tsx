@@ -80,7 +80,8 @@ const generateSlug = (name: string): string => {
     .replace(/[\u0300-\u036f]/g, "") // Remove accents
     .replace(/[^a-z0-9\s-]/g, "") // Remove special chars
     .trim()
-    .replace(/\s+/g, "-"); // Replace spaces with dashes
+    .replace(/\s+/g, "-") // Replace spaces with dashes
+    .replace(/-+/g, "-"); // Collapse consecutive dashes
 };
 
 export function BranchForm({
@@ -365,10 +366,10 @@ export function BranchForm({
                   )}
                 >
                   <span className="font-medium text-slate-900">
-                    {t(`routingModes.${mode.toLowerCase()}.title`)}
+                    {t(`routingModes.${mode}.title`)}
                   </span>
                   <span className="text-xs text-slate-500 mt-1">
-                    {t(`routingModes.${mode.toLowerCase()}.description`)}
+                    {t(`routingModes.${mode}.description`)}
                   </span>
                   {formData.routingMode === mode && (
                     <div className="absolute top-3 right-3 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center">

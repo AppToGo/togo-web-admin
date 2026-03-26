@@ -1,6 +1,12 @@
 {
   "branch": "Sucursal",
   "branches": "Sucursales",
+  "title": "Sucursales",
+  "subtitle": "Gestiona las sucursales de tu negocio",
+  "createBranch": "Nueva Sucursal",
+  "mainBranch": "Principal",
+  "timezone": "Zona horaria",
+  "currency": "Moneda",
   "selectBranch": "Seleccionar sucursal...",
   "noBranches": "Sin sucursales",
   "singleBranch": "Única",
@@ -8,13 +14,47 @@
   "allBranches": "Todas las sucursales",
   "loadingBranches": "Cargando sucursales...",
   "noBranchesAvailable": "No hay sucursales disponibles",
+  "createSuccess": "Sucursal {name} creada exitosamente",
+  "updateSuccess": "Sucursal {name} actualizada",
+  "deleteSuccess": "Sucursal eliminada",
+  "setMainSuccess": "{name} es ahora la sucursal principal",
+  "empty": {
+    "title": "Sin sucursales",
+    "description": "Aún no tienes sucursales creadas. Crea la primera para comenzar a gestionar tu negocio."
+  },
+  "noBusiness": {
+    "title": "Sin negocio asignado",
+    "description": "No tienes un negocio asignado. Contacta al administrador para obtener acceso."
+  },
+  "notFound": {
+    "title": "Sucursal no encontrada",
+    "description": "La sucursal que buscas no existe o no tienes permisos para verla."
+  },
+  "limitReached": {
+    "title": "Límite de sucursales alcanzado",
+    "description": "Tu plan permite hasta {max} sucursal(es) y ya tienes {current}. Actualiza tu plan para crear más."
+  },
+  "info": {
+    "title": "Información de la sucursal"
+  },
+  "tips": {
+    "title": "Consejos",
+    "code": "Código",
+    "codeDescription": "Usa un código único y descriptivo, como CC-001 para Sede Centro.",
+    "mainBranch": "Sucursal principal",
+    "mainBranchDescription": "La sucursal principal es la que se asigna por defecto a los pedidos.",
+    "whatsapp": "WhatsApp",
+    "whatsappDescription": "Ingresa el número en formato E.164, por ejemplo +573001234567."
+  },
   "create": {
     "title": "Crear Sucursal",
+    "subtitle": "Completa los datos para registrar una nueva sucursal",
     "description": "Crea una nueva sucursal para tu negocio",
     "success": "Sucursal creada exitosamente"
   },
   "edit": {
     "title": "Editar Sucursal",
+    "subtitle": "Modifica los datos de la sucursal",
     "description": "Modifica los datos de la sucursal",
     "success": "Sucursal actualizada exitosamente"
   },
@@ -38,8 +78,14 @@
     "isActive": "Activa"
   },
   "routingModes": {
-    "DEDICATED": "Número dedicado",
-    "SINGLE_NUMBER": "Número único"
+    "DEDICATED": {
+      "title": "Número dedicado",
+      "description": "Cada sucursal tiene su propio número de WhatsApp exclusivo."
+    },
+    "SINGLE_NUMBER": {
+      "title": "Número único",
+      "description": "Un solo número de WhatsApp atiende todas las sucursales del negocio."
+    }
   },
   "notifications": {
     "created": "Sucursal creada exitosamente",
@@ -62,5 +108,66 @@
     "current": "Actual",
     "max": "Máximo",
     "remaining": "Disponibles"
+  },
+  "limits": {
+    "title": "Sucursales del plan",
+    "limitReached": "Límite alcanzado",
+    "limitReachedMessage": "Has alcanzado el límite de sucursales de tu plan. Actualiza para crear más.",
+    "usage": "{current} de {max} sucursales",
+    "remaining": "{count} disponible(s)",
+    "upgrade": "Actualizar plan",
+    "upgradeDescription": "Tu plan actual solo permite una sucursal. Actualiza para gestionar múltiples ubicaciones."
+  },
+  "form": {
+    "title": "Datos de la sucursal",
+    "description": "Completa la información básica de la nueva sucursal",
+    "editTitle": "Editar datos",
+    "editDescription": "Modifica la información de esta sucursal",
+    "createBranch": "Crear sucursal",
+    "sections": {
+      "basic": "Información básica",
+      "whatsapp": "Configuración de WhatsApp",
+      "location": "Ubicación y configuración",
+      "status": "Estado"
+    },
+    "descriptions": {
+      "basic": "Nombre, código único y URL amigable de la sucursal",
+      "whatsapp": "Número y modo de enrutamiento de WhatsApp",
+      "location": "Dirección, zona horaria y moneda"
+    },
+    "fields": {
+      "name": "Nombre",
+      "slug": "Slug (URL)",
+      "code": "Código interno",
+      "routingMode": "Modo de enrutamiento",
+      "whatsappPhoneNumber": "Número de WhatsApp",
+      "whatsappPhoneNumberId": "ID de número (Meta)",
+      "address": "Dirección",
+      "timezone": "Zona horaria",
+      "currency": "Moneda",
+      "isActive": "Sucursal activa"
+    },
+    "placeholders": {
+      "name": "Ej: Sucursal Centro",
+      "slug": "sucursal-centro",
+      "code": "SC-001",
+      "whatsappPhoneNumberId": "ID del número en Meta Business",
+      "address": "Calle Principal 123, Ciudad"
+    },
+    "help": {
+      "slug": "Identificador URL de la sucursal. Se genera automáticamente desde el nombre.",
+      "codeLocked": "El código de la sucursal principal no se puede modificar.",
+      "phoneFormat": "Formato internacional E.164, ej: +573001234567",
+      "phoneNumberId": "ID del número de teléfono en Meta Business Manager",
+      "isActive": "Las sucursales inactivas no reciben pedidos nuevos.",
+      "mainBranchAlwaysActive": "La sucursal principal no puede desactivarse."
+    },
+    "errors": {
+      "nameRequired": "El nombre es obligatorio",
+      "slugRequired": "El slug es obligatorio",
+      "slugInvalid": "El slug solo puede contener letras minúsculas, números y guiones",
+      "codeRequired": "El código es obligatorio",
+      "phoneInvalid": "Número inválido. Usa formato E.164, ej: +573001234567"
+    }
   }
 }

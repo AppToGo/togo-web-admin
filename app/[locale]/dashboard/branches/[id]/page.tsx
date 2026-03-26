@@ -8,7 +8,6 @@ import {
   useHasBusiness,
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
-import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,187 +20,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
-import type {
-  Branch,
-  UpdateBranchRequest,
-} from "@/features/branches/types";
+import type { UpdateBranchRequest } from "@/features/branches/types";
+import {
+  BranchForm,
+  useBranch,
+  useUpdateBranch,
+} from "@/features/branches";
 import { getPrimaryWhatsApp } from "@/features/branches/utils/branch-helpers";
 
-// Placeholder BranchForm component - should be imported from features/branches/components
-interface BranchFormProps {
-  branch?: Branch;
-  onSubmit: (data: UpdateBranchRequest) => void;
-  onCancel: () => void;
-  isLoading?: boolean;
-}
-
-function BranchForm({ branch, onSubmit, onCancel, isLoading }: BranchFormProps) {
-  const tc = useTranslations("common");
-  const [formData, setFormData] = useState<UpdateBranchRequest>({
-    name: branch?.name || "",
-    slug: branch?.slug || "",
-    code: branch?.code || "",
-    whatsappPhoneNumber: branch?.whatsappPhoneNumber || "",
-    whatsappPhoneNumberId: branch?.whatsappPhoneNumberId || "",
-    address: branch?.address || "",
-    timezone: branch?.timezone || "America/Santiago",
-    currency: branch?.currency || "CLP",
-    isActive: branch?.isActive ?? true,
-  });
-
-  useEffect(() => {
-    if (branch) {
-      setFormData({
-        name: branch.name,
-        slug: branch.slug,
-        code: branch.code,
-        whatsappPhoneNumber: branch.whatsappPhoneNumber || "",
-        whatsappPhoneNumberId: branch.whatsappPhoneNumberId || "",
-        address: branch.address || "",
-        timezone: branch.timezone,
-        currency: branch.currency,
-        isActive: branch.isActive,
-      });
-    }
-  }, [branch]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Nombre
-        </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Código
-        </label>
-        <input
-          type="text"
-          value={formData.code}
-          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Dirección
-        </label>
-        <input
-          type="text"
-          value={formData.address || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, address: e.target.value })
-          }
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="isActive"
-          checked={formData.isActive}
-          onChange={(e) =>
-            setFormData({ ...formData, isActive: e.target.checked })
-          }
-          className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-        />
-        <label htmlFor="isActive" className="text-sm text-slate-700">
-          Sede activa
-        </label>
-      </div>
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={isLoading} className="flex-1">
-          {isLoading ? tc("buttons.saving") : tc("buttons.saveChanges")}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          {tc("buttons.cancel")}
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-// Placeholder hook - should be imported from features/branches/hooks
-function useBranch(id: string | null) {
-  const [branch, setBranch] = useState<Branch | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (id) {
-      // Simulate API call
-      setTimeout(() => {
-        setBranch({
-          id: id,
-          businessId: "biz-123",
-          name: "Sede Principal",
-          slug: "sede-principal",
-          code: "MAIN001",
-          isMainBranch: true,
-          isActive: true,
-          whatsappPhoneNumber: "+1234567890",
-          whatsappPhoneNumberId: "phone-123",
-          whatsappNumbersExtra: null,
-          routingMode: "SINGLE_NUMBER",
-          address: "Av. Principal 123",
-          timezone: "America/Santiago",
-          currency: "CLP",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        setIsLoading(false);
-      }, 500);
-    }
-  }, [id]);
-
-  return { data: branch, isLoading };
-}
-
-// Placeholder hook - should be imported from features/branches/hooks
-function useUpdateBranch() {
-  const [isPending, setIsPending] = useState(false);
-
-  const mutate = async (
-    { id, data }: { id: string; data: UpdateBranchRequest },
-    options?: { onSuccess?: () => void; onError?: (error: Error) => void }
-  ) => {
-    setIsPending(true);
-    try {
-      // Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      options?.onSuccess?.();
-    } catch (error) {
-      options?.onError?.(error as Error);
-    } finally {
-      setIsPending(false);
-    }
-  };
-
-  return { mutate, isPending };
-}
-
-interface EditBranchPageProps {
-  params: Promise<{
-    id: string;
-    locale: string;
-  }>;
-}
-
-export default function EditBranchPage({ params }: EditBranchPageProps) {
+export default function EditBranchPage() {
   const t = useTranslations("branches");
   const tc = useTranslations("common");
   const router = useRouter();
@@ -209,17 +36,16 @@ export default function EditBranchPage({ params }: EditBranchPageProps) {
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
-  const selectedBusinessId = useEffectiveBusinessId();
 
-  // Usar React.use() para unwrap el Promise de params (Next.js 15)
-  const { id } = React.use(params);
+  const params = useParams();
+  const id = params.id as string;
 
   const { data: branch, isLoading: isLoadingBranch } = useBranch(id);
   const updateBranch = useUpdateBranch();
 
   const handleSubmit = (data: UpdateBranchRequest) => {
     updateBranch.mutate(
-      { id, data },
+      { branchId: id, data },
       {
         onSuccess: () => {
           router.push("/dashboard/branches");
@@ -232,7 +58,6 @@ export default function EditBranchPage({ params }: EditBranchPageProps) {
     router.push("/dashboard/branches");
   };
 
-  // Check access for non-super-admin users without business
   if (!hasBusiness && !isSuperAdmin) {
     return (
       <DashboardLayout>
@@ -251,7 +76,6 @@ export default function EditBranchPage({ params }: EditBranchPageProps) {
     );
   }
 
-  // Loading state
   if (isLoadingBranch) {
     return (
       <DashboardLayout>
@@ -269,7 +93,6 @@ export default function EditBranchPage({ params }: EditBranchPageProps) {
     );
   }
 
-  // Not found state
   if (!branch) {
     return (
       <DashboardLayout>
@@ -397,6 +220,3 @@ export default function EditBranchPage({ params }: EditBranchPageProps) {
     </DashboardLayout>
   );
 }
-
-// Importar React para usar React.use()
-import * as React from "react";

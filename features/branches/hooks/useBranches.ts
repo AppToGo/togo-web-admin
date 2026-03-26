@@ -24,7 +24,7 @@ import type { Branch, CanCreateBranchResponse } from "../types";
  * (ya sea del usuario autenticado o del negocio seleccionado por SUPER_ADMIN)
  */
 export function useBranches() {
-  const { user } = useAuthStore.getState();
+  const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
@@ -77,7 +77,7 @@ export function useBranch(id: string | null, enabled: boolean = true) {
  * Verifica límites del plan y retorna información sobre capacidad disponible
  */
 export function useCanCreateBranch() {
-  const { user } = useAuthStore.getState();
+  const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
