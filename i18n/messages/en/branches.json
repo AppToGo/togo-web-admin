@@ -1,0 +1,162 @@
+{
+  "branch": "Branch",
+  "branches": "Branches",
+  "title": "Branches",
+  "subtitle": "Manage your business branches",
+  "createBranch": "New Branch",
+  "mainBranch": "Main",
+  "timezone": "Timezone",
+  "currency": "Currency",
+  "selectBranch": "Select branch...",
+  "noBranches": "No branches",
+  "singleBranch": "Single",
+  "main": "Main",
+  "allBranches": "All branches",
+  "loadingBranches": "Loading branches...",
+  "noBranchesAvailable": "No branches available",
+  "createSuccess": "Branch {name} created successfully",
+  "updateSuccess": "Branch {name} updated",
+  "deleteSuccess": "Branch deleted",
+  "setMainSuccess": "{name} is now the main branch",
+  "empty": {
+    "title": "No branches yet",
+    "description": "You haven't created any branches yet. Create the first one to start managing your business."
+  },
+  "noBusiness": {
+    "title": "No business assigned",
+    "description": "You don't have a business assigned. Contact the administrator to get access."
+  },
+  "notFound": {
+    "title": "Branch not found",
+    "description": "The branch you're looking for doesn't exist or you don't have permission to view it."
+  },
+  "limitReached": {
+    "title": "Branch limit reached",
+    "description": "Your plan allows up to {max} branch(es) and you already have {current}. Upgrade your plan to create more."
+  },
+  "info": {
+    "title": "Branch information"
+  },
+  "tips": {
+    "title": "Tips",
+    "code": "Code",
+    "codeDescription": "Use a unique and descriptive code, like HQ-001 for Headquarters.",
+    "mainBranch": "Main branch",
+    "mainBranchDescription": "The main branch is assigned to orders by default.",
+    "whatsapp": "WhatsApp",
+    "whatsappDescription": "Enter the number in E.164 format, e.g. +13001234567."
+  },
+  "create": {
+    "title": "Create Branch",
+    "subtitle": "Fill in the details to register a new branch"
+  },
+  "edit": {
+    "title": "Edit Branch",
+    "subtitle": "Modify the branch details"
+  },
+  "delete": {
+    "title": "Delete Branch",
+    "description": "Are you sure you want to delete this branch? This action cannot be undone."
+  },
+  "fields": {
+    "name": "Name",
+    "namePlaceholder": "Ex: Downtown Branch",
+    "code": "Code",
+    "codePlaceholder": "Ex: DB-001",
+    "address": "Address",
+    "addressPlaceholder": "Ex: 123 Main Street",
+    "phone": "WhatsApp Phone",
+    "timezone": "Timezone",
+    "currency": "Currency",
+    "routingMode": "Routing Mode",
+    "isMainBranch": "Main branch",
+    "isActive": "Active"
+  },
+  "routingModes": {
+    "DEDICATED": {
+      "title": "Dedicated Number",
+      "description": "Each branch has its own exclusive WhatsApp number."
+    },
+    "SINGLE_NUMBER": {
+      "title": "Single Number",
+      "description": "One WhatsApp number handles all branches of the business."
+    }
+  },
+  "errors": {
+    "createFailed": "Failed to create branch",
+    "updateFailed": "Failed to update branch",
+    "deleteFailed": "Failed to delete branch",
+    "setMainFailed": "Failed to set main branch",
+    "loadFailed": "Failed to load branches",
+    "limitReached": "You have reached the branch limit for your plan",
+    "duplicateCode": "A branch with this code already exists"
+  },
+  "plan": {
+    "limitTitle": "Branch limit reached",
+    "limitDescription": "Your current plan allows {max} branch(es). Upgrade your plan to create more.",
+    "current": "Current",
+    "max": "Maximum",
+    "remaining": "Available"
+  },
+  "limits": {
+    "title": "Plan branches",
+    "limitReached": "Limit reached",
+    "limitReachedMessage": "You've reached your plan's branch limit. Upgrade to create more.",
+    "usage": "{current} of {max} branches",
+    "remaining": "{count} available",
+    "upgrade": "Upgrade plan",
+    "upgradeDescription": "Your current plan only allows one branch. Upgrade to manage multiple locations."
+  },
+  "form": {
+    "title": "Branch details",
+    "description": "Fill in the basic information for the new branch",
+    "editTitle": "Edit details",
+    "editDescription": "Modify the information for this branch",
+    "createBranch": "Create branch",
+    "sections": {
+      "basic": "Basic information",
+      "whatsapp": "WhatsApp configuration",
+      "location": "Location & settings",
+      "status": "Status"
+    },
+    "descriptions": {
+      "basic": "Branch name, unique code and URL-friendly slug",
+      "whatsapp": "WhatsApp number and routing mode",
+      "location": "Address, timezone and currency"
+    },
+    "fields": {
+      "name": "Name",
+      "slug": "Slug (URL)",
+      "code": "Internal code",
+      "routingMode": "Routing mode",
+      "whatsappPhoneNumber": "WhatsApp number",
+      "whatsappPhoneNumberId": "Phone number ID (Meta)",
+      "address": "Address",
+      "timezone": "Timezone",
+      "currency": "Currency",
+      "isActive": "Branch active"
+    },
+    "placeholders": {
+      "name": "Ex: Downtown Branch",
+      "slug": "downtown-branch",
+      "code": "DB-001",
+      "whatsappPhoneNumberId": "Meta Business phone number ID",
+      "address": "123 Main Street, City"
+    },
+    "help": {
+      "slug": "URL identifier for the branch. Auto-generated from the name.",
+      "codeLocked": "The main branch code cannot be modified.",
+      "phoneFormat": "International E.164 format, e.g. +13001234567",
+      "phoneNumberId": "Phone number ID from Meta Business Manager",
+      "isActive": "Inactive branches do not receive new orders.",
+      "mainBranchAlwaysActive": "The main branch cannot be deactivated."
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "slugRequired": "Slug is required",
+      "slugInvalid": "Slug can only contain lowercase letters, numbers and hyphens",
+      "codeRequired": "Code is required",
+      "phoneInvalid": "Invalid number. Use E.164 format, e.g. +13001234567"
+    }
+  }
+}
