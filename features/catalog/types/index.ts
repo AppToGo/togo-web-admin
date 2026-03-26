@@ -14,6 +14,7 @@ export type {
   UpdateCategoryDto,
   ProductFilters,
   GlobalCatalogFilters,
+  PaginatedGlobalCatalog,
   ProductCardProps,
   GlobalProductCardProps,
   ProductFormProps,

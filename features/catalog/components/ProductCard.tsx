@@ -33,9 +33,9 @@ export function ProductCard({
   const [imageError, setImageError] = useState(false);
 
   const productImage = product.image || product.globalProduct?.image;
-  const displayName = product.name;
+  const displayName = product.customName || product.globalProduct?.name;
   const displayDescription =
-    product.description || product.globalProduct?.description;
+    product.customDescription || product.globalProduct?.description;
   const displayBrand = product.globalProduct?.brand;
 
   // Format price as currency
@@ -56,21 +56,27 @@ export function ProductCard({
       return { label: t("status.outOfStock"), color: "text-red-500" };
     }
     if (product.stock <= 10) {
-      return { label: t("status.lowStockCount", { count: product.stock }), color: "text-amber-500" };
+      return {
+        label: t("status.lowStockCount", { count: product.stock }),
+        color: "text-amber-500",
+      };
     }
-    return { label: t("status.stockCount", { count: product.stock }), color: "text-emerald-600" };
+    return {
+      label: t("status.stockCount", { count: product.stock }),
+      color: "text-emerald-600",
+    };
   };
 
   const stockStatus = getStockStatus();
 
+  console.log("product", product);
   // Grid view
   if (viewMode === "grid") {
     return (
       <div
         className={cn(
-          "group relative bg-white rounded-card-lg p-4 shadow-card",
+          "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg p-4 flex flex-col",
           "hover:shadow-card-md transition-all duration-200",
-          "border border-slate-100",
           !product.isActive && "opacity-60 grayscale-[0.3]"
         )}
       >
@@ -91,12 +97,12 @@ export function ProductCard({
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.isFromTemplate && (
+            {product.globalProductId && (
               <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
                 {t("title")}
               </span>
             )}
-            {!product.isFromTemplate && (
+            {!product.globalProductId && (
               <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
                 {t("status.custom")}
               </span>
@@ -113,14 +119,18 @@ export function ProductCard({
                   : "bg-slate-200 text-slate-600"
               )}
             >
-              {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+              {product.isActive
+                ? tCommon("status.active")
+                : tCommon("status.inactive")}
             </span>
           </div>
         </div>
 
         {/* Content */}
-        <div className="space-y-2">
-          <h3 className="font-semibold text-slate-900 line-clamp-1">
+        <div className="space-y-2 flex flex-col flex-1">
+          <h3
+            className={`${displayBrand ? "mb-0" : ""} "font-semibold text-slate-900 line-clamp-1"`}
+          >
             {displayName}
           </h3>
 
@@ -133,6 +143,8 @@ export function ProductCard({
               {displayDescription}
             </p>
           )}
+
+          <div className="flex-1"></div>
 
           <div className="pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between">
@@ -185,7 +197,9 @@ export function ProductCard({
                 onClick={() => onToggleStatus?.(product, !product.isActive)}
               >
                 <Power className="w-4 h-4 mr-2" />
-                {product.isActive ? t("actions.deactivate") : t("actions.activate")}
+                {product.isActive
+                  ? t("actions.deactivate")
+                  : t("actions.activate")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete?.(product)}
@@ -205,9 +219,8 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "group flex items-center gap-4 bg-white rounded-card p-4 shadow-card-sm",
+        "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4",
         "hover:shadow-card transition-all duration-200",
-        "border border-slate-100",
         !product.isActive && "opacity-60 grayscale-[0.3]"
       )}
     >
@@ -248,7 +261,9 @@ export function ProductCard({
                 : "bg-slate-200 text-slate-600"
             )}
           >
-            {product.isActive ? tCommon("status.active") : tCommon("status.inactive")}
+            {product.isActive
+              ? tCommon("status.active")
+              : tCommon("status.inactive")}
           </span>
         </div>
 

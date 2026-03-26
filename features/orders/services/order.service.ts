@@ -15,7 +15,10 @@ import type {
   GetOrdersParams,
   UpdateOrderStatusRequest,
 } from "../types";
-import type { OrderMetricsResponse, GetOrderMetricsParams } from "../types/order-metrics.types";
+import type {
+  OrderMetricsResponse,
+  GetOrderMetricsParams,
+} from "../types/order-metrics.types";
 
 /**
  * Obtener el businessId del usuario autenticado
@@ -80,9 +83,12 @@ export async function getOrders(
     return data;
   }
 
-  const { data } = await apiClient.get<Order[]>(getBaseUrl(params?.businessId), {
-    params: queryParams,
-  });
+  const { data } = await apiClient.get<Order[]>(
+    getBaseUrl(params?.businessId),
+    {
+      params: queryParams,
+    }
+  );
   return data;
 }
 
@@ -130,7 +136,9 @@ export async function getOrderById(
   orderId: string,
   businessId?: string
 ): Promise<Order> {
-  const { data } = await apiClient.get<Order>(`${getBaseUrl(businessId)}/${orderId}`);
+  const { data } = await apiClient.get<Order>(
+    `${getBaseUrl(businessId)}/${orderId}`
+  );
   return data;
 }
 
@@ -178,7 +186,10 @@ export async function getOrderStatusHistory(
 /**
  * Eliminar una orden (solo para OWNER/ADMIN o estados DRAFT/CANCELLED)
  */
-export async function deleteOrder(orderId: string, businessId?: string): Promise<void> {
+export async function deleteOrder(
+  orderId: string,
+  businessId?: string
+): Promise<void> {
   await apiClient.delete(`${getBaseUrl(businessId)}/${orderId}`);
 }
 
@@ -217,6 +228,7 @@ export async function getOrderMetrics(
   const queryParams: Record<string, string> = {};
   if (params?.dateFrom) queryParams.dateFrom = params.dateFrom;
   if (params?.dateTo) queryParams.dateTo = params.dateTo;
+  if (params?.branchId) queryParams.branchId = params.branchId;
 
   const { data } = await apiClient.get<OrderMetricsResponse>(
     `/businesses/${effectiveBusinessId}/orders/metrics`,

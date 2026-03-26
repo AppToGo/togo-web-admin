@@ -92,7 +92,7 @@ export function CategoryList({
     industryCategoryId: "",
   });
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] =
     useState<BusinessCategory | null>(null);
   const [deletingCategory, setDeletingCategory] =
@@ -406,11 +406,11 @@ export function CategoryList({
 
       {/* Categories Table */}
       {filteredCategories.length > 0 && (
-        <Card>
-          <div className="rounded-lg border border-slate-200 overflow-hidden">
+        <Card variant="glass">
+          <div className="rounded-lg  overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                <TableRow className="bg-white hover:bg-white">
                   <TableHead className="text-slate-500">
                     {tCommon("fields.name")}
                   </TableHead>
@@ -430,7 +430,7 @@ export function CategoryList({
                 {filteredCategories.map((category) => (
                   <TableRow
                     key={category.id}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-white transition-colors"
                   >
                     {/* Name */}
                     <TableCell>
@@ -499,18 +499,15 @@ export function CategoryList({
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog 
-        open={isModalOpen} 
-        onOpenChange={(open) => !open && closeModal()}
-      >
+      <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
               {isEditing ? t("categories.edit") : t("categories.new")}
             </DialogTitle>
             <DialogDescription>
-              {isEditing 
-                ? t("categories.editDescription") 
+              {isEditing
+                ? t("categories.editDescription")
                 : t("categories.createDescription")}
             </DialogDescription>
           </DialogHeader>
@@ -620,7 +617,9 @@ export function CategoryList({
                 }
                 isLoading={isLoading}
               >
-                {isEditing ? tCommon("buttons.saveChanges") : t("categories.create")}
+                {isEditing
+                  ? tCommon("buttons.saveChanges")
+                  : t("categories.create")}
               </Button>
             </div>
           </form>

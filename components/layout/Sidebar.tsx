@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
+import { locales } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 import {
   useCurrentUser,
@@ -21,6 +23,13 @@ interface SidebarProps {
   onMenuClick?: () => void;
 }
 
+type NavigationItem = {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children?: NavigationItem[];
+};
+
 export function Sidebar({
   isOpen,
   isCollapsed,
@@ -36,7 +45,7 @@ export function Sidebar({
   const logout = useLogout();
 
   // Navigation items with translation keys
-  const navigation = [
+  const navigation: NavigationItem[] = [
     {
       name: t("sidebar.dashboard"),
       href: "/dashboard",
@@ -51,21 +60,43 @@ export function Sidebar({
       name: t("sidebar.catalog"),
       href: "/dashboard/catalog",
       icon: PackageIcon,
+      children: [
+        {
+          name: t("sidebar.myProducts"),
+          href: "/dashboard/catalog/products",
+          icon: BoxIcon,
+        },
+        {
+          name: t("sidebar.globalCatalog"),
+          href: "/dashboard/catalog/global",
+          icon: GlobeIcon,
+        },
+        {
+          name: t("sidebar.categories"),
+          href: "/dashboard/catalog/categories",
+          icon: TagsIcon,
+        },
+      ],
+    },
+    {
+      name: t("sidebar.branches"),
+      href: "/dashboard/branches",
+      icon: BuildingIcon,
     },
     {
       name: t("sidebar.customers"),
-      href: "/customers",
+      href: "/dashboard/customers",
       icon: UsersIcon,
     },
     {
       name: t("sidebar.settings"),
-      href: "/settings",
+      href: "/dashboard/settings",
       icon: SettingsIcon,
     },
   ];
 
   // Admin navigation (Super Admin only)
-  const adminNavigation = [
+  const adminNavigation: NavigationItem[] = [
     {
       name: t("sidebar.globalCatalog"),
       href: "/admin/global-products",
@@ -116,31 +147,15 @@ export function Sidebar({
 
         {/* Navigation */}
         <nav className="p-3 space-y-1">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center rounded-card text-sm font-medium transition-all duration-200",
-                  isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
-                  isActive
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                )}
-                title={isCollapsed ? item.name : undefined}
-              >
-                <item.icon
-                  className={cn(
-                    "w-5 h-5 shrink-0",
-                    isActive ? "text-indigo-600" : "text-slate-400"
-                  )}
-                />
-                {!isCollapsed && <span>{item.name}</span>}
-              </Link>
-            );
-          })}
+          {navigation.map((item) => (
+            <CollapsibleNavItem
+              key={item.name}
+              item={item}
+              pathname={pathname}
+              isCollapsed={isCollapsed}
+              onMenuClick={onMenuClick}
+            />
+          ))}
         </nav>
 
         {/* Admin Navigation (Super Admin only) */}
@@ -154,33 +169,16 @@ export function Sidebar({
               </div>
             )}
             <nav className="px-3 pb-3 space-y-1">
-              {adminNavigation.map((item) => {
-                const isActive = pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center rounded-card text-sm font-medium transition-all duration-200",
-                      isCollapsed
-                        ? "justify-center px-3 py-3"
-                        : "gap-3 px-4 py-3",
-                      isActive
-                        ? "bg-purple-50 text-purple-600"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    )}
-                    title={isCollapsed ? item.name : undefined}
-                  >
-                    <item.icon
-                      className={cn(
-                        "w-5 h-5 shrink-0",
-                        isActive ? "text-purple-600" : "text-slate-400"
-                      )}
-                    />
-                    {!isCollapsed && <span>{item.name}</span>}
-                  </Link>
-                );
-              })}
+              {adminNavigation.map((item) => (
+                <CollapsibleNavItem
+                  key={item.name}
+                  item={item}
+                  pathname={pathname}
+                  isCollapsed={isCollapsed}
+                  isAdmin
+                  onMenuClick={onMenuClick}
+                />
+              ))}
             </nav>
           </>
         )}
@@ -190,7 +188,11 @@ export function Sidebar({
           <button
             onClick={onToggleCollapse}
             className="w-6 h-6 rounded-full bg-white shadow-card border border-slate-100 text-slate-600 flex items-center justify-center hover:text-indigo-600 hover:border-indigo-200 transition-all"
-            title={isCollapsed ? tc("buttons.expandMenu") : tc("buttons.collapseMenu")}
+            title={
+              isCollapsed
+                ? tc("buttons.expandMenu")
+                : tc("buttons.collapseMenu")
+            }
           >
             <ChevronIcon
               className={cn(
@@ -271,6 +273,218 @@ export function Sidebar({
   );
 }
 
+// Helper to remove locale prefix and trailing slashes for comparison
+function normalizePath(path: string): string {
+  const localeList = locales as unknown as string[];
+  const parts = path.split("/");
+  let normalized;
+
+  // Remove locale
+  if (parts[1] && localeList.includes(parts[1])) {
+    normalized = "/" + parts.slice(2).join("/") || "/";
+  } else {
+    normalized = path;
+  }
+
+  // Remove trailing slash (except for root)
+  if (normalized.endsWith("/") && normalized.length > 1) {
+    normalized = normalized.slice(0, -1);
+  }
+
+  return normalized;
+}
+
+// Collapsible Navigation Item Component
+interface CollapsibleNavItemProps {
+  item: NavigationItem;
+  pathname: string;
+  isCollapsed: boolean;
+  isAdmin?: boolean;
+  onMenuClick?: () => void;
+}
+
+function CollapsibleNavItem({
+  item,
+  pathname,
+  isCollapsed,
+  isAdmin,
+  onMenuClick,
+}: CollapsibleNavItemProps) {
+  const normalizedPathname = normalizePath(pathname);
+
+  const [isExpanded, setIsExpanded] = useState(() => {
+    // Auto-expand if a child is active
+    if (item.children) {
+      return item.children.some((child) =>
+        normalizedPathname.startsWith(normalizePath(child.href))
+      );
+    }
+    return false;
+  });
+
+  const hasChildren = item.children && item.children.length > 0;
+
+  // Determine active states
+  const normalizedItemHref = normalizePath(item.href);
+  const isParentActive =
+    normalizedPathname === normalizedItemHref ||
+    normalizedPathname.startsWith(`${normalizedItemHref}/`);
+  const isAnyChildActive = hasChildren
+    ? item.children!.some(
+        (child) => normalizedPathname === normalizePath(child.href)
+      )
+    : false;
+
+  // If no children, render as simple Link
+  if (!hasChildren) {
+    const isActive =
+      normalizedItemHref === "/dashboard"
+        ? normalizedPathname === "/dashboard"
+        : normalizedPathname === normalizedItemHref ||
+          normalizedPathname.startsWith(`${normalizedItemHref}/`);
+    return (
+      <Link
+        href={item.href}
+        onClick={onMenuClick}
+        className={cn(
+          "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
+          isActive
+            ? isAdmin
+              ? "bg-purple-50 text-purple-600"
+              : "bg-indigo-50 text-indigo-600"
+            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        )}
+        title={isCollapsed ? item.name : undefined}
+      >
+        <item.icon
+          className={cn(
+            "w-5 h-5 shrink-0",
+            isActive
+              ? isAdmin
+                ? "text-purple-600"
+                : "text-indigo-600"
+              : "text-slate-400"
+          )}
+        />
+        {!isCollapsed && <span>{item.name}</span>}
+      </Link>
+    );
+  }
+
+  // If collapsed and has children, navigate to first child on click
+  if (isCollapsed) {
+    const firstChild = item.children![0];
+    return (
+      <Link
+        href={firstChild.href}
+        onClick={onMenuClick}
+        className={cn(
+          "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          "justify-center px-3 py-3",
+          isParentActive
+            ? isAdmin
+              ? "bg-purple-50 text-purple-600"
+              : "bg-indigo-50 text-indigo-600"
+            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        )}
+        title={item.name}
+      >
+        <item.icon
+          className={cn(
+            "w-5 h-5 shrink-0",
+            isParentActive
+              ? isAdmin
+                ? "text-purple-600"
+                : "text-indigo-600"
+              : "text-slate-400"
+          )}
+        />
+      </Link>
+    );
+  }
+
+  // Expanded mode with collapsible children
+  return (
+    <div className="space-y-1">
+      {/* Parent item (clickable to expand/collapse) */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={cn(
+          "w-full flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          "gap-3 px-4 py-3",
+          isParentActive || isAnyChildActive
+            ? isAdmin
+              ? "bg-purple-50 text-purple-600"
+              : "bg-indigo-50 text-indigo-600"
+            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        )}
+      >
+        <item.icon
+          className={cn(
+            "w-5 h-5 shrink-0",
+            isParentActive || isAnyChildActive
+              ? isAdmin
+                ? "text-purple-600"
+                : "text-indigo-600"
+              : "text-slate-400"
+          )}
+        />
+        <span className="flex-1 text-left">{item.name}</span>
+        <ChevronDownIcon
+          className={cn(
+            "w-4 h-4 shrink-0 transition-transform duration-200",
+            isExpanded ? "rotate-180" : "",
+            isParentActive || isAnyChildActive
+              ? isAdmin
+                ? "text-purple-600"
+                : "text-indigo-600"
+              : "text-slate-400"
+          )}
+        />
+      </button>
+
+      {/* Children items */}
+      {isExpanded && (
+        <div className="space-y-1 pl-4">
+          {item.children!.map((child) => {
+            const isThisChildActive =
+              normalizedPathname === normalizePath(child.href);
+            return (
+              <Link
+                key={child.name}
+                href={child.href}
+                onClick={onMenuClick}
+                className={cn(
+                  "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                  "gap-3 px-4 py-2.5",
+                  isThisChildActive
+                    ? isAdmin
+                      ? "bg-purple-50/50 text-purple-600"
+                      : "bg-indigo-50/50 text-indigo-600"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                )}
+              >
+                <child.icon
+                  className={cn(
+                    "w-4 h-4 shrink-0",
+                    isThisChildActive
+                      ? isAdmin
+                        ? "text-purple-600"
+                        : "text-indigo-600"
+                      : "text-slate-400"
+                  )}
+                />
+                <span>{child.name}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Icons
 function LayoutDashboardIcon({ className }: { className?: string }) {
   return (
@@ -309,6 +523,24 @@ function ShoppingBagIcon({ className }: { className?: string }) {
 }
 
 function PackageIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+      />
+    </svg>
+  );
+}
+
+function BoxIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -417,6 +649,20 @@ function ChevronIcon({ className }: { className?: string }) {
   );
 }
 
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
 function GlobeIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -448,6 +694,24 @@ function TagsIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+      />
+    </svg>
+  );
+}
+
+function BuildingIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5"
       />
     </svg>
   );

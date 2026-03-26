@@ -6,6 +6,7 @@
   },
   "buttons": {
     "save": "Guardar",
+    "saving": "Guardando...",
     "saveChanges": "Guardar Cambios",
     "cancel": "Cancelar",
     "delete": "Eliminar",

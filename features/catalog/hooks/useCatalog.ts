@@ -22,9 +22,13 @@ import type {
   UpdateCategoryDto,
   ProductFilters,
   GlobalCatalogFilters,
+  PaginatedGlobalCatalog,
+  PaginatedBusinessProducts,
 } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
+import type { Business } from "@/types";
 import * as catalogService from "../services/catalog.service";
+import apiClient from "@/services/api.service";
 import type { CatalogToastMessages } from "./useCatalogTranslations";
 
 // ============================================================================
@@ -47,6 +51,8 @@ export const catalogKeys = {
     [...catalogKeys.all, "industry-categories"] as const,
   stats: (businessId: string) =>
     [...catalogKeys.all, "stats", businessId] as const,
+  business: (businessId: string) =>
+    [...catalogKeys.all, "business", businessId] as const,
 };
 
 // ============================================================================
@@ -59,7 +65,7 @@ export const catalogKeys = {
 export function useMyProducts(
   businessId: string,
   filters?: ProductFilters,
-  options?: UseQueryOptions<BusinessProduct[], Error>
+  options?: UseQueryOptions<PaginatedBusinessProducts, Error>
 ) {
   return useQuery({
     queryKey: [...catalogKeys.products(businessId), filters],
@@ -270,7 +276,7 @@ export function useToggleProductStatus(
 export function useGlobalCatalog(
   businessId: string,
   filters?: GlobalCatalogFilters,
-  options?: UseQueryOptions<GlobalProduct[], Error>
+  options?: UseQueryOptions<PaginatedGlobalCatalog, Error>
 ) {
   return useQuery({
     queryKey: [...catalogKeys.globalCatalog(businessId), filters],
@@ -576,4 +582,23 @@ export function useCatalogStats(
 }
 
 // Re-export the CatalogToastMessages type for convenience
+
+/**
+ * Hook to fetch business details by ID
+ */
+export function useBusiness(
+  businessId: string,
+  options?: Omit<UseQueryOptions<Business, Error, Business, readonly unknown[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<Business, Error, Business, readonly unknown[]>({
+    queryKey: catalogKeys.business(businessId),
+    queryFn: async () => {
+      const { data } = await apiClient.get<Business>(`/businesses/${businessId}`);
+      return data;
+    },
+    enabled: !!businessId,
+    ...options,
+  });
+}
+
 export type { CatalogToastMessages } from "./useCatalogTranslations";

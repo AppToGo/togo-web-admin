@@ -91,7 +91,6 @@ export function ActivateProductModal({
   // Validate form
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const tValidation = useTranslations("common");
 
     if (!formData.name.trim()) {
       newErrors.name = tCommon("validation.required");
@@ -154,7 +153,7 @@ export function ActivateProductModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4 px-7 pb-7">
           {/* Product Preview */}
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-card">
             <div className="w-12 h-12 rounded-card bg-white flex items-center justify-center overflow-hidden">
@@ -172,7 +171,9 @@ export function ActivateProductModal({
               <p className="font-medium text-slate-900 truncate">
                 {product.name}
               </p>
-              <p className="text-xs text-slate-500">{tCommon("fields.sku")}: {product.sku}</p>
+              <p className="text-xs text-slate-500">
+                {tCommon("fields.sku")}: {product.sku}
+              </p>
             </div>
           </div>
 
@@ -188,7 +189,9 @@ export function ActivateProductModal({
               onChange={handleChange}
               placeholder={t("products.form.namePlaceholder")}
               disabled={isLoading}
-              className={cn(errors.name && "border-red-500 focus-visible:ring-red-500")}
+              className={cn(
+                errors.name && "border-red-500 focus-visible:ring-red-500"
+              )}
             />
             {errors.name && (
               <p className="text-xs text-red-500 flex items-center gap-1">
@@ -196,9 +199,7 @@ export function ActivateProductModal({
                 {errors.name}
               </p>
             )}
-            <p className="text-xs text-slate-500">
-              {t("customizeNameHint")}
-            </p>
+            <p className="text-xs text-slate-500">{t("customizeNameHint")}</p>
           </div>
 
           {/* Price */}
@@ -260,7 +261,9 @@ export function ActivateProductModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activate-category">{t("products.category")}</Label>
+              <Label htmlFor="activate-category">
+                {t("products.category")}
+              </Label>
               <Select
                 value={formData.categoryId}
                 onValueChange={(value) =>
@@ -285,7 +288,8 @@ export function ActivateProductModal({
           {/* Info */}
           <div className="p-3 bg-blue-50 rounded-card text-xs text-blue-700">
             <p>
-              <strong>{tCommon("notifications.info")}:</strong> {t("activateProductNote")}
+              <strong>{tCommon("notifications.info")}:</strong>{" "}
+              {t("activateProductNote")}
             </p>
           </div>
 

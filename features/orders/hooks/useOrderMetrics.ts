@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
+import { useBranchStore } from "@/stores/branch.store";
 import { useDateFilterParams } from "@/features/filters/hooks/useDateFilterQuery";
 import { getOrderMetrics } from "../services/order.service";
 import type {
@@ -75,7 +76,11 @@ export function useOrderMetrics(params?: GetOrderMetricsParams) {
  * @returns Datos procesados para el dashboard y métricas crudas
  */
 export function useDashboardMetrics(params?: Omit<GetOrderMetricsParams, 'dateFrom' | 'dateTo'>) {
-  const { data: metrics, ...rest } = useOrderMetrics(params);
+  const { selectedBranchId } = useBranchStore();
+  const { data: metrics, ...rest } = useOrderMetrics({
+    ...params,
+    branchId: params?.branchId ?? selectedBranchId ?? undefined,
+  });
 
   const dashboardData: DashboardMetricsData | null = useMemo(() => {
     if (!metrics) return null;

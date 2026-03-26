@@ -13,7 +13,10 @@
     "notifications": "Notifications",
     "expandMenu": "Expand menu",
     "collapseMenu": "Collapse menu",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "myProducts": "My Products",
+    "categories": "Categories",
+    "branches": "Branches"
   },
   "breadcrumbs": {
     "home": "Home",
@@ -21,6 +24,7 @@
     "orders": "Orders",
     "catalog": "Catalog",
     "customers": "Customers",
+    "branches": "Branches",
     "settings": "Settings",
     "profile": "Profile",
     "admin": "Administration",

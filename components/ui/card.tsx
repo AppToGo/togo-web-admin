@@ -13,6 +13,28 @@ const cardVariants = cva("text-card-foreground", {
       primary:
         "border border-indigo-200 bg-white shadow-sm ring-1 ring-indigo-100 rounded-lg",
       kanban: "border bg-card text-card-foreground shadow rounded-xl",
+      glass:
+        "rounded-card-xl bg-white/40 backdrop-blur-xl border border-white/80 overflow-hidden",
+      "gradient-indigo":
+        "rounded-card-lg shadow-card bg-gradient-indigo-purple text-white overflow-hidden",
+      "gradient-emerald":
+        "rounded-card-lg shadow-card bg-gradient-emerald-teal text-white overflow-hidden",
+      "gradient-amber":
+        "rounded-card-lg shadow-card bg-gradient-orange-amber text-white overflow-hidden",
+      "gradient-blue":
+        "rounded-card-lg shadow-card bg-gradient-blue-cyan text-white overflow-hidden",
+      "gradient-purple":
+        "rounded-card-lg shadow-card bg-gradient-purple-indigo text-white overflow-hidden",
+      "metrics-emerald":
+        "rounded-card-xl border border-white/80 overflow-hidden relative backdrop-blur-2xl bg-gradient-to-br from-emerald-400/15 via-white/10 to-emerald-500/20",
+      "metrics-blue":
+        "rounded-card-xl border border-white/80 overflow-hidden relative backdrop-blur-2xl bg-gradient-to-br from-blue-400/15 via-white/10 to-blue-500/20",
+      "metrics-purple":
+        "rounded-card-xl border border-white/80 overflow-hidden relative backdrop-blur-2xl bg-gradient-to-br from-purple-400/15 via-white/10 to-purple-500/20",
+      "metrics-amber":
+        "rounded-card-xl border border-white/80 overflow-hidden relative backdrop-blur-2xl bg-gradient-to-br from-amber-400/15 via-white/10 to-amber-500/20",
+      "metrics-default":
+        "rounded-card-xl border border-white/80 overflow-hidden relative backdrop-blur-2xl bg-gradient-to-br from-slate-400/15 via-white/10 to-slate-500/20",
     },
   },
   defaultVariants: {
@@ -24,7 +46,24 @@ export interface CardProps
   extends
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {
-  variant?: "default" | "ghost" | "outline" | "elevated" | "primary" | "kanban";
+  variant?:
+    | "default"
+    | "ghost"
+    | "outline"
+    | "elevated"
+    | "primary"
+    | "kanban"
+    | "glass"
+    | "gradient-indigo"
+    | "gradient-emerald"
+    | "gradient-amber"
+    | "gradient-blue"
+    | "gradient-purple"
+    | "metrics-emerald"
+    | "metrics-blue"
+    | "metrics-purple"
+    | "metrics-amber"
+    | "metrics-default";
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(

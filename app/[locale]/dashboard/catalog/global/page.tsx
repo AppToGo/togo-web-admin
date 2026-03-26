@@ -1,0 +1,377 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Search, Package, Store, Grid3X3 } from "lucide-react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useGlobalCatalog,
+  useIndustryCategories,
+  useActivateGlobalProduct,
+  useCategories,
+} from "@/features/catalog/hooks";
+import {
+  GlobalProductCard,
+  ActivateProductModal,
+} from "@/features/catalog/components";
+import type {
+  GlobalProduct,
+  ActivateGlobalProductDto,
+} from "@/features/catalog/types";
+
+type ViewMode = "grid" | "list";
+
+const globalPageSize = 12;
+
+// ============================================================================
+// LOADING SKELETON
+// ============================================================================
+
+function GlobalCatalogLoading() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-white rounded-card-lg overflow-hidden border border-slate-100"
+        >
+          <Skeleton className="aspect-4/3" />
+          <div className="p-4 space-y-3">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// EMPTY STATE
+// ============================================================================
+
+function EmptyGlobalCatalogState() {
+  const t = useTranslations("catalog");
+
+  return (
+    <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+        <Grid3X3 className="w-8 h-8 text-slate-400" />
+      </div>
+      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+        {t("globalCatalog.empty.title")}
+      </h3>
+      <p className="text-sm text-slate-500 max-w-sm mx-auto">
+        {t("globalCatalog.empty.message")}
+      </p>
+    </div>
+  );
+}
+
+// ============================================================================
+// ERROR STATE
+// ============================================================================
+
+function ErrorState({ error }: { error: Error | null }) {
+  const t = useTranslations("catalog");
+
+  return (
+    <div className="text-center py-16 bg-red-50 rounded-card-lg border border-red-200">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <Grid3X3 className="w-8 h-8 text-red-500" />
+      </div>
+      <h3 className="text-lg font-semibold text-red-900 mb-2">
+        {t("globalCatalog.error.title") || "Error loading catalog"}
+      </h3>
+      <p className="text-sm text-red-600 mb-6 max-w-sm mx-auto">
+        {error?.message || "An unexpected error occurred"}
+      </p>
+    </div>
+  );
+}
+
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
+
+export default function GlobalCatalogPage() {
+  const t = useTranslations("catalog");
+  const tc = useTranslations("common");
+
+  useAuthGuard();
+  const businessId = useEffectiveBusinessId();
+
+  if (!businessId) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+            <Store className="w-8 h-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("noBusiness.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("noBusiness.description")}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Estados
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+  const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<
+    string[]
+  >([]);
+  const [selectedBrand, setSelectedBrand] = useState<string>("all");
+  const [globalPage, setGlobalPage] = useState(1);
+  const [globalViewMode, setGlobalViewMode] = useState<ViewMode>("grid");
+  const [activatingProduct, setActivatingProduct] =
+    useState<GlobalProduct | null>(null);
+
+  // Hooks
+  const {
+    data: globalProductsData,
+    isLoading: isLoadingGlobal,
+    error: globalProductsError,
+  } = useGlobalCatalog(businessId, {
+    search: globalSearchQuery || undefined,
+    industryCategoryIds:
+      selectedIndustryCategories.length > 0
+        ? selectedIndustryCategories.join(",")
+        : undefined,
+    brand: selectedBrand === "all" ? undefined : selectedBrand,
+    page: globalPage,
+    limit: globalPageSize,
+  });
+
+  const { data: industryCategoriesData } = useIndustryCategories();
+  const { data: categoriesData } = useCategories(businessId);
+
+  const globalProducts = globalProductsData?.items || [];
+  const globalMeta = globalProductsData?.meta;
+  const industryCategories = Array.isArray(industryCategoriesData)
+    ? industryCategoriesData
+    : [];
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+
+  // Mutaciones
+  const activateGlobal = useActivateGlobalProduct(businessId);
+
+  // Handler
+  const handleActivateGlobal = (data: ActivateGlobalProductDto) => {
+    activateGlobal.mutate(data, {
+      onSuccess: () => setActivatingProduct(null),
+    });
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {t("globalCatalog.title")}
+            </h1>
+            <p className="text-slate-500 mt-1">{t("globalCatalog.subtitle")}</p>
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="relative col-span-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder={t("globalCatalog.search")}
+              value={globalSearchQuery}
+              onChange={(e) => {
+                setGlobalSearchQuery(e.target.value);
+                setGlobalPage(1);
+              }}
+              className="pl-9"
+            />
+          </div>
+
+          {/* Category and Brand Filters */}
+          <div className="relative col-span-2 gap-4 flex flex-row">
+            <div className="relative flex-1">
+              <MultiSelect
+                options={industryCategories.map((ic) => ({
+                  value: ic.id,
+                  label: ic.name,
+                }))}
+                value={selectedIndustryCategories}
+                onChange={(value) => {
+                  setSelectedIndustryCategories(value);
+                  setGlobalPage(1);
+                }}
+                placeholder={t("globalCatalog.filters.category")}
+                searchPlaceholder={tc("buttons.search")}
+                emptyMessage={tc("empty.noResults")}
+                maxDisplay={1}
+                className="w-full"
+              />
+            </div>
+            <div className="flex-1">
+              <Select
+                value={selectedBrand}
+                onValueChange={(value) => {
+                  setSelectedBrand(value);
+                  setGlobalPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("globalCatalog.filters.brand")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{tc("filters.all")}</SelectItem>
+                  {Array.from(
+                    new Set(globalProducts.map((p) => p.brand).filter(Boolean))
+                  )
+                    .sort()
+                    .map((brand) => (
+                      <SelectItem key={brand} value={brand as string}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* View Toggle */}
+          <div className="col-span-1 flex justify-end">
+            <ViewToggle
+              value={globalViewMode}
+              onChange={(value) => setGlobalViewMode(value as ViewMode)}
+              className="w-19"
+            />
+          </div>
+        </div>
+
+        {/* Global Products */}
+        {isLoadingGlobal ? (
+          <GlobalCatalogLoading />
+        ) : globalProductsError ? (
+          <ErrorState error={globalProductsError as Error} />
+        ) : globalProducts.length === 0 ? (
+          <EmptyGlobalCatalogState />
+        ) : globalViewMode === "list" ? (
+          <div className="space-y-3">
+            {globalProducts.map((product: GlobalProduct) => (
+              <div
+                key={product.id}
+                className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card  hover:shadow-sm transition-shadow"
+              >
+                {/* Imagen */}
+                <div className="w-16 h-16 rounded-card shrink-0 bg-slate-100 overflow-hidden">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-6 h-6 text-slate-400" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-slate-900 truncate">
+                    {product.name}
+                  </h4>
+                  <p className="text-sm text-slate-500">
+                    {product.brand || "Sin marca"} • {product.sku}
+                  </p>
+                </div>
+
+                {/* Action */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActivatingProduct(product)}
+                >
+                  <Store className="w-4 h-4 mr-2" />
+                  {t("globalCatalog.activate")}
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {globalProducts.map((product: GlobalProduct) => (
+              <GlobalProductCard
+                key={product.id}
+                product={product}
+                onActivate={setActivatingProduct}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {globalMeta && globalMeta.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setGlobalPage((prev) => Math.max(1, prev - 1))}
+              disabled={globalPage === 1}
+            >
+              {tc("pagination.previous")}
+            </Button>
+            <span className="text-sm text-slate-500">
+              {tc("pagination.pageOf", {
+                page: globalPage,
+                totalPages: globalMeta.totalPages,
+              })}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setGlobalPage((prev) =>
+                  Math.min(globalMeta.totalPages, prev + 1)
+                )
+              }
+              disabled={globalPage === globalMeta.totalPages}
+            >
+              {tc("pagination.next")}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Activate Global Product Modal */}
+      <ActivateProductModal
+        product={activatingProduct}
+        categories={categories}
+        isOpen={!!activatingProduct}
+        onClose={() => setActivatingProduct(null)}
+        onActivate={handleActivateGlobal}
+        isLoading={activateGlobal.isPending}
+      />
+    </DashboardLayout>
+  );
+}

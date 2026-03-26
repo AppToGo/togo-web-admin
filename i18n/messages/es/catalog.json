@@ -132,6 +132,10 @@
     "empty": {
       "title": "Catálogo completo",
       "message": "Has activado todos los productos disponibles del catálogo global."
+    },
+    "filters": {
+      "brand": "Marca",
+      "category": "Categoría"
     }
   },
   "actions": {
