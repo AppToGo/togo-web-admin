@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Branch, RoutingMode } from "../types";
+import { getPrimaryWhatsApp } from "../utils/branch-helpers";
 
 interface BranchCardProps {
   branch: Branch;
@@ -123,12 +124,15 @@ export const BranchCard = memo(function BranchCard({
         </div>
 
         {/* Contact Info */}
-        {branch.whatsappPhoneNumber && (
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-            <span className="truncate">{branch.whatsappPhoneNumber}</span>
-          </div>
-        )}
+        {(() => {
+          const primaryNumber = getPrimaryWhatsApp(branch);
+          return primaryNumber ? (
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+              <span className="truncate">{primaryNumber}</span>
+            </div>
+          ) : null;
+        })()}
 
         {/* Address */}
         {branch.address && (

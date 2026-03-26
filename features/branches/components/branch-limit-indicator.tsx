@@ -11,14 +11,12 @@ import type { CanCreateBranchResponse } from "../types";
 
 interface BranchLimitIndicatorProps {
   limitData: CanCreateBranchResponse;
-  plan: "BASIC" | "PRO" | "ENTERPRISE";
   onUpgrade?: () => void;
   isLoading?: boolean;
 }
 
 export const BranchLimitIndicator = memo(function BranchLimitIndicator({
   limitData,
-  plan,
   onUpgrade,
   isLoading = false,
 }: BranchLimitIndicatorProps) {
@@ -27,7 +25,8 @@ export const BranchLimitIndicator = memo(function BranchLimitIndicator({
   const percentage = Math.min(100, (limitData.current / limitData.max) * 100);
   const isAtLimit = limitData.remaining === 0;
   const isNearLimit = limitData.remaining <= 1 && !isAtLimit;
-  const isBasicPlan = plan === "BASIC";
+  // Usar max para determinar el tipo de plan (capacidad vs nombre)
+  const isSingleBranchPlan = limitData.max <= 1;
 
   const progressColor = isAtLimit
     ? "bg-red-600"
@@ -91,8 +90,8 @@ export const BranchLimitIndicator = memo(function BranchLimitIndicator({
                 : t("limits.remaining", { count: limitData.remaining })}
             </p>
 
-            {/* Upgrade Button for BASIC plan */}
-            {isBasicPlan && (
+            {/* Upgrade Button for single branch plans */}
+            {isSingleBranchPlan && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -106,8 +105,8 @@ export const BranchLimitIndicator = memo(function BranchLimitIndicator({
             )}
           </div>
 
-          {/* Upgrade Message for BASIC plan */}
-          {isBasicPlan && (
+          {/* Upgrade Message for single branch plans */}
+          {isSingleBranchPlan && (
             <div className="pt-2 border-t border-slate-100">
               <p className="text-xs text-slate-500">
                 {t("limits.upgradeDescription")}

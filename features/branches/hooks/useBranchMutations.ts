@@ -54,6 +54,7 @@ export function useCreateBranch() {
         isActive: true,
         whatsappPhoneNumber: data.whatsappPhoneNumber || null,
         whatsappPhoneNumberId: data.whatsappPhoneNumberId || null,
+        whatsappNumbersExtra: null,
         routingMode: data.routingMode,
         address: data.address || null,
         timezone: data.timezone || "America/Lima",

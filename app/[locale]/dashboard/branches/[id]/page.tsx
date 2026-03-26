@@ -26,6 +26,7 @@ import type {
   Branch,
   UpdateBranchRequest,
 } from "@/features/branches/types";
+import { getPrimaryWhatsApp } from "@/features/branches/utils/branch-helpers";
 
 // Placeholder BranchForm component - should be imported from features/branches/components
 interface BranchFormProps {
@@ -154,6 +155,8 @@ function useBranch(id: string | null) {
           isActive: true,
           whatsappPhoneNumber: "+1234567890",
           whatsappPhoneNumberId: "phone-123",
+          whatsappNumbersExtra: null,
+          routingMode: "SINGLE_NUMBER",
           address: "Av. Principal 123",
           timezone: "America/Santiago",
           currency: "CLP",
@@ -371,14 +374,15 @@ export default function EditBranchPage({ params }: EditBranchPageProps) {
                 })}
               </span>
             </div>
-            {branch.whatsappPhoneNumber && (
-              <div className="flex justify-between">
-                <span className="text-slate-500">WhatsApp:</span>
-                <span className="text-slate-700">
-                  {branch.whatsappPhoneNumber}
-                </span>
-              </div>
-            )}
+            {(() => {
+              const phone = getPrimaryWhatsApp(branch);
+              return phone ? (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">WhatsApp:</span>
+                  <span className="text-slate-700">{phone}</span>
+                </div>
+              ) : null;
+            })()}
             <div className="flex justify-between">
               <span className="text-slate-500">{t("timezone")}:</span>
               <span className="text-slate-700">{branch.timezone}</span>

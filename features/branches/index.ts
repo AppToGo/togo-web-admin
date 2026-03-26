@@ -8,6 +8,9 @@
 // Types
 export * from "./types";
 
+// Utils
+export * from "./utils/branch-helpers";
+
 // TODO: Add the following exports when implemented:
 // - Components (BranchCard, BranchForm, BranchLimitIndicator)
 // - Hooks (useBranches, useBranch, useCreateBranch, useUpdateBranch, useCanCreateBranch)

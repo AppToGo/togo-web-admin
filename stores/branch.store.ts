@@ -8,6 +8,15 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { z } from "zod";
+
+// Schema Zod para validar datos del store en localStorage
+const BranchStorageSchema = z.object({
+  state: z.object({
+    selectedBranchId: z.string().nullable(),
+    selectedBranchName: z.string().nullable(),
+  }),
+});
 
 interface BranchState {
   /** ID de la sucursal seleccionada */
@@ -87,15 +96,24 @@ export function useHasSelectedBranch(): boolean {
  */
 export function getSelectedBranchId(): string | null {
   if (typeof window === "undefined") return null;
-  
+
   try {
     const stored = localStorage.getItem("togo-selected-branch");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return parsed.state?.selectedBranchId || null;
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored);
+    const result = BranchStorageSchema.safeParse(parsed);
+
+    if (result.success) {
+      return result.data.state.selectedBranchId;
+    } else {
+      // Datos corruptos, limpiar
+      console.error("[BranchStore] Datos corruptos en localStorage:", result.error);
+      localStorage.removeItem("togo-selected-branch");
     }
   } catch {
-    // Ignore parsing errors
+    // Error de parsing, limpiar
+    localStorage.removeItem("togo-selected-branch");
   }
   return null;
 }
@@ -106,16 +124,33 @@ export function getSelectedBranchId(): string | null {
  */
 export function setSelectedBranchId(id: string | null, name?: string | null): void {
   if (typeof window === "undefined") return;
-  
+
   try {
     const key = "togo-selected-branch";
     const stored = localStorage.getItem(key);
-    const current = stored ? JSON.parse(stored) : { state: {} };
-    
-    current.state.selectedBranchId = id;
-    current.state.selectedBranchName = name || null;
-    
-    localStorage.setItem(key, JSON.stringify(current));
+    let current: unknown;
+
+    if (stored) {
+      try {
+        current = JSON.parse(stored);
+      } catch {
+        // JSON inválido, empezar fresco
+        current = { state: {} };
+      }
+    } else {
+      current = { state: {} };
+    }
+
+    // Validar estructura existente o crear nueva
+    const validated = BranchStorageSchema.safeParse(current);
+    const state = validated.success
+      ? validated.data.state
+      : { selectedBranchId: null, selectedBranchName: null };
+
+    state.selectedBranchId = id;
+    state.selectedBranchName = name || null;
+
+    localStorage.setItem(key, JSON.stringify({ state }));
   } catch {
     // Ignore storage errors
   }

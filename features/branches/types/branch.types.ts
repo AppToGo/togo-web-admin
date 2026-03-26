@@ -23,6 +23,7 @@ export interface Branch {
   isActive: boolean;
   whatsappPhoneNumber: string | null;
   whatsappPhoneNumberId: string | null;
+  whatsappNumbersExtra: unknown;
   routingMode: RoutingMode;
   address: string | null;
   timezone: string;
