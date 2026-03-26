@@ -1,22 +1,9 @@
 /**
  * Catalog Types
- *
+ * 
  * TypeScript definitions for the normalized product catalog system.
  * Supports the Rappi-style architecture: GlobalProduct + BusinessProduct
  */
-
-/**
- * Paginated response structure
- */
-export interface PaginatedGlobalCatalog {
-  items: GlobalProduct[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
 
 // ============================================================================
 // GLOBAL PRODUCTS (Catalogo TOGO)
@@ -54,37 +41,37 @@ export interface GlobalProduct {
 export interface BusinessProduct {
   id: string;
   businessId: string;
-
+  
   // Reference to global product (null = custom product)
   globalProductId?: string | null;
   globalProduct?: GlobalProduct | null;
-
+  
   // Product details (can override global product values)
   name: string; // Computed: customName || globalProduct.name
   description?: string; // Computed: customDescription || globalProduct.description
   price: number;
   stock?: number | null;
   image?: string | null; // Computed: customImage || globalProduct.image
-
+  
   // Backend fields for overrides
   customName?: string;
   customDescription?: string;
   customImage?: string | null;
   customAttributes?: Record<string, unknown>;
-
+  
   // Product metadata
   slug: string;
   internalSku?: string;
   isFeatured: boolean;
-
+  
   // Categorization
   categoryId?: string | null;
   category?: BusinessCategory | null;
-
+  
   // Status
   isActive: boolean;
   isFromTemplate: boolean;
-
+  
   // Timestamps
   createdAt: string;
   updatedAt: string;
@@ -216,18 +203,6 @@ export interface ProductFilters {
   categoryId?: string;
   isActive?: boolean;
   isFromTemplate?: boolean;
-  page?: number;
-  limit?: number;
-}
-
-/**
- * Paginated response for business products
- */
-export interface PaginatedBusinessProducts {
-  items: BusinessProduct[];
-  total: number;
-  page: number;
-  limit: number;
 }
 
 /**
@@ -235,11 +210,8 @@ export interface PaginatedBusinessProducts {
  */
 export interface GlobalCatalogFilters {
   search?: string;
-  // Nota: El backend automáticamente filtra por la industria del negocio via businessId
-  industryCategoryIds?: string;  // CSV: "id1,id2,id3" (multiselect)
+  industryCategoryId?: string;
   brand?: string;
-  page?: number;
-  limit?: number;
 }
 
 /**

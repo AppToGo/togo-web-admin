@@ -24,8 +24,6 @@
 
 import apiClient from "@/services/api.service";
 import type {
-  PaginatedGlobalCatalog,
-  PaginatedBusinessProducts,
   GlobalProduct,
   BusinessProduct,
   BusinessCategory,
@@ -83,7 +81,7 @@ const USE_MOCK = false;
 export async function getMyProducts(
   businessId: string,
   filters?: ProductFilters
-): Promise<PaginatedBusinessProducts> {
+): Promise<BusinessProduct[]> {
   const params = new URLSearchParams();
   if (filters?.search) params.append("search", filters.search);
   if (filters?.categoryId) params.append("categoryId", filters.categoryId);
@@ -91,10 +89,8 @@ export async function getMyProducts(
     params.append("isActive", String(filters.isActive));
   if (filters?.isFromTemplate !== undefined)
     params.append("isFromTemplate", String(filters.isFromTemplate));
-  if (filters?.page) params.append("page", String(filters.page));
-  if (filters?.limit) params.append("limit", String(filters.limit));
 
-  const response = await apiClient.get<PaginatedBusinessProducts>(
+  const response = await apiClient.get<BusinessProduct[]>(
     `/businesses/${businessId}/products?${params}`
   );
   return response.data;
@@ -204,19 +200,13 @@ export async function toggleProductStatus(
 export async function getGlobalCatalog(
   businessId: string,
   filters?: GlobalCatalogFilters
-): Promise<PaginatedGlobalCatalog> {
+): Promise<GlobalProduct[]> {
   const params = new URLSearchParams();
   if (filters?.search) params.append("search", filters.search);
-  // Categorías seleccionadas (CSV)
-  // Nota: El backend automáticamente filtra por la industria del negocio
-  if (filters?.industryCategoryIds) {
-    params.append("industryCategoryIds", filters.industryCategoryIds);
-  }
+  if (filters?.industryCategoryId) params.append("industryCategoryId", filters.industryCategoryId);
   if (filters?.brand) params.append("brand", filters.brand);
-  if (filters?.page) params.append("page", filters.page.toString());
-  if (filters?.limit) params.append("limit", filters.limit.toString());
 
-  const response = await apiClient.get<PaginatedGlobalCatalog>(
+  const response = await apiClient.get<GlobalProduct[]>(
     `/businesses/${businessId}/global-catalog?${params}`
   );
   return response.data;
