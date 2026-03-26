@@ -107,6 +107,12 @@
     "upgrade": "Upgrade plan",
     "upgradeDescription": "Your current plan only allows one branch. Upgrade to manage multiple locations."
   },
+  "routingMode": "Routing mode",
+  "card": {
+    "mainBranch": "Main",
+    "makeMain": "Set as main",
+    "cannotDeleteMain": "The main branch cannot be deleted"
+  },
   "metrics": {
     "ordersToday": "Orders today",
     "pending": "Pending",
