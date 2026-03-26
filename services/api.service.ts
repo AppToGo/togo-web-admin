@@ -22,6 +22,7 @@ import axios, {
 } from "axios";
 import { APP_CONFIG } from "@/config/app.config";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useBusinessStore } from "@/features/business/stores/business.store";
 import { 
   isRefreshInProgress, 
   startGlobalRefresh,
@@ -55,16 +56,23 @@ apiClient.interceptors.request.use(
     }
 
     // Get access token from memory
-    const { accessToken } = useAuthStore.getState();
+    const { accessToken, user } = useAuthStore.getState();
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    // SECURITY: We intentionally do NOT send X-Business-ID header
-    // The backend should extract businessId from the JWT only
-    // This prevents potential header manipulation attacks
-    // See README.md "Multi-Tenant" section for details
+    // For SUPER_ADMIN: Send selected business ID in header
+    // This allows the backend to know which business context to use
+    const { selectedBusinessId } = useBusinessStore.getState();
+    const isSuperAdmin = user?.role === "SUPER_ADMIN";
+    
+    // Only send x-business-id header when:
+    // 1. User is SUPER_ADMIN
+    // 2. A specific business is selected (not null, not empty string "")
+    if (isSuperAdmin && selectedBusinessId && selectedBusinessId !== "") {
+      config.headers["x-business-id"] = selectedBusinessId;
+    }
 
     return config;
   },
