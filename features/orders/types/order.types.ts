@@ -63,6 +63,10 @@ export interface Order {
   paymentProofUrl?: string;
   paymentProofType?: string;
   paymentProofReceivedAt?: Date;
+  subtotal: number;
+  tax: number;
+  total: number;
+  /** @deprecated usar total */
   totalAmount: number;
   customerId: string;
   addressId?: string;
