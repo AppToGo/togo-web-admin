@@ -13,6 +13,8 @@ import {
   getBranches,
   getBranchById,
   canCreateBranch,
+  getBranchMetrics,
+  type BranchMetrics,
 } from "../services/branch.service";
 import { BRANCHES_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 import type { Branch, CanCreateBranchResponse } from "../types";
@@ -101,6 +103,19 @@ export function useCanCreateBranch() {
       }
       return failureCount < 3;
     },
+  });
+}
+
+/**
+ * Hook para obtener métricas de una sucursal específica
+ */
+export function useBranchMetrics(id: string | null | undefined) {
+  return useQuery<BranchMetrics, Error>({
+    queryKey: ["branch-metrics", id],
+    queryFn: () => getBranchMetrics(id!),
+    enabled: !!id,
+    staleTime: 60 * 1000, // 60s
+    gcTime: 5 * 60 * 1000,
   });
 }
 

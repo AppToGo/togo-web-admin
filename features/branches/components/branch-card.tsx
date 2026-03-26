@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Branch, RoutingMode } from "../types";
 import { getPrimaryWhatsApp } from "../utils/branch-helpers";
+import { useBranchMetrics } from "../hooks/useBranches";
 
 interface BranchCardProps {
   branch: Branch;
@@ -64,6 +65,7 @@ export const BranchCard = memo(function BranchCard({
   const t = useTranslations("branches");
   const tCommon = useTranslations("common");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { data: metrics } = useBranchMetrics(branch.isActive ? branch.id : null);
 
   const routingMode = routingModeConfig[branch.routingMode];
   const RoutingIcon = routingMode.icon;
@@ -163,6 +165,26 @@ export const BranchCard = memo(function BranchCard({
             <span className="font-medium">{branch.currency}</span>
           </div>
         </div>
+
+        {/* Metrics */}
+        {metrics && (
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100/60">
+            <div className="text-center">
+              <p className="text-lg font-bold text-slate-900">{metrics.ordersToday}</p>
+              <p className="text-xs text-slate-500">{t("metrics.ordersToday")}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-amber-600">{metrics.pendingOrders}</p>
+              <p className="text-xs text-slate-500">{t("metrics.pending")}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-emerald-600">
+                {metrics.revenueToday.toLocaleString()}
+              </p>
+              <p className="text-xs text-slate-500">{t("metrics.revenueToday")}</p>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2 pt-3 border-t border-slate-100">

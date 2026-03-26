@@ -74,3 +74,22 @@ export async function setMainBranch(id: string): Promise<Branch> {
   const { data } = await apiClient.post<Branch>(`/branches/${id}/set-main`);
   return data;
 }
+
+export interface BranchMetrics {
+  branchId: string;
+  generadoEn: string;
+  ordersToday: number;
+  completedToday: number;
+  pendingOrders: number;
+  totalOrders: number;
+  revenueToday: number;
+  revenuePeriod: number;
+}
+
+/**
+ * Obtener métricas de una sucursal
+ */
+export async function getBranchMetrics(id: string): Promise<BranchMetrics> {
+  const { data } = await apiClient.get<BranchMetrics>(`/branches/${id}/metrics`);
+  return data;
+}
