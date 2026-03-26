@@ -1,0 +1,66 @@
+{
+  "branch": "Sucursal",
+  "branches": "Sucursales",
+  "selectBranch": "Seleccionar sucursal...",
+  "noBranches": "Sin sucursales",
+  "singleBranch": "Única",
+  "main": "Principal",
+  "allBranches": "Todas las sucursales",
+  "loadingBranches": "Cargando sucursales...",
+  "noBranchesAvailable": "No hay sucursales disponibles",
+  "create": {
+    "title": "Crear Sucursal",
+    "description": "Crea una nueva sucursal para tu negocio",
+    "success": "Sucursal creada exitosamente"
+  },
+  "edit": {
+    "title": "Editar Sucursal",
+    "description": "Modifica los datos de la sucursal",
+    "success": "Sucursal actualizada exitosamente"
+  },
+  "delete": {
+    "title": "Eliminar Sucursal",
+    "description": "¿Estás seguro de eliminar esta sucursal? Esta acción no se puede deshacer.",
+    "success": "Sucursal eliminada exitosamente"
+  },
+  "fields": {
+    "name": "Nombre",
+    "namePlaceholder": "Ej: Sucursal Centro",
+    "code": "Código",
+    "codePlaceholder": "Ej: SC-001",
+    "address": "Dirección",
+    "addressPlaceholder": "Ej: Calle Principal 123",
+    "phone": "Teléfono WhatsApp",
+    "timezone": "Zona horaria",
+    "currency": "Moneda",
+    "routingMode": "Modo de enrutamiento",
+    "isMainBranch": "Sucursal principal",
+    "isActive": "Activa"
+  },
+  "routingModes": {
+    "DEDICATED": "Número dedicado",
+    "SINGLE_NUMBER": "Número único"
+  },
+  "notifications": {
+    "created": "Sucursal creada exitosamente",
+    "updated": "Sucursal actualizada exitosamente",
+    "deleted": "Sucursal eliminada exitosamente",
+    "setMain": "Sucursal principal actualizada"
+  },
+  "errors": {
+    "createFailed": "Error al crear la sucursal",
+    "updateFailed": "Error al actualizar la sucursal",
+    "deleteFailed": "Error al eliminar la sucursal",
+    "setMainFailed": "Error al establecer la sucursal principal",
+    "loadFailed": "Error al cargar las sucursales",
+    "limitReached": "Has alcanzado el límite de sucursales para tu plan",
+    "duplicateCode": "Ya existe una sucursal con ese código"
+  },
+  "plan": {
+    "limitTitle": "Límite de sucursales alcanzado",
+    "limitDescription": "Tu plan actual permite {max} sucursal(es). Actualiza tu plan para crear más.",
+    "current": "Actual",
+    "max": "Máximo",
+    "remaining": "Disponibles"
+  }
+}
