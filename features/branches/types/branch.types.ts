@@ -5,6 +5,8 @@
  * Basado en los DTOs del backend.
  */
 
+import type { WhatsAppNumberExtra } from "../utils/branch-helpers";
+
 /**
  * Modo de enrutamiento de WhatsApp para una sucursal
  */
@@ -23,13 +25,13 @@ export interface Branch {
   isActive: boolean;
   whatsappPhoneNumber: string | null;
   whatsappPhoneNumberId: string | null;
-  whatsappNumbersExtra: unknown;
+  whatsappNumbersExtra: WhatsAppNumberExtra[] | null;
   routingMode: RoutingMode;
   address: string | null;
   timezone: string;
   currency: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**

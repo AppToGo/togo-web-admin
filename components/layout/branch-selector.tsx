@@ -49,15 +49,18 @@ export function BranchSelector() {
     return branches.find((b: Branch) => b.id === selectedBranchId);
   }, [branches, selectedBranchId]);
 
-  // Seleccionar automáticamente la primera sucursal si no hay selección
+  // Seleccionar automáticamente la primera sucursal si no hay selección o falta el nombre
   useEffect(() => {
-    if (branches && branches.length > 0 && !selectedBranchId) {
-      // Priorizar la sucursal principal
+    if (branches && branches.length > 0 && (!selectedBranchId || !selectedBranchName)) {
+      // Priorizar la sucursal previamente seleccionada (restaurar nombre), luego la principal
+      const existingBranch = selectedBranchId
+        ? branches.find((b: Branch) => b.id === selectedBranchId)
+        : null;
       const mainBranch = branches.find((b: Branch) => b.isMainBranch);
-      const branchToSelect = mainBranch || branches[0];
+      const branchToSelect = existingBranch || mainBranch || branches[0];
       setSelectedBranch(branchToSelect.id, branchToSelect.name);
     }
-  }, [branches, selectedBranchId, setSelectedBranch]);
+  }, [branches, selectedBranchId, selectedBranchName, setSelectedBranch]);
 
   // Limpiar selección si no hay sucursales
   useEffect(() => {
@@ -219,14 +222,17 @@ export function BranchSelectorCompact() {
     return branches.find((b: Branch) => b.id === selectedBranchId);
   }, [branches, selectedBranchId]);
 
-  // Auto-select first branch
+  // Auto-select first branch (also restores name after cold localStorage hydration)
   useEffect(() => {
-    if (branches && branches.length > 0 && !selectedBranchId) {
+    if (branches && branches.length > 0 && (!selectedBranchId || !selectedBranchName)) {
+      const existingBranch = selectedBranchId
+        ? branches.find((b: Branch) => b.id === selectedBranchId)
+        : null;
       const mainBranch = branches.find((b: Branch) => b.isMainBranch);
-      const branchToSelect = mainBranch || branches[0];
+      const branchToSelect = existingBranch || mainBranch || branches[0];
       setSelectedBranch(branchToSelect.id, branchToSelect.name);
     }
-  }, [branches, selectedBranchId, setSelectedBranch]);
+  }, [branches, selectedBranchId, selectedBranchName, setSelectedBranch]);
 
   if (isLoading) {
     return (

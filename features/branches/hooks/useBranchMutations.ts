@@ -20,6 +20,7 @@ import {
 import { BRANCHES_KEYS } from "./query-keys";
 import type { Branch, CreateBranchRequest, UpdateBranchRequest } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
+import { useBranchStore } from "@/stores/branch.store";
 
 /**
  * Hook para crear una nueva sucursal
@@ -59,8 +60,8 @@ export function useCreateBranch() {
         address: data.address || null,
         timezone: data.timezone || "America/Lima",
         currency: data.currency || "PEN",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       // Actualizar lista de sucursales
@@ -252,8 +253,12 @@ export function useDeleteBranch() {
     },
 
     // Success
-    onSuccess: () => {
+    onSuccess: (_, branchId) => {
       toast.success(t("deleteSuccess"));
+      // Clear store if the deleted branch was selected
+      if (useBranchStore.getState().selectedBranchId === branchId) {
+        useBranchStore.getState().clearSelectedBranch();
+      }
     },
 
     // Revalidar después de la mutación

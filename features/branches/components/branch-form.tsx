@@ -135,6 +135,8 @@ export function BranchForm({
         currency: branch.currency,
         isActive: branch.isActive,
       });
+      setErrors({});
+      setTouched({});
       setSlugManuallyEdited(true);
     }
   }, [branch]);
@@ -142,7 +144,7 @@ export function BranchForm({
   // Auto-generate slug from name
   useEffect(() => {
     if (!slugManuallyEdited && !isEditing && formData.name) {
-      setFormData((prev) => ({ ...prev, slug: generateSlug(formData.name) }));
+      setFormData((prev) => ({ ...prev, slug: generateSlug(prev.name) }));
     }
   }, [formData.name, slugManuallyEdited, isEditing]);
 

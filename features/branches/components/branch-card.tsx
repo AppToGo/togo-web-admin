@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Edit2,
@@ -17,6 +17,16 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Branch, RoutingMode } from "../types";
 import { getPrimaryWhatsApp } from "../utils/branch-helpers";
 
@@ -53,6 +63,7 @@ export const BranchCard = memo(function BranchCard({
 }: BranchCardProps) {
   const t = useTranslations("branches");
   const tCommon = useTranslations("common");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const routingMode = routingModeConfig[branch.routingMode];
   const RoutingIcon = routingMode.icon;
@@ -185,7 +196,7 @@ export const BranchCard = memo(function BranchCard({
             variant="ghost"
             size="sm"
             className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => onDelete?.(branch)}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={isLoading || branch.isMainBranch}
             title={
               branch.isMainBranch
@@ -198,6 +209,29 @@ export const BranchCard = memo(function BranchCard({
           </Button>
         </div>
       </CardContent>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("delete.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("delete.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("buttons.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                onDelete?.(branch);
+              }}
+            >
+              {tCommon("buttons.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 });

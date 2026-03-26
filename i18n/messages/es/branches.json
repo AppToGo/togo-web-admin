@@ -48,20 +48,15 @@
   },
   "create": {
     "title": "Crear Sucursal",
-    "subtitle": "Completa los datos para registrar una nueva sucursal",
-    "description": "Crea una nueva sucursal para tu negocio",
-    "success": "Sucursal creada exitosamente"
+    "subtitle": "Completa los datos para registrar una nueva sucursal"
   },
   "edit": {
     "title": "Editar Sucursal",
-    "subtitle": "Modifica los datos de la sucursal",
-    "description": "Modifica los datos de la sucursal",
-    "success": "Sucursal actualizada exitosamente"
+    "subtitle": "Modifica los datos de la sucursal"
   },
   "delete": {
     "title": "Eliminar Sucursal",
-    "description": "¿Estás seguro de eliminar esta sucursal? Esta acción no se puede deshacer.",
-    "success": "Sucursal eliminada exitosamente"
+    "description": "¿Estás seguro de eliminar esta sucursal? Esta acción no se puede deshacer."
   },
   "fields": {
     "name": "Nombre",
@@ -86,12 +81,6 @@
       "title": "Número único",
       "description": "Un solo número de WhatsApp atiende todas las sucursales del negocio."
     }
-  },
-  "notifications": {
-    "created": "Sucursal creada exitosamente",
-    "updated": "Sucursal actualizada exitosamente",
-    "deleted": "Sucursal eliminada exitosamente",
-    "setMain": "Sucursal principal actualizada"
   },
   "errors": {
     "createFailed": "Error al crear la sucursal",

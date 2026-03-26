@@ -14,6 +14,8 @@ import { useTranslations } from "next-intl";
 import {
   useBranches,
   useCanCreateBranch,
+  useDeleteBranch,
+  useSetMainBranch,
   BranchCard,
   BranchLimitIndicator,
 } from "@/features/branches";
@@ -70,6 +72,8 @@ export default function BranchesPage() {
 
   const { data: branches, isLoading } = useBranches();
   const { data: limitData, isLoading: isLoadingLimit } = useCanCreateBranch();
+  const deleteBranch = useDeleteBranch();
+  const setMainBranch = useSetMainBranch();
 
   const handleCreateBranch = () => {
     router.push("/dashboard/branches/new");
@@ -77,6 +81,18 @@ export default function BranchesPage() {
 
   const handleEditBranch = (branchId: string) => {
     router.push(`/dashboard/branches/${branchId}`);
+  };
+
+  const handleDeleteBranch = (branchId: string) => {
+    deleteBranch.mutate(branchId);
+  };
+
+  const handleSetMainBranch = (branchId: string) => {
+    setMainBranch.mutate(branchId);
+  };
+
+  const handleUpgrade = () => {
+    router.push("/dashboard/settings");
   };
 
   if (!hasBusiness && !isSuperAdmin) {
@@ -128,6 +144,7 @@ export default function BranchesPage() {
               <BranchLimitIndicator
                 limitData={limitData}
                 isLoading={isLoadingLimit}
+                onUpgrade={handleUpgrade}
               />
             )}
 
@@ -141,6 +158,9 @@ export default function BranchesPage() {
                     key={branch.id}
                     branch={branch}
                     onEdit={(b) => handleEditBranch(b.id)}
+                    onDelete={(b) => handleDeleteBranch(b.id)}
+                    onMakeMain={(b) => handleSetMainBranch(b.id)}
+                    isLoading={deleteBranch.isPending || setMainBranch.isPending}
                   />
                 ))}
               </div>

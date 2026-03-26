@@ -48,20 +48,15 @@
   },
   "create": {
     "title": "Create Branch",
-    "subtitle": "Fill in the details to register a new branch",
-    "description": "Create a new branch for your business",
-    "success": "Branch created successfully"
+    "subtitle": "Fill in the details to register a new branch"
   },
   "edit": {
     "title": "Edit Branch",
-    "subtitle": "Modify the branch details",
-    "description": "Modify the branch details",
-    "success": "Branch updated successfully"
+    "subtitle": "Modify the branch details"
   },
   "delete": {
     "title": "Delete Branch",
-    "description": "Are you sure you want to delete this branch? This action cannot be undone.",
-    "success": "Branch deleted successfully"
+    "description": "Are you sure you want to delete this branch? This action cannot be undone."
   },
   "fields": {
     "name": "Name",
@@ -86,12 +81,6 @@
       "title": "Single Number",
       "description": "One WhatsApp number handles all branches of the business."
     }
-  },
-  "notifications": {
-    "created": "Branch created successfully",
-    "updated": "Branch updated successfully",
-    "deleted": "Branch deleted successfully",
-    "setMain": "Main branch updated"
   },
   "errors": {
     "createFailed": "Failed to create branch",
