@@ -195,9 +195,5 @@
     "categoryDeleted": "Categoría eliminada exitosamente",
     "categoryActivated": "Categoría activada exitosamente",
     "categoryDeactivated": "Categoría desactivada exitosamente"
-  },
-  "filters": {
-    "industryCategory": "Categoría de Industria",
-    "brand": "Marca"
   }
 }
