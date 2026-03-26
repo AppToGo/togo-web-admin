@@ -39,6 +39,7 @@ export default function EditBranchPage() {
 
   const params = useParams();
   const id = params.id as string;
+  const locale = params.locale as string;
 
   const { data: branch, isLoading: isLoadingBranch } = useBranch(id);
   const updateBranch = useUpdateBranch();
@@ -178,7 +179,7 @@ export default function EditBranchPage() {
             <div className="flex justify-between">
               <span className="text-slate-500">{tc("fields.created")}:</span>
               <span className="text-slate-700">
-                {new Date(branch.createdAt).toLocaleDateString("es-ES", {
+                {new Date(branch.createdAt).toLocaleDateString(locale, {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -190,7 +191,7 @@ export default function EditBranchPage() {
                 {tc("fields.lastUpdated")}:
               </span>
               <span className="text-slate-700">
-                {new Date(branch.updatedAt).toLocaleDateString("es-ES", {
+                {new Date(branch.updatedAt).toLocaleDateString(locale, {
                   year: "numeric",
                   month: "long",
                   day: "numeric",

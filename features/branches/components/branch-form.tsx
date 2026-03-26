@@ -24,6 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { Branch, RoutingMode, CreateBranchRequest, UpdateBranchRequest } from "../types";
+import { getPrimaryWhatsApp } from "../utils/branch-helpers";
 
 interface BranchFormProps {
   branch?: Branch | null;
@@ -121,11 +122,12 @@ export function BranchForm({
   // Initialize form with branch data when editing
   useEffect(() => {
     if (branch) {
+      const phone = getPrimaryWhatsApp(branch);
       setFormData({
         name: branch.name,
         slug: branch.slug,
         code: branch.code,
-        whatsappPhoneNumber: branch.whatsappPhoneNumber || "",
+        whatsappPhoneNumber: phone || "",
         whatsappPhoneNumberId: branch.whatsappPhoneNumberId || "",
         routingMode: branch.routingMode,
         address: branch.address || "",
