@@ -430,11 +430,13 @@ const BUSINESSES_KEY = ["businesses"];
 /**
  * Hook para obtener lista de negocios (solo SUPER_ADMIN)
  */
-export function useBusinesses() {
+export function useBusinesses(options?: { enabled?: boolean }) {
+  const { enabled = true } = options || {};
   return useQuery({
     queryKey: BUSINESSES_KEY,
     queryFn: () => getBusinesses(),
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
+    enabled,
   });
 }

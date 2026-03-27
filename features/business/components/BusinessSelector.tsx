@@ -22,7 +22,7 @@ export function BusinessSelector() {
   const t = useTranslations();
   const isSuperAdmin = useIsSuperAdmin();
   const user = useCurrentUser();
-  const { data: businesses, isLoading } = useBusinesses();
+  const { data: businesses, isLoading } = useBusinesses({ enabled: isSuperAdmin });
   const { selectedBusinessId, selectedBusinessName, setSelectedBusiness } =
     useBusinessStore();
   const effectiveBusinessId = useEffectiveBusinessId();
