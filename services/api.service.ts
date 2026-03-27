@@ -36,6 +36,18 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // Serialize arrays without brackets (branchIds=id1&branchIds=id2 instead of branchIds[]=id1)
+  paramsSerializer: (params) => {
+    const searchParams = new URLSearchParams();
+    for (const key in params) {
+      if (Array.isArray(params[key])) {
+        params[key].forEach((value) => searchParams.append(key, value));
+      } else if (params[key] !== undefined && params[key] !== null) {
+        searchParams.append(key, params[key]);
+      }
+    }
+    return searchParams.toString();
+  },
 });
 
 // ============================================================================
