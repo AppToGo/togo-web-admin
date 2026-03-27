@@ -37,7 +37,7 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
-import { useUserBranches } from "@/features/branches/hooks";
+import { useUserBranches } from "@/features/orders/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 
 type CardViewMode = "card" | "list";
@@ -124,8 +124,11 @@ export default function OrdersPage() {
   ].filter(Boolean).length;
 
   // Get user branches info for access validation
-  const { branches, isLoading: isLoadingBranches, isVisible: showBranchSelector } = useUserBranches();
+  const { branches, isLoading: isLoadingBranches } = useUserBranches();
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
+  
+  // Show branch selector only if user has access to multiple branches
+  const showBranchSelector = branches.length > 1;
 
   // Para usuarios normales sin negocio, mostrar error
   if (!hasBusiness && !isSuperAdmin) {

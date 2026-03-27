@@ -122,10 +122,12 @@ export function useBranchMetrics(id: string | null | undefined) {
 /**
  * Hook para obtener la sucursal seleccionada con sus datos completos
  * Combina el store con la query de sucursales
+ * @deprecated Use useSelectedBranchIds from @/stores/branch.store for multi-select
  */
 export function useSelectedBranch() {
   const { data: branches, isLoading } = useBranches();
-  const selectedBranchId = useBranchStore((state) => state.selectedBranchId);
+  const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
+  const selectedBranchId = selectedBranchIds[0] ?? null;
 
   const selectedBranch = useMemo(() => {
     if (!branches || !selectedBranchId) return null;
@@ -139,86 +141,4 @@ export function useSelectedBranch() {
   };
 }
 
-/**
- * User Branch Assignment Info
- * Represents a branch with the user's role in that branch
- */
-export interface UserBranchAssignment {
-  id: string;
-  name: string;
-  role: string;
-  isMainBranch: boolean;
-}
 
-/**
- * Business Info for multi-branch checks
- */
-export interface BusinessInfo {
-  maxBranches: number;
-  currentBranches: number;
-}
-
-/**
- * Hook to get user branches with business info
- * Combines branches, business limits, and user role information
- * 
- * @returns Object containing branches, business info, loading state, and error state
- */
-export function useUserBranches() {
-  const user = useAuthStore((state) => state.user);
-  const { data: branches, isLoading: isLoadingBranches, error: branchesError } = useBranches();
-  const { data: canCreateData, isLoading: isLoadingCanCreate } = useCanCreateBranch();
-
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
-  const isOwner = user?.role === "OWNER";
-  const canSelectAll = isSuperAdmin || isOwner;
-  
-  // Default branch ID from user session
-  const defaultBranchId = user?.operatorProfileId || null;
-
-  // Business info derived from canCreateBranch response
-  const businessInfo: BusinessInfo | null = useMemo(() => {
-    if (!canCreateData) return null;
-    return {
-      maxBranches: canCreateData.max,
-      currentBranches: canCreateData.current,
-    };
-  }, [canCreateData]);
-
-  // Map branches to user branch assignments
-  // For now, all branches have the user's role (future: could fetch specific assignments)
-  const userBranches: UserBranchAssignment[] = useMemo(() => {
-    if (!branches) return [];
-    return branches.map((branch) => ({
-      id: branch.id,
-      name: branch.name,
-      role: user?.role || "OPERATOR",
-      isMainBranch: branch.isMainBranch,
-    }));
-  }, [branches, user?.role]);
-
-  // Determine if multi-branch selection should be visible
-  const isVisible = useMemo(() => {
-    if (!businessInfo || !userBranches) return false;
-    // Hidden if maxBranches === 1 (BASIC plan)
-    if (businessInfo.maxBranches === 1) return false;
-    // Hidden if only 1 branch assignment
-    if (userBranches.length <= 1) return false;
-    // Visible if maxBranches > 1 AND branches.length > 1
-    return businessInfo.maxBranches > 1 && userBranches.length > 1;
-  }, [businessInfo, userBranches]);
-
-  const isLoading = isLoadingBranches || isLoadingCanCreate;
-  const error = branchesError || null;
-
-  return {
-    branches: userBranches,
-    businessInfo,
-    userRole: user?.role || null,
-    defaultBranchId,
-    canSelectAll,
-    isVisible,
-    isLoading,
-    error,
-  };
-}

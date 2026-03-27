@@ -4,7 +4,7 @@ import { useEffect, useMemo, useCallback } from "react";
 import { Building2, Check, ChevronsUpDown, X, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { useUserBranches } from "@/features/branches/hooks";
+import { useUserBranches } from "@/features/orders/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -52,20 +52,21 @@ export function BranchMultiSelector({
   // Get branches and business info from useUserBranches hook
   const {
     branches,
-    businessInfo,
-    userRole,
     defaultBranchId,
-    canSelectAll,
-    isVisible,
     isLoading,
     error,
   } = useUserBranches();
+  
+  // Derive additional properties from branches
+  const canSelectAll = branches.length > 0; // All authenticated users can select from their accessible branches
+  const isVisible = branches.length > 1; // Only show if user has access to multiple branches
 
   // Get selected branch IDs from store
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
-  const setSelectedBranchIds = useBranchStore((state) => state.setSelectedBranchIds);
-  const clearSelectedBranchIds = useBranchStore((state) => state.clearSelectedBranchIds);
+  const setSelectedBranches = useBranchStore((state) => state.setSelectedBranches);
+  const deselectAllBranches = useBranchStore((state) => state.deselectAllBranches);
   const selectAllBranches = useBranchStore((state) => state.selectAllBranches);
+  const selectedBranchNames = useBranchStore((state) => state.selectedBranchNames);
 
   // All branch IDs for "Select All" functionality
   const allBranchIds = useMemo(() => branches.map((b) => b.id), [branches]);
@@ -75,9 +76,6 @@ export function BranchMultiSelector({
     if (!selectedBranchIds || selectedBranchIds.length === 0) return false;
     return selectedBranchIds.length === branches.length;
   }, [selectedBranchIds, branches.length]);
-
-  // Check if "All Branches" option should be shown
-  const showAllOption = canSelectAll;
 
   // Initialize selection on mount
   useEffect(() => {
@@ -90,27 +88,35 @@ export function BranchMultiSelector({
         branches.some((b) => b.id === id)
       );
       if (validIds.length !== selectedBranchIds.length) {
-        setSelectedBranchIds(validIds.length > 0 ? validIds : null);
+        const validNames = validIds.reduce((acc, id) => {
+          const branch = branches.find((b) => b.id === id);
+          if (branch) acc[id] = branch.name;
+          return acc;
+        }, {} as Record<string, string>);
+        setSelectedBranches(validIds, validNames);
       }
       return;
     }
 
-    // First load - initialize based on user role
-    if (canSelectAll) {
-      // OWNER/SUPER_ADMIN: select all branches
-      selectAllBranches(allBranchIds);
-    } else if (defaultBranchId) {
-      // Other users: select default branch from session
+    // First load - initialize based on default branch or select all
+    if (defaultBranchId) {
+      // Select default branch from session
       const hasAccess = branches.some((b) => b.id === defaultBranchId);
       if (hasAccess) {
-        setSelectedBranchIds([defaultBranchId]);
+        const defaultBranch = branches.find((b) => b.id === defaultBranchId);
+        setSelectedBranches([defaultBranchId], defaultBranch ? { [defaultBranchId]: defaultBranch.name } : {});
       } else if (branches.length > 0) {
         // Fallback to first available branch
-        setSelectedBranchIds([branches[0].id]);
+        const firstBranch = branches[0];
+        setSelectedBranches([firstBranch.id], { [firstBranch.id]: firstBranch.name });
       }
     } else if (branches.length > 0) {
-      // No default branch, select first available
-      setSelectedBranchIds([branches[0].id]);
+      // No default branch, select all available branches
+      const allNames = branches.reduce((acc, branch) => {
+        acc[branch.id] = branch.name;
+        return acc;
+      }, {} as Record<string, string>);
+      setSelectedBranches(allBranchIds, allNames);
     }
   }, [
     isLoading,
@@ -119,7 +125,7 @@ export function BranchMultiSelector({
     defaultBranchId,
     allBranchIds,
     selectedBranchIds,
-    setSelectedBranchIds,
+    setSelectedBranches,
     selectAllBranches,
   ]);
 
@@ -133,49 +139,60 @@ export function BranchMultiSelector({
   // Handle individual branch toggle
   const handleToggleBranch = useCallback(
     (branchId: string) => {
-      if (!selectedBranchIds) {
-        setSelectedBranchIds([branchId]);
-        return;
-      }
+      const branch = branches.find((b) => b.id === branchId);
+      if (!branch) return;
 
       if (selectedBranchIds.includes(branchId)) {
         // Remove branch if already selected
         const newSelection = selectedBranchIds.filter((id) => id !== branchId);
-        setSelectedBranchIds(newSelection.length > 0 ? newSelection : null);
+        const newNames = { ...selectedBranchNames };
+        delete newNames[branchId];
+        setSelectedBranches(newSelection, newNames);
       } else {
         // Add branch to selection
-        setSelectedBranchIds([...selectedBranchIds, branchId]);
+        setSelectedBranches(
+          [...selectedBranchIds, branchId],
+          { ...selectedBranchNames, [branchId]: branch.name }
+        );
       }
     },
-    [selectedBranchIds, setSelectedBranchIds]
+    [selectedBranchIds, selectedBranchNames, setSelectedBranches, branches]
   );
 
   // Handle "All Branches" toggle
   const handleToggleAll = useCallback(() => {
     if (isAllSelected) {
-      clearSelectedBranchIds();
+      deselectAllBranches();
     } else {
-      selectAllBranches(allBranchIds);
+      const allNames = branches.reduce((acc, branch) => {
+        acc[branch.id] = branch.name;
+        return acc;
+      }, {} as Record<string, string>);
+      setSelectedBranches(allBranchIds, allNames);
     }
-  }, [isAllSelected, allBranchIds, clearSelectedBranchIds, selectAllBranches]);
+  }, [isAllSelected, allBranchIds, deselectAllBranches, setSelectedBranches, branches]);
 
   // Handle select all branches
   const handleSelectAll = useCallback(() => {
-    selectAllBranches(allBranchIds);
-  }, [allBranchIds, selectAllBranches]);
+    const allNames = branches.reduce((acc, branch) => {
+      acc[branch.id] = branch.name;
+      return acc;
+    }, {} as Record<string, string>);
+    setSelectedBranches(allBranchIds, allNames);
+  }, [allBranchIds, setSelectedBranches, branches]);
 
   // Handle clear all selections
   const handleClearAll = useCallback(() => {
-    clearSelectedBranchIds();
-  }, [clearSelectedBranchIds]);
+    deselectAllBranches();
+  }, [deselectAllBranches]);
 
   // Get selected branch names for display
   const selectedLabels = useMemo(() => {
-    if (!selectedBranchIds || selectedBranchIds.length === 0) return [];
+    if (selectedBranchIds.length === 0) return [];
     return selectedBranchIds
-      .map((id) => branches.find((b) => b.id === id)?.name)
+      .map((id) => selectedBranchNames[id] || branches.find((b) => b.id === id)?.name)
       .filter(Boolean) as string[];
-  }, [selectedBranchIds, branches]);
+  }, [selectedBranchIds, selectedBranchNames, branches]);
 
   // Don't render if not visible (single branch or basic plan)
   if (!isVisible && !isLoading) {
@@ -232,16 +249,16 @@ export function BranchMultiSelector({
         >
           <div className="flex items-center gap-2 overflow-hidden">
             <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
-            {selectedBranchIds && selectedBranchIds.length > 0 ? (
+            {selectedBranchIds.length > 0 ? (
               <div className="flex items-center gap-1.5 overflow-hidden">
                 <span className="truncate text-sm">
                   {selectedLabels.length === 1
                     ? selectedLabels[0]
                     : t("branchSelector.selectedCount", {
-                        count: selectedBranchIds.length,
+                        count: selectedLabels.length,
                       })}
                 </span>
-                {selectedBranchIds.length > 1 && (
+                {selectedLabels.length > 1 && (
                   <Badge
                     variant="secondary"
                     className="h-5 px-1.5 text-[10px] font-medium shrink-0"
@@ -274,8 +291,8 @@ export function BranchMultiSelector({
               {t("branchSelector.noResults")}
             </CommandEmpty>
             <CommandGroup className="p-1">
-              {/* "All Branches" option for OWNER/SUPER_ADMIN */}
-              {showAllOption && (
+              {/* "All Branches" option */}
+              {canSelectAll && (
                 <CommandItem
                   onSelect={handleToggleAll}
                   className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer hover:bg-slate-100 aria-selected:bg-slate-100"
@@ -295,13 +312,13 @@ export function BranchMultiSelector({
               )}
 
               {/* Divider when "All Branches" option is shown */}
-              {showAllOption && (
+              {canSelectAll && (
                 <div className="my-1 border-t border-slate-100" />
               )}
 
               {/* Individual branches */}
               {branches.map((branch) => {
-                const isSelected = selectedBranchIds?.includes(branch.id) ?? false;
+                const isSelected = selectedBranchIds.includes(branch.id);
                 return (
                   <CommandItem
                     key={branch.id}
@@ -337,7 +354,7 @@ export function BranchMultiSelector({
               size="sm"
               onClick={handleClearAll}
               className="h-7 px-2 text-xs text-slate-500 hover:text-slate-700"
-              disabled={!selectedBranchIds || selectedBranchIds.length === 0}
+              disabled={selectedBranchIds.length === 0}
             >
               <X className="w-3 h-3 mr-1" />
               {t("branchSelector.clearAll")}
