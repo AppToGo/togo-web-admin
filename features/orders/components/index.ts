@@ -10,6 +10,7 @@ export type { OrderDetailContentProps } from "./OrderDetailContent";
 export { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
 export { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 export { ColumnVisibilityBar, type ColumnVisibilityConfig } from "./ColumnVisibilityBar";
+export { BranchMultiSelector, BranchFilterBadge, type BranchMultiSelectorProps } from "./BranchMultiSelector";
 
 // Export styles
 export * from "../styles";

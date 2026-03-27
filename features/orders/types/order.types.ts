@@ -107,6 +107,7 @@ export interface GetOrdersParams {
   sortOrder?: "asc" | "desc";
   dateFrom?: string;
   dateTo?: string;
+  branchIds?: string[];
 }
 
 // Respuesta paginada de órdenes

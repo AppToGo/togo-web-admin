@@ -92,6 +92,7 @@ interface UseOrdersByStatusParams {
   dateFrom?: string;
   dateTo?: string;
   businessId?: string; // Para SUPER_ADMIN que puede ver cualquier negocio
+  branchIds?: string[]; // Filtrar por sucursales seleccionadas
   skipDateFilter?: boolean; // Si es true, no usa los filtros globales de fecha
 }
 
@@ -101,6 +102,7 @@ interface UseOrdersByStatusParams {
  * Por defecto usa los filtros de fecha globales.
  * Si se pasa `skipDateFilter: true`, ignora los filtros globales.
  * Si se pasan `dateFrom`/`dateTo`, sobreescriben los filtros globales.
+ * Si se pasan `branchIds`, filtra por esas sucursales.
  */
 export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
   const dateParams = useDateFilterParams();
