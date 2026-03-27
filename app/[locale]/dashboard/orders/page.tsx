@@ -182,7 +182,7 @@ export default function OrdersPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
 
-              {/* Buscador -->
+              {/* Buscador */}
               <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
