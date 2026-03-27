@@ -14,3 +14,11 @@ export {
   useDashboardMetrics,
   useDetailedMetrics,
 } from './useOrderMetrics';
+
+// Hooks para manejo de sesión de sucursales
+export {
+  useUserBranches,
+  useHasBranchAccess,
+  useDefaultBranch,
+  AUTH_SESSION_KEY,
+} from './useUserBranches';

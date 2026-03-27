@@ -73,3 +73,44 @@ export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
 }
+
+/**
+ * User Branch Information
+ * Represents a branch the user has access to
+ */
+export interface UserBranch {
+  id: string;
+  name: string;
+  isMainBranch: boolean;
+  role: string;
+}
+
+/**
+ * User Preferences
+ * Stores user-specific preferences
+ */
+export interface UserPreferences {
+  defaultBranchId: string | null;
+}
+
+/**
+ * Business Information
+ * Basic business details for the session
+ */
+export interface SessionBusiness {
+  id: string;
+  name: string;
+  plan: string;
+  maxBranches: number;
+}
+
+/**
+ * Session Response
+ * Complete session data returned from /auth/session endpoint
+ */
+export interface SessionResponse {
+  defaultBranchId: string | null;
+  branches: UserBranch[];
+  business: SessionBusiness;
+  userPreferences: UserPreferences;
+}

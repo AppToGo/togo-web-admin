@@ -29,6 +29,7 @@ interface OrdersKanbanBoardProps {
   dateFrom?: string;
   dateTo?: string;
   businessId?: string; // Para SUPER_ADMIN
+  branchIds?: string[]; // Filtrar por sucursales seleccionadas
   paymentStatusFilter?: {
     paid: boolean;
     pending: boolean;
@@ -94,6 +95,7 @@ export function OrdersKanbanBoard({
   dateFrom,
   dateTo,
   businessId,
+  branchIds,
   paymentStatusFilter = { paid: true, pending: true },
   deliveryTypeFilter = { delivery: true, pickup: true },
 }: OrdersKanbanBoardProps) {
@@ -116,6 +118,7 @@ export function OrdersKanbanBoard({
     dateFrom,
     dateTo,
     businessId,
+    branchIds,
   });
   const updateStatus = useUpdateOrderStatus();
 

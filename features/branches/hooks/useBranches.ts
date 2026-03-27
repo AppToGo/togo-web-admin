@@ -122,10 +122,12 @@ export function useBranchMetrics(id: string | null | undefined) {
 /**
  * Hook para obtener la sucursal seleccionada con sus datos completos
  * Combina el store con la query de sucursales
+ * @deprecated Use useSelectedBranchIds from @/stores/branch.store for multi-select
  */
 export function useSelectedBranch() {
   const { data: branches, isLoading } = useBranches();
-  const selectedBranchId = useBranchStore((state) => state.selectedBranchId);
+  const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
+  const selectedBranchId = selectedBranchIds[0] ?? null;
 
   const selectedBranch = useMemo(() => {
     if (!branches || !selectedBranchId) return null;
@@ -138,3 +140,5 @@ export function useSelectedBranch() {
     hasSelection: !!selectedBranchId,
   };
 }
+
+

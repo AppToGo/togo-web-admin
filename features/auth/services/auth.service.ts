@@ -13,6 +13,7 @@ import {
   LoginCredentials,
   LoginResponse,
   RefreshTokenRequest,
+  SessionResponse,
 } from "@/types/auth.types";
 
 const AUTH_ENDPOINTS = {
@@ -20,6 +21,7 @@ const AUTH_ENDPOINTS = {
   REFRESH: "/auth/refresh",
   LOGOUT: "/auth/logout",
   LOGOUT_ALL: "/auth/logout-all",
+  SESSION: "/auth/session",
 } as const;
 
 /**
@@ -83,4 +85,16 @@ export async function validateToken(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Get user session data
+ * Fetches complete session context including branches, business info, and preferences
+ * Should be called after login and on app initialization
+ * 
+ * @returns SessionResponse with branches, business info, and user preferences
+ */
+export async function getUserSession(): Promise<SessionResponse> {
+  const response = await apiClient.get<SessionResponse>(AUTH_ENDPOINTS.SESSION);
+  return response.data;
 }
