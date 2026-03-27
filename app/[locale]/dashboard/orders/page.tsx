@@ -181,8 +181,6 @@ export default function OrdersPage() {
           {/* Controles: Branch Selector, Buscador, filtro de fecha y toggle de vista */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              {/* Branch Multi Selector - only show when applicable */}
-              {showBranchSelector && <BranchMultiSelector />}
 
               {/* Buscador -->
               <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
@@ -195,6 +193,8 @@ export default function OrdersPage() {
                   className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
                 />
               </div>
+              {/* Branch Multi Selector - only show when applicable */}
+              {showBranchSelector && <BranchMultiSelector />}
 
               {/* Botón de filtros adicionales */}
               <Popover>
