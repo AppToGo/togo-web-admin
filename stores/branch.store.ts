@@ -1,7 +1,7 @@
 /**
  * Branch Store
  *
- * Store global para manejar la sucursal seleccionada.
+ * Store global para manejar la sucursal seleccionada (single) y sucursales seleccionadas (multi).
  * Persiste la selección en localStorage para mantener la preferencia
  * al recargar la página.
  */
@@ -15,21 +15,34 @@ const BranchStorageSchema = z.object({
   state: z.object({
     selectedBranchId: z.string().nullable(),
     selectedBranchName: z.string().nullable(),
+    selectedBranchIds: z.array(z.string()).nullable(),
   }),
 });
 
 interface BranchState {
-  /** ID de la sucursal seleccionada */
+  /** ID de la sucursal seleccionada (single selection mode) */
   selectedBranchId: string | null;
-  /** Nombre de la sucursal seleccionada (para mostrar en UI) */
+  /** Nombre de la sucursal seleccionada (single selection mode) */
   selectedBranchName: string | null;
+  /** IDs de las sucursales seleccionadas (multi selection mode) */
+  selectedBranchIds: string[] | null;
 }
 
 interface BranchActions {
-  /** Establecer la sucursal seleccionada */
+  /** Establecer la sucursal seleccionada (single) */
   setSelectedBranch: (id: string | null, name?: string | null) => void;
-  /** Limpiar la selección */
+  /** Limpiar la selección (single) */
   clearSelectedBranch: () => void;
+  /** Establecer las sucursales seleccionadas (multi) */
+  setSelectedBranchIds: (ids: string[] | null) => void;
+  /** Agregar una sucursal a la selección (multi) */
+  addSelectedBranch: (id: string) => void;
+  /** Remover una sucursal de la selección (multi) */
+  removeSelectedBranch: (id: string) => void;
+  /** Limpiar todas las selecciones (multi) */
+  clearSelectedBranchIds: () => void;
+  /** Seleccionar todas las sucursales disponibles (multi) */
+  selectAllBranches: (allIds: string[]) => void;
 }
 
 type BranchStore = BranchState & BranchActions;
@@ -37,6 +50,7 @@ type BranchStore = BranchState & BranchActions;
 const initialState: BranchState = {
   selectedBranchId: null,
   selectedBranchName: null,
+  selectedBranchIds: null,
 };
 
 /**
@@ -47,7 +61,7 @@ const initialState: BranchState = {
  */
 export const useBranchStore = create<BranchStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
 
       setSelectedBranch: (id: string | null, name?: string | null) => {
@@ -58,7 +72,44 @@ export const useBranchStore = create<BranchStore>()(
       },
 
       clearSelectedBranch: () => {
-        set(initialState);
+        set({
+          selectedBranchId: null,
+          selectedBranchName: null,
+        });
+      },
+
+      setSelectedBranchIds: (ids: string[] | null) => {
+        set({
+          selectedBranchIds: ids,
+        });
+      },
+
+      addSelectedBranch: (id: string) => {
+        const current = get().selectedBranchIds || [];
+        if (!current.includes(id)) {
+          set({
+            selectedBranchIds: [...current, id],
+          });
+        }
+      },
+
+      removeSelectedBranch: (id: string) => {
+        const current = get().selectedBranchIds || [];
+        set({
+          selectedBranchIds: current.filter((branchId) => branchId !== id),
+        });
+      },
+
+      clearSelectedBranchIds: () => {
+        set({
+          selectedBranchIds: null,
+        });
+      },
+
+      selectAllBranches: (allIds: string[]) => {
+        set({
+          selectedBranchIds: allIds,
+        });
       },
     }),
     {
@@ -69,7 +120,7 @@ export const useBranchStore = create<BranchStore>()(
 );
 
 /**
- * Hook para obtener el branchId efectivo
+ * Hook para obtener el branchId efectivo (single selection)
  * Combina el store con lógica de fallback si es necesario
  */
 export function useSelectedBranchId(): string | null {
@@ -77,21 +128,35 @@ export function useSelectedBranchId(): string | null {
 }
 
 /**
- * Hook para obtener el nombre de la sucursal seleccionada
+ * Hook para obtener el nombre de la sucursal seleccionada (single)
  */
 export function useSelectedBranchName(): string | null {
   return useBranchStore((state) => state.selectedBranchName);
 }
 
 /**
- * Hook para verificar si hay una sucursal seleccionada
+ * Hook para obtener los IDs de sucursales seleccionadas (multi)
+ */
+export function useSelectedBranchIds(): string[] | null {
+  return useBranchStore((state) => state.selectedBranchIds);
+}
+
+/**
+ * Hook para verificar si hay una sucursal seleccionada (single)
  */
 export function useHasSelectedBranch(): boolean {
   return useBranchStore((state) => !!state.selectedBranchId);
 }
 
 /**
- * Función helper para obtener el branch ID seleccionado
+ * Hook para verificar si hay sucursales seleccionadas (multi)
+ */
+export function useHasSelectedBranches(): boolean {
+  return useBranchStore((state) => !!state.selectedBranchIds && state.selectedBranchIds.length > 0);
+}
+
+/**
+ * Función helper para obtener el branch ID seleccionado (single)
  * Útil para usar fuera de componentes React
  */
 export function getSelectedBranchId(): string | null {
@@ -119,10 +184,44 @@ export function getSelectedBranchId(): string | null {
 }
 
 /**
- * Función helper para establecer el branch ID seleccionado
+ * Función helper para obtener los branch IDs seleccionados (multi)
+ * Útil para usar fuera de componentes React
+ */
+export function getSelectedBranchIds(): string[] | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const stored = localStorage.getItem("togo-selected-branch");
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored);
+    const result = BranchStorageSchema.safeParse(parsed);
+
+    if (result.success) {
+      return result.data.state.selectedBranchIds;
+    } else {
+      console.error("[BranchStore] Datos corruptos en localStorage:", result.error);
+      localStorage.removeItem("togo-selected-branch");
+    }
+  } catch {
+    localStorage.removeItem("togo-selected-branch");
+  }
+  return null;
+}
+
+/**
+ * Función helper para establecer el branch ID seleccionado (single)
  * Útil para usar fuera de componentes React.
  * Delega en el store para mantener una única fuente de verdad.
  */
 export function setSelectedBranchId(id: string | null, name?: string | null): void {
   useBranchStore.getState().setSelectedBranch(id, name);
+}
+
+/**
+ * Función helper para establecer los branch IDs seleccionados (multi)
+ * Útil para usar fuera de componentes React.
+ */
+export function setSelectedBranchIds(ids: string[] | null): void {
+  useBranchStore.getState().setSelectedBranchIds(ids);
 }

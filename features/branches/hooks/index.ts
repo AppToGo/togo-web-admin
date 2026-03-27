@@ -10,6 +10,9 @@ export {
   useBranch,
   useCanCreateBranch,
   useSelectedBranch,
+  useUserBranches,
+  type UserBranchAssignment,
+  type BusinessInfo,
 } from "./useBranches";
 
 // Mutation hooks
