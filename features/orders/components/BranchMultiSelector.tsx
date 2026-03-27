@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useUserBranches } from "@/features/orders/hooks";
 import { useBranchStore } from "@/stores/branch.store";
-import { MultiSelect } from "@/components/ui/multi-select";
+import { MultiSelector } from "@/components/ui/multi-selector";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,8 +18,12 @@ export interface BranchMultiSelectorProps {
 /**
  * Branch Multi-Selector Component
  *
- * Wrapper around the generic MultiSelect component for branch filtering.
- * Handles business logic: visibility, auto-initialization, and store integration.
+ * Uses the generic MultiSelector component with branch-specific logic.
+ * Features:
+ * - Conditional visibility based on branch count
+ * - Auto-select default branch on mount
+ * - Persist selection to localStorage via branch.store
+ * - Shows main branch badge
  */
 export function BranchMultiSelector({
   className,
@@ -28,25 +32,29 @@ export function BranchMultiSelector({
   const t = useTranslations("orders");
   const tb = useTranslations("branches");
 
-  // Get branches and business info from useUserBranches hook
   const { branches, defaultBranchId, isLoading, error } = useUserBranches();
-
-  // Only show if user has access to multiple branches
   const isVisible = branches.length > 1;
 
-  // Get selected branch IDs from store
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
   const setSelectedBranches = useBranchStore((state) => state.setSelectedBranches);
   const deselectAllBranches = useBranchStore((state) => state.deselectAllBranches);
 
-  // Convert branches to MultiSelect options
+  // Convert branches to MultiSelector options with badges
   const branchOptions = useMemo(
     () =>
       branches.map((b) => ({
         value: b.id,
         label: b.name,
+        badge: b.isMainBranch ? (
+          <Badge
+            variant="outline"
+            className="text-[10px] h-5 text-amber-600 border-amber-200 bg-amber-50"
+          >
+            {tb("main")}
+          </Badge>
+        ) : undefined,
       })),
-    [branches]
+    [branches, tb]
   );
 
   // Handle selection changes
@@ -67,7 +75,6 @@ export function BranchMultiSelector({
   useEffect(() => {
     if (isLoading || !branches.length) return;
 
-    // If there's already a selection in store, validate it
     if (selectedBranchIds.length > 0) {
       const validIds = selectedBranchIds.filter((id) =>
         branches.some((b) => b.id === id)
@@ -83,7 +90,6 @@ export function BranchMultiSelector({
       return;
     }
 
-    // First load - initialize based on default branch or select all
     if (defaultBranchId) {
       const hasAccess = branches.some((b) => b.id === defaultBranchId);
       if (hasAccess) {
@@ -108,12 +114,8 @@ export function BranchMultiSelector({
     }
   }, [isLoading, branches, defaultBranchId, selectedBranchIds, setSelectedBranches]);
 
-  // Don't render if not visible (single branch)
-  if (!isVisible && !isLoading) {
-    return null;
-  }
+  if (!isVisible && !isLoading) return null;
 
-  // Loading state
   if (isLoading) {
     return (
       <div
@@ -129,7 +131,6 @@ export function BranchMultiSelector({
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div
@@ -144,7 +145,6 @@ export function BranchMultiSelector({
     );
   }
 
-  // No branches state
   if (branches.length === 0) {
     return (
       <div
@@ -159,51 +159,27 @@ export function BranchMultiSelector({
     );
   }
 
-  // Custom trigger content showing Building icon
-  const customTrigger = (
-    <div className="flex items-center gap-2 overflow-hidden">
-      <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
-      {selectedBranchIds.length > 0 ? (
-        <span className="truncate text-sm text-slate-700">
-          {selectedBranchIds.length === 1
-            ? branches.find((b) => b.id === selectedBranchIds[0])?.name
-            : t("branchSelector.selectedCount", { count: selectedBranchIds.length })}
-        </span>
-      ) : (
-        <span className="text-slate-400 text-sm">{t("branchSelector.placeholder")}</span>
-      )}
-    </div>
-  );
-
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <MultiSelect
-        options={branchOptions}
-        value={selectedBranchIds}
-        onChange={handleChange}
-        placeholder={t("branchSelector.placeholder")}
-        searchPlaceholder={t("branchSelector.searchPlaceholder")}
-        emptyMessage={t("branchSelector.noResults")}
-        maxDisplay={1}
-        className="min-w-[180px]"
-      />
-      {selectedBranchIds.length > 1 && (
-        <Badge
-          variant="secondary"
-          className="h-5 px-1.5 text-[10px] font-medium shrink-0"
-        >
-          {selectedBranchIds.length}
-        </Badge>
-      )}
-    </div>
+    <MultiSelector
+      options={branchOptions}
+      value={selectedBranchIds}
+      onChange={handleChange}
+      placeholder={t("branchSelector.placeholder")}
+      searchPlaceholder={t("branchSelector.searchPlaceholder")}
+      emptyMessage={t("branchSelector.noResults")}
+      allLabel={t("branchSelector.allBranches")}
+      clearAllLabel={t("branchSelector.clearAll")}
+      selectAllLabel={t("branchSelector.selectAll")}
+      icon={<Building2 className="w-4 h-4" />}
+      className={className}
+      showSelectAll
+      showFooter
+    />
   );
 }
 
 /**
  * Branch Filter Badge
- *
- * Displays a badge with the count of selected branches
- * Used when space is limited
  */
 export function BranchFilterBadge({ count }: { count: number }) {
   const t = useTranslations("orders");
