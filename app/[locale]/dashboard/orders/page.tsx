@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { OrdersKanbanBoard } from "@/features/orders/components";
+import { OrdersKanbanBoard, BranchMultiSelector } from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
 import {
@@ -37,6 +37,8 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useUserBranches } from "@/features/branches/hooks";
+import { useBranchStore } from "@/stores/branch.store";
 
 type CardViewMode = "card" | "list";
 
@@ -121,6 +123,10 @@ export default function OrdersPage() {
     isCustomDate,
   ].filter(Boolean).length;
 
+  // Get user branches info for access validation
+  const { branches, isLoading: isLoadingBranches, isVisible: showBranchSelector } = useUserBranches();
+  const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
+
   // Para usuarios normales sin negocio, mostrar error
   if (!hasBusiness && !isSuperAdmin) {
     return (
@@ -140,6 +146,25 @@ export default function OrdersPage() {
     );
   }
 
+  // Para usuarios sin acceso a ninguna sucursal, mostrar error
+  if (!isLoadingBranches && branches.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+            <Store className="w-8 h-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("noBranches.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md mb-6">
+            {t("noBranches.description")}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -150,10 +175,13 @@ export default function OrdersPage() {
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
-          {/* Controles: Buscador, filtro de fecha y toggle de vista */}
+          {/* Controles: Branch Selector, Buscador, filtro de fecha y toggle de vista */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              {/* Buscador */}
+              {/* Branch Multi Selector - only show when applicable */}
+              {showBranchSelector && <BranchMultiSelector />}
+
+              {/* Buscador -->
               <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
@@ -393,6 +421,7 @@ export default function OrdersPage() {
               dateFrom={dateParams.dateFrom}
               dateTo={dateParams.dateTo}
               businessId={selectedBusinessId || undefined}
+              branchIds={selectedBranchIds || undefined}
               paymentStatusFilter={paymentStatusFilter}
               deliveryTypeFilter={deliveryTypeFilter}
             />

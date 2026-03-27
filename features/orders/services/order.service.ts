@@ -63,7 +63,7 @@ export async function getOrders(
   params?: GetOrdersParams & { businessId?: string }
 ): Promise<Order[]> {
   // Construir query params solo con valores definidos
-  const queryParams: Record<string, string> = {};
+  const queryParams: Record<string, string | string[]> = {};
 
   if (params?.status) {
     queryParams.status = params.status;
@@ -73,6 +73,9 @@ export async function getOrders(
   }
   if (params?.dateTo) {
     queryParams.dateTo = params.dateTo;
+  }
+  if (params?.branchIds && params.branchIds.length > 0) {
+    queryParams.branchIds = params.branchIds;
   }
 
   // Si businessId es "" (string vacío), es SUPER_ADMIN pidiendo TODOS
