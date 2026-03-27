@@ -39,13 +39,23 @@ const apiClient: AxiosInstance = axios.create({
   // Serialize arrays without brackets (branchIds=id1&branchIds=id2 instead of branchIds[]=id1)
   paramsSerializer: (params) => {
     const searchParams = new URLSearchParams();
-    for (const key in params) {
-      if (Array.isArray(params[key])) {
-        params[key].forEach((value) => searchParams.append(key, value));
-      } else if (params[key] !== undefined && params[key] !== null) {
-        searchParams.append(key, params[key]);
+    
+    // Use Object.keys to avoid prototype pollution
+    Object.keys(params).forEach((key) => {
+      const value = params[key];
+      
+      if (Array.isArray(value)) {
+        // Validate each element is a string/number before appending
+        value.forEach((item) => {
+          if (item !== undefined && item !== null) {
+            searchParams.append(key, String(item));
+          }
+        });
+      } else if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
       }
-    }
+    });
+    
     return searchParams.toString();
   },
 });
