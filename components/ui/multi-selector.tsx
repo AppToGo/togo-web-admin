@@ -98,8 +98,11 @@ export function MultiSelector({
     if (value.length === 0) return placeholder;
     if (isAllSelected) return allLabel;
     if (value.length === 1) return selectedOptions[0]?.label;
-    return `${value.length} selected`;
-  }, [value.length, isAllSelected, selectedOptions, allLabel, placeholder]);
+    if (value.length <= maxDisplay) {
+      return selectedOptions.map(o => o.label).join(', ');
+    }
+    return `${selectedOptions.slice(0, maxDisplay).map(o => o.label).join(', ')} +${value.length - maxDisplay}`;
+  }, [value.length, isAllSelected, selectedOptions, allLabel, placeholder, maxDisplay]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

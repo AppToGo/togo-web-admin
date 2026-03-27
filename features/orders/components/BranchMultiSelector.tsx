@@ -37,8 +37,7 @@ export function BranchMultiSelector({
 
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
   const setSelectedBranches = useBranchStore((state) => state.setSelectedBranches);
-  const deselectAllBranches = useBranchStore((state) => state.deselectAllBranches);
-
+  
   // Convert branches to MultiSelector options with badges
   const branchOptions = useMemo(
     () =>

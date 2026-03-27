@@ -52,9 +52,7 @@ export function useOrderMetrics(params?: GetOrderMetricsParams) {
   // Merge de parámetros: incluye branchIds seleccionados
   const mergedParams: GetOrderMetricsParams = {
     ...dateParams,
-    branchIds: selectedBranchIds.length > 0 
-      ? selectedBranchIds.filter(id => typeof id === 'string' && id.length > 0 && /^[a-zA-Z0-9-_]+$/.test(id))
-      : undefined,
+    branchIds: selectedBranchIds.length > 0 ? selectedBranchIds : undefined,
     ...params,
   };
 
