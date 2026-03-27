@@ -148,7 +148,6 @@ export interface GetOrderMetricsParams {
   businessId?: string;
   dateFrom?: string;
   dateTo?: string;
-  branchId?: string;
   branchIds?: string[];
 }
 
