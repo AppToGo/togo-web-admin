@@ -256,7 +256,7 @@ export function useDeleteBranch() {
     onSuccess: (_, branchId) => {
       toast.success(t("deleteSuccess"));
       // Clear store if the deleted branch was selected
-      if (useBranchStore.getState().selectedBranchId === branchId) {
+      if (useBranchStore.getState().selectedBranchIds.includes(branchId)) {
         useBranchStore.getState().clearSelectedBranch();
       }
     },

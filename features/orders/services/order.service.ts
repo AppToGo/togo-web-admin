@@ -228,10 +228,12 @@ export async function getOrderMetrics(
     throw new Error("Se requiere un businessId para consultar métricas");
   }
 
-  const queryParams: Record<string, string> = {};
+  const queryParams: Record<string, string | string[]> = {};
   if (params?.dateFrom) queryParams.dateFrom = params.dateFrom;
   if (params?.dateTo) queryParams.dateTo = params.dateTo;
-  if (params?.branchId) queryParams.branchId = params.branchId;
+  if (params?.branchIds && params.branchIds.length > 0) {
+    queryParams.branchIds = params.branchIds;
+  }
 
   const { data } = await apiClient.get<OrderMetricsResponse>(
     `/businesses/${effectiveBusinessId}/orders/metrics`,

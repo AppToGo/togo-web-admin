@@ -31,11 +31,15 @@ export function BranchSelector() {
   const { data: branches, isLoading: isLoadingBranches } = useBranches();
   const { data: canCreateData, isLoading: isLoadingCanCreate } = useCanCreateBranch();
   const { 
-    selectedBranchId, 
-    selectedBranchName, 
+    selectedBranchIds,
+    selectedBranchNames,
     setSelectedBranch, 
     clearSelectedBranch 
   } = useBranchStore();
+  
+  // Legacy single-select compatibility (first selected branch)
+  const selectedBranchId = selectedBranchIds[0] ?? null;
+  const selectedBranchName = selectedBranchId ? selectedBranchNames[selectedBranchId] ?? null : null;
 
   // Determinar si el plan permite múltiples sucursales
   const isMultiBranch = useMemo(() => {
@@ -210,7 +214,9 @@ export function BranchSelectorCompact() {
   const t = useTranslations("branches");
   const { data: branches, isLoading } = useBranches();
   const { data: canCreateData } = useCanCreateBranch();
-  const { selectedBranchId, selectedBranchName, setSelectedBranch } = useBranchStore();
+  const { selectedBranchIds, selectedBranchNames, setSelectedBranch } = useBranchStore();
+  const selectedBranchId = selectedBranchIds[0] ?? null;
+  const selectedBranchName = selectedBranchId ? selectedBranchNames[selectedBranchId] ?? null : null;
 
   const isMultiBranch = useMemo(() => {
     if (!canCreateData) return false;
@@ -296,7 +302,7 @@ export function BranchSelectorCompact() {
  */
 export function BranchBadge() {
   const { data: branches } = useBranches();
-  const selectedBranchId = useBranchStore((state) => state.selectedBranchId);
+  const selectedBranchId = useBranchStore((state) => state.selectedBranchIds[0] ?? null);
 
   const selectedBranch = useMemo(() => {
     if (!branches || !selectedBranchId) return null;

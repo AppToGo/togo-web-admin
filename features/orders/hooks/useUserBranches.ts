@@ -128,7 +128,7 @@ export function useUserBranches(): UseUserBranchesReturn {
   const hasBranchAccessError =
     error?.message?.includes("No branch access") ||
     error?.message?.includes("403") ||
-    (sessionData?.branches.length === 0 ?? false);
+    (sessionData?.branches.length === 0 || false);
 
   return {
     branches: sessionData?.branches ?? [],

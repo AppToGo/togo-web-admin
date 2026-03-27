@@ -42,15 +42,17 @@ const METRICS_GC_TIME = 5 * 60 * 1000; // 5 minutos
  */
 export function useOrderMetrics(params?: GetOrderMetricsParams) {
   const { selectedBusinessId } = useBusinessStore();
+  const { selectedBranchIds } = useBranchStore();
   const { user } = useAuthStore();
   const dateParams = useDateFilterParams();
 
   const effectiveBusinessId =
     params?.businessId || selectedBusinessId || user?.businessId || undefined;
 
-  // Merge de parámetros: store global tiene prioridad base, params puede sobreescribir
+  // Merge de parámetros: incluye branchIds seleccionados
   const mergedParams: GetOrderMetricsParams = {
     ...dateParams,
+    branchIds: selectedBranchIds.length > 0 ? selectedBranchIds : undefined,
     ...params,
   };
 
@@ -76,10 +78,10 @@ export function useOrderMetrics(params?: GetOrderMetricsParams) {
  * @returns Datos procesados para el dashboard y métricas crudas
  */
 export function useDashboardMetrics(params?: Omit<GetOrderMetricsParams, 'dateFrom' | 'dateTo'>) {
-  const { selectedBranchId } = useBranchStore();
+  const { selectedBranchIds } = useBranchStore();
   const { data: metrics, ...rest } = useOrderMetrics({
     ...params,
-    branchId: params?.branchId ?? selectedBranchId ?? undefined,
+    branchIds: params?.branchIds ?? (selectedBranchIds.length > 0 ? selectedBranchIds : undefined),
   });
 
   const dashboardData: DashboardMetricsData | null = useMemo(() => {

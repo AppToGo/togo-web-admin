@@ -42,7 +42,7 @@ interface BranchActions {
   /** Toggle selección de una sucursal */
   toggleBranchSelection: (branchId: string, name: string) => void;
   /** Seleccionar todas las sucursales */
-  selectAllBranches: (branchIds: string[]) => void;
+  selectAllBranchesAction: (branchIds: string[]) => void;
   /** Deseleccionar todas las sucursales */
   deselectAllBranches: () => void;
   /** Verificar si una sucursal está seleccionada */
@@ -109,7 +109,7 @@ export const useBranchStore = create<BranchStore>()(
         }
       },
 
-      selectAllBranches: (branchIds: string[]) => {
+      selectAllBranchesAction: (branchIds: string[]) => {
         set({
           selectedBranchIds: branchIds,
           selectAllBranches: true,

@@ -36,7 +36,7 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
     },
     {
       title: t("metrics.averageOrder"),
-      value: formatCurrency(metrics.averageOrderValue),
+      value: formatCurrency(metrics.avgOrderValue),
       icon: TrendingUp,
       variant: "gradient-purple" as const,
     },
@@ -100,7 +100,7 @@ export function CustomerMetricsCard({ metrics }: CustomerMetricsCardProps) {
                     </div>
                     <div>
                       <p className="font-medium text-slate-900">
-                        {product.productName}
+                        {product.name}
                       </p>
                       <div className="flex items-center gap-3 text-sm text-slate-500 mt-0.5">
                         <span className="flex items-center gap-1">
