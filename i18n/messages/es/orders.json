@@ -65,6 +65,10 @@
     "title": "No tienes un negocio asignado",
     "description": "Para ver las órdenes, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
   },
+  "noBranches": {
+    "title": "No hay sucursales seleccionadas",
+    "description": "Selecciona al menos una sucursal para ver las órdenes."
+  },
   "search": {
     "placeholder": "Buscar por orden, cliente, dirección, pago, tipo..."
   },
@@ -130,6 +134,14 @@
     "inProgress": "En preparación",
     "ready": "Listos",
     "delivered": "Entregados"
+  },
+  "columnVisibility": {
+    "minOneColumn": "Debe haber al menos una columna visible",
+    "hideColumn": "Ocultar {column}",
+    "showColumn": "Mostrar {column}",
+    "hideStatsPanel": "Ocultar panel de estadísticas",
+    "showStatsPanel": "Mostrar panel de estadísticas",
+    "statistics": "Estadísticas"
   },
   "columns": {
     "orderNumber": "Pedido #",
@@ -206,6 +218,7 @@
     "selectAll": "Seleccionar todo",
     "selectedCount": "{count} seleccionadas",
     "oneBranch": "1 sucursal",
-    "multipleBranches": "{count} sucursales"
+    "multipleBranches": "{count} sucursales",
+    "selectBusinessFirst": "Selecciona un negocio primero"
   }
 }

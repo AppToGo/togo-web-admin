@@ -99,10 +99,20 @@ export function MultiSelector({
     if (isAllSelected) return allLabel;
     if (value.length === 1) return selectedOptions[0]?.label;
     if (value.length <= maxDisplay) {
-      return selectedOptions.map(o => o.label).join(', ');
+      return selectedOptions.map((o) => o.label).join(", ");
     }
-    return `${selectedOptions.slice(0, maxDisplay).map(o => o.label).join(', ')} +${value.length - maxDisplay}`;
-  }, [value.length, isAllSelected, selectedOptions, allLabel, placeholder, maxDisplay]);
+    return `${selectedOptions
+      .slice(0, maxDisplay)
+      .map((o) => o.label)
+      .join(", ")} +${value.length - maxDisplay}`;
+  }, [
+    value.length,
+    isAllSelected,
+    selectedOptions,
+    allLabel,
+    placeholder,
+    maxDisplay,
+  ]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -113,17 +123,17 @@ export function MultiSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-10 px-3 justify-between gap-2 min-w-[180px]",
-            "bg-white hover:bg-slate-50 border-slate-200",
+            "h-10 px-3 justify-between gap-2 min-w-45 shadow-none border-0 bg-white",
+            "hover:bg-slate-50 border-slate-200 hover:text-slate-700",
             "text-slate-700 font-normal",
             className
           )}
         >
           <div className="flex items-center gap-2 overflow-hidden">
             {icon && <span className="shrink-0 text-slate-400">{icon}</span>}
-            <span className="truncate text-sm">
+            <span className="truncate text-sm hover:text-slate-500">
               {value.length === 0 ? (
-                <span className="text-slate-400">{placeholder}</span>
+                <span className="text-slate-400 ">{placeholder}</span>
               ) : (
                 displayText
               )}
@@ -142,17 +152,13 @@ export function MultiSelector({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-[280px] p-0 z-50"
-        align="start"
-        sideOffset={4}
-      >
+      <PopoverContent className="w-70 p-0 z-50" align="start" sideOffset={4}>
         <Command className="rounded-lg border-0">
           <CommandInput
             placeholder={searchPlaceholder}
             className="h-10 border-b border-slate-100"
           />
-          <CommandList className="max-h-[300px] overflow-auto">
+          <CommandList className="max-h-75 overflow-auto">
             <CommandEmpty className="py-3 text-sm text-slate-500 text-center">
               {emptyMessage}
             </CommandEmpty>

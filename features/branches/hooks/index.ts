@@ -7,6 +7,7 @@
 // Query hooks
 export {
   useBranches,
+  useBranchesByBusiness,
   useBranch,
   useCanCreateBranch,
   useSelectedBranch,

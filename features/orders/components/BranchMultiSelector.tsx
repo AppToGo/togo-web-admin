@@ -5,7 +5,10 @@ import { Building2, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useUserBranches } from "@/features/orders/hooks";
+import { useBranchesByBusiness } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
+import { useBusinessStore } from "@/features/business/stores/business.store";
+import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { MultiSelector } from "@/components/ui/multi-selector";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +35,33 @@ export function BranchMultiSelector({
   const t = useTranslations("orders");
   const tb = useTranslations("branches");
 
-  const { branches, defaultBranchId, isLoading, error } = useUserBranches();
+  // Check if user is SUPER_ADMIN
+  const isSuperAdmin = useIsSuperAdmin();
+  const { selectedBusinessId } = useBusinessStore();
+
+  // For SUPER_ADMIN: load branches from selected business
+  // For regular users: load branches from user session
+  const {
+    branches: userBranches,
+    defaultBranchId: userDefaultBranchId,
+    isLoading: userIsLoading,
+    error: userError,
+  } = useUserBranches();
+
+  const {
+    data: businessBranches,
+    isLoading: businessIsLoading,
+    error: businessError,
+  } = useBranchesByBusiness(isSuperAdmin ? selectedBusinessId : null);
+
+  // Use appropriate data based on user role
+  const branches = isSuperAdmin ? (businessBranches ?? []) : userBranches;
+  const defaultBranchId = isSuperAdmin
+    ? businessBranches?.find((b) => b.isMainBranch)?.id ?? null
+    : userDefaultBranchId;
+  const isLoading = isSuperAdmin ? businessIsLoading : userIsLoading;
+  const error = isSuperAdmin ? businessError : userError;
+
   const isVisible = branches.length > 1;
 
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
@@ -131,6 +160,21 @@ export function BranchMultiSelector({
     selectedBranchIds,
     setSelectedBranches,
   ]);
+
+  // Show message for SUPER_ADMIN when no business is selected
+  if (isSuperAdmin && !selectedBusinessId) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 rounded-md bg-slate-50 border border-slate-200 text-slate-600 text-sm",
+          className
+        )}
+      >
+        <Store className="w-4 h-4" />
+        <span>{t("branchSelector.selectBusinessFirst")}</span>
+      </div>
+    );
+  }
 
   if (!isVisible && !isLoading) return null;
 
