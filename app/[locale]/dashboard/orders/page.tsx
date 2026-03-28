@@ -38,6 +38,7 @@ import {
 } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useUserBranches } from "@/features/orders/hooks";
+import { useBranchesByBusiness } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 
 type CardViewMode = "card" | "list";
@@ -127,8 +128,17 @@ export default function OrdersPage() {
   const { branches, isLoading: isLoadingBranches } = useUserBranches();
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
   
+  // For SUPER_ADMIN, get branches from selected business
+  const { data: businessBranches, isLoading: isLoadingBusinessBranches } = useBranchesByBusiness(
+    isSuperAdmin ? selectedBusinessId : null
+  );
+  
+  // Use business branches for SUPER_ADMIN, user branches for others
+  const effectiveBranches = isSuperAdmin ? (businessBranches || []) : branches;
+  const isLoadingEffectiveBranches = isSuperAdmin ? isLoadingBusinessBranches : isLoadingBranches;
+  
   // Show branch selector only if user has access to multiple branches
-  const showBranchSelector = branches.length > 1;
+  const showBranchSelector = effectiveBranches.length > 1;
 
   // Para usuarios normales sin negocio, mostrar error
   if (!hasBusiness && !isSuperAdmin) {
@@ -151,7 +161,7 @@ export default function OrdersPage() {
 
   // Para usuarios sin acceso a ninguna sucursal, mostrar error
   // SUPER_ADMIN puede operar sin sucursales inicialmente (seleccionan negocio primero)
-  if (!isLoadingBranches && branches.length === 0 && !isSuperAdmin) {
+  if (!isLoadingEffectiveBranches && effectiveBranches.length === 0 && !isSuperAdmin) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
