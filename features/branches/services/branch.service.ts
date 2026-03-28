@@ -24,9 +24,15 @@ export async function getBranches(): Promise<Branch[]> {
 /**
  * Obtener todas las sucursales de un negocio específico
  * Usado por SUPER_ADMIN para cargar sucursales del negocio seleccionado
+ * 
+ * Usa el endpoint /branches con header x-business-id para SUPER_ADMIN
  */
 export async function getBranchesByBusinessId(businessId: string): Promise<Branch[]> {
-  const { data } = await apiClient.get<Branch[]>(`/businesses/${businessId}/branches`);
+  const { data } = await apiClient.get<Branch[]>("/branches", {
+    headers: {
+      "x-business-id": businessId,
+    },
+  });
   return data;
 }
 
