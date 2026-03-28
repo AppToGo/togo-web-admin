@@ -37,8 +37,7 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
-import { useUserBranches } from "@/features/orders/hooks";
-import { useBranchesByBusiness } from "@/features/branches/hooks";
+import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 
 type CardViewMode = "card" | "list";
@@ -124,21 +123,13 @@ export default function OrdersPage() {
     isCustomDate,
   ].filter(Boolean).length;
 
-  // Get user branches info for access validation
-  const { branches, isLoading: isLoadingBranches } = useUserBranches();
+  // Get effective branches based on user role
+  const { 
+    branches: effectiveBranches, 
+    isLoading: isLoadingEffectiveBranches,
+    showBranchSelector 
+  } = useEffectiveBranches();
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
-  
-  // For SUPER_ADMIN, get branches from selected business
-  const { data: businessBranches, isLoading: isLoadingBusinessBranches } = useBranchesByBusiness(
-    isSuperAdmin ? selectedBusinessId : null
-  );
-  
-  // Use business branches for SUPER_ADMIN, user branches for others
-  const effectiveBranches = isSuperAdmin ? (businessBranches || []) : branches;
-  const isLoadingEffectiveBranches = isSuperAdmin ? isLoadingBusinessBranches : isLoadingBranches;
-  
-  // Show branch selector only if user has access to multiple branches
-  const showBranchSelector = effectiveBranches.length > 1;
 
   // Para usuarios normales sin negocio, mostrar error
   if (!hasBusiness && !isSuperAdmin) {
