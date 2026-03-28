@@ -24,9 +24,17 @@ export async function getBranches(): Promise<Branch[]> {
 /**
  * Obtener todas las sucursales de un negocio específico
  * Usado por SUPER_ADMIN para cargar sucursales del negocio seleccionado
+ * 
+ * El businessId se pasa como header x-business-id via apiClient
  */
 export async function getBranchesByBusinessId(businessId: string): Promise<Branch[]> {
-  const { data } = await apiClient.get<Branch[]>(`/businesses/${businessId}/branches`);
+  // El apiClient agregará el header x-business-id automáticamente
+  // cuando detecte que el usuario es SUPER_ADMIN
+  const { data } = await apiClient.get<Branch[]>("/branches", {
+    headers: {
+      "x-business-id": businessId,
+    },
+  });
   return data;
 }
 
