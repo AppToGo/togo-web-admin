@@ -150,7 +150,8 @@ export default function OrdersPage() {
   }
 
   // Para usuarios sin acceso a ninguna sucursal, mostrar error
-  if (!isLoadingBranches && branches.length === 0) {
+  // SUPER_ADMIN puede operar sin sucursales inicialmente (seleccionan negocio primero)
+  if (!isLoadingBranches && branches.length === 0 && !isSuperAdmin) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
