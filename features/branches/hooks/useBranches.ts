@@ -11,6 +11,7 @@ import { useBusinessStore } from "@/features/business/stores/business.store";
 import { useBranchStore } from "@/stores/branch.store";
 import {
   getBranches,
+  getBranchesByBusinessId,
   getBranchById,
   canCreateBranch,
   getBranchMetrics,
@@ -44,6 +45,32 @@ export function useBranches() {
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: isEnabled,
+    retry: (failureCount, error) => {
+      // No reintentar en errores 401 o 403
+      if (error instanceof Error) {
+        const message = error.message;
+        if (message.includes("401") || message.includes("403")) {
+          return false;
+        }
+      }
+      return failureCount < 3;
+    },
+  });
+}
+
+/**
+ * Hook para obtener sucursales de un negocio específico
+ * Usado por SUPER_ADMIN para cargar sucursales del negocio seleccionado
+ *
+ * @param businessId - ID del negocio (null para no ejecutar la query)
+ */
+export function useBranchesByBusiness(businessId: string | null) {
+  return useQuery<Branch[], Error>({
+    queryKey: businessId ? BRANCHES_KEYS.byBusiness(businessId) : ["branches", "business", "none"],
+    queryFn: () => getBranchesByBusinessId(businessId!),
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled: !!businessId,
     retry: (failureCount, error) => {
       // No reintentar en errores 401 o 403
       if (error instanceof Error) {

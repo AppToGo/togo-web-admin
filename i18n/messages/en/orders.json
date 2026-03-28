@@ -65,6 +65,10 @@
     "title": "You don't have a business assigned",
     "description": "To view orders, you need to have a business assigned to your account. Contact the system administrator."
   },
+  "noBranches": {
+    "title": "No branches selected",
+    "description": "Select at least one branch to view orders."
+  },
   "search": {
     "placeholder": "Search by order, customer, address, payment, type..."
   },
@@ -130,6 +134,14 @@
     "inProgress": "In preparation",
     "ready": "Ready",
     "delivered": "Delivered"
+  },
+  "columnVisibility": {
+    "minOneColumn": "At least one column must be visible",
+    "hideColumn": "Hide {column}",
+    "showColumn": "Show {column}",
+    "hideStatsPanel": "Hide statistics panel",
+    "showStatsPanel": "Show statistics panel",
+    "statistics": "Statistics"
   },
   "columns": {
     "orderNumber": "Order #",
@@ -206,6 +218,7 @@
     "selectAll": "Select all",
     "selectedCount": "{count} selected",
     "oneBranch": "1 branch",
-    "multipleBranches": "{count} branches"
+    "multipleBranches": "{count} branches",
+    "selectBusinessFirst": "Select a business first"
   }
 }

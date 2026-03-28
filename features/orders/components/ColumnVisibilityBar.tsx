@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
 import { Eye, EyeOff, PanelRight, PanelRightClose } from "lucide-react";
-import { generateColumnColors, generateColumnLabels } from "../theme";
+import { generateColumnColors } from "../theme";
 import type { OrderStatus } from "../types";
 
 const COOKIE_KEY_VISIBILITY = "kanban-column-visibility";
@@ -27,13 +28,14 @@ export interface ColumnVisibilityConfig {
   COMPLETED: boolean;
 }
 
-// Labels generados automáticamente desde el theme
-const COLUMN_LABELS: Record<keyof ColumnVisibilityConfig, string> = 
-  generateColumnLabels(KANBAN_STATUSES) as Record<keyof ColumnVisibilityConfig, string>;
+
 
 // Colores generados automáticamente desde el theme
-const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> = 
-  generateColumnColors(KANBAN_STATUSES) as Record<keyof ColumnVisibilityConfig, string>;
+const COLUMN_COLORS: Record<keyof ColumnVisibilityConfig, string> =
+  generateColumnColors(KANBAN_STATUSES) as Record<
+    keyof ColumnVisibilityConfig,
+    string
+  >;
 
 const defaultVisibility: ColumnVisibilityConfig = {
   CONFIRMED: true,
@@ -54,6 +56,7 @@ export function ColumnVisibilityBar({
   isSidebarOpen = true,
   onSidebarToggle,
 }: ColumnVisibilityBarProps) {
+  const t = useTranslations("orders");
   const [visibility, setVisibility] =
     useState<ColumnVisibilityConfig>(defaultVisibility);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -73,20 +76,17 @@ export function ColumnVisibilityBar({
   }, []);
 
   // Save to cookies when visibility changes
-  const toggleColumn = useCallback(
-    (column: keyof ColumnVisibilityConfig) => {
-      setVisibility((prev) => {
-        const next = { ...prev, [column]: !prev[column] };
-        Cookies.set(COOKIE_KEY_VISIBILITY, JSON.stringify(next), {
-          expires: 365,
-        });
-        return next;
+  const toggleColumn = useCallback((column: keyof ColumnVisibilityConfig) => {
+    setVisibility((prev) => {
+      const next = { ...prev, [column]: !prev[column] };
+      Cookies.set(COOKIE_KEY_VISIBILITY, JSON.stringify(next), {
+        expires: 365,
       });
-      // NOTE: onVisibilityChange is called via useEffect below
-      // to avoid setState-during-render warning
-    },
-    []
-  );
+      return next;
+    });
+    // NOTE: onVisibilityChange is called via useEffect below
+    // to avoid setState-during-render warning
+  }, []);
 
   // Notify parent when visibility changes
   useEffect(() => {
@@ -135,7 +135,7 @@ export function ColumnVisibilityBar({
       {/* Toggle Buttons */}
       <div className="flex items-center gap-1.5">
         {(
-          Object.keys(COLUMN_LABELS) as Array<keyof ColumnVisibilityConfig>
+          KANBAN_STATUSES as Array<keyof ColumnVisibilityConfig>
         ).map((column) => {
           const isVisible = visibility[column];
           const isDisabled = visibleCount === 1 && isVisible;
@@ -170,10 +170,10 @@ export function ColumnVisibilityBar({
               )}
               title={
                 isDisabled
-                  ? "Debe haber al menos una columna visible"
+                  ? t("columnVisibility.minOneColumn")
                   : isVisible
-                    ? `Ocultar ${COLUMN_LABELS[column]}`
-                    : `Mostrar ${COLUMN_LABELS[column]}`
+                    ? t("columnVisibility.hideColumn", { column: t(`status.${column}`) })
+                    : t("columnVisibility.showColumn", { column: t(`status.${column}`) })
               }
             >
               {/* Status Dot */}
@@ -187,7 +187,7 @@ export function ColumnVisibilityBar({
 
               {/* Label */}
               <span className={cn(!isVisible && "line-through opacity-60")}>
-                {COLUMN_LABELS[column]}
+                {t(`status.${column}`)}
               </span>
 
               {/* Icon */}
@@ -227,12 +227,12 @@ export function ColumnVisibilityBar({
         )}
         title={
           isSidebarOpen
-            ? "Ocultar panel de estadísticas"
-            : "Mostrar panel de estadísticas"
+            ? t("columnVisibility.hideStatsPanel")
+            : t("columnVisibility.showStatsPanel")
         }
       >
         <span className={cn(!isSidebarOpen && "line-through opacity-60")}>
-          Estadísticas
+          {t("columnVisibility.statistics")}
         </span>
         <span className="ml-0.5">
           {isSidebarOpen ? (

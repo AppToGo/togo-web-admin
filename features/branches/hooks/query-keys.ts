@@ -8,6 +8,7 @@
 export const BRANCHES_KEYS = {
   all: ["branches"] as const,
   lists: () => [...BRANCHES_KEYS.all, "list"] as const,
+  byBusiness: (businessId: string) => [...BRANCHES_KEYS.all, "business", businessId] as const,
   detail: (id: string) => [...BRANCHES_KEYS.all, "detail", id] as const,
   canCreate: () => [...BRANCHES_KEYS.all, "can-create"] as const,
 };
