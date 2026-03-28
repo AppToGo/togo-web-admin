@@ -196,5 +196,16 @@
     "totalRevenue": "Ingresos totales",
     "paid": "Pagado",
     "pendingPayment": "Pendiente de pago"
+  },
+  "branchSelector": {
+    "placeholder": "Seleccionar sucursales",
+    "searchPlaceholder": "Buscar sucursal...",
+    "noResults": "No se encontraron sucursales",
+    "allBranches": "Todas las sucursales",
+    "clearAll": "Limpiar",
+    "selectAll": "Seleccionar todo",
+    "selectedCount": "{count} seleccionadas",
+    "oneBranch": "1 sucursal",
+    "multipleBranches": "{count} sucursales"
   }
 }

@@ -36,8 +36,10 @@ export function BranchMultiSelector({
   const isVisible = branches.length > 1;
 
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
-  const setSelectedBranches = useBranchStore((state) => state.setSelectedBranches);
-  
+  const setSelectedBranches = useBranchStore(
+    (state) => state.setSelectedBranches
+  );
+
   // Convert branches to MultiSelector options with badges
   const branchOptions = useMemo(
     () =>
@@ -59,11 +61,14 @@ export function BranchMultiSelector({
   // Handle selection changes
   const handleChange = useCallback(
     (values: string[]) => {
-      const names = values.reduce((acc, id) => {
-        const branch = branches.find((b) => b.id === id);
-        if (branch) acc[id] = branch.name;
-        return acc;
-      }, {} as Record<string, string>);
+      const names = values.reduce(
+        (acc, id) => {
+          const branch = branches.find((b) => b.id === id);
+          if (branch) acc[id] = branch.name;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
       setSelectedBranches(values, names);
       onSelectionChange?.(values);
     },
@@ -79,11 +84,14 @@ export function BranchMultiSelector({
         branches.some((b) => b.id === id)
       );
       if (validIds.length !== selectedBranchIds.length) {
-        const validNames = validIds.reduce((acc, id) => {
-          const branch = branches.find((b) => b.id === id);
-          if (branch) acc[id] = branch.name;
-          return acc;
-        }, {} as Record<string, string>);
+        const validNames = validIds.reduce(
+          (acc, id) => {
+            const branch = branches.find((b) => b.id === id);
+            if (branch) acc[id] = branch.name;
+            return acc;
+          },
+          {} as Record<string, string>
+        );
         setSelectedBranches(validIds, validNames);
       }
       return;
@@ -99,19 +107,30 @@ export function BranchMultiSelector({
         );
       } else if (branches.length > 0) {
         const firstBranch = branches[0];
-        setSelectedBranches([firstBranch.id], { [firstBranch.id]: firstBranch.name });
+        setSelectedBranches([firstBranch.id], {
+          [firstBranch.id]: firstBranch.name,
+        });
       }
     } else if (branches.length > 0) {
-      const allNames = branches.reduce((acc, branch) => {
-        acc[branch.id] = branch.name;
-        return acc;
-      }, {} as Record<string, string>);
+      const allNames = branches.reduce(
+        (acc, branch) => {
+          acc[branch.id] = branch.name;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
       setSelectedBranches(
         branches.map((b) => b.id),
         allNames
       );
     }
-  }, [isLoading, branches, defaultBranchId, selectedBranchIds, setSelectedBranches]);
+  }, [
+    isLoading,
+    branches,
+    defaultBranchId,
+    selectedBranchIds,
+    setSelectedBranches,
+  ]);
 
   if (!isVisible && !isLoading) return null;
 
@@ -119,7 +138,7 @@ export function BranchMultiSelector({
     return (
       <div
         className={cn(
-          "flex items-center h-10 px-3 gap-2 rounded-md border border-slate-200 bg-slate-50 min-w-[180px]",
+          "flex items-center h-10 px-3 gap-2 rounded-md border border-slate-200 bg-slate-50 min-w-45",
           className
         )}
       >

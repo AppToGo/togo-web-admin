@@ -196,5 +196,16 @@
     "totalRevenue": "Total revenue",
     "paid": "Paid",
     "pendingPayment": "Pending payment"
+  },
+  "branchSelector": {
+    "placeholder": "Select branches",
+    "searchPlaceholder": "Search branch...",
+    "noResults": "No branches found",
+    "allBranches": "All branches",
+    "clearAll": "Clear",
+    "selectAll": "Select all",
+    "selectedCount": "{count} selected",
+    "oneBranch": "1 branch",
+    "multipleBranches": "{count} branches"
   }
 }
