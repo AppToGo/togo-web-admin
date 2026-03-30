@@ -27,10 +27,13 @@ export function BusinessSelector() {
     useBusinessStore();
   const effectiveBusinessId = useEffectiveBusinessId();
 
-  // Para usuarios normales, usar su businessId
+  // Para usuarios normales, sincronizar su businessId
   useEffect(() => {
-    if (!isSuperAdmin && user?.businessId && !selectedBusinessId) {
-      setSelectedBusiness(user.businessId, user.businessName || undefined);
+    if (!isSuperAdmin && user?.businessId) {
+      // Si no hay selección, o la selección no coincide con el negocio actual
+      if (!selectedBusinessId || selectedBusinessId !== user.businessId) {
+        setSelectedBusiness(user.businessId, user.businessName || undefined);
+      }
     }
   }, [isSuperAdmin, user, selectedBusinessId, setSelectedBusiness]);
 
