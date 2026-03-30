@@ -22,3 +22,7 @@ export {
   useDefaultBranch,
   AUTH_SESSION_KEY,
 } from './useUserBranches';
+
+// WebSocket realtime orders hook
+export { useOrdersRealtime } from './useOrdersRealtime';
+export type { RealtimeState } from './useOrdersRealtime';
