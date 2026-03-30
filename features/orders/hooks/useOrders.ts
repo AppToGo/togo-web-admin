@@ -33,7 +33,7 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import { useStatusLabels } from "../utils/order-status.utils";
 
 // Query keys para mantener consistencia
-const ORDERS_KEYS = {
+export const ORDERS_KEYS = {
   all: ["orders"] as const,
   lists: () => [...ORDERS_KEYS.all, "list"] as const,
   list: (filters: GetOrdersParams) =>
