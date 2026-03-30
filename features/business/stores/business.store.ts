@@ -9,6 +9,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+import { useAuthStore } from "@/features/auth/stores/auth.store";
+
 interface BusinessState {
   /** ID del negocio seleccionado. "" = Todos (solo SUPER_ADMIN), null = usar el del usuario */
   selectedBusinessId: string | null;
@@ -63,11 +65,39 @@ export const useBusinessStore = create<BusinessStore>()(
  * Hook para obtener el businessId efectivo
  * - SUPER_ADMIN con selección: usa el seleccionado
  * - SUPER_ADMIN sin selección: retorna "" (todos)
- * - Usuario normal: retorna null (usa el del auth store)
+ * - Usuario normal: retorna el businessId del usuario (valida coherencia)
+ *
+ * Prioridad:
+ * 1. selectedBusinessId si está seleccionado (para SUPER_ADMIN)
+ * 2. businessId del usuario autenticado
+ * 3. null si no hay ninguno
+ *
+ * Validación de coherencia:
+ * - Para usuarios normales, verifica que selectedBusinessId coincida con user.businessId
+ * - Si no coincide (ej: cambio de cuenta, reset de BD), ignora la selección y usa el del usuario
  */
 export function useEffectiveBusinessId(): string | null {
   const { selectedBusinessId } = useBusinessStore();
-  return selectedBusinessId;
+  const { user } = useAuthStore();
+
+  // Si no hay usuario, no hay businessId
+  if (!user) return null;
+
+  // SUPER_ADMIN puede seleccionar cualquier negocio
+  if (user.role === 'SUPER_ADMIN') {
+    return selectedBusinessId ?? user.businessId ?? null;
+  }
+
+  // Para usuarios normales (OPERATOR, OWNER, ADMIN):
+  // El selectedBusinessId debe coincidir con el del usuario
+  // Si no coincide (ej: cambio de cuenta, reset de BD), ignorarlo
+  if (selectedBusinessId && selectedBusinessId !== user.businessId) {
+    // La selección no coincide con el negocio del usuario
+    // Retornar el businessId del usuario (el correcto)
+    return user.businessId;
+  }
+
+  return selectedBusinessId ?? user.businessId ?? null;
 }
 
 /**

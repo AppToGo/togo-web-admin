@@ -57,16 +57,24 @@ const GC_TIME = 5 * 60 * 1000; // 5 minutes
  */
 export function useOrders(params?: GetOrdersParams & { businessId?: string }) {
   const dateParams = useDateFilterParams();
-  const { user } = useAuthStore.getState();
+  const user = useAuthStore((state) => state.user);
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = params?.businessId !== undefined;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
 
+  // Determinar el businessId efectivo:
+  // 1. Si se pasa explícitamente en params, usar ese
+  // 2. Si no, usar el del usuario autenticado
+  // Esto asegura que la query key incluya el businessId correcto para cacheo
+  const effectiveBusinessId = params?.businessId ?? user?.businessId ?? undefined;
+
   // Merge de parámetros: filtros globales tienen prioridad base
+  // Incluir explicitamente el businessId efectivo para la query key
   const mergedParams = {
     ...dateParams,
     ...params,
+    businessId: effectiveBusinessId,
   };
 
   return useQuery({

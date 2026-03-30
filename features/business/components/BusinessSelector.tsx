@@ -27,12 +27,20 @@ export function BusinessSelector() {
     useBusinessStore();
   const effectiveBusinessId = useEffectiveBusinessId();
 
-  // Para usuarios normales, usar su businessId
+  // Extraer valores específicos para evitar re-renders innecesarios
+  const userBusinessId = user?.businessId;
+  const userBusinessName = user?.businessName;
+  const userRole = user?.role;
+
+  // Para usuarios normales, sincronizar su businessId
   useEffect(() => {
-    if (!isSuperAdmin && user?.businessId && !selectedBusinessId) {
-      setSelectedBusiness(user.businessId, user.businessName || undefined);
+    if (userRole !== 'SUPER_ADMIN' && userBusinessId) {
+      // Si no hay selección, o la selección no coincide con el negocio actual
+      if (!selectedBusinessId || selectedBusinessId !== userBusinessId) {
+        setSelectedBusiness(userBusinessId, userBusinessName || undefined);
+      }
     }
-  }, [isSuperAdmin, user, selectedBusinessId, setSelectedBusiness]);
+  }, [userRole, userBusinessId, userBusinessName, selectedBusinessId, setSelectedBusiness]);
 
   // Solo mostrar para SUPER_ADMIN
   if (!isSuperAdmin) {

@@ -425,7 +425,7 @@ export default function OrdersPage() {
               cardViewMode={cardViewMode}
               dateFrom={dateParams.dateFrom}
               dateTo={dateParams.dateTo}
-              businessId={selectedBusinessId || undefined}
+              businessId={selectedBusinessId ?? undefined}
               branchIds={selectedBranchIds || undefined}
               paymentStatusFilter={paymentStatusFilter}
               deliveryTypeFilter={deliveryTypeFilter}
