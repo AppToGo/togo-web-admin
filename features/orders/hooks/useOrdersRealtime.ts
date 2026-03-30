@@ -7,7 +7,52 @@ import { APP_CONFIG } from '@/config/app.config';
 import { toast } from 'sonner';
 import { ORDERS_KEYS } from './useOrders';
 
-const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace('/v1', '');
+// WebSocket URL con fallback más robusto
+const WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  process.env.NEXT_PUBLIC_API_URL?.replace('/v1', '') ||
+  'http://localhost:3000';
+
+// Constantes para eventos de WebSocket
+const WS_EVENTS = {
+  ORDER_CREATED: 'order:created',
+  ORDER_UPDATED: 'order:updated',
+  ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
+  OPERATOR_JOINED: 'operator:joined',
+  OPERATOR_LEFT: 'operator:left',
+  AUTH_ERROR: 'auth_error',
+} as const;
+
+// Interfaces para eventos
+interface OrderCreatedEvent {
+  orderId: string;
+  status: string;
+  timestamp: string;
+}
+
+interface OrderUpdatedEvent {
+  orderId: string;
+  newStatus: string;
+  timestamp: string;
+}
+
+interface OrderPaymentUpdatedEvent {
+  orderId: string;
+  newStatus: string;
+  timestamp: string;
+}
+
+interface OperatorEvent {
+  userId: string;
+}
+
+// Utilidad para console.debug solo en desarrollo
+const debugLog = (message: string, ...args: unknown[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.debug(message, ...args);
+  }
+};
 
 export interface RealtimeState {
   isConnected: boolean;
@@ -18,6 +63,7 @@ export interface RealtimeState {
 export function useOrdersRealtime(): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
+  const isRefreshingRef = useRef(false);
 
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
@@ -25,16 +71,27 @@ export function useOrdersRealtime(): RealtimeState {
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
-  const refreshAndReconnect = useCallback(async (socket: Socket) => {
-    const refreshed = await useAuthStore.getState().refreshAccessToken();
-    if (refreshed) {
-      const newToken = useAuthStore.getState().accessToken;
-      socket.auth = { token: newToken };
-      socket.connect();
-    } else {
-      socket.disconnect();
-    }
-  }, []);
+  const refreshAndReconnect = useCallback(
+    async (socket: Socket) => {
+      // Lock para evitar múltiples refreshs paralelos
+      if (isRefreshingRef.current) return;
+
+      isRefreshingRef.current = true;
+      try {
+        const refreshed = await useAuthStore.getState().refreshAccessToken();
+        if (refreshed) {
+          const newToken = useAuthStore.getState().accessToken;
+          socket.auth = { token: newToken, businessId };
+          socket.connect();
+        } else {
+          socket.disconnect();
+        }
+      } finally {
+        isRefreshingRef.current = false;
+      }
+    },
+    [businessId]
+  );
 
   const [state, setState] = useState<RealtimeState>({
     isConnected: false,
@@ -50,8 +107,9 @@ export function useOrdersRealtime(): RealtimeState {
 
     setState((prev) => ({ ...prev, isConnecting: true }));
 
+    // Socket con businessId en el handshake
     const socket = io(`${WS_URL}/orders`, {
-      auth: { token: getToken() },
+      auth: { token: getToken(), businessId },
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 10,
@@ -77,39 +135,39 @@ export function useOrdersRealtime(): RealtimeState {
       setState({ isConnected: false, isConnecting: false, error: error.message });
     });
 
-    socket.on('auth_error', async ({ message }: { message: string }) => {
+    socket.on(WS_EVENTS.AUTH_ERROR, async ({ message }: { message: string }) => {
       if (message === 'token_expired') {
         await refreshAndReconnect(socket);
       }
     });
 
-    socket.on('order:created', (data) => {
+    socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       toast.info(`Nueva orden #${data.orderId.slice(-6)}`);
     });
 
-    socket.on('order:updated', (data) => {
-      queryClient.setQueryData(ORDERS_KEYS.detail(data.orderId), (old: any) => {
-        if (!old) return old;
+    socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
+      queryClient.setQueryData(ORDERS_KEYS.detail(data.orderId), (old: unknown) => {
+        if (!old || typeof old !== 'object') return old;
         return { ...old, status: data.newStatus, updatedAt: data.timestamp };
       });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
     });
 
-    socket.on('order:paymentUpdated', (data) => {
-      queryClient.setQueryData(ORDERS_KEYS.detail(data.orderId), (old: any) => {
-        if (!old) return old;
+    socket.on(WS_EVENTS.ORDER_PAYMENT_UPDATED, (data: OrderPaymentUpdatedEvent) => {
+      queryClient.setQueryData(ORDERS_KEYS.detail(data.orderId), (old: unknown) => {
+        if (!old || typeof old !== 'object') return old;
         return { ...old, paymentStatus: data.newStatus, updatedAt: data.timestamp };
       });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
     });
 
-    socket.on('operator:joined', ({ userId }) => {
-      console.debug('[WS] Operador conectado:', userId);
+    socket.on(WS_EVENTS.OPERATOR_JOINED, ({ userId }: OperatorEvent) => {
+      debugLog('[WS] Operador conectado:', userId);
     });
 
-    socket.on('operator:left', ({ userId }) => {
-      console.debug('[WS] Operador desconectado:', userId);
+    socket.on(WS_EVENTS.OPERATOR_LEFT, ({ userId }: OperatorEvent) => {
+      debugLog('[WS] Operador desconectado:', userId);
     });
 
     return () => {
