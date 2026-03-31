@@ -5,7 +5,7 @@
  * Handles browser autoplay restrictions gracefully.
  */
 
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useNotificationPreferences } from "../stores/notification-preferences.store";
@@ -20,45 +20,37 @@ const SOUND_PATH = "/sounds/beep.mp3";
 export function useOrderNotification() {
   const t = useTranslations("orders");
   const { enableSounds, enableNotifications } = useNotificationPreferences();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Initialize audio element on mount
-  useEffect(() => {
-    audioRef.current = new Audio(SOUND_PATH);
-    audioRef.current.volume = 0.5;
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
-    };
-  }, []);
 
   /**
    * Plays the new order sound notification
+   * Creates fresh audio instance each time to ensure it plays reliably
    * Handles browser autoplay policy by catching errors
    */
   const playNewOrderSound = useCallback(async (): Promise<void> => {
-    if (!enableSounds || !audioRef.current) return;
+    if (!enableSounds) return;
 
     try {
-      // Reset to start and play
-      audioRef.current.currentTime = 0;
+      // Create fresh audio instance each time (ensures it's ready to play)
+      const audio = new Audio(SOUND_PATH);
+      audio.volume = 0.5;
 
       // Handle browser autoplay restrictions
-      const playPromise = audioRef.current.play();
+      const playPromise = audio.play();
 
       if (playPromise !== undefined) {
         await playPromise;
       }
+
+      // Cleanup after playing
+      audio.addEventListener("ended", () => {
+        audio.src = "";
+      });
     } catch (error) {
       // Browser autoplay policy blocked the sound
-      // This is expected behavior - we don't want to spam errors
+      // This is expected before user interaction
       if (process.env.NODE_ENV === "development") {
         // eslint-disable-next-line no-console
-        console.debug("[Notification] Sound play prevented by browser policy:", error);
+        console.debug("[Notification] Sound play prevented:", error);
       }
     }
   }, [enableSounds]);
