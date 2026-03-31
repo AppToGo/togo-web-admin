@@ -39,6 +39,7 @@ import {
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
+import { useOrdersRealtime } from "@/features/orders/hooks";
 
 type CardViewMode = "card" | "list";
 
@@ -78,6 +79,9 @@ export default function OrdersPage() {
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
+
+  // Initialize WebSocket connection for realtime order updates
+  useOrdersRealtime();
 
   // Filtros globales de fecha
   const dateParams = useDateFilterParams();
