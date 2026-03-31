@@ -11,9 +11,8 @@ import { useTranslations } from "next-intl";
 import { useNotificationPreferences } from "../stores/notification-preferences.store";
 import { formatOrderNumber } from "@/features/orders/utils/order-number.utils";
 
-// Simple beep sound as base64 fallback (short notification chime - WAV format)
-const DEFAULT_SOUND_BASE64 =
-  'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZSA0PVanu8LdnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREP';
+// Path to the notification sound file
+const SOUND_PATH = "/sounds/beep.mp3";
 
 /**
  * Hook for managing order notifications (sound + toast)
@@ -23,12 +22,15 @@ export function useOrderNotification() {
   const { enableSounds, enableNotifications } = useNotificationPreferences();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Cleanup audio element on unmount
+  // Initialize audio element on mount
   useEffect(() => {
+    audioRef.current = new Audio(SOUND_PATH);
+    audioRef.current.volume = 0.5;
+
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = '';
+        audioRef.current.src = "";
         audioRef.current = null;
       }
     };
@@ -39,15 +41,9 @@ export function useOrderNotification() {
    * Handles browser autoplay policy by catching errors
    */
   const playNewOrderSound = useCallback(async (): Promise<void> => {
-    if (!enableSounds) return;
+    if (!enableSounds || !audioRef.current) return;
 
     try {
-      // Lazy-load audio element
-      if (!audioRef.current) {
-        audioRef.current = new Audio(DEFAULT_SOUND_BASE64);
-        audioRef.current.volume = 0.5;
-      }
-
       // Reset to start and play
       audioRef.current.currentTime = 0;
 
