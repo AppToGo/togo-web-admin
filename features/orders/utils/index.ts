@@ -20,3 +20,6 @@ export {
   getDeliveryTypeLabel,
   useStatusLabels,
 } from './order-status.utils';
+
+// Order number formatting utility
+export { formatOrderNumber } from './order-number.utils';

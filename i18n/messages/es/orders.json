@@ -182,7 +182,7 @@
     "tax": "Impuestos"
   },
   "notifications": {
-    "newOrder": "¡Nuevo pedido recibido!",
+    "newOrder": "Nueva orden {orderNumber}",
     "orderUpdated": "Pedido actualizado",
     "orderCancelled": "Pedido cancelado",
     "orderAccepted": "Pedido aceptado",

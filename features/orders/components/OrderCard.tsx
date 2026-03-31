@@ -21,6 +21,7 @@ import {
   canCompleteOrder,
   getPaymentStatusLabel,
 } from "../utils/order-status.utils";
+import { formatOrderNumber } from "../utils/order-number.utils";
 import { kanbanCardVariants, categoryBadgeVariants } from "../styles";
 import { cn } from "@/lib/utils";
 import {
@@ -162,11 +163,6 @@ export function PaymentStatusEditor({
       </DropdownMenu>
     </div>
   );
-}
-
-// Función para formatear el ID como número de orden
-function formatOrderNumber(id: string): string {
-  return `#${id.slice(0, 6).toUpperCase()}`;
 }
 
 // Función para formatear el método de pago - uses translations
