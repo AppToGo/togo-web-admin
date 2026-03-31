@@ -12,6 +12,7 @@ import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
 import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from './useOrders';
+import { METRICS_KEYS } from './useOrderMetrics';
 import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
 
 // WebSocket URL con fallback más robusto
@@ -25,6 +26,7 @@ const WS_EVENTS = {
   ORDER_CREATED: 'order:created',
   ORDER_UPDATED: 'order:updated',
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
+  METRICS_UPDATED: 'order:metricsUpdated',
   OPERATOR_JOINED: 'operator:joined',
   OPERATOR_LEFT: 'operator:left',
   AUTH_ERROR: 'auth_error',
@@ -182,6 +184,14 @@ export function useOrdersRealtime(): RealtimeState {
         return { ...old, paymentStatus: data.newStatus, updatedAt: data.timestamp };
       });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
+    });
+
+    socket.on(WS_EVENTS.METRICS_UPDATED, () => {
+      // Invalidar métricas solo del negocio actual — no afecta otros negocios
+      // El backend emite esta señal máximo 1 vez cada 10s por negocio (Redis debounce)
+      queryClient.invalidateQueries({
+        queryKey: METRICS_KEYS.business(businessId ?? undefined),
+      });
     });
 
     socket.on(WS_EVENTS.OPERATOR_JOINED, ({ userId }: OperatorEvent) => {
