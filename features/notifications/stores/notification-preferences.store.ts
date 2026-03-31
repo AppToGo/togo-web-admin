@@ -5,6 +5,7 @@
  * Persisted to localStorage using Zustand's persist middleware.
  */
 
+import { useEffect } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -67,3 +68,13 @@ export const useNotificationPreferences = create<NotificationPreferencesStore>()
     }
   )
 );
+
+/**
+ * Hook to manually trigger rehydration of notification preferences from localStorage.
+ * Call this in a component that mounts after the app is ready (e.g., DashboardLayout or page).
+ */
+export function useHydrateNotificationPreferences(): void {
+  useEffect(() => {
+    void useNotificationPreferences.persist.rehydrate();
+  }, []);
+}

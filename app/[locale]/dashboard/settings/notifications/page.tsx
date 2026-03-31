@@ -7,13 +7,19 @@ import { Bell, Volume2, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useNotificationPreferences } from "@/features/notifications/stores/notification-preferences.store";
+import { 
+  useNotificationPreferences,
+  useHydrateNotificationPreferences,
+} from "@/features/notifications/stores/notification-preferences.store";
 
 export default function NotificationSettingsPage() {
   const t = useTranslations("settings");
   const tc = useTranslations("common");
   const { enableSounds, enableNotifications, setEnableSounds, setEnableNotifications } =
     useNotificationPreferences();
+
+  // Rehydrate persisted preferences from localStorage on mount
+  useHydrateNotificationPreferences();
 
   useAuthGuard();
 

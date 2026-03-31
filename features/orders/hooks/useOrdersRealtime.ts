@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+
+// Type for the notifyNewOrder function
+interface NotifyNewOrderFn {
+  (orderId: string): void;
+}
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
@@ -74,6 +79,14 @@ export function useOrdersRealtime(): RealtimeState {
   
   // Use the order notification hook for sound + toast notifications
   const { notifyNewOrder } = useOrderNotification();
+  
+  // Use ref pattern to avoid re-triggering socket connection when preferences change
+  const notifyNewOrderRef = useRef<NotifyNewOrderFn>(notifyNewOrder);
+  
+  // Keep ref updated with latest callback
+  useEffect(() => {
+    notifyNewOrderRef.current = notifyNewOrder;
+  }, [notifyNewOrder]);
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
@@ -151,7 +164,8 @@ export function useOrdersRealtime(): RealtimeState {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       
       // Trigger notification (sound + toast) based on user preferences
-      notifyNewOrder(data.orderId);
+      // Use ref to avoid re-triggering socket connection when preferences change
+      notifyNewOrderRef.current(data.orderId);
     });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
@@ -184,7 +198,7 @@ export function useOrdersRealtime(): RealtimeState {
       socketRef.current = null;
       setState({ isConnected: false, isConnecting: false, error: null });
     };
-  }, [businessId, getToken, queryClient, refreshAndReconnect, notifyNewOrder]);
+  }, [businessId, getToken, queryClient, refreshAndReconnect]);
 
   return state;
 }
