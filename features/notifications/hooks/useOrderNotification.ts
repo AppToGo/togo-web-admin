@@ -101,18 +101,5 @@ export function useOrderNotification() {
     playNewOrderSound,
     showNewOrderToast,
     notifyNewOrder,
-    /**
-     * Direct notification with pre-formatted order number
-     * Use this when you already have the formatted number
-     */
-    notifyWithNumber: useCallback(
-      (orderNumber: string): void => {
-        playNewOrderSound();
-        if (enableNotifications) {
-          toast.info(t("notifications.newOrder", { orderNumber }));
-        }
-      },
-      [playNewOrderSound, enableNotifications, t]
-    ),
   };
 }

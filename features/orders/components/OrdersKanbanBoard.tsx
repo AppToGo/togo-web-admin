@@ -13,6 +13,7 @@ import {
 } from "./ColumnVisibilityBar";
 
 import { useOrdersByStatus, useUpdateOrderStatus } from "../hooks/useOrders";
+import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
 import type { Order, OrderStatus } from "../types";
 import {
   getKanbanColumns,
@@ -99,6 +100,9 @@ export function OrdersKanbanBoard({
   paymentStatusFilter = { paid: true, pending: true },
   deliveryTypeFilter = { delivery: true, pickup: true },
 }: OrdersKanbanBoardProps) {
+  // Hydrate notification preferences when the orders page mounts
+  useHydrateNotificationPreferences();
+
   // Estado local del sidebar de estadísticas
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
