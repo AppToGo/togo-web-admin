@@ -34,17 +34,8 @@ export function useOrderNotification() {
       const audio = new Audio(SOUND_PATH);
       audio.volume = 0.5;
 
-      // Handle browser autoplay restrictions
-      const playPromise = audio.play();
-
-      if (playPromise !== undefined) {
-        await playPromise;
-      }
-
-      // Cleanup after playing
-      audio.addEventListener("ended", () => {
-        audio.src = "";
-      });
+      // Play sound - modern browsers return a Promise
+      await audio.play();
     } catch (error) {
       // Browser autoplay policy blocked the sound
       // This is expected before user interaction
