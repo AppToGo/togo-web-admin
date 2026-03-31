@@ -21,10 +21,13 @@ import type {
 } from "../types/order-metrics.types";
 
 // Query keys para mantener consistencia
-const METRICS_KEYS = {
+export const METRICS_KEYS = {
   all: ["order-metrics"] as const,
+  // Usado para invalidar todas las métricas de un negocio (independiente de params)
+  business: (businessId: string | undefined) =>
+    [...METRICS_KEYS.all, businessId] as const,
   detail: (businessId: string | undefined, params: GetOrderMetricsParams | undefined) =>
-    [...METRICS_KEYS.all, businessId, params] as const,
+    [...METRICS_KEYS.business(businessId), params] as const,
 };
 
 // Stale time configurables
