@@ -5,15 +5,15 @@
  * Handles browser autoplay restrictions gracefully.
  */
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useNotificationPreferences } from "../stores/notification-preferences.store";
 import { formatOrderNumber } from "@/features/orders/utils/order-number.utils";
 
-// Simple beep sound as base64 fallback (short chime)
+// Simple beep sound as base64 fallback (short notification chime - WAV format)
 const DEFAULT_SOUND_BASE64 =
-  "data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWgAAAA0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQZAAABAAAIAAAAAAABAAAgAAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//uQZAAABAAAIAAAAAAABAAAgAAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+  'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZSA0PVanu8LdnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREP';
 
 /**
  * Hook for managing order notifications (sound + toast)
@@ -22,6 +22,17 @@ export function useOrderNotification() {
   const t = useTranslations("orders");
   const { enableSounds, enableNotifications } = useNotificationPreferences();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Cleanup audio element on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   /**
    * Plays the new order sound notification

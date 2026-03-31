@@ -6,11 +6,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
 import { APP_CONFIG } from '@/config/app.config';
-import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
 import { ORDERS_KEYS } from './useOrders';
-import { formatOrderNumber } from '@/features/orders/utils/order-number.utils';
-import { useNotificationPreferences } from '@/features/notifications/stores/notification-preferences.store';
+import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -51,9 +48,6 @@ interface OperatorEvent {
   userId: string;
 }
 
-// Simple beep sound as base64 fallback (short notification chime)
-const NOTIFICATION_SOUND_BASE64 =
-  'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZSA0PVanu8LdnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREPUqzu8blnHgU1kNjyxn0vBSh+zPLaizsIHGu98+OZUREP';
 
 // Utilidad para console.debug solo en desarrollo
 const debugLog = (message: string, ...args: unknown[]) => {
@@ -73,52 +67,15 @@ export function useOrdersRealtime(): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const isRefreshingRef = useRef(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const t = useTranslations('orders');
-
+  
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
   const businessId = selectedBusinessId || user?.businessId || null;
   
-  // Get notification preferences from store
-  const { enableSounds, enableNotifications } = useNotificationPreferences();
+  // Use the order notification hook for sound + toast notifications
+  const { notifyNewOrder } = useOrderNotification();
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
-
-  // Initialize audio element for notifications
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !audioRef.current) {
-      audioRef.current = new Audio(NOTIFICATION_SOUND_BASE64);
-      audioRef.current.volume = 0.5;
-    }
-    
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  // Play notification sound with browser autoplay policy handling
-  const playNotificationSound = useCallback(async () => {
-    if (!enableSounds || !audioRef.current) return;
-
-    try {
-      audioRef.current.currentTime = 0;
-      const playPromise = audioRef.current.play();
-      
-      if (playPromise !== undefined) {
-        await playPromise;
-      }
-    } catch (error) {
-      // Browser autoplay policy blocked the sound - this is expected
-      if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
-        console.debug('[WS] Sound play prevented by browser policy:', error);
-      }
-    }
-  }, [enableSounds]);
 
   const refreshAndReconnect = useCallback(
     async (socket: Socket) => {
@@ -193,14 +150,8 @@ export function useOrdersRealtime(): RealtimeState {
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       
-      // Play sound if enabled
-      playNotificationSound();
-      
-      // Show toast if notifications enabled
-      if (enableNotifications) {
-        const orderNumber = formatOrderNumber(data.orderId);
-        toast.info(t('notifications.newOrder', { orderNumber }));
-      }
+      // Trigger notification (sound + toast) based on user preferences
+      notifyNewOrder(data.orderId);
     });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
@@ -233,7 +184,7 @@ export function useOrdersRealtime(): RealtimeState {
       socketRef.current = null;
       setState({ isConnected: false, isConnecting: false, error: null });
     };
-  }, [businessId, getToken, queryClient, refreshAndReconnect, playNotificationSound, enableNotifications, t]);
+  }, [businessId, getToken, queryClient, refreshAndReconnect, notifyNewOrder]);
 
   return state;
 }

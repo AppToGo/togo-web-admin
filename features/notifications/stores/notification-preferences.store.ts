@@ -63,6 +63,7 @@ export const useNotificationPreferences = create<NotificationPreferencesStore>()
     {
       name: "togo-notification-preferences",
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
     }
   )
 );
