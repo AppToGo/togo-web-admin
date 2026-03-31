@@ -35,12 +35,29 @@
   "notifications": {
     "title": "Notification preferences",
     "subtitle": "Configure how you want to receive notifications",
+    "description": "Customize your notification and sound alert preferences",
     "email": "Email notifications",
     "push": "Push notifications",
     "sms": "SMS notifications",
     "newOrders": "New orders",
     "orderUpdates": "Order updates",
-    "promotions": "Promotions and offers"
+    "promotions": "Promotions and offers",
+    "soundAlerts": {
+      "title": "Sound alerts",
+      "description": "Configure sound alerts for new orders",
+      "enable": "Enable sound alerts for new orders",
+      "help": "Play a sound when a new order arrives"
+    },
+    "toastNotifications": {
+      "title": "Toast notifications",
+      "description": "Configure on-screen toast notifications",
+      "enable": "Enable toast notifications",
+      "help": "Show a notification on screen when a new order arrives"
+    },
+    "note": {
+      "title": "Note",
+      "description": "Your preferences are automatically saved in this browser. Sound alerts may be blocked by the browser's autoplay policy until you interact with the page."
+    }
   },
   "language": {
     "title": "Language",

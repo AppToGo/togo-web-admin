@@ -182,7 +182,7 @@
     "tax": "Tax"
   },
   "notifications": {
-    "newOrder": "New order received!",
+    "newOrder": "New order {orderNumber}",
     "orderUpdated": "Order updated",
     "orderCancelled": "Order cancelled",
     "orderAccepted": "Order accepted",

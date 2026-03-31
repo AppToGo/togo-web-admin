@@ -1,11 +1,18 @@
+'use client';
+
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+
+// Type for the notifyNewOrder function
+interface NotifyNewOrderFn {
+  (orderId: string): void;
+}
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
 import { APP_CONFIG } from '@/config/app.config';
-import { toast } from 'sonner';
 import { ORDERS_KEYS } from './useOrders';
+import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -46,6 +53,7 @@ interface OperatorEvent {
   userId: string;
 }
 
+
 // Utilidad para console.debug solo en desarrollo
 const debugLog = (message: string, ...args: unknown[]) => {
   if (process.env.NODE_ENV === 'development') {
@@ -64,10 +72,21 @@ export function useOrdersRealtime(): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const isRefreshingRef = useRef(false);
-
+  
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
   const businessId = selectedBusinessId || user?.businessId || null;
+  
+  // Use the order notification hook for sound + toast notifications
+  const { notifyNewOrder } = useOrderNotification();
+  
+  // Use ref pattern to avoid re-triggering socket connection when preferences change
+  const notifyNewOrderRef = useRef<NotifyNewOrderFn>(notifyNewOrder);
+  
+  // Keep ref updated with latest callback
+  useEffect(() => {
+    notifyNewOrderRef.current = notifyNewOrder;
+  }, [notifyNewOrder]);
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
@@ -143,7 +162,10 @@ export function useOrdersRealtime(): RealtimeState {
 
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
-      toast.info(`Nueva orden #${data.orderId.slice(-6)}`);
+      
+      // Trigger notification (sound + toast) based on user preferences
+      // Use ref to avoid re-triggering socket connection when preferences change
+      notifyNewOrderRef.current(data.orderId);
     });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {

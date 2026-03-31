@@ -35,12 +35,29 @@
   "notifications": {
     "title": "Preferencias de notificaciones",
     "subtitle": "Configura cómo quieres recibir notificaciones",
+    "description": "Personaliza tus preferencias de notificaciones y alertas de sonido",
     "email": "Notificaciones por correo",
     "push": "Notificaciones push",
     "sms": "Notificaciones SMS",
     "newOrders": "Nuevos pedidos",
     "orderUpdates": "Actualizaciones de pedidos",
-    "promotions": "Promociones y ofertas"
+    "promotions": "Promociones y ofertas",
+    "soundAlerts": {
+      "title": "Alertas de sonido",
+      "description": "Configura las alertas de sonido para nuevos pedidos",
+      "enable": "Habilitar alertas de sonido para nuevos pedidos",
+      "help": "Reproduce un sonido cuando llega un nuevo pedido"
+    },
+    "toastNotifications": {
+      "title": "Notificaciones emergentes",
+      "description": "Configura las notificaciones emergentes en pantalla",
+      "enable": "Habilitar notificaciones emergentes",
+      "help": "Muestra una notificación en pantalla cuando llega un nuevo pedido"
+    },
+    "note": {
+      "title": "Nota",
+      "description": "Tus preferencias se guardan automáticamente en este navegador. Las alertas de sonido pueden ser bloqueadas por la política de reproducción automática del navegador hasta que interactúes con la página."
+    }
   },
   "language": {
     "title": "Idioma",

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Settings, Store, Bell, Shield, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -66,9 +67,17 @@ export default function SettingsPage() {
                 <CardDescription>{section.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">
-                  {tc("buttons.configure")}
-                </Button>
+                {section.id === "notifications" ? (
+                  <Link href="/dashboard/settings/notifications">
+                    <Button variant="outline" className="w-full">
+                      {tc("buttons.configure")}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button variant="outline" className="w-full">
+                    {tc("buttons.configure")}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
