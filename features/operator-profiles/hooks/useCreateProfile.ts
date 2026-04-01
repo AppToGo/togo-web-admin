@@ -82,6 +82,8 @@ export function useCreateProfile() {
     // Revalidar después de la mutación
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.lists() });
+      // Also invalidate any detail queries that might exist
+      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.all });
     },
   });
 }

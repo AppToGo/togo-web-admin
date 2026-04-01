@@ -34,11 +34,14 @@ import {
   BranchAssignmentManager,
   useUserPermissions,
 } from "@/features/user-permissions";
-import {
-  useOperatorProfiles,
-} from "@/features/operator-profiles";
+import { useOperatorProfiles } from "@/features/operator-profiles";
 
-// Mock user data - replace with actual API hook
+
+/**
+ * @todo Implement actual API integration for useUser hook
+ * This is a temporary mock that should be replaced with a real API call
+ * to fetch user details from the backend.
+ */
 interface User {
   id: string;
   name: string;
@@ -50,12 +53,11 @@ interface User {
 }
 
 function useUser(id: string | null) {
-  // TODO: Replace with actual API hook when available
   return {
     data: id ? {
       id,
-      name: "Usuario Ejemplo",
-      email: "usuario@ejemplo.com",
+      name: "Example User",
+      email: "user@example.com",
       role: "OPERATOR",
       isActive: true,
       createdAt: new Date().toISOString(),
