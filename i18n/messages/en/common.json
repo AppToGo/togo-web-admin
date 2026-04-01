@@ -30,6 +30,7 @@
     "export": "Export",
     "add": "Add",
     "remove": "Remove",
+    "reset": "Reset",
     "update": "Update",
     "refresh": "Refresh",
     "retry": "Try again",

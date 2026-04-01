@@ -31,6 +31,7 @@
     "export": "Exportar",
     "add": "Agregar",
     "remove": "Quitar",
+    "reset": "Restablecer",
     "update": "Actualizar",
     "refresh": "Actualizar",
     "retry": "Intentar de nuevo",
