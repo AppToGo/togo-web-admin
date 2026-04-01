@@ -155,7 +155,6 @@ export function OrderMetricsSkeleton() {
           </div>
         ))}
       </div>
-      <Skeleton className="h-32 w-full rounded-card-lg" />
       <DeliveryMetricsCardSkeleton />
     </div>
   );
