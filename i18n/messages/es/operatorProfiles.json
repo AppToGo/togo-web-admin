@@ -29,7 +29,21 @@
       "customers": "Clientes",
       "reports": "Reportes",
       "settings": "Configuración",
-      "users": "Usuarios"
+      "users": "Usuarios",
+      "business": "Negocio",
+      "business_ops": "Operaciones de Negocio",
+      "category": "Categoría",
+      "customer": "Cliente",
+      "delivery": "Entrega",
+      "favorite": "Favorito",
+      "order": "Pedido",
+      "payment": "Pago",
+      "product": "Producto",
+      "profile": "Perfil",
+      "recommendation": "Recomendación",
+      "suggestion": "Sugerencia",
+      "user": "Usuario",
+      "whatsapp": "WhatsApp"
     }
   },
   "noBusiness": {
@@ -111,7 +125,21 @@
     "customers": "Clientes",
     "reports": "Reportes",
     "settings": "Configuración",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "business": "Negocio",
+    "business_ops": "Operaciones de Negocio",
+    "category": "Categoría",
+    "customer": "Cliente",
+    "delivery": "Entrega",
+    "favorite": "Favorito",
+    "order": "Pedido",
+    "payment": "Pago",
+    "product": "Producto",
+    "profile": "Perfil",
+    "recommendation": "Recomendación",
+    "suggestion": "Sugerencia",
+    "user": "Usuario",
+    "whatsapp": "WhatsApp"
   },
   "tabs": {
     "general": "General",

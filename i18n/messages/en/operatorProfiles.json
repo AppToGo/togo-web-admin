@@ -29,7 +29,21 @@
       "customers": "Customers",
       "reports": "Reports",
       "settings": "Settings",
-      "users": "Users"
+      "users": "Users",
+      "business": "Business",
+      "business_ops": "Business Operations",
+      "category": "Category",
+      "customer": "Customer",
+      "delivery": "Delivery",
+      "favorite": "Favorite",
+      "order": "Order",
+      "payment": "Payment",
+      "product": "Product",
+      "profile": "Profile",
+      "recommendation": "Recommendation",
+      "suggestion": "Suggestion",
+      "user": "User",
+      "whatsapp": "WhatsApp"
     }
   },
   "noBusiness": {
@@ -111,7 +125,21 @@
     "customers": "Customers",
     "reports": "Reports",
     "settings": "Settings",
-    "users": "Users"
+    "users": "Users",
+    "business": "Business",
+    "business_ops": "Business Operations",
+    "category": "Category",
+    "customer": "Customer",
+    "delivery": "Delivery",
+    "favorite": "Favorite",
+    "order": "Order",
+    "payment": "Payment",
+    "product": "Product",
+    "profile": "Profile",
+    "recommendation": "Recommendation",
+    "suggestion": "Suggestion",
+    "user": "User",
+    "whatsapp": "WhatsApp"
   },
   "tabs": {
     "general": "General",
