@@ -9,7 +9,9 @@
   "roles": {
     "SUPER_ADMIN": "Super Administrator",
     "BUSINESS_OWNER": "Business Owner",
-    "OPERATOR": "Operator"
+    "OWNER": "Owner",
+    "OPERATOR": "Operator",
+    "ADMIN": "Administrator"
   },
   "general": {
     "title": "General Information",
@@ -30,7 +32,8 @@
     "assignProfile": "Assign Profile",
     "changeProfile": "Change Profile",
     "computedPermissions": "Computed Permissions",
-    "computedAt": "Computed at"
+    "computedAt": "Computed at",
+    "selectProfile": "Select profile"
   },
   "branchAssignments": {
     "title": "Branch Assignments",

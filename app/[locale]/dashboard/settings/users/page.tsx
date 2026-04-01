@@ -108,14 +108,14 @@ export default function UsersPage() {
                         {t(`roles.${user.role}`)}
                       </Badge>
                       <Badge
-                        variant={user.isActive ? "default" : "secondary"}
+                        variant={user.active ? "default" : "secondary"}
                         className={cn(
-                          user.isActive
+                          user.active
                             ? "bg-green-100 text-green-700 hover:bg-green-100"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-100"
                         )}
                       >
-                        {user.isActive ? tc("status.active") : tc("status.inactive")}
+                        {user.active ? tc("status.active") : tc("status.inactive")}
                       </Badge>
                     </div>
                   </Link>

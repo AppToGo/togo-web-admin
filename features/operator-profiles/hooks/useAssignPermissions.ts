@@ -48,11 +48,11 @@ export function useAssignPermissions() {
       );
 
       // Transformar los permisos del request al formato de ProfilePermission
-      const optimisticPermissions: ProfilePermission[] = data.permissions.map(
-        (perm, index) => ({
+      const optimisticPermissions: ProfilePermission[] = data.permissionCodes.map(
+        (code, index) => ({
           id: `temp-${Date.now()}-${index}`,
-          permissionCode: perm.permissionCode,
-          params: perm.params as Record<string, unknown> | undefined,
+          permissionCode: code,
+          params: undefined,
         })
       );
 

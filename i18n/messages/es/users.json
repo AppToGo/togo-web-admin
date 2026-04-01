@@ -9,7 +9,9 @@
   "roles": {
     "SUPER_ADMIN": "Super Administrador",
     "BUSINESS_OWNER": "Propietario",
-    "OPERATOR": "Operador"
+    "OWNER": "Propietario",
+    "OPERATOR": "Operador",
+    "ADMIN": "Administrador"
   },
   "general": {
     "title": "Información General",
@@ -30,7 +32,8 @@
     "assignProfile": "Asignar Perfil",
     "changeProfile": "Cambiar Perfil",
     "computedPermissions": "Permisos Computados",
-    "computedAt": "Computado el"
+    "computedAt": "Computado el",
+    "selectProfile": "Seleccionar perfil"
   },
   "branchAssignments": {
     "title": "Asignación de Sedes",

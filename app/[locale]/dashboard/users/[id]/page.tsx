@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -137,7 +137,7 @@ export default function UserDetailPage() {
   const locale = params.locale as string;
 
   const [activeTab, setActiveTab] = useState("general");
-  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("none");
 
   const { data: user, isLoading: isLoadingUser } = useUser(id);
   const { data: permissions, isLoading: isLoadingPermissions } = useUserPermissions(id);
@@ -145,11 +145,13 @@ export default function UserDetailPage() {
   const assignProfile = useAssignOperatorProfile();
 
   // Set initial selected profile when permissions load
-  useState(() => {
+  useEffect(() => {
     if (permissions?.operatorProfile?.id) {
       setSelectedProfileId(permissions.operatorProfile.id);
+    } else {
+      setSelectedProfileId("none");
     }
-  });
+  }, [permissions]);
 
   const handleBack = () => {
     router.push("/dashboard/settings");
@@ -158,7 +160,7 @@ export default function UserDetailPage() {
   const handleAssignProfile = () => {
     assignProfile.mutate({
       userId: id,
-      profileId: selectedProfileId || null,
+      profileId: selectedProfileId === "none" ? null : selectedProfileId,
     });
   };
 
@@ -343,7 +345,7 @@ export default function UserDetailPage() {
                         <SelectValue placeholder={t("permissions.selectProfile")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">
+                        <SelectItem value="none">
                           {t("permissions.noProfile")}
                         </SelectItem>
                         {profiles?.map((profile) => (

@@ -124,10 +124,7 @@ export default function EditProfilePage() {
     assignPermissions.mutate({
       profileId: id,
       data: {
-        permissions: selectedPermissions.map((p) => ({
-          permissionCode: p.permissionCode,
-          params: p.params,
-        })),
+        permissionCodes: selectedPermissions.map((p) => p.permissionCode),
       },
     });
   };

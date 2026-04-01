@@ -9,7 +9,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
-  isActive: boolean;
+  active: boolean;
   businessId: string | null;
   operatorProfileId: string | null;
   createdAt: string;
@@ -27,6 +27,6 @@ export interface UpdateUserRequest {
   name?: string;
   email?: string;
   role?: string;
-  isActive?: boolean;
+  active?: boolean;
   operatorProfileId?: string | null;
 }

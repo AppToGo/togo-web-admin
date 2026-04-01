@@ -116,7 +116,7 @@ export const UserPermissionView = memo(function UserPermissionView({
                 <Users className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-lg">{t("operatorProfile")}</CardTitle>
+                <CardTitle className="text-lg">{t("operatorProfile.label")}</CardTitle>
                 <CardDescription>{t("operatorProfileDescription")}</CardDescription>
               </div>
             </div>
@@ -147,7 +147,7 @@ export const UserPermissionView = memo(function UserPermissionView({
               <CheckCircle2 className="w-6 h-6 text-amber-600" />
             </div>
             <div>
-              <CardTitle className="text-lg">{t("permissions")}</CardTitle>
+              <CardTitle className="text-lg">{t("permissions.title")}</CardTitle>
               <CardDescription>
                 {t("permissionsCount", { count: permissions.permissions.length })}
               </CardDescription>
@@ -190,7 +190,7 @@ export const UserPermissionView = memo(function UserPermissionView({
       <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
         <Clock className="w-3.5 h-3.5" />
         <span>
-          {t("computedAt")}: {new Date(permissions.computedAt).toLocaleString()}
+          {t("permissions.computedAt")}: {new Date(permissions.computedAt).toLocaleString()}
         </span>
       </div>
     </div>

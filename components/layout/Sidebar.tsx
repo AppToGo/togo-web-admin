@@ -79,11 +79,6 @@ export function Sidebar({
       ],
     },
     {
-      name: t("sidebar.branches"),
-      href: "/dashboard/branches",
-      icon: BuildingIcon,
-    },
-    {
       name: t("sidebar.customers"),
       href: "/dashboard/customers",
       icon: UsersIcon,
