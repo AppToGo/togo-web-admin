@@ -205,6 +205,11 @@ export function useOrdersRealtime(): RealtimeState {
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
+      
+      // También invalidar completed (pago puede cambiar en órdenes completadas)
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'completed'],
+      });
     });
 
     socket.on(WS_EVENTS.METRICS_UPDATED, () => {

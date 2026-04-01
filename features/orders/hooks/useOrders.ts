@@ -181,48 +181,6 @@ export function useLiveOrders(filters: LiveOrdersFilters) {
         businessId: effectiveBusinessId,
         statuses: LIVE_STATUSES,
       }),
-    select: (data) => {
-      // Agrupar por estado para fácil acceso
-      const grouped: Record<OrderStatus, Order[]> = {} as Record<
-        OrderStatus,
-        Order[]
-      >;
-
-      // Inicializar arrays vacíos para cada estado LIVE
-      LIVE_STATUSES.forEach((status) => {
-        grouped[status] = [];
-      });
-
-      // Agrupar órdenes
-      data.forEach((order) => {
-        if (grouped[order.status]) {
-          grouped[order.status].push(order);
-        }
-      });
-
-      return data;
-    },
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
-    enabled: isEnabled,
-    retry: (failureCount, error) => {
-      // No reintentar en errores 401 o 403
-      if (error instanceof Error) {
-        const message = error.message;
-        if (message.includes("401") || message.includes("403")) {
-          return false;
-        }
-      }
-      return failureCount < 3;
-    },
-  });
-}
-
-/**
- * Hook para obtener una orden específica
- *
- * @param orderId - ID de la orden
- * @param enabled - Si la query está habilitada
  */
 export function useOrder(orderId: string | null, enabled: boolean = true) {
   const { selectedBusinessId } = useBusinessStore();

@@ -26,7 +26,6 @@ import {
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
-import { isArchiveStatus } from "../constants/order-statuses";
 
 
 interface OrdersKanbanBoardProps {
