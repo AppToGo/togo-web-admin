@@ -11,9 +11,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
 import { APP_CONFIG } from '@/config/app.config';
-import { ORDERS_KEYS } from './useOrders';
+import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
 import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
+import { ARCHIVE_STATUS } from '../constants/order-statuses';
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -42,6 +43,7 @@ interface OrderCreatedEvent {
 interface OrderUpdatedEvent {
   orderId: string;
   newStatus: string;
+  previousStatus?: string;
   timestamp: string;
 }
 
@@ -163,27 +165,46 @@ export function useOrdersRealtime(): RealtimeState {
     });
 
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
-      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
+      // Invalidar cache de órdenes LIVE del negocio (nueva orden siempre va a CONFIRMED)
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
+      });
       
       // Trigger notification (sound + toast) based on user preferences
-      // Use ref to avoid re-triggering socket connection when preferences change
       notifyNewOrderRef.current(data.orderId);
     });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
+      // Actualizar detalle de orden en cache
       queryClient.setQueryData(ORDERS_KEYS.detail(data.orderId), (old: unknown) => {
         if (!old || typeof old !== 'object') return old;
         return { ...old, status: data.newStatus, updatedAt: data.timestamp };
       });
-      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
+      
+      // Invalidar cache de órdenes LIVE (orden movió de columna)
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
+      });
+      
+      // Si la orden llegó a COMPLETED, invalidar también el cache de completadas
+      if (data.newStatus === ARCHIVE_STATUS) {
+        queryClient.invalidateQueries({
+          queryKey: [...ORDERS_KEYS.all, businessId, 'completed'],
+        });
+      }
     });
 
     socket.on(WS_EVENTS.ORDER_PAYMENT_UPDATED, (data: OrderPaymentUpdatedEvent) => {
+      // Actualizar detalle de orden en cache
       queryClient.setQueryData(ORDERS_KEYS.detail(data.orderId), (old: unknown) => {
         if (!old || typeof old !== 'object') return old;
         return { ...old, paymentStatus: data.newStatus, updatedAt: data.timestamp };
       });
-      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
+      
+      // Actualizar también en cache de órdenes LIVE
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
+      });
     });
 
     socket.on(WS_EVENTS.METRICS_UPDATED, () => {

@@ -19,6 +19,8 @@ import type {
   OrderMetricsResponse,
   GetOrderMetricsParams,
 } from "../types/order-metrics.types";
+import type { OrdersPage } from "../types/order-cache.types";
+import { LIVE_STATUSES } from "../constants/order-statuses";
 
 /**
  * Obtener el businessId del usuario autenticado
@@ -238,6 +240,114 @@ export async function getOrderMetrics(
   const { data } = await apiClient.get<OrderMetricsResponse>(
     `/businesses/${effectiveBusinessId}/orders/metrics`,
     { params: queryParams }
+  );
+  return data;
+}
+
+/**
+ * Obtener órdenes en vivo (no completadas)
+ * Optimizado para cargar todas las órdenes activas de una vez
+ *
+ * @param params - Filtros incluyendo businessId, statuses (LIVE_STATUSES), date range, branchIds
+ * @returns Array de órdenes activas
+ */
+export async function getLiveOrders(
+  params?: GetOrdersParams & { businessId?: string; statuses?: string[] }
+): Promise<Order[]> {
+  // Construir query params solo con valores definidos
+  const queryParams: Record<string, string | string[]> = {};
+
+  // Usar los statuses proporcionados o los LIVE_STATUSES por defecto
+  if (params?.statuses && params.statuses.length > 0) {
+    queryParams.statuses = params.statuses;
+  } else {
+    queryParams.statuses = LIVE_STATUSES;
+  }
+
+  if (params?.dateFrom) {
+    queryParams.dateFrom = params.dateFrom;
+  }
+  if (params?.dateTo) {
+    queryParams.dateTo = params.dateTo;
+  }
+  if (params?.branchIds && params.branchIds.length > 0) {
+    queryParams.branchIds = params.branchIds;
+  }
+
+  // Si businessId es "" (string vacío), es SUPER_ADMIN pidiendo TODOS
+  if (params?.businessId === "") {
+    const { data } = await apiClient.get<Order[]>("/admin/orders", {
+      params: queryParams,
+    });
+    return data;
+  }
+
+  const effectiveBusinessId = params?.businessId || getBusinessId();
+  if (!effectiveBusinessId) {
+    throw new Error("Se requiere un businessId para consultar órdenes");
+  }
+
+  const { data } = await apiClient.get<Order[]>(
+    `/businesses/${effectiveBusinessId}/orders`,
+    {
+      params: queryParams,
+    }
+  );
+  return data;
+}
+
+/**
+ * Obtener órdenes completadas con paginación
+ * Optimizado para infinite scroll
+ *
+ * @param params - Filtros incluyendo businessId, page, limit, date range, branchIds
+ * @returns Página paginada de órdenes completadas
+ */
+export async function getCompletedOrders(
+  params?: GetOrdersParams & {
+    businessId?: string;
+    page?: number;
+    limit?: number;
+  }
+): Promise<OrdersPage> {
+  // Construir query params
+  const queryParams: Record<string, string | number | string[]> = {};
+
+  // Siempre filtrar por status COMPLETED
+  queryParams.status = "COMPLETED";
+
+  if (params?.dateFrom) {
+    queryParams.dateFrom = params.dateFrom;
+  }
+  if (params?.dateTo) {
+    queryParams.dateTo = params.dateTo;
+  }
+  if (params?.branchIds && params.branchIds.length > 0) {
+    queryParams.branchIds = params.branchIds;
+  }
+
+  // Paginación
+  queryParams.page = params?.page || 1;
+  queryParams.limit = params?.limit || 20;
+
+  // Si businessId es "" (string vacío), es SUPER_ADMIN pidiendo TODOS
+  if (params?.businessId === "") {
+    const { data } = await apiClient.get<OrdersPage>("/admin/orders", {
+      params: queryParams,
+    });
+    return data;
+  }
+
+  const effectiveBusinessId = params?.businessId || getBusinessId();
+  if (!effectiveBusinessId) {
+    throw new Error("Se requiere un businessId para consultar órdenes");
+  }
+
+  const { data } = await apiClient.get<OrdersPage>(
+    `/businesses/${effectiveBusinessId}/orders`,
+    {
+      params: queryParams,
+    }
   );
   return data;
 }
