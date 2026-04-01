@@ -23,7 +23,12 @@
     "description": "These are the effective permissions of the user",
     "computedAt": "Computed",
     "noPermissions": "User has no assigned permissions",
-    "groupByDomain": "Group by domain"
+    "groupByDomain": "Group by domain",
+    "operatorProfile": "Operator Profile",
+    "operatorProfileDescription": "Assign an operator profile to define user permissions",
+    "selectProfile": "Select profile",
+    "noProfile": "No profile assigned",
+    "assignProfile": "Assign Profile"
   },
   "branchAssignments": {
     "title": "Assigned Branches",
@@ -72,6 +77,7 @@
   "assignedAt": "Assigned on",
   "assignSuccess": "User assigned successfully",
   "removeSuccess": "Assignment removed successfully",
+  "profileAssigned": "Profile assigned successfully",
   "fields": {
     "branch": "Branch",
     "role": "Role"

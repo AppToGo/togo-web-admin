@@ -13,6 +13,7 @@ export type OrderStatus =
   | "PAID"
   | "IN_PROGRESS"
   | "READY"
+  | "ON_THE_WAY"
   | "COMPLETED"
   | "CANCELLED"
   | "ABANDONED";

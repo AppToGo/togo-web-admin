@@ -23,7 +23,12 @@
     "description": "Estos son los permisos efectivos del usuario",
     "computedAt": "Computado",
     "noPermissions": "El usuario no tiene permisos asignados",
-    "groupByDomain": "Agrupar por dominio"
+    "groupByDomain": "Agrupar por dominio",
+    "operatorProfile": "Perfil de Operador",
+    "operatorProfileDescription": "Asigna un perfil de operador para definir los permisos del usuario",
+    "selectProfile": "Seleccionar perfil",
+    "noProfile": "Sin perfil asignado",
+    "assignProfile": "Asignar Perfil"
   },
   "branchAssignments": {
     "title": "Sedes Asignadas",
@@ -72,6 +77,7 @@
   "assignedAt": "Asignado el",
   "assignSuccess": "Usuario asignado exitosamente",
   "removeSuccess": "Asignación eliminada exitosamente",
+  "profileAssigned": "Perfil asignado exitosamente",
   "fields": {
     "branch": "Sede",
     "role": "Rol"

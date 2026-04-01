@@ -33,7 +33,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBranches } from "@/features/branches/hooks/useBranches";
@@ -76,6 +75,18 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
     (branch) => !assignments?.some((a) => a.branchId === branch.id)
   );
 
+  /**
+   * Obtiene la etiqueta traducida para un rol
+   */
+  const getRoleLabel = (roleValue: string): string => {
+    const roleMap: Record<string, string> = {
+      BRANCH_MANAGER: t("roles.branchManager"),
+      BRANCH_OPERATOR: t("roles.branchOperator"),
+      BRANCH_VIEWER: t("roles.branchViewer"),
+    };
+    return roleMap[roleValue] || roleValue;
+  };
+
   const handleAssign = useCallback(() => {
     if (!selectedBranchId || !role) return;
 
@@ -84,7 +95,7 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
       {
         onSuccess: () => {
           setSelectedBranchId("");
-          setRole("OPERATOR");
+          setRole("BRANCH_OPERATOR");
         },
       }
     );
@@ -104,8 +115,8 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
   const isMutating = assignMutation.isPending || removeMutation.isPending;
 
   // Obtener color según el rol
-  const getRoleBadgeClass = (role: string) => {
-    switch (role.toUpperCase()) {
+  const getRoleBadgeClass = (roleValue: string) => {
+    switch (roleValue.toUpperCase()) {
       case "BRANCH_MANAGER":
         return "bg-blue-100 text-blue-700 border-blue-200";
       case "BRANCH_OPERATOR":
@@ -271,7 +282,7 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
                           variant="outline"
                           className={cn("text-xs", getRoleBadgeClass(assignment.role))}
                         >
-                          {assignment.role}
+                          {getRoleLabel(assignment.role)}
                         </Badge>
                         <span className="text-slate-300">•</span>
                         <span className="text-xs">

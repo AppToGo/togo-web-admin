@@ -91,6 +91,11 @@ export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
     variant: COLOR_TO_VARIANT[STATUS_THEME.READY.color],
     description: "READY",
   },
+  ON_THE_WAY: {
+    title: "ON_THE_WAY",
+    variant: COLOR_TO_VARIANT[STATUS_THEME.ON_THE_WAY.color],
+    description: "ON_THE_WAY",
+  },
   COMPLETED: {
     title: "COMPLETED",
     variant: COLOR_TO_VARIANT[STATUS_THEME.COMPLETED.color],

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
@@ -19,6 +19,13 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -28,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, User, Shield, Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import apiClient from "@/services/api.service";
 
@@ -36,6 +44,7 @@ import {
   UserPermissionView,
   BranchAssignmentManager,
   useUserPermissions,
+  USER_PERMISSIONS_KEYS,
 } from "@/features/user-permissions";
 import { useOperatorProfiles } from "@/features/operator-profiles";
 
@@ -72,6 +81,48 @@ function useUser(userId: string | null) {
   });
 }
 
+/**
+ * Hook to assign operator profile to user
+ */
+function useAssignOperatorProfile() {
+  const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
+  const businessId = currentUser?.businessId;
+  const t = useTranslations("userPermissions");
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      profileId,
+    }: {
+      userId: string;
+      profileId: string | null;
+    }) => {
+      if (!businessId) throw new Error("No business ID");
+      const { data } = await apiClient.patch(
+        `/businesses/${businessId}/users/${userId}`,
+        {
+          operatorProfileId: profileId,
+        }
+      );
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate user data and permissions
+      queryClient.invalidateQueries({ queryKey: ["users", businessId] });
+      queryClient.invalidateQueries({
+        queryKey: USER_PERMISSIONS_KEYS.permissions(variables.userId),
+      });
+      toast.success(t("profileAssigned"));
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : t("errors.assignFailed");
+      toast.error(message);
+    },
+  });
+}
+
 export default function UserDetailPage() {
   const t = useTranslations("users");
   const tc = useTranslations("common");
@@ -86,13 +137,29 @@ export default function UserDetailPage() {
   const locale = params.locale as string;
 
   const [activeTab, setActiveTab] = useState("general");
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
 
   const { data: user, isLoading: isLoadingUser } = useUser(id);
   const { data: permissions, isLoading: isLoadingPermissions } = useUserPermissions(id);
   const { data: profiles, isLoading: isLoadingProfiles } = useOperatorProfiles();
+  const assignProfile = useAssignOperatorProfile();
+
+  // Set initial selected profile when permissions load
+  useState(() => {
+    if (permissions?.operatorProfile?.id) {
+      setSelectedProfileId(permissions.operatorProfile.id);
+    }
+  });
 
   const handleBack = () => {
     router.push("/dashboard/settings");
+  };
+
+  const handleAssignProfile = () => {
+    assignProfile.mutate({
+      userId: id,
+      profileId: selectedProfileId || null,
+    });
   };
 
   if (!hasBusiness && !isSuperAdmin) {
@@ -268,18 +335,33 @@ export default function UserDetailPage() {
                   <Skeleton className="h-10 w-full" />
                 ) : (
                   <div className="flex items-center gap-4">
-                    <select
-                      className="flex-1 h-10 px-3 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      defaultValue={permissions?.operatorProfile?.id || ""}
+                    <Select
+                      value={selectedProfileId}
+                      onValueChange={setSelectedProfileId}
                     >
-                      <option value="">{t("permissions.noProfile")}</option>
-                      {profiles?.map((profile) => (
-                        <option key={profile.id} value={profile.id}>
-                          {profile.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Button variant="outline">{t("permissions.assignProfile")}</Button>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder={t("permissions.selectProfile")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">
+                          {t("permissions.noProfile")}
+                        </SelectItem>
+                        {profiles?.map((profile) => (
+                          <SelectItem key={profile.id} value={profile.id}>
+                            {profile.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      onClick={handleAssignProfile}
+                      disabled={assignProfile.isPending}
+                    >
+                      {assignProfile.isPending
+                        ? tc("buttons.saving")
+                        : t("permissions.assignProfile")}
+                    </Button>
                   </div>
                 )}
               </CardContent>

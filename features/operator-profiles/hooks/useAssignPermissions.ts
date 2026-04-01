@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { assignPermissions } from "../services/operator-profile.service";
 import { OPERATOR_PROFILES_KEYS } from "./query-keys";
+import { USER_PERMISSIONS_KEYS } from "@/features/user-permissions/hooks/query-keys";
 import type { AssignPermissionsRequest, OperatorProfile, ProfilePermission } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
@@ -106,10 +107,13 @@ export function useAssignPermissions() {
     },
 
     // Revalidar después de la mutación
-    onSettled: (_data, _error, { profileId }) => {
-      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.lists() });
+    onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: OPERATOR_PROFILES_KEYS.detail(profileId),
+        queryKey: OPERATOR_PROFILES_KEYS.all,
+      });
+      // Invalidate user permissions for all users with this profile
+      queryClient.invalidateQueries({
+        queryKey: USER_PERMISSIONS_KEYS.all,
       });
     },
   });
