@@ -181,7 +181,21 @@ export function useLiveOrders(filters: LiveOrdersFilters) {
         businessId: effectiveBusinessId,
         statuses: LIVE_STATUSES,
       }),
- */
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled: isEnabled,
+    retry: (failureCount, error) => {
+      // No reintentar en errores 401 o 403
+      if (error instanceof Error) {
+        const message = error.message;
+        if (message.includes("401") || message.includes("403")) {
+          return false;
+        }
+      }
+      return failureCount < 3;
+    },
+  });
+}
 export function useOrder(orderId: string | null, enabled: boolean = true) {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();
