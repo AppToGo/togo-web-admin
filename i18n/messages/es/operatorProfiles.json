@@ -1,0 +1,138 @@
+{
+  "title": "Perfiles de Operador",
+  "subtitle": "Gestiona los perfiles de operador y sus permisos",
+  "create": {
+    "title": "Nuevo Perfil de Operador",
+    "subtitle": "Crea un nuevo perfil con permisos específicos"
+  },
+  "edit": {
+    "title": "Editar Perfil"
+  },
+  "info": {
+    "title": "Información del Perfil"
+  },
+  "permissions": {
+    "title": "Permisos",
+    "description": "Selecciona los permisos que tendrán los usuarios con este perfil",
+    "searchPlaceholder": "Buscar permisos...",
+    "selectedCount": "{count} seleccionados",
+    "totalCount": "{count} disponibles",
+    "selectAll": "Seleccionar todos",
+    "deselectAll": "Deseleccionar todos",
+    "noResults": "No se encontraron permisos",
+    "tryDifferentSearch": "Intenta con otra búsqueda",
+    "domain": {
+      "orders": "Pedidos",
+      "products": "Productos",
+      "categories": "Categorías",
+      "branches": "Sedes",
+      "customers": "Clientes",
+      "reports": "Reportes",
+      "settings": "Configuración",
+      "users": "Usuarios"
+    }
+  },
+  "noBusiness": {
+    "title": "No tienes un negocio asignado",
+    "description": "Para gestionar perfiles de operador, necesitas tener un negocio asignado a tu cuenta."
+  },
+  "notFound": {
+    "title": "Perfil no encontrado",
+    "description": "El perfil que buscas no existe o ha sido eliminado."
+  },
+  "createProfile": "Crear Perfil",
+  "newProfile": "Nuevo Perfil",
+  "editProfile": "Editar Perfil",
+  "card": {
+    "permissions": "{count} permisos",
+    "users": "{count} usuarios",
+    "created": "Creado",
+    "clone": "Clonar"
+  },
+  "clone": {
+    "title": "Clonar Perfil",
+    "description": "Crear una copia de \"{name}\"",
+    "defaultName": "{name} (Copia)",
+    "fields": {
+      "name": "Nombre del nuevo perfil"
+    },
+    "placeholders": {
+      "name": "Ej: Perfil Admin (Copia)"
+    },
+    "help": {
+      "name": "Elige un nombre descriptivo para el perfil clonado"
+    },
+    "whatWillBeCloned": "Se clonará:",
+    "items": {
+      "permissions": "{count} permisos",
+      "configuration": "Configuración del perfil"
+    },
+    "usersNotCloned": "Los usuarios asignados al perfil original no se clonarán.",
+    "cloning": "Clonando...",
+    "confirm": "Clonar Perfil"
+  },
+  "delete": {
+    "title": "Eliminar Perfil",
+    "description": "¿Estás seguro de eliminar \"{name}\"? Esta acción no se puede deshacer.",
+    "success": "Perfil eliminado exitosamente",
+    "error": "Error al eliminar el perfil"
+  },
+  "form": {
+    "sections": {
+      "basic": "Información básica",
+      "permissions": "Permisos"
+    },
+    "descriptions": {
+      "basic": "Nombre del perfil de operador",
+      "permissions": "Selecciona los permisos que tendrán los usuarios con este perfil"
+    },
+    "fields": {
+      "name": "Nombre"
+    },
+    "placeholders": {
+      "name": "Ej: Administrador de Sucursal"
+    },
+    "help": {
+      "name": "Nombre descriptivo para identificar el perfil"
+    },
+    "errors": {
+      "nameRequired": "El nombre es obligatorio",
+      "nameTooLong": "El nombre no puede tener más de 100 caracteres"
+    },
+    "createProfile": "Crear Perfil",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando..."
+  },
+  "domains": {
+    "orders": "Pedidos",
+    "products": "Productos",
+    "categories": "Categorías",
+    "branches": "Sedes",
+    "customers": "Clientes",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "users": "Usuarios"
+  },
+  "tabs": {
+    "general": "General",
+    "permissions": "Permisos"
+  },
+  "empty": {
+    "title": "No hay perfiles",
+    "description": "Crea tu primer perfil de operador para asignar permisos a los usuarios"
+  },
+  "errors": {
+    "createFailed": "Error al crear el perfil",
+    "updateFailed": "Error al actualizar el perfil",
+    "deleteFailed": "Error al eliminar el perfil",
+    "cloneFailed": "Error al clonar el perfil",
+    "assignPermissionsFailed": "Error al asignar permisos",
+    "loadFailed": "Error al cargar los perfiles"
+  },
+  "success": {
+    "createSuccess": "Perfil \"{name}\" creado exitosamente",
+    "updateSuccess": "Perfil \"{name}\" actualizado exitosamente",
+    "cloneSuccess": "Perfil \"{name}\" clonado exitosamente",
+    "assignPermissionsSuccess": "Permisos actualizados exitosamente"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "title": "Permisos de Usuario",
+  "subtitle": "Gestiona los permisos y asignaciones de sedes",
+  "sections": {
+    "permissions": "Permisos",
+    "branches": "Asignación de Sedes",
+    "profile": "Perfil de Operador"
+  },
+  "role": {
+    "label": "Rol",
+    "BUSINESS_OWNER": "Propietario",
+    "OPERATOR": "Operador",
+    "SUPER_ADMIN": "Super Administrador"
+  },
+  "operatorProfile": {
+    "label": "Perfil de Operador",
+    "none": "Sin perfil asignado",
+    "select": "Seleccionar perfil",
+    "change": "Cambiar perfil"
+  },
+  "permissions": {
+    "title": "Permisos Computados",
+    "description": "Estos son los permisos efectivos del usuario",
+    "computedAt": "Computado",
+    "noPermissions": "El usuario no tiene permisos asignados",
+    "groupByDomain": "Agrupar por dominio"
+  },
+  "branchAssignments": {
+    "title": "Sedes Asignadas",
+    "description": "Gestiona las sedes donde el usuario tiene acceso",
+    "add": "Agregar asignación",
+    "empty": "No hay sedes asignadas",
+    "columns": {
+      "branch": "Sede",
+      "role": "Rol",
+      "assignedAt": "Asignado",
+      "actions": "Acciones"
+    }
+  },
+  "assignBranch": {
+    "title": "Asignar a Sede",
+    "branchLabel": "Sede",
+    "roleLabel": "Rol en la sede",
+    "selectBranch": "Seleccionar sede",
+    "selectRole": "Seleccionar rol",
+    "submit": "Asignar",
+    "cancel": "Cancelar",
+    "success": "Usuario asignado exitosamente",
+    "error": "Error al asignar usuario"
+  },
+  "removeBranch": {
+    "title": "Eliminar asignación",
+    "description": "¿Estás seguro de eliminar la asignación de {branchName}?",
+    "success": "Asignación eliminada exitosamente",
+    "error": "Error al eliminar la asignación"
+  },
+  "errors": {
+    "assignFailed": "Error al asignar usuario a la sede",
+    "removeFailed": "Error al eliminar la asignación",
+    "loadPermissionsFailed": "Error al cargar los permisos",
+    "loadAssignmentsFailed": "Error al cargar las asignaciones"
+  }
+}

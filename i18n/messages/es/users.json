@@ -1,0 +1,52 @@
+{
+  "title": "Usuarios",
+  "subtitle": "Gestiona los usuarios de tu negocio",
+  "tabs": {
+    "general": "General",
+    "permissions": "Permisos",
+    "branches": "Sedes"
+  },
+  "roles": {
+    "SUPER_ADMIN": "Super Administrador",
+    "BUSINESS_OWNER": "Propietario",
+    "OPERATOR": "Operador"
+  },
+  "general": {
+    "title": "Información General",
+    "description": "Detalles del usuario",
+    "fields": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "status": "Estado"
+    }
+  },
+  "permissions": {
+    "title": "Permisos",
+    "description": "Gestiona los permisos del usuario",
+    "operatorProfile": "Perfil de Operador",
+    "operatorProfileDescription": "Selecciona un perfil de operador para asignar permisos predefinidos",
+    "noProfile": "Sin perfil asignado",
+    "assignProfile": "Asignar Perfil",
+    "changeProfile": "Cambiar Perfil",
+    "computedPermissions": "Permisos Computados",
+    "computedAt": "Computado el"
+  },
+  "branchAssignments": {
+    "title": "Asignación de Sedes",
+    "description": "Gestiona las sedes donde el usuario tiene acceso"
+  },
+  "noBusiness": {
+    "title": "No tienes un negocio asignado",
+    "description": "Para gestionar usuarios, necesitas tener un negocio asignado a tu cuenta."
+  },
+  "notFound": {
+    "title": "Usuario no encontrado",
+    "description": "El usuario que buscas no existe o ha sido eliminado."
+  },
+  "errors": {
+    "loadFailed": "Error al cargar el usuario",
+    "updateFailed": "Error al actualizar el usuario",
+    "deleteFailed": "Error al eliminar el usuario"
+  }
+}
