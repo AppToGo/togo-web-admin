@@ -1,0 +1,52 @@
+{
+  "title": "Users",
+  "subtitle": "Manage your business users",
+  "tabs": {
+    "general": "General",
+    "permissions": "Permissions",
+    "branches": "Branches"
+  },
+  "roles": {
+    "SUPER_ADMIN": "Super Administrator",
+    "BUSINESS_OWNER": "Business Owner",
+    "OPERATOR": "Operator"
+  },
+  "general": {
+    "title": "General Information",
+    "description": "User details",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status"
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "description": "Manage user permissions",
+    "operatorProfile": "Operator Profile",
+    "operatorProfileDescription": "Select an operator profile to assign predefined permissions",
+    "noProfile": "No profile assigned",
+    "assignProfile": "Assign Profile",
+    "changeProfile": "Change Profile",
+    "computedPermissions": "Computed Permissions",
+    "computedAt": "Computed at"
+  },
+  "branchAssignments": {
+    "title": "Branch Assignments",
+    "description": "Manage branches where the user has access"
+  },
+  "noBusiness": {
+    "title": "No business assigned",
+    "description": "To manage users, you need to have a business assigned to your account."
+  },
+  "notFound": {
+    "title": "User not found",
+    "description": "The user you are looking for does not exist or has been deleted."
+  },
+  "errors": {
+    "loadFailed": "Error loading user",
+    "updateFailed": "Error updating user",
+    "deleteFailed": "Error deleting user"
+  }
+}
