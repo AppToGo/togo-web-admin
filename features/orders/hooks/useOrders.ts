@@ -181,27 +181,6 @@ export function useLiveOrders(filters: LiveOrdersFilters) {
         businessId: effectiveBusinessId,
         statuses: LIVE_STATUSES,
       }),
-    select: (data) => {
-      // Agrupar por estado para fácil acceso
-      const grouped: Record<OrderStatus, Order[]> = {} as Record<
-        OrderStatus,
-        Order[]
-      >;
-
-      // Inicializar arrays vacíos para cada estado LIVE
-      LIVE_STATUSES.forEach((status) => {
-        grouped[status] = [];
-      });
-
-      // Agrupar órdenes
-      data.forEach((order) => {
-        if (grouped[order.status]) {
-          grouped[order.status].push(order);
-        }
-      });
-
-      return data;
-    },
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: isEnabled,
@@ -217,13 +196,6 @@ export function useLiveOrders(filters: LiveOrdersFilters) {
     },
   });
 }
-
-/**
- * Hook para obtener una orden específica
- *
- * @param orderId - ID de la orden
- * @param enabled - Si la query está habilitada
- */
 export function useOrder(orderId: string | null, enabled: boolean = true) {
   const { selectedBusinessId } = useBusinessStore();
   const { user } = useAuthStore();

@@ -7,7 +7,6 @@ import { OrderCard } from "../OrderCard";
 import type { Order, OrderStatus } from "../../types";
 import type { CardViewMode } from "../OrderCard";
 import { getColumnConfig } from "../../config/kanban-columns.config";
-import { isArchiveStatus } from "../../constants/order-statuses";
 import {
   columnVariants,
   columnDragOverVariants,
