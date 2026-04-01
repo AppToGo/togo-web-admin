@@ -115,7 +115,7 @@ export async function assignPermissions(
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.put<OperatorProfile>(
     `/businesses/${businessId}/operator-profiles/${id}/permissions`,
-    request
+    { permissionCodes: request.permissionCodes }
   );
   return data;
 }

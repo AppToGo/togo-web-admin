@@ -63,5 +63,5 @@ export interface CloneProfileRequest {
  * DTO para asignar permisos a un perfil
  */
 export interface AssignPermissionsRequest {
-  permissions: Array<{ permissionCode: string; params?: object }>;
+  permissionCodes: string[];
 }

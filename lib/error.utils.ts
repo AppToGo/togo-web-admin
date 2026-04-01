@@ -106,7 +106,7 @@ export function getHumanizedErrorMessage(error: unknown): string {
   if (!error) return defaultMessage;
   
   // Extraer mensaje del error - PRIORIZAR mensaje del backend ( Axios response.data.message )
-  let rawMessage = "";
+  let rawMessage: unknown = "";
   
   // Primero intentar obtener el mensaje del backend (Axios error response)
   const axiosError = error as any;
@@ -122,8 +122,20 @@ export function getHumanizedErrorMessage(error: unknown): string {
     rawMessage = axiosError.message;
   }
   
+  // Convertir a string si es necesario (manejar arrays y objetos de validación)
+  let messageString: string;
+  if (typeof rawMessage === 'string') {
+    messageString = rawMessage;
+  } else if (Array.isArray(rawMessage)) {
+    messageString = rawMessage.join(', ');
+  } else if (rawMessage && typeof rawMessage === 'object') {
+    messageString = JSON.stringify(rawMessage);
+  } else {
+    messageString = String(rawMessage);
+  }
+  
   // Buscar coincidencia con mensajes conocidos (case-insensitive, búsqueda parcial)
-  const lowerRawMessage = rawMessage.toLowerCase();
+  const lowerRawMessage = messageString.toLowerCase();
   for (const [key, friendlyMessage] of Object.entries(FRIENDLY_ERROR_MESSAGES)) {
     if (lowerRawMessage.includes(key.toLowerCase())) {
       return friendlyMessage;
@@ -132,10 +144,10 @@ export function getHumanizedErrorMessage(error: unknown): string {
   
   // Si no hay coincidencia, retornar el mensaje original si es válido
   // o el mensaje por defecto si es un mensaje técnico genérico
-  if (rawMessage && 
-      !rawMessage.includes("Request failed with status code") &&
-      rawMessage.length < 200) {
-    return rawMessage;
+  if (messageString && 
+      !messageString.includes("Request failed with status code") &&
+      messageString.length < 200) {
+    return messageString;
   }
   
   return defaultMessage;

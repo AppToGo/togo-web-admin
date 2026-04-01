@@ -9,7 +9,9 @@
   "roles": {
     "SUPER_ADMIN": "Super Administrator",
     "BUSINESS_OWNER": "Business Owner",
-    "OPERATOR": "Operator"
+    "OWNER": "Owner",
+    "OPERATOR": "Operator",
+    "ADMIN": "Administrator"
   },
   "general": {
     "title": "General Information",
