@@ -32,7 +32,8 @@
     "assignProfile": "Assign Profile",
     "changeProfile": "Change Profile",
     "computedPermissions": "Computed Permissions",
-    "computedAt": "Computed at"
+    "computedAt": "Computed at",
+    "selectProfile": "Select profile"
   },
   "branchAssignments": {
     "title": "Branch Assignments",

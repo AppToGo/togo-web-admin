@@ -32,7 +32,8 @@
     "assignProfile": "Asignar Perfil",
     "changeProfile": "Cambiar Perfil",
     "computedPermissions": "Permisos Computados",
-    "computedAt": "Computado el"
+    "computedAt": "Computado el",
+    "selectProfile": "Seleccionar perfil"
   },
   "branchAssignments": {
     "title": "Asignación de Sedes",
