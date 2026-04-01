@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -145,13 +145,13 @@ export default function UserDetailPage() {
   const assignProfile = useAssignOperatorProfile();
 
   // Set initial selected profile when permissions load
-  useState(() => {
+  useEffect(() => {
     if (permissions?.operatorProfile?.id) {
       setSelectedProfileId(permissions.operatorProfile.id);
     } else {
       setSelectedProfileId("none");
     }
-  });
+  }, [permissions]);
 
   const handleBack = () => {
     router.push("/dashboard/settings");
