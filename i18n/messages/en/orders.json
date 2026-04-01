@@ -194,7 +194,8 @@
     "title": "No orders",
     "description": "Orders will appear here when customers place them",
     "noOrdersInProgress": "No orders in progress",
-    "noProducts": "No products"
+    "noProducts": "No products",
+    "noOrders": "No orders"
   },
   "paymentNotes": {
     "confirmedFromAdmin": "Payment confirmed from admin panel"

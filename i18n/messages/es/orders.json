@@ -194,7 +194,8 @@
     "title": "No hay órdenes",
     "description": "Las órdenes aparecerán aquí cuando los clientes realicen pedidos",
     "noOrdersInProgress": "No hay órdenes en proceso",
-    "noProducts": "Sin productos"
+    "noProducts": "Sin productos",
+    "noOrders": "No hay órdenes"
   },
   "paymentNotes": {
     "confirmedFromAdmin": "Pago confirmado desde panel admin"

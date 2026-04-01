@@ -27,7 +27,6 @@ import {
 } from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
 
-
 interface OrdersKanbanBoardProps {
   searchQuery?: string;
   cardViewMode?: CardViewMode;
@@ -112,13 +111,12 @@ export function OrdersKanbanBoard({
 
   // Estado local del sidebar de estadísticas
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
+
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibilityConfig>({
       CONFIRMED: true,
       IN_PROGRESS: true,
       READY: true,
-      ON_THE_WAY: true,
       COMPLETED: true,
     });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
@@ -301,10 +299,10 @@ export function OrdersKanbanBoard({
               {columns.map((column) => {
                 const isCompletedColumn = column.id === "COMPLETED";
                 // Loading específico por tipo de columna
-                const columnIsLoading = isCompletedColumn 
-                  ? isLoadingCompleted 
+                const columnIsLoading = isCompletedColumn
+                  ? isLoadingCompleted
                   : isLoadingLive;
-                
+
                 return (
                   <KanbanColumn
                     key={column.id}
@@ -338,7 +336,9 @@ export function OrdersKanbanBoard({
             "shrink-0 ml-0 transition-all duration-300 ease-in-out",
             "rounded-card-xl bg-white/30 backdrop-blur-xl border border-white/40",
             "flex flex-col overflow-hidden",
-            isSidebarOpen ? "w-72 opacity-100 ml-3" : "w-0 opacity-0 border-0 ml-0"
+            isSidebarOpen
+              ? "w-72 opacity-100 ml-3"
+              : "w-0 opacity-0 border-0 ml-0"
           )}
         >
           {/* Scroll vertical solo en el sidebar */}
@@ -347,10 +347,12 @@ export function OrdersKanbanBoard({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-pink-400" />
-                <h3 className="font-semibold text-sm text-slate-700">Operación en curso</h3>
+                <h3 className="font-semibold text-sm text-slate-700">
+                  Operación en curso
+                </h3>
               </div>
             </div>
-            
+
             {/* Stats Content - Métricas de órdenes */}
             <div className="space-y-6">
               {isLoadingLive ? <OrderMetricsSkeleton /> : <OrderMetrics />}
