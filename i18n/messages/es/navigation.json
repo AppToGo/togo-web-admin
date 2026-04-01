@@ -16,7 +16,10 @@
     "openMenu": "Abrir menú",
     "myProducts": "Mis Productos",
     "categories": "Mis Categorias",
-    "branches": "Sedes"
+    "branches": "Sedes",
+    "operatorProfiles": "Perfiles de Operador",
+    "general": "General",
+    "users": "Usuarios"
   },
   "breadcrumbs": {
     "home": "Inicio",

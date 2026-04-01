@@ -1,0 +1,137 @@
+{
+  "title": "Operator Profiles",
+  "subtitle": "Manage operator profiles and their permissions",
+  "create": {
+    "title": "New Operator Profile",
+    "subtitle": "Create a new profile with specific permissions"
+  },
+  "edit": {
+    "title": "Edit Profile"
+  },
+  "info": {
+    "title": "Profile Information"
+  },
+  "permissions": {
+    "title": "Permissions",
+    "description": "Select the permissions that users with this profile will have",
+    "searchPlaceholder": "Search permissions...",
+    "selectedCount": "{count} selected",
+    "totalCount": "{count} available",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "noResults": "No permissions found",
+    "tryDifferentSearch": "Try a different search",
+    "domain": {
+      "orders": "Orders",
+      "products": "Products",
+      "categories": "Categories",
+      "branches": "Branches",
+      "customers": "Customers",
+      "reports": "Reports",
+      "settings": "Settings",
+      "users": "Users"
+    }
+  },
+  "noBusiness": {
+    "title": "You don't have an assigned business",
+    "description": "To manage operator profiles, you need to have a business assigned to your account."
+  },
+  "notFound": {
+    "title": "Profile not found",
+    "description": "The profile you are looking for does not exist or has been deleted."
+  },
+  "createProfile": "Create Profile",
+  "newProfile": "New Profile",
+  "editProfile": "Edit Profile",
+  "card": {
+    "permissions": "{count} permissions",
+    "users": "{count} users",
+    "created": "Created",
+    "clone": "Clone"
+  },
+  "clone": {
+    "title": "Clone Profile",
+    "description": "Create a copy of \"{name}\"",
+    "defaultName": "{name} (Copy)",
+    "fields": {
+      "name": "New profile name"
+    },
+    "placeholders": {
+      "name": "E.g.: Admin Profile (Copy)"
+    },
+    "help": {
+      "name": "Choose a descriptive name for the cloned profile"
+    },
+    "whatWillBeCloned": "Will be cloned:",
+    "items": {
+      "permissions": "{count} permissions",
+      "configuration": "Profile configuration"
+    },
+    "usersNotCloned": "Users assigned to the original profile will not be cloned.",
+    "cloning": "Cloning...",
+    "confirm": "Clone Profile"
+  },
+  "delete": {
+    "title": "Delete Profile",
+    "description": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "success": "Profile deleted successfully",
+    "error": "Error deleting profile"
+  },
+  "form": {
+    "sections": {
+      "basic": "Basic Information",
+      "permissions": "Permissions"
+    },
+    "descriptions": {
+      "basic": "Operator profile name",
+      "permissions": "Select the permissions that users with this profile will have"
+    },
+    "fields": {
+      "name": "Name"
+    },
+    "placeholders": {
+      "name": "E.g.: Branch Administrator"
+    },
+    "help": {
+      "name": "Descriptive name to identify the profile"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "nameTooLong": "Name cannot exceed 100 characters"
+    },
+    "createProfile": "Create Profile",
+    "saveChanges": "Save Changes",
+    "saving": "Saving..."
+  },
+  "domains": {
+    "orders": "Orders",
+    "products": "Products",
+    "categories": "Categories",
+    "branches": "Branches",
+    "customers": "Customers",
+    "reports": "Reports",
+    "settings": "Settings",
+    "users": "Users"
+  },
+  "tabs": {
+    "general": "General",
+    "permissions": "Permissions"
+  },
+  "empty": {
+    "title": "No profiles",
+    "description": "Create your first operator profile to assign permissions to users"
+  },
+  "errors": {
+    "createFailed": "Error creating profile",
+    "updateFailed": "Error updating profile",
+    "deleteFailed": "Error deleting profile",
+    "cloneFailed": "Error cloning profile",
+    "assignPermissionsFailed": "Error assigning permissions",
+    "loadFailed": "Error loading profiles"
+  },
+  "deleteSuccess": "Profile deleted successfully",
+  "createSuccess": "Profile \"{name}\" created successfully",
+  "updateSuccess": "Profile \"{name}\" updated successfully",
+  "cloneSuccess": "Profile \"{name}\" cloned successfully",
+  "assignPermissionsSuccess": "Permissions updated successfully"
+}

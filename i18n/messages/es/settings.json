@@ -73,6 +73,23 @@
     "dark": "Oscuro",
     "system": "Sistema"
   },
+  "profile": {
+    "title": "Perfil",
+    "description": "Gestiona tu información personal"
+  },
+  "security": {
+    "title": "Seguridad",
+    "description": "Configura la seguridad de tu cuenta"
+  },
+  "users": {
+    "description": "Gestiona los usuarios de tu negocio"
+  },
+  "operatorProfiles": {
+    "description": "Gestiona los perfiles de operador y sus permisos"
+  },
+  "branches": {
+    "description": "Gestiona las sedes de tu negocio"
+  },
   "save": {
     "button": "Guardar cambios",
     "success": "Cambios guardados exitosamente",

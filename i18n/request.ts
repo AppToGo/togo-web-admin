@@ -36,6 +36,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
     business: (await import(`./messages/${validLocale}/business.json`)).default,
     customers: (await import(`./messages/${validLocale}/customers.json`)).default,
     branches: (await import(`./messages/${validLocale}/branches.json`)).default,
+    operatorProfiles: (await import(`./messages/${validLocale}/operatorProfiles.json`)).default,
+    userPermissions: (await import(`./messages/${validLocale}/userPermissions.json`)).default,
+    users: (await import(`./messages/${validLocale}/users.json`)).default,
   };
 
   return {

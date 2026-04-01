@@ -73,6 +73,23 @@
     "dark": "Dark",
     "system": "System"
   },
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your personal information"
+  },
+  "security": {
+    "title": "Security",
+    "description": "Configure your account security"
+  },
+  "users": {
+    "description": "Manage your business users"
+  },
+  "operatorProfiles": {
+    "description": "Manage operator profiles and their permissions"
+  },
+  "branches": {
+    "description": "Manage your business branches"
+  },
   "save": {
     "button": "Save changes",
     "success": "Changes saved successfully",
