@@ -143,8 +143,8 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
             <Building2 className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <CardTitle className="text-lg">{t("branchAssignments")}</CardTitle>
-            <CardDescription>{t("branchAssignmentsDescription")}</CardDescription>
+            <CardTitle className="text-lg">{t("branchAssignments.title")}</CardTitle>
+            <CardDescription>{t("branchAssignments.description")}</CardDescription>
           </div>
         </div>
       </CardHeader>
