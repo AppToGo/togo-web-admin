@@ -16,7 +16,6 @@ const KANBAN_STATUSES: OrderStatus[] = [
   "CONFIRMED",
   "IN_PROGRESS",
   "READY",
-  "ON_THE_WAY",
   "COMPLETED",
 ];
 
@@ -24,7 +23,6 @@ export interface ColumnVisibilityConfig {
   CONFIRMED: boolean;
   IN_PROGRESS: boolean;
   READY: boolean;
-  ON_THE_WAY: boolean;
   COMPLETED: boolean;
 }
 
@@ -41,7 +39,6 @@ const defaultVisibility: ColumnVisibilityConfig = {
   CONFIRMED: true,
   IN_PROGRESS: true,
   READY: true,
-  ON_THE_WAY: true,
   COMPLETED: true,
 };
 

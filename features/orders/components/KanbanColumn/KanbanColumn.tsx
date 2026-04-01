@@ -32,6 +32,8 @@ export interface KanbanColumnProps {
   viewMode?: CardViewMode;
   flexBasis?: string;
   minWidth?: number;
+  // Total count for display (falls back to orders.length if not provided)
+  totalCount?: number;
   // Infinite scroll props for archive columns
   isArchive?: boolean;
   hasMore?: boolean;
@@ -48,6 +50,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   viewMode = "card",
   flexBasis,
   minWidth = 320,
+  totalCount,
   isArchive = false,
   hasMore = false,
   isFetchingNextPage = false,
@@ -142,7 +145,7 @@ export const KanbanColumn = memo(function KanbanColumn({
                 : counterTextVariants({ status })
             )}
           >
-            {orders.length}
+            {totalCount ?? orders.length}
           </span>
         </div>
       </div>

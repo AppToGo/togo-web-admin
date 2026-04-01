@@ -3,6 +3,10 @@
 import { memo } from "react";
 import { useTranslations } from "next-intl";
 import { useDashboardMetrics } from "../hooks/useOrderMetrics";
+import {
+  DeliveryMetricsCard,
+  DeliveryMetricsCardSkeleton,
+} from "./DeliveryMetricsCard";
 import { formatCurrency } from "../utils/order-status.utils";
 import {
   progressBarVariants,
@@ -94,6 +98,13 @@ export const OrderMetrics = memo(function OrderMetrics() {
         )}
       </div>
 
+      {/* Delivery Type Metrics */}
+      <DeliveryMetricsCard
+        delivery={metrics.porTipoEntrega.DELIVERY.total}
+        pickup={metrics.porTipoEntrega.PICKUP.total}
+        dineIn={metrics.porTipoEntrega.DINE_IN.total}
+      />
+
       {/* Revenue Card - Detailed revenue */}
       <Card variant="gradient-indigo" className="p-5">
         {/* Paid */}
@@ -144,7 +155,7 @@ export function OrderMetricsSkeleton() {
           </div>
         ))}
       </div>
-      <Skeleton className="h-32 w-full rounded-card-lg" />
+      <DeliveryMetricsCardSkeleton />
     </div>
   );
 }
