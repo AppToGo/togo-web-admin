@@ -136,6 +136,7 @@ export function OrdersKanbanBoard({
   });
 
   // Hook for COMPLETED orders (infinite scroll)
+  // Solo habilitar si hay businessId (no pasar string vacío)
   const {
     orders: completedOrders,
     isLoading: isLoadingCompleted,
@@ -144,7 +145,7 @@ export function OrdersKanbanBoard({
     fetchNextPage,
     error: errorCompleted,
   } = useCompletedOrdersInfinite({
-    businessId: businessId || "",
+    businessId: businessId,
     dateFrom,
     dateTo,
     branchIds,
@@ -152,9 +153,6 @@ export function OrdersKanbanBoard({
 
   const updateStatus = useUpdateOrderStatus();
 
-  // Combine loading states
-  const isLoading = isLoadingLive || isLoadingCompleted;
-  
   // Combine errors
   const error = errorLive || errorCompleted;
 
@@ -300,6 +298,10 @@ export function OrdersKanbanBoard({
             >
               {columns.map((column) => {
                 const isCompletedColumn = column.id === "COMPLETED";
+                // Loading específico por tipo de columna
+                const columnIsLoading = isCompletedColumn 
+                  ? isLoadingCompleted 
+                  : isLoadingLive;
                 
                 return (
                   <KanbanColumn
@@ -308,7 +310,7 @@ export function OrdersKanbanBoard({
                     orders={filteredOrdersByStatus?.[column.id] || []}
                     onStatusChange={handleStatusChange}
                     onOrderClick={handleOrderClick}
-                    isLoading={isLoading}
+                    isLoading={columnIsLoading}
                     viewMode={cardViewMode}
                     // Distribuir ancho igualitariamente entre columnas visibles
                     flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
@@ -348,7 +350,7 @@ export function OrdersKanbanBoard({
             
             {/* Stats Content - Métricas de órdenes */}
             <div className="space-y-6">
-              {isLoading ? (
+              {isLoadingLive ? (
                 <>
                   <OrderMetricsSkeleton />
                   <div className="pt-4 border-t border-slate-200/50">
