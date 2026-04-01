@@ -137,7 +137,7 @@ export default function UserDetailPage() {
   const locale = params.locale as string;
 
   const [activeTab, setActiveTab] = useState("general");
-  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("none");
 
   const { data: user, isLoading: isLoadingUser } = useUser(id);
   const { data: permissions, isLoading: isLoadingPermissions } = useUserPermissions(id);
@@ -148,6 +148,8 @@ export default function UserDetailPage() {
   useState(() => {
     if (permissions?.operatorProfile?.id) {
       setSelectedProfileId(permissions.operatorProfile.id);
+    } else {
+      setSelectedProfileId("none");
     }
   });
 
@@ -158,7 +160,7 @@ export default function UserDetailPage() {
   const handleAssignProfile = () => {
     assignProfile.mutate({
       userId: id,
-      profileId: selectedProfileId || null,
+      profileId: selectedProfileId === "none" ? null : selectedProfileId,
     });
   };
 
@@ -343,7 +345,7 @@ export default function UserDetailPage() {
                         <SelectValue placeholder={t("permissions.selectProfile")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">
+                        <SelectItem value="none">
                           {t("permissions.noProfile")}
                         </SelectItem>
                         {profiles?.map((profile) => (
