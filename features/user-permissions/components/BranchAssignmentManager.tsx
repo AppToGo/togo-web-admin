@@ -68,7 +68,7 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
   const removeMutation = useRemoveFromBranch(userId);
 
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const [role, setRole] = useState<string>("OPERATOR");
+  const [role, setRole] = useState<string>("BRANCH_OPERATOR");
   const [assignmentToRemove, setAssignmentToRemove] = useState<UserBranchAssignment | null>(null);
 
   // Filtrar sucursales ya asignadas
@@ -106,6 +106,13 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
   // Obtener color según el rol
   const getRoleBadgeClass = (role: string) => {
     switch (role.toUpperCase()) {
+      case "BRANCH_MANAGER":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "BRANCH_OPERATOR":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "BRANCH_VIEWER":
+        return "bg-slate-100 text-slate-700 border-slate-200";
+      // Legacy role support
       case "ADMIN":
         return "bg-red-100 text-red-700 border-red-200";
       case "MANAGER":
@@ -174,16 +181,19 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
               </Select>
             </div>
 
-            {/* Input de rol */}
+            {/* Selector de rol */}
             <div className="space-y-2">
-              <Label htmlFor="role-input">{t("fields.role")}</Label>
-              <Input
-                id="role-input"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder={t("placeholders.enterRole")}
-                disabled={isMutating}
-              />
+              <Label htmlFor="role-select">{t("fields.role")}</Label>
+              <Select value={role} onValueChange={setRole} disabled={isMutating}>
+                <SelectTrigger id="role-select">
+                  <SelectValue placeholder={t("placeholders.selectRole")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BRANCH_OPERATOR">{t("roles.branchOperator")}</SelectItem>
+                  <SelectItem value="BRANCH_MANAGER">{t("roles.branchManager")}</SelectItem>
+                  <SelectItem value="BRANCH_VIEWER">{t("roles.branchViewer")}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useHasBusiness,
   useIsSuperAdmin,
+  useAuthStore,
 } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, User, Shield, Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import apiClient from "@/services/api.service";
 
 // Features
 import {
@@ -36,11 +39,8 @@ import {
 } from "@/features/user-permissions";
 import { useOperatorProfiles } from "@/features/operator-profiles";
 
-
 /**
- * @todo Implement actual API integration for useUser hook
- * This is a temporary mock that should be replaced with a real API call
- * to fetch user details from the backend.
+ * User type for user details
  */
 interface User {
   id: string;
@@ -52,19 +52,24 @@ interface User {
   updatedAt: string;
 }
 
-function useUser(id: string | null) {
-  return {
-    data: id ? {
-      id,
-      name: "Example User",
-      email: "user@example.com",
-      role: "OPERATOR",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as User : null,
-    isLoading: false,
-  };
+/**
+ * Hook to fetch user details from the backend
+ */
+function useUser(userId: string | null) {
+  const { user: currentUser } = useAuthStore();
+  const businessId = currentUser?.businessId;
+
+  return useQuery({
+    queryKey: ["users", businessId, userId],
+    queryFn: async () => {
+      if (!businessId || !userId) return null;
+      const { data } = await apiClient.get<User>(
+        `/businesses/${businessId}/users/${userId}`
+      );
+      return data;
+    },
+    enabled: !!businessId && !!userId,
+  });
 }
 
 export default function UserDetailPage() {

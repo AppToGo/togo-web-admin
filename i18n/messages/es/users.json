@@ -44,6 +44,17 @@
     "title": "Usuario no encontrado",
     "description": "El usuario que buscas no existe o ha sido eliminado."
   },
+  "list": {
+    "title": "Lista de Usuarios",
+    "description": "Gestiona los usuarios que tienen acceso a tu negocio"
+  },
+  "empty": {
+    "title": "No hay usuarios",
+    "description": "Comienza agregando tu primer usuario al negocio."
+  },
+  "buttons": {
+    "addUser": "Agregar Usuario"
+  },
   "errors": {
     "loadFailed": "Error al cargar el usuario",
     "updateFailed": "Error al actualizar el usuario",

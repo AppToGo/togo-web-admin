@@ -16,7 +16,10 @@
     "openMenu": "Open menu",
     "myProducts": "My Products",
     "categories": "Categories",
-    "branches": "Branches"
+    "branches": "Branches",
+    "operatorProfiles": "Operator Profiles",
+    "general": "General",
+    "users": "Users"
   },
   "breadcrumbs": {
     "home": "Home",

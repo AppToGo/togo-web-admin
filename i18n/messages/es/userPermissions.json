@@ -78,7 +78,13 @@
   },
   "placeholders": {
     "selectBranch": "Seleccionar sede",
-    "enterRole": "Ingresar rol"
+    "enterRole": "Ingresar rol",
+    "selectRole": "Seleccionar rol"
+  },
+  "roles": {
+    "branchOperator": "Operador",
+    "branchManager": "Gerente",
+    "branchViewer": "Visualizador"
   },
   "buttons": {
     "assign": "Asignar"

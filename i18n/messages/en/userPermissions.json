@@ -78,7 +78,13 @@
   },
   "placeholders": {
     "selectBranch": "Select branch",
-    "enterRole": "Enter role"
+    "enterRole": "Enter role",
+    "selectRole": "Select role"
+  },
+  "roles": {
+    "branchOperator": "Operator",
+    "branchManager": "Manager",
+    "branchViewer": "Viewer"
   },
   "buttons": {
     "assign": "Assign"

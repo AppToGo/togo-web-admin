@@ -17,7 +17,9 @@
     "myProducts": "Mis Productos",
     "categories": "Mis Categorias",
     "branches": "Sedes",
-    "operatorProfiles": "Perfiles de Operador"
+    "operatorProfiles": "Perfiles de Operador",
+    "general": "General",
+    "users": "Usuarios"
   },
   "breadcrumbs": {
     "home": "Inicio",
