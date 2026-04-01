@@ -8,6 +8,7 @@ export { OrderDetailContent } from "./OrderDetailContent";
 export { OrderDetailDialog } from "./OrderDetailDialog";
 export type { OrderDetailContentProps } from "./OrderDetailContent";
 export { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
+export { DeliveryMetricsCard, DeliveryMetricsCardSkeleton } from "./DeliveryMetricsCard";
 export { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 export { ColumnVisibilityBar, type ColumnVisibilityConfig } from "./ColumnVisibilityBar";
 export { BranchMultiSelector, BranchFilterBadge, type BranchMultiSelectorProps } from "./BranchMultiSelector";

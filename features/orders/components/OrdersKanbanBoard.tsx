@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
 import { OrderDetailDialog } from "./OrderDetailDialog";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
-import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
 
 import {
   ColumnVisibilityBar,
@@ -16,6 +15,7 @@ import {
   useOrdersByStatus,
   useUpdateOrderStatus,
   useCompletedOrdersInfinite,
+  useOrderMetrics,
 } from "../hooks";
 import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
 import type { Order, OrderStatus } from "../types";
@@ -106,6 +106,9 @@ export function OrdersKanbanBoard({
 }: OrdersKanbanBoardProps) {
   // Hydrate notification preferences when the orders page mounts
   useHydrateNotificationPreferences();
+
+  // Get metrics for total counts per status
+  const { data: metrics } = useOrderMetrics();
 
   // Estado local del sidebar de estadísticas
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -321,6 +324,7 @@ export function OrdersKanbanBoard({
                       isCompletedColumn ? isFetchingNextPage : false
                     }
                     onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
+                    totalCount={metrics?.porEstadoOrden[column.id]}
                   />
                 );
               })}
@@ -349,21 +353,7 @@ export function OrdersKanbanBoard({
             
             {/* Stats Content - Métricas de órdenes */}
             <div className="space-y-6">
-              {isLoadingLive ? (
-                <>
-                  <OrderMetricsSkeleton />
-                  <div className="pt-4 border-t border-slate-200/50">
-                    <RecentActivitySkeleton />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <OrderMetrics />
-                  <div className="pt-4 border-t border-slate-200/50">
-                    <RecentActivity />
-                  </div>
-                </>
-              )}
+              {isLoadingLive ? <OrderMetricsSkeleton /> : <OrderMetrics />}
             </div>
           </div>
         </aside>
