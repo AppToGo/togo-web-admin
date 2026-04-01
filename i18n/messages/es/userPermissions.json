@@ -59,5 +59,35 @@
     "removeFailed": "Error al eliminar la asignación",
     "loadPermissionsFailed": "Error al cargar los permisos",
     "loadAssignmentsFailed": "Error al cargar las asignaciones"
+  },
+  "userRole": "Rol del Usuario",
+  "roleDescription": "Rol asignado al usuario en el sistema",
+  "operatorProfileDescription": "Perfil que determina los permisos del usuario",
+  "permissionsCount": "{count} permisos",
+  "noPermissionsAssigned": "No hay permisos asignados",
+  "addAssignment": "Agregar Asignación",
+  "currentAssignments": "Asignaciones Actuales",
+  "noAssignments": "Sin asignaciones",
+  "noAssignmentsDescription": "El usuario no tiene sedes asignadas",
+  "assignedAt": "Asignado el",
+  "assignSuccess": "Usuario asignado exitosamente",
+  "removeSuccess": "Asignación eliminada exitosamente",
+  "fields": {
+    "branch": "Sede",
+    "role": "Rol"
+  },
+  "placeholders": {
+    "selectBranch": "Seleccionar sede",
+    "enterRole": "Ingresar rol"
+  },
+  "buttons": {
+    "assign": "Asignar"
+  },
+  "remove": {
+    "title": "Eliminar Asignación",
+    "description": "¿Estás seguro de eliminar la asignación de {branchName}?"
+  },
+  "loading": {
+    "branchName": "Cargando..."
   }
 }

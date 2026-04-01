@@ -129,10 +129,9 @@
     "assignPermissionsFailed": "Error assigning permissions",
     "loadFailed": "Error loading profiles"
   },
-  "success": {
-    "createSuccess": "Profile \"{name}\" created successfully",
-    "updateSuccess": "Profile \"{name}\" updated successfully",
-    "cloneSuccess": "Profile \"{name}\" cloned successfully",
-    "assignPermissionsSuccess": "Permissions updated successfully"
-  }
+  "deleteSuccess": "Profile deleted successfully",
+  "createSuccess": "Profile \"{name}\" created successfully",
+  "updateSuccess": "Profile \"{name}\" updated successfully",
+  "cloneSuccess": "Profile \"{name}\" cloned successfully",
+  "assignPermissionsSuccess": "Permissions updated successfully"
 }

@@ -59,5 +59,35 @@
     "removeFailed": "Error removing assignment",
     "loadPermissionsFailed": "Error loading permissions",
     "loadAssignmentsFailed": "Error loading assignments"
+  },
+  "userRole": "User Role",
+  "roleDescription": "User's role in the system",
+  "operatorProfileDescription": "Profile that determines user permissions",
+  "permissionsCount": "{count} permissions",
+  "noPermissionsAssigned": "No permissions assigned",
+  "addAssignment": "Add Assignment",
+  "currentAssignments": "Current Assignments",
+  "noAssignments": "No assignments",
+  "noAssignmentsDescription": "User has no assigned branches",
+  "assignedAt": "Assigned on",
+  "assignSuccess": "User assigned successfully",
+  "removeSuccess": "Assignment removed successfully",
+  "fields": {
+    "branch": "Branch",
+    "role": "Role"
+  },
+  "placeholders": {
+    "selectBranch": "Select branch",
+    "enterRole": "Enter role"
+  },
+  "buttons": {
+    "assign": "Assign"
+  },
+  "remove": {
+    "title": "Remove Assignment",
+    "description": "Are you sure you want to remove the assignment from {branchName}?"
+  },
+  "loading": {
+    "branchName": "Loading..."
   }
 }

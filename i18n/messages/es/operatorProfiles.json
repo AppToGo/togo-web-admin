@@ -129,10 +129,9 @@
     "assignPermissionsFailed": "Error al asignar permisos",
     "loadFailed": "Error al cargar los perfiles"
   },
-  "success": {
-    "createSuccess": "Perfil \"{name}\" creado exitosamente",
-    "updateSuccess": "Perfil \"{name}\" actualizado exitosamente",
-    "cloneSuccess": "Perfil \"{name}\" clonado exitosamente",
-    "assignPermissionsSuccess": "Permisos actualizados exitosamente"
-  }
+  "deleteSuccess": "Perfil eliminado exitosamente",
+  "createSuccess": "Perfil \"{name}\" creado exitosamente",
+  "updateSuccess": "Perfil \"{name}\" actualizado exitosamente",
+  "cloneSuccess": "Perfil \"{name}\" clonado exitosamente",
+  "assignPermissionsSuccess": "Permisos actualizados exitosamente"
 }
