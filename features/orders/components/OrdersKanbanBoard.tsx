@@ -12,7 +12,11 @@ import {
   type ColumnVisibilityConfig,
 } from "./ColumnVisibilityBar";
 
-import { useOrdersByStatus, useUpdateOrderStatus } from "../hooks/useOrders";
+import {
+  useOrdersByStatus,
+  useUpdateOrderStatus,
+  useCompletedOrdersInfinite,
+} from "../hooks";
 import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
 import type { Order, OrderStatus } from "../types";
 import {
@@ -22,6 +26,7 @@ import {
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
+import { isArchiveStatus } from "../constants/order-statuses";
 
 
 interface OrdersKanbanBoardProps {
@@ -118,13 +123,40 @@ export function OrdersKanbanBoard({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
 
-  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({
+  // Hook for LIVE orders (all except COMPLETED)
+  const {
+    ordersByStatus,
+    isLoading: isLoadingLive,
+    error: errorLive,
+  } = useOrdersByStatus({
     dateFrom,
     dateTo,
     businessId,
     branchIds,
   });
+
+  // Hook for COMPLETED orders (infinite scroll)
+  const {
+    orders: completedOrders,
+    isLoading: isLoadingCompleted,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error: errorCompleted,
+  } = useCompletedOrdersInfinite({
+    businessId: businessId || "",
+    dateFrom,
+    dateTo,
+    branchIds,
+  });
+
   const updateStatus = useUpdateOrderStatus();
+
+  // Combine loading states
+  const isLoading = isLoadingLive || isLoadingCompleted;
+  
+  // Combine errors
+  const error = errorLive || errorCompleted;
 
   const allColumns = useMemo(() => getKanbanColumns(), []);
 
@@ -140,10 +172,18 @@ export function OrdersKanbanBoard({
 
   // Filtrar órdenes por búsqueda y filtros adicionales
   const filteredOrdersByStatus = useMemo(() => {
-    if (!ordersByStatus) return ordersByStatus;
+    // Start with LIVE orders from useOrdersByStatus
+    const baseOrders = ordersByStatus
+      ? { ...ordersByStatus }
+      : ({} as Record<OrderStatus, Order[]>);
+
+    // Add COMPLETED orders from infinite scroll
+    if (completedOrders) {
+      baseOrders["COMPLETED"] = completedOrders;
+    }
 
     const filtered: Record<OrderStatus, Order[]> = {} as any;
-    Object.entries(ordersByStatus).forEach(([status, statusOrders]) => {
+    Object.entries(baseOrders).forEach(([status, statusOrders]) => {
       let result = statusOrders;
 
       // Filtro por búsqueda
@@ -178,7 +218,13 @@ export function OrdersKanbanBoard({
       filtered[status as OrderStatus] = result;
     });
     return filtered;
-  }, [ordersByStatus, searchQuery, paymentStatusFilter, deliveryTypeFilter]);
+  }, [
+    ordersByStatus,
+    completedOrders,
+    searchQuery,
+    paymentStatusFilter,
+    deliveryTypeFilter,
+  ]);
 
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
@@ -252,20 +298,31 @@ export function OrdersKanbanBoard({
                     : `${visibleColumnCount * 320}px`,
               }}
             >
-              {columns.map((column) => (
-                <KanbanColumn
-                  key={column.id}
-                  status={column.id}
-                  orders={filteredOrdersByStatus?.[column.id] || []}
-                  onStatusChange={handleStatusChange}
-                  onOrderClick={handleOrderClick}
-                  isLoading={isLoading}
-                  viewMode={cardViewMode}
-                  // Distribuir ancho igualitariamente entre columnas visibles
-                  flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
-                  minWidth={320}
-                />
-              ))}
+              {columns.map((column) => {
+                const isCompletedColumn = column.id === "COMPLETED";
+                
+                return (
+                  <KanbanColumn
+                    key={column.id}
+                    status={column.id}
+                    orders={filteredOrdersByStatus?.[column.id] || []}
+                    onStatusChange={handleStatusChange}
+                    onOrderClick={handleOrderClick}
+                    isLoading={isLoading}
+                    viewMode={cardViewMode}
+                    // Distribuir ancho igualitariamente entre columnas visibles
+                    flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
+                    minWidth={320}
+                    // Infinite scroll props for COMPLETED column
+                    isArchive={isCompletedColumn}
+                    hasMore={isCompletedColumn ? hasNextPage : false}
+                    isFetchingNextPage={
+                      isCompletedColumn ? isFetchingNextPage : false
+                    }
+                    onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

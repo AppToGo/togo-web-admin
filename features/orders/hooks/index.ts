@@ -6,7 +6,14 @@ export {
   useOrderHistory,
   useUpdateOrderStatus,
   useRecentActivity,
+  useLiveOrders,
 } from './useOrders';
+
+// Infinite scroll hooks for archive orders
+export {
+  useCompletedOrdersInfinite,
+  useCompletedOrdersInfiniteRaw,
+} from './useCompletedOrders';
 
 // Nuevos hooks de métricas basados en el endpoint /metrics
 export {

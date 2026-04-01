@@ -21,6 +21,7 @@ import {
   getOrderStatusHistory,
   updateOrderPaymentStatus,
   getBusinesses,
+  getLiveOrders,
   type UpdatePaymentStatusRequest,
 } from "../services/order.service";
 import type {
@@ -31,17 +32,11 @@ import type {
 } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import { useStatusLabels } from "../utils/order-status.utils";
-
-// Query keys para mantener consistencia
-export const ORDERS_KEYS = {
-  all: ["orders"] as const,
-  lists: () => [...ORDERS_KEYS.all, "list"] as const,
-  list: (filters: GetOrdersParams) =>
-    [...ORDERS_KEYS.lists(), JSON.stringify(filters)] as const,
-  details: () => [...ORDERS_KEYS.all, "detail"] as const,
-  detail: (id: string) => [...ORDERS_KEYS.details(), id] as const,
-  history: (id: string) => [...ORDERS_KEYS.detail(id), "history"] as const,
-};
+import { LIVE_STATUSES } from "../constants/order-statuses";
+import {
+  ORDERS_KEYS,
+  type LiveOrdersFilters,
+} from "../types/order-cache.types";
 
 // Stale times configurables
 const STALE_TIME = 30 * 1000; // 30 seconds
@@ -105,8 +100,9 @@ interface UseOrdersByStatusParams {
 }
 
 /**
- * Hook para obtener órdenes agrupadas por estado (para Kanban)
+ * Hook para obtener órdenes LIVE agrupadas por estado (para Kanban)
  *
+ * Solo carga órdenes con estados LIVE (no COMPLETED).
  * Por defecto usa los filtros de fecha globales.
  * Si se pasa `skipDateFilter: true`, ignora los filtros globales.
  * Si se pasan `dateFrom`/`dateTo`, sobreescriben los filtros globales.
@@ -123,37 +119,23 @@ export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
         ...params,
       };
 
-  const { data: orders, ...rest } = useOrders(finalParams);
+  const { data: orders, ...rest } = useLiveOrders(finalParams);
 
   const ordersByStatus = useMemo(() => {
     if (!orders) return {} as Record<OrderStatus, Order[]>;
 
     const grouped = {} as Record<OrderStatus, Order[]>;
 
-    // Inicializar todos los estados con arrays vacíos
-    const allStatuses: OrderStatus[] = [
-      "DRAFT",
-      "CONFIRMED",
-      "PAYMENT_PENDING",
-      "PAID",
-      "IN_PROGRESS",
-      "READY",
-      "ON_THE_WAY",
-      "COMPLETED",
-      "CANCELLED",
-      "ABANDONED",
-    ];
-
-    allStatuses.forEach((status) => {
+    // Inicializar solo los estados LIVE con arrays vacíos
+    LIVE_STATUSES.forEach((status) => {
       grouped[status] = [];
     });
 
-    // Agrupar órdenes
+    // Agrupar órdenes (solo LIVE, ya que el servicio filtra)
     orders.forEach((order) => {
-      if (!grouped[order.status]) {
-        grouped[order.status] = [];
+      if (grouped[order.status]) {
+        grouped[order.status].push(order);
       }
-      grouped[order.status].push(order);
     });
 
     // Ordenar por fecha descendente dentro de cada grupo
@@ -172,6 +154,68 @@ export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
     orders,
     ...rest,
   };
+}
+
+/**
+ * Hook para obtener órdenes en vivo (estados activos)
+ *
+ * Usa el endpoint optimizado para órdenes LIVE.
+ * Los estados LIVE incluyen todos excepto COMPLETED.
+ */
+export function useLiveOrders(filters: LiveOrdersFilters) {
+  const user = useAuthStore((state) => state.user);
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const hasBusinessId = !!user?.businessId;
+  const hasSelectedBusiness = filters.businessId !== undefined;
+  const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
+
+  // Determinar el businessId efectivo
+  const effectiveBusinessId =
+    filters.businessId ?? user?.businessId ?? undefined;
+
+  return useQuery({
+    queryKey: ORDERS_KEYS.live(filters.businessId, filters),
+    queryFn: () =>
+      getLiveOrders({
+        ...filters,
+        businessId: effectiveBusinessId,
+        statuses: LIVE_STATUSES,
+      }),
+    select: (data) => {
+      // Agrupar por estado para fácil acceso
+      const grouped: Record<OrderStatus, Order[]> = {} as Record<
+        OrderStatus,
+        Order[]
+      >;
+
+      // Inicializar arrays vacíos para cada estado LIVE
+      LIVE_STATUSES.forEach((status) => {
+        grouped[status] = [];
+      });
+
+      // Agrupar órdenes
+      data.forEach((order) => {
+        if (grouped[order.status]) {
+          grouped[order.status].push(order);
+        }
+      });
+
+      return data;
+    },
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled: isEnabled,
+    retry: (failureCount, error) => {
+      // No reintentar en errores 401 o 403
+      if (error instanceof Error) {
+        const message = error.message;
+        if (message.includes("401") || message.includes("403")) {
+          return false;
+        }
+      }
+      return failureCount < 3;
+    },
+  });
 }
 
 /**

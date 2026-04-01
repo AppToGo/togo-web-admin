@@ -11,7 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
 import { APP_CONFIG } from '@/config/app.config';
-import { ORDERS_KEYS } from './useOrders';
+import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
 import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
 

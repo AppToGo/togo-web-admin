@@ -1,12 +1,13 @@
 "use client";
 
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { OrderCard } from "../OrderCard";
 import type { Order, OrderStatus } from "../../types";
 import type { CardViewMode } from "../OrderCard";
 import { getColumnConfig } from "../../config/kanban-columns.config";
+import { isArchiveStatus } from "../../constants/order-statuses";
 import {
   columnVariants,
   columnDragOverVariants,
@@ -32,6 +33,11 @@ export interface KanbanColumnProps {
   viewMode?: CardViewMode;
   flexBasis?: string;
   minWidth?: number;
+  // Infinite scroll props for archive columns
+  isArchive?: boolean;
+  hasMore?: boolean;
+  isFetchingNextPage?: boolean;
+  onLoadMore?: () => void;
 }
 
 export const KanbanColumn = memo(function KanbanColumn({
@@ -43,9 +49,14 @@ export const KanbanColumn = memo(function KanbanColumn({
   viewMode = "card",
   flexBasis,
   minWidth = 320,
+  isArchive = false,
+  hasMore = false,
+  isFetchingNextPage = false,
+  onLoadMore,
 }: KanbanColumnProps) {
   const t = useTranslations("orders");
   const [isDragOver, setIsDragOver] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Obtener configuración de la columna desde el dominio
   const config = getColumnConfig(status);
@@ -74,6 +85,32 @@ export const KanbanColumn = memo(function KanbanColumn({
     },
     [status, onStatusChange]
   );
+
+  // IntersectionObserver for infinite scroll (archive columns only)
+  useEffect(() => {
+    if (!isArchive || !onLoadMore || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingNextPage) {
+          onLoadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isArchive, hasMore, isFetchingNextPage, onLoadMore]);
 
   return (
     <div
@@ -156,16 +193,35 @@ export const KanbanColumn = memo(function KanbanColumn({
             </p>
           </div>
         ) : (
-          orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onStatusChange={onStatusChange}
-              onClick={() => onOrderClick?.(order.id)}
-              currentStatus={status}
-              viewMode={viewMode}
-            />
-          ))
+          <>
+            {orders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onStatusChange={onStatusChange}
+                onClick={() => onOrderClick?.(order.id)}
+                currentStatus={status}
+                viewMode={viewMode}
+              />
+            ))}
+            
+            {/* Sentinel div for infinite scroll (archive columns only) */}
+            {isArchive && (
+              <div
+                ref={sentinelRef}
+                className="h-4 w-full"
+                aria-hidden="true"
+              />
+            )}
+            
+            {/* Loading skeleton for next page (archive columns only) */}
+            {isArchive && isFetchingNextPage && (
+              <>
+                <KanbanCardSkeleton />
+                <KanbanCardSkeleton />
+              </>
+            )}
+          </>
         )}
       </div>
     </div>
