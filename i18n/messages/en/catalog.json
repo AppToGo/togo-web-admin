@@ -71,7 +71,10 @@
     "empty": {
       "title": "You don't have products yet",
       "message": "Start by creating custom products or activating products from the TOGO global catalog."
-    }
+    },
+    "selectAll": "Select all",
+    "select": "Select",
+    "selectedCount": "{count} selected"
   },
   "categories": {
     "error": {
@@ -209,7 +212,9 @@
     "forBranch": "For selected branch",
     "activate": "Activate in branch",
     "deactivate": "Deactivate",
-    "adjustStock": "Adjust stock"
+    "adjustStock": "Adjust stock",
+    "adjustStockDescription": "Adjust stock for {count} selected products",
+    "comingSoon": "Coming soon"
   },
   "hybridFilters": {
     "filterByBranch": "Filter by branch:",

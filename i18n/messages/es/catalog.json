@@ -71,7 +71,10 @@
     "empty": {
       "title": "No tienes productos aún",
       "message": "Comienza creando productos personalizados o activando productos desde el catálogo global de TOGO."
-    }
+    },
+    "selectAll": "Seleccionar todos",
+    "select": "Seleccionar",
+    "selectedCount": "{count} seleccionados"
   },
   "categories": {
     "error": {
@@ -209,7 +212,9 @@
     "forBranch": "Para la sede seleccionada",
     "activate": "Activar en sede",
     "deactivate": "Desactivar",
-    "adjustStock": "Ajustar stock"
+    "adjustStock": "Ajustar stock",
+    "adjustStockDescription": "Ajustar stock para {count} productos seleccionados",
+    "comingSoon": "Próximamente"
   },
   "hybridFilters": {
     "filterByBranch": "Filtrar por sede:",
