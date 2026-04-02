@@ -50,7 +50,15 @@
       "category": "Categoría",
       "status": "Estado",
       "categoryPlaceholder": "Todas las categorías",
-      "statusPlaceholder": "Todos los estados"
+      "statusPlaceholder": "Todos los estados",
+      "title": "Filtros",
+      "allCategories": "Todas las categorías",
+      "clearAll": "Limpiar todo",
+      "productStatus": {
+        "title": "Estado del producto",
+        "active": "Activos",
+        "inactive": "Inactivos"
+      }
     },
     "form": {
       "nameLabel": "Nombre del producto",
@@ -226,7 +234,13 @@
     "activationStatus": "Estado en sede",
     "allStatuses": "Todos los estados",
     "activated": "Activados",
-    "notActivated": "No activados"
+    "notActivated": "No activados",
+    "branchStatus": {
+      "title": "Estado en sede",
+      "activated": "Activados",
+      "notActivated": "No activados"
+    },
+    "noBranches": "No hay sedes disponibles"
   },
   "availabilityTab": {
     "title": "Disponibilidad por Sede",
