@@ -54,6 +54,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 interface BranchInventoryManagerProps {
+  readOnly?: boolean;
   businessId: string;
   branches: BranchSummary[];
 }
@@ -210,7 +211,7 @@ function ActivateProductDialog({
   );
 }
 
-export function BranchInventoryManager({ businessId, branches }: BranchInventoryManagerProps) {
+export function BranchInventoryManager({ businessId, branches, readOnly = false }: BranchInventoryManagerProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
 
@@ -248,7 +249,7 @@ export function BranchInventoryManager({ businessId, branches }: BranchInventory
   const stats = useMemo(() => {
     const total = items.length;
     const activated = items.filter((i) => i.isAvailable).length;
-    const available = items.filter((i) => i.isAvailable && i.isAvailable).length;
+    const available = items.filter((i) => i.isAvailable).length;
     const lowStock = items.filter(
       (i) => i.isAvailable && i.stock !== null && i.stock < 10
     ).length;
@@ -282,6 +283,7 @@ export function BranchInventoryManager({ businessId, branches }: BranchInventory
 
   // Activation handlers
   const handleActivate = useCallback((product: InventoryItem) => {
+    if (readOnly) return;
     setActivatingProduct(product);
   }, []);
 

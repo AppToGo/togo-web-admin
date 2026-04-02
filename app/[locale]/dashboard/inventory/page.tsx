@@ -126,17 +126,17 @@ export default function InventoryPage() {
         {/* Header con título y descripción */}
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Inventario por Sede
+            {t("inventory.title")}
           </h1>
           <p className="text-sm text-slate-500">
-            Vista de solo lectura del inventario. Usa la página de{" "}
+            {t("inventory.readOnlySubtitle")}{" "}
             <a
               href="/dashboard/products"
               className="text-primary hover:underline font-medium"
             >
-              Productos
+              {t("inventory.productsLink")}
             </a>{" "}
-            para gestionar disponibilidad.
+            {t("inventory.manageAvailability")}
           </p>
         </div>
 
@@ -158,8 +158,8 @@ export default function InventoryPage() {
           </AlertDescription>
         </Alert>
 
-        {/* Componente de gestión de inventario */}
-        <BranchInventoryManager
+        {/* Inventory management component */}
+        <BranchInventoryManager readOnly={true}
           businessId={businessId}
           branches={branches.map((b) => ({
             id: b.id,

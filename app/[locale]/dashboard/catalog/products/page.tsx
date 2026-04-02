@@ -430,10 +430,9 @@ export default function ProductsPage() {
         productIds: Array.from(selectedProductIds),
         isAvailable: true,
       });
-      toast.success(t("notifications.bulkUpdateSuccess", { count: selectedProductIds.size }));
       clearSelection();
     } catch {
-      toast.error(t("notifications.errorBulkUpdate"));
+      // Error ya manejado por el hook
     }
   }, [selectedBranchId, selectedProductIds, bulkBranchUpdate, t, clearSelection]);
 
@@ -446,10 +445,9 @@ export default function ProductsPage() {
         productIds: Array.from(selectedProductIds),
         isAvailable: false,
       });
-      toast.success(t("notifications.bulkUpdateSuccess", { count: selectedProductIds.size }));
       clearSelection();
     } catch {
-      toast.error(t("notifications.errorBulkUpdate"));
+      // Error ya manejado por el hook
     }
   }, [selectedBranchId, selectedProductIds, bulkBranchUpdate, t, clearSelection]);
 
