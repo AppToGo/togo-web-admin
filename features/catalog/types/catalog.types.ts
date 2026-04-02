@@ -146,6 +146,12 @@ export interface CreateSimpleProductDto {
   description?: string;
   image?: string;
   categoryId?: string;
+  initialInventory?: {
+    branchId: string;
+    isAvailable: boolean;
+    priceOverride?: number;
+    stock?: number;
+  }[];
 }
 
 /**

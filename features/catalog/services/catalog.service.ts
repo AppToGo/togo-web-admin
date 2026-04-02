@@ -119,7 +119,7 @@ export async function getProductById(
  */
 function convertSimpleToBackendDto(
   data: CreateSimpleProductDto
-): CreateCustomProductDto {
+): CreateCustomProductDto & { initialInventory?: typeof data.initialInventory } {
   return {
     slug: generateSlug(data.name),
     price: data.price,
@@ -130,6 +130,7 @@ function convertSimpleToBackendDto(
     customImage: data.image,
     isActive: true,
     isFeatured: false,
+    initialInventory: data.initialInventory,
   };
 }
 

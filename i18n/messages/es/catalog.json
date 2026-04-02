@@ -37,6 +37,8 @@
     "stock": "Stock",
     "stockOptional": "Stock (opcional)",
     "activeProduct": "Producto activo",
+    "branchAvailability": "Disponibilidad por Sede",
+    "noInventoryWarning": "El producto se creará pero no estará disponible en ninguna sede hasta que configures su inventario",
     "presentation": "Presentación: {unit}",
     "sku": "SKU",
     "barcode": "Código de barras",

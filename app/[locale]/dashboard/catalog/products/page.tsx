@@ -34,6 +34,7 @@ import {
   useToggleProductStatus,
 } from "@/features/catalog/hooks";
 import { ProductCard, ProductForm } from "@/features/catalog/components";
+import { useBranches } from "@/features/branches/hooks/useBranches";
 import type {
   BusinessProduct,
   CreateCustomProductDto,
@@ -205,9 +206,11 @@ export default function ProductsPage() {
   });
 
   const { data: categoriesData } = useCategories(businessId);
+  const { data: branchesData } = useBranches();
 
   // Handle backend response format: { items, limit, page, total }
   const products = productsData?.items || [];
+  const branches = branchesData || [];
   const total = productsData?.total || 0;
   const currentPage = productsData?.page || 1;
   const limit = productsData?.limit || pageSize;
@@ -389,6 +392,7 @@ export default function ProductsPage() {
           </DialogHeader>
           <ProductForm
             categories={categories}
+            branches={branches}
             onSubmit={handleCreateProduct}
             onCancel={() => setIsCreateModalOpen(false)}
             isLoading={createProduct.isPending}
