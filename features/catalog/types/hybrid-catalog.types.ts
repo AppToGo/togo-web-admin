@@ -69,7 +69,6 @@ export interface PaginatedProductsWithBranchStatus {
 export interface BusinessProductWithBranchInfo extends BusinessProduct {
   branchInfo?: {
     isAvailable: boolean;
-    isAvailable: boolean;
     stock: number | null;
     priceOverride: number | null;
     effectivePrice: number;

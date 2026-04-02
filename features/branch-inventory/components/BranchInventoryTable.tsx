@@ -226,7 +226,8 @@ export function BranchInventoryTable({
         id: "select",
         header: () => (
           <Checkbox
-            checked={allSelected || someSelected ? true : false}
+            checked={allSelected}
+            data-state={someSelected ? "indeterminate" : allSelected ? "checked" : "unchecked"}
             onCheckedChange={handleSelectAll}
             aria-label={t("table.selectAll")}
           />

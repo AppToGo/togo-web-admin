@@ -21,7 +21,6 @@ export interface InventoryItem {
   isAvailable: boolean;
   priceOverride: number | null;
   effectivePrice: number;
-  isAvailable: boolean;
   productImage?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;

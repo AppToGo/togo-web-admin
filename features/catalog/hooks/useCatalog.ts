@@ -665,7 +665,7 @@ export function useBulkBranchUpdate(
     onSuccess: (result) => {
       toast.success(
         messages?.bulkUpdateSuccess ??
-          `${result.processed} productos actualizados exitosamente`
+          `${result.processed} products updated successfully`
       );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),

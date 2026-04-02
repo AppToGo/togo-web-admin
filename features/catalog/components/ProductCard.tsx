@@ -23,7 +23,7 @@ interface ProductCardProps {
   selected?: boolean;
   onSelect?: () => void;
   showCheckbox?: boolean;
-  branchInfo?: { isAvailable: boolean; isAvailable: boolean };
+  branchInfo?: { isAvailable: boolean };
 }
 
 export function ProductCard({
