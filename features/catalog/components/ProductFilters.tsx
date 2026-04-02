@@ -5,10 +5,11 @@
  * 
  * Filtros extendidos para productos con selección de sede y estado de activación.
  * Solo muestra los filtros de sede cuando el negocio tiene múltiples sedes.
+ * Todos los filtros en una sola línea responsive con flex-wrap.
  */
 
 import { useTranslations } from "next-intl";
-import { Search, Store } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -70,106 +71,97 @@ export function ProductFilters({
   const tc = useTranslations("common");
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Fila 1: Búsqueda y filtros principales */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder={t("products.search")}
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+    <div className="flex flex-wrap items-center gap-3">
+      {/* Search */}
+      <div className="relative flex-1 min-w-[200px]">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input
+          placeholder={t("products.search")}
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
-        {/* Category Filter */}
-        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+      {/* Category Filter */}
+      <Select value={selectedCategory} onValueChange={onCategoryChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder={t("products.filters.categoryPlaceholder")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t("products.filters.all")}</SelectItem>
+          {categories.map((cat) => (
+            <SelectItem key={cat.id} value={cat.id}>
+              {cat.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Status Filter */}
+      <Select value={statusFilter} onValueChange={onStatusChange}>
+        <SelectTrigger className="w-[140px]">
+          <SelectValue placeholder={t("products.filters.statusPlaceholder")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t("products.filters.all")}</SelectItem>
+          <SelectItem value="active">{tc("status.active")}</SelectItem>
+          <SelectItem value="inactive">{tc("status.inactive")}</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Branch Filter (condicional) */}
+      {showBranchFilters && branches.length > 1 && (
+        <Select
+          value={selectedBranchId || "all"}
+          onValueChange={(value) =>
+            onBranchChange?.(value === "all" ? null : value)
+          }
+        >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t("products.filters.all")} />
+            <SelectValue placeholder={t("hybridFilters.selectBranch")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("products.filters.all")}</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
+            <SelectItem value="all">{t("hybridFilters.allBranches")}</SelectItem>
+            {branches.map((branch) => (
+              <SelectItem key={branch.id} value={branch.id}>
+                {branch.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+      )}
 
-        {/* Status Filter */}
-        <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder={tc("status.active")} />
+      {/* Activation Status Filter (solo cuando hay sede seleccionada) */}
+      {selectedBranchId && (
+        <Select
+          value={activationStatus || "all"}
+          onValueChange={(value) =>
+            onActivationStatusChange?.(value as "activated" | "not_activated" | "all")
+          }
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder={t("hybridFilters.activationStatus")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("products.filters.all")}</SelectItem>
-            <SelectItem value="active">{tc("status.active")}</SelectItem>
-            <SelectItem value="inactive">{tc("status.inactive")}</SelectItem>
+            <SelectItem value="all">{t("hybridFilters.allStatuses")}</SelectItem>
+            <SelectItem value="activated">
+              {t("hybridFilters.activated")}
+            </SelectItem>
+            <SelectItem value="not_activated">
+              {t("hybridFilters.notActivated")}
+            </SelectItem>
           </SelectContent>
         </Select>
+      )}
 
-        {/* View Toggle */}
+      {/* View Toggle */}
+      <div className="ml-auto">
         <ViewToggle
           value={viewMode}
           onChange={(value) => onViewModeChange(value as "grid" | "list")}
         />
       </div>
-
-      {/* Fila 2: Filtros HYBRID (solo cuando hay múltiples sedes) */}
-      {showBranchFilters && branches.length > 1 && (
-        <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-slate-200">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Store className="w-4 h-4" />
-            <span>{t("hybridFilters.filterByBranch")}</span>
-          </div>
-
-          {/* Branch Filter */}
-          <Select
-            value={selectedBranchId || "all"}
-            onValueChange={(value) =>
-              onBranchChange?.(value === "all" ? null : value)
-            }
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder={t("hybridFilters.selectBranch")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("hybridFilters.allBranches")}</SelectItem>
-              {branches.map((branch) => (
-                <SelectItem key={branch.id} value={branch.id}>
-                  {branch.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Activation Status Filter (solo cuando hay sede seleccionada) */}
-          {selectedBranchId && (
-            <Select
-              value={activationStatus || "all"}
-              onValueChange={(value) =>
-                onActivationStatusChange?.(value as "activated" | "not_activated" | "all")
-              }
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("hybridFilters.activationStatus")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("hybridFilters.allStatuses")}</SelectItem>
-                <SelectItem value="activated">
-                  {t("hybridFilters.activated")}
-                </SelectItem>
-                <SelectItem value="not_activated">
-                  {t("hybridFilters.notActivated")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      )}
     </div>
   );
 }

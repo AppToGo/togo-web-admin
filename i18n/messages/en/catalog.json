@@ -48,7 +48,9 @@
     "filters": {
       "all": "All",
       "category": "Category",
-      "status": "Status"
+      "status": "Status",
+      "categoryPlaceholder": "All categories",
+      "statusPlaceholder": "All statuses"
     },
     "form": {
       "nameLabel": "Product name",
