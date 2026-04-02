@@ -47,6 +47,9 @@
     "expandMenu": "Expand menu",
     "collapseMenu": "Collapse menu",
     "openMenu": "Open menu",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "processing": "Processing...",
     "send": "Send",
     "showMore": "Show more",
     "showLess": "Show less"

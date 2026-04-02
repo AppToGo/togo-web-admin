@@ -1,0 +1,107 @@
+{
+  "title": "Branch Inventory Management",
+  "subtitle": "Manage product availability, stock, and prices by branch",
+  "selectBranch": "Select Branch",
+  "branchPlaceholder": "Choose a branch to manage its inventory",
+  "mainBranch": "Main",
+  "stats": {
+    "total": "Total Products",
+    "activated": "Activated",
+    "lowStock": "Low Stock",
+    "outOfStock": "Out of Stock"
+  },
+  "noBranch": {
+    "title": "Select a branch",
+    "message": "Choose a branch from the dropdown to view and manage its inventory"
+  },
+  "noBusiness": {
+    "title": "No business selected",
+    "description": "Select a business to manage branch inventory"
+  },
+  "noBranches": {
+    "title": "No branches configured",
+    "description": "Create at least one branch to manage inventory"
+  },
+  "table": {
+    "product": "Product",
+    "category": "Category",
+    "activated": "Activated",
+    "available": "Available",
+    "stock": "Stock",
+    "basePrice": "Base Price",
+    "branchPrice": "Branch Price",
+    "actions": "Actions",
+    "selectAll": "Select all",
+    "selectRow": "Select row",
+    "outOfStock": "Out of stock",
+    "inStock": "{count} units",
+    "search": "Search products...",
+    "showing": "Showing {count} of {total} products",
+    "empty": {
+      "title": "No products",
+      "message": "Create products in the Catalog section to manage their inventory"
+    }
+  },
+  "selector": {
+    "title": "Availability by Branch",
+    "available": "Available",
+    "priceOverride": "Specific price",
+    "stock": "Initial stock",
+    "optional": "optional",
+    "mainBranch": "Main",
+    "noBranches": "No branches available",
+    "noSelectionWarning": "Product will be created but won't be available at any branch until you activate inventory",
+    "summary": "{count} branches selected, {available} available",
+    "discount": "Save: ${amount}",
+    "noStockControl": "No control",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all"
+  },
+  "activate": {
+    "title": "Activate Product in Branch",
+    "description": "Configure stock and price for \"{name}\"",
+    "priceOverride": "Specific price for this branch",
+    "basePrice": "Base price: {price}",
+    "stock": "Initial stock",
+    "stockPlaceholder": "Leave empty for no control",
+    "available": "Available for sale",
+    "cancel": "Cancel",
+    "confirm": "Activate Product",
+    "processing": "Activating..."
+  },
+  "notifications": {
+    "activated": "Product activated in branch",
+    "activateError": "Error activating: {error}",
+    "deactivated": "Product deactivated in branch",
+    "deactivateError": "Error deactivating: {error}",
+    "stockUpdated": "Stock updated",
+    "stockError": "Error updating stock: {error}",
+    "bulkActivated": "{count} products activated ({existing} already existed)",
+    "bulkActivateError": "Bulk activation error: {error}"
+  },
+  "bulk": {
+    "selected": "{count} selected",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "adjustStock": "Adjust Stock",
+    "activateTitle": "Activate Selected Products",
+    "activateDescription": "Configure stock and availability for {count} products",
+    "defaultStock": "Default initial stock",
+    "stockPlaceholder": "Leave empty for no control",
+    "stockHint": "Will be applied to all selected products",
+    "makeAvailable": "Available for sale",
+    "confirmActivate": "Activate {count} Products",
+    "deactivateTitle": "Deactivate Products",
+    "deactivateDescription": "Are you sure you want to deactivate {count} products from this branch?",
+    "deactivateWarning": "Deactivated products won't appear in this branch's catalog",
+    "confirmDeactivate": "Deactivate Products",
+    "adjustStockTitle": "Adjust Stock",
+    "adjustStockDescription": "Modify stock for {count} products",
+    "addStock": "Add",
+    "removeStock": "Remove",
+    "quantity": "Quantity",
+    "quantityPlaceholder": "Amount to adjust",
+    "confirmAdjustStock": "Apply Adjustment",
+    "stockAdjustmentHint": "Stock will be increased or decreased by the specified amount"
+  }
+}

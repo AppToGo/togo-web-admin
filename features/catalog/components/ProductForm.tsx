@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Package } from "lucide-react";
+import { Package, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  BranchInventorySelector,
+  type InitialInventoryConfig,
+} from "@/features/branch-inventory/components/BranchInventorySelector";
+import type { Branch } from "@/features/branches/types";
 import type {
   BusinessProduct,
   BusinessCategory,
@@ -26,6 +31,7 @@ import type {
 interface ProductFormProps {
   product?: BusinessProduct | null;
   categories: BusinessCategory[];
+  branches?: Branch[];
   onSubmit: (data: CreateSimpleProductDto | UpdateProductDto) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -34,6 +40,7 @@ interface ProductFormProps {
 export function ProductForm({
   product,
   categories,
+  branches = [],
   onSubmit,
   onCancel,
   isLoading = false,
@@ -53,6 +60,9 @@ export function ProductForm({
     categoryId: "",
     isActive: true,
   });
+
+  // Initial inventory state (for new products)
+  const [initialInventory, setInitialInventory] = useState<InitialInventoryConfig[]>([]);
 
   // Image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -121,10 +131,22 @@ export function ProductForm({
           description: formData.description || undefined,
           image: formData.image || undefined,
           categoryId: formData.categoryId || undefined,
+          // Include initial inventory for branch activation
+          initialInventory: initialInventory.length > 0
+            ? initialInventory.map((inv) => ({
+                branchId: inv.branchId,
+                isAvailable: inv.isAvailable,
+                priceOverride: inv.priceOverride,
+                stock: inv.stock,
+              }))
+            : undefined,
         };
 
     onSubmit(data);
   };
+
+  // Show warning if no branches selected for new product
+  const showInventoryWarning = !isEditing && branches.length > 0 && initialInventory.length === 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -296,6 +318,32 @@ export function ProductForm({
           disabled={isLoading}
         />
       </div>
+
+      {/* Branch Inventory Selector (only for new products) */}
+      {!isEditing && branches.length > 0 && (
+        <div className="space-y-3 pt-4 border-t border-slate-200">
+          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            {t("products.branchAvailability")}
+          </h3>
+
+          {showInventoryWarning && (
+            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700">
+                {t("products.noInventoryWarning")}
+              </p>
+            </div>
+          )}
+
+          <BranchInventorySelector
+            branches={branches}
+            basePrice={parseFloat(formData.price) || 0}
+            value={initialInventory}
+            onChange={setInitialInventory}
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4">
