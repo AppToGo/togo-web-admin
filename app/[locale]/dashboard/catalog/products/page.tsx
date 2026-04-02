@@ -354,7 +354,7 @@ export default function ProductsPage() {
             ? false
             : undefined,
       branchId: selectedBranchId || undefined,
-      activationStatus: activationStatus !== "all" ? activationStatus : undefined,
+      activationStatus: activationStatus,
       page,
       limit: pageSize,
     }
