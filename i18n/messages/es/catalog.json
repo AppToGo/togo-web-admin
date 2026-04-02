@@ -74,7 +74,11 @@
     },
     "selectAll": "Seleccionar todos",
     "select": "Seleccionar",
-    "selectedCount": "{count} seleccionados"
+    "selectedCount": "{count} seleccionados",
+    "status": {
+      "activeInBranch": "Activo en sede",
+      "inactiveInBranch": "Inactivo en sede"
+    }
   },
   "categories": {
     "error": {
@@ -181,7 +185,6 @@
     "lowStockCount": "Stock bajo: {count}",
     "stockCount": "Stock: {count}",
     "custom": "Personalizado",
-    "activeInBranch": "Activo en sede",
     "notActivated": "No activado"
   },
   "activateModal": {
