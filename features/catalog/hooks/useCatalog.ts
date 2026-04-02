@@ -675,7 +675,7 @@ export function useBulkBranchUpdate(
       toast.error(
         error.message ||
           messages?.errorBulkUpdate ||
-          "Error al actualizar productos"
+          "Error updating products"
       );
     },
   });

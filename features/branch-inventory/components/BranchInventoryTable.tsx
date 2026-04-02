@@ -64,6 +64,7 @@ interface BranchInventoryTableProps {
     field: "stock" | "priceOverride",
     value: number
   ) => void;
+  readOnly?: boolean;
 }
 
 // Stock badge component
@@ -156,6 +157,7 @@ export function BranchInventoryTable({
   onDeactivate,
   debouncedUpdate,
   onToggleAvailability,
+  readOnly = false,
 }: BranchInventoryTableProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
@@ -290,7 +292,9 @@ export function BranchInventoryTable({
           return (
             <Switch
               checked={item.isAvailable}
+              disabled={readOnly}
               onCheckedChange={(checked) => {
+                if (readOnly) return;
                 if (checked) {
                   onActivate(item);
                 } else {
@@ -315,10 +319,11 @@ export function BranchInventoryTable({
           return (
             <Switch
               checked={item.isAvailable}
-              onCheckedChange={(checked) =>
-                onToggleAvailability(item.businessProductId, checked)
-              }
-              disabled={!item.isAvailable}
+              onCheckedChange={(checked) => {
+                if (readOnly) return;
+                onToggleAvailability(item.businessProductId, checked);
+              }}
+              disabled={readOnly || !item.isAvailable}
             />
           );
         },
@@ -351,7 +356,7 @@ export function BranchInventoryTable({
                 placeholder="∞"
                 value={displayValue}
                 onChange={(e) => handleStockChange(item.businessProductId, e.target.value)}
-                disabled={!item.isAvailable}
+                disabled={readOnly || !item.isAvailable}
                 className="w-20 h-8 text-sm"
               />
               <StockBadge stock={item.stock} />
@@ -394,7 +399,7 @@ export function BranchInventoryTable({
                 placeholder={String(item.basePrice)}
                 value={displayValue}
                 onChange={(e) => handlePriceChange(item.businessProductId, e.target.value)}
-                disabled={!item.isAvailable}
+                disabled={readOnly || !item.isAvailable}
                 className="w-24 h-8 text-sm"
               />
               <PriceDisplay
@@ -421,6 +426,7 @@ export function BranchInventoryTable({
       editingStock,
       editingPrice,
       onToggleAvailability,
+      readOnly,
       t,
     ]
   );

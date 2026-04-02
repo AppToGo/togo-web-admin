@@ -248,7 +248,7 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
 
   const stats = useMemo(() => {
     const total = items.length;
-    const activated = items.filter((i) => i.isAvailable).length;
+    const activated = items.length; // products with a BranchInventory record (OPT-IN)
     const available = items.filter((i) => i.isAvailable).length;
     const lowStock = items.filter(
       (i) => i.isAvailable && i.stock !== null && i.stock < 10
@@ -459,6 +459,7 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
           onDeactivate={handleDeactivate}
           onToggleAvailability={handleToggleAvailability}
           debouncedUpdate={queueUpdate}
+          readOnly={readOnly}
         />
       ) : (
         <Card className="p-12 text-center">
