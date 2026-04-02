@@ -144,20 +144,17 @@ export default function InventoryPage() {
         <Alert className="bg-blue-50 border-blue-200">
           <Info className="h-4 w-4 text-blue-600" />
           <AlertTitle className="text-blue-900">
-            Vista de Solo Lectura
+            {t("inventory.readOnlyTitle")}
           </AlertTitle>
           <AlertDescription className="text-blue-700">
-            Esta página muestra el estado actual del inventario por sede. Para
-            activar/desactivar productos o realizar cambios en el catálogo,
-            dirígete a la página de{" "}
+            {t("inventory.readOnlyDescription")}{" "}
             <a
               href="/dashboard/products"
               className="font-semibold underline hover:no-underline"
             >
-              Productos
+              {t("inventory.productsLink")}
             </a>
-            . Los operadores pueden realizar ajustes básicos de stock desde
-            aquí.
+            . {t("inventory.operatorsNote")}
           </AlertDescription>
         </Alert>
 

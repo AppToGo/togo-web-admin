@@ -180,27 +180,6 @@ export function BranchAvailabilityTab({
 
               {isAvailable && (
                 <CardContent className="pt-0 space-y-4">
-                  {/* Availability Toggle */}
-                  <div className="flex items-center justify-between py-2 border-t border-slate-100">
-                    <span className="text-sm text-slate-600">
-                      {t("availabilityTab.availableForSale")}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {isAvailable ? (
-                        <Check className="w-4 h-4 text-emerald-500" />
-                      ) : (
-                        <X className="w-4 h-4 text-slate-400" />
-                      )}
-                      <Switch
-                        checked={isAvailable}
-                        onCheckedChange={(checked) =>
-                          onUpdate(branch.id, { isAvailable: checked })
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
                   {/* Stock */}
                   <div className="flex items-center justify-between py-2 border-t border-slate-100">
                     <span className="text-sm text-slate-600">

@@ -15,7 +15,6 @@ export interface BranchAvailability {
   branchName: string;
   branchCode: string;
   isAvailable: boolean;
-  isAvailable: boolean;
   stock: number | null;
   priceOverride: number | null;
   effectivePrice: number;

@@ -431,8 +431,8 @@ export async function getProductWithBranchAvailability(
 export async function bulkBranchUpdate(
   businessId: string,
   data: BulkBranchUpdateDto
-): Promise<{ updated: number; errors: string[] }> {
-  const response = await apiClient.post<{ updated: number; errors: string[] }>(
+): Promise<{ processed: number; errors: string[] }> {
+  const response = await apiClient.post<{ processed: number; errors: string[] }>(
     `/businesses/${businessId}/products/bulk-branch-update`,
     data
   );
