@@ -175,7 +175,9 @@
     "lowStock": "Low stock",
     "lowStockCount": "Low stock: {count}",
     "stockCount": "Stock: {count}",
-    "custom": "Custom"
+    "custom": "Custom",
+    "activeInBranch": "Active in branch",
+    "notActivated": "Not activated"
   },
   "activateModal": {
     "title": "Activate Product",
@@ -196,6 +198,36 @@
     "categoryUpdated": "Category updated successfully",
     "categoryDeleted": "Category deleted successfully",
     "categoryActivated": "Category activated successfully",
-    "categoryDeactivated": "Category deactivated successfully"
+    "categoryDeactivated": "Category deactivated successfully",
+    "bulkUpdateSuccess": "{count} products updated successfully",
+    "errorBulkUpdate": "Error updating products"
+  },
+  "bulkActions": {
+    "selectedCount": "{count, plural, =0 {0 products selected} =1 {1 product selected} other {# products selected}}",
+    "forBranch": "For selected branch",
+    "activate": "Activate in branch",
+    "deactivate": "Deactivate",
+    "adjustStock": "Adjust stock"
+  },
+  "hybridFilters": {
+    "filterByBranch": "Filter by branch:",
+    "selectBranch": "Select branch",
+    "allBranches": "All branches",
+    "activationStatus": "Activation status",
+    "allStatuses": "All statuses",
+    "activated": "Activated",
+    "notActivated": "Not activated"
+  },
+  "availabilityTab": {
+    "title": "Availability by Branch",
+    "description": "Manage this product's availability at each branch of your business",
+    "noBranches": "No branches configured",
+    "noBranchesDescription": "Set up branches in your business to manage product availability",
+    "mainBranch": "Main branch",
+    "active": "Active",
+    "inactive": "Inactive",
+    "availableForSale": "Available for sale",
+    "stock": "Stock",
+    "priceOverride": "Branch price"
   }
 }

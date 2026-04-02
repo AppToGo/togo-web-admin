@@ -56,8 +56,8 @@ interface BranchInventoryTableProps {
   onSelectAll: (ids: string[]) => void;
   onActivate: (product: InventoryItem) => void;
   onDeactivate: (productId: string) => void;
-  onUpdateStock: (productId: string, stock: number) => void;
-  onUpdatePrice: (productId: string, price: number) => void;
+  onUpdateStock?: (productId: string, stock: number) => void;
+  onUpdatePrice?: (productId: string, price: number) => void;
   onToggleAvailability: (productId: string, isAvailable: boolean) => void;
   debouncedUpdate?: (
     productId: string,
@@ -226,8 +226,7 @@ export function BranchInventoryTable({
         id: "select",
         header: () => (
           <Checkbox
-            checked={allSelected}
-            indeterminate={someSelected}
+            checked={allSelected || someSelected ? true : false}
             onCheckedChange={handleSelectAll}
             aria-label={t("table.selectAll")}
           />

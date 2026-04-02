@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * Inventory Page
- * 
- * Página de gestión de inventario por sede.
+ * Inventory Page (Read-Only View)
+ *
+ * Página de vista de solo lectura del inventario por sede.
+ * La gestión completa de productos se realiza desde la página de Productos.
  * URL: /dashboard/inventory
  */
 
@@ -12,9 +13,10 @@ import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import { BranchInventoryManager } from "@/features/branch-inventory/components/BranchInventoryManager";
-import { Store, Package } from "lucide-react";
+import { Store, Package, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslations } from "next-intl";
 
 function LoadingState() {
@@ -58,8 +60,12 @@ function NoBusinessState() {
       <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
         <Store className="w-8 h-8 text-amber-500" />
       </div>
-      <h2 className="text-xl font-semibold text-slate-900 mb-2">{t("noBusiness.title")}</h2>
-      <p className="text-slate-500 text-center max-w-md">{t("noBusiness.description")}</p>
+      <h2 className="text-xl font-semibold text-slate-900 mb-2">
+        {t("noBusiness.title")}
+      </h2>
+      <p className="text-slate-500 text-center max-w-md">
+        {t("noBusiness.description")}
+      </p>
     </div>
   );
 }
@@ -72,8 +78,12 @@ function NoBranchesState() {
       <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
         <Package className="w-8 h-8 text-slate-400" />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-2">{t("noBranches.title")}</h3>
-      <p className="text-slate-500 text-center max-w-md">{t("noBranches.description")}</p>
+      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+        {t("noBranches.title")}
+      </h3>
+      <p className="text-slate-500 text-center max-w-md">
+        {t("noBranches.description")}
+      </p>
     </div>
   );
 }
@@ -112,15 +122,56 @@ export default function InventoryPage() {
 
   return (
     <DashboardLayout>
-      <BranchInventoryManager
-        businessId={businessId}
-        branches={branches.map((b) => ({
-          id: b.id,
-          name: b.name,
-          code: b.code,
-          isMainBranch: b.isMainBranch,
-        }))}
-      />
+      <div className="space-y-6">
+        {/* Header con título y descripción */}
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Inventario por Sede
+          </h1>
+          <p className="text-sm text-slate-500">
+            Vista de solo lectura del inventario. Usa la página de{" "}
+            <a
+              href="/dashboard/products"
+              className="text-primary hover:underline font-medium"
+            >
+              Productos
+            </a>{" "}
+            para gestionar disponibilidad.
+          </p>
+        </div>
+
+        {/* Alerta informativa */}
+        <Alert className="bg-blue-50 border-blue-200">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-900">
+            Vista de Solo Lectura
+          </AlertTitle>
+          <AlertDescription className="text-blue-700">
+            Esta página muestra el estado actual del inventario por sede. Para
+            activar/desactivar productos o realizar cambios en el catálogo,
+            dirígete a la página de{" "}
+            <a
+              href="/dashboard/products"
+              className="font-semibold underline hover:no-underline"
+            >
+              Productos
+            </a>
+            . Los operadores pueden realizar ajustes básicos de stock desde
+            aquí.
+          </AlertDescription>
+        </Alert>
+
+        {/* Componente de gestión de inventario */}
+        <BranchInventoryManager
+          businessId={businessId}
+          branches={branches.map((b) => ({
+            id: b.id,
+            name: b.name,
+            code: b.code,
+            isMainBranch: b.isMainBranch,
+          }))}
+        />
+      </div>
     </DashboardLayout>
   );
 }

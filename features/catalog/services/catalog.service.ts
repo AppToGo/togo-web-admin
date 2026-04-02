@@ -366,3 +366,75 @@ export async function getCatalogStats(businessId: string): Promise<{
   );
   return response.data;
 }
+
+// ============================================================================
+// HYBRID INVENTORY API (Branch-specific product management)
+// ============================================================================
+
+import type {
+  ProductWithBranchFilters,
+  PaginatedProductsWithBranchStatus,
+  BusinessProductWithAvailability,
+  BulkBranchUpdateDto,
+} from "../types/hybrid-catalog.types";
+
+/**
+ * Get products with branch filter (HYBRID approach)
+ * GET /businesses/:businessId/products?branchId=X&activationStatus=activated|not_activated|all
+ */
+export async function getProductsWithBranchFilter(
+  businessId: string,
+  params: {
+    branchId?: string;
+    activationStatus?: "activated" | "not_activated" | "all";
+    search?: string;
+    categoryId?: string;
+    isActive?: boolean;
+    page?: number;
+    limit?: number;
+  }
+): Promise<PaginatedProductsWithBranchStatus> {
+  const searchParams = new URLSearchParams();
+  
+  if (params.branchId) searchParams.append("branchId", params.branchId);
+  if (params.activationStatus) searchParams.append("activationStatus", params.activationStatus);
+  if (params.search) searchParams.append("search", params.search);
+  if (params.categoryId) searchParams.append("categoryId", params.categoryId);
+  if (params.isActive !== undefined) searchParams.append("isActive", String(params.isActive));
+  if (params.page) searchParams.append("page", String(params.page));
+  if (params.limit) searchParams.append("limit", String(params.limit));
+
+  const response = await apiClient.get<PaginatedProductsWithBranchStatus>(
+    `/businesses/${businessId}/products?${searchParams.toString()}`
+  );
+  return response.data;
+}
+
+/**
+ * Get product with branch availability info
+ * GET /businesses/:businessId/products/:productId?includeBranchAvailability=true
+ */
+export async function getProductWithBranchAvailability(
+  businessId: string,
+  productId: string
+): Promise<BusinessProductWithAvailability> {
+  const response = await apiClient.get<BusinessProductWithAvailability>(
+    `/businesses/${businessId}/products/${productId}?includeBranchAvailability=true`
+  );
+  return response.data;
+}
+
+/**
+ * Bulk update products in a branch
+ * POST /businesses/:businessId/products/bulk-branch-update
+ */
+export async function bulkBranchUpdate(
+  businessId: string,
+  data: BulkBranchUpdateDto
+): Promise<{ updated: number; errors: string[] }> {
+  const response = await apiClient.post<{ updated: number; errors: string[] }>(
+    `/businesses/${businessId}/products/bulk-branch-update`,
+    data
+  );
+  return response.data;
+}

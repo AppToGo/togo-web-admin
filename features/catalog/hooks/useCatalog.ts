@@ -30,6 +30,11 @@ import type { Business } from "@/types";
 import * as catalogService from "../services/catalog.service";
 import apiClient from "@/services/api.service";
 import type { CatalogToastMessages } from "./useCatalogTranslations";
+import type {
+  PaginatedProductsWithBranchStatus,
+  BusinessProductWithAvailability,
+  BulkBranchUpdateDto,
+} from "../types/hybrid-catalog.types";
 
 // ============================================================================
 // QUERY KEYS
@@ -598,6 +603,81 @@ export function useBusiness(
     },
     enabled: !!businessId,
     ...options,
+  });
+}
+
+// ============================================================================
+// HYBRID INVENTORY HOOKS
+// ============================================================================
+
+/**
+ * Hook to fetch products with branch filter (HYBRID approach)
+ */
+export function useProductsWithBranchFilter(
+  businessId: string,
+  params: {
+    branchId?: string;
+    activationStatus?: "activated" | "not_activated" | "all";
+    search?: string;
+    categoryId?: string;
+    isActive?: boolean;
+    page?: number;
+    limit?: number;
+  },
+  options?: UseQueryOptions<PaginatedProductsWithBranchStatus, Error>
+) {
+  return useQuery({
+    queryKey: [...catalogKeys.products(businessId), "branch-filter", params],
+    queryFn: () => catalogService.getProductsWithBranchFilter(businessId, params),
+    enabled: !!businessId && !!params.branchId, // Solo ejecutar cuando hay sede seleccionada
+    ...options,
+  });
+}
+
+/**
+ * Hook to fetch product with branch availability
+ */
+export function useProductWithBranchAvailability(
+  businessId: string,
+  productId: string,
+  options?: UseQueryOptions<BusinessProductWithAvailability, Error>
+) {
+  return useQuery({
+    queryKey: [...catalogKeys.product(businessId, productId), "with-availability"],
+    queryFn: () => catalogService.getProductWithBranchAvailability(businessId, productId),
+    enabled: !!businessId && !!productId,
+    ...options,
+  });
+}
+
+/**
+ * Hook for bulk branch update
+ */
+export function useBulkBranchUpdate(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: BulkBranchUpdateDto) =>
+      catalogService.bulkBranchUpdate(businessId, data),
+    onSuccess: (result) => {
+      toast.success(
+        messages?.bulkUpdateSuccess ??
+          `${result.updated} productos actualizados exitosamente`
+      );
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.products(businessId),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          messages?.errorBulkUpdate ||
+          "Error al actualizar productos"
+      );
+    },
   });
 }
 

@@ -34,6 +34,8 @@ export interface CatalogToastMessages {
   errorCreatingCategory: string;
   errorUpdatingCategory: string;
   errorDeletingCategory: string;
+  bulkUpdateSuccess?: string;
+  errorBulkUpdate?: string;
 }
 
 export function useCatalogTranslations(): CatalogToastMessages {
