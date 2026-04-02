@@ -83,7 +83,6 @@ export interface InventoryFilters {
   categoryId?: string;
   search?: string;
   isAvailable?: boolean;
-  isAvailable?: boolean;
   page?: number;
   limit?: number;
 }

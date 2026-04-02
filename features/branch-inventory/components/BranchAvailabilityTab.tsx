@@ -31,7 +31,6 @@ interface BranchAvailabilityTabProps {
   basePrice: number;
   onUpdate: (branchId: string, data: {
     isAvailable?: boolean;
-    isAvailable?: boolean;
     stock?: number | null;
     priceOverride?: number | null;
   }) => void;
@@ -120,7 +119,6 @@ export function BranchAvailabilityTab({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {branches.map((branch) => {
           const availability = getBranchAvailability(branch.id);
-          const isAvailable = availability?.isAvailable ?? false;
           const isAvailable = availability?.isAvailable ?? false;
           const stock = availability?.stock ?? null;
           const priceOverride = availability?.priceOverride ?? null;
