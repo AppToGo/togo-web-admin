@@ -74,7 +74,11 @@
     },
     "selectAll": "Select all",
     "select": "Select",
-    "selectedCount": "{count} selected"
+    "selectedCount": "{count} selected",
+    "status": {
+      "activeInBranch": "Active in branch",
+      "inactiveInBranch": "Inactive in branch"
+    }
   },
   "categories": {
     "error": {
@@ -181,7 +185,6 @@
     "lowStockCount": "Low stock: {count}",
     "stockCount": "Stock: {count}",
     "custom": "Custom",
-    "activeInBranch": "Active in branch",
     "notActivated": "Not activated"
   },
   "activateModal": {
