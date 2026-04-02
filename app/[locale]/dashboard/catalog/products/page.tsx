@@ -2,20 +2,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Search, Package, Store } from "lucide-react";
+import { Plus, Package, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +16,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewToggle } from "@/components/ui/view-toggle";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -47,7 +38,6 @@ import type {
 } from "@/features/catalog/types";
 
 type ViewMode = "grid" | "list";
-type ActivationStatus = "activated" | "not_activated" | "all";
 
 // ============================================================================
 // LOADING SKELETONS
@@ -293,7 +283,13 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  
+  // NUEVO: Estado de status filter como objeto booleano
+  const [statusFilter, setStatusFilter] = useState<{ active: boolean; inactive: boolean }>({
+    active: true,
+    inactive: true,
+  });
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(
     null
@@ -302,17 +298,37 @@ export default function ProductsPage() {
   // Nuevos estados para funcionalidad HYBRID
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
-  const [activationStatus, setActivationStatus] = useState<ActivationStatus>("all");
+  
+  // NUEVO: Estado de activation filter como objeto booleano
+  const [activationFilter, setActivationFilter] = useState<{ activated: boolean; notActivated: boolean }>({
+    activated: true,
+    notActivated: true,
+  });
+  
   const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
 
   // Paginación
   const [page, setPage] = useState(1);
   const pageSize = 12;
 
+  // NUEVO: Calcular conteo de filtros activos
+  const activeFiltersCount = [
+    selectedCategory !== "all",
+    !(statusFilter.active && statusFilter.inactive),
+    selectedBranchId && !(activationFilter.activated && activationFilter.notActivated),
+  ].filter(Boolean).length;
+
+  // NUEVO: Función para limpiar todos los filtros
+  const clearAllFilters = () => {
+    setSelectedCategory("all");
+    setStatusFilter({ active: true, inactive: true });
+    setActivationFilter({ activated: true, notActivated: true });
+  };
+
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCategory, statusFilter, selectedBranchId, activationStatus]);
+  }, [searchQuery, selectedCategory, statusFilter, selectedBranchId, activationFilter]);
 
   // Reset selection when branch changes
   useEffect(() => {
@@ -326,17 +342,26 @@ export default function ProductsPage() {
   // Lógica condicional: usar useProductsWithBranchFilter cuando hay sede seleccionada
   const shouldUseBranchFilter = !!selectedBranchId;
 
+  // NUEVO: Helper para convertir statusFilter a isActive para queries
+  const getIsActiveFromFilter = useCallback((): boolean | undefined => {
+    if (statusFilter.active && !statusFilter.inactive) return true;
+    if (!statusFilter.active && statusFilter.inactive) return false;
+    return undefined; // Ambos o ninguno = no filtrar
+  }, [statusFilter]);
+
+  // NUEVO: Helper para convertir activationFilter a string para queries
+  const getActivationStatusFromFilter = useCallback((): "activated" | "not_activated" | "all" => {
+    if (activationFilter.activated && !activationFilter.notActivated) return "activated";
+    if (!activationFilter.activated && activationFilter.notActivated) return "not_activated";
+    return "all";
+  }, [activationFilter]);
+
   const myProductsQuery = useMyProducts(
     !shouldUseBranchFilter ? (businessId || '') : '',
     {
       search: searchQuery || undefined,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-      isActive:
-        statusFilter === "active"
-          ? true
-          : statusFilter === "inactive"
-            ? false
-            : undefined,
+      isActive: getIsActiveFromFilter(),
       page,
       limit: pageSize,
     }
@@ -347,14 +372,9 @@ export default function ProductsPage() {
     {
       search: searchQuery || undefined,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-      isActive:
-        statusFilter === "active"
-          ? true
-          : statusFilter === "inactive"
-            ? false
-            : undefined,
+      isActive: getIsActiveFromFilter(),
       branchId: selectedBranchId || undefined,
-      activationStatus: activationStatus,
+      activationStatus: getActivationStatusFromFilter(),
       page,
       limit: pageSize,
     }
@@ -530,7 +550,7 @@ export default function ProductsPage() {
           </Button>
         </div>
 
-        {/* Filtros usando ProductFilters component */}
+        {/* Filtros usando ProductFilters component - ACTUALIZADO */}
         <ProductFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -540,12 +560,11 @@ export default function ProductsPage() {
           onStatusChange={setStatusFilter}
           selectedBranchId={selectedBranchId}
           onBranchChange={setSelectedBranchId}
-          activationStatus={activationStatus}
-          onActivationStatusChange={setActivationStatus}
+          activationFilter={activationFilter}
+          onActivationFilterChange={setActivationFilter}
           categories={categories}
-          branches={branches}
-
-          showBranchFilters={true}
+          activeFiltersCount={activeFiltersCount}
+          onClearFilters={clearAllFilters}
           viewMode={viewMode}
           onViewModeChange={(value) => setViewMode(value as ViewMode)}
         />

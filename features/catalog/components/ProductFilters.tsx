@@ -3,14 +3,23 @@
 /**
  * ProductFilters Component
  * 
- * Filtros extendidos para productos con selección de sede y estado de activación.
- * Solo muestra los filtros de sede cuando el negocio tiene múltiples sedes.
- * Todos los filtros en una sola línea responsive con flex-wrap.
+ * Filtros para productos con patrón popover similar a órdenes.
+ * - Buscador nativo estilo órdenes
+ * - BranchSingleSelector fuera del popover
+ * - Botón filtro con popover que contiene Select de categoría y switches para estados
  */
 
 import { useTranslations } from "next-intl";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Search, Filter, Check, Clock, Package, Store, Building2, FolderOpen, X } from "lucide-react";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { Switch } from "@/components/ui/switch";
+import { BranchSingleSelector } from "@/features/branches/components";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -18,13 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ViewToggle } from "@/components/ui/view-toggle";
-
-interface Branch {
-  id: string;
-  name: string;
-  code: string;
-}
 
 interface Category {
   id: string;
@@ -36,18 +38,19 @@ interface ProductFiltersProps {
   onSearchChange: (value: string) => void;
   selectedCategory: string;
   onCategoryChange: (value: string) => void;
-  statusFilter: string;
-  onStatusChange: (value: string) => void;
+  statusFilter: { active: boolean; inactive: boolean };
+  onStatusChange: (value: { active: boolean; inactive: boolean }) => void;
   viewMode: "grid" | "list";
   onViewModeChange: (mode: "grid" | "list") => void;
   categories: Category[];
-  // Filtros HYBRID (opcionales)
+  // Filtros HYBRID
   selectedBranchId?: string | null;
   onBranchChange?: (branchId: string | null) => void;
-  activationStatus?: "activated" | "not_activated" | "all";
-  onActivationStatusChange?: (status: "activated" | "not_activated" | "all") => void;
-  branches?: Branch[];
-  showBranchFilters?: boolean;
+  activationFilter?: { activated: boolean; notActivated: boolean };
+  onActivationFilterChange?: (value: { activated: boolean; notActivated: boolean }) => void;
+  // Conteo y limpieza de filtros
+  activeFiltersCount: number;
+  onClearFilters: () => void;
 }
 
 export function ProductFilters({
@@ -62,98 +65,212 @@ export function ProductFilters({
   categories,
   selectedBranchId,
   onBranchChange,
-  activationStatus,
-  onActivationStatusChange,
-  branches = [],
-  showBranchFilters = false,
+  activationFilter,
+  onActivationFilterChange,
+  activeFiltersCount,
+  onClearFilters,
 }: ProductFiltersProps) {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
 
+  // Verificar si hay filtros activos
+  const hasCategoryFilter = selectedCategory !== "all";
+  const hasStatusFilter = !statusFilter.active || !statusFilter.inactive;
+  const hasActivationFilter = selectedBranchId && activationFilter &&
+    (!activationFilter.activated || !activationFilter.notActivated);
+  
+  const hasAnyFilter = hasCategoryFilter || hasStatusFilter || !!hasActivationFilter;
+
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {/* Search */}
-      <div className="relative flex-1 min-w-[200px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Buscador estilo órdenes */}
+      <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64 border border-slate-200">
+        <Search className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
+        <input
+          type="text"
           placeholder={t("products.search")}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9"
+          className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
         />
+        {searchQuery && (
+          <button
+            onClick={() => onSearchChange("")}
+            className="ml-2 p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
-      {/* Category Filter */}
-      <Select value={selectedCategory} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder={t("products.filters.categoryPlaceholder")} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("products.filters.all")}</SelectItem>
-          {categories.map((cat) => (
-            <SelectItem key={cat.id} value={cat.id}>
-              {cat.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Status Filter */}
-      <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-[140px]">
-          <SelectValue placeholder={t("products.filters.statusPlaceholder")} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("products.filters.all")}</SelectItem>
-          <SelectItem value="active">{tc("status.active")}</SelectItem>
-          <SelectItem value="inactive">{tc("status.inactive")}</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Branch Filter (condicional) */}
-      {showBranchFilters && branches.length > 1 && (
-        <Select
-          value={selectedBranchId || "all"}
-          onValueChange={(value) =>
-            onBranchChange?.(value === "all" ? null : value)
-          }
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t("hybridFilters.selectBranch")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("hybridFilters.allBranches")}</SelectItem>
-            {branches.map((branch) => (
-              <SelectItem key={branch.id} value={branch.id}>
-                {branch.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Branch Single Selector - siempre visible */}
+      {onBranchChange && (
+        <BranchSingleSelector
+          value={selectedBranchId || null}
+          onChange={onBranchChange}
+        />
       )}
 
-      {/* Activation Status Filter (solo cuando hay sede seleccionada) */}
-      {selectedBranchId && (
-        <Select
-          value={activationStatus || "all"}
-          onValueChange={(value) =>
-            onActivationStatusChange?.(value as "activated" | "not_activated" | "all")
-          }
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder={t("hybridFilters.activationStatus")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("hybridFilters.allStatuses")}</SelectItem>
-            <SelectItem value="activated">
-              {t("hybridFilters.activated")}
-            </SelectItem>
-            <SelectItem value="not_activated">
-              {t("hybridFilters.notActivated")}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      )}
+      {/* Botón de filtros con popover */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            className={cn(
+              "relative flex items-center justify-center w-10 h-10 rounded-card transition-all duration-200",
+              hasAnyFilter
+                ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+                : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-slate-200"
+            )}
+            title={tc("buttons.filter")}
+          >
+            <Filter className="w-4 h-4" />
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-80 p-0 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="font-semibold text-sm text-slate-900">
+              {t("products.filters.title")}
+            </h3>
+            {hasAnyFilter && (
+              <button
+                onClick={onClearFilters}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                {tc("buttons.clearAll")}
+              </button>
+            )}
+          </div>
+
+          <div className="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
+            {/* Filtro de Categoría */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                <FolderOpen className="w-3.5 h-3.5" />
+                {t("products.filters.category")}
+              </h4>
+              <Select value={selectedCategory} onValueChange={onCategoryChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("products.filters.categoryPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("products.filters.allCategories")}</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Separador */}
+            <div className="h-px bg-slate-100" />
+
+            {/* Filtro de Estado del Producto (Activo/Inactivo) */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                <Package className="w-3.5 h-3.5" />
+                {t("products.filters.productStatus.title")}
+              </h4>
+              <div className="space-y-2">
+                {/* Switch Activos */}
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                      {tc("status.active")}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={statusFilter.active}
+                    onCheckedChange={(checked) =>
+                      onStatusChange({ ...statusFilter, active: checked })
+                    }
+                  />
+                </label>
+
+                {/* Switch Inactivos */}
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-slate-500" />
+                    </div>
+                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                      {tc("status.inactive")}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={statusFilter.inactive}
+                    onCheckedChange={(checked) =>
+                      onStatusChange({ ...statusFilter, inactive: checked })
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Filtro de Estado en Sede (solo cuando hay sede seleccionada) */}
+            {selectedBranchId && activationFilter && onActivationFilterChange && (
+              <>
+                {/* Separador */}
+                <div className="h-px bg-slate-100" />
+
+                <div className="space-y-3">
+                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5" />
+                    {t("hybridFilters.branchStatus.title")}
+                  </h4>
+                  <div className="space-y-2">
+                    {/* Switch Activados en sede */}
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                          <Store className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                          {t("hybridFilters.activated")}
+                        </span>
+                      </div>
+                      <Switch
+                        checked={activationFilter.activated}
+                        onCheckedChange={(checked) =>
+                          onActivationFilterChange({ ...activationFilter, activated: checked })
+                        }
+                      />
+                    </label>
+
+                    {/* Switch No activados en sede */}
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-slate-500" />
+                        </div>
+                        <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                          {t("hybridFilters.notActivated")}
+                        </span>
+                      </div>
+                      <Switch
+                        checked={activationFilter.notActivated}
+                        onCheckedChange={(checked) =>
+                          onActivationFilterChange({ ...activationFilter, notActivated: checked })
+                        }
+                      />
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* View Toggle */}
       <div className="ml-auto">

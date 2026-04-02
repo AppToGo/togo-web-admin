@@ -50,7 +50,15 @@
       "category": "Category",
       "status": "Status",
       "categoryPlaceholder": "All categories",
-      "statusPlaceholder": "All statuses"
+      "statusPlaceholder": "All statuses",
+      "title": "Filters",
+      "allCategories": "All categories",
+      "clearAll": "Clear all",
+      "productStatus": {
+        "title": "Product status",
+        "active": "Active",
+        "inactive": "Inactive"
+      }
     },
     "form": {
       "nameLabel": "Product name",
@@ -74,7 +82,11 @@
     },
     "selectAll": "Select all",
     "select": "Select",
-    "selectedCount": "{count} selected"
+    "selectedCount": "{count} selected",
+    "status": {
+      "activeInBranch": "Active in branch",
+      "inactiveInBranch": "Inactive in branch"
+    }
   },
   "categories": {
     "error": {
@@ -181,7 +193,6 @@
     "lowStockCount": "Low stock: {count}",
     "stockCount": "Stock: {count}",
     "custom": "Custom",
-    "activeInBranch": "Active in branch",
     "notActivated": "Not activated"
   },
   "activateModal": {
@@ -223,7 +234,13 @@
     "activationStatus": "Activation status",
     "allStatuses": "All statuses",
     "activated": "Activated",
-    "notActivated": "Not activated"
+    "notActivated": "Not activated",
+    "branchStatus": {
+      "title": "Branch status",
+      "activated": "Activated",
+      "notActivated": "Not activated"
+    },
+    "noBranches": "No branches available"
   },
   "availabilityTab": {
     "title": "Availability by Branch",
