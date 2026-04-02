@@ -21,7 +21,7 @@ export interface InventoryItem {
   isAvailable: boolean;
   priceOverride: number | null;
   effectivePrice: number;
-  isActivated: boolean;
+  isAvailable: boolean;
   productImage?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;
@@ -83,7 +83,7 @@ export interface InventoryFilters {
   categoryId?: string;
   search?: string;
   isAvailable?: boolean;
-  isActivated?: boolean;
+  isAvailable?: boolean;
   page?: number;
   limit?: number;
 }

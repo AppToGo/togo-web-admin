@@ -14,7 +14,7 @@ export interface BranchAvailability {
   branchId: string;
   branchName: string;
   branchCode: string;
-  isActivated: boolean;
+  isAvailable: boolean;
   isAvailable: boolean;
   stock: number | null;
   priceOverride: number | null;
@@ -69,7 +69,7 @@ export interface PaginatedProductsWithBranchStatus {
  */
 export interface BusinessProductWithBranchInfo extends BusinessProduct {
   branchInfo?: {
-    isActivated: boolean;
+    isAvailable: boolean;
     isAvailable: boolean;
     stock: number | null;
     priceOverride: number | null;

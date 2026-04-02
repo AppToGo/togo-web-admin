@@ -156,13 +156,13 @@ interface SelectableProductCardProps {
   isSelected: boolean;
   showCheckbox: boolean;
   branchActivationStatus?: {
-    isActive: boolean;
+    isAvailable: boolean;
     stock: number;
   } | null;
   onToggleSelection: (id: string) => void;
   onEdit: (product: BusinessProduct) => void;
   onDelete: (product: BusinessProduct) => void;
-  onToggleStatus: (product: BusinessProduct, isActive: boolean) => void;
+  onToggleStatus: (product: BusinessProduct, isAvailable: boolean) => void;
 }
 
 function SelectableProductCard({
@@ -217,15 +217,15 @@ function SelectableProductCard({
         </div>
         {branchActivationStatus && (
           <Badge
-            variant={branchActivationStatus.isActive ? "default" : "secondary"}
+            variant={branchActivationStatus.isAvailable ? "default" : "secondary"}
             className={cn(
               "shrink-0",
-              branchActivationStatus.isActive
+              branchActivationStatus.isAvailable
                 ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-100"
             )}
           >
-            {branchActivationStatus.isActive
+            {branchActivationStatus.isAvailable
               ? t("products.status.activeInBranch")
               : t("products.status.inactiveInBranch")}
           </Badge>
@@ -257,14 +257,14 @@ function SelectableProductCard({
       {branchActivationStatus && (
         <div className="absolute top-3 right-3 z-10">
           <Badge
-            variant={branchActivationStatus.isActive ? "default" : "secondary"}
+            variant={branchActivationStatus.isAvailable ? "default" : "secondary"}
             className={cn(
-              branchActivationStatus.isActive
+              branchActivationStatus.isAvailable
                 ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-100"
             )}
           >
-            {branchActivationStatus.isActive
+            {branchActivationStatus.isAvailable
               ? t("products.status.activeInBranch")
               : t("products.status.inactiveInBranch")}
           </Badge>
@@ -481,10 +481,10 @@ export default function ProductsPage() {
   const branchActivationMap = useMemo(() => {
     if (!shouldUseBranchFilter || !productsData?.items) return new Map();
     
-    const map = new Map<string, { isActive: boolean; stock: number }>();
-    productsData.items.forEach((product: BusinessProduct & { branchStatus?: { isActive: boolean; stock: number } }) => {
-      if (product.branchStatus) {
-        map.set(product.id, product.branchStatus);
+    const map = new Map<string, { isAvailable: boolean; stock: number }>();
+    productsData.items.forEach((product: BusinessProduct & { branchAvailability?: { isAvailable: boolean; stock: number } }) => {
+      if (product.branchAvailability) {
+        map.set(product.id, product.branchAvailability);
       }
     });
     return map;

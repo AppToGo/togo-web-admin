@@ -247,13 +247,13 @@ export function BranchInventoryManager({ businessId, branches }: BranchInventory
 
   const stats = useMemo(() => {
     const total = items.length;
-    const activated = items.filter((i) => i.isActivated).length;
-    const available = items.filter((i) => i.isActivated && i.isAvailable).length;
+    const activated = items.filter((i) => i.isAvailable).length;
+    const available = items.filter((i) => i.isAvailable && i.isAvailable).length;
     const lowStock = items.filter(
-      (i) => i.isActivated && i.stock !== null && i.stock < 10
+      (i) => i.isAvailable && i.stock !== null && i.stock < 10
     ).length;
     const outOfStock = items.filter(
-      (i) => i.isActivated && i.stock === 0
+      (i) => i.isAvailable && i.stock === 0
     ).length;
 
     return { total, activated, available, lowStock, outOfStock };

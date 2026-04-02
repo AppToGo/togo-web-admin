@@ -23,7 +23,7 @@ interface ProductCardProps {
   selected?: boolean;
   onSelect?: () => void;
   showCheckbox?: boolean;
-  branchInfo?: { isActivated: boolean; isAvailable: boolean };
+  branchInfo?: { isAvailable: boolean; isAvailable: boolean };
 }
 
 export function ProductCard({
@@ -161,12 +161,12 @@ export function ProductCard({
               <span
                 className={cn(
                   "px-2 py-1 text-[10px] font-medium rounded-full",
-                  branchInfo.isActivated
+                  branchInfo.isAvailable
                     ? "bg-emerald-100 text-emerald-700"
                     : "bg-slate-200 text-slate-600"
                 )}
               >
-                {branchInfo.isActivated
+                {branchInfo.isAvailable
                   ? t("status.activeInBranch")
                   : t("status.notActivated")}
               </span>
@@ -332,12 +332,12 @@ export function ProductCard({
             <span
               className={cn(
                 "px-1.5 py-0.5 text-[10px] rounded",
-                branchInfo.isActivated
+                branchInfo.isAvailable
                   ? "bg-emerald-100 text-emerald-700"
                   : "bg-slate-200 text-slate-600"
               )}
             >
-              {branchInfo.isActivated
+              {branchInfo.isAvailable
                 ? t("status.activeInBranch")
                 : t("status.notActivated")}
             </span>

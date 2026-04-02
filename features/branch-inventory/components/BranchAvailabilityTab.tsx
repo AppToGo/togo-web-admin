@@ -30,7 +30,7 @@ interface BranchAvailabilityTabProps {
   branchAvailability: BranchAvailability[];
   basePrice: number;
   onUpdate: (branchId: string, data: {
-    isActivated?: boolean;
+    isAvailable?: boolean;
     isAvailable?: boolean;
     stock?: number | null;
     priceOverride?: number | null;
@@ -120,7 +120,7 @@ export function BranchAvailabilityTab({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {branches.map((branch) => {
           const availability = getBranchAvailability(branch.id);
-          const isActivated = availability?.isActivated ?? false;
+          const isAvailable = availability?.isAvailable ?? false;
           const isAvailable = availability?.isAvailable ?? false;
           const stock = availability?.stock ?? null;
           const priceOverride = availability?.priceOverride ?? null;
@@ -131,7 +131,7 @@ export function BranchAvailabilityTab({
               key={branch.id}
               className={cn(
                 "border transition-all",
-                isActivated
+                isAvailable
                   ? "border-slate-200 bg-white"
                   : "border-slate-200 bg-slate-50/50"
               )}
@@ -142,7 +142,7 @@ export function BranchAvailabilityTab({
                     <div
                       className={cn(
                         "w-10 h-10 rounded-lg flex items-center justify-center",
-                        isActivated
+                        isAvailable
                           ? "bg-indigo-100 text-indigo-600"
                           : "bg-slate-100 text-slate-400"
                       )}
@@ -165,12 +165,12 @@ export function BranchAvailabilityTab({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-500">
-                      {isActivated ? t("availabilityTab.active") : t("availabilityTab.inactive")}
+                      {isAvailable ? t("availabilityTab.active") : t("availabilityTab.inactive")}
                     </span>
                     <Switch
-                      checked={isActivated}
+                      checked={isAvailable}
                       onCheckedChange={(checked) =>
-                        onUpdate(branch.id, { isActivated: checked })
+                        onUpdate(branch.id, { isAvailable: checked })
                       }
                       disabled={isLoading}
                     />
@@ -178,7 +178,7 @@ export function BranchAvailabilityTab({
                 </div>
               </CardHeader>
 
-              {isActivated && (
+              {isAvailable && (
                 <CardContent className="pt-0 space-y-4">
                   {/* Availability Toggle */}
                   <div className="flex items-center justify-between py-2 border-t border-slate-100">

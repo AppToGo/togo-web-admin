@@ -266,7 +266,7 @@ export function BranchInventoryTable({
                 <span
                   className={cn(
                     "font-medium",
-                    item.isActivated ? "text-slate-900" : "text-slate-500"
+                    item.isAvailable ? "text-slate-900" : "text-slate-500"
                   )}
                 >
                   {item.productName}
@@ -288,7 +288,7 @@ export function BranchInventoryTable({
           const item = row.original;
           return (
             <Switch
-              checked={item.isActivated}
+              checked={item.isAvailable}
               onCheckedChange={(checked) => {
                 if (checked) {
                   onActivate(item);
@@ -308,7 +308,7 @@ export function BranchInventoryTable({
         header: t("table.available"),
         cell: ({ row }) => {
           const item = row.original;
-          if (!item.isActivated) {
+          if (!item.isAvailable) {
             return <span className="text-slate-400">-</span>;
           }
           return (
@@ -317,7 +317,7 @@ export function BranchInventoryTable({
               onCheckedChange={(checked) =>
                 onToggleAvailability(item.businessProductId, checked)
               }
-              disabled={!item.isActivated}
+              disabled={!item.isAvailable}
             />
           );
         },
@@ -330,7 +330,7 @@ export function BranchInventoryTable({
         header: t("table.stock"),
         cell: ({ row }) => {
           const item = row.original;
-          if (!item.isActivated) {
+          if (!item.isAvailable) {
             return <span className="text-slate-400">-</span>;
           }
 
@@ -350,7 +350,7 @@ export function BranchInventoryTable({
                 placeholder="∞"
                 value={displayValue}
                 onChange={(e) => handleStockChange(item.businessProductId, e.target.value)}
-                disabled={!item.isActivated}
+                disabled={!item.isAvailable}
                 className="w-20 h-8 text-sm"
               />
               <StockBadge stock={item.stock} />
@@ -372,7 +372,7 @@ export function BranchInventoryTable({
         header: t("table.branchPrice"),
         cell: ({ row }) => {
           const item = row.original;
-          if (!item.isActivated) {
+          if (!item.isAvailable) {
             return <span className="text-slate-400">-</span>;
           }
 
@@ -393,7 +393,7 @@ export function BranchInventoryTable({
                 placeholder={String(item.basePrice)}
                 value={displayValue}
                 onChange={(e) => handlePriceChange(item.businessProductId, e.target.value)}
-                disabled={!item.isActivated}
+                disabled={!item.isAvailable}
                 className="w-24 h-8 text-sm"
               />
               <PriceDisplay
@@ -512,7 +512,7 @@ export function BranchInventoryTable({
                   className={cn(
                     "transition-colors",
                     selectedIds.has(row.original.businessProductId) && "bg-indigo-50/50",
-                    !row.original.isActivated && "bg-slate-50/50"
+                    !row.original.isAvailable && "bg-slate-50/50"
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
