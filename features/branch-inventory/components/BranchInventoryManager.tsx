@@ -54,6 +54,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 interface BranchInventoryManagerProps {
+  readOnly?: boolean;
   businessId: string;
   branches: BranchSummary[];
 }
@@ -210,7 +211,7 @@ function ActivateProductDialog({
   );
 }
 
-export function BranchInventoryManager({ businessId, branches }: BranchInventoryManagerProps) {
+export function BranchInventoryManager({ businessId, branches, readOnly = false }: BranchInventoryManagerProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
 
@@ -247,13 +248,13 @@ export function BranchInventoryManager({ businessId, branches }: BranchInventory
 
   const stats = useMemo(() => {
     const total = items.length;
-    const activated = items.filter((i) => i.isActivated).length;
-    const available = items.filter((i) => i.isActivated && i.isAvailable).length;
+    const activated = items.length; // products with a BranchInventory record (OPT-IN)
+    const available = items.filter((i) => i.isAvailable).length;
     const lowStock = items.filter(
-      (i) => i.isActivated && i.stock !== null && i.stock < 10
+      (i) => i.isAvailable && i.stock !== null && i.stock < 10
     ).length;
     const outOfStock = items.filter(
-      (i) => i.isActivated && i.stock === 0
+      (i) => i.isAvailable && i.stock === 0
     ).length;
 
     return { total, activated, available, lowStock, outOfStock };
@@ -282,6 +283,7 @@ export function BranchInventoryManager({ businessId, branches }: BranchInventory
 
   // Activation handlers
   const handleActivate = useCallback((product: InventoryItem) => {
+    if (readOnly) return;
     setActivatingProduct(product);
   }, []);
 
@@ -457,6 +459,7 @@ export function BranchInventoryManager({ businessId, branches }: BranchInventory
           onDeactivate={handleDeactivate}
           onToggleAvailability={handleToggleAvailability}
           debouncedUpdate={queueUpdate}
+          readOnly={readOnly}
         />
       ) : (
         <Card className="p-12 text-center">

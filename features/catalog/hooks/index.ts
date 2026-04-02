@@ -34,4 +34,8 @@ export {
   useBusiness,
   // Stats
   useCatalogStats,
+  // Hybrid Inventory Hooks
+  useProductsWithBranchFilter,
+  useProductWithBranchAvailability,
+  useBulkBranchUpdate,
 } from "./useCatalog";

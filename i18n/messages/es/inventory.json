@@ -103,5 +103,11 @@
     "quantityPlaceholder": "Cantidad a ajustar",
     "confirmAdjustStock": "Aplicar Ajuste",
     "stockAdjustmentHint": "El stock se incrementará o decrementará según la cantidad especificada"
-  }
+  },
+  "readOnlyTitle": "Vista de Solo Lectura",
+  "readOnlySubtitle": "Vista de solo lectura del inventario. Usa la página de",
+  "manageAvailability": "para gestionar disponibilidad.",
+  "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
+  "productsLink": "Productos",
+  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
 }

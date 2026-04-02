@@ -175,7 +175,9 @@
     "lowStock": "Stock bajo",
     "lowStockCount": "Stock bajo: {count}",
     "stockCount": "Stock: {count}",
-    "custom": "Personalizado"
+    "custom": "Personalizado",
+    "activeInBranch": "Activo en sede",
+    "notActivated": "No activado"
   },
   "activateModal": {
     "title": "Activar Producto",
@@ -196,6 +198,36 @@
     "categoryUpdated": "Categoría actualizada exitosamente",
     "categoryDeleted": "Categoría eliminada exitosamente",
     "categoryActivated": "Categoría activada exitosamente",
-    "categoryDeactivated": "Categoría desactivada exitosamente"
+    "categoryDeactivated": "Categoría desactivada exitosamente",
+    "bulkUpdateSuccess": "{count} productos actualizados exitosamente",
+    "errorBulkUpdate": "Error al actualizar productos"
+  },
+  "bulkActions": {
+    "selectedCount": "{count, plural, =0 {0 productos seleccionados} =1 {1 producto seleccionado} other {# productos seleccionados}}",
+    "forBranch": "Para la sede seleccionada",
+    "activate": "Activar en sede",
+    "deactivate": "Desactivar",
+    "adjustStock": "Ajustar stock"
+  },
+  "hybridFilters": {
+    "filterByBranch": "Filtrar por sede:",
+    "selectBranch": "Seleccionar sede",
+    "allBranches": "Todas las sedes",
+    "activationStatus": "Estado en sede",
+    "allStatuses": "Todos los estados",
+    "activated": "Activados",
+    "notActivated": "No activados"
+  },
+  "availabilityTab": {
+    "title": "Disponibilidad por Sede",
+    "description": "Gestiona la disponibilidad de este producto en cada sede de tu negocio",
+    "noBranches": "No hay sedes configuradas",
+    "noBranchesDescription": "Configura sedes en tu negocio para gestionar la disponibilidad del producto",
+    "mainBranch": "Sede principal",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "availableForSale": "Disponible para venta",
+    "stock": "Stock",
+    "priceOverride": "Precio en sede"
   }
 }

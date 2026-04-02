@@ -104,7 +104,7 @@ export function BranchInventorySelector({
 
   if (branches.length === 0) {
     return (
-      <Card variant="bordered" className="p-6 text-center">
+      <Card className="p-6 text-center border-2 border-dashed border-slate-200">
         <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
         <p className="text-slate-600">{t("selector.noBranches")}</p>
       </Card>

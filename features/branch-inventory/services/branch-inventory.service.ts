@@ -38,8 +38,6 @@ export async function getBranchInventory(
   if (filters?.search) params.append("search", filters.search);
   if (filters?.isAvailable !== undefined)
     params.append("isAvailable", String(filters.isAvailable));
-  if (filters?.isActivated !== undefined)
-    params.append("isActivated", String(filters.isActivated));
   if (filters?.page) params.append("page", String(filters.page));
   if (filters?.limit) params.append("limit", String(filters.limit));
 

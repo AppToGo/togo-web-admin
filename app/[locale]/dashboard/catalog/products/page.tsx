@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Search, Package, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -8,6 +8,7 @@ import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -24,17 +25,21 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ViewToggle } from "@/components/ui/view-toggle";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   useMyProducts,
+  useProductsWithBranchFilter,
+  useBulkBranchUpdate,
   useCategories,
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
   useToggleProductStatus,
 } from "@/features/catalog/hooks";
-import { ProductCard, ProductForm } from "@/features/catalog/components";
+import { ProductCard, ProductForm, ProductFilters, BulkActionBar } from "@/features/catalog/components";
 import { useBranches } from "@/features/branches/hooks/useBranches";
+import { toast } from "sonner";
 import type {
   BusinessProduct,
   CreateCustomProductDto,
@@ -42,6 +47,7 @@ import type {
 } from "@/features/catalog/types";
 
 type ViewMode = "grid" | "list";
+type ActivationStatus = "activated" | "not_activated" | "all";
 
 // ============================================================================
 // LOADING SKELETONS
@@ -56,6 +62,7 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
             key={i}
             className="flex items-center gap-4 p-4 bg-white rounded-card border border-slate-100"
           >
+            <Skeleton className="w-5 h-5 rounded shrink-0" />
             <Skeleton className="w-16 h-16 rounded-card shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-48" />
@@ -140,6 +147,137 @@ function ErrorState({ error }: { error: Error | null }) {
 }
 
 // ============================================================================
+// PRODUCT CARD WITH SELECTION WRAPPER
+// ============================================================================
+
+interface SelectableProductCardProps {
+  product: BusinessProduct;
+  viewMode: ViewMode;
+  isSelected: boolean;
+  showCheckbox: boolean;
+  branchActivationStatus?: {
+    isAvailable: boolean;
+    stock: number;
+  } | null;
+  onToggleSelection: (id: string) => void;
+  onEdit: (product: BusinessProduct) => void;
+  onDelete: (product: BusinessProduct) => void;
+  onToggleStatus: (product: BusinessProduct, isAvailable: boolean) => void;
+}
+
+function SelectableProductCard({
+  product,
+  viewMode,
+  isSelected,
+  showCheckbox,
+  branchActivationStatus,
+  onToggleSelection,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: SelectableProductCardProps) {
+  const t = useTranslations("catalog");
+
+  const handleCheckboxChange = useCallback(() => {
+    onToggleSelection(product.id);
+  }, [onToggleSelection, product.id]);
+
+  const cardContent = (
+    <ProductCard
+      product={product}
+      viewMode={viewMode}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onToggleStatus={onToggleStatus}
+    />
+  );
+
+  if (viewMode === "list") {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-3 p-4 bg-white rounded-card border transition-all duration-200",
+          isSelected
+            ? "border-indigo-500 bg-indigo-50/30"
+            : "border-slate-100 hover:border-slate-200"
+        )}
+      >
+        {showCheckbox && (
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={handleCheckboxChange}
+            className="shrink-0"
+            aria-label={t("products.select")}
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            {cardContent}
+          </div>
+        </div>
+        {branchActivationStatus && (
+          <Badge
+            variant={branchActivationStatus.isAvailable ? "default" : "secondary"}
+            className={cn(
+              "shrink-0",
+              branchActivationStatus.isAvailable
+                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-100"
+            )}
+          >
+            {branchActivationStatus.isAvailable
+              ? t("products.status.activeInBranch")
+              : t("products.status.inactiveInBranch")}
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Grid view
+  return (
+    <div
+      className={cn(
+        "relative bg-white rounded-card-lg border transition-all duration-200",
+        isSelected
+          ? "border-indigo-500 ring-2 ring-indigo-500/20"
+          : "border-slate-100 hover:border-slate-200"
+      )}
+    >
+      {showCheckbox && (
+        <div className="absolute top-3 left-3 z-10">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={handleCheckboxChange}
+            className="bg-white/90 backdrop-blur-sm"
+            aria-label={t("products.select")}
+          />
+        </div>
+      )}
+      {branchActivationStatus && (
+        <div className="absolute top-3 right-3 z-10">
+          <Badge
+            variant={branchActivationStatus.isAvailable ? "default" : "secondary"}
+            className={cn(
+              branchActivationStatus.isAvailable
+                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-100"
+            )}
+          >
+            {branchActivationStatus.isAvailable
+              ? t("products.status.activeInBranch")
+              : t("products.status.inactiveInBranch")}
+          </Badge>
+        </div>
+      )}
+      <div className="p-4">
+        {cardContent}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // MAIN PAGE COMPONENT
 // ============================================================================
 
@@ -147,28 +285,11 @@ export default function ProductsPage() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
 
+
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
 
-  if (!businessId) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
-            <Store className="w-8 h-8 text-amber-500" />
-          </div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("noBusiness.title")}
-          </h2>
-          <p className="text-slate-500 text-center max-w-md">
-            {t("noBusiness.description")}
-          </p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  // Estados
+  // Estados existentes
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -178,6 +299,12 @@ export default function ProductsPage() {
     null
   );
 
+  // Nuevos estados para funcionalidad HYBRID
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+  const [activationStatus, setActivationStatus] = useState<ActivationStatus>("all");
+  const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
+
   // Paginación
   const [page, setPage] = useState(1);
   const pageSize = 12;
@@ -185,28 +312,64 @@ export default function ProductsPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCategory, statusFilter]);
+  }, [searchQuery, selectedCategory, statusFilter, selectedBranchId, activationStatus]);
 
-  // Hooks
-  const {
-    data: productsData,
-    isLoading: isLoadingProducts,
-    error: productsError,
-  } = useMyProducts(businessId, {
-    search: searchQuery || undefined,
-    categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-    isActive:
-      statusFilter === "active"
-        ? true
-        : statusFilter === "inactive"
-          ? false
-          : undefined,
-    page,
-    limit: pageSize,
-  });
+  // Reset selection when branch changes
+  useEffect(() => {
+    setSelectedProductIds(new Set());
+  }, [selectedBranchId]);
 
-  const { data: categoriesData } = useCategories(businessId);
+  // Hooks de datos
   const { data: branchesData } = useBranches();
+  const { data: categoriesData } = useCategories(businessId || '');
+
+  // Lógica condicional: usar useProductsWithBranchFilter cuando hay sede seleccionada
+  const shouldUseBranchFilter = !!selectedBranchId;
+
+  const myProductsQuery = useMyProducts(
+    !shouldUseBranchFilter ? (businessId || '') : '',
+    {
+      search: searchQuery || undefined,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+      isActive:
+        statusFilter === "active"
+          ? true
+          : statusFilter === "inactive"
+            ? false
+            : undefined,
+      page,
+      limit: pageSize,
+    }
+  );
+
+  const branchFilteredQuery = useProductsWithBranchFilter(
+    shouldUseBranchFilter ? (businessId || '') : '',
+    {
+      search: searchQuery || undefined,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+      isActive:
+        statusFilter === "active"
+          ? true
+          : statusFilter === "inactive"
+            ? false
+            : undefined,
+      branchId: selectedBranchId || undefined,
+      activationStatus: activationStatus !== "all" ? activationStatus : undefined,
+      page,
+      limit: pageSize,
+    }
+  );
+
+  // Usar el query apropiado según el contexto
+  const productsData = shouldUseBranchFilter
+    ? branchFilteredQuery.data
+    : myProductsQuery.data;
+  const isLoadingProducts = shouldUseBranchFilter
+    ? branchFilteredQuery.isLoading
+    : myProductsQuery.isLoading;
+  const productsError = shouldUseBranchFilter
+    ? branchFilteredQuery.error
+    : myProductsQuery.error;
 
   // Handle backend response format: { items, limit, page, total }
   const products = productsData?.items || [];
@@ -229,12 +392,71 @@ export default function ProductsPage() {
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutaciones
-  const createProduct = useCreateProduct(businessId);
-  const updateProduct = useUpdateProduct(businessId);
-  const deleteProduct = useDeleteProduct(businessId);
-  const toggleStatus = useToggleProductStatus(businessId);
+  const createProduct = useCreateProduct(businessId || '');
+  const updateProduct = useUpdateProduct(businessId || '');
+  const deleteProduct = useDeleteProduct(businessId || '');
+  const toggleStatus = useToggleProductStatus(businessId || '');
+  const bulkBranchUpdate = useBulkBranchUpdate(businessId || '');
 
-  // Handlers
+  // Handlers para selección múltiple
+  const toggleProductSelection = useCallback((id: string) => {
+    setSelectedProductIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const selectAllProducts = useCallback(() => {
+    const allIds = products.map((p) => p.id);
+    setSelectedProductIds(new Set(allIds));
+  }, [products]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedProductIds(new Set());
+  }, []);
+
+  // Handlers para bulk actions
+  const handleBulkActivate = useCallback(async () => {
+    if (!selectedBranchId || selectedProductIds.size === 0) return;
+
+    try {
+      await bulkBranchUpdate.mutateAsync({
+        branchId: selectedBranchId!,
+        productIds: Array.from(selectedProductIds),
+        isAvailable: true,
+      });
+      clearSelection();
+    } catch {
+      // Error ya manejado por el hook
+    }
+  }, [selectedBranchId, selectedProductIds, bulkBranchUpdate, t, clearSelection]);
+
+  const handleBulkDeactivate = useCallback(async () => {
+    if (!selectedBranchId || selectedProductIds.size === 0) return;
+
+    try {
+      await bulkBranchUpdate.mutateAsync({
+        branchId: selectedBranchId!,
+        productIds: Array.from(selectedProductIds),
+        isAvailable: false,
+      });
+      clearSelection();
+    } catch {
+      // Error ya manejado por el hook
+    }
+  }, [selectedBranchId, selectedProductIds, bulkBranchUpdate, t, clearSelection]);
+
+  const handleBulkAdjustStock = useCallback(() => {
+    if (selectedProductIds.size === 0) return;
+    setIsBulkStockModalOpen(true);
+  }, [selectedProductIds.size]);
+
+  // Handlers existentes
   const handleCreateProduct = (
     data: CreateCustomProductDto | UpdateProductDto
   ) => {
@@ -252,6 +474,40 @@ export default function ProductsPage() {
       { onSuccess: () => setEditingProduct(null) }
     );
   };
+
+  // Memoized branch activation status map
+  const branchActivationMap = useMemo(() => {
+    if (!shouldUseBranchFilter || !productsData?.items) return new Map();
+    
+    const map = new Map<string, { isAvailable: boolean; stock: number }>();
+    productsData.items.forEach((product: BusinessProduct & { branchAvailability?: { isAvailable: boolean; stock: number } }) => {
+      if (product.branchAvailability) {
+        map.set(product.id, product.branchAvailability);
+      }
+    });
+    return map;
+  }, [shouldUseBranchFilter, productsData]);
+
+  if (!businessId) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+            <Store className="w-8 h-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("noBusiness.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("noBusiness.description")}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const hasSelection = selectedProductIds.size > 0;
+  const showCheckboxes = !!selectedBranchId;
 
   return (
     <DashboardLayout>
@@ -274,56 +530,61 @@ export default function ProductsPage() {
           </Button>
         </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder={t("products.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+        {/* Filtros usando ProductFilters component */}
+        <ProductFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          selectedBranchId={selectedBranchId}
+          onBranchChange={setSelectedBranchId}
+          activationStatus={activationStatus}
+          onActivationStatusChange={setActivationStatus}
+          categories={categories}
+          branches={branches}
+
+          showBranchFilters={true}
+          viewMode={viewMode}
+          onViewModeChange={(value) => setViewMode(value as ViewMode)}
+        />
+
+        {/* Select All / Clear Selection Actions */}
+        {showCheckboxes && products.length > 0 && (
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedProductIds.size === products.length && products.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      selectAllProducts();
+                    } else {
+                      clearSelection();
+                    }
+                  }}
+                  aria-label={t("products.selectAll")}
+                />
+                <span className="text-sm text-slate-600">
+                  {selectedProductIds.size > 0
+                    ? t("products.selectedCount", { count: selectedProductIds.size })
+                    : t("products.selectAll")}
+                </span>
+              </div>
+              {hasSelection && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelection}
+                  className="text-slate-500"
+                >
+                  {tc("buttons.clear")}
+                </Button>
+              )}
+            </div>
           </div>
-
-          {/* Category Filter */}
-          <Select
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t("products.filters.all")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("products.filters.all")}</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder={tc("status.active")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("products.filters.all")}</SelectItem>
-              <SelectItem value="active">{tc("status.active")}</SelectItem>
-              <SelectItem value="inactive">{tc("status.inactive")}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* View Toggle */}
-          <ViewToggle
-            value={viewMode}
-            onChange={(value) => setViewMode(value as ViewMode)}
-            variant="bordered"
-          />
-        </div>
+        )}
 
         {/* Products Content */}
         {isLoadingProducts ? (
@@ -341,10 +602,14 @@ export default function ProductsPage() {
             )}
           >
             {products.map((product) => (
-              <ProductCard
+              <SelectableProductCard
                 key={product.id}
                 product={product}
                 viewMode={viewMode}
+                isSelected={selectedProductIds.has(product.id)}
+                showCheckbox={showCheckboxes}
+                branchActivationStatus={branchActivationMap.get(product.id) || null}
+                onToggleSelection={toggleProductSelection}
                 onEdit={setEditingProduct}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
                 onToggleStatus={(p, isActive) =>
@@ -380,6 +645,17 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedProductIds.size}
+        branchId={selectedBranchId}
+        onActivate={handleBulkActivate}
+        onDeactivate={handleBulkDeactivate}
+        onAdjustStock={handleBulkAdjustStock}
+        onClear={clearSelection}
+        isLoading={bulkBranchUpdate.isPending}
+      />
 
       {/* Create Product Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
@@ -419,6 +695,31 @@ export default function ProductsPage() {
             onCancel={() => setEditingProduct(null)}
             isLoading={updateProduct.isPending}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Stock Adjustment Modal (Placeholder) */}
+      <Dialog open={isBulkStockModalOpen} onOpenChange={setIsBulkStockModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("bulkActions.adjustStock")}</DialogTitle>
+            <DialogDescription>
+              {t("bulkActions.adjustStockDescription", { count: selectedProductIds.size })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-slate-600">
+              {t("bulkActions.comingSoon")}
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsBulkStockModalOpen(false)}
+            >
+              {tc("buttons.cancel")}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </DashboardLayout>

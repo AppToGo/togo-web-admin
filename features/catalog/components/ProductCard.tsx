@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Edit2, Trash2, Power, Package, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,10 @@ interface ProductCardProps {
   onDelete?: (product: BusinessProduct) => void;
   onToggleStatus?: (product: BusinessProduct, isActive: boolean) => void;
   viewMode?: "grid" | "list";
+  selected?: boolean;
+  onSelect?: () => void;
+  showCheckbox?: boolean;
+  branchInfo?: { isAvailable: boolean };
 }
 
 export function ProductCard({
@@ -27,6 +32,10 @@ export function ProductCard({
   onDelete,
   onToggleStatus,
   viewMode = "grid",
+  selected = false,
+  onSelect,
+  showCheckbox = false,
+  branchInfo,
 }: ProductCardProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -69,7 +78,12 @@ export function ProductCard({
 
   const stockStatus = getStockStatus();
 
-  console.log("product", product);
+  // Handle checkbox click with stop propagation
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect?.();
+  };
+
   // Grid view
   if (viewMode === "grid") {
     return (
@@ -77,9 +91,26 @@ export function ProductCard({
         className={cn(
           "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg p-4 flex flex-col",
           "hover:shadow-card-md transition-all duration-200",
-          !product.isActive && "opacity-60 grayscale-[0.3]"
+          !product.isActive && "opacity-60 grayscale-[0.3]",
+          selected && "ring-2 ring-indigo-500 bg-indigo-50/30"
         )}
       >
+        {/* Checkbox - Grid */}
+        {showCheckbox && (
+          <div className="absolute top-2 left-2 z-20">
+            <div
+              onClick={handleCheckboxClick}
+              className="bg-white/90 backdrop-blur-sm rounded p-1 shadow-card-sm hover:bg-white transition-colors"
+            >
+              <Checkbox
+                checked={selected}
+                onCheckedChange={onSelect}
+                aria-label={tCommon("actions.select")}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Image */}
         <div className="relative aspect-square rounded-card bg-slate-50 mb-4 overflow-hidden">
           {productImage && !imageError ? (
@@ -96,7 +127,10 @@ export function ProductCard({
           )}
 
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
+          <div className={cn(
+            "absolute flex flex-col gap-1",
+            showCheckbox ? "top-10 left-2" : "top-2 left-2"
+          )}>
             {product.globalProductId && (
               <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
                 {t("title")}
@@ -110,7 +144,7 @@ export function ProductCard({
           </div>
 
           {/* Status badge */}
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
             <span
               className={cn(
                 "px-2 py-1 text-[10px] font-medium rounded-full",
@@ -123,13 +157,30 @@ export function ProductCard({
                 ? tCommon("status.active")
                 : tCommon("status.inactive")}
             </span>
+            {branchInfo && (
+              <span
+                className={cn(
+                  "px-2 py-1 text-[10px] font-medium rounded-full",
+                  branchInfo.isAvailable
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-slate-200 text-slate-600"
+                )}
+              >
+                {branchInfo.isAvailable
+                  ? t("status.activeInBranch")
+                  : t("status.notActivated")}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Content */}
         <div className="space-y-2 flex flex-col flex-1">
           <h3
-            className={`${displayBrand ? "mb-0" : ""} "font-semibold text-slate-900 line-clamp-1"`}
+            className={cn(
+              "font-semibold text-slate-900 line-clamp-1",
+              displayBrand ? "mb-0" : ""
+            )}
           >
             {displayName}
           </h3>
@@ -221,9 +272,21 @@ export function ProductCard({
       className={cn(
         "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4",
         "hover:shadow-card transition-all duration-200",
-        !product.isActive && "opacity-60 grayscale-[0.3]"
+        !product.isActive && "opacity-60 grayscale-[0.3]",
+        selected && "ring-2 ring-indigo-500 bg-indigo-50/30"
       )}
     >
+      {/* Checkbox - List */}
+      {showCheckbox && (
+        <div onClick={handleCheckboxClick} className="flex-shrink-0">
+          <Checkbox
+            checked={selected}
+            onCheckedChange={onSelect}
+            aria-label={tCommon("actions.select")}
+          />
+        </div>
+      )}
+
       {/* Image */}
       <div className="relative w-16 h-16 rounded-card bg-slate-50 flex-shrink-0 overflow-hidden">
         {productImage && !imageError ? (
@@ -265,6 +328,20 @@ export function ProductCard({
               ? tCommon("status.active")
               : tCommon("status.inactive")}
           </span>
+          {branchInfo && (
+            <span
+              className={cn(
+                "px-1.5 py-0.5 text-[10px] rounded",
+                branchInfo.isAvailable
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-slate-200 text-slate-600"
+              )}
+            >
+              {branchInfo.isAvailable
+                ? t("status.activeInBranch")
+                : t("status.notActivated")}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
