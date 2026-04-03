@@ -70,7 +70,8 @@ export function ProductForm({
   >([]);
 
   // Track if branch inventory has been modified during edit
-  const [hasModifiedBranchInventory, setHasModifiedBranchInventory] = useState(false);
+  const [hasModifiedBranchInventory, setHasModifiedBranchInventory] =
+    useState(false);
 
   // Image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -80,7 +81,8 @@ export function ProductForm({
     if (product) {
       // Use custom fields if they exist, otherwise fall back to computed fields
       const displayName = product.customName ?? product.name ?? "";
-      const displayDescription = product.customDescription ?? product.description ?? "";
+      const displayDescription =
+        product.customDescription ?? product.description ?? "";
       const displayImage = product.customImage ?? product.image ?? "";
 
       setFormData({
@@ -200,6 +202,7 @@ export function ProductForm({
   const showInventoryWarning =
     !isEditing && branches.length > 0 && initialInventory.length === 0;
 
+  console.log("formData", formData);
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-7">
       {/* Image Preview */}
@@ -293,6 +296,7 @@ export function ProductForm({
       <div className="space-y-2">
         <Label htmlFor="category">{t("products.category")}</Label>
         <Select
+          key={product?.id || 'new'}
           value={formData.categoryId}
           onValueChange={(value) =>
             setFormData((prev) => ({ ...prev, categoryId: value }))
