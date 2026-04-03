@@ -50,7 +50,7 @@
     "optional": "opcional",
     "mainBranch": "Principal",
     "noBranches": "No hay sedes disponibles",
-    "noSelectionWarning": "El producto se creará pero no estará disponible en ninguna sede hasta que actives el inventario",
+    "noSelectionWarning": "Selecciona una sede para gestionar su inventario",
     "summary": "{count} sedes seleccionadas, {available} disponibles",
     "discount": "Ahorro: ${amount}",
     "noStockControl": "Sin control",
