@@ -50,7 +50,7 @@
     "optional": "optional",
     "mainBranch": "Main",
     "noBranches": "No branches available",
-    "noSelectionWarning": "Product will be created but won't be available at any branch until you activate inventory",
+    "noSelectionWarning": "Select a branch to manage its inventory",
     "summary": "{count} branches selected, {available} available",
     "discount": "Save: ${amount}",
     "noStockControl": "No control",
