@@ -16,7 +16,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   useMyProducts,
@@ -168,103 +167,21 @@ function SelectableProductCard({
   onEdit,
   onDelete,
 }: SelectableProductCardProps) {
-  const t = useTranslations("catalog");
-
-  const handleCheckboxChange = useCallback(() => {
+  const handleSelect = useCallback(() => {
     onToggleSelection(product.id);
   }, [onToggleSelection, product.id]);
 
-  const cardContent = (
+  return (
     <ProductCard
       product={product}
       viewMode={viewMode}
       onEdit={onEdit}
       onDelete={onDelete}
+      selected={isSelected}
+      onSelect={handleSelect}
+      showCheckbox={showCheckbox}
+      branchInfo={branchActivationStatus || undefined}
     />
-  );
-
-  if (viewMode === "list") {
-    return (
-      <div
-        className={cn(
-          "flex items-center gap-3 p-4 transition-all duration-200",
-          isSelected
-            ? "border-indigo-500 bg-indigo-50/30"
-            : "border-slate-100 hover:border-slate-200"
-        )}
-      >
-        {showCheckbox && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={handleCheckboxChange}
-            className="shrink-0"
-            aria-label={t("products.select")}
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">{cardContent}</div>
-        </div>
-        {branchActivationStatus && (
-          <Badge
-            variant={
-              branchActivationStatus.isAvailable ? "default" : "secondary"
-            }
-            className={cn(
-              "shrink-0",
-              branchActivationStatus.isAvailable
-                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-100"
-            )}
-          >
-            {branchActivationStatus.isAvailable
-              ? t("products.status.activeInBranch")
-              : t("products.status.inactiveInBranch")}
-          </Badge>
-        )}
-      </div>
-    );
-  }
-
-  // Grid view
-  return (
-    <div
-      className={cn(
-        "relative transition-all duration-200",
-        isSelected
-          ? "border-indigo-500 ring-2 ring-indigo-500/20"
-          : "border-slate-100 hover:border-slate-200"
-      )}
-    >
-      {showCheckbox && (
-        <div className="absolute top-3 left-3 z-10">
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={handleCheckboxChange}
-            className="bg-white/90 backdrop-blur-sm"
-            aria-label={t("products.select")}
-          />
-        </div>
-      )}
-      {branchActivationStatus && (
-        <div className="absolute top-3 right-3 z-10">
-          <Badge
-            variant={
-              branchActivationStatus.isAvailable ? "default" : "secondary"
-            }
-            className={cn(
-              branchActivationStatus.isAvailable
-                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-100"
-            )}
-          >
-            {branchActivationStatus.isAvailable
-              ? t("products.status.activeInBranch")
-              : t("products.status.inactiveInBranch")}
-          </Badge>
-        </div>
-      )}
-      {cardContent}
-    </div>
   );
 }
 
