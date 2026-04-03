@@ -22,6 +22,7 @@ interface ProductCardProps {
   onSelect?: () => void;
   showCheckbox?: boolean;
   branchInfo?: { isAvailable: boolean };
+  effectivePrice?: number;
 }
 
 export function ProductCard({
@@ -33,6 +34,7 @@ export function ProductCard({
   onSelect,
   showCheckbox = false,
   branchInfo,
+  effectivePrice,
 }: ProductCardProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -74,6 +76,9 @@ export function ProductCard({
   };
 
   const stockStatus = getStockStatus();
+
+  // Calculate the display price: use effectivePrice if available, otherwise fall back to product.price
+  const displayPrice = effectivePrice ?? product.price;
 
   // Click en card - seleccionar si no es elemento interactivo
   const handleCardClick = (e: React.MouseEvent) => {
@@ -213,7 +218,7 @@ export function ProductCard({
           <div className="pt-2 border-t border-slate-100 mt-auto">
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold text-slate-900">
-                {formatPrice(product.price)}
+                {formatPrice(displayPrice)}
               </span>
               <span className={cn("text-xs", stockStatus.color)}>
                 {stockStatus.label}
@@ -361,7 +366,7 @@ export function ProductCard({
       {/* Price */}
       <div className="text-right">
         <span className="text-lg font-bold text-slate-900">
-          {formatPrice(product.price)}
+          {formatPrice(displayPrice)}
         </span>
       </div>
 
