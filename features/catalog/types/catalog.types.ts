@@ -170,6 +170,7 @@ export interface ActivateGlobalProductDto {
 /**
  * DTO for updating a business product
  * Aligned with backend UpdateBusinessProductDto (Partial of CreateBusinessProductDto)
+ * NOTE: branchInventory is NOT included here - use bulkBranchUpdate for inventory updates
  */
 export interface UpdateProductDto {
   slug?: string;
@@ -184,13 +185,6 @@ export interface UpdateProductDto {
   customAttributes?: Record<string, unknown>;
   isActive?: boolean;
   isFeatured?: boolean;
-  // Branch inventory updates
-  branchInventory?: {
-    branchId: string;
-    isAvailable: boolean;
-    priceOverride?: number;
-    stock?: number;
-  }[];
 }
 
 /**

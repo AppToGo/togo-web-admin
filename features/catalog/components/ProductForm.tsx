@@ -35,7 +35,15 @@ interface ProductFormProps {
   categories: BusinessCategory[];
   branches?: Branch[];
   branchAvailability?: BranchAvailability[];
-  onSubmit: (data: CreateSimpleProductDto | UpdateProductDto) => void;
+  onSubmit: (
+    data: CreateSimpleProductDto | UpdateProductDto,
+    branchInventory?: {
+      branchId: string;
+      isAvailable: boolean;
+      priceOverride?: number;
+      stock?: number;
+    }[]
+  ) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -169,51 +177,55 @@ export function ProductForm({
 
     // Use simple DTO for forms - service will convert to backend format
     // isActive siempre true - no hay estado global de producto
-    const data: CreateSimpleProductDto | UpdateProductDto = isEditing
-      ? {
-          // Update: send only changed fields using backend field names
-          price: parseFloat(formData.price),
-          stock: formData.stock === "" ? null : parseInt(formData.stock, 10),
-          customName: formData.name,
-          customDescription: formData.description || undefined,
-          customImage: formData.image || null,
-          categoryId: formData.categoryId || null,
-          isActive: true,
-          // Include branch inventory updates if modified
-          ...(hasModifiedBranchInventory && initialInventory.length > 0
-            ? {
-                branchInventory: initialInventory.map((inv) => ({
-                  branchId: inv.branchId,
-                  isAvailable: inv.isAvailable,
-                  priceOverride: inv.priceOverride,
-                  stock: inv.stock,
-                })),
-              }
-            : {}),
-        }
-      : {
-          // Create: use simple DTO (will be converted by service)
-          name: formData.name,
-          price: parseFloat(formData.price),
-          stock:
-            formData.stock === "" ? undefined : parseInt(formData.stock, 10),
-          description: formData.description || undefined,
-          image: formData.image || undefined,
-          categoryId: formData.categoryId || undefined,
-          isActive: true,
-          // Include initial inventory for branch activation
-          initialInventory:
-            initialInventory.length > 0
-              ? initialInventory.map((inv) => ({
-                  branchId: inv.branchId,
-                  isAvailable: inv.isAvailable,
-                  priceOverride: inv.priceOverride,
-                  stock: inv.stock,
-                }))
-              : undefined,
-        };
+    if (isEditing) {
+      // Update: send only product-level fields (NO branchInventory)
+      // Branch inventory updates are handled separately via bulkBranchUpdate
+      const data: UpdateProductDto = {
+        price: parseFloat(formData.price),
+        stock: formData.stock === "" ? null : parseInt(formData.stock, 10),
+        customName: formData.name,
+        customDescription: formData.description || undefined,
+        customImage: formData.image || null,
+        categoryId: formData.categoryId || null,
+        isActive: true,
+      };
 
-    onSubmit(data);
+      // Pass branch inventory separately if modified
+      const branchInventoryData =
+        hasModifiedBranchInventory && initialInventory.length > 0
+          ? initialInventory.map((inv) => ({
+              branchId: inv.branchId,
+              isAvailable: inv.isAvailable,
+              priceOverride: inv.priceOverride,
+              stock: inv.stock,
+            }))
+          : undefined;
+
+      onSubmit(data, branchInventoryData);
+    } else {
+      // Create: use simple DTO (will be converted by service)
+      const data: CreateSimpleProductDto = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock:
+          formData.stock === "" ? undefined : parseInt(formData.stock, 10),
+        description: formData.description || undefined,
+        image: formData.image || undefined,
+        categoryId: formData.categoryId || undefined,
+        // Include initial inventory for branch activation
+        initialInventory:
+          initialInventory.length > 0
+            ? initialInventory.map((inv) => ({
+                branchId: inv.branchId,
+                isAvailable: inv.isAvailable,
+                priceOverride: inv.priceOverride,
+                stock: inv.stock,
+              }))
+            : undefined,
+      };
+
+      onSubmit(data);
+    }
   };
 
   // Show warning if no branches selected for new product

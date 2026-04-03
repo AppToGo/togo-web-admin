@@ -423,14 +423,46 @@ export default function ProductsPage() {
     });
   };
 
-  const handleUpdateProduct = (
-    data: CreateCustomProductDto | UpdateProductDto
+  const handleUpdateProduct = async (
+    data: UpdateProductDto,
+    branchInventory?: {
+      branchId: string;
+      isAvailable: boolean;
+      priceOverride?: number;
+      stock?: number;
+    }[]
   ) => {
     if (!editingProduct) return;
-    updateProduct.mutate(
-      { productId: editingProduct.id, data: data as UpdateProductDto },
-      { onSuccess: () => setEditingProductId(null) }
-    );
+
+    try {
+      // Step 1: Update product fields first
+      await updateProduct.mutateAsync({
+        productId: editingProduct.id,
+        data,
+      });
+
+      // Step 2: Update branch inventory separately if modified
+      if (branchInventory && branchInventory.length > 0) {
+        // Use Promise.all to update all branches in parallel
+        await Promise.all(
+          branchInventory.map((branchData) =>
+            bulkBranchUpdate.mutateAsync({
+              productIds: [editingProduct.id],
+              branchId: branchData.branchId,
+              isAvailable: branchData.isAvailable,
+              stock: branchData.stock,
+              priceOverride: branchData.priceOverride,
+            })
+          )
+        );
+      }
+
+      // Close modal on success
+      setEditingProductId(null);
+    } catch {
+      // Error is handled by the hooks (toast notifications)
+      // Don't close modal on error so user can retry
+    }
   };
 
   // Memoized branch activation status map
@@ -677,7 +709,7 @@ export default function ProductsPage() {
             branchAvailability={editingProduct?.branchAvailability}
             onSubmit={handleUpdateProduct}
             onCancel={() => setEditingProductId(null)}
-            isLoading={updateProduct.isPending || isLoadingEditingProduct}
+            isLoading={updateProduct.isPending || bulkBranchUpdate.isPending || isLoadingEditingProduct}
           />
         </DialogContent>
       </Dialog>
