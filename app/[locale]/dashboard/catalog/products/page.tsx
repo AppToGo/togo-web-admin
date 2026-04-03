@@ -151,6 +151,7 @@ interface SelectableProductCardProps {
   branchActivationStatus?: {
     isAvailable: boolean;
     stock: number;
+    effectivePrice?: number;
   } | null;
   onToggleSelection: (id: string) => void;
   onEdit: (product: BusinessProduct) => void;
@@ -181,6 +182,7 @@ function SelectableProductCard({
       onSelect={handleSelect}
       showCheckbox={showCheckbox}
       branchInfo={branchActivationStatus || undefined}
+      effectivePrice={branchActivationStatus?.effectivePrice}
     />
   );
 }
@@ -426,15 +428,20 @@ export default function ProductsPage() {
   const branchActivationMap = useMemo(() => {
     if (!shouldUseBranchFilter || !productsData?.items) return new Map();
 
-    const map = new Map<string, { isAvailable: boolean; stock: number }>();
+    const map = new Map<string, { isAvailable: boolean; stock: number; effectivePrice?: number }>();
     productsData.items.forEach(
       (
         product: BusinessProduct & {
-          branchAvailability?: { isAvailable: boolean; stock: number };
+          branchInfo?: { isAvailable: boolean; stock: number; priceOverride: number | null };
         }
       ) => {
-        if (product.branchAvailability) {
-          map.set(product.id, product.branchAvailability);
+        if (product.branchInfo) {
+          map.set(product.id, {
+            isAvailable: product.branchInfo.isAvailable,
+            stock: product.branchInfo.stock ?? 0,
+            // Calculate effectivePrice client-side: priceOverride ?? product.price
+            effectivePrice: product.branchInfo.priceOverride ?? product.price,
+          });
         }
       }
     );

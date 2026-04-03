@@ -17,7 +17,7 @@ export interface BranchAvailability {
   isAvailable: boolean;
   stock: number | null;
   priceOverride: number | null;
-  effectivePrice: number;
+  // effectivePrice is calculated client-side: priceOverride ?? product.price
 }
 
 /**
@@ -71,7 +71,7 @@ export interface BusinessProductWithBranchInfo extends BusinessProduct {
     isAvailable: boolean;
     stock: number | null;
     priceOverride: number | null;
-    effectivePrice: number;
+    // effectivePrice is calculated client-side: priceOverride ?? product.price
   };
 }
 
