@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Package, AlertCircle } from "lucide-react";
 import { useMemo } from "react";
@@ -76,20 +76,28 @@ export function ProductForm({
   // Image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Separate state for category select to ensure proper syncing with Radix UI Select
-  const [selectedCategoryId, setSelectedCategoryId] = useState(formData.categoryId);
+  // Track which product we've already initialized to prevent re-initialization
+  const initializedProductIdRef = useRef<string | null>(null);
 
   // Initialize form with product data when editing
   useEffect(() => {
-    console.log("Initializing form with product", product);
-    if (product) {
-      // Use custom fields if they exist, otherwise fall back to computed fields
+    if (!product) {
+      // Reset when no product (creating new)
+      initializedProductIdRef.current = null;
+      return;
+    }
+
+    // Get the category ID from the product (handles both categoryId and category.id)
+    const productCategoryId = product.categoryId ?? product.category?.id ?? "";
+
+    // If this is a new product being edited, or if the category just arrived
+    const isNewProduct = initializedProductIdRef.current !== product.id;
+    const categoryArrived = !formData.categoryId && productCategoryId;
+
+    if (isNewProduct || categoryArrived) {
       const displayName = product.customName ?? product.name ?? "";
-      const displayDescription =
-        product.customDescription ?? product.description ?? "";
+      const displayDescription = product.customDescription ?? product.description ?? "";
       const displayImage = product.customImage ?? product.image ?? "";
-      const displayCategoryId =
-        product.categoryId ?? product.category?.id ?? "";
 
       setFormData({
         name: displayName,
@@ -97,12 +105,15 @@ export function ProductForm({
         stock: product.stock?.toString() ?? "",
         description: displayDescription,
         image: displayImage,
-        categoryId: displayCategoryId,
+        categoryId: productCategoryId,
       });
-      setSelectedCategoryId(displayCategoryId);
       setImagePreview(displayImage || product.globalProduct?.image || null);
+      
+      if (isNewProduct) {
+        initializedProductIdRef.current = product.id;
+      }
     }
-  }, [product?.id]);
+  }, [product, formData.categoryId]);
 
   // Initialize branch inventory from branchAvailability when editing
   useEffect(() => {
@@ -119,11 +130,6 @@ export function ProductForm({
       setInitialInventory(inventoryConfig);
     }
   }, [isEditing, branchAvailability]);
-
-  // Sync selectedCategoryId with formData.categoryId when formData changes externally
-  useEffect(() => {
-    setSelectedCategoryId(formData.categoryId);
-  }, [formData.categoryId]);
 
   // Handle input changes
   const handleChange = (
@@ -308,12 +314,8 @@ export function ProductForm({
       <div className="space-y-2">
         <Label htmlFor="category">{t("products.category")}</Label>
         <Select
-          key={product?.id || "new"}
-          value={selectedCategoryId}
-          onValueChange={(value) => {
-            setSelectedCategoryId(value);
-            setFormData((prev) => ({ ...prev, categoryId: value }));
-          }}
+          value={formData.categoryId}
+          onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryId: value }))}
           disabled={isLoading || categories.length === 0}
         >
           <SelectTrigger>

@@ -55,7 +55,8 @@
     "discount": "Save: ${amount}",
     "noStockControl": "No control",
     "selectAll": "Select all",
-    "deselectAll": "Deselect all"
+    "deselectAll": "Deselect all",
+    "inStock": "{count} units"
   },
   "activate": {
     "title": "Activate Product in Branch",

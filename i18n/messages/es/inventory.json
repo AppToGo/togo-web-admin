@@ -55,7 +55,8 @@
     "discount": "Ahorro: ${amount}",
     "noStockControl": "Sin control",
     "selectAll": "Seleccionar todas",
-    "deselectAll": "Deseleccionar todas"
+    "deselectAll": "Deseleccionar todas",
+    "inStock": "{count} unidades"
   },
   "activate": {
     "title": "Activar Producto en Sede",
