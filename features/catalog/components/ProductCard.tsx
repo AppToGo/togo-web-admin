@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Edit2, Trash2, Package, ImageOff } from "lucide-react";
+import { Edit2, Trash2, Package, ImageOff, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,7 +75,20 @@ export function ProductCard({
 
   const stockStatus = getStockStatus();
 
-  // Handle checkbox click with stop propagation
+  // Click en card - seleccionar si no es elemento interactivo
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (!showCheckbox) return;
+
+    const isInteractive = (e.target as HTMLElement).closest(
+      'button, a, [role="menu"], input, [data-no-select]'
+    );
+
+    if (!isInteractive) {
+      onSelect?.();
+    }
+  };
+
+  // Click en checkbox/overlay - propagar selección
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect?.();
@@ -87,27 +99,12 @@ export function ProductCard({
     return (
       <div
         className={cn(
-          "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg p-4 flex flex-col",
+          "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg p-4 h-full flex flex-col",
           "hover:shadow-card-md transition-all duration-200",
-
-          selected && "ring-2 ring-indigo-500 bg-indigo-50/30"
+          selected && "ring-2 ring-indigo-500 bg-white"
         )}
+        onClick={handleCardClick}
       >
-        {/* Checkbox - Grid */}
-        {showCheckbox && (
-          <div className="absolute top-2 left-2 z-20">
-            <div
-              onClick={handleCheckboxClick}
-              className="bg-white/90 backdrop-blur-sm rounded p-1 shadow-card-sm hover:bg-white transition-colors"
-            >
-              <Checkbox
-                checked={selected}
-                onCheckedChange={onSelect}
-                aria-label={tCommon("actions.select")}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Image */}
         <div className="relative aspect-square rounded-card bg-slate-50 mb-4 overflow-hidden">
@@ -124,28 +121,34 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Badges */}
-          <div
-            className={cn(
-              "absolute flex flex-col gap-1",
-              showCheckbox ? "top-10 left-2" : "top-2 left-2"
-            )}
-          >
-            {product.globalProductId && (
-              <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
-                {t("title")}
-              </span>
-            )}
-            {!product.globalProductId && (
-              <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
-                {t("status.custom")}
-              </span>
-            )}
-          </div>
+          {/* Overlay de selección - NUEVO */}
+          {showCheckbox && (
+            <div
+              onClick={handleCheckboxClick}
+              className={cn(
+                "absolute inset-0 flex items-center justify-center transition-opacity cursor-pointer z-[5]",
+                selected
+                  ? "opacity-100 bg-indigo-600/70"
+                  : "opacity-0 group-hover:opacity-100 bg-black/50"
+              )}
+              role="checkbox"
+              aria-checked={selected}
+              aria-label={tCommon("actions.select")}
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
+            >
+              <Check
+                className={cn(
+                  "w-16 h-16 drop-shadow-lg",
+                  selected ? "text-white" : "text-white/90"
+                )}
+              />
+            </div>
+          )}
 
-          {/* Status badge - solo branch availability */}
+          {/* Badge branchInfo */}
           {branchInfo && (
-            <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+            <div className="absolute top-2 right-2 z-10">
               <span
                 className={cn(
                   "px-2 py-1 text-[10px] font-medium rounded-full",
@@ -160,10 +163,24 @@ export function ProductCard({
               </span>
             </div>
           )}
+
+          {/* Badges tipo (global/custom) */}
+          <div className="absolute flex flex-col gap-1 top-2 left-2">
+            {product.globalProductId && (
+              <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
+                {t("title")}
+              </span>
+            )}
+            {!product.globalProductId && (
+              <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
+                {t("status.custom")}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="space-y-2 flex flex-col flex-1">
+        <div className="flex-1 flex flex-col min-h-0 space-y-2">
           <h3
             className={cn(
               "font-semibold text-slate-900 line-clamp-1",
@@ -173,19 +190,28 @@ export function ProductCard({
             {displayName}
           </h3>
 
+          {/* Categoría - AHORA después del título */}
+          {product.category && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+              <span className="text-xs text-slate-500">
+                {product.category.name}
+              </span>
+            </div>
+          )}
+
           {displayBrand && (
             <p className="text-xs text-slate-500">{displayBrand}</p>
           )}
 
           {displayDescription && (
-            <p className="text-xs text-slate-500 line-clamp-2">
+            <p className="text-xs text-slate-500 line-clamp-2 flex-1">
               {displayDescription}
             </p>
           )}
 
-          <div className="flex-1"></div>
-
-          <div className="pt-2 border-t border-slate-100">
+          {/* Border-t siempre al final con mt-auto */}
+          <div className="pt-2 border-t border-slate-100 mt-auto">
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold text-slate-900">
                 {formatPrice(product.price)}
@@ -195,19 +221,10 @@ export function ProductCard({
               </span>
             </div>
           </div>
-
-          {product.category && (
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-indigo-500" />
-              <span className="text-xs text-slate-500">
-                {product.category.name}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Actions */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -228,12 +245,20 @@ export function ProductCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit?.(product)}>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(product);
+                }}
+              >
                 <Edit2 className="w-4 h-4 mr-2" />
                 {tCommon("buttons.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onDelete?.(product)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(product);
+                }}
                 className="text-red-600 focus:text-red-600"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -250,20 +275,28 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4",
-        "hover:shadow-card transition-all duration-200",
-
-        selected && "ring-2 ring-indigo-500 bg-indigo-50/30"
+        "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4 hover:shadow-card transition-all duration-200 cursor-pointer",
+          selected && "ring-2 ring-indigo-500 bg-white"
       )}
+      onClick={handleCardClick}
     >
-      {/* Checkbox - List */}
+      {/* Icono de check - NUEVO */}
       {showCheckbox && (
-        <div onClick={handleCheckboxClick} className="flex-shrink-0">
-          <Checkbox
-            checked={selected}
-            onCheckedChange={onSelect}
-            aria-label={tCommon("actions.select")}
-          />
+        <div
+          onClick={handleCheckboxClick}
+          className={cn(
+            "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer",
+            selected
+              ? "bg-indigo-500 text-white"
+              : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
+          )}
+          role="checkbox"
+          aria-checked={selected}
+          aria-label={tCommon("actions.select")}
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
+        >
+          {selected && <Check className="w-4 h-4" />}
         </div>
       )}
 
@@ -285,6 +318,7 @@ export function ProductCard({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
+        {/* Título con badges inline */}
         <div className="flex items-start gap-2">
           <h3 className="font-semibold text-slate-900">{displayName}</h3>
           {product.isFromTemplate ? (
@@ -312,14 +346,15 @@ export function ProductCard({
           )}
         </div>
 
+        {/* Categoría, Brand, Stock - AHORA categoría primero */}
         <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-          {displayBrand && <span>{displayBrand}</span>}
           {product.category && (
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
               {product.category.name}
             </span>
           )}
+          {displayBrand && <span>{displayBrand}</span>}
           <span className={stockStatus.color}>{stockStatus.label}</span>
         </div>
       </div>
@@ -337,7 +372,10 @@ export function ProductCard({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => onEdit?.(product)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit?.(product);
+          }}
         >
           <Edit2 className="w-4 h-4" />
         </Button>
@@ -345,7 +383,10 @@ export function ProductCard({
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-red-600 hover:text-red-700"
-          onClick={() => onDelete?.(product)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.(product);
+          }}
         >
           <Trash2 className="w-4 h-4" />
         </Button>

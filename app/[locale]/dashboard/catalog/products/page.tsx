@@ -284,8 +284,6 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(
     null
@@ -328,12 +326,7 @@ export default function ProductsPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [
-    searchQuery,
-    selectedCategory,
-    selectedBranchId,
-    activationFilter,
-  ]);
+  }, [searchQuery, selectedCategory, selectedBranchId, activationFilter]);
 
   // Reset selection when branch changes
   useEffect(() => {
@@ -623,6 +616,7 @@ export default function ProductsPage() {
               </div>
             </div>
           )}
+          <div className="flex flex-1 gap-2"></div>
           <Button
             onClick={() => setIsCreateModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-700"
