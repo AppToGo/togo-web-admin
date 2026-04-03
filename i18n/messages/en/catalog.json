@@ -38,6 +38,7 @@
     "stockOptional": "Stock (optional)",
     "activeProduct": "Active product",
     "branchAvailability": "Availability by Branch",
+    "modified": "Modified",
     "noInventoryWarning": "Product will be created but won't be available at any branch until you configure its inventory",
     "presentation": "Presentation: {unit}",
     "sku": "SKU",

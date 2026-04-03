@@ -25,6 +25,7 @@ import {
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
+  useProductWithBranchAvailability,
 } from "@/features/catalog/hooks";
 import {
   ProductCard,
@@ -204,9 +205,17 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(
-    null
-  );
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  // Fetch full product data with branch availability when editing
+  const { data: editingProductWithAvailability, isLoading: isLoadingEditingProduct } =
+    useProductWithBranchAvailability(
+      businessId || "",
+      editingProductId || ""
+    );
+
+  // Use the fetched product data for editing, or null if not editing
+  const editingProduct = editingProductWithAvailability || null;
 
   // Nuevos estados para funcionalidad HYBRID
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
@@ -420,7 +429,7 @@ export default function ProductsPage() {
     if (!editingProduct) return;
     updateProduct.mutate(
       { productId: editingProduct.id, data: data as UpdateProductDto },
-      { onSuccess: () => setEditingProduct(null) }
+      { onSuccess: () => setEditingProductId(null) }
     );
   };
 
@@ -584,7 +593,7 @@ export default function ProductsPage() {
                   branchActivationMap.get(product.id) || null
                 }
                 onToggleSelection={toggleProductSelection}
-                onEdit={setEditingProduct}
+                onEdit={(product) => setEditingProductId(product.id)}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
               />
             ))}
@@ -652,7 +661,7 @@ export default function ProductsPage() {
       {/* Edit Product Modal */}
       <Dialog
         open={!!editingProduct}
-        onOpenChange={() => setEditingProduct(null)}
+        onOpenChange={() => setEditingProductId(null)}
       >
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -664,9 +673,11 @@ export default function ProductsPage() {
           <ProductForm
             product={editingProduct}
             categories={categories}
+            branches={branches}
+            branchAvailability={editingProduct?.branchAvailability}
             onSubmit={handleUpdateProduct}
-            onCancel={() => setEditingProduct(null)}
-            isLoading={updateProduct.isPending}
+            onCancel={() => setEditingProductId(null)}
+            isLoading={updateProduct.isPending || isLoadingEditingProduct}
           />
         </DialogContent>
       </Dialog>
