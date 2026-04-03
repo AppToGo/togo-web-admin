@@ -343,6 +343,8 @@ export default function ProductsPage() {
   const updateProduct = useUpdateProduct(businessId || "");
   const deleteProduct = useDeleteProduct(businessId || "");
   const bulkBranchUpdate = useBulkBranchUpdate(businessId || "");
+  // Silent version for product edit flow (no toast notifications)
+  const silentBulkBranchUpdate = useBulkBranchUpdate(businessId || "", { silent: true });
 
   // Handlers para selección múltiple
   const toggleProductSelection = useCallback((id: string) => {
@@ -444,9 +446,10 @@ export default function ProductsPage() {
       // Step 2: Update branch inventory separately if modified
       if (branchInventory && branchInventory.length > 0) {
         // Use Promise.all to update all branches in parallel
+        // Using silentBulkBranchUpdate to avoid toast notifications during product edit
         await Promise.all(
           branchInventory.map((branchData) =>
-            bulkBranchUpdate.mutateAsync({
+            silentBulkBranchUpdate.mutateAsync({
               productIds: [editingProduct.id],
               branchId: branchData.branchId,
               isAvailable: branchData.isAvailable,
@@ -709,7 +712,7 @@ export default function ProductsPage() {
             branchAvailability={editingProduct?.branchAvailability}
             onSubmit={handleUpdateProduct}
             onCancel={() => setEditingProductId(null)}
-            isLoading={updateProduct.isPending || bulkBranchUpdate.isPending || isLoadingEditingProduct}
+            isLoading={updateProduct.isPending || silentBulkBranchUpdate.isPending || isLoadingEditingProduct}
           />
         </DialogContent>
       </Dialog>
