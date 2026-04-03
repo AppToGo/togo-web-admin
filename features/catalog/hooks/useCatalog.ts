@@ -658,7 +658,10 @@ export function useProductWithBranchAvailability(
  */
 export function useBulkBranchUpdate(
   businessId: string,
-  messages?: Partial<CatalogToastMessages>
+  options?: {
+    messages?: Partial<CatalogToastMessages>;
+    silent?: boolean;
+  }
 ) {
   const queryClient = useQueryClient();
 
@@ -666,20 +669,24 @@ export function useBulkBranchUpdate(
     mutationFn: (data: BulkBranchUpdateDto) =>
       catalogService.bulkBranchUpdate(businessId, data),
     onSuccess: (result) => {
-      toast.success(
-        messages?.bulkUpdateSuccess ??
-          `${result.processed} products updated successfully`
-      );
+      if (!options?.silent) {
+        toast.success(
+          options?.messages?.bulkUpdateSuccess ??
+            `${result.processed} products updated successfully`
+        );
+      }
       queryClient.invalidateQueries({
         queryKey: catalogKeys.products(businessId),
       });
     },
     onError: (error: Error) => {
-      toast.error(
-        error.message ||
-          messages?.errorBulkUpdate ||
-          "Error updating products"
-      );
+      if (!options?.silent) {
+        toast.error(
+          error.message ||
+            options?.messages?.errorBulkUpdate ||
+            "Error updating products"
+        );
+      }
     },
   });
 }
