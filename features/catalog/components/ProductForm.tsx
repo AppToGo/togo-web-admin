@@ -28,11 +28,13 @@ import type {
   CreateSimpleProductDto,
   UpdateProductDto,
 } from "../types/catalog.types";
+import type { BranchAvailability } from "../types/hybrid-catalog.types";
 
 interface ProductFormProps {
   product?: BusinessProduct | null;
   categories: BusinessCategory[];
   branches?: Branch[];
+  branchAvailability?: BranchAvailability[];
   onSubmit: (data: CreateSimpleProductDto | UpdateProductDto) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -42,6 +44,7 @@ export function ProductForm({
   product,
   categories,
   branches = [],
+  branchAvailability = [],
   onSubmit,
   onCancel,
   isLoading = false,
@@ -61,10 +64,13 @@ export function ProductForm({
     categoryId: "",
   });
 
-  // Initial inventory state (for new products)
+  // Initial inventory state (for new products) / Branch inventory state (for editing)
   const [initialInventory, setInitialInventory] = useState<
     InitialInventoryConfig[]
   >([]);
+
+  // Track if branch inventory has been modified during edit
+  const [hasModifiedBranchInventory, setHasModifiedBranchInventory] = useState(false);
 
   // Image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -72,17 +78,38 @@ export function ProductForm({
   // Initialize form with product data when editing
   useEffect(() => {
     if (product) {
+      // Use custom fields if they exist, otherwise fall back to computed fields
+      const displayName = product.customName ?? product.name ?? "";
+      const displayDescription = product.customDescription ?? product.description ?? "";
+      const displayImage = product.customImage ?? product.image ?? "";
+
       setFormData({
-        name: product.name,
-        price: product.price.toString(),
+        name: displayName,
+        price: product.price?.toString() ?? "",
         stock: product.stock?.toString() ?? "",
-        description: product.description ?? "",
-        image: product.image ?? "",
+        description: displayDescription,
+        image: displayImage,
         categoryId: product.categoryId ?? "",
       });
-      setImagePreview(product.image || product.globalProduct?.image || null);
+      setImagePreview(displayImage || product.globalProduct?.image || null);
     }
   }, [product]);
+
+  // Initialize branch inventory from branchAvailability when editing
+  useEffect(() => {
+    if (isEditing && branchAvailability && branchAvailability.length > 0) {
+      const inventoryConfig: InitialInventoryConfig[] = branchAvailability.map(
+        (ba) => ({
+          branchId: ba.branchId,
+          branchName: ba.branchName,
+          isAvailable: ba.isAvailable,
+          priceOverride: ba.priceOverride ?? undefined,
+          stock: ba.stock ?? undefined,
+        })
+      );
+      setInitialInventory(inventoryConfig);
+    }
+  }, [isEditing, branchAvailability]);
 
   // Handle input changes
   const handleChange = (
@@ -108,6 +135,14 @@ export function ProductForm({
     setImagePreview(url || null);
   };
 
+  // Handle branch inventory changes during edit
+  const handleBranchInventoryChange = (inventory: InitialInventoryConfig[]) => {
+    setInitialInventory(inventory);
+    if (isEditing) {
+      setHasModifiedBranchInventory(true);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,6 +159,17 @@ export function ProductForm({
           customImage: formData.image || null,
           categoryId: formData.categoryId || null,
           isActive: true,
+          // Include branch inventory updates if modified
+          ...(hasModifiedBranchInventory && initialInventory.length > 0
+            ? {
+                branchInventory: initialInventory.map((inv) => ({
+                  branchId: inv.branchId,
+                  isAvailable: inv.isAvailable,
+                  priceOverride: inv.priceOverride,
+                  stock: inv.stock,
+                })),
+              }
+            : {}),
         }
       : {
           // Create: use simple DTO (will be converted by service)
@@ -305,14 +351,36 @@ export function ProductForm({
         )}
       </div>
 
-      {/* Branch Inventory Selector (only for new products) */}
+      {/* Branch Inventory Selector (for new products) */}
       {!isEditing && branches.length > 0 && (
         <div className="space-y-3 pt-4 border-t border-slate-200">
           <BranchInventorySelector
             branches={branches}
             basePrice={parseFloat(formData.price) || 0}
             value={initialInventory}
-            onChange={setInitialInventory}
+            onChange={handleBranchInventoryChange}
+          />
+        </div>
+      )}
+
+      {/* Branch Inventory Editor (for editing products) */}
+      {isEditing && branches.length > 0 && (
+        <div className="space-y-3 pt-4 border-t border-slate-200">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-700">
+              {t("products.branchAvailability")}
+            </span>
+            {hasModifiedBranchInventory && (
+              <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                {t("products.modified")}
+              </span>
+            )}
+          </div>
+          <BranchInventorySelector
+            branches={branches}
+            basePrice={parseFloat(formData.price) || 0}
+            value={initialInventory}
+            onChange={handleBranchInventoryChange}
           />
         </div>
       )}

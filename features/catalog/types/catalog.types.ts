@@ -184,6 +184,13 @@ export interface UpdateProductDto {
   customAttributes?: Record<string, unknown>;
   isActive?: boolean;
   isFeatured?: boolean;
+  // Branch inventory updates
+  branchInventory?: {
+    branchId: string;
+    isAvailable: boolean;
+    priceOverride?: number;
+    stock?: number;
+  }[];
 }
 
 /**
