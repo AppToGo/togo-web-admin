@@ -105,7 +105,6 @@ export function ProductCard({
         )}
         onClick={handleCardClick}
       >
-
         {/* Image */}
         <div className="relative aspect-square rounded-card bg-slate-50 mb-4 overflow-hidden">
           {productImage && !imageError ? (
@@ -158,8 +157,8 @@ export function ProductCard({
                 )}
               >
                 {branchInfo.isAvailable
-                  ? t("status.activeInBranch")
-                  : t("status.notActivated")}
+                  ? t("products.status.activeInBranch")
+                  : t("products.status.notActivated")}
               </span>
             </div>
           )}
@@ -276,7 +275,7 @@ export function ProductCard({
     <div
       className={cn(
         "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4 hover:shadow-card transition-all duration-200 cursor-pointer",
-          selected && "ring-2 ring-indigo-500 bg-white"
+        selected && "ring-2 ring-indigo-500 bg-white"
       )}
       onClick={handleCardClick}
     >
@@ -285,7 +284,7 @@ export function ProductCard({
         <div
           onClick={handleCheckboxClick}
           className={cn(
-            "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer",
+            "shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer",
             selected
               ? "bg-indigo-500 text-white"
               : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
@@ -301,7 +300,7 @@ export function ProductCard({
       )}
 
       {/* Image */}
-      <div className="relative w-16 h-16 rounded-card bg-slate-50 flex-shrink-0 overflow-hidden">
+      <div className="relative w-16 h-16 rounded-card bg-slate-50 shrink-0 overflow-hidden">
         {productImage && !imageError ? (
           <img
             src={productImage}
@@ -340,8 +339,8 @@ export function ProductCard({
               )}
             >
               {branchInfo.isAvailable
-                ? t("status.activeInBranch")
-                : t("status.notActivated")}
+                ? t("products.status.activeInBranch")
+                : t("products.status.notActivated")}
             </span>
           )}
         </div>

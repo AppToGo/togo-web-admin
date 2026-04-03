@@ -84,8 +84,9 @@
     "select": "Seleccionar",
     "selectedCount": "{count} seleccionados",
     "status": {
-      "activeInBranch": "Activo en sede",
-      "inactiveInBranch": "Inactivo en sede"
+      "activeInBranch": "Activo",
+      "inactiveInBranch": "Inactivo",
+      "notActivated": "No activado"
     }
   },
   "categories": {
