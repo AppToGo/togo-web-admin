@@ -227,6 +227,8 @@ export function useDeleteProduct(
 
 /**
  * Hook to toggle product status
+ * @deprecated El concepto de estado global activo/inactivo fue eliminado. 
+ * Los productos siempre tienen isActive: true. Use bulkBranchUpdate para desactivar productos en sedes.
  *
  * @param businessId - The business ID
  * @param messages - Optional translated toast messages. Use useCatalogTranslations() hook to get these
@@ -236,6 +238,7 @@ export function useDeleteProduct(
  * const messages = useCatalogTranslations();
  * const toggleStatus = useToggleProductStatus(businessId, messages);
  * ```
+ * @deprecated
  */
 export function useToggleProductStatus(
   businessId: string,

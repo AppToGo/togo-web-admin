@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Edit2, Trash2, Power, Package, ImageOff } from "lucide-react";
+import { Edit2, Trash2, Package, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,7 +18,6 @@ interface ProductCardProps {
   product: BusinessProduct;
   onEdit?: (product: BusinessProduct) => void;
   onDelete?: (product: BusinessProduct) => void;
-  onToggleStatus?: (product: BusinessProduct, isActive: boolean) => void;
   viewMode?: "grid" | "list";
   selected?: boolean;
   onSelect?: () => void;
@@ -30,7 +29,6 @@ export function ProductCard({
   product,
   onEdit,
   onDelete,
-  onToggleStatus,
   viewMode = "grid",
   selected = false,
   onSelect,
@@ -91,7 +89,7 @@ export function ProductCard({
         className={cn(
           "group relative bg-white/40 backdrop-blur-xl border border-white/80 rounded-card-lg p-4 flex flex-col",
           "hover:shadow-card-md transition-all duration-200",
-          !product.isActive && "opacity-60 grayscale-[0.3]",
+
           selected && "ring-2 ring-indigo-500 bg-indigo-50/30"
         )}
       >
@@ -127,10 +125,12 @@ export function ProductCard({
           )}
 
           {/* Badges */}
-          <div className={cn(
-            "absolute flex flex-col gap-1",
-            showCheckbox ? "top-10 left-2" : "top-2 left-2"
-          )}>
+          <div
+            className={cn(
+              "absolute flex flex-col gap-1",
+              showCheckbox ? "top-10 left-2" : "top-2 left-2"
+            )}
+          >
             {product.globalProductId && (
               <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
                 {t("title")}
@@ -143,21 +143,9 @@ export function ProductCard({
             )}
           </div>
 
-          {/* Status badge */}
-          <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-            <span
-              className={cn(
-                "px-2 py-1 text-[10px] font-medium rounded-full",
-                product.isActive
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-slate-200 text-slate-600"
-              )}
-            >
-              {product.isActive
-                ? tCommon("status.active")
-                : tCommon("status.inactive")}
-            </span>
-            {branchInfo && (
+          {/* Status badge - solo branch availability */}
+          {branchInfo && (
+            <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
               <span
                 className={cn(
                   "px-2 py-1 text-[10px] font-medium rounded-full",
@@ -170,8 +158,8 @@ export function ProductCard({
                   ? t("status.activeInBranch")
                   : t("status.notActivated")}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -245,14 +233,6 @@ export function ProductCard({
                 {tCommon("buttons.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onToggleStatus?.(product, !product.isActive)}
-              >
-                <Power className="w-4 h-4 mr-2" />
-                {product.isActive
-                  ? t("actions.deactivate")
-                  : t("actions.activate")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
                 onClick={() => onDelete?.(product)}
                 className="text-red-600 focus:text-red-600"
               >
@@ -272,7 +252,7 @@ export function ProductCard({
       className={cn(
         "group flex items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card p-4",
         "hover:shadow-card transition-all duration-200",
-        !product.isActive && "opacity-60 grayscale-[0.3]",
+
         selected && "ring-2 ring-indigo-500 bg-indigo-50/30"
       )}
     >
@@ -316,18 +296,6 @@ export function ProductCard({
               {t("status.custom")}
             </span>
           )}
-          <span
-            className={cn(
-              "px-1.5 py-0.5 text-[10px] rounded",
-              product.isActive
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-slate-200 text-slate-600"
-            )}
-          >
-            {product.isActive
-              ? tCommon("status.active")
-              : tCommon("status.inactive")}
-          </span>
           {branchInfo && (
             <span
               className={cn(
@@ -372,14 +340,6 @@ export function ProductCard({
           onClick={() => onEdit?.(product)}
         >
           <Edit2 className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => onToggleStatus?.(product, !product.isActive)}
-        >
-          <Power className="w-4 h-4" />
         </Button>
         <Button
           variant="ghost"
