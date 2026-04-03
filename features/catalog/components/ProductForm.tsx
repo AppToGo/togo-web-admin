@@ -84,6 +84,8 @@ export function ProductForm({
       const displayDescription =
         product.customDescription ?? product.description ?? "";
       const displayImage = product.customImage ?? product.image ?? "";
+      const displayCategoryId =
+        product.categoryId ?? product.category?.id ?? "";
 
       setFormData({
         name: displayName,
@@ -91,11 +93,11 @@ export function ProductForm({
         stock: product.stock?.toString() ?? "",
         description: displayDescription,
         image: displayImage,
-        categoryId: product.categoryId ?? product.category?.id ?? "",
+        categoryId: displayCategoryId,
       });
       setImagePreview(displayImage || product.globalProduct?.image || null);
     }
-  }, [product]);
+  }, [product?.id]);
 
   // Initialize branch inventory from branchAvailability when editing
   useEffect(() => {
@@ -202,7 +204,6 @@ export function ProductForm({
   const showInventoryWarning =
     !isEditing && branches.length > 0 && initialInventory.length === 0;
 
-  console.log("formData", formData);
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-7">
       {/* Image Preview */}
@@ -296,7 +297,7 @@ export function ProductForm({
       <div className="space-y-2">
         <Label htmlFor="category">{t("products.category")}</Label>
         <Select
-          key={product?.id || 'new'}
+          key={product?.id || "new"}
           value={formData.categoryId}
           onValueChange={(value) =>
             setFormData((prev) => ({ ...prev, categoryId: value }))
