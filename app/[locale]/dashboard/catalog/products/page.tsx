@@ -428,19 +428,27 @@ export default function ProductsPage() {
   const branchActivationMap = useMemo(() => {
     if (!shouldUseBranchFilter || !productsData?.items) return new Map();
 
-    const map = new Map<string, { isAvailable: boolean; stock: number; effectivePrice?: number }>();
+    const map = new Map<
+      string,
+      { isAvailable: boolean; stock: number; effectivePrice?: number }
+    >();
     productsData.items.forEach(
       (
         product: BusinessProduct & {
-          branchInfo?: { isAvailable: boolean; stock: number; priceOverride: number | null };
+          branchAvailability?: {
+            isAvailable: boolean;
+            stock: number;
+            priceOverride: number | null;
+          };
         }
       ) => {
-        if (product.branchInfo) {
+        if (product.branchAvailability) {
           map.set(product.id, {
-            isAvailable: product.branchInfo.isAvailable,
-            stock: product.branchInfo.stock ?? 0,
+            isAvailable: product.branchAvailability.isAvailable,
+            stock: product.branchAvailability.stock ?? 0,
             // Calculate effectivePrice client-side: priceOverride ?? product.price
-            effectivePrice: product.branchInfo.priceOverride ?? product.price,
+            effectivePrice:
+              product.branchAvailability.priceOverride ?? product.price,
           });
         }
       }
