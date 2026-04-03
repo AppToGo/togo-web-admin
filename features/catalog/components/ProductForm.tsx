@@ -62,7 +62,9 @@ export function ProductForm({
   });
 
   // Initial inventory state (for new products)
-  const [initialInventory, setInitialInventory] = useState<InitialInventoryConfig[]>([]);
+  const [initialInventory, setInitialInventory] = useState<
+    InitialInventoryConfig[]
+  >([]);
 
   // Image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -127,30 +129,33 @@ export function ProductForm({
           // Create: use simple DTO (will be converted by service)
           name: formData.name,
           price: parseFloat(formData.price),
-          stock: formData.stock === "" ? undefined : parseInt(formData.stock, 10),
+          stock:
+            formData.stock === "" ? undefined : parseInt(formData.stock, 10),
           description: formData.description || undefined,
           image: formData.image || undefined,
           categoryId: formData.categoryId || undefined,
           isActive: true,
           // Include initial inventory for branch activation
-          initialInventory: initialInventory.length > 0
-            ? initialInventory.map((inv) => ({
-                branchId: inv.branchId,
-                isAvailable: inv.isAvailable,
-                priceOverride: inv.priceOverride,
-                stock: inv.stock,
-              }))
-            : undefined,
+          initialInventory:
+            initialInventory.length > 0
+              ? initialInventory.map((inv) => ({
+                  branchId: inv.branchId,
+                  isAvailable: inv.isAvailable,
+                  priceOverride: inv.priceOverride,
+                  stock: inv.stock,
+                }))
+              : undefined,
         };
 
     onSubmit(data);
   };
 
   // Show warning if no branches selected for new product
-  const showInventoryWarning = !isEditing && branches.length > 0 && initialInventory.length === 0;
+  const showInventoryWarning =
+    !isEditing && branches.length > 0 && initialInventory.length === 0;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 p-7">
       {/* Image Preview */}
       <div className="flex justify-center">
         <div className="relative w-32 h-32 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
@@ -303,20 +308,6 @@ export function ProductForm({
       {/* Branch Inventory Selector (only for new products) */}
       {!isEditing && branches.length > 0 && (
         <div className="space-y-3 pt-4 border-t border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            {t("products.branchAvailability")}
-          </h3>
-
-          {showInventoryWarning && (
-            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-amber-700">
-                {t("products.noInventoryWarning")}
-              </p>
-            </div>
-          )}
-
           <BranchInventorySelector
             branches={branches}
             basePrice={parseFloat(formData.price) || 0}

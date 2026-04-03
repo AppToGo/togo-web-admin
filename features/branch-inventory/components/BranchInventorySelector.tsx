@@ -2,7 +2,7 @@
 
 /**
  * BranchInventorySelector Component
- * 
+ *
  * Componente para seleccionar sedes al crear/editar un producto.
  * Permite configurar disponibilidad, stock y precio por sucursal.
  */
@@ -71,9 +71,7 @@ export function BranchInventorySelector({
   const handleUpdateConfig = useCallback(
     (branchId: string, updates: Partial<InitialInventoryConfig>) => {
       onChange(
-        value.map((v) =>
-          v.branchId === branchId ? { ...v, ...updates } : v
-        )
+        value.map((v) => (v.branchId === branchId ? { ...v, ...updates } : v))
       );
     },
     [value, onChange]
@@ -111,7 +109,8 @@ export function BranchInventorySelector({
     );
   }
 
-  const allSelected = branches.length > 0 && branches.every((b) => selectedBranchIds.has(b.id));
+  const allSelected =
+    branches.length > 0 && branches.every((b) => selectedBranchIds.has(b.id));
 
   return (
     <div className="space-y-4">
@@ -133,14 +132,6 @@ export function BranchInventorySelector({
           {allSelected ? tc("buttons.deselectAll") : tc("buttons.selectAll")}
         </Button>
       </div>
-
-      {/* Warning if no branches selected */}
-      {value.length === 0 && (
-        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-amber-700">{t("selector.noSelectionWarning")}</p>
-        </div>
-      )}
 
       {/* Branches list */}
       <div className="space-y-3">
@@ -191,7 +182,9 @@ export function BranchInventorySelector({
                       <Switch
                         checked={config.isAvailable}
                         onCheckedChange={(checked) =>
-                          handleUpdateConfig(branch.id, { isAvailable: checked })
+                          handleUpdateConfig(branch.id, {
+                            isAvailable: checked,
+                          })
                         }
                       />
                     </div>
@@ -200,7 +193,7 @@ export function BranchInventorySelector({
 
                 {/* Configuration fields (only when selected) */}
                 {isSelected && (
-                  <div className="grid grid-cols-2 gap-4 pl-7">
+                  <div className="grid grid-cols-2 gap-4 ">
                     {/* Price override */}
                     <div className="space-y-1.5">
                       <Label
@@ -209,7 +202,9 @@ export function BranchInventorySelector({
                       >
                         <DollarSign className="w-3 h-3" />
                         {t("selector.priceOverride")}
-                        <span className="text-slate-400">({t("selector.optional")})</span>
+                        <span className="text-slate-400">
+                          ({t("selector.optional")})
+                        </span>
                       </Label>
                       <div className="relative">
                         <Input
@@ -234,13 +229,16 @@ export function BranchInventorySelector({
                           </div>
                         )}
                       </div>
-                      {config.priceOverride && config.priceOverride < basePrice && (
-                        <p className="text-xs text-green-600">
-                          {t("selector.discount", {
-                            amount: (basePrice - config.priceOverride).toFixed(2),
-                          })}
-                        </p>
-                      )}
+                      {config.priceOverride &&
+                        config.priceOverride < basePrice && (
+                          <p className="text-xs text-green-600">
+                            {t("selector.discount", {
+                              amount: (
+                                basePrice - config.priceOverride
+                              ).toFixed(2),
+                            })}
+                          </p>
+                        )}
                     </div>
 
                     {/* Stock */}
@@ -251,7 +249,9 @@ export function BranchInventorySelector({
                       >
                         <Package className="w-3 h-3" />
                         {t("selector.stock")}
-                        <span className="text-slate-400">({t("selector.optional")})</span>
+                        <span className="text-slate-400">
+                          ({t("selector.optional")})
+                        </span>
                       </Label>
                       <Input
                         id={`stock-${branch.id}`}
@@ -262,7 +262,9 @@ export function BranchInventorySelector({
                         value={config.stock ?? ""}
                         onChange={(e) =>
                           handleUpdateConfig(branch.id, {
-                            stock: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                            stock: e.target.value
+                              ? parseInt(e.target.value, 10)
+                              : undefined,
                           })
                         }
                         className="h-8 text-sm"
