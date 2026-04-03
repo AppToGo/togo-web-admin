@@ -253,5 +253,118 @@
     "availableForSale": "Disponible para venta",
     "stock": "Stock",
     "priceOverride": "Precio en sede"
+  },
+  "inventory": {
+    "title": "Gestión de Inventario por Sede",
+    "subtitle": "Administra la disponibilidad, stock y precios de tus productos por sucursal",
+    "selectBranch": "Seleccionar Sede",
+    "branchPlaceholder": "Elige una sede para gestionar su inventario",
+    "mainBranch": "Principal",
+    "stats": {
+      "total": "Total Productos",
+      "activated": "Activados",
+      "lowStock": "Stock Bajo",
+      "outOfStock": "Agotados"
+    },
+    "noBranch": {
+      "title": "Selecciona una sede",
+      "message": "Elige una sede del menú desplegable para ver y gestionar su inventario"
+    },
+    "noBusiness": {
+      "title": "No hay negocio seleccionado",
+      "description": "Selecciona un negocio para gestionar el inventario por sede"
+    },
+    "noBranches": {
+      "title": "No hay sedes configuradas",
+      "description": "Crea al menos una sede para poder gestionar el inventario"
+    },
+    "table": {
+      "product": "Producto",
+      "category": "Categoría",
+      "activated": "Activado",
+      "available": "Disponible",
+      "stock": "Stock",
+      "basePrice": "Precio Base",
+      "branchPrice": "Precio Sede",
+      "actions": "Acciones",
+      "selectAll": "Seleccionar todos",
+      "selectRow": "Seleccionar fila",
+      "outOfStock": "Agotado",
+      "inStock": "{count} unidades",
+      "search": "Buscar productos...",
+      "showing": "Mostrando {count} de {total} productos",
+      "empty": {
+        "title": "No hay productos",
+        "message": "Crea productos en la sección de Catálogo para gestionar su inventario"
+      }
+    },
+    "selector": {
+      "title": "Disponibilidad por Sede",
+      "available": "Disponible",
+      "priceOverride": "Precio específico",
+      "stock": "Stock inicial",
+      "optional": "opcional",
+      "mainBranch": "Principal",
+      "noBranches": "No hay sedes disponibles",
+      "noSelectionWarning": "El producto se creará pero no estará disponible en ninguna sede hasta que actives el inventario",
+      "summary": "{count} sedes seleccionadas, {available} disponibles",
+      "discount": "Ahorro: ${amount}",
+      "noStockControl": "Sin control",
+      "selectAll": "Seleccionar todas",
+      "deselectAll": "Deseleccionar todas"
+    },
+    "activate": {
+      "title": "Activar Producto en Sede",
+      "description": "Configura el stock y precio para \"{name}\"",
+      "priceOverride": "Precio específico para esta sede",
+      "basePrice": "Precio base: {price}",
+      "stock": "Stock inicial",
+      "stockPlaceholder": "Dejar vacío para sin control",
+      "available": "Disponible para venta",
+      "cancel": "Cancelar",
+      "confirm": "Activar Producto",
+      "processing": "Activando..."
+    },
+    "notifications": {
+      "activated": "Producto activado en la sede",
+      "activateError": "Error al activar: {error}",
+      "deactivated": "Producto desactivado en la sede",
+      "deactivateError": "Error al desactivar: {error}",
+      "stockUpdated": "Stock actualizado",
+      "stockError": "Error al actualizar stock: {error}",
+      "bulkActivated": "{count} productos activados ({existing} ya existían)",
+      "bulkActivateError": "Error en activación masiva: {error}"
+    },
+    "bulk": {
+      "selected": "{count} seleccionados",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "adjustStock": "Ajustar Stock",
+      "activateTitle": "Activar Productos Seleccionados",
+      "activateDescription": "Configura el stock y disponibilidad para {count} productos",
+      "defaultStock": "Stock inicial por defecto",
+      "stockPlaceholder": "Dejar vacío para sin control",
+      "stockHint": "Se aplicará a todos los productos seleccionados",
+      "makeAvailable": "Disponible para venta",
+      "confirmActivate": "Activar {count} Productos",
+      "deactivateTitle": "Desactivar Productos",
+      "deactivateDescription": "¿Estás seguro de desactivar {count} productos de esta sede?",
+      "deactivateWarning": "Los productos desactivados no aparecerán en el catálogo de esta sede",
+      "confirmDeactivate": "Desactivar Productos",
+      "adjustStockTitle": "Ajustar Stock",
+      "adjustStockDescription": "Modifica el stock de {count} productos",
+      "addStock": "Agregar",
+      "removeStock": "Quitar",
+      "quantity": "Cantidad",
+      "quantityPlaceholder": "Cantidad a ajustar",
+      "confirmAdjustStock": "Aplicar Ajuste",
+      "stockAdjustmentHint": "El stock se incrementará o decrementará según la cantidad especificada"
+    },
+    "readOnlyTitle": "Vista de Solo Lectura",
+    "readOnlySubtitle": "Vista de solo lectura del inventario. Usa la página de",
+    "manageAvailability": "para gestionar disponibilidad.",
+    "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
+    "productsLink": "Productos",
+    "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
   }
 }
