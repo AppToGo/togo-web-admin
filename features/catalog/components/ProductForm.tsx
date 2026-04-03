@@ -76,8 +76,12 @@ export function ProductForm({
   // Image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Separate state for category select to ensure proper syncing with Radix UI Select
+  const [selectedCategoryId, setSelectedCategoryId] = useState(formData.categoryId);
+
   // Initialize form with product data when editing
   useEffect(() => {
+    console.log("Initializing form with product", product);
     if (product) {
       // Use custom fields if they exist, otherwise fall back to computed fields
       const displayName = product.customName ?? product.name ?? "";
@@ -95,6 +99,7 @@ export function ProductForm({
         image: displayImage,
         categoryId: displayCategoryId,
       });
+      setSelectedCategoryId(displayCategoryId);
       setImagePreview(displayImage || product.globalProduct?.image || null);
     }
   }, [product?.id]);
@@ -114,6 +119,11 @@ export function ProductForm({
       setInitialInventory(inventoryConfig);
     }
   }, [isEditing, branchAvailability]);
+
+  // Sync selectedCategoryId with formData.categoryId when formData changes externally
+  useEffect(() => {
+    setSelectedCategoryId(formData.categoryId);
+  }, [formData.categoryId]);
 
   // Handle input changes
   const handleChange = (
@@ -204,6 +214,7 @@ export function ProductForm({
   const showInventoryWarning =
     !isEditing && branches.length > 0 && initialInventory.length === 0;
 
+  console.log("ProductForm render", formData);
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-7">
       {/* Image Preview */}
@@ -298,10 +309,11 @@ export function ProductForm({
         <Label htmlFor="category">{t("products.category")}</Label>
         <Select
           key={product?.id || "new"}
-          value={formData.categoryId}
-          onValueChange={(value) =>
-            setFormData((prev) => ({ ...prev, categoryId: value }))
-          }
+          value={selectedCategoryId}
+          onValueChange={(value) => {
+            setSelectedCategoryId(value);
+            setFormData((prev) => ({ ...prev, categoryId: value }));
+          }}
           disabled={isLoading || categories.length === 0}
         >
           <SelectTrigger>
