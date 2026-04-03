@@ -89,7 +89,7 @@ export function ProductForm({
         stock: product.stock?.toString() ?? "",
         description: displayDescription,
         image: displayImage,
-        categoryId: product.categoryId ?? "",
+        categoryId: product.categoryId ?? product.category?.id ?? "",
       });
       setImagePreview(displayImage || product.globalProduct?.image || null);
     }
