@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Package, AlertCircle } from "lucide-react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +51,7 @@ export function ProductForm({
   const isEditing = !!product;
   const isFromTemplate = product?.isFromTemplate ?? false;
 
-  // Form state
+  // Form state - isActive siempre true (no hay estado global de producto)
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -58,7 +59,6 @@ export function ProductForm({
     description: "",
     image: "",
     categoryId: "",
-    isActive: true,
   });
 
   // Initial inventory state (for new products)
@@ -77,7 +77,6 @@ export function ProductForm({
         description: product.description ?? "",
         image: product.image ?? "",
         categoryId: product.categoryId ?? "",
-        isActive: product.isActive,
       });
       setImagePreview(product.image || product.globalProduct?.image || null);
     }
@@ -112,6 +111,7 @@ export function ProductForm({
     e.preventDefault();
 
     // Use simple DTO for forms - service will convert to backend format
+    // isActive siempre true - no hay estado global de producto
     const data: CreateSimpleProductDto | UpdateProductDto = isEditing
       ? {
           // Update: send only changed fields using backend field names
@@ -121,7 +121,7 @@ export function ProductForm({
           customDescription: formData.description || undefined,
           customImage: formData.image || null,
           categoryId: formData.categoryId || null,
-          isActive: formData.isActive,
+          isActive: true,
         }
       : {
           // Create: use simple DTO (will be converted by service)
@@ -131,6 +131,7 @@ export function ProductForm({
           description: formData.description || undefined,
           image: formData.image || undefined,
           categoryId: formData.categoryId || undefined,
+          isActive: true,
           // Include initial inventory for branch activation
           initialInventory: initialInventory.length > 0
             ? initialInventory.map((inv) => ({
@@ -297,26 +298,6 @@ export function ProductForm({
             {t("imageFallbackDescription")}
           </p>
         )}
-      </div>
-
-      {/* Active Toggle */}
-      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-card">
-        <div>
-          <Label htmlFor="isActive" className="font-medium">
-            {t("products.activeProduct")}
-          </Label>
-          <p className="text-xs text-slate-500">
-            {t("inactiveProductsDescription")}
-          </p>
-        </div>
-        <Switch
-          id="isActive"
-          checked={formData.isActive}
-          onCheckedChange={(checked) =>
-            setFormData((prev) => ({ ...prev, isActive: checked }))
-          }
-          disabled={isLoading}
-        />
       </div>
 
       {/* Branch Inventory Selector (only for new products) */}

@@ -10,9 +10,10 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Search, Filter, Check, Clock, Package, Store, Building2, FolderOpen, X } from "lucide-react";
+import { Search, Filter, Package, Store, Building2, FolderOpen, X } from "lucide-react";
 import { ViewToggle } from "@/components/ui/view-toggle";
 import { Switch } from "@/components/ui/switch";
+
 import { BranchSingleSelector } from "@/features/branches/components";
 import { cn } from "@/lib/utils";
 import {
@@ -38,8 +39,6 @@ interface ProductFiltersProps {
   onSearchChange: (value: string) => void;
   selectedCategory: string;
   onCategoryChange: (value: string) => void;
-  statusFilter: { active: boolean; inactive: boolean };
-  onStatusChange: (value: { active: boolean; inactive: boolean }) => void;
   viewMode: "grid" | "list";
   onViewModeChange: (mode: "grid" | "list") => void;
   categories: Category[];
@@ -58,8 +57,6 @@ export function ProductFilters({
   onSearchChange,
   selectedCategory,
   onCategoryChange,
-  statusFilter,
-  onStatusChange,
   viewMode,
   onViewModeChange,
   categories,
@@ -75,11 +72,10 @@ export function ProductFilters({
 
   // Verificar si hay filtros activos
   const hasCategoryFilter = selectedCategory !== "all";
-  const hasStatusFilter = !statusFilter.active || !statusFilter.inactive;
   const hasActivationFilter = selectedBranchId && activationFilter &&
     (!activationFilter.activated || !activationFilter.notActivated);
   
-  const hasAnyFilter = hasCategoryFilter || hasStatusFilter || !!hasActivationFilter;
+  const hasAnyFilter = hasCategoryFilter || !!hasActivationFilter;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -167,54 +163,6 @@ export function ProductFilters({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            {/* Separador */}
-            <div className="h-px bg-slate-100" />
-
-            {/* Filtro de Estado del Producto (Activo/Inactivo) */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-                <Package className="w-3.5 h-3.5" />
-                {t("products.filters.productStatus.title")}
-              </h4>
-              <div className="space-y-2">
-                {/* Switch Activos */}
-                <label className="flex items-center justify-between cursor-pointer group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                      <Check className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                      {tc("status.active")}
-                    </span>
-                  </div>
-                  <Switch
-                    checked={statusFilter.active}
-                    onCheckedChange={(checked) =>
-                      onStatusChange({ ...statusFilter, active: checked })
-                    }
-                  />
-                </label>
-
-                {/* Switch Inactivos */}
-                <label className="flex items-center justify-between cursor-pointer group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-slate-500" />
-                    </div>
-                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                      {tc("status.inactive")}
-                    </span>
-                  </div>
-                  <Switch
-                    checked={statusFilter.inactive}
-                    onCheckedChange={(checked) =>
-                      onStatusChange({ ...statusFilter, inactive: checked })
-                    }
-                  />
-                </label>
-              </div>
             </div>
 
             {/* Filtro de Estado en Sede (solo cuando hay sede seleccionada) */}

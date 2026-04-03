@@ -26,9 +26,13 @@ import {
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
-  useToggleProductStatus,
 } from "@/features/catalog/hooks";
-import { ProductCard, ProductForm, ProductFilters, BulkActionBar } from "@/features/catalog/components";
+import {
+  ProductCard,
+  ProductForm,
+  ProductFilters,
+  BulkActionBar,
+} from "@/features/catalog/components";
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import { toast } from "sonner";
 import type {
@@ -152,7 +156,6 @@ interface SelectableProductCardProps {
   onToggleSelection: (id: string) => void;
   onEdit: (product: BusinessProduct) => void;
   onDelete: (product: BusinessProduct) => void;
-  onToggleStatus: (product: BusinessProduct, isAvailable: boolean) => void;
 }
 
 function SelectableProductCard({
@@ -164,7 +167,6 @@ function SelectableProductCard({
   onToggleSelection,
   onEdit,
   onDelete,
-  onToggleStatus,
 }: SelectableProductCardProps) {
   const t = useTranslations("catalog");
 
@@ -178,7 +180,6 @@ function SelectableProductCard({
       viewMode={viewMode}
       onEdit={onEdit}
       onDelete={onDelete}
-      onToggleStatus={onToggleStatus}
     />
   );
 
@@ -186,7 +187,7 @@ function SelectableProductCard({
     return (
       <div
         className={cn(
-          "flex items-center gap-3 p-4 bg-white rounded-card border transition-all duration-200",
+          "flex items-center gap-3 p-4 transition-all duration-200",
           isSelected
             ? "border-indigo-500 bg-indigo-50/30"
             : "border-slate-100 hover:border-slate-200"
@@ -201,13 +202,13 @@ function SelectableProductCard({
           />
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            {cardContent}
-          </div>
+          <div className="flex items-center gap-2">{cardContent}</div>
         </div>
         {branchActivationStatus && (
           <Badge
-            variant={branchActivationStatus.isAvailable ? "default" : "secondary"}
+            variant={
+              branchActivationStatus.isAvailable ? "default" : "secondary"
+            }
             className={cn(
               "shrink-0",
               branchActivationStatus.isAvailable
@@ -228,7 +229,7 @@ function SelectableProductCard({
   return (
     <div
       className={cn(
-        "relative bg-white rounded-card-lg border transition-all duration-200",
+        "relative transition-all duration-200",
         isSelected
           ? "border-indigo-500 ring-2 ring-indigo-500/20"
           : "border-slate-100 hover:border-slate-200"
@@ -247,7 +248,9 @@ function SelectableProductCard({
       {branchActivationStatus && (
         <div className="absolute top-3 right-3 z-10">
           <Badge
-            variant={branchActivationStatus.isAvailable ? "default" : "secondary"}
+            variant={
+              branchActivationStatus.isAvailable ? "default" : "secondary"
+            }
             className={cn(
               branchActivationStatus.isAvailable
                 ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
@@ -260,9 +263,7 @@ function SelectableProductCard({
           </Badge>
         </div>
       )}
-      <div className="p-4">
-        {cardContent}
-      </div>
+      {cardContent}
     </div>
   );
 }
@@ -275,7 +276,6 @@ export default function ProductsPage() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
 
-
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
 
@@ -283,12 +283,8 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  
-  // NUEVO: Estado de status filter como objeto booleano
-  const [statusFilter, setStatusFilter] = useState<{ active: boolean; inactive: boolean }>({
-    active: true,
-    inactive: true,
-  });
+
+
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BusinessProduct | null>(
@@ -296,39 +292,48 @@ export default function ProductsPage() {
   );
 
   // Nuevos estados para funcionalidad HYBRID
-  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
+    new Set()
+  );
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
-  
+
   // NUEVO: Estado de activation filter como objeto booleano
-  const [activationFilter, setActivationFilter] = useState<{ activated: boolean; notActivated: boolean }>({
+  const [activationFilter, setActivationFilter] = useState<{
+    activated: boolean;
+    notActivated: boolean;
+  }>({
     activated: true,
     notActivated: true,
   });
-  
+
   const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
 
   // Paginación
   const [page, setPage] = useState(1);
   const pageSize = 12;
 
-  // NUEVO: Calcular conteo de filtros activos
+  // Calcular conteo de filtros activos
   const activeFiltersCount = [
     selectedCategory !== "all",
-    !(statusFilter.active && statusFilter.inactive),
-    selectedBranchId && !(activationFilter.activated && activationFilter.notActivated),
+    selectedBranchId &&
+      !(activationFilter.activated && activationFilter.notActivated),
   ].filter(Boolean).length;
 
-  // NUEVO: Función para limpiar todos los filtros
+  // Función para limpiar todos los filtros
   const clearAllFilters = () => {
     setSelectedCategory("all");
-    setStatusFilter({ active: true, inactive: true });
     setActivationFilter({ activated: true, notActivated: true });
   };
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCategory, statusFilter, selectedBranchId, activationFilter]);
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedBranchId,
+    activationFilter,
+  ]);
 
   // Reset selection when branch changes
   useEffect(() => {
@@ -337,42 +342,40 @@ export default function ProductsPage() {
 
   // Hooks de datos
   const { data: branchesData } = useBranches();
-  const { data: categoriesData } = useCategories(businessId || '');
+  const { data: categoriesData } = useCategories(businessId || "");
 
   // Lógica condicional: usar useProductsWithBranchFilter cuando hay sede seleccionada
   const shouldUseBranchFilter = !!selectedBranchId;
 
-  // NUEVO: Helper para convertir statusFilter a isActive para queries
-  const getIsActiveFromFilter = useCallback((): boolean | undefined => {
-    if (statusFilter.active && !statusFilter.inactive) return true;
-    if (!statusFilter.active && statusFilter.inactive) return false;
-    return undefined; // Ambos o ninguno = no filtrar
-  }, [statusFilter]);
-
-  // NUEVO: Helper para convertir activationFilter a string para queries
-  const getActivationStatusFromFilter = useCallback((): "activated" | "not_activated" | "all" => {
-    if (activationFilter.activated && !activationFilter.notActivated) return "activated";
-    if (!activationFilter.activated && activationFilter.notActivated) return "not_activated";
+  // Helper para convertir activationFilter a string para queries
+  const getActivationStatusFromFilter = useCallback(():
+    | "activated"
+    | "not_activated"
+    | "all" => {
+    if (activationFilter.activated && !activationFilter.notActivated)
+      return "activated";
+    if (!activationFilter.activated && activationFilter.notActivated)
+      return "not_activated";
     return "all";
   }, [activationFilter]);
 
   const myProductsQuery = useMyProducts(
-    !shouldUseBranchFilter ? (businessId || '') : '',
+    !shouldUseBranchFilter ? businessId || "" : "",
     {
       search: searchQuery || undefined,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-      isActive: getIsActiveFromFilter(),
+      isActive: true,
       page,
       limit: pageSize,
     }
   );
 
   const branchFilteredQuery = useProductsWithBranchFilter(
-    shouldUseBranchFilter ? (businessId || '') : '',
+    shouldUseBranchFilter ? businessId || "" : "",
     {
       search: searchQuery || undefined,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
-      isActive: getIsActiveFromFilter(),
+      isActive: true,
       branchId: selectedBranchId || undefined,
       activationStatus: getActivationStatusFromFilter(),
       page,
@@ -402,21 +405,23 @@ export default function ProductsPage() {
   const totalPages = Math.ceil(total / limit);
 
   // Build meta object to match expected format
-  const meta = total > 0 ? {
-    total,
-    page: currentPage,
-    limit,
-    totalPages,
-  } : undefined;
+  const meta =
+    total > 0
+      ? {
+          total,
+          page: currentPage,
+          limit,
+          totalPages,
+        }
+      : undefined;
 
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Mutaciones
-  const createProduct = useCreateProduct(businessId || '');
-  const updateProduct = useUpdateProduct(businessId || '');
-  const deleteProduct = useDeleteProduct(businessId || '');
-  const toggleStatus = useToggleProductStatus(businessId || '');
-  const bulkBranchUpdate = useBulkBranchUpdate(businessId || '');
+  const createProduct = useCreateProduct(businessId || "");
+  const updateProduct = useUpdateProduct(businessId || "");
+  const deleteProduct = useDeleteProduct(businessId || "");
+  const bulkBranchUpdate = useBulkBranchUpdate(businessId || "");
 
   // Handlers para selección múltiple
   const toggleProductSelection = useCallback((id: string) => {
@@ -454,7 +459,13 @@ export default function ProductsPage() {
     } catch {
       // Error ya manejado por el hook
     }
-  }, [selectedBranchId, selectedProductIds, bulkBranchUpdate, t, clearSelection]);
+  }, [
+    selectedBranchId,
+    selectedProductIds,
+    bulkBranchUpdate,
+    t,
+    clearSelection,
+  ]);
 
   const handleBulkDeactivate = useCallback(async () => {
     if (!selectedBranchId || selectedProductIds.size === 0) return;
@@ -469,7 +480,13 @@ export default function ProductsPage() {
     } catch {
       // Error ya manejado por el hook
     }
-  }, [selectedBranchId, selectedProductIds, bulkBranchUpdate, t, clearSelection]);
+  }, [
+    selectedBranchId,
+    selectedProductIds,
+    bulkBranchUpdate,
+    t,
+    clearSelection,
+  ]);
 
   const handleBulkAdjustStock = useCallback(() => {
     if (selectedProductIds.size === 0) return;
@@ -498,13 +515,19 @@ export default function ProductsPage() {
   // Memoized branch activation status map
   const branchActivationMap = useMemo(() => {
     if (!shouldUseBranchFilter || !productsData?.items) return new Map();
-    
+
     const map = new Map<string, { isAvailable: boolean; stock: number }>();
-    productsData.items.forEach((product: BusinessProduct & { branchAvailability?: { isAvailable: boolean; stock: number } }) => {
-      if (product.branchAvailability) {
-        map.set(product.id, product.branchAvailability);
+    productsData.items.forEach(
+      (
+        product: BusinessProduct & {
+          branchAvailability?: { isAvailable: boolean; stock: number };
+        }
+      ) => {
+        if (product.branchAvailability) {
+          map.set(product.id, product.branchAvailability);
+        }
       }
-    });
+    );
     return map;
   }, [shouldUseBranchFilter, productsData]);
 
@@ -541,6 +564,65 @@ export default function ProductsPage() {
             <p className="text-slate-500 mt-1">{t("subtitle")}</p>
           </div>
 
+          {/* Filtros usando ProductFilters component */}
+          <ProductFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedBranchId={selectedBranchId}
+            onBranchChange={setSelectedBranchId}
+            activationFilter={activationFilter}
+            onActivationFilterChange={setActivationFilter}
+            categories={categories}
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearAllFilters}
+            viewMode={viewMode}
+            onViewModeChange={(value) => setViewMode(value as ViewMode)}
+          />
+        </div>
+
+        <div className="flex flex-row justify-between items-end gap-4">
+          {/* Select All / Clear Selection Actions */}
+          {showCheckboxes && products.length > 0 && (
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={
+                      selectedProductIds.size === products.length &&
+                      products.length > 0
+                    }
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        selectAllProducts();
+                      } else {
+                        clearSelection();
+                      }
+                    }}
+                    aria-label={t("products.selectAll")}
+                  />
+                  <span className="text-sm text-slate-600">
+                    {selectedProductIds.size > 0
+                      ? t("products.selectedCount", {
+                          count: selectedProductIds.size,
+                        })
+                      : t("products.selectAll")}
+                  </span>
+                </div>
+                {hasSelection && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSelection}
+                    className="text-slate-500"
+                  >
+                    {tc("buttons.clear")}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           <Button
             onClick={() => setIsCreateModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-700"
@@ -549,61 +631,6 @@ export default function ProductsPage() {
             {t("products.create")}
           </Button>
         </div>
-
-        {/* Filtros usando ProductFilters component - ACTUALIZADO */}
-        <ProductFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          selectedBranchId={selectedBranchId}
-          onBranchChange={setSelectedBranchId}
-          activationFilter={activationFilter}
-          onActivationFilterChange={setActivationFilter}
-          categories={categories}
-          activeFiltersCount={activeFiltersCount}
-          onClearFilters={clearAllFilters}
-          viewMode={viewMode}
-          onViewModeChange={(value) => setViewMode(value as ViewMode)}
-        />
-
-        {/* Select All / Clear Selection Actions */}
-        {showCheckboxes && products.length > 0 && (
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={selectedProductIds.size === products.length && products.length > 0}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      selectAllProducts();
-                    } else {
-                      clearSelection();
-                    }
-                  }}
-                  aria-label={t("products.selectAll")}
-                />
-                <span className="text-sm text-slate-600">
-                  {selectedProductIds.size > 0
-                    ? t("products.selectedCount", { count: selectedProductIds.size })
-                    : t("products.selectAll")}
-                </span>
-              </div>
-              {hasSelection && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSelection}
-                  className="text-slate-500"
-                >
-                  {tc("buttons.clear")}
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Products Content */}
         {isLoadingProducts ? (
@@ -627,13 +654,12 @@ export default function ProductsPage() {
                 viewMode={viewMode}
                 isSelected={selectedProductIds.has(product.id)}
                 showCheckbox={showCheckboxes}
-                branchActivationStatus={branchActivationMap.get(product.id) || null}
+                branchActivationStatus={
+                  branchActivationMap.get(product.id) || null
+                }
                 onToggleSelection={toggleProductSelection}
                 onEdit={setEditingProduct}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
-                onToggleStatus={(p, isActive) =>
-                  toggleStatus.mutate({ productId: p.id, isActive })
-                }
               />
             ))}
           </div>
@@ -656,7 +682,9 @@ export default function ProductsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
+              onClick={() =>
+                setPage((prev) => Math.min(meta.totalPages, prev + 1))
+              }
               disabled={page >= meta.totalPages}
             >
               {tc("pagination.next")}
@@ -718,12 +746,17 @@ export default function ProductsPage() {
       </Dialog>
 
       {/* Bulk Stock Adjustment Modal (Placeholder) */}
-      <Dialog open={isBulkStockModalOpen} onOpenChange={setIsBulkStockModalOpen}>
+      <Dialog
+        open={isBulkStockModalOpen}
+        onOpenChange={setIsBulkStockModalOpen}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("bulkActions.adjustStock")}</DialogTitle>
             <DialogDescription>
-              {t("bulkActions.adjustStockDescription", { count: selectedProductIds.size })}
+              {t("bulkActions.adjustStockDescription", {
+                count: selectedProductIds.size,
+              })}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
