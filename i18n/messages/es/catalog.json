@@ -157,7 +157,8 @@
     "filters": {
       "brand": "Marca",
       "category": "Categoría"
-    }
+    },
+    "activate": "Activar"
   },
   "actions": {
     "activate": "Activar",
