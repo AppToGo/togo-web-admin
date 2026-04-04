@@ -6,6 +6,7 @@
   "mainBranch": "Principal",
   "stats": {
     "total": "Total Productos",
+    "available": "Disponibles",
     "activated": "Activados",
     "lowStock": "Stock Bajo",
     "outOfStock": "Agotados"
