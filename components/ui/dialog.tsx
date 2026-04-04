@@ -51,14 +51,14 @@ const Dialog = ({
 
   return createPortal(
     <DialogContext.Provider value={{ onClose: handleClose }}>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
         {/* Backdrop con blur */}
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
           onClick={handleClose}
         />
         {/* Content container */}
-        <div className="relative z-[101] w-full max-w-lg">{children}</div>
+        <div className="relative z-101 w-full max-w-lg">{children}</div>
       </div>
     </DialogContext.Provider>,
     document.body

@@ -60,7 +60,9 @@ export function ActivateProductModal({
     categoryId: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [initialInventory, setInitialInventory] = useState<InitialInventoryConfig[]>([]);
+  const [initialInventory, setInitialInventory] = useState<
+    InitialInventoryConfig[]
+  >([]);
 
   // Reset form when product changes
   useEffect(() => {
@@ -135,7 +137,8 @@ export function ActivateProductModal({
       price: parseFloat(formData.price),
       stock: formData.stock === "" ? undefined : parseInt(formData.stock, 10),
       categoryId: formData.categoryId || undefined,
-      initialInventory: initialInventory.length > 0 ? initialInventory : undefined,
+      initialInventory:
+        initialInventory.length > 0 ? initialInventory : undefined,
     };
 
     onActivate(submitData);
@@ -152,7 +155,7 @@ export function ActivateProductModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-600" />
@@ -254,19 +257,6 @@ export function ActivateProductModal({
             )}
           </div>
 
-          {/* Branch Inventory Selector */}
-          {branches.length > 0 && (
-            <div className="space-y-2">
-              <Label>{t("products.branchAvailability")}</Label>
-              <BranchInventorySelector
-                branches={branches}
-                basePrice={parseFloat(formData.price) || 0}
-                value={initialInventory}
-                onChange={setInitialInventory}
-              />
-            </div>
-          )}
-
           {/* Stock and Category */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -307,6 +297,19 @@ export function ActivateProductModal({
               </Select>
             </div>
           </div>
+
+          {/* Branch Inventory Selector */}
+          {branches.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("products.branchAvailability")}</Label>
+              <BranchInventorySelector
+                branches={branches}
+                basePrice={parseFloat(formData.price) || 0}
+                value={initialInventory}
+                onChange={setInitialInventory}
+              />
+            </div>
+          )}
 
           {/* Info */}
           <div className="p-3 bg-blue-50 rounded-card text-xs text-blue-700">
