@@ -257,7 +257,7 @@ export function ActivateProductModal({
           {/* Branch Inventory Selector */}
           {branches.length > 0 && (
             <div className="space-y-2">
-              <Label>{t("branchAvailability", { defaultValue: "Disponibilidad por Sede" })}</Label>
+              <Label>{t("products.branchAvailability")}</Label>
               <BranchInventorySelector
                 branches={branches}
                 basePrice={parseFloat(formData.price) || 0}
