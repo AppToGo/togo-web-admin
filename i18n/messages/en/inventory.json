@@ -104,5 +104,11 @@
     "quantityPlaceholder": "Amount to adjust",
     "confirmAdjustStock": "Apply Adjustment",
     "stockAdjustmentHint": "Stock will be increased or decreased by the specified amount"
-  }
+  },
+  "readOnlyTitle": "Read-Only View",
+  "readOnlySubtitle": "Read-only view of inventory. Go to",
+  "readOnlyDescription": "This page shows the current inventory status by branch. To activate/deactivate products or make catalog changes, go to",
+  "manageAvailability": "to manage availability.",
+  "productsLink": "Products",
+  "operatorsNote": "Operators can make basic stock adjustments from here."
 }
