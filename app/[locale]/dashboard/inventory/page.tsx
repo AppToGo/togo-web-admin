@@ -122,53 +122,17 @@ export default function InventoryPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header con título y descripción */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {t("title")}
-          </h1>
-          <p className="text-sm text-slate-500">
-            {t("readOnlySubtitle")}{" "}
-            <a
-              href="/dashboard/products"
-              className="text-primary hover:underline font-medium"
-            >
-              {t("productsLink")}
-            </a>{" "}
-            {t("manageAvailability")}
-          </p>
-        </div>
-
-        {/* Alerta informativa */}
-        <Alert className="bg-blue-50 border-blue-200">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertTitle className="text-blue-900">
-            {t("readOnlyTitle")}
-          </AlertTitle>
-          <AlertDescription className="text-blue-700">
-            {t("readOnlyDescription")}{" "}
-            <a
-              href="/dashboard/products"
-              className="font-semibold underline hover:no-underline"
-            >
-              {t("productsLink")}
-            </a>
-            . {t("operatorsNote")}
-          </AlertDescription>
-        </Alert>
-
-        {/* Inventory management component */}
-        <BranchInventoryManager readOnly={true}
-          businessId={businessId}
-          branches={branches.map((b) => ({
-            id: b.id,
-            name: b.name,
-            code: b.code,
-            isMainBranch: b.isMainBranch,
-          }))}
-        />
-      </div>
+      {/* Inventory management component */}
+      <BranchInventoryManager
+        readOnly={true}
+        businessId={businessId}
+        branches={branches.map((b) => ({
+          id: b.id,
+          name: b.name,
+          code: b.code,
+          isMainBranch: b.isMainBranch,
+        }))}
+      />
     </DashboardLayout>
   );
 }

@@ -105,26 +105,26 @@ export function BulkInventoryActions({
           exit={{ opacity: 0, y: 20 }}
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
         >
-          <div className="bg-slate-900 text-white rounded-xl shadow-2xl p-2 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 px-4 py-2 flex items-center gap-4">
             {/* Selection count */}
-            <div className="flex items-center gap-2 px-3 py-1.5 border-r border-slate-700">
-              <span className="text-sm font-medium">
+            <div className="flex items-center gap-2 px-3 py-1.5 border-r border-slate-200 text-slate-900">
+              <span className="text-sm font-medium text-slate-900">
                 {t("bulk.selected", { count: selectedCount })}
               </span>
               <button
                 onClick={onClearSelection}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-slate-400 hover:text-black transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant="ghost"
-                className="text-white hover:bg-slate-800"
+                variant="outline"
+                className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
                 onClick={() => setActiveAction("activate")}
                 disabled={isLoading}
               >
@@ -134,8 +134,8 @@ export function BulkInventoryActions({
 
               <Button
                 size="sm"
-                variant="ghost"
-                className="text-white hover:bg-slate-800"
+                variant="outline"
+                className="text-amber-600 border-amber-200 hover:bg-amber-50"
                 onClick={() => setActiveAction("deactivate")}
                 disabled={isLoading}
               >
@@ -145,8 +145,7 @@ export function BulkInventoryActions({
 
               <Button
                 size="sm"
-                variant="ghost"
-                className="text-white hover:bg-slate-800"
+                variant="outline"
                 onClick={() => setActiveAction("adjustStock")}
                 disabled={isLoading}
               >
@@ -231,14 +230,14 @@ export function BulkInventoryActions({
             </DialogDescription>
           </DialogHeader>
 
-          <DialogDescription className="px-4">
+          <div className="px-4">
             <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-sm text-amber-700">
                 {t("bulk.deactivateWarning")}
               </p>
             </div>
-          </DialogDescription>
+          </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleClose}>
@@ -278,7 +277,7 @@ export function BulkInventoryActions({
             </DialogDescription>
           </DialogHeader>
 
-          <DialogDescription className="px-7">
+          <div className="px-7">
             <div className="space-y-4 py-4">
               {/* Increment/Decrement toggle */}
               <div className="flex gap-2">
@@ -319,7 +318,7 @@ export function BulkInventoryActions({
                 {t("bulk.stockAdjustmentHint")}
               </p>
             </div>
-          </DialogDescription>
+          </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleClose}>

@@ -65,6 +65,8 @@ interface BranchInventoryTableProps {
     value: number
   ) => void;
   readOnly?: boolean;
+  globalFilter: string;
+  setGlobalFilter: (value: string) => void;
 }
 
 // Stock badge component
@@ -166,13 +168,14 @@ export function BranchInventoryTable({
   debouncedUpdate,
   onToggleAvailability,
   readOnly = false,
+  globalFilter,
+  setGlobalFilter,
 }: BranchInventoryTableProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
 
   // Local state for inline editing
   const [editingStock, setEditingStock] = useState<Record<string, string>>({});
@@ -469,29 +472,16 @@ export function BranchInventoryTable({
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder={t("table.search")}
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm"
-        />
-        <div className="text-sm text-slate-500">
-          {t("table.showing", {
-            count: table.getFilteredRowModel().rows.length,
-            total: data.length,
-          })}
-        </div>
-      </div>
-
       {/* Table */}
-      <Card className="border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
+      <Card variant="glass">
+        <div className="rounded-lg  overflow-hidden">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="bg-slate-50/50">
+                <TableRow
+                  key={headerGroup.id}
+                  className="bg-white hover:bg-white"
+                >
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
@@ -513,12 +503,7 @@ export function BranchInventoryTable({
               {table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={cn(
-                    "transition-colors",
-                    selectedIds.has(row.original.businessProductId) &&
-                      "bg-indigo-50/50",
-                    !row.original.isAvailable && "bg-slate-50/50"
-                  )}
+                  className="hover:bg-white transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

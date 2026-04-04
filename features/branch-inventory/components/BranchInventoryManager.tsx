@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardProps } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +27,8 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
+  X,
+  Search,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import {
@@ -52,6 +54,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { BranchSingleSelector } from "@/features/branches/components";
 
 interface BranchInventoryManagerProps {
   readOnly?: boolean;
@@ -70,39 +73,51 @@ function StatCard({
   title: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
-  variant?: "default" | "success" | "warning" | "danger";
+  variant?: "default" | "emerald" | "blue" | "purple" | "amber";
   isLoading?: boolean;
 }) {
-  const variants = {
-    default: "bg-slate-50 border-slate-200",
-    success: "bg-green-50 border-green-200",
-    warning: "bg-amber-50 border-amber-200",
-    danger: "bg-red-50 border-red-200",
-  };
-
-  const iconVariants = {
-    default: "text-slate-500",
-    success: "text-green-500",
-    warning: "text-amber-500",
-    danger: "text-red-500",
-  };
-
   return (
-    <Card className={cn("border", variants[variant])}>
-      <CardContent className="p-4 flex items-center gap-3">
-        <div className={cn("p-2 rounded-lg bg-white", iconVariants[variant])}>
-          <Icon className="w-5 h-5" />
-        </div>
-        <div>
-          <p className="text-sm text-slate-500">{title}</p>
-          {isLoading ? (
-            <Skeleton className="h-6 w-16 mt-1" />
-          ) : (
-            <p className="text-xl font-semibold text-slate-900">{value}</p>
-          )}
+    <Card variant={`metrics-${variant}`}>
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs sm:text-sm font-medium text-card-foreground/80">
+              {title}
+            </p>
+            {isLoading ? (
+              <Skeleton className="h-6 w-16 mt-1" />
+            ) : (
+              <p className="text-lg sm:text-2xl font-bold text-card-foreground mt-1 sm:mt-2">
+                {value}
+              </p>
+            )}
+          </div>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
+            <Icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${variant}-600`} />
+          </div>
         </div>
       </CardContent>
     </Card>
+
+    // <Card key={card.title} variant={`metrics-${card.variant}`}>
+    //           <CardContent className="p-4 sm:p-6">
+    //             <div className="flex items-center justify-between">
+    //               <div>
+    //                 <p className="text-xs sm:text-sm font-medium text-card-foreground/80">
+    //                   {card.title}
+    //                 </p>
+    //                 <p className="text-lg sm:text-2xl font-bold text-card-foreground mt-1 sm:mt-2">
+    //                   {card.value}
+    //                 </p>
+    //               </div>
+    //               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
+    //                 <card.icon
+    //                   className={`h-5 w-5 sm:h-6 sm:w-6 text-${card.variant}-600`}
+    //                 />
+    //               </div>
+    //             </div>
+    //           </CardContent>
+    //         </Card>
   );
 }
 
@@ -239,6 +254,7 @@ export function BranchInventoryManager({
     const mainBranch = branches.find((b) => b.isMainBranch);
     return mainBranch?.id || branches[0]?.id || "";
   });
+  const [globalFilter, setGlobalFilter] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activatingProduct, setActivatingProduct] =
     useState<InventoryItem | null>(null);
@@ -410,55 +426,35 @@ export function BranchInventoryManager({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")}
+          {/* Search */}
+          <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64 border border-slate-200">
+            <Search className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
+            <input
+              type="text"
+              placeholder={t("table.search")}
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
             />
-            {tc("buttons.refresh")}
-          </Button>
+            {globalFilter && (
+              <button
+                onClick={() => setGlobalFilter("")}
+                className="ml-2 p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Branch Single Selector - siempre visible */}
+          {setSelectedBranchId && (
+            <BranchSingleSelector
+              value={selectedBranchId || null}
+              onChange={(val) => setSelectedBranchId(val as string)}
+            />
+          )}
         </div>
       </div>
-
-      {/* Branch selector */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <Store className="w-5 h-5 text-slate-400" />
-            <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700 block mb-1.5">
-                {t("selectBranch")}
-              </label>
-              <Select
-                value={selectedBranchId}
-                onValueChange={setSelectedBranchId}
-              >
-                <SelectTrigger className="w-full sm:w-80">
-                  <SelectValue placeholder={t("branchPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{branch.name}</span>
-                        {branch.isMainBranch && (
-                          <Badge variant="secondary" className="text-xs">
-                            {t("mainBranch")}
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Stats */}
       {selectedBranchId && (
@@ -468,26 +464,27 @@ export function BranchInventoryManager({
             value={stats.total}
             icon={Package}
             isLoading={isLoading}
+            variant="emerald"
           />
           <StatCard
             title={t("stats.available")}
             value={stats.available}
             icon={CheckCircle}
-            variant="success"
+            variant="blue"
             isLoading={isLoading}
           />
           <StatCard
             title={t("stats.lowStock")}
             value={stats.lowStock}
             icon={AlertTriangle}
-            variant={stats.lowStock > 0 ? "warning" : "default"}
+            variant={stats.lowStock > 0 ? "amber" : "purple"}
             isLoading={isLoading}
           />
           <StatCard
             title={t("stats.outOfStock")}
             value={stats.outOfStock}
             icon={XCircle}
-            variant={stats.outOfStock > 0 ? "danger" : "default"}
+            variant={stats.outOfStock > 0 ? "amber" : "default"}
             isLoading={isLoading}
           />
         </div>
@@ -506,6 +503,8 @@ export function BranchInventoryManager({
           onToggleAvailability={handleToggleAvailability}
           debouncedUpdate={queueUpdate}
           readOnly={readOnly}
+          globalFilter={globalFilter}
+          setGlobalFilter={setGlobalFilter}
         />
       ) : (
         <Card className="p-12 text-center">
