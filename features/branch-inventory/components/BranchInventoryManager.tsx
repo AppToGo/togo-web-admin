@@ -2,7 +2,7 @@
 
 /**
  * BranchInventoryManager Component
- * 
+ *
  * Componente principal de gestión de inventario por sede.
  * Combina: selector de sede, tabla de inventario, acciones masivas y estadísticas.
  */
@@ -116,7 +116,11 @@ function ActivateProductDialog({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { stock?: number; isAvailable: boolean; priceOverride?: number }) => void;
+  onConfirm: (data: {
+    stock?: number;
+    isAvailable: boolean;
+    priceOverride?: number;
+  }) => void;
   product: InventoryItem | null;
   isLoading: boolean;
 }) {
@@ -142,14 +146,17 @@ function ActivateProductDialog({
         <DialogHeader>
           <DialogTitle>{t("activate.title")}</DialogTitle>
           <DialogDescription>
-            {product && t("activate.description", { name: product.productName })}
+            {product &&
+              t("activate.description", { name: product.productName })}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 p-4">
           {/* Price override */}
           <div className="space-y-2">
-            <Label htmlFor="activate-price">{t("activate.priceOverride")}</Label>
+            <Label htmlFor="activate-price">
+              {t("activate.priceOverride")}
+            </Label>
             <div className="relative">
               <Input
                 id="activate-price"
@@ -162,7 +169,9 @@ function ActivateProductDialog({
               />
               {product && (
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                  {t("activate.basePrice", { price: formatCurrency(product.basePrice) })}
+                  {t("activate.basePrice", {
+                    price: formatCurrency(product.basePrice),
+                  })}
                 </span>
               )}
             </div>
@@ -183,8 +192,14 @@ function ActivateProductDialog({
 
           {/* Availability */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="activate-available">{t("activate.available")}</Label>
-            <Switch id="activate-available" checked={isAvailable} onCheckedChange={setIsAvailable} />
+            <Label htmlFor="activate-available">
+              {t("activate.available")}
+            </Label>
+            <Switch
+              id="activate-available"
+              checked={isAvailable}
+              onCheckedChange={setIsAvailable}
+            />
           </div>
         </div>
 
@@ -211,7 +226,11 @@ function ActivateProductDialog({
   );
 }
 
-export function BranchInventoryManager({ businessId, branches, readOnly = false }: BranchInventoryManagerProps) {
+export function BranchInventoryManager({
+  businessId,
+  branches,
+  readOnly = false,
+}: BranchInventoryManagerProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
 
@@ -221,7 +240,8 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
     return mainBranch?.id || branches[0]?.id || "";
   });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [activatingProduct, setActivatingProduct] = useState<InventoryItem | null>(null);
+  const [activatingProduct, setActivatingProduct] =
+    useState<InventoryItem | null>(null);
 
   // Queries
   const {
@@ -235,7 +255,10 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
   const deactivateMutation = useDeactivateProduct(businessId, selectedBranchId);
   const bulkActivateMutation = useBulkActivate(businessId, selectedBranchId);
   const updateStockMutation = useUpdateStock(businessId, selectedBranchId);
-  const setAvailabilityMutation = useSetAvailability(businessId, selectedBranchId);
+  const setAvailabilityMutation = useSetAvailability(
+    businessId,
+    selectedBranchId
+  );
 
   // Debounced update
   const { queueUpdate } = useDebouncedInventoryUpdate(
@@ -290,7 +313,11 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
   }, []);
 
   const handleConfirmActivate = useCallback(
-    (data: { stock?: number; isAvailable: boolean; priceOverride?: number }) => {
+    (data: {
+      stock?: number;
+      isAvailable: boolean;
+      priceOverride?: number;
+    }) => {
       if (!activatingProduct) return;
 
       activateMutation.mutate(
@@ -338,7 +365,9 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
   const handleBulkDeactivate = useCallback(() => {
     // Deactivate products one by one (bulk delete not available in API)
     const productIds = Array.from(selectedIds);
-    Promise.all(productIds.map((id) => deactivateMutation.mutateAsync(id))).then(() => {
+    Promise.all(
+      productIds.map((id) => deactivateMutation.mutateAsync(id))
+    ).then(() => {
       handleClearSelection();
     });
   }, [selectedIds, deactivateMutation, handleClearSelection]);
@@ -348,7 +377,12 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
       // Adjust stock for each selected product
       const productIds = Array.from(selectedIds);
       Promise.all(
-        productIds.map((id) => updateStockMutation.mutateAsync({ productId: id, quantity: adjustment }))
+        productIds.map((id) =>
+          updateStockMutation.mutateAsync({
+            productId: id,
+            quantity: adjustment,
+          })
+        )
       ).then(() => {
         handleClearSelection();
       });
@@ -376,8 +410,15 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")}
+            />
             {tc("buttons.refresh")}
           </Button>
         </div>
@@ -392,7 +433,10 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
               <label className="text-sm font-medium text-slate-700 block mb-1.5">
                 {t("selectBranch")}
               </label>
-              <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
+              <Select
+                value={selectedBranchId}
+                onValueChange={setSelectedBranchId}
+              >
                 <SelectTrigger className="w-full sm:w-80">
                   <SelectValue placeholder={t("branchPlaceholder")} />
                 </SelectTrigger>
@@ -466,7 +510,9 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
       ) : (
         <Card className="p-12 text-center">
           <Store className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-slate-900 mb-1">{t("noBranch.title")}</h3>
+          <h3 className="text-lg font-medium text-slate-900 mb-1">
+            {t("noBranch.title")}
+          </h3>
           <p className="text-slate-500">{t("noBranch.message")}</p>
         </Card>
       )}

@@ -2,7 +2,7 @@
 
 /**
  * BulkInventoryActions Component
- * 
+ *
  * Barra de acciones masivas para productos seleccionados.
  * Permite activar, desactivar y ajustar stock en lote.
  */
@@ -159,7 +159,10 @@ export function BulkInventoryActions({
       </AnimatePresence>
 
       {/* Activate Dialog */}
-      <Dialog open={activeAction === "activate"} onOpenChange={() => handleClose()}>
+      <Dialog
+        open={activeAction === "activate"}
+        onOpenChange={() => handleClose()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("bulk.activateTitle")}</DialogTitle>
@@ -183,7 +186,9 @@ export function BulkInventoryActions({
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="activate-available">{t("bulk.makeAvailable")}</Label>
+              <Label htmlFor="activate-available">
+                {t("bulk.makeAvailable")}
+              </Label>
               <Switch
                 id="activate-available"
                 checked={activateAvailable}
@@ -205,7 +210,7 @@ export function BulkInventoryActions({
               ) : (
                 <>
                   <Power className="w-4 h-4 mr-2" />
-                  {t("bulk.confirmActivate")}
+                  {t("bulk.confirmActivate", { count: selectedCount })}
                 </>
               )}
             </Button>
@@ -214,7 +219,10 @@ export function BulkInventoryActions({
       </Dialog>
 
       {/* Deactivate Confirmation Dialog */}
-      <Dialog open={activeAction === "deactivate"} onOpenChange={() => handleClose()}>
+      <Dialog
+        open={activeAction === "deactivate"}
+        onOpenChange={() => handleClose()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("bulk.deactivateTitle")}</DialogTitle>
@@ -223,16 +231,24 @@ export function BulkInventoryActions({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-700">{t("bulk.deactivateWarning")}</p>
-          </div>
+          <DialogDescription className="px-4">
+            <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-700">
+                {t("bulk.deactivateWarning")}
+              </p>
+            </div>
+          </DialogDescription>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleClose}>
               {tc("buttons.cancel")}
             </Button>
-            <Button variant="destructive" onClick={onBulkDeactivate} disabled={isLoading}>
+            <Button
+              variant="destructive"
+              onClick={onBulkDeactivate}
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
@@ -250,7 +266,10 @@ export function BulkInventoryActions({
       </Dialog>
 
       {/* Adjust Stock Dialog */}
-      <Dialog open={activeAction === "adjustStock"} onOpenChange={() => handleClose()}>
+      <Dialog
+        open={activeAction === "adjustStock"}
+        onOpenChange={() => handleClose()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("bulk.adjustStockTitle")}</DialogTitle>
@@ -259,44 +278,48 @@ export function BulkInventoryActions({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            {/* Increment/Decrement toggle */}
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={isIncrement ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => setIsIncrement(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t("bulk.addStock")}
-              </Button>
-              <Button
-                type="button"
-                variant={!isIncrement ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => setIsIncrement(false)}
-              >
-                <Minus className="w-4 h-4 mr-2" />
-                {t("bulk.removeStock")}
-              </Button>
-            </div>
+          <DialogDescription className="px-7">
+            <div className="space-y-4 py-4">
+              {/* Increment/Decrement toggle */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={isIncrement ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setIsIncrement(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t("bulk.addStock")}
+                </Button>
+                <Button
+                  type="button"
+                  variant={!isIncrement ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setIsIncrement(false)}
+                >
+                  <Minus className="w-4 h-4 mr-2" />
+                  {t("bulk.removeStock")}
+                </Button>
+              </div>
 
-            {/* Amount input */}
-            <div className="space-y-2">
-              <Label htmlFor="stock-adjustment">{t("bulk.quantity")}</Label>
-              <Input
-                id="stock-adjustment"
-                type="number"
-                min={1}
-                placeholder={t("bulk.quantityPlaceholder")}
-                value={stockAdjustment}
-                onChange={(e) => setStockAdjustment(e.target.value)}
-              />
-            </div>
+              {/* Amount input */}
+              <div className="space-y-2">
+                <Label htmlFor="stock-adjustment">{t("bulk.quantity")}</Label>
+                <Input
+                  id="stock-adjustment"
+                  type="number"
+                  min={1}
+                  placeholder={t("bulk.quantityPlaceholder")}
+                  value={stockAdjustment}
+                  onChange={(e) => setStockAdjustment(e.target.value)}
+                />
+              </div>
 
-            <p className="text-xs text-slate-500">{t("bulk.stockAdjustmentHint")}</p>
-          </div>
+              <p className="text-xs text-slate-500">
+                {t("bulk.stockAdjustmentHint")}
+              </p>
+            </div>
+          </DialogDescription>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleClose}>
@@ -304,7 +327,11 @@ export function BulkInventoryActions({
             </Button>
             <Button
               onClick={handleAdjustStock}
-              disabled={isLoading || !stockAdjustment || parseInt(stockAdjustment, 10) <= 0}
+              disabled={
+                isLoading ||
+                !stockAdjustment ||
+                parseInt(stockAdjustment, 10) <= 0
+              }
             >
               {isLoading ? (
                 <>
