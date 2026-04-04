@@ -21,6 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  BranchInventorySelector,
+  InitialInventoryConfig,
+} from "@/features/branch-inventory/components/BranchInventorySelector";
+import type { Branch } from "@/features/branches/types";
 import type {
   GlobalProduct,
   BusinessCategory,
@@ -30,6 +35,7 @@ import type {
 interface ActivateProductModalProps {
   product: GlobalProduct | null;
   categories: BusinessCategory[];
+  branches: Branch[];
   isOpen: boolean;
   onClose: () => void;
   onActivate: (data: ActivateGlobalProductDto) => void;
@@ -39,6 +45,7 @@ interface ActivateProductModalProps {
 export function ActivateProductModal({
   product,
   categories,
+  branches,
   isOpen,
   onClose,
   onActivate,
@@ -53,6 +60,9 @@ export function ActivateProductModal({
     categoryId: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [initialInventory, setInitialInventory] = useState<
+    InitialInventoryConfig[]
+  >([]);
 
   // Reset form when product changes
   useEffect(() => {
@@ -64,6 +74,7 @@ export function ActivateProductModal({
         categoryId: "",
       });
       setErrors({});
+      setInitialInventory([]);
     }
   }, [product]);
 
@@ -120,15 +131,17 @@ export function ActivateProductModal({
 
     if (!validate() || !product) return;
 
-    const data: ActivateGlobalProductDto = {
+    const submitData: ActivateGlobalProductDto = {
       globalProductId: product.id,
       slug: generateSlug(formData.name),
       price: parseFloat(formData.price),
       stock: formData.stock === "" ? undefined : parseInt(formData.stock, 10),
       categoryId: formData.categoryId || undefined,
+      initialInventory:
+        initialInventory.length > 0 ? initialInventory : undefined,
     };
 
-    onActivate(data);
+    onActivate(submitData);
   };
 
   // Handle close
@@ -142,7 +155,7 @@ export function ActivateProductModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-600" />
@@ -284,6 +297,19 @@ export function ActivateProductModal({
               </Select>
             </div>
           </div>
+
+          {/* Branch Inventory Selector */}
+          {branches.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("products.branchAvailability")}</Label>
+              <BranchInventorySelector
+                branches={branches}
+                basePrice={parseFloat(formData.price) || 0}
+                value={initialInventory}
+                onChange={setInitialInventory}
+              />
+            </div>
+          )}
 
           {/* Info */}
           <div className="p-3 bg-blue-50 rounded-card text-xs text-blue-700">

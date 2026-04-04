@@ -235,6 +235,8 @@ export async function activateGlobalProduct(
   const payload: ActivateGlobalProductDto = {
     ...data,
     slug: data.slug || generateSlug(data.name || ""),
+    // Include initialInventory if provided
+    initialInventory: data.initialInventory,
   };
 
   const response = await apiClient.post<BusinessProduct>(

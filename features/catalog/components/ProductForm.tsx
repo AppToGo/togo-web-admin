@@ -103,9 +103,10 @@ export function ProductForm({
     const categoryArrived = !formData.categoryId && productCategoryId;
 
     if (isNewProduct || categoryArrived) {
-      const displayName = product.customName ?? product.name ?? "";
-      const displayDescription = product.customDescription ?? product.description ?? "";
-      const displayImage = product.customImage ?? product.image ?? "";
+      // For global products (isFromTemplate), use globalProduct as fallback for inherited fields
+      const displayName = product.customName ?? product.name ?? product.globalProduct?.name ?? "";
+      const displayDescription = product.customDescription ?? product.description ?? product.globalProduct?.description ?? "";
+      const displayImage = product.customImage ?? product.image ?? product.globalProduct?.image ?? "";
 
       setFormData({
         name: displayName,
@@ -265,6 +266,11 @@ export function ProductForm({
       <div className="space-y-2">
         <Label htmlFor="name">
           {t("products.name")} <span className="text-red-500">*</span>
+          {isFromTemplate && (
+            <span className="ml-2 text-xs text-blue-600">
+              ({t("inheritedFromCatalog")})
+            </span>
+          )}
         </Label>
         <Input
           id="name"
@@ -273,10 +279,10 @@ export function ProductForm({
           onChange={handleChange}
           placeholder={t("products.form.namePlaceholder")}
           required
-          disabled={isLoading}
+          disabled={isLoading || isFromTemplate}
         />
         {isFromTemplate && (
-          <p className="text-xs text-blue-600">
+          <p className="text-xs text-slate-500">
             {t("inheritedFrom", { name: product?.globalProduct?.name ?? "" })}
           </p>
         )}
@@ -351,7 +357,14 @@ export function ProductForm({
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">{t("products.description")}</Label>
+        <Label htmlFor="description">
+          {t("products.description")}
+          {isFromTemplate && (
+            <span className="ml-2 text-xs text-blue-600">
+              ({t("inheritedFromCatalog")})
+            </span>
+          )}
+        </Label>
         <Textarea
           id="description"
           name="description"
@@ -359,13 +372,20 @@ export function ProductForm({
           onChange={handleChange}
           placeholder={t("products.form.descriptionPlaceholder")}
           rows={3}
-          disabled={isLoading}
+          disabled={isLoading || isFromTemplate}
         />
       </div>
 
       {/* Image URL */}
       <div className="space-y-2">
-        <Label htmlFor="image">{t("products.imageUrl")}</Label>
+        <Label htmlFor="image">
+          {t("products.imageUrl")}
+          {isFromTemplate && (
+            <span className="ml-2 text-xs text-blue-600">
+              ({t("inheritedFromCatalog")})
+            </span>
+          )}
+        </Label>
         <Input
           id="image"
           name="image"
@@ -373,9 +393,9 @@ export function ProductForm({
           value={formData.image}
           onChange={handleImageChange}
           placeholder={t("products.imagePlaceholder")}
-          disabled={isLoading}
+          disabled={isLoading || isFromTemplate}
         />
-        {isFromTemplate && !formData.image && (
+        {isFromTemplate && (
           <p className="text-xs text-slate-500">
             {t("imageFallbackDescription")}
           </p>
