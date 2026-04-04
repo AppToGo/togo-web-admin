@@ -11,7 +11,7 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Search, Filter, FolderOpen, X } from "lucide-react";
+import { Search, Filter, FolderOpen, X, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import type { CategoryFilters as CategoryFiltersType } from "../types/catalog.types";
 
 interface IndustryCategoryOption {
@@ -115,41 +116,6 @@ export function CategoryFilters({
           </div>
 
           <div className="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
-            {/* Filtro de Estado */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-                <FolderOpen className="w-3.5 h-3.5" />
-                {tc("fields.status")}
-              </h4>
-              <Select
-                value={
-                  filters.isActive === null || filters.isActive === undefined
-                    ? "all"
-                    : filters.isActive.toString()
-                }
-                onValueChange={(value) =>
-                  onFiltersChange({
-                    ...filters,
-                    isActive: value === "all" ? null : value === "true",
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={tc("fields.status")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tc("filters.all")}</SelectItem>
-                  <SelectItem value="true">{tc("status.active")}</SelectItem>
-                  <SelectItem value="false">
-                    {tc("status.inactive")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Separador */}
-            <div className="h-px bg-slate-100" />
-
             {/* Filtro de Categoría Industrial */}
             <div className="space-y-3">
               <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
@@ -179,6 +145,60 @@ export function CategoryFilters({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Separador */}
+            <div className="h-px bg-slate-100" />
+
+            {/* Filtro de Estado - Switches */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                <FolderOpen className="w-3.5 h-3.5" />
+                {tc("fields.status")}
+              </h4>
+              <div className="space-y-2">
+                {/* Switch Activas */}
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                      {tc("status.active")}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={filters.isActive === true}
+                    onCheckedChange={(checked) =>
+                      onFiltersChange({
+                        ...filters,
+                        isActive: checked ? true : filters.isActive === false ? false : null,
+                      })
+                    }
+                  />
+                </label>
+
+                {/* Switch Inactivas */}
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                      <XCircle className="w-4 h-4 text-slate-500" />
+                    </div>
+                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                      {tc("status.inactive")}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={filters.isActive === false}
+                    onCheckedChange={(checked) =>
+                      onFiltersChange({
+                        ...filters,
+                        isActive: checked ? false : filters.isActive === true ? true : null,
+                      })
+                    }
+                  />
+                </label>
+              </div>
             </div>
           </div>
         </PopoverContent>
