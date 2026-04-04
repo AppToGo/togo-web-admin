@@ -42,7 +42,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CategoryActions } from "./CategoryActions";
-import type { BusinessCategory, CategoryFilters } from "../types/catalog.types";
+import { CategoryFilters } from "./CategoryFilters";
+import type { BusinessCategory, CategoryFilters as CategoryFiltersType } from "../types/catalog.types";
 
 // Industry category option type
 interface IndustryCategoryOption {
@@ -86,7 +87,7 @@ export function CategoryList({
   const tCommon = useTranslations("common");
 
   // Filters state
-  const [filters, setFilters] = useState<CategoryFilters>({
+  const [filters, setFilters] = useState<CategoryFiltersType>({
     name: "",
     isActive: null,
     industryCategoryId: "",
@@ -121,6 +122,12 @@ export function CategoryList({
       cat.industryCategoryId === filters.industryCategoryId;
     return matchesName && matchesStatus && matchesIndustry;
   });
+
+  // Calculate active filters count
+  const activeFiltersCount =
+    (filters.name ? 1 : 0) +
+    (filters.isActive !== null ? 1 : 0) +
+    (filters.industryCategoryId ? 1 : 0);
 
   // Clear all filters
   const clearFilters = () => {
@@ -237,136 +244,33 @@ export function CategoryList({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header con título a la izquierda y filtros/botón a la derecha */}
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        {/* Izquierda: Título */}
         <div>
           <h3 className="text-lg font-semibold text-slate-900">
             {t("categories.title")}
           </h3>
           <p className="text-sm text-slate-500">{t("categories.subtitle")}</p>
         </div>
-        <Button onClick={handleOpenCreate} disabled={isLoading}>
-          <Plus className="w-4 h-4 mr-2" />
-          {t("categories.new")}
-        </Button>
-      </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-x-4">
-        {/* Name filter */}
-        <div className="flex flex-col col-span-2">
-          <Label
-            htmlFor="filter-name"
-            className="text-sm font-medium text-slate-700 mb-1.5 block"
-          >
-            {tCommon("fields.name")}
-          </Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              id="filter-name"
-              value={filters.name}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, name: e.target.value }))
-              }
-              placeholder={tCommon("search.placeholder")}
-              className="pl-9"
-            />
-          </div>
-        </div>
-
-        <div className="col-span-3 gap-4 flex items-end">
-          {/* Status filter */}
-          <div className="flex-1 flex-col">
-            <Label
-              htmlFor="filter-status"
-              className="text-sm font-medium text-slate-700 mb-1.5 block"
-            >
-              {tCommon("fields.status")}
-            </Label>
-            <Select
-              value={
-                filters.isActive === null || filters.isActive === undefined
-                  ? "all"
-                  : filters.isActive.toString()
-              }
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  isActive: value === "all" ? null : value === "true",
-                }))
-              }
-            >
-              <SelectTrigger id="filter-status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tCommon("filters.all")}</SelectItem>
-                <SelectItem value="true">{tCommon("status.active")}</SelectItem>
-                <SelectItem value="false">
-                  {tCommon("status.inactive")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Industry Category filter */}
-          <div className="flex-1 flex-col">
-            <Label
-              htmlFor="filter-industry"
-              className="text-sm font-medium text-slate-700 mb-1.5 block"
-            >
-              {t("categories.industryCategory")}
-            </Label>
-            <Select
-              value={filters.industryCategoryId || "all"}
-              onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  industryCategoryId: value === "all" ? "" : value,
-                }))
-              }
-            >
-              <SelectTrigger id="filter-industry">
-                <SelectValue
-                  placeholder={t("categories.selectIndustryCategory")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tCommon("filters.all")}</SelectItem>
-                {industryCategories.map((ic) => (
-                  <SelectItem key={ic.id} value={ic.id}>
-                    {ic.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Clear filters */}
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearFilters}
-              className="w-40 h-10 flex-none"
-            >
-              <X className="w-4 h-4 mr-1" />
-              {tCommon("filters.clear")}
-            </Button>
-          )}
-        </div>
-
-        {/* Results count */}
-        <div className="text-sm text-slate-500 pt-1 pl-2">
-          {filteredCategories.length}{" "}
-          {filteredCategories.length === 1
-            ? t("categories.result")
-            : t("categories.results")}
+        {/* Derecha: Filtros y botón Nueva */}
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            industryCategories={industryCategories}
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearFilters}
+          />
+          <Button onClick={handleOpenCreate} disabled={isLoading}>
+            <Plus className="w-4 h-4 mr-2" />
+            {t("categories.new")}
+          </Button>
         </div>
       </div>
 
-      {/* Empty State */}
+      {/* 3. Empty State */}
       {categories.length === 0 && (
         <div className="text-center py-12 bg-slate-50 rounded-card-lg">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
@@ -385,7 +289,7 @@ export function CategoryList({
         </div>
       )}
 
-      {/* No results after filtering */}
+      {/* 4. No results after filtering */}
       {categories.length > 0 && filteredCategories.length === 0 && (
         <div className="text-center py-12 bg-slate-50 rounded-card-lg">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
@@ -404,7 +308,7 @@ export function CategoryList({
         </div>
       )}
 
-      {/* Categories Table */}
+      {/* 5. Categories Table */}
       {filteredCategories.length > 0 && (
         <Card variant="glass">
           <div className="rounded-lg  overflow-hidden">

@@ -8,6 +8,7 @@ export { ProductForm } from "./ProductForm";
 export { ActivateProductModal } from "./ActivateProductModal";
 export { CategoryList } from "./CategoryList";
 export { CategoryActions } from "./CategoryActions";
+export { CategoryFilters } from "./CategoryFilters";
 
 /**
  * Hybrid Catalog Components (Inventory by Branch)
