@@ -244,21 +244,30 @@ export function CategoryList({
 
   return (
     <div className="space-y-6">
-      {/* 1. Filtros arriba */}
-      <CategoryFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        industryCategories={industryCategories}
-        activeFiltersCount={activeFiltersCount}
-        onClearFilters={clearFilters}
-      />
+      {/* Header con título a la izquierda y filtros/botón a la derecha */}
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        {/* Izquierda: Título */}
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">
+            {t("categories.title")}
+          </h3>
+          <p className="text-sm text-slate-500">{t("categories.subtitle")}</p>
+        </div>
 
-      {/* 2. Header solo con título */}
-      <div>
-        <h3 className="text-lg font-semibold text-slate-900">
-          {t("categories.title")}
-        </h3>
-        <p className="text-sm text-slate-500">{t("categories.subtitle")}</p>
+        {/* Derecha: Filtros y botón Nueva */}
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            industryCategories={industryCategories}
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearFilters}
+          />
+          <Button onClick={handleOpenCreate} disabled={isLoading}>
+            <Plus className="w-4 h-4 mr-2" />
+            {t("categories.new")}
+          </Button>
+        </div>
       </div>
 
       {/* 3. Empty State */}
@@ -391,16 +400,6 @@ export function CategoryList({
             </Table>
           </div>
         </Card>
-      )}
-
-      {/* 6. Botón "Nueva" debajo de tabla */}
-      {filteredCategories.length > 0 && (
-        <div className="flex justify-end">
-          <Button onClick={handleOpenCreate} disabled={isLoading}>
-            <Plus className="w-4 h-4 mr-2" />
-            {t("categories.new")}
-          </Button>
-        </div>
       )}
 
       {/* Create/Edit Dialog */}
