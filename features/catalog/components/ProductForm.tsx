@@ -103,9 +103,10 @@ export function ProductForm({
     const categoryArrived = !formData.categoryId && productCategoryId;
 
     if (isNewProduct || categoryArrived) {
-      const displayName = product.customName ?? product.name ?? "";
-      const displayDescription = product.customDescription ?? product.description ?? "";
-      const displayImage = product.customImage ?? product.image ?? "";
+      // For global products (isFromTemplate), use globalProduct as fallback for inherited fields
+      const displayName = product.customName ?? product.name ?? product.globalProduct?.name ?? "";
+      const displayDescription = product.customDescription ?? product.description ?? product.globalProduct?.description ?? "";
+      const displayImage = product.customImage ?? product.image ?? product.globalProduct?.image ?? "";
 
       setFormData({
         name: displayName,
