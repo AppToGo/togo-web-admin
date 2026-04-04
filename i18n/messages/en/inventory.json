@@ -6,6 +6,7 @@
   "mainBranch": "Main",
   "stats": {
     "total": "Total Products",
+    "available": "Available",
     "activated": "Activated",
     "lowStock": "Low Stock",
     "outOfStock": "Out of Stock"
@@ -25,6 +26,7 @@
   "table": {
     "product": "Product",
     "category": "Category",
+    "available": "Available",
     "activated": "Activated",
     "available": "Available",
     "stock": "Stock",

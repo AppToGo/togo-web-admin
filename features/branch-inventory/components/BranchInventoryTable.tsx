@@ -2,7 +2,7 @@
 
 /**
  * BranchInventoryTable Component
- * 
+ *
  * Tabla editable de inventario usando TanStack Table v8.
  * Muestra TODOS los productos del negocio (LEFT JOIN).
  * Soporta edición inline con debounce y selección múltiple.
@@ -100,7 +100,10 @@ function StockBadge({ stock }: { stock: number | null }) {
   }
 
   return (
-    <Badge variant="outline" className="font-normal text-green-700 border-green-200">
+    <Badge
+      variant="outline"
+      className="font-normal text-green-700 border-green-200"
+    >
       {stock}
     </Badge>
   );
@@ -125,15 +128,20 @@ function PriceDisplay({
           {formatCurrency(basePrice)}
         </span>
       )}
-      <span className={cn("font-medium", hasOverride ? "text-indigo-600" : "text-slate-900")}>
+      <span
+        className={cn(
+          "font-medium",
+          hasOverride ? "text-indigo-600" : "text-slate-900"
+        )}
+      >
         {formatCurrency(effectivePrice)}
       </span>
       {hasOverride && (
         <span className="text-xs">
           {priceOverride! > basePrice ? (
             <span className="text-green-600 flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" />
-              +{formatCurrency(priceOverride! - basePrice)}
+              <TrendingUp className="w-3 h-3" />+
+              {formatCurrency(priceOverride! - basePrice)}
             </span>
           ) : (
             <span className="text-amber-600 flex items-center gap-0.5">
@@ -172,12 +180,16 @@ export function BranchInventoryTable({
 
   // Derived state for "select all" checkbox
   const allSelected = useMemo(
-    () => data.length > 0 && data.every((row) => selectedIds.has(row.businessProductId)),
+    () =>
+      data.length > 0 &&
+      data.every((row) => selectedIds.has(row.businessProductId)),
     [data, selectedIds]
   );
 
   const someSelected = useMemo(
-    () => data.some((row) => selectedIds.has(row.businessProductId)) && !allSelected,
+    () =>
+      data.some((row) => selectedIds.has(row.businessProductId)) &&
+      !allSelected,
     [data, selectedIds, allSelected]
   );
 
@@ -229,7 +241,13 @@ export function BranchInventoryTable({
         header: () => (
           <Checkbox
             checked={allSelected}
-            data-state={someSelected ? "indeterminate" : allSelected ? "checked" : "unchecked"}
+            data-state={
+              someSelected
+                ? "indeterminate"
+                : allSelected
+                  ? "checked"
+                  : "unchecked"
+            }
             onCheckedChange={handleSelectAll}
             aria-label={t("table.selectAll")}
           />
@@ -237,7 +255,9 @@ export function BranchInventoryTable({
         cell: ({ row }) => (
           <Checkbox
             checked={selectedIds.has(row.original.businessProductId)}
-            onCheckedChange={() => onToggleSelection(row.original.businessProductId)}
+            onCheckedChange={() =>
+              onToggleSelection(row.original.businessProductId)
+            }
             onClick={(e) => e.stopPropagation()}
             aria-label={t("table.selectRow")}
           />
@@ -275,7 +295,9 @@ export function BranchInventoryTable({
                   {item.productName}
                 </span>
                 {item.categoryName && (
-                  <span className="text-xs text-slate-400">{item.categoryName}</span>
+                  <span className="text-xs text-slate-400">
+                    {item.categoryName}
+                  </span>
                 )}
               </div>
             </div>
@@ -283,39 +305,13 @@ export function BranchInventoryTable({
         },
         size: 250,
       },
-      // Activation toggle
-      {
-        id: "activated",
-        header: t("table.activated"),
-        cell: ({ row }) => {
-          const item = row.original;
-          return (
-            <Switch
-              checked={item.isAvailable}
-              disabled={readOnly}
-              onCheckedChange={(checked) => {
-                if (readOnly) return;
-                if (checked) {
-                  onActivate(item);
-                } else {
-                  onDeactivate(item.businessProductId);
-                }
-              }}
-            />
-          );
-        },
-        enableSorting: false,
-        size: 100,
-      },
-      // Availability toggle (only when activated)
+
+      // Availability toggle - controls if product is sold in this branch
       {
         id: "available",
         header: t("table.available"),
         cell: ({ row }) => {
           const item = row.original;
-          if (!item.isAvailable) {
-            return <span className="text-slate-400">-</span>;
-          }
           return (
             <Switch
               checked={item.isAvailable}
@@ -323,7 +319,7 @@ export function BranchInventoryTable({
                 if (readOnly) return;
                 onToggleAvailability(item.businessProductId, checked);
               }}
-              disabled={readOnly || !item.isAvailable}
+              disabled={readOnly}
             />
           );
         },
@@ -336,17 +332,14 @@ export function BranchInventoryTable({
         header: t("table.stock"),
         cell: ({ row }) => {
           const item = row.original;
-          if (!item.isAvailable) {
-            return <span className="text-slate-400">-</span>;
-          }
 
           const editValue = editingStock[item.businessProductId];
           const displayValue =
             editValue !== undefined
               ? editValue
               : item.stock === null
-              ? ""
-              : String(item.stock);
+                ? ""
+                : String(item.stock);
 
           return (
             <div className="flex items-center gap-2">
@@ -355,7 +348,9 @@ export function BranchInventoryTable({
                 min={0}
                 placeholder="∞"
                 value={displayValue}
-                onChange={(e) => handleStockChange(item.businessProductId, e.target.value)}
+                onChange={(e) =>
+                  handleStockChange(item.businessProductId, e.target.value)
+                }
                 disabled={readOnly || !item.isAvailable}
                 className="w-20 h-8 text-sm"
               />
@@ -378,17 +373,14 @@ export function BranchInventoryTable({
         header: t("table.branchPrice"),
         cell: ({ row }) => {
           const item = row.original;
-          if (!item.isAvailable) {
-            return <span className="text-slate-400">-</span>;
-          }
 
           const editValue = editingPrice[item.businessProductId];
           const displayValue =
             editValue !== undefined
               ? editValue
               : item.priceOverride === null
-              ? ""
-              : String(item.priceOverride);
+                ? ""
+                : String(item.priceOverride);
 
           return (
             <div className="space-y-1">
@@ -398,7 +390,9 @@ export function BranchInventoryTable({
                 step={0.01}
                 placeholder={String(item.basePrice)}
                 value={displayValue}
-                onChange={(e) => handlePriceChange(item.businessProductId, e.target.value)}
+                onChange={(e) =>
+                  handlePriceChange(item.businessProductId, e.target.value)
+                }
                 disabled={readOnly || !item.isAvailable}
                 className="w-24 h-8 text-sm"
               />
@@ -506,7 +500,10 @@ export function BranchInventoryTable({
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -518,13 +515,17 @@ export function BranchInventoryTable({
                   key={row.id}
                   className={cn(
                     "transition-colors",
-                    selectedIds.has(row.original.businessProductId) && "bg-indigo-50/50",
+                    selectedIds.has(row.original.businessProductId) &&
+                      "bg-indigo-50/50",
                     !row.original.isAvailable && "bg-slate-50/50"
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -539,7 +540,8 @@ export function BranchInventoryTable({
         <div className="text-sm text-slate-500">
           {tc("pagination.showing", {
             from:
-              table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
+              table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
               1,
             to: Math.min(
               (table.getState().pagination.pageIndex + 1) *

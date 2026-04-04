@@ -215,8 +215,11 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
 
-  // State
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  // State - initialize with main branch or first available branch
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(() => {
+    const mainBranch = branches.find((b) => b.isMainBranch);
+    return mainBranch?.id || branches[0]?.id || "";
+  });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activatingProduct, setActivatingProduct] = useState<InventoryItem | null>(null);
 
@@ -248,7 +251,6 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
 
   const stats = useMemo(() => {
     const total = items.length;
-    const activated = items.length; // products with a BranchInventory record (OPT-IN)
     const available = items.filter((i) => i.isAvailable).length;
     const lowStock = items.filter(
       (i) => i.isAvailable && i.stock !== null && i.stock < 10
@@ -257,7 +259,7 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
       (i) => i.isAvailable && i.stock === 0
     ).length;
 
-    return { total, activated, available, lowStock, outOfStock };
+    return { total, available, lowStock, outOfStock };
   }, [items]);
 
   // Selection handlers
@@ -424,8 +426,8 @@ export function BranchInventoryManager({ businessId, branches, readOnly = false 
             isLoading={isLoading}
           />
           <StatCard
-            title={t("stats.activated")}
-            value={stats.activated}
+            title={t("stats.available")}
+            value={stats.available}
             icon={CheckCircle}
             variant="success"
             isLoading={isLoading}
