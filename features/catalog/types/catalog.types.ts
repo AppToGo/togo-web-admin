@@ -165,6 +165,12 @@ export interface ActivateGlobalProductDto {
   stock?: number;
   categoryId?: string;
   internalSku?: string;
+  initialInventory?: {
+    branchId: string;
+    isAvailable: boolean;
+    priceOverride?: number;
+    stock?: number;
+  }[];
 }
 
 /**

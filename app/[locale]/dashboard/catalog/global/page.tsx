@@ -24,6 +24,7 @@ import {
   useActivateGlobalProduct,
   useCategories,
 } from "@/features/catalog/hooks";
+import { useBranches } from "@/features/branches/hooks";
 import {
   GlobalProductCard,
   ActivateProductModal,
@@ -163,6 +164,7 @@ export default function GlobalCatalogPage() {
 
   const { data: industryCategoriesData } = useIndustryCategories();
   const { data: categoriesData } = useCategories(businessId);
+  const { data: branchesData } = useBranches();
 
   const globalProducts = globalProductsData?.items || [];
   const globalMeta = globalProductsData?.meta;
@@ -170,6 +172,7 @@ export default function GlobalCatalogPage() {
     ? industryCategoriesData
     : [];
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
+  const branches = Array.isArray(branchesData) ? branchesData : [];
 
   // Mutaciones
   const activateGlobal = useActivateGlobalProduct(businessId);
@@ -367,6 +370,7 @@ export default function GlobalCatalogPage() {
       <ActivateProductModal
         product={activatingProduct}
         categories={categories}
+        branches={branches}
         isOpen={!!activatingProduct}
         onClose={() => setActivatingProduct(null)}
         onActivate={handleActivateGlobal}
