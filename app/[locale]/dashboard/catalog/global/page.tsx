@@ -2,21 +2,11 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Package, Store, Grid3X3 } from "lucide-react";
+import { Package, Store, Grid3X3 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { ViewToggle } from "@/components/ui/view-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useGlobalCatalog,
@@ -28,6 +18,7 @@ import { useBranches } from "@/features/branches/hooks";
 import {
   GlobalProductCard,
   ActivateProductModal,
+  GlobalCatalogFilters,
 } from "@/features/catalog/components";
 import type {
   GlobalProduct,
@@ -187,87 +178,37 @@ export default function GlobalCatalogPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Header con título y filtros */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
               {t("globalCatalog.title")}
             </h1>
             <p className="text-slate-500 mt-1">{t("globalCatalog.subtitle")}</p>
           </div>
-        </div>
-
-        {/* Filtros */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          {/* Search */}
-          <div className="relative col-span-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder={t("globalCatalog.search")}
-              value={globalSearchQuery}
-              onChange={(e) => {
-                setGlobalSearchQuery(e.target.value);
-                setGlobalPage(1);
-              }}
-              className="pl-9"
-            />
-          </div>
-
-          {/* Category and Brand Filters */}
-          <div className="relative col-span-2 gap-4 flex flex-row">
-            <div className="relative flex-1">
-              <MultiSelect
-                options={industryCategories.map((ic) => ({
-                  value: ic.id,
-                  label: ic.name,
-                }))}
-                value={selectedIndustryCategories}
-                onChange={(value) => {
-                  setSelectedIndustryCategories(value);
-                  setGlobalPage(1);
-                }}
-                placeholder={t("globalCatalog.filters.category")}
-                searchPlaceholder={tc("buttons.search")}
-                emptyMessage={tc("empty.noResults")}
-                maxDisplay={1}
-                className="w-full"
-              />
-            </div>
-            <div className="flex-1">
-              <Select
-                value={selectedBrand}
-                onValueChange={(value) => {
-                  setSelectedBrand(value);
-                  setGlobalPage(1);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("globalCatalog.filters.brand")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{tc("filters.all")}</SelectItem>
-                  {Array.from(
-                    new Set(globalProducts.map((p) => p.brand).filter(Boolean))
-                  )
-                    .sort()
-                    .map((brand) => (
-                      <SelectItem key={brand} value={brand as string}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* View Toggle */}
-          <div className="col-span-1 flex justify-end">
-            <ViewToggle
-              value={globalViewMode}
-              onChange={(value) => setGlobalViewMode(value as ViewMode)}
-              className="w-19"
-            />
-          </div>
+          <GlobalCatalogFilters
+            searchQuery={globalSearchQuery}
+            onSearchChange={(value) => {
+              setGlobalSearchQuery(value);
+              setGlobalPage(1);
+            }}
+            industryCategories={industryCategories}
+            selectedIndustryCategories={selectedIndustryCategories}
+            onIndustryCategoriesChange={(values) => {
+              setSelectedIndustryCategories(values);
+              setGlobalPage(1);
+            }}
+            brands={Array.from(
+              new Set(globalProducts.map((p) => p.brand).filter(Boolean))
+            )}
+            selectedBrand={selectedBrand}
+            onBrandChange={(value) => {
+              setSelectedBrand(value);
+              setGlobalPage(1);
+            }}
+            viewMode={globalViewMode}
+            onViewModeChange={(mode) => setGlobalViewMode(mode)}
+          />
         </div>
 
         {/* Global Products */}

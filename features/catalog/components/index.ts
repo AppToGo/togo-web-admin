@@ -14,3 +14,8 @@ export { CategoryActions } from "./CategoryActions";
  */
 export { BulkActionBar } from "./BulkActionBar";
 export { ProductFilters } from "./ProductFilters";
+
+/**
+ * Global Catalog Components
+ */
+export { GlobalCatalogFilters } from "./GlobalCatalogFilters";
