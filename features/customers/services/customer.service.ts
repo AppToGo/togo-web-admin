@@ -71,6 +71,9 @@ export async function getCustomers(
   if (params?.sortOrder) {
     queryParams.sortOrder = params.sortOrder;
   }
+  if (params?.branchId) {
+    queryParams.branchId = params.branchId;
+  }
 
   const { data } = await apiClient.get<PaginatedCustomersResponse>(
     getBaseUrl(params?.businessId),
@@ -137,7 +140,8 @@ export async function getCustomerOrders(
 export async function getGlobalCustomerMetrics(
   businessId?: string,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  branchId?: string
 ): Promise<GlobalCustomerMetrics> {
   const effectiveBusinessId = businessId || getBusinessId();
   if (!effectiveBusinessId) {
@@ -147,6 +151,7 @@ export async function getGlobalCustomerMetrics(
   const queryParams: Record<string, string> = {};
   if (dateFrom) queryParams.dateFrom = dateFrom;
   if (dateTo) queryParams.dateTo = dateTo;
+  if (branchId) queryParams.branchId = branchId;
 
   const { data } = await apiClient.get<GlobalCustomerMetrics>(
     `/businesses/${effectiveBusinessId}/customers/metrics`,

@@ -18,11 +18,12 @@ import { useGlobalCustomerMetrics } from "../../hooks";
 
 interface TopCustomersChartsProps {
   businessId?: string;
+  branchId?: string;
 }
 
-export function TopCustomersCharts({ businessId }: TopCustomersChartsProps) {
+export function TopCustomersCharts({ businessId, branchId }: TopCustomersChartsProps) {
   const t = useTranslations("customers");
-  const { data: metrics, isLoading } = useGlobalCustomerMetrics(businessId);
+  const { data: metrics, isLoading } = useGlobalCustomerMetrics({ businessId, branchId });
 
   if (isLoading) {
     return (

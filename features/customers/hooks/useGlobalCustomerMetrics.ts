@@ -12,39 +12,46 @@ import { useDateFilterParams } from "@/features/filters/hooks/useDateFilterQuery
 import { getGlobalCustomerMetrics } from "../services/customer.service";
 import { CUSTOMERS_KEYS, STALE_TIME, GC_TIME } from "./useCustomers";
 
+interface UseGlobalCustomerMetricsParams {
+  businessId?: string;
+  branchId?: string;
+}
+
 /**
  * Hook para obtener métricas globales de clientes
  *
  * Usa automáticamente los filtros de fecha globales del store.
  * SUPER_ADMIN puede pasar businessId para ver métricas de cualquier negocio.
  *
- * @param businessId - ID del negocio (opcional, para SUPER_ADMIN)
+ * @param params - Parámetros opcionales incluyendo businessId y branchId
  */
-export function useGlobalCustomerMetrics(businessId?: string) {
+export function useGlobalCustomerMetrics(params?: UseGlobalCustomerMetricsParams) {
   const dateParams = useDateFilterParams();
   const { user } = useAuthStore.getState();
   const { selectedBusinessId } = useBusinessStore();
 
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const hasBusinessId = !!user?.businessId;
-  const hasSelectedBusiness = !!businessId || !!selectedBusinessId;
+  const hasSelectedBusiness = !!params?.businessId || !!selectedBusinessId;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
 
   // Determinar el businessId efectivo
-  const effectiveBusinessId = businessId || selectedBusinessId || undefined;
+  const effectiveBusinessId = params?.businessId || selectedBusinessId || undefined;
+  const branchId = params?.branchId;
 
   return useQuery({
-    queryKey: [
-      ...CUSTOMERS_KEYS.globalMetrics(),
-      effectiveBusinessId,
-      dateParams.dateFrom,
-      dateParams.dateTo,
-    ],
+    queryKey: CUSTOMERS_KEYS.globalMetrics({
+      businessId: effectiveBusinessId,
+      branchId,
+      from: dateParams.dateFrom,
+      to: dateParams.dateTo,
+    }),
     queryFn: () =>
       getGlobalCustomerMetrics(
         effectiveBusinessId,
         dateParams.dateFrom,
-        dateParams.dateTo
+        dateParams.dateTo,
+        branchId
       ),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
