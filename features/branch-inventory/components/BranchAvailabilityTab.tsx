@@ -122,7 +122,7 @@ export function BranchAvailabilityTab({
           const isAvailable = availability?.isAvailable ?? false;
           const stock = availability?.stock ?? null;
           const priceOverride = availability?.priceOverride ?? null;
-          const effectivePrice = availability?.effectivePrice ?? basePrice;
+          const effectivePrice = availability?.priceOverride ?? basePrice;
 
           return (
             <Card
