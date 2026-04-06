@@ -44,6 +44,14 @@ function getBaseUrl(businessId?: string): string {
 }
 
 /**
+ * Valida si un string es un UUID válido (cualquier versión)
+ */
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
  * Obtener todos los clientes del negocio actual con paginación
  * SUPER_ADMIN puede pasar businessId para ver clientes de cualquier negocio
  */
@@ -70,6 +78,9 @@ export async function getCustomers(
   }
   if (params?.sortOrder) {
     queryParams.sortOrder = params.sortOrder;
+  }
+  if (params?.branchId && isValidUUID(params.branchId)) {
+    queryParams.branchId = params.branchId;
   }
 
   const { data } = await apiClient.get<PaginatedCustomersResponse>(
@@ -137,7 +148,8 @@ export async function getCustomerOrders(
 export async function getGlobalCustomerMetrics(
   businessId?: string,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  branchId?: string
 ): Promise<GlobalCustomerMetrics> {
   const effectiveBusinessId = businessId || getBusinessId();
   if (!effectiveBusinessId) {
@@ -147,6 +159,9 @@ export async function getGlobalCustomerMetrics(
   const queryParams: Record<string, string> = {};
   if (dateFrom) queryParams.dateFrom = dateFrom;
   if (dateTo) queryParams.dateTo = dateTo;
+  if (branchId && isValidUUID(branchId)) {
+    queryParams.branchId = branchId;
+  }
 
   const { data } = await apiClient.get<GlobalCustomerMetrics>(
     `/businesses/${effectiveBusinessId}/customers/metrics`,

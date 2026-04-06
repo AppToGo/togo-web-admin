@@ -86,6 +86,7 @@ export interface GetCustomersParams {
     | "lastOrderDate"
     | "createdAt";
   sortOrder?: "asc" | "desc";
+  branchId?: string;
 }
 
 /**

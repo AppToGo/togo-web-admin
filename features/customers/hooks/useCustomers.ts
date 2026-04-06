@@ -22,7 +22,8 @@ export const CUSTOMERS_KEYS = {
   detail: (id: string) => [...CUSTOMERS_KEYS.details(), id] as const,
   metrics: (id: string) => [...CUSTOMERS_KEYS.detail(id), "metrics"] as const,
   orders: (id: string) => [...CUSTOMERS_KEYS.detail(id), "orders"] as const,
-  globalMetrics: () => [...CUSTOMERS_KEYS.all, "global-metrics"] as const,
+  globalMetrics: (filters?: { businessId?: string; branchId?: string; from?: string; to?: string }) => 
+    [...CUSTOMERS_KEYS.all, "global-metrics", JSON.stringify(filters ?? {})] as const,
 };
 
 // Stale times configurables
@@ -59,6 +60,7 @@ export function useCustomers(
     limit: 10,
     ...params,
     businessId: effectiveBusinessId,
+    branchId: params?.branchId,
   };
 
   const query = useQuery<PaginatedCustomersResponse, Error>({

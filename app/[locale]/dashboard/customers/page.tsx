@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
@@ -16,6 +16,8 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { BranchSingleSelector } from "@/features/branches/components";
+import { useEffectiveBranches } from "@/features/branches/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -70,6 +72,19 @@ export default function CustomersPage() {
   const [page, setPage] = useState(1);
   const limit = 10;
 
+  // Estado para sede seleccionada
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+
+  // Hook de branches
+  const { showBranchSelector, defaultBranchId } = useEffectiveBranches();
+
+  // Efecto para auto-seleccionar sede cuando no hay selector
+  useEffect(() => {
+    if (!showBranchSelector && defaultBranchId) {
+      setSelectedBranchId(defaultBranchId);
+    }
+  }, [showBranchSelector, defaultBranchId]);
+
   // Query de clientes
   const {
     data: customers,
@@ -79,6 +94,7 @@ export default function CustomersPage() {
     page,
     limit,
     businessId: selectedBusinessId || undefined,
+    branchId: selectedBranchId || undefined,
   });
 
   // Para usuarios normales sin negocio, mostrar error
@@ -113,7 +129,13 @@ export default function CustomersPage() {
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
-          <div className="col-span-1">
+          <div className="col-span-1 flex items-start gap-2">
+            {showBranchSelector && (
+              <BranchSingleSelector
+                value={selectedBranchId}
+                onChange={setSelectedBranchId}
+              />
+            )}
             <DateRangeFilter
               variant="default"
               availablePresets={[
@@ -145,6 +167,7 @@ export default function CustomersPage() {
             <Suspense fallback={<Skeleton className="h-80" />}>
               <TopCustomersCharts
                 businessId={selectedBusinessId || undefined}
+                branchId={selectedBranchId || undefined}
               />
             </Suspense>
           </div>
