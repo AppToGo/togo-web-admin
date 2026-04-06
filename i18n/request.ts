@@ -34,6 +34,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     validation: (await import(`./messages/${validLocale}/validation.json`)).default,
     metadata: (await import(`./messages/${validLocale}/metadata.json`)).default,
     business: (await import(`./messages/${validLocale}/business.json`)).default,
+    businessSettings: (await import(`./messages/${validLocale}/business-settings.json`)).default,
     customers: (await import(`./messages/${validLocale}/customers.json`)).default,
     branches: (await import(`./messages/${validLocale}/branches.json`)).default,
     operatorProfiles: (await import(`./messages/${validLocale}/operatorProfiles.json`)).default,
