@@ -173,6 +173,9 @@
   },
   "warning": "Warning",
   "importantWarning": "Important warning",
+  "warnings": {
+    "readOnly": "Read-only mode"
+  },
   "actions": {
     "actions": "Actions",
     "select": "Select",

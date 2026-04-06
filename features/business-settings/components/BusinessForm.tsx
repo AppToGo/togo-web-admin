@@ -178,8 +178,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   id="name"
                   {...register('name')}
                   disabled={isLoading || !canEdit}
-                  error={errors.name?.message}
+                  aria-invalid={!!errors.name}
                 />
+                {errors.name && (
+                  <p className="text-xs text-red-500">{errors.name.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="slug">
@@ -190,8 +193,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   {...register('slug')}
                   onChange={handleSlugChange}
                   disabled={isLoading || !canEdit}
-                  error={errors.slug?.message}
+                  aria-invalid={!!errors.slug}
                 />
+                {errors.slug && (
+                  <p className="text-xs text-red-500">{errors.slug.message}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -200,8 +206,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                 id="phone"
                 {...register('phone')}
                 disabled={isLoading || !canEdit}
-                error={errors.phone?.message}
+                aria-invalid={!!errors.phone}
               />
+              {errors.phone && (
+                <p className="text-xs text-red-500">{errors.phone.message}</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -225,8 +234,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   id="timezone"
                   {...register('timezone')}
                   disabled={isLoading || !canEdit}
-                  error={errors.timezone?.message}
+                  aria-invalid={!!errors.timezone}
                 />
+                {errors.timezone && (
+                  <p className="text-xs text-red-500">{errors.timezone.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="currency">
@@ -236,8 +248,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   id="currency"
                   {...register('currency')}
                   disabled={isLoading || !canEdit}
-                  error={errors.currency?.message}
+                  aria-invalid={!!errors.currency}
                 />
+                {errors.currency && (
+                  <p className="text-xs text-red-500">{errors.currency.message}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -299,8 +314,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                 id="catalogUrl"
                 {...register('catalogUrl')}
                 disabled={isLoading || !canEdit}
-                error={errors.catalogUrl?.message}
+                aria-invalid={!!errors.catalogUrl}
               />
+              {errors.catalogUrl && (
+                <p className="text-xs text-red-500">{errors.catalogUrl.message}</p>
+              )}
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-1 space-y-2">
@@ -312,8 +330,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   max={100}
                   {...register('autoSuggestThreshold', { valueAsNumber: true })}
                   disabled={isLoading || !canEdit}
-                  error={errors.autoSuggestThreshold?.message}
+                  aria-invalid={!!errors.autoSuggestThreshold}
                 />
+                {errors.autoSuggestThreshold && (
+                  <p className="text-xs text-red-500">{errors.autoSuggestThreshold.message}</p>
+                )}
               </div>
               <div className="flex items-center gap-2 pt-6">
                 <Switch
@@ -368,9 +389,12 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   id="logo"
                   {...register('logo')}
                   disabled={isLoading || !canEdit}
-                  error={errors.logo?.message}
+                  aria-invalid={!!errors.logo}
                   placeholder="https://..."
                 />
+                {errors.logo && (
+                  <p className="text-xs text-red-500">{errors.logo.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="banner">{t('fields.banner')}</Label>
@@ -378,9 +402,12 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   id="banner"
                   {...register('banner')}
                   disabled={isLoading || !canEdit}
-                  error={errors.banner?.message}
+                  aria-invalid={!!errors.banner}
                   placeholder="https://..."
                 />
+                {errors.banner && (
+                  <p className="text-xs text-red-500">{errors.banner.message}</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,10 +425,13 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                     id="primaryColor"
                     {...register('primaryColor')}
                     disabled={isLoading || !canEdit}
-                    error={errors.primaryColor?.message}
+                    aria-invalid={!!errors.primaryColor}
                     className="flex-1"
                   />
                 </div>
+                {errors.primaryColor && (
+                  <p className="text-xs text-red-500">{errors.primaryColor.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="accentColor">{t('fields.accentColor')}</Label>
@@ -417,10 +447,13 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                     id="accentColor"
                     {...register('accentColor')}
                     disabled={isLoading || !canEdit}
-                    error={errors.accentColor?.message}
+                    aria-invalid={!!errors.accentColor}
                     className="flex-1"
                   />
                 </div>
+                {errors.accentColor && (
+                  <p className="text-xs text-red-500">{errors.accentColor.message}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -466,8 +499,11 @@ export function BusinessForm({ business, onSubmit, isLoading = false, canEdit }:
                   setValueAs: (v) => (v === '' ? null : parseFloat(v)) 
                 })}
                 disabled={isLoading || !canEdit}
-                error={errors.deliveryFee?.message}
+                aria-invalid={!!errors.deliveryFee}
               />
+              {errors.deliveryFee && (
+                <p className="text-xs text-red-500">{errors.deliveryFee.message}</p>
+              )}
             </div>
           </CardContent>
         </Card>

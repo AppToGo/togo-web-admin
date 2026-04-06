@@ -6,6 +6,12 @@ const workingHoursDaySchema = z.object({
   open: z.string().regex(timeRegex, 'Formato inválido (HH:mm)'),
   close: z.string().regex(timeRegex, 'Formato inválido (HH:mm)'),
   enabled: z.boolean(),
+}).refine((data) => {
+  if (!data.enabled) return true;
+  return data.open < data.close;
+}, {
+  message: 'La hora de apertura debe ser anterior a la de cierre',
+  path: ['close'],
 });
 
 export const businessFormSchema = z.object({

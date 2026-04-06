@@ -1,0 +1,74 @@
+{
+  "title": "Business Information",
+  "subtitle": "Manage your business data and settings",
+  "updateSuccess": "Business updated successfully",
+  "updateError": "Error updating business",
+  "readOnlyWarning": "Only owner or administrator can edit this information",
+  "sections": {
+    "basic": "Basic Information",
+    "regional": "Regional Settings",
+    "catalog": "Catalog & Sales",
+    "appearance": "Appearance",
+    "hours": "Business Hours",
+    "delivery": "Delivery Settings"
+  },
+  "descriptions": {
+    "basic": "Main identification data of the business",
+    "regional": "Timezone and currency configuration",
+    "catalog": "Catalog visibility and mode options",
+    "appearance": "Visual customization of the catalog",
+    "hours": "Define your business operating hours",
+    "delivery": "Shipping rate configuration"
+  },
+  "fields": {
+    "name": "Business name",
+    "slug": "Slug (friendly URL)",
+    "phone": "Phone",
+    "timezone": "Timezone",
+    "currency": "Currency",
+    "industry": "Industry",
+    "catalogVisibility": "Catalog visibility",
+    "catalogMode": "Catalog mode",
+    "autoSuggestThreshold": "Auto-suggest threshold",
+    "allowOrdersWithoutCatalog": "Allow orders without catalog",
+    "catalogUrl": "Catalog URL",
+    "welcomeMessage": "Welcome message",
+    "description": "Description",
+    "logo": "Logo URL",
+    "banner": "Banner URL",
+    "primaryColor": "Primary color",
+    "accentColor": "Accent color",
+    "deliveryFee": "Delivery fee"
+  },
+  "workingHours": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "open": "Open",
+    "close": "Close",
+    "enabled": "Open",
+    "closed": "Closed"
+  },
+  "catalogVisibility": {
+    "public": "Public - Visible to everyone",
+    "private": "Private - Access only",
+    "restricted": "Restricted - Limited"
+  },
+  "catalogMode": {
+    "menu": "Menu - View only",
+    "marketplace": "Marketplace - Direct sales",
+    "hybrid": "Hybrid - Menu + Sales"
+  },
+  "slugWarning": {
+    "title": "Change slug?",
+    "description": "Changing the slug will affect your catalog URL. Old links will stop working.",
+    "confirm": "Yes, change slug"
+  },
+  "errors": {
+    "businessNotFound": "Business not found"
+  }
+}

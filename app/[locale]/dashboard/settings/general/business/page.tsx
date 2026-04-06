@@ -113,7 +113,7 @@ export default function BusinessSettingsPage() {
 
         {/* Read-only warning */}
         {!canEdit && (
-          <Alert variant="warning">
+          <Alert variant="default" className="border-amber-500 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{tCommon('warnings.readOnly')}</AlertTitle>
             <AlertDescription>{t('readOnlyWarning')}</AlertDescription>
