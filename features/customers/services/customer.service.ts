@@ -44,14 +44,6 @@ function getBaseUrl(businessId?: string): string {
 }
 
 /**
- * Valida si un string es un UUID válido (cualquier versión)
- */
-function isValidUUID(str: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-}
-
-/**
  * Obtener todos los clientes del negocio actual con paginación
  * SUPER_ADMIN puede pasar businessId para ver clientes de cualquier negocio
  */
@@ -79,7 +71,7 @@ export async function getCustomers(
   if (params?.sortOrder) {
     queryParams.sortOrder = params.sortOrder;
   }
-  if (params?.branchId && isValidUUID(params.branchId)) {
+  if (params?.branchId) {
     queryParams.branchId = params.branchId;
   }
 
@@ -159,7 +151,7 @@ export async function getGlobalCustomerMetrics(
   const queryParams: Record<string, string> = {};
   if (dateFrom) queryParams.dateFrom = dateFrom;
   if (dateTo) queryParams.dateTo = dateTo;
-  if (branchId && isValidUUID(branchId)) {
+  if (branchId) {
     queryParams.branchId = branchId;
   }
 
