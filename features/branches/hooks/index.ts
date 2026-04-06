@@ -24,3 +24,13 @@ export {
 // Query keys (para uso avanzado)
 export { BRANCHES_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 export { useEffectiveBranches } from "./useEffectiveBranches";
+
+// Branch mode hooks
+export {
+  useBranchMode,
+  useMainBranch,
+  useIsMultiBranch,
+  useBranchCount,
+  type SingleBranchMode,
+  type MultiBranchMode,
+} from "./useBranchMode";

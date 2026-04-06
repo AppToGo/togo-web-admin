@@ -14,6 +14,7 @@ import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
+import { useBranchMode } from "@/features/branches/hooks/useBranchMode";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -43,79 +44,91 @@ export function Sidebar({
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
+  const branchMode = useBranchMode();
 
   // Navigation items with translation keys
-  const navigation: NavigationItem[] = [
-    {
-      name: t("sidebar.dashboard"),
-      href: "/dashboard",
-      icon: LayoutDashboardIcon,
-    },
-    {
-      name: t("sidebar.orders"),
-      href: "/dashboard/orders",
-      icon: ShoppingBagIcon,
-    },
-    {
-      name: t("sidebar.catalog"),
-      href: "/dashboard/catalog",
-      icon: PackageIcon,
-      children: [
-        {
-          name: t("sidebar.myProducts"),
-          href: "/dashboard/catalog/products",
-          icon: BoxIcon,
-        },
-        {
-          name: t("sidebar.inventory"),
-          href: "/dashboard/inventory",
-          icon: InventoryIcon,
-        },
-        {
-          name: t("sidebar.globalCatalog"),
-          href: "/dashboard/catalog/global",
-          icon: GlobeIcon,
-        },
-        {
-          name: t("sidebar.categories"),
-          href: "/dashboard/catalog/categories",
-          icon: TagsIcon,
-        },
-      ],
-    },
-    {
-      name: t("sidebar.customers"),
-      href: "/dashboard/customers",
-      icon: UsersIcon,
-    },
-    {
-      name: t("sidebar.settings"),
-      href: "/dashboard/settings",
-      icon: SettingsIcon,
-      children: [
-        {
-          name: t("sidebar.general"),
-          href: "/dashboard/settings/general",
-          icon: UserIcon,
-        },
-        {
-          name: t("sidebar.branches"),
-          href: "/dashboard/branches",
-          icon: BuildingIcon,
-        },
-        {
-          name: t("sidebar.operatorProfiles"),
-          href: "/dashboard/settings/operator-profiles",
-          icon: ShieldIcon,
-        },
-        {
-          name: t("sidebar.users"),
-          href: "/dashboard/settings/users",
-          icon: UsersIcon,
-        },
-      ],
-    },
-  ];
+  const navigation: NavigationItem[] = React.useMemo(() => {
+    const items: NavigationItem[] = [
+      {
+        name: t("sidebar.dashboard"),
+        href: "/dashboard",
+        icon: LayoutDashboardIcon,
+      },
+      {
+        name: t("sidebar.orders"),
+        href: "/dashboard/orders",
+        icon: ShoppingBagIcon,
+      },
+      {
+        name: t("sidebar.catalog"),
+        href: "/dashboard/catalog",
+        icon: PackageIcon,
+        children: [
+          {
+            name: t("sidebar.myProducts"),
+            href: "/dashboard/catalog/products",
+            icon: BoxIcon,
+          },
+          {
+            name: t("sidebar.inventory"),
+            href: "/dashboard/inventory",
+            icon: InventoryIcon,
+          },
+          {
+            name: t("sidebar.globalCatalog"),
+            href: "/dashboard/catalog/global",
+            icon: GlobeIcon,
+          },
+          {
+            name: t("sidebar.categories"),
+            href: "/dashboard/catalog/categories",
+            icon: TagsIcon,
+          },
+        ],
+      },
+      {
+        name: t("sidebar.customers"),
+        href: "/dashboard/customers",
+        icon: UsersIcon,
+      },
+      {
+        name: t("sidebar.settings"),
+        href: "/dashboard/settings",
+        icon: SettingsIcon,
+        children: [
+          // Modo SINGLE (1 sede): Mostrar Configuración General
+          // Modo MULTI (2+ sedes): Mostrar Sedes
+          ...(branchMode?.mode === 'SINGLE'
+            ? [
+                {
+                  name: t("sidebar.general"),
+                  href: "/dashboard/settings/general",
+                  icon: UserIcon,
+                },
+              ]
+            : [
+                {
+                  name: t("sidebar.branches"),
+                  href: "/dashboard/branches",
+                  icon: BuildingIcon,
+                },
+              ]),
+          {
+            name: t("sidebar.operatorProfiles"),
+            href: "/dashboard/settings/operator-profiles",
+            icon: ShieldIcon,
+          },
+          {
+            name: t("sidebar.users"),
+            href: "/dashboard/settings/users",
+            icon: UsersIcon,
+          },
+        ],
+      },
+    ];
+
+    return items;
+  }, [t, branchMode]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [

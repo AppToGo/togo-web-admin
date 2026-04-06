@@ -169,5 +169,48 @@
       "codeRequired": "El código es obligatorio",
       "phoneInvalid": "Número inválido. Usa formato E.164, ej: +573001234567"
     }
+  },
+  "settings": {
+    "title": "Configuración de {branchName}",
+    "subtitle": "Gestiona la información, envío y horarios de atención de esta sede",
+    "basicInfo": {
+      "title": "Información básica",
+      "name": "Nombre de la sede",
+      "namePlaceholder": "Ej: Sede Centro",
+      "contactPhone": "Teléfono de contacto",
+      "contactPhonePlaceholder": "Ej: +57 300 123 4567",
+      "address": "Dirección",
+      "addressPlaceholder": "Ej: Calle 123 # 45-67"
+    },
+    "delivery": {
+      "title": "Configuración de envío",
+      "description": "Define cómo se calcula el costo de envío para esta sede",
+      "feeType": "Tipo de tarifa",
+      "types": {
+        "free": "Envío gratis",
+        "flat": "Tarifa plana",
+        "distance": "Por distancia"
+      },
+      "flatFee": "Tarifa plana",
+      "distanceRanges": "Rangos de distancia",
+      "minKm": "Desde (km)",
+      "maxKm": "Hasta (km)",
+      "fee": "Tarifa"
+    },
+    "businessHours": {
+      "title": "Horarios de atención",
+      "description": "Define los días y horarios en que esta sede está abierta",
+      "timezone": "Zona horaria",
+      "closed": "Cerrado",
+      "days": {
+        "monday": "Lunes",
+        "tuesday": "Martes",
+        "wednesday": "Miércoles",
+        "thursday": "Jueves",
+        "friday": "Viernes",
+        "saturday": "Sábado",
+        "sunday": "Domingo"
+      }
+    }
   }
 }

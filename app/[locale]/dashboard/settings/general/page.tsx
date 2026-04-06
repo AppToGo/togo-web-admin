@@ -7,6 +7,7 @@ import { Settings, Store, Bell, Shield, User, Users, Building2 } from "lucide-re
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
+import { useBranchMode, BranchSettingsForm, useUpdateBranch } from "@/features/branches";
 
 export default function GeneralSettingsPage() {
   const t = useTranslations("settings");
@@ -15,6 +16,45 @@ export default function GeneralSettingsPage() {
 
   useAuthGuard();
 
+  const branchMode = useBranchMode();
+  const updateBranch = useUpdateBranch();
+
+  // Si está cargando o no hay datos
+  if (!branchMode) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Si es modo SINGLE (1 sede), mostrar formulario de configuración de la sede
+  if (branchMode.mode === 'SINGLE') {
+    return (
+      <BranchSettingsForm
+        branch={branchMode.mainBranch}
+        onSave={async (data) => {
+          await updateBranch.mutateAsync({
+            branchId: branchMode.mainBranch.id,
+            data: {
+              name: data.name,
+              contactPhone: data.contactPhone,
+              address: data.address,
+              deliveryConfig: data.deliveryConfig,
+              businessHours: data.businessHours,
+            },
+          });
+        }}
+        isSaving={updateBranch.isPending}
+        mode="PAGE"
+        backUrl="/dashboard"
+      />
+    );
+  }
+
+  // Si es modo MULTI (2+ sedes), mostrar las opciones de configuración
   const settingsSections = [
     {
       id: "profile",

@@ -6,6 +6,7 @@
  */
 
 import type { WhatsAppNumberExtra } from "../utils/branch-helpers";
+import type { DeliveryConfig, BusinessHours } from './branch-config.types';
 
 /**
  * Modo de enrutamiento de WhatsApp para una sucursal
@@ -32,6 +33,12 @@ export interface Branch {
   currency: string;
   createdAt: string;
   updatedAt: string;
+  /** Teléfono de contacto de la sede (diferente al WhatsApp) */
+  contactPhone?: string | null;
+  /** Configuración de envío */
+  deliveryConfig?: DeliveryConfig;
+  /** Horarios de atención */
+  businessHours?: BusinessHours;
 }
 
 /**
@@ -58,6 +65,12 @@ export interface CreateBranchRequest {
   address?: string;
   timezone?: string;
   currency?: string;
+  /** Teléfono de contacto de la sede */
+  contactPhone?: string;
+  /** Configuración de envío */
+  deliveryConfig?: DeliveryConfig;
+  /** Horarios de atención */
+  businessHours?: BusinessHours;
 }
 
 /**
@@ -74,4 +87,10 @@ export interface UpdateBranchRequest {
   timezone?: string;
   currency?: string;
   isActive?: boolean;
+  /** Teléfono de contacto de la sede */
+  contactPhone?: string;
+  /** Configuración de envío */
+  deliveryConfig?: DeliveryConfig;
+  /** Horarios de atención */
+  businessHours?: BusinessHours;
 }

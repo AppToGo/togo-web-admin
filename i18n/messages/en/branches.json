@@ -169,5 +169,48 @@
       "codeRequired": "Code is required",
       "phoneInvalid": "Invalid number. Use E.164 format, e.g. +13001234567"
     }
+  },
+  "settings": {
+    "title": "{branchName} Settings",
+    "subtitle": "Manage this branch's information, delivery and business hours",
+    "basicInfo": {
+      "title": "Basic Information",
+      "name": "Branch name",
+      "namePlaceholder": "E.g.: Downtown Branch",
+      "contactPhone": "Contact phone",
+      "contactPhonePlaceholder": "E.g.: +1 300 123 4567",
+      "address": "Address",
+      "addressPlaceholder": "E.g.: 123 Main St"
+    },
+    "delivery": {
+      "title": "Delivery Settings",
+      "description": "Define how delivery fees are calculated for this branch",
+      "feeType": "Fee type",
+      "types": {
+        "free": "Free delivery",
+        "flat": "Flat fee",
+        "distance": "By distance"
+      },
+      "flatFee": "Flat fee",
+      "distanceRanges": "Distance ranges",
+      "minKm": "From (km)",
+      "maxKm": "To (km)",
+      "fee": "Fee"
+    },
+    "businessHours": {
+      "title": "Business Hours",
+      "description": "Define the days and hours this branch is open",
+      "timezone": "Timezone",
+      "closed": "Closed",
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    }
   }
 }
