@@ -89,7 +89,11 @@
     "setMainFailed": "Error al establecer la sucursal principal",
     "loadFailed": "Error al cargar las sucursales",
     "limitReached": "Has alcanzado el límite de sucursales para tu plan",
-    "duplicateCode": "Ya existe una sucursal con ese código"
+    "duplicateCode": "Ya existe una sucursal con ese código",
+    "loadingFailed": "Error al cargar configuración",
+    "loadingFailedDescription": "No se pudieron cargar las sedes. Por favor, intenta nuevamente.",
+    "selectBusiness": "Selecciona un negocio",
+    "selectBusinessDescription": "Como administrador, debes seleccionar un negocio para ver su configuración."
   },
   "plan": {
     "limitTitle": "Límite de sucursales alcanzado",

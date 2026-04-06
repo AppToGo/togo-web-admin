@@ -19,7 +19,8 @@
     "categories": "Categories",
     "branches": "Branches",
     "operatorProfiles": "Operator Profiles",
-    "general": "General",
+    "general": "Settings",
+    "business": "Business Details",
     "users": "Users"
   },
   "breadcrumbs": {

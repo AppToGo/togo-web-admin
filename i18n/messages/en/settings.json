@@ -22,15 +22,56 @@
     "confirmPassword": "Confirm new password"
   },
   "business": {
-    "title": "Business information",
-    "subtitle": "Configure your business data",
+    "title": "Business Details",
+    "subtitle": "General information and branding for your business",
     "name": "Business name",
     "description": "Description",
     "address": "Address",
     "phone": "Phone",
     "email": "Contact email",
     "timezone": "Timezone",
-    "currency": "Currency"
+    "currency": "Currency",
+    "slug": {
+      "label": "Custom URL",
+      "placeholder": "my-business",
+      "help": "This will be your URL in the catalog: togo.com/your-business"
+    },
+    "catalog": {
+      "visibility": {
+        "label": "Catalog visibility",
+        "public": "Public - Anyone can view",
+        "private": "Private - Access only",
+        "restricted": "Restricted - Registered users only"
+      },
+      "mode": {
+        "label": "Catalog mode",
+        "menu": "Menu - For restaurants",
+        "marketplace": "Marketplace - For stores",
+        "hybrid": "Hybrid - Both modes"
+      }
+    },
+    "branding": {
+      "title": "Branding",
+      "logo": {
+        "label": "Business logo",
+        "upload": "Upload logo",
+        "placeholder": "Logo URL"
+      },
+      "banner": {
+        "label": "Catalog banner",
+        "placeholder": "Banner URL"
+      },
+      "colors": {
+        "primary": "Primary color",
+        "accent": "Accent color"
+      }
+    },
+    "welcomeMessage": {
+      "label": "Welcome message",
+      "placeholder": "Message your customers will see when entering the catalog..."
+    },
+    "saveSuccess": "Business details saved successfully",
+    "saveError": "Error saving business details"
   },
   "notifications": {
     "title": "Notification preferences",

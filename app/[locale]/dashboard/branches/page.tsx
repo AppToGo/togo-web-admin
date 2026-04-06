@@ -83,6 +83,10 @@ export default function BranchesPage() {
     router.push(`/dashboard/branches/${branchId}`);
   };
 
+  const handleConfigureBranch = (branchId: string) => {
+    router.push(`/dashboard/branches/${branchId}/settings`);
+  };
+
   const handleDeleteBranch = (branchId: string) => {
     deleteBranch.mutate(branchId);
   };
@@ -158,6 +162,7 @@ export default function BranchesPage() {
                     key={branch.id}
                     branch={branch}
                     onEdit={(b) => handleEditBranch(b.id)}
+                    onConfigure={(b) => handleConfigureBranch(b.id)}
                     onDelete={(b) => handleDeleteBranch(b.id)}
                     onMakeMain={(b) => handleSetMainBranch(b.id)}
                     isLoading={deleteBranch.isPending || setMainBranch.isPending}

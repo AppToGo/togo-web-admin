@@ -22,15 +22,56 @@
     "confirmPassword": "Confirmar nueva contraseña"
   },
   "business": {
-    "title": "Información del negocio",
-    "subtitle": "Configura los datos de tu negocio",
+    "title": "Datos del Negocio",
+    "subtitle": "Información general y branding de tu negocio",
     "name": "Nombre del negocio",
     "description": "Descripción",
     "address": "Dirección",
     "phone": "Teléfono",
     "email": "Correo de contacto",
     "timezone": "Zona horaria",
-    "currency": "Moneda"
+    "currency": "Moneda",
+    "slug": {
+      "label": "URL personalizada",
+      "placeholder": "mi-negocio",
+      "help": "Este será tu URL en el catálogo: togo.com/tu-negocio"
+    },
+    "catalog": {
+      "visibility": {
+        "label": "Visibilidad del catálogo",
+        "public": "Público - Cualquiera puede ver",
+        "private": "Privado - Solo con acceso",
+        "restricted": "Restringido - Solo usuarios registrados"
+      },
+      "mode": {
+        "label": "Modo del catálogo",
+        "menu": "Menú - Para restaurantes",
+        "marketplace": "Marketplace - Para tiendas",
+        "hybrid": "Híbrido - Ambos modos"
+      }
+    },
+    "branding": {
+      "title": "Branding",
+      "logo": {
+        "label": "Logo del negocio",
+        "upload": "Subir logo",
+        "placeholder": "URL del logo"
+      },
+      "banner": {
+        "label": "Banner del catálogo",
+        "placeholder": "URL del banner"
+      },
+      "colors": {
+        "primary": "Color principal",
+        "accent": "Color de acento"
+      }
+    },
+    "welcomeMessage": {
+      "label": "Mensaje de bienvenida",
+      "placeholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+    },
+    "saveSuccess": "Datos del negocio guardados correctamente",
+    "saveError": "Error al guardar los datos del negocio"
   },
   "notifications": {
     "title": "Preferencias de notificaciones",

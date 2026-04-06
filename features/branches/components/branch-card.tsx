@@ -12,6 +12,7 @@ import {
   Hash,
   Smartphone,
   Route,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import { useBranchMetrics } from "../hooks/useBranches";
 interface BranchCardProps {
   branch: Branch;
   onEdit?: (branch: Branch) => void;
+  onConfigure?: (branch: Branch) => void;
   onDelete?: (branch: Branch) => void;
   onMakeMain?: (branch: Branch) => void;
   isLoading?: boolean;
@@ -58,6 +60,7 @@ const routingModeConfig: Record<
 export const BranchCard = memo(function BranchCard({
   branch,
   onEdit,
+  onConfigure,
   onDelete,
   onMakeMain,
   isLoading = false,
@@ -197,6 +200,17 @@ export const BranchCard = memo(function BranchCard({
           >
             <Edit2 className="w-4 h-4 mr-1.5" />
             {tCommon("buttons.edit")}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+            onClick={() => onConfigure?.(branch)}
+            disabled={isLoading}
+          >
+            <Settings className="w-4 h-4 mr-1.5" />
+            {tCommon("buttons.configure")}
           </Button>
 
           {!branch.isMainBranch && (

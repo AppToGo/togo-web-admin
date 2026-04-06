@@ -14,7 +14,7 @@ import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
-import { useBranchMode } from "@/features/branches/hooks/useBranchMode";
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export function Sidebar({
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
-  const branchMode = useBranchMode();
+
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -96,23 +96,16 @@ export function Sidebar({
         href: "/dashboard/settings",
         icon: SettingsIcon,
         children: [
-          // Modo SINGLE (1 sede): Mostrar Configuración General
-          // Modo MULTI (2+ sedes): Mostrar Sedes
-          ...(branchMode?.mode === 'SINGLE'
-            ? [
-                {
-                  name: t("sidebar.general"),
-                  href: "/dashboard/settings/general",
-                  icon: UserIcon,
-                },
-              ]
-            : [
-                {
-                  name: t("sidebar.branches"),
-                  href: "/dashboard/branches",
-                  icon: BuildingIcon,
-                },
-              ]),
+          {
+            name: t("sidebar.general"),
+            href: "/dashboard/settings/general",
+            icon: UserIcon,
+          },
+          {
+            name: t("sidebar.branches"),
+            href: "/dashboard/branches",
+            icon: BuildingIcon,
+          },
           {
             name: t("sidebar.operatorProfiles"),
             href: "/dashboard/settings/operator-profiles",
@@ -128,7 +121,7 @@ export function Sidebar({
     ];
 
     return items;
-  }, [t, branchMode]);
+  }, [t]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [

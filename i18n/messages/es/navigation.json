@@ -19,7 +19,8 @@
     "categories": "Mis Categorias",
     "branches": "Sedes",
     "operatorProfiles": "Perfiles de Operador",
-    "general": "General",
+    "general": "Configuración",
+    "business": "Datos del Negocio",
     "users": "Usuarios"
   },
   "breadcrumbs": {

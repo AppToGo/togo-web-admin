@@ -3,24 +3,36 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
-import { Settings, Store, Bell, Shield, User, Users, Building2 } from "lucide-react";
+import {
+  Settings,
+  Store,
+  Bell,
+  Shield,
+  User,
+  Users,
+  Building2,
+  AlertCircle,
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Link } from "@/i18n/routing";
-import { useBranchMode, BranchSettingsForm, useUpdateBranch } from "@/features/branches";
+import { useBranches } from "@/features/branches";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
 
 export default function GeneralSettingsPage() {
   const t = useTranslations("settings");
   const tc = useTranslations("common");
   const tn = useTranslations("navigation");
+  const tb = useTranslations("branches");
 
   useAuthGuard();
 
-  const branchMode = useBranchMode();
-  const updateBranch = useUpdateBranch();
+  const user = useCurrentUser();
+  const { data: branches, isLoading, error } = useBranches();
 
-  // Si está cargando o no hay datos
-  if (!branchMode) {
+  // Manejar estado de carga
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
@@ -30,45 +42,89 @@ export default function GeneralSettingsPage() {
     );
   }
 
-  // Si es modo SINGLE (1 sede), mostrar formulario de configuración de la sede
-  if (branchMode.mode === 'SINGLE') {
+  // Manejar error al cargar sedes
+  if (error) {
     return (
-      <BranchSettingsForm
-        branch={branchMode.mainBranch}
-        onSave={async (data) => {
-          await updateBranch.mutateAsync({
-            branchId: branchMode.mainBranch.id,
-            data: {
-              name: data.name,
-              contactPhone: data.contactPhone,
-              address: data.address,
-              deliveryConfig: data.deliveryConfig,
-              businessHours: data.businessHours,
-            },
-          });
-        }}
-        isSaving={updateBranch.isPending}
-        mode="PAGE"
-        backUrl="/dashboard"
-      />
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto mt-8">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>{tb("errors.loadingFailed")}</AlertTitle>
+            <AlertDescription>
+              {tb("errors.loadingFailedDescription")}
+              <br />
+              <code className="text-xs mt-2 block">{error.message}</code>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
     );
   }
 
-  // Si es modo MULTI (2+ sedes), mostrar las opciones de configuración
+  // Manejar usuario sin negocio asignado
+  if (!user?.businessId && user?.role !== 'SUPER_ADMIN') {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto mt-8">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>{tb("noBusiness.title")}</AlertTitle>
+            <AlertDescription>
+              {tb("noBusiness.description")}
+            </AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Manejar SUPER_ADMIN sin negocio seleccionado
+  if (user?.role === 'SUPER_ADMIN' && !branches) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto mt-8">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>{tb("errors.selectBusiness")}</AlertTitle>
+            <AlertDescription>
+              {tb("errors.selectBusinessDescription")}
+            </AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Manejar sin sedes
+  if (!branches || branches.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto mt-8 text-center">
+          <Building2 className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {tb("empty.title")}
+          </h2>
+          <p className="text-slate-500 mb-6">
+            {tb("empty.description")}
+          </p>
+          <Link href="/dashboard/branches/new">
+            <Button>
+              {tb("createBranch")}
+            </Button>
+          </Link>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Settings sections - Menu de navegación siempre visible
   const settingsSections = [
-    {
-      id: "profile",
-      icon: User,
-      title: t("profile.title"),
-      description: t("profile.description"),
-      href: "/dashboard/settings/general",
-    },
     {
       id: "business",
       icon: Store,
       title: t("business.title"),
       description: t("business.description"),
-      href: "/dashboard/settings/general",
+      href: "/dashboard/settings/general/business",
     },
     {
       id: "branches",
@@ -97,13 +153,6 @@ export default function GeneralSettingsPage() {
       title: t("notifications.title"),
       description: t("notifications.description"),
       href: "/dashboard/settings/notifications",
-    },
-    {
-      id: "security",
-      icon: Shield,
-      title: t("security.title"),
-      description: t("security.description"),
-      href: "/dashboard/settings/general",
     },
   ];
 
