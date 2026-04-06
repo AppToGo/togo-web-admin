@@ -23,8 +23,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Branch, RoutingMode, CreateBranchRequest, UpdateBranchRequest } from "../types";
+import type { Branch, RoutingMode, CreateBranchRequest, UpdateBranchRequest, DeliveryFeeType, BusinessHours } from "../types";
 import { getPrimaryWhatsApp } from "../utils/branch-helpers";
+import { DeliveryConfigSection } from './DeliveryConfigSection';
+import { BusinessHoursSection } from './BusinessHoursSection';
 
 interface BranchFormProps {
   branch?: Branch | null;
@@ -100,6 +102,21 @@ export function BranchForm({
   const isEditing = !!branch;
   const isMainBranch = branch?.isMainBranch ?? false;
 
+  // Default business hours
+  const DEFAULT_BUSINESS_HOURS: BusinessHours = {
+    timezone: 'America/Bogota',
+    schedule: {
+      monday: { isOpen: true, open: '09:00', close: '18:00' },
+      tuesday: { isOpen: true, open: '09:00', close: '18:00' },
+      wednesday: { isOpen: true, open: '09:00', close: '18:00' },
+      thursday: { isOpen: true, open: '09:00', close: '18:00' },
+      friday: { isOpen: true, open: '09:00', close: '18:00' },
+      saturday: { isOpen: false, open: '09:00', close: '18:00' },
+      sunday: { isOpen: false, open: '09:00', close: '18:00' },
+    },
+    holidays: [],
+  };
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -112,6 +129,9 @@ export function BranchForm({
     timezone: "America/Bogota",
     currency: "COP",
     isActive: true,
+    contactPhone: "",
+    deliveryConfig: { type: 'FREE' as DeliveryFeeType },
+    businessHours: DEFAULT_BUSINESS_HOURS,
   });
 
   // Validation state
@@ -134,6 +154,9 @@ export function BranchForm({
         timezone: branch.timezone,
         currency: branch.currency,
         isActive: branch.isActive,
+        contactPhone: branch.contactPhone || "",
+        deliveryConfig: branch.deliveryConfig || { type: 'FREE' },
+        businessHours: branch.businessHours || DEFAULT_BUSINESS_HOURS,
       });
       setErrors({});
       setTouched({});
@@ -242,6 +265,9 @@ export function BranchForm({
           timezone: formData.timezone,
           currency: formData.currency,
           isActive: formData.isActive,
+          contactPhone: formData.contactPhone || undefined,
+          deliveryConfig: formData.deliveryConfig,
+          businessHours: formData.businessHours,
         }
       : {
           // Create: send all required fields
@@ -254,6 +280,9 @@ export function BranchForm({
           address: formData.address || undefined,
           timezone: formData.timezone,
           currency: formData.currency,
+          contactPhone: formData.contactPhone || undefined,
+          deliveryConfig: formData.deliveryConfig,
+          businessHours: formData.businessHours,
         };
 
     onSubmit(data);
@@ -540,6 +569,45 @@ export function BranchForm({
           </CardContent>
         </Card>
       )}
+
+      {/* Contact Phone */}
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Phone className="w-4 h-4 text-purple-500" />
+            {t("form.sections.contact")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor={`${formId}-contactPhone`}>
+              {t("form.fields.contactPhone")}
+            </Label>
+            <Input
+              id={`${formId}-contactPhone`}
+              name="contactPhone"
+              type="tel"
+              value={formData.contactPhone}
+              onChange={handleChange}
+              placeholder={t("form.placeholders.contactPhone")}
+              disabled={isLoading}
+            />
+            <p className="text-xs text-slate-500">{t("form.help.contactPhone")}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delivery Config */}
+      <DeliveryConfigSection
+        value={formData.deliveryConfig}
+        onChange={(config) => setFormData((prev) => ({ ...prev, deliveryConfig: config }))}
+      />
+
+      {/* Business Hours */}
+      <BusinessHoursSection
+        value={formData.businessHours}
+        onChange={(hours) => setFormData((prev) => ({ ...prev, businessHours: hours }))}
+      />
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4">

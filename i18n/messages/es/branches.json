@@ -132,7 +132,10 @@
       "basic": "Información básica",
       "whatsapp": "Configuración de WhatsApp",
       "location": "Ubicación y configuración",
-      "status": "Estado"
+      "status": "Estado",
+      "contact": "Contacto",
+      "delivery": "Envío",
+      "businessHours": "Horarios"
     },
     "descriptions": {
       "basic": "Nombre, código único y URL amigable de la sucursal",
@@ -149,14 +152,16 @@
       "address": "Dirección",
       "timezone": "Zona horaria",
       "currency": "Moneda",
-      "isActive": "Sucursal activa"
+      "isActive": "Sucursal activa",
+      "contactPhone": "Teléfono de contacto"
     },
     "placeholders": {
       "name": "Ej: Sucursal Centro",
       "slug": "sucursal-centro",
       "code": "SC-001",
       "whatsappPhoneNumberId": "ID del número en Meta Business",
-      "address": "Calle Principal 123, Ciudad"
+      "address": "Calle Principal 123, Ciudad",
+      "contactPhone": "Ej: +57 300 123 4567"
     },
     "help": {
       "slug": "Identificador URL de la sucursal. Se genera automáticamente desde el nombre.",
@@ -164,7 +169,8 @@
       "phoneFormat": "Formato internacional E.164, ej: +573001234567",
       "phoneNumberId": "ID del número de teléfono en Meta Business Manager",
       "isActive": "Las sucursales inactivas no reciben pedidos nuevos.",
-      "mainBranchAlwaysActive": "La sucursal principal no puede desactivarse."
+      "mainBranchAlwaysActive": "La sucursal principal no puede desactivarse.",
+      "contactPhone": "Teléfono de contacto de esta sede para clientes"
     },
     "errors": {
       "nameRequired": "El nombre es obligatorio",

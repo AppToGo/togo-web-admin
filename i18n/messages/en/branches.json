@@ -128,7 +128,10 @@
       "basic": "Basic information",
       "whatsapp": "WhatsApp configuration",
       "location": "Location & settings",
-      "status": "Status"
+      "status": "Status",
+      "contact": "Contact",
+      "delivery": "Delivery",
+      "businessHours": "Business Hours"
     },
     "descriptions": {
       "basic": "Branch name, unique code and URL-friendly slug",
@@ -145,14 +148,16 @@
       "address": "Address",
       "timezone": "Timezone",
       "currency": "Currency",
-      "isActive": "Branch active"
+      "isActive": "Branch active",
+      "contactPhone": "Contact phone"
     },
     "placeholders": {
       "name": "Ex: Downtown Branch",
       "slug": "downtown-branch",
       "code": "DB-001",
       "whatsappPhoneNumberId": "Meta Business phone number ID",
-      "address": "123 Main Street, City"
+      "address": "123 Main Street, City",
+      "contactPhone": "E.g.: +1 300 123 4567"
     },
     "help": {
       "slug": "URL identifier for the branch. Auto-generated from the name.",
@@ -160,7 +165,8 @@
       "phoneFormat": "International E.164 format, e.g. +13001234567",
       "phoneNumberId": "Phone number ID from Meta Business Manager",
       "isActive": "Inactive branches do not receive new orders.",
-      "mainBranchAlwaysActive": "The main branch cannot be deactivated."
+      "mainBranchAlwaysActive": "The main branch cannot be deactivated.",
+      "contactPhone": "Contact phone for this branch for customers"
     },
     "errors": {
       "nameRequired": "Name is required",

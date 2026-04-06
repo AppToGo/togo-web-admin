@@ -84,7 +84,7 @@ export default function BranchesPage() {
   };
 
   const handleConfigureBranch = (branchId: string) => {
-    router.push(`/dashboard/branches/${branchId}/settings`);
+    router.push(`/dashboard/branches/${branchId}/edit`);
   };
 
   const handleDeleteBranch = (branchId: string) => {
