@@ -97,9 +97,9 @@ export function Sidebar({
         icon: SettingsIcon,
         children: [
           {
-            name: t("sidebar.general"),
-            href: "/dashboard/settings/general",
-            icon: UserIcon,
+            name: t("sidebar.business"),
+            href: "/dashboard/settings/general/business",
+            icon: StoreIcon,
           },
           {
             name: t("sidebar.branches"),
@@ -107,14 +107,19 @@ export function Sidebar({
             icon: BuildingIcon,
           },
           {
+            name: t("sidebar.users"),
+            href: "/dashboard/settings/users",
+            icon: UsersIcon,
+          },
+          {
             name: t("sidebar.operatorProfiles"),
             href: "/dashboard/settings/operator-profiles",
             icon: ShieldIcon,
           },
           {
-            name: t("sidebar.users"),
-            href: "/dashboard/settings/users",
-            icon: UsersIcon,
+            name: t("sidebar.notifications"),
+            href: "/dashboard/settings/notifications",
+            icon: BellIcon,
           },
         ],
       },
@@ -794,6 +799,29 @@ function InventoryIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+      />
+    </svg>
+  );
+}
+
+function StoreIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 3h18v18H3zM9 9h6v6H9z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 9h18M9 3v6M15 3v6"
       />
     </svg>
   );

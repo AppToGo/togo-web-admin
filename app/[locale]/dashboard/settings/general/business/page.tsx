@@ -205,7 +205,7 @@ export default function BusinessSettingsPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/dashboard/settings/general">
+          <Link href="/dashboard/settings">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -476,7 +476,7 @@ export default function BusinessSettingsPage() {
 
           {/* Actions */}
           <div className="flex justify-end gap-4">
-            <Link href="/dashboard/settings/general">
+            <Link href="/dashboard/settings">
               <Button type="button" variant="outline">
                 Cancelar
               </Button>

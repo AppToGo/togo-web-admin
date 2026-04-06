@@ -17,8 +17,8 @@ export default function SettingsPage() {
   const locale = params.locale as string;
 
   useEffect(() => {
-    // Redirect to the General settings page
-    router.replace(`/${locale}/dashboard/settings/general`);
+    // Redirect to the Business settings page
+    router.replace(`/${locale}/dashboard/settings/general/business`);
   }, [router, locale]);
 
   // Return null while redirecting
