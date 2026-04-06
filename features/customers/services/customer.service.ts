@@ -44,6 +44,14 @@ function getBaseUrl(businessId?: string): string {
 }
 
 /**
+ * Valida si un string es un UUID v4 válido
+ */
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
  * Obtener todos los clientes del negocio actual con paginación
  * SUPER_ADMIN puede pasar businessId para ver clientes de cualquier negocio
  */
@@ -71,7 +79,7 @@ export async function getCustomers(
   if (params?.sortOrder) {
     queryParams.sortOrder = params.sortOrder;
   }
-  if (params?.branchId) {
+  if (params?.branchId && isValidUUID(params.branchId)) {
     queryParams.branchId = params.branchId;
   }
 
@@ -151,7 +159,9 @@ export async function getGlobalCustomerMetrics(
   const queryParams: Record<string, string> = {};
   if (dateFrom) queryParams.dateFrom = dateFrom;
   if (dateTo) queryParams.dateTo = dateTo;
-  if (branchId) queryParams.branchId = branchId;
+  if (branchId && isValidUUID(branchId)) {
+    queryParams.branchId = branchId;
+  }
 
   const { data } = await apiClient.get<GlobalCustomerMetrics>(
     `/businesses/${effectiveBusinessId}/customers/metrics`,
