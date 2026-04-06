@@ -28,7 +28,7 @@ export default function GeneralSettingsPage() {
       icon: Store,
       title: t("business.title"),
       description: t("business.description"),
-      href: "/dashboard/settings/general",
+      href: "/dashboard/settings/general/business",
     },
     {
       id: "branches",

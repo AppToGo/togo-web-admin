@@ -168,7 +168,11 @@
     "createFailed": "Error al crear",
     "updateFailed": "Error al actualizar",
     "deleteFailed": "Error al eliminar",
-    "statusChangeFailed": "Error al cambiar el estado"
+    "statusChangeFailed": "Error al cambiar el estado",
+    "loading": "Error al cargar"
+  },
+  "warnings": {
+    "readOnly": "Modo solo lectura"
   },
   "warning": "Advertencia",
   "importantWarning": "Advertencia importante",

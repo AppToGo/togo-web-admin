@@ -1,0 +1,74 @@
+{
+  "title": "Información del Negocio",
+  "subtitle": "Gestiona los datos y configuración de tu negocio",
+  "updateSuccess": "Negocio actualizado correctamente",
+  "updateError": "Error al actualizar el negocio",
+  "readOnlyWarning": "Solo el propietario o administrador pueden editar esta información",
+  "sections": {
+    "basic": "Información Básica",
+    "regional": "Configuración Regional",
+    "catalog": "Catálogo y Ventas",
+    "appearance": "Apariencia",
+    "hours": "Horarios de Atención",
+    "delivery": "Configuración de Delivery"
+  },
+  "descriptions": {
+    "basic": "Datos principales de identificación del negocio",
+    "regional": "Configuración de zona horaria y moneda",
+    "catalog": "Opciones de visibilidad y modo de catálogo",
+    "appearance": "Personalización visual del catálogo",
+    "hours": "Define los horarios de atención de tu negocio",
+    "delivery": "Configuración de tarifas de envío"
+  },
+  "fields": {
+    "name": "Nombre del negocio",
+    "slug": "Slug (URL amigable)",
+    "phone": "Teléfono",
+    "timezone": "Zona horaria",
+    "currency": "Moneda",
+    "industry": "Industria",
+    "catalogVisibility": "Visibilidad del catálogo",
+    "catalogMode": "Modo de catálogo",
+    "autoSuggestThreshold": "Umbral de sugerencias automáticas",
+    "allowOrdersWithoutCatalog": "Permitir pedidos sin catálogo",
+    "catalogUrl": "URL del catálogo",
+    "welcomeMessage": "Mensaje de bienvenida",
+    "description": "Descripción",
+    "logo": "URL del logo",
+    "banner": "URL del banner",
+    "primaryColor": "Color primario",
+    "accentColor": "Color de acento",
+    "deliveryFee": "Tarifa de envío"
+  },
+  "workingHours": {
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado",
+    "sunday": "Domingo",
+    "open": "Apertura",
+    "close": "Cierre",
+    "enabled": "Abierto",
+    "closed": "Cerrado"
+  },
+  "catalogVisibility": {
+    "public": "Público - Visible para todos",
+    "private": "Privado - Solo con acceso",
+    "restricted": "Restringido - Limitado"
+  },
+  "catalogMode": {
+    "menu": "Menú - Solo visualización",
+    "marketplace": "Marketplace - Venta directa",
+    "hybrid": "Híbrido - Menú + Venta"
+  },
+  "slugWarning": {
+    "title": "¿Cambiar el slug?",
+    "description": "Cambiar el slug modificará la URL de tu catálogo. Los enlaces antiguos dejarán de funcionar.",
+    "confirm": "Sí, cambiar slug"
+  },
+  "errors": {
+    "businessNotFound": "No se encontró el negocio"
+  }
+}
