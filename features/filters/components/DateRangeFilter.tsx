@@ -96,9 +96,7 @@ export function DateRangeFilter({
   const handleApplyCustom = () => {
     if (tempRange?.from) {
       const fromStr = format(tempRange.from, "yyyy-MM-dd");
-      const toStr = tempRange.to
-        ? format(tempRange.to, "yyyy-MM-dd")
-        : fromStr;
+      const toStr = tempRange.to ? format(tempRange.to, "yyyy-MM-dd") : fromStr;
 
       setCustomRange({ from: fromStr, to: toStr });
       setShowCalendarDialog(false);
@@ -119,7 +117,7 @@ export function DateRangeFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-between gap-2 font-normal",
+              "w-full justify-between gap-2 font-normal shadow-none",
               variantStyles[variant],
               "bg-white hover:bg-slate-50 border-slate-200"
             )}
@@ -166,7 +164,7 @@ export function DateRangeFilter({
 
       {/* Dialog del calendario para rango personalizado */}
       <Dialog open={showCalendarDialog} onOpenChange={setShowCalendarDialog}>
-        <DialogContent className="sm:max-w-[800px]">
+        <DialogContent className="sm:max-w-200">
           <DialogHeader>
             <DialogTitle>Seleccionar rango de fechas</DialogTitle>
           </DialogHeader>

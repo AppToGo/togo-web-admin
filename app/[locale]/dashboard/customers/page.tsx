@@ -118,10 +118,10 @@ export default function CustomersPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 flex-1 min-h-0">
+      <div className="space-y-6">
         {/* Header con título y filtro de fecha */}
-        <div className="grid grid-cols-6 gap-4">
-          <div className="col-span-5">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Users className="h-6 w-6 text-indigo-600" />
               {t("title")}
@@ -129,7 +129,7 @@ export default function CustomersPage() {
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
-          <div className="col-span-1 flex items-start gap-2">
+          <div className="flex flex-row items-center gap-2">
             {showBranchSelector && (
               <BranchSingleSelector
                 value={selectedBranchId}

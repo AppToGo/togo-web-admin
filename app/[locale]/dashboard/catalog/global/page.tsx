@@ -199,7 +199,11 @@ export default function GlobalCatalogPage() {
               setGlobalPage(1);
             }}
             brands={Array.from(
-              new Set(globalProducts.map((p) => p.brand).filter(Boolean))
+              new Set(
+                globalProducts
+                  .map((p) => p.brand)
+                  .filter((b): b is string => !!b)
+              )
             )}
             selectedBrand={selectedBrand}
             onBrandChange={(value) => {
