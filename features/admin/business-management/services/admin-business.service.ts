@@ -4,7 +4,7 @@
  * 
  * Backend endpoints:
  * - GET /admin/businesses
- * - GET /admin/businesses/alerts
+ * - GET /admin/businesses/payment-alerts
  * - PATCH /admin/businesses/:id/branches-limit
  * - POST /admin/businesses/:id/payments
  * - POST /admin/businesses/:id/notifications
@@ -240,7 +240,7 @@ export async function getBusinesses(
 
 /**
  * Get payment alerts (businesses with pending/overdue payments)
- * GET /admin/businesses/alerts
+ * GET /admin/businesses/payment-alerts
  */
 export async function getPaymentAlerts(): Promise<BusinessWithSubscription[]> {
   if (USE_MOCK) {
@@ -254,7 +254,7 @@ export async function getPaymentAlerts(): Promise<BusinessWithSubscription[]> {
     );
   }
 
-  const response = await apiClient.get<BusinessWithSubscription[]>("/admin/businesses/alerts");
+  const response = await apiClient.get<BusinessWithSubscription[]>("/admin/businesses/payment-alerts");
   return response.data;
 }
 
