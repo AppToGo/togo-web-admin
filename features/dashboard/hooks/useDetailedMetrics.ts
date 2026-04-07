@@ -2,11 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
+import { useDashboardBranchId } from '../stores/branch-filter.store';
 import apiClient from '@/services/api.service';
 import { DetailedMetrics } from '../types/dashboard.types';
 
 const DETAILED_STALE_TIME = 2 * 60 * 1000; // 2 minutes
 const DETAILED_GC_TIME = 5 * 60 * 1000; // 5 minutes
+
+export interface UseDetailedMetricsOptions {
+  enabled?: boolean;
+  branchId?: string | null;
+}
 
 interface DetailedMetricsResponse {
   metodosPago: Array<{
@@ -23,17 +30,16 @@ interface DetailedMetricsResponse {
     };
   };
   tasasConversion: {
-    confirmacion: {
-      base: number;
+    conteos: {
+      confirmado: number;
+      pagado: number;
+      completado: number;
     };
-    pago: {
-      base: number;
-      tasa: number;
-    };
-    completitud: {
-      base: number;
-      tasa: number;
-    };
+    confirmacion: number;
+    pago: number;
+    completitud: number;
+    cancelacion: number;
+    abandono: number;
   };
   recaudos: {
     porDia?: Array<{
@@ -47,28 +53,51 @@ interface DetailedMetricsResponse {
   }>;
 }
 
-async function fetchDetailedMetrics(businessId: string): Promise<DetailedMetrics> {
-  const { data } = await apiClient.get<DetailedMetricsResponse>(`/businesses/${businessId}/orders/metrics`);
+async function fetchDetailedMetrics(
+  businessId: string,
+  dateFrom: string,
+  dateTo: string,
+  branchId?: string | null
+): Promise<DetailedMetrics> {
+  const params: Record<string, string> = {
+    dateFrom,
+    dateTo,
+  };
+  
+  if (branchId) {
+    params.branchIds = branchId;
+  }
+  
+  const { data } = await apiClient.get<DetailedMetricsResponse>(
+    `/businesses/${businessId}/orders/metrics`,
+    {
+      params,
+    }
+  );
+
+  // Mapear métodos de pago
+  const paymentMethods = (data.metodosPago || []).map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
+    method: m.metodo,
+    count: m.cantidad,
+    amount: m.monto,
+    percentage: m.porcentaje,
+  }));
 
   return {
-    paymentMethods: data.metodosPago.map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
-      method: m.metodo,
-      count: m.cantidad,
-      amount: m.monto,
-      percentage: m.porcentaje,
-    })),
+    paymentMethods,
     trendComparison: {
       current: data.comparativa.recaudoTotal.valor,
       previous: data.comparativa.recaudoTotal.valorAnterior,
       growth: data.comparativa.recaudoTotal.crecimiento,
     },
     conversionFunnel: {
-      confirmed: data.tasasConversion.confirmacion.base,
-      paid: data.tasasConversion.pago.base,
-      completed: data.tasasConversion.completitud.base,
+      // Usar conteos desde tasasConversion.conteos (estructura correcta del backend)
+      confirmed: data.tasasConversion.conteos.confirmado,
+      paid: data.tasasConversion.conteos.pagado,
+      completed: data.tasasConversion.conteos.completado,
       rates: {
-        confirmedToPaid: data.tasasConversion.pago.tasa,
-        paidToCompleted: data.tasasConversion.completitud.tasa,
+        confirmedToPaid: data.tasasConversion.pago,
+        paidToCompleted: data.tasasConversion.completitud,
       },
     },
     revenueChart: data.recaudos.porDia || [],
@@ -79,13 +108,18 @@ async function fetchDetailedMetrics(businessId: string): Promise<DetailedMetrics
   };
 }
 
-export function useDetailedMetrics(options?: { enabled?: boolean }) {
+export function useDetailedMetrics(options?: UseDetailedMetricsOptions) {
   const user = useCurrentUser();
   const businessId = user?.businessId;
+  const dateRange = useDateFilterRange();
+  const dashboardBranchId = useDashboardBranchId();
+  
+  // Usar branchId de las opciones si se proporciona, sino usar el del store
+  const branchId = options?.branchId !== undefined ? options.branchId : dashboardBranchId;
 
   return useQuery({
-    queryKey: ['dashboard', 'detailed', businessId],
-    queryFn: () => fetchDetailedMetrics(businessId!),
+    queryKey: ['dashboard', 'detailed', businessId, dateRange.from, dateRange.to, branchId],
+    queryFn: () => fetchDetailedMetrics(businessId!, dateRange.from, dateRange.to, branchId),
     enabled: options?.enabled !== false && !!businessId,
     staleTime: DETAILED_STALE_TIME,
     gcTime: DETAILED_GC_TIME,

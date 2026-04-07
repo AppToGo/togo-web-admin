@@ -12,6 +12,7 @@ import {
   KpiSectionSkeleton,
   LazyMetricsGrid,
   LazyChartsSection,
+  BranchSelector,
 } from "@/features/dashboard";
 import { usePlanMetrics } from "@/features/dashboard/hooks/usePlanMetrics";
 
@@ -50,18 +51,21 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <DateRangeFilter
-            variant="default"
-            showPresets={true}
-            availablePresets={[
-              "today",
-              "yesterday",
-              "week",
-              "last7days",
-              "month",
-              "custom",
-            ]}
-          />
+          <div className="flex items-center gap-3">
+            <BranchSelector />
+            <DateRangeFilter
+              variant="default"
+              showPresets={true}
+              availablePresets={[
+                "today",
+                "yesterday",
+                "week",
+                "last7days",
+                "month",
+                "custom",
+              ]}
+            />
+          </div>
         </div>
 
         {/* KPIs - Carga inmediata con Suspense */}
