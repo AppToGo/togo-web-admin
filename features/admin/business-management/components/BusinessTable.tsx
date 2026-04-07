@@ -88,7 +88,7 @@ export function BusinessTable({
 
               {/* Plan */}
               <TableCell>
-                <PlanBadge plan={business.subscription?.plan || 1} />
+                <PlanBadge plan={business.subscription?.plan} />
               </TableCell>
 
               {/* Payment Status */}
@@ -112,7 +112,7 @@ export function BusinessTable({
               <TableCell>
                 <BranchesCount
                   count={business.branchesCount}
-                  plan={business.subscription?.plan || 1}
+                  plan={business.subscription?.plan ?? null}
                   override={business.subscription?.maxBranchesOverride}
                 />
               </TableCell>
@@ -193,12 +193,23 @@ export function BusinessTable({
 
 interface BranchesCountProps {
   count: number;
-  plan: number;
+  plan: number | null;
   override: number | null | undefined;
 }
 
 function BranchesCount({ count, plan, override }: BranchesCountProps) {
-  const maxBranches = override ?? getPlanMaxBranches(plan);
+  // If no plan and no override, show simple count
+  if (plan === null && override === null) {
+    return (
+      <div className="flex flex-col">
+        <span className="text-sm font-medium text-slate-700">
+          {count}
+        </span>
+      </div>
+    );
+  }
+  
+  const maxBranches = override ?? getPlanMaxBranches(plan ?? 1);
   const isNearLimit = count >= maxBranches * 0.8;
   const isOverLimit = count > maxBranches;
 

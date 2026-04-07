@@ -9,11 +9,26 @@ import { cn } from "@/lib/utils";
 import { PLAN_OPTIONS, getPlanLabel } from "../constants/payment-status";
 
 interface PlanBadgeProps {
-  plan: number;
+  plan: number | null | undefined;
   className?: string;
 }
 
 export function PlanBadge({ plan, className }: PlanBadgeProps) {
+  // Handle null/undefined plan (no subscription)
+  if (plan == null) {
+    return (
+      <div
+        className={cn(
+          "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border bg-gray-100 text-gray-500 border-gray-200",
+          className
+        )}
+      >
+        <PlanIcon plan={0} className="w-3.5 h-3.5 mr-1.5" />
+        Sin plan
+      </div>
+    );
+  }
+
   const getPlanColor = (planValue: number): string => {
     switch (planValue) {
       case 1: // Free
@@ -54,6 +69,22 @@ interface PlanIconProps {
 function PlanIcon({ plan, className }: PlanIconProps) {
   // Different icons based on plan level
   switch (plan) {
+    case 0: // No plan
+      return (
+        <svg
+          className={className}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+          />
+        </svg>
+      );
     case 1: // Free
       return (
         <svg

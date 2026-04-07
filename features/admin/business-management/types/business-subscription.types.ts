@@ -33,7 +33,11 @@ export interface PaymentRecord {
 export interface BusinessWithSubscription extends Business {
   subscription: BusinessSubscription | null;
   branchesCount: number;
+  userCount: number;
+  orderCount: number;
+  totalPaid: string;
   daysUntilDue: number | null;
+  isInGracePeriod?: boolean;
 }
 
 export interface BusinessFilters {
