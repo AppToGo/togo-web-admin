@@ -18,6 +18,22 @@ export function PaymentMethodsChart() {
   const { data } = useDetailedMetrics();
 
   if (!data) return null;
+  
+  // Verificar si hay métodos de pago
+  if (!data.paymentMethods || data.paymentMethods.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Métodos de Pago</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-56 flex items-center justify-center text-slate-400">
+            No hay datos de métodos de pago disponibles
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const chartData = data.paymentMethods.map((method) => ({
     name: method.method,

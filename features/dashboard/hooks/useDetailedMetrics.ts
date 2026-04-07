@@ -77,11 +77,13 @@ async function fetchDetailedMetrics(
 
   // Debug: Verificar respuesta de la API
   console.log('API Response:', data);
+  console.log('metodosPago:', data.metodosPago);
+  console.log('metodosPago length:', data.metodosPago?.length);
   console.log('porDia:', data.recaudos?.porDia);
   console.log('porDia length:', data.recaudos?.porDia?.length);
 
   return {
-    paymentMethods: data.metodosPago.map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
+    paymentMethods: (data.metodosPago || []).map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
       method: m.metodo,
       count: m.cantidad,
       amount: m.monto,
