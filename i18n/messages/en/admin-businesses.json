@@ -40,6 +40,7 @@
     "activate": "Activate"
   },
   "filters": {
+    "title": "Filters",
     "searchPlaceholder": "Search businesses...",
     "plan": "Plan",
     "allPlans": "All plans",
@@ -49,7 +50,9 @@
     "allStates": "All",
     "active": "Active",
     "inactive": "Inactive",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "clear": "Clear",
+    "apply": "Apply"
   },
   "modals": {
     "cancel": "Cancel",

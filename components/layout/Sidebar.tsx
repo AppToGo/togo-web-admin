@@ -47,9 +47,7 @@ export function Sidebar({
   const logout = useLogout();
 
   // Fetch payment alerts for badge
-  const { data: paymentAlerts } = usePaymentAlerts({
-    enabled: isSuperAdmin,
-  });
+  const { data: paymentAlerts } = usePaymentAlerts(isSuperAdmin);
   const alertCount = paymentAlerts?.length || 0;
 
 

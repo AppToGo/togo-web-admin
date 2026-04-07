@@ -5,7 +5,7 @@
  * Super Admin page for managing business subscriptions
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -13,6 +13,9 @@ import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertBadge } from "@/components/ui/alert-badge";
+import { Input } from "@/components/ui/input";
+import { Filter, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   useBusinesses,
   usePaymentAlerts,
@@ -21,11 +24,13 @@ import {
   useSendNotification,
   useToggleBusinessStatus,
 } from "@/features/admin/business-management/hooks/useAdminBusinesses";
-import { BusinessFilters } from "@/features/admin/business-management/components/BusinessFilters";
-import { BusinessTable } from "@/features/admin/business-management/components/BusinessTable";
-import { RecordPaymentModal } from "@/features/admin/business-management/components/RecordPaymentModal";
-import { EditBranchesLimitModal } from "@/features/admin/business-management/components/EditBranchesLimitModal";
-import { SendNotificationModal } from "@/features/admin/business-management/components/SendNotificationModal";
+import {
+  BusinessTable,
+  FilterPopover,
+  RecordPaymentModal,
+  EditBranchesLimitModal,
+  SendNotificationModal,
+} from "@/features/admin/business-management/components";
 import type {
   BusinessFilters as BusinessFiltersType,
   BusinessWithSubscription,
@@ -39,23 +44,45 @@ const DEFAULT_FILTERS: BusinessFiltersType = {
   limit: 20,
 };
 
+// Debounce hook for search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function BusinessManagementPage() {
   const t = useTranslations("admin-businesses");
-  const { isLoading: isAuthLoading } = useAuthGuard({ requiredRole: "SUPER_ADMIN" });
+  const tc = useTranslations("common");
+  const { isLoading: isAuthLoading } = useAuthGuard();
   const isSuperAdmin = useIsSuperAdmin();
 
   // State
   const [filters, setFilters] = useState<BusinessFiltersType>(DEFAULT_FILTERS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithSubscription | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isBranchesModalOpen, setIsBranchesModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
+  // Update filters when debounced search changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      search: debouncedSearch || undefined,
+      page: 1,
+    }));
+  }, [debouncedSearch]);
+
   // Queries
   const { data: businessesData, isLoading: isBusinessesLoading } = useBusinesses(filters);
-  const { data: alerts } = usePaymentAlerts({
-    enabled: isSuperAdmin,
-  });
+  const { data: alerts } = usePaymentAlerts(isSuperAdmin);
 
   // Mutations
   const updateBranchesLimit = useUpdateBranchesLimit();
@@ -151,6 +178,12 @@ export default function BusinessManagementPage() {
     }
   };
 
+  // Check if there are active filters (excluding search)
+  const hasActiveFilters =
+    filters.plan !== undefined ||
+    filters.paymentStatus !== undefined ||
+    filters.isActive !== undefined;
+
   if (isAuthLoading) {
     return null; // Let the loading.tsx handle this
   }
@@ -175,134 +208,231 @@ export default function BusinessManagementPage() {
 
   return (
     <DashboardLayout>
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            {t("page.title")}
-          </h1>
-          <p className="text-slate-500 mt-1">{t("page.description")}</p>
-        </div>
-        {alertCount > 0 && (
-          <AlertBadge
-            count={alertCount}
-            label={t("page.alerts", { count: alertCount })}
-            variant="destructive"
-          />
-        )}
-      </div>
-
-      {/* Alerts Section */}
-      {alertCount > 0 && (
-        <Card className="p-4 border-amber-200 bg-amber-50/50">
-          <div className="flex items-start gap-3">
-            <AlertTriangleIcon className="w-5 h-5 text-amber-600 mt-0.5" />
-            <div>
-              <h3 className="font-medium text-amber-900">
-                {t("alerts.title", { count: alertCount })}
-              </h3>
-              <p className="text-sm text-amber-700 mt-1">
-                {t("alerts.description")}
-              </p>
-            </div>
+      <div className="space-y-6">
+        {/* Header with Title, Search and Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {t("page.title")}
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">{t("page.description")}</p>
           </div>
+
+          {/* Search and Filter Controls */}
+          <div className="flex items-center gap-2">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                type="text"
+                placeholder={t("filters.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "pl-10 w-full sm:w-64 h-10",
+                  searchQuery && "pr-8"
+                )}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <XIcon className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Popover */}
+            <FilterPopover filters={filters} onChange={handleFiltersChange}>
+              <Button
+                variant="outline"
+                size="icon"
+                className={cn(
+                  "h-10 w-10 relative",
+                  hasActiveFilters && "border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
+                )}
+                title={t("filters.title", { defaultValue: "Filters" })}
+              >
+                <Filter className="w-4 h-4" />
+              </Button>
+            </FilterPopover>
+
+            {/* Alerts Badge */}
+            {alertCount > 0 && (
+              <AlertBadge
+                count={alertCount}
+                label={t("page.alerts", { count: alertCount })}
+                variant="destructive"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Alerts Section */}
+        {alertCount > 0 && (
+          <Card className="p-4 border-amber-200 bg-amber-50/50">
+            <div className="flex items-start gap-3">
+              <AlertTriangleIcon className="w-5 h-5 text-amber-600 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-amber-900">
+                  {t("alerts.title", { count: alertCount })}
+                </h3>
+                <p className="text-sm text-amber-700 mt-1">
+                  {t("alerts.description")}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Active Filters Indicator */}
+        {hasActiveFilters && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-slate-500">{t("filters.active")}:</span>
+            <div className="flex items-center gap-2">
+              {filters.plan !== undefined && (
+                <FilterTag
+                  label={`${t("filters.plan")}: ${filters.plan}`}
+                  onRemove={() =>
+                    handleFiltersChange({ ...filters, plan: undefined, page: 1 })
+                  }
+                />
+              )}
+              {filters.paymentStatus && (
+                <FilterTag
+                  label={`${t("filters.paymentStatus")}: ${filters.paymentStatus}`}
+                  onRemove={() =>
+                    handleFiltersChange({ ...filters, paymentStatus: undefined, page: 1 })
+                  }
+                />
+              )}
+              {filters.isActive !== undefined && (
+                <FilterTag
+                  label={`${t("filters.status")}: ${filters.isActive ? t("filters.active") : t("filters.inactive")}`}
+                  onRemove={() =>
+                    handleFiltersChange({ ...filters, isActive: undefined, page: 1 })
+                  }
+                />
+              )}
+            </div>
+            <button
+              onClick={() =>
+                handleFiltersChange({
+                  page: 1,
+                  limit: filters.limit,
+                  search: filters.search,
+                })
+              }
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium ml-2"
+            >
+              {tc("buttons.clearAll", { defaultValue: "Clear all" })}
+            </button>
+          </div>
+        )}
+
+        {/* Table */}
+        <Card>
+          <BusinessTable
+            businesses={businessesData?.data || []}
+            onRecordPayment={handleRecordPayment}
+            onEditBranches={handleEditBranches}
+            onSendNotification={handleSendNotification}
+            onToggleStatus={handleToggleStatus}
+            isLoading={isBusinessesLoading}
+          />
+
+          {/* Pagination */}
+          {businessesData?.meta && businessesData.meta.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-4 border-t">
+              <div className="text-sm text-slate-500">
+                {t("pagination.showing", {
+                  from: ((filters.page ?? 1) - 1) * (filters.limit ?? 20) + 1,
+                  to: Math.min(
+                    (filters.page ?? 1) * (filters.limit ?? 20),
+                    businessesData.meta.total
+                  ),
+                  total: businessesData.meta.total,
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={filters.page === 1}
+                >
+                  {t("pagination.previous")}
+                </Button>
+                <span className="text-sm text-slate-600">
+                  {t("pagination.page", {
+                    current: filters.page ?? 1,
+                    total: businessesData.meta.totalPages,
+                  })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={filters.page === businessesData.meta.totalPages}
+                >
+                  {t("pagination.next")}
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
-      )}
 
-      {/* Filters */}
-      <BusinessFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-      />
-
-      {/* Table */}
-      <Card>
-        <BusinessTable
-          businesses={businessesData?.data || []}
-          onRecordPayment={handleRecordPayment}
-          onEditBranches={handleEditBranches}
-          onSendNotification={handleSendNotification}
-          onToggleStatus={handleToggleStatus}
-          isLoading={isBusinessesLoading}
+        {/* Modals */}
+        <RecordPaymentModal
+          business={selectedBusiness}
+          isOpen={isPaymentModalOpen}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedBusiness(null);
+          }}
+          onSubmit={handleSubmitPayment}
+          isSubmitting={recordPayment.isPending}
         />
 
-        {/* Pagination */}
-        {businessesData?.meta && businessesData.meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-4 border-t">
-            <div className="text-sm text-slate-500">
-              {t("pagination.showing", {
-                from: (filters.page! - 1) * filters.limit! + 1,
-                to: Math.min(
-                  filters.page! * filters.limit!,
-                  businessesData.meta.total
-                ),
-                total: businessesData.meta.total,
-              })}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePreviousPage}
-                disabled={filters.page === 1}
-              >
-                {t("pagination.previous")}
-              </Button>
-              <span className="text-sm text-slate-600">
-                {t("pagination.page", {
-                  current: filters.page,
-                  total: businessesData.meta.totalPages,
-                })}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={filters.page === businessesData.meta.totalPages}
-              >
-                {t("pagination.next")}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Card>
+        <EditBranchesLimitModal
+          business={selectedBusiness}
+          isOpen={isBranchesModalOpen}
+          onClose={() => {
+            setIsBranchesModalOpen(false);
+            setSelectedBusiness(null);
+          }}
+          onSubmit={handleSubmitBranchesLimit}
+          isSubmitting={updateBranchesLimit.isPending}
+        />
 
-      {/* Modals */}
-      <RecordPaymentModal
-        business={selectedBusiness}
-        isOpen={isPaymentModalOpen}
-        onClose={() => {
-          setIsPaymentModalOpen(false);
-          setSelectedBusiness(null);
-        }}
-        onSubmit={handleSubmitPayment}
-        isSubmitting={recordPayment.isPending}
-      />
-
-      <EditBranchesLimitModal
-        business={selectedBusiness}
-        isOpen={isBranchesModalOpen}
-        onClose={() => {
-          setIsBranchesModalOpen(false);
-          setSelectedBusiness(null);
-        }}
-        onSubmit={handleSubmitBranchesLimit}
-        isSubmitting={updateBranchesLimit.isPending}
-      />
-
-      <SendNotificationModal
-        business={selectedBusiness}
-        isOpen={isNotificationModalOpen}
-        onClose={() => {
-          setIsNotificationModalOpen(false);
-          setSelectedBusiness(null);
-        }}
-        onSubmit={handleSubmitNotification}
-        isSubmitting={sendNotification.isPending}
-      />
-    </div>
+        <SendNotificationModal
+          business={selectedBusiness}
+          isOpen={isNotificationModalOpen}
+          onClose={() => {
+            setIsNotificationModalOpen(false);
+            setSelectedBusiness(null);
+          }}
+          onSubmit={handleSubmitNotification}
+          isSubmitting={sendNotification.isPending}
+        />
+      </div>
     </DashboardLayout>
+  );
+}
+
+// Filter Tag Component
+function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-200">
+      {label}
+      <button
+        onClick={onRemove}
+        className="ml-1 hover:text-indigo-900 focus:outline-none"
+      >
+        <XIcon className="w-3 h-3" />
+      </button>
+    </span>
   );
 }
 
@@ -338,6 +468,24 @@ function AlertTriangleIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 18L18 6M6 6l12 12"
       />
     </svg>
   );

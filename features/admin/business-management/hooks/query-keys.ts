@@ -8,6 +8,6 @@ export const ADMIN_BUSINESS_KEYS = {
   businesses: () => [...ADMIN_BUSINESS_KEYS.all, "list"] as const,
   business: (id: string) => [...ADMIN_BUSINESS_KEYS.all, "detail", id] as const,
   alerts: () => [...ADMIN_BUSINESS_KEYS.all, "alerts"] as const,
-  filters: (filters: Record<string, unknown>) =>
+  filters: (filters: object) =>
     [...ADMIN_BUSINESS_KEYS.businesses(), { filters }] as const,
 } as const;

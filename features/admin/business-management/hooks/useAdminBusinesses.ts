@@ -44,13 +44,13 @@ export function useBusinesses(
  * Hook to fetch payment alerts
  */
 export function usePaymentAlerts(
-  options?: UseQueryOptions<BusinessWithSubscription[], Error>
+  enabled: boolean = true
 ) {
   return useQuery({
     queryKey: ADMIN_BUSINESS_KEYS.alerts(),
     queryFn: () => adminBusinessService.getPaymentAlerts(),
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-    ...options,
+    enabled,
   });
 }
 
