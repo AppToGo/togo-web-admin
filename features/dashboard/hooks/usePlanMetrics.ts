@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useCurrentBusiness } from '@/features/business';
-import { PLAN_METRICS_CONFIG } from '../lib/plan-metrics.config';
-import { useKpiMetrics } from './useKpiMetrics';
-import { useDetailedMetrics } from './useDetailedMetrics';
+import { useCurrentBusiness } from "@/features/business";
+import { PLAN_METRICS_CONFIG } from "../lib/plan-metrics.config";
+import { useKpiMetrics } from "./useKpiMetrics";
+import { useDetailedMetrics } from "./useDetailedMetrics";
 
 const PLAN_MAPPING: Record<number, string> = {
-  1: 'free',
-  2: 'basic',
-  3: 'pro',
-  4: 'enterprise',
+  1: "free",
+  2: "basic",
+  3: "pro",
+  4: "enterprise",
 };
 
 export function usePlanMetrics() {
   const { data: business } = useCurrentBusiness();
   const planNumber = business?.subscriptionPlan || 1;
 
-  const planKey = PLAN_MAPPING[planNumber] || 'free';
+  const planKey = PLAN_MAPPING[planNumber] || "free";
   const config = PLAN_METRICS_CONFIG[planKey];
 
-  const kpiQuery = useKpiMetrics({ enabled: config.immediate.includes('kpi') });
+  const kpiQuery = useKpiMetrics({ enabled: config.immediate.includes("kpi") });
   const detailedQuery = useDetailedMetrics({ enabled: config.lazy.length > 0 });
 
   return { kpiQuery, detailedQuery, config, planKey, planNumber };
