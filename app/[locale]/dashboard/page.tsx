@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useAuthGuard } from '@/features/auth/hooks/useAuthGuard';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
-import { useTranslations } from 'next-intl';
-import { DateRangeFilter } from '@/features/filters/components';
-import { useDateFilterPreset } from '@/features/filters/stores';
-import { 
-  KpiSection, 
+import { Suspense } from "react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useTranslations } from "next-intl";
+import { DateRangeFilter } from "@/features/filters/components";
+import { useDateFilterPreset } from "@/features/filters/stores";
+import {
+  KpiSection,
   KpiSectionSkeleton,
   LazyMetricsGrid,
   LazyChartsSection,
-} from '@/features/dashboard';
-import { usePlanMetrics } from '@/features/dashboard/hooks/usePlanMetrics';
+} from "@/features/dashboard";
+import { usePlanMetrics } from "@/features/dashboard/hooks/usePlanMetrics";
 
 export default function DashboardPage() {
-  const t = useTranslations('dashboard');
-  const tc = useTranslations('common');
-  
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
+
   useAuthGuard();
-  
+
   const user = useCurrentUser();
   const currentPreset = useDateFilterPreset();
   const { config, planKey } = usePlanMetrics();
@@ -32,13 +32,17 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
-              {t('greeting', { name: user?.name || tc('empty.title') })}
+              {t("greeting", { name: user?.name || tc("empty.title") })}
             </h2>
             <p className="text-slate-500 mt-1">
               {user?.businessName ? (
-                <>{t('welcome.withBusiness', { businessName: user.businessName })}</>
+                <>
+                  {t("welcome.withBusiness", {
+                    businessName: user.businessName,
+                  })}
+                </>
               ) : (
-                t('welcome.withoutBusiness')
+                t("welcome.withoutBusiness")
               )}
             </p>
             <p className="text-xs text-indigo-600 mt-1 font-medium">
@@ -49,7 +53,14 @@ export default function DashboardPage() {
           <DateRangeFilter
             variant="default"
             showPresets={true}
-            availablePresets={['today', 'yesterday', 'week', 'last7days', 'month', 'custom']}
+            availablePresets={[
+              "today",
+              "yesterday",
+              "week",
+              "last7days",
+              "month",
+              "custom",
+            ]}
           />
         </div>
 
@@ -59,7 +70,7 @@ export default function DashboardPage() {
         </Suspense>
 
         {/* Metrics Grid - Lazy load (Basic+) */}
-        {config.lazy.includes('payment-methods') && (
+        {config.lazy.includes("payment-methods") && (
           <section>
             <h3 className="text-lg font-semibold mb-4">Métricas Detalladas</h3>
             <LazyMetricsGrid />
@@ -67,7 +78,7 @@ export default function DashboardPage() {
         )}
 
         {/* Charts - Lazy load (Pro+) */}
-        {config.lazy.includes('revenue-chart') && (
+        {config.lazy.includes("revenue-chart") && (
           <section>
             <h3 className="text-lg font-semibold mb-4">Análisis</h3>
             <LazyChartsSection />

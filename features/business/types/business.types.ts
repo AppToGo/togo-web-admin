@@ -24,6 +24,7 @@ export interface Business {
   catalogMode: 'MENU' | 'MARKETPLACE' | 'HYBRID';
   createdAt: string;
   updatedAt: string;
+  subscriptionPlan?: number;
 }
 
 export interface UpdateBusinessRequest {

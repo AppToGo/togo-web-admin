@@ -1,6 +1,6 @@
 'use client';
 
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import { useCurrentBusiness } from '@/features/business';
 import { PLAN_METRICS_CONFIG } from '../lib/plan-metrics.config';
 import { useKpiMetrics } from './useKpiMetrics';
 import { useDetailedMetrics } from './useDetailedMetrics';
@@ -13,8 +13,8 @@ const PLAN_MAPPING: Record<number, string> = {
 };
 
 export function usePlanMetrics() {
-  const user = useCurrentUser();
-  const planNumber = user?.subscriptionPlan || 1;
+  const { data: business } = useCurrentBusiness();
+  const planNumber = business?.subscriptionPlan || 1;
 
   const planKey = PLAN_MAPPING[planNumber] || 'free';
   const config = PLAN_METRICS_CONFIG[planKey];
@@ -22,5 +22,5 @@ export function usePlanMetrics() {
   const kpiQuery = useKpiMetrics({ enabled: config.immediate.includes('kpi') });
   const detailedQuery = useDetailedMetrics({ enabled: config.lazy.length > 0 });
 
-  return { kpiQuery, detailedQuery, config, planKey };
+  return { kpiQuery, detailedQuery, config, planKey, planNumber };
 }
