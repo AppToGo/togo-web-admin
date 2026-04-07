@@ -82,13 +82,20 @@ async function fetchDetailedMetrics(
   console.log('porDia:', data.recaudos?.porDia);
   console.log('porDia length:', data.recaudos?.porDia?.length);
 
+  // Mapear métodos de pago
+  const paymentMethods = (data.metodosPago || []).map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
+    method: m.metodo,
+    count: m.cantidad,
+    amount: m.monto,
+    percentage: m.porcentaje,
+  }));
+
+  // Debug: Verificar mapeo de métodos de pago
+  console.log('Raw metodosPago:', data.metodosPago);
+  console.log('Mapped paymentMethods:', paymentMethods);
+
   return {
-    paymentMethods: (data.metodosPago || []).map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
-      method: m.metodo,
-      count: m.cantidad,
-      amount: m.monto,
-      percentage: m.porcentaje,
-    })),
+    paymentMethods,
     trendComparison: {
       current: data.comparativa.recaudoTotal.valor,
       previous: data.comparativa.recaudoTotal.valorAnterior,
