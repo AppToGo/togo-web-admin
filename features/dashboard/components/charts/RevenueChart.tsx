@@ -16,6 +16,10 @@ import { formatCurrency } from '@/lib/utils';
 export function RevenueChart() {
   const { data } = useDetailedMetrics();
 
+  // Debug: Verificar datos del chart
+  console.log('Chart data:', data?.revenueChart);
+  console.log('Chart data length:', data?.revenueChart?.length);
+
   if (!data) return null;
 
   const chartData = data.revenueChart.map((point) => ({

@@ -65,7 +65,7 @@ async function fetchDetailedMetrics(
   };
   
   if (branchId) {
-    params.branchId = branchId;
+    params.branchIds = branchId;
   }
   
   const { data } = await apiClient.get<DetailedMetricsResponse>(
@@ -74,6 +74,11 @@ async function fetchDetailedMetrics(
       params,
     }
   );
+
+  // Debug: Verificar respuesta de la API
+  console.log('API Response:', data);
+  console.log('porDia:', data.recaudos?.porDia);
+  console.log('porDia length:', data.recaudos?.porDia?.length);
 
   return {
     paymentMethods: data.metodosPago.map((m: DetailedMetricsResponse['metodosPago'][0]) => ({

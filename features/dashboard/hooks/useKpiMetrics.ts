@@ -50,7 +50,7 @@ async function fetchKpiMetrics(
   };
   
   if (branchId) {
-    params.branchId = branchId;
+    params.branchIds = branchId;
   }
   
   const { data } = await apiClient.get<KpiMetricsResponse>(
