@@ -15,6 +15,7 @@ export interface AuthenticatedUser {
   businessId: string | null;
   businessName: string | null;
   operatorProfileId: string | null;
+  subscriptionPlan?: number;
 }
 
 // Login Request
