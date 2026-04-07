@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
 import apiClient from '@/services/api.service';
 import { DetailedMetrics } from '../types/dashboard.types';
 
@@ -23,17 +24,16 @@ interface DetailedMetricsResponse {
     };
   };
   tasasConversion: {
-    confirmacion: {
-      base: number;
+    conteos: {
+      confirmado: number;
+      pagado: number;
+      completado: number;
     };
-    pago: {
-      base: number;
-      tasa: number;
-    };
-    completitud: {
-      base: number;
-      tasa: number;
-    };
+    confirmacion: number;
+    pago: number;
+    completitud: number;
+    cancelacion: number;
+    abandono: number;
   };
   recaudos: {
     porDia?: Array<{
@@ -47,8 +47,20 @@ interface DetailedMetricsResponse {
   }>;
 }
 
-async function fetchDetailedMetrics(businessId: string): Promise<DetailedMetrics> {
-  const { data } = await apiClient.get<DetailedMetricsResponse>(`/businesses/${businessId}/orders/metrics`);
+async function fetchDetailedMetrics(
+  businessId: string,
+  dateFrom: string,
+  dateTo: string
+): Promise<DetailedMetrics> {
+  const { data } = await apiClient.get<DetailedMetricsResponse>(
+    `/businesses/${businessId}/orders/metrics`,
+    {
+      params: {
+        dateFrom,
+        dateTo,
+      },
+    }
+  );
 
   return {
     paymentMethods: data.metodosPago.map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
@@ -63,12 +75,13 @@ async function fetchDetailedMetrics(businessId: string): Promise<DetailedMetrics
       growth: data.comparativa.recaudoTotal.crecimiento,
     },
     conversionFunnel: {
-      confirmed: data.tasasConversion.confirmacion.base,
-      paid: data.tasasConversion.pago.base,
-      completed: data.tasasConversion.completitud.base,
+      // Usar conteos desde tasasConversion.conteos (estructura correcta del backend)
+      confirmed: data.tasasConversion.conteos.confirmado,
+      paid: data.tasasConversion.conteos.pagado,
+      completed: data.tasasConversion.conteos.completado,
       rates: {
-        confirmedToPaid: data.tasasConversion.pago.tasa,
-        paidToCompleted: data.tasasConversion.completitud.tasa,
+        confirmedToPaid: data.tasasConversion.pago,
+        paidToCompleted: data.tasasConversion.completitud,
       },
     },
     revenueChart: data.recaudos.porDia || [],
@@ -82,10 +95,11 @@ async function fetchDetailedMetrics(businessId: string): Promise<DetailedMetrics
 export function useDetailedMetrics(options?: { enabled?: boolean }) {
   const user = useCurrentUser();
   const businessId = user?.businessId;
+  const dateRange = useDateFilterRange();
 
   return useQuery({
-    queryKey: ['dashboard', 'detailed', businessId],
-    queryFn: () => fetchDetailedMetrics(businessId!),
+    queryKey: ['dashboard', 'detailed', businessId, dateRange.from, dateRange.to],
+    queryFn: () => fetchDetailedMetrics(businessId!, dateRange.from, dateRange.to),
     enabled: options?.enabled !== false && !!businessId,
     staleTime: DETAILED_STALE_TIME,
     gcTime: DETAILED_GC_TIME,

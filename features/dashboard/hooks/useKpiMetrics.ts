@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
 import apiClient from '@/services/api.service';
 import { KpiMetrics } from '../types/dashboard.types';
 
@@ -31,8 +32,20 @@ interface KpiMetricsResponse {
   };
 }
 
-async function fetchKpiMetrics(businessId: string): Promise<KpiMetrics> {
-  const { data } = await apiClient.get<KpiMetricsResponse>(`/businesses/${businessId}/orders/metrics`);
+async function fetchKpiMetrics(
+  businessId: string,
+  dateFrom: string,
+  dateTo: string
+): Promise<KpiMetrics> {
+  const { data } = await apiClient.get<KpiMetricsResponse>(
+    `/businesses/${businessId}/orders/metrics`,
+    {
+      params: {
+        dateFrom,
+        dateTo,
+      },
+    }
+  );
 
   // Transformar respuesta del backend al formato KpiMetrics
   return {
@@ -50,10 +63,11 @@ async function fetchKpiMetrics(businessId: string): Promise<KpiMetrics> {
 export function useKpiMetrics(options?: { enabled?: boolean }) {
   const user = useCurrentUser();
   const businessId = user?.businessId;
+  const dateRange = useDateFilterRange();
 
   return useQuery({
-    queryKey: ['dashboard', 'kpi', businessId],
-    queryFn: () => fetchKpiMetrics(businessId!),
+    queryKey: ['dashboard', 'kpi', businessId, dateRange.from, dateRange.to],
+    queryFn: () => fetchKpiMetrics(businessId!, dateRange.from, dateRange.to),
     enabled: options?.enabled !== false && !!businessId,
     staleTime: KPI_STALE_TIME,
     gcTime: KPI_GC_TIME,
