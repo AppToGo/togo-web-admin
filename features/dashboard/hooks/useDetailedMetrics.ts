@@ -2,33 +2,79 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import apiClient from '@/services/api.service';
 import { DetailedMetrics } from '../types/dashboard.types';
 
 const DETAILED_STALE_TIME = 2 * 60 * 1000; // 2 minutes
 const DETAILED_GC_TIME = 5 * 60 * 1000; // 5 minutes
 
+interface DetailedMetricsResponse {
+  metodosPago: Array<{
+    metodo: string;
+    cantidad: number;
+    monto: number;
+    porcentaje: number;
+  }>;
+  comparativa: {
+    recaudoTotal: {
+      valor: number;
+      valorAnterior: number;
+      crecimiento: number;
+    };
+  };
+  tasasConversion: {
+    confirmacion: {
+      base: number;
+    };
+    pago: {
+      base: number;
+      tasa: number;
+    };
+    completitud: {
+      base: number;
+      tasa: number;
+    };
+  };
+  recaudos: {
+    porDia?: Array<{
+      date: string;
+      amount: number;
+    }>;
+  };
+  horasPico: Array<{
+    hora: number;
+    cantidad: number;
+  }>;
+}
+
 async function fetchDetailedMetrics(businessId: string): Promise<DetailedMetrics> {
-  // Mock data - replace with actual API call
+  const { data } = await apiClient.get<DetailedMetricsResponse>(`/businesses/${businessId}/orders/metrics`);
+
   return {
-    paymentMethods: [
-      { method: 'CASH', count: 45, amount: 850000, percentage: 45 },
-      { method: 'TRANSFER', count: 35, amount: 620000, percentage: 35 },
-      { method: 'CARD', count: 20, amount: 380000, percentage: 20 },
-    ],
-    trendComparison: { current: 1250000, previous: 1100000, growth: 13.6 },
-    conversionFunnel: {
-      confirmed: 200,
-      paid: 156,
-      completed: 142,
-      rates: { confirmedToPaid: 78, paidToCompleted: 91 },
-    },
-    revenueChart: Array.from({ length: 30 }, (_, i) => ({
-      date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      amount: Math.floor(Math.random() * 50000) + 30000,
+    paymentMethods: data.metodosPago.map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
+      method: m.metodo,
+      count: m.cantidad,
+      amount: m.monto,
+      percentage: m.porcentaje,
     })),
-    peakHours: Array.from({ length: 24 }, (_, i) => ({
-      hour: i,
-      count: Math.floor(Math.random() * 20),
+    trendComparison: {
+      current: data.comparativa.recaudoTotal.valor,
+      previous: data.comparativa.recaudoTotal.valorAnterior,
+      growth: data.comparativa.recaudoTotal.crecimiento,
+    },
+    conversionFunnel: {
+      confirmed: data.tasasConversion.confirmacion.base,
+      paid: data.tasasConversion.pago.base,
+      completed: data.tasasConversion.completitud.base,
+      rates: {
+        confirmedToPaid: data.tasasConversion.pago.tasa,
+        paidToCompleted: data.tasasConversion.completitud.tasa,
+      },
+    },
+    revenueChart: data.recaudos.porDia || [],
+    peakHours: data.horasPico.map((h: DetailedMetricsResponse['horasPico'][0]) => ({
+      hour: h.hora,
+      count: h.cantidad,
     })),
   };
 }

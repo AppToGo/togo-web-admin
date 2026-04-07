@@ -5,13 +5,20 @@ import { PLAN_METRICS_CONFIG } from '../lib/plan-metrics.config';
 import { useKpiMetrics } from './useKpiMetrics';
 import { useDetailedMetrics } from './useDetailedMetrics';
 
+const PLAN_MAPPING: Record<number, string> = {
+  1: 'free',
+  2: 'basic',
+  3: 'pro',
+  4: 'enterprise',
+};
+
 export function usePlanMetrics() {
   const user = useCurrentUser();
-  const planNumber = user?.business?.subscriptionPlan || 1;
-  
-  const planKey = planNumber === 1 ? 'free' : planNumber === 2 ? 'basic' : planNumber === 3 ? 'pro' : 'enterprise';
+  const planNumber = user?.subscriptionPlan || 1;
+
+  const planKey = PLAN_MAPPING[planNumber] || 'free';
   const config = PLAN_METRICS_CONFIG[planKey];
-  
+
   const kpiQuery = useKpiMetrics({ enabled: config.immediate.includes('kpi') });
   const detailedQuery = useDetailedMetrics({ enabled: config.lazy.length > 0 });
 

@@ -10,6 +10,12 @@ export function ConversionFunnel() {
 
   const { conversionFunnel } = data;
 
+  // Validación para evitar división por cero
+  const safePercentage = (value: number, total: number) => {
+    if (total === 0) return 0;
+    return (value / total) * 100;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -27,9 +33,9 @@ export function ConversionFunnel() {
           <div className="flex items-center gap-4">
             <div className="w-24 text-sm">Pagadas</div>
             <div className="flex-1 h-8 bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-indigo-500 rounded-full" 
-                style={{ width: `${(conversionFunnel.paid / conversionFunnel.confirmed) * 100}%` }}
+              <div
+                className="h-full bg-indigo-500 rounded-full"
+                style={{ width: `${safePercentage(conversionFunnel.paid, conversionFunnel.confirmed)}%` }}
               />
             </div>
             <div className="w-12 text-right text-sm">{conversionFunnel.paid}</div>
@@ -37,9 +43,9 @@ export function ConversionFunnel() {
           <div className="flex items-center gap-4">
             <div className="w-24 text-sm">Completadas</div>
             <div className="flex-1 h-8 bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-indigo-500 rounded-full" 
-                style={{ width: `${(conversionFunnel.completed / conversionFunnel.confirmed) * 100}%` }}
+              <div
+                className="h-full bg-indigo-500 rounded-full"
+                style={{ width: `${safePercentage(conversionFunnel.completed, conversionFunnel.confirmed)}%` }}
               />
             </div>
             <div className="w-12 text-right text-sm">{conversionFunnel.completed}</div>

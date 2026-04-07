@@ -2,22 +2,48 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import apiClient from '@/services/api.service';
 import { KpiMetrics } from '../types/dashboard.types';
 
 const KPI_STALE_TIME = 30 * 1000; // 30 seconds
 const KPI_GC_TIME = 2 * 60 * 1000; // 2 minutes
 
+interface KpiMetricsResponse {
+  conteos: {
+    hoy: number;
+    completadasHoy: number;
+    total: number;
+    pagadas: number;
+    pendientesPago: number;
+  };
+  recaudos: {
+    pagadas: {
+      total: number;
+    };
+  };
+  comparativa: {
+    recaudoTotal: {
+      crecimiento: number;
+    };
+    ordenesTotales: {
+      crecimiento: number;
+    };
+  };
+}
+
 async function fetchKpiMetrics(businessId: string): Promise<KpiMetrics> {
-  // Mock data - replace with actual API call
+  const { data } = await apiClient.get<KpiMetricsResponse>(`/businesses/${businessId}/orders/metrics`);
+
+  // Transformar respuesta del backend al formato KpiMetrics
   return {
-    ordersToday: 25,
-    ordersCompletedToday: 18,
-    revenueToday: 1250000,
-    revenueGrowth: 12.5,
-    ordersGrowth: 8.3,
-    totalOrders: 156,
-    paidOrders: 142,
-    pendingOrders: 14,
+    ordersToday: data.conteos.hoy,
+    ordersCompletedToday: data.conteos.completadasHoy,
+    revenueToday: data.recaudos.pagadas.total,
+    revenueGrowth: data.comparativa.recaudoTotal.crecimiento,
+    ordersGrowth: data.comparativa.ordenesTotales.crecimiento,
+    totalOrders: data.conteos.total,
+    paidOrders: data.conteos.pagadas,
+    pendingOrders: data.conteos.pendientesPago,
   };
 }
 

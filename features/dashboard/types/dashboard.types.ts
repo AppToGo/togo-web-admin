@@ -14,7 +14,7 @@ export interface KpiMetrics {
 export interface DetailedMetrics {
   paymentMethods: PaymentMethod[];
   trendComparison: TrendComparison;
-  conversionFunnel: ConversionFunnel;
+  conversionFunnel: ConversionFunnelData;
   revenueChart: RevenueChartPoint[];
   peakHours: PeakHour[];
 }
@@ -32,7 +32,7 @@ export interface TrendComparison {
   growth: number;
 }
 
-export interface ConversionFunnel {
+export interface ConversionFunnelData {
   confirmed: number;
   paid: number;
   completed: number;
