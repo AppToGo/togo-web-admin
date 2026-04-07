@@ -50,10 +50,13 @@
     "allStates": "All",
     "active": "Active",
     "inactive": "Inactive",
+    "statusFilter": "Business status",
+    "all": "All",
+    "activeOnly": "Active only",
+    "inactiveOnly": "Inactive only",
     "clearFilters": "Clear filters",
     "clear": "Clear",
-    "apply": "Apply",
-    "showOnlyActive": "Show only active"
+    "apply": "Apply"
   },
   "common": {
     "cancel": "Cancel",

@@ -44,7 +44,7 @@ export interface BusinessFilters {
   plan?: number;
   paymentStatuses?: string[];
   search?: string;
-  isActive?: boolean;
+  statusFilter?: 'all' | 'active' | 'inactive';
   page?: number;
   limit?: number;
 }

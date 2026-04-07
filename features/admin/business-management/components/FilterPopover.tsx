@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Popover,
   PopoverContent,
@@ -42,7 +43,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
   const [localFilters, setLocalFilters] = useState({
     plan: filters.plan?.toString() || "all",
     paymentStatuses: filters.paymentStatuses || [],
-    isActive: filters.isActive,
+    statusFilter: filters.statusFilter || "all",
   });
 
   // Calculate active filters count (excluding search)
@@ -50,7 +51,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     let count = 0;
     if (filters.plan !== undefined) count++;
     if (filters.paymentStatuses && filters.paymentStatuses.length > 0) count++;
-    if (filters.isActive !== undefined) count++;
+    if (filters.statusFilter && filters.statusFilter !== "all") count++;
     return count;
   }, [filters]);
 
@@ -64,7 +65,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
       setLocalFilters({
         plan: filters.plan?.toString() || "all",
         paymentStatuses: filters.paymentStatuses || [],
-        isActive: filters.isActive,
+        statusFilter: filters.statusFilter || "all",
       });
     }
   }, [filters]);
@@ -75,7 +76,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
       ...filters,
       plan: localFilters.plan === "all" ? undefined : parseInt(localFilters.plan, 10),
       paymentStatuses: localFilters.paymentStatuses.length > 0 ? localFilters.paymentStatuses : undefined,
-      isActive: localFilters.isActive,
+      statusFilter: localFilters.statusFilter as BusinessFilters["statusFilter"],
       page: 1,
     });
     setIsOpen(false);
@@ -92,7 +93,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     setLocalFilters({
       plan: "all",
       paymentStatuses: [],
-      isActive: undefined,
+      statusFilter: "all",
     });
     
     onChange(clearedFilters);
@@ -115,16 +116,16 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     });
   };
 
-  // Handle active status change
-  const handleActiveChange = (checked: boolean) => {
-    setLocalFilters((prev) => ({ ...prev, isActive: checked ? true : undefined }));
+  // Handle status filter change
+  const handleStatusFilterChange = (value: string) => {
+    setLocalFilters((prev) => ({ ...prev, statusFilter: value }));
   };
 
   // Check if local filters differ from applied filters
   const hasLocalChanges = useMemo(() => {
     const currentPlan = filters.plan?.toString() || "all";
     const currentPaymentStatuses = filters.paymentStatuses || [];
-    const currentIsActive = filters.isActive;
+    const currentStatusFilter = filters.statusFilter || "all";
 
     const paymentStatusesChanged = 
       localFilters.paymentStatuses.length !== currentPaymentStatuses.length ||
@@ -134,7 +135,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     return (
       localFilters.plan !== currentPlan ||
       paymentStatusesChanged ||
-      localFilters.isActive !== currentIsActive
+      localFilters.statusFilter !== currentStatusFilter
     );
   }, [filters, localFilters]);
 
@@ -226,21 +227,35 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
             </div>
           </div>
 
-          {/* Active Status Filter - Switch */}
+          {/* Status Filter - Radio Buttons */}
           <div className="space-y-2.5">
             <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              {t("filters.status")}
+              {t("filters.statusFilter", { defaultValue: "Estado del negocio" })}
             </Label>
-            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
-              <span className="text-sm text-slate-700">
-                {t("filters.showOnlyActive", { defaultValue: "Mostrar solo activos" })}
-              </span>
-              <Switch
-                checked={localFilters.isActive === true}
-                onCheckedChange={handleActiveChange}
-                className="data-[state=checked]:bg-indigo-500"
-              />
-            </label>
+            <RadioGroup
+              value={localFilters.statusFilter}
+              onValueChange={handleStatusFilterChange}
+              className="space-y-2"
+            >
+              <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+                <RadioGroupItem value="all" id="status-all" />
+                <Label htmlFor="status-all" className="text-sm text-slate-700 cursor-pointer flex-1">
+                  {t("filters.all", { defaultValue: "Todos" })}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+                <RadioGroupItem value="active" id="status-active" />
+                <Label htmlFor="status-active" className="text-sm text-slate-700 cursor-pointer flex-1">
+                  {t("filters.activeOnly", { defaultValue: "Solo activos" })}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+                <RadioGroupItem value="inactive" id="status-inactive" />
+                <Label htmlFor="status-inactive" className="text-sm text-slate-700 cursor-pointer flex-1">
+                  {t("filters.inactiveOnly", { defaultValue: "Solo inactivos" })}
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         </div>
 

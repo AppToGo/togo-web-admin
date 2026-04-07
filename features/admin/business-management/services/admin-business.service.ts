@@ -204,8 +204,10 @@ export async function getBusinesses(
           b.slug.toLowerCase().includes(search)
       );
     }
-    if (filters?.isActive !== undefined) {
-      filtered = filtered.filter((b) => b.isActive === filters.isActive);
+    if (filters?.statusFilter && filters.statusFilter !== "all") {
+      filtered = filtered.filter((b) => 
+        filters.statusFilter === "active" ? b.isActive : !b.isActive
+      );
     }
 
     // Pagination
@@ -232,7 +234,9 @@ export async function getBusinesses(
     params.append("paymentStatuses", filters.paymentStatuses.join(","));
   }
   if (filters?.search) params.append("search", filters.search);
-  if (filters?.isActive !== undefined) params.append("isActive", String(filters.isActive));
+  if (filters?.statusFilter && filters.statusFilter !== "all") {
+    params.append("statusFilter", filters.statusFilter);
+  }
   if (filters?.page) params.append("page", String(filters.page));
   if (filters?.limit) params.append("limit", String(filters.limit));
 

@@ -50,10 +50,13 @@
     "allStates": "Todos",
     "active": "Activos",
     "inactive": "Inactivos",
+    "statusFilter": "Estado del negocio",
+    "all": "Todos",
+    "activeOnly": "Solo activos",
+    "inactiveOnly": "Solo inactivos",
     "clearFilters": "Limpiar filtros",
     "clear": "Limpiar",
-    "apply": "Aplicar",
-    "showOnlyActive": "Mostrar solo activos"
+    "apply": "Aplicar"
   },
   "common": {
     "cancel": "Cancelar",
