@@ -67,6 +67,28 @@
     "empty": "No recent activity",
     "emptyDescription": "Orders and actions will appear here"
   },
+  "charts": {
+    "conversionFunnel": {
+      "title": "Conversion Funnel",
+      "confirmed": "Confirmed",
+      "paid": "Paid",
+      "completed": "Completed",
+      "ofTotal": "% of total"
+    },
+    "revenue": {
+      "title": "Revenue last 30 days"
+    },
+    "peakHours": {
+      "title": "Peak Hours",
+      "peakLabel": "Peak hour:",
+      "orders": "orders"
+    },
+    "paymentMethods": {
+      "title": "Payment Methods",
+      "orders": "orders",
+      "noData": "No payment methods data available"
+    }
+  },
   "filters": {
     "allBranches": "All branches",
     "selectBranch": "Select branch",

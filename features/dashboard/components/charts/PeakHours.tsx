@@ -72,11 +72,6 @@ export function PeakHours() {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-          <span>00:00</span>
-          <span>12:00</span>
-          <span>23:00</span>
-        </div>
         {maxCount > 0 && (
           <div className="mt-4 p-3 bg-indigo-50 rounded-lg">
             <p className="text-sm text-indigo-700">

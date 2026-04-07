@@ -7,7 +7,6 @@ import {
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
@@ -16,10 +15,6 @@ const COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'];
 
 export function PaymentMethodsChart() {
   const { data } = useDetailedMetrics();
-
-  // Debug: Verificar datos recibidos en el componente
-  console.log('PaymentMethodsChart - data:', data);
-  console.log('PaymentMethodsChart - paymentMethods:', data?.paymentMethods);
 
   if (!data) return null;
   

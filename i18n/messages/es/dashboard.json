@@ -67,6 +67,28 @@
     "empty": "No hay actividad reciente",
     "emptyDescription": "Los pedidos y acciones aparecerán aquí"
   },
+  "charts": {
+    "conversionFunnel": {
+      "title": "Embudo de Conversión",
+      "confirmed": "Confirmadas",
+      "paid": "Pagadas",
+      "completed": "Completadas",
+      "ofTotal": "% del total"
+    },
+    "revenue": {
+      "title": "Ingresos últimos 30 días"
+    },
+    "peakHours": {
+      "title": "Horas Pico",
+      "peakLabel": "Hora pico:",
+      "orders": "órdenes"
+    },
+    "paymentMethods": {
+      "title": "Métodos de Pago",
+      "orders": "órdenes",
+      "noData": "No hay datos de métodos de pago disponibles"
+    }
+  },
   "filters": {
     "allBranches": "Todas las sedes",
     "selectBranch": "Seleccionar sede",

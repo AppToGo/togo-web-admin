@@ -75,13 +75,6 @@ async function fetchDetailedMetrics(
     }
   );
 
-  // Debug: Verificar respuesta de la API
-  console.log('API Response:', data);
-  console.log('metodosPago:', data.metodosPago);
-  console.log('metodosPago length:', data.metodosPago?.length);
-  console.log('porDia:', data.recaudos?.porDia);
-  console.log('porDia length:', data.recaudos?.porDia?.length);
-
   // Mapear métodos de pago
   const paymentMethods = (data.metodosPago || []).map((m: DetailedMetricsResponse['metodosPago'][0]) => ({
     method: m.metodo,
@@ -89,10 +82,6 @@ async function fetchDetailedMetrics(
     amount: m.monto,
     percentage: m.porcentaje,
   }));
-
-  // Debug: Verificar mapeo de métodos de pago
-  console.log('Raw metodosPago:', data.metodosPago);
-  console.log('Mapped paymentMethods:', paymentMethods);
 
   return {
     paymentMethods,

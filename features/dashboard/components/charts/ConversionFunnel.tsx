@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -15,6 +16,7 @@ import {
 const COLORS = ['#6366f1', '#8b5cf6', '#a78bfa'];
 
 export function ConversionFunnel() {
+  const t = useTranslations('dashboard.charts.conversionFunnel');
   const { data } = useDetailedMetrics();
 
   if (!data) return null;
@@ -23,12 +25,12 @@ export function ConversionFunnel() {
 
   const chartData = [
     {
-      name: 'Confirmadas',
+      name: t('confirmed'),
       value: conversionFunnel.confirmed,
       percentage: 100,
     },
     {
-      name: 'Pagadas',
+      name: t('paid'),
       value: conversionFunnel.paid,
       percentage:
         conversionFunnel.confirmed > 0
@@ -36,7 +38,7 @@ export function ConversionFunnel() {
           : 0,
     },
     {
-      name: 'Completadas',
+      name: t('completed'),
       value: conversionFunnel.completed,
       percentage:
         conversionFunnel.confirmed > 0
@@ -48,7 +50,7 @@ export function ConversionFunnel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Embudo de Conversión</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-48">
@@ -70,12 +72,12 @@ export function ConversionFunnel() {
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
-                    const data = payload[0].payload;
+                    const item = payload[0].payload;
                     return (
                       <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-3">
-                        <p className="text-sm font-medium text-slate-700">{data.name}</p>
-                        <p className="text-lg font-semibold text-indigo-600">{data.value}</p>
-                        <p className="text-xs text-slate-500">{data.percentage}% del total</p>
+                        <p className="text-sm font-medium text-slate-700">{item.name}</p>
+                        <p className="text-lg font-semibold text-indigo-600">{item.value}</p>
+                        <p className="text-xs text-slate-500">{item.percentage}{t('ofTotal')}</p>
                       </div>
                     );
                   }
