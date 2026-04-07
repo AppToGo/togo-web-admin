@@ -12,6 +12,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Popover,
   PopoverContent,
@@ -40,20 +41,15 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
   // Local state for temporary filter values (applied only on "Apply")
   const [localFilters, setLocalFilters] = useState({
     plan: filters.plan?.toString() || "all",
-    paymentStatus: filters.paymentStatus || "all",
-    isActive: 
-      filters.isActive === undefined
-        ? "all"
-        : filters.isActive
-        ? "true"
-        : "false",
+    paymentStatuses: filters.paymentStatuses || [],
+    isActive: filters.isActive,
   });
 
   // Calculate active filters count (excluding search)
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.plan !== undefined) count++;
-    if (filters.paymentStatus !== undefined) count++;
+    if (filters.paymentStatuses && filters.paymentStatuses.length > 0) count++;
     if (filters.isActive !== undefined) count++;
     return count;
   }, [filters]);
@@ -67,13 +63,8 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
       // Sync local state with parent filters when opening
       setLocalFilters({
         plan: filters.plan?.toString() || "all",
-        paymentStatus: filters.paymentStatus || "all",
-        isActive:
-          filters.isActive === undefined
-            ? "all"
-            : filters.isActive
-            ? "true"
-            : "false",
+        paymentStatuses: filters.paymentStatuses || [],
+        isActive: filters.isActive,
       });
     }
   }, [filters]);
@@ -83,8 +74,8 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     onChange({
       ...filters,
       plan: localFilters.plan === "all" ? undefined : parseInt(localFilters.plan, 10),
-      paymentStatus: localFilters.paymentStatus === "all" ? undefined : localFilters.paymentStatus,
-      isActive: localFilters.isActive === "all" ? undefined : localFilters.isActive === "true",
+      paymentStatuses: localFilters.paymentStatuses.length > 0 ? localFilters.paymentStatuses : undefined,
+      isActive: localFilters.isActive,
       page: 1,
     });
     setIsOpen(false);
@@ -100,8 +91,8 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     
     setLocalFilters({
       plan: "all",
-      paymentStatus: "all",
-      isActive: "all",
+      paymentStatuses: [],
+      isActive: undefined,
     });
     
     onChange(clearedFilters);
@@ -113,31 +104,45 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
     setLocalFilters((prev) => ({ ...prev, plan: value }));
   };
 
-  const handlePaymentStatusChange = (value: string) => {
-    setLocalFilters((prev) => ({ ...prev, paymentStatus: value }));
+  // Toggle payment status in the array
+  const togglePaymentStatus = (status: string, checked: boolean) => {
+    setLocalFilters((prev) => {
+      if (checked) {
+        return { ...prev, paymentStatuses: [...prev.paymentStatuses, status] };
+      } else {
+        return { ...prev, paymentStatuses: prev.paymentStatuses.filter((s) => s !== status) };
+      }
+    });
   };
 
-  const handleActiveChange = (value: string) => {
-    setLocalFilters((prev) => ({ ...prev, isActive: value }));
+  // Handle active status change
+  const handleActiveChange = (checked: boolean) => {
+    setLocalFilters((prev) => ({ ...prev, isActive: checked ? true : undefined }));
   };
 
   // Check if local filters differ from applied filters
   const hasLocalChanges = useMemo(() => {
     const currentPlan = filters.plan?.toString() || "all";
-    const currentPaymentStatus = filters.paymentStatus || "all";
-    const currentIsActive =
-      filters.isActive === undefined
-        ? "all"
-        : filters.isActive
-        ? "true"
-        : "false";
+    const currentPaymentStatuses = filters.paymentStatuses || [];
+    const currentIsActive = filters.isActive;
+
+    const paymentStatusesChanged = 
+      localFilters.paymentStatuses.length !== currentPaymentStatuses.length ||
+      localFilters.paymentStatuses.some((s) => !currentPaymentStatuses.includes(s)) ||
+      currentPaymentStatuses.some((s) => !localFilters.paymentStatuses.includes(s));
 
     return (
       localFilters.plan !== currentPlan ||
-      localFilters.paymentStatus !== currentPaymentStatus ||
+      paymentStatusesChanged ||
       localFilters.isActive !== currentIsActive
     );
   }, [filters, localFilters]);
+
+  // Get payment status entries for rendering
+  const paymentStatusEntries = useMemo(() => 
+    Object.entries(PAYMENT_STATUS_CONFIG),
+    []
+  );
 
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -199,44 +204,43 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
             </Select>
           </div>
 
-          {/* Payment Status Filter */}
+          {/* Payment Status Filter - Switches */}
           <div className="space-y-2.5">
             <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               {t("filters.paymentStatus")}
             </Label>
-            <Select
-              value={localFilters.paymentStatus}
-              onValueChange={handlePaymentStatusChange}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("filters.paymentStatus")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
-                {Object.entries(PAYMENT_STATUS_CONFIG).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    {config.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2">
+              {paymentStatusEntries.map(([key, config]) => (
+                <label
+                  key={key}
+                  className="flex items-center justify-between p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <span className="text-sm text-slate-700">{config.label}</span>
+                  <Switch
+                    checked={localFilters.paymentStatuses.includes(key)}
+                    onCheckedChange={(checked) => togglePaymentStatus(key, checked)}
+                    className="data-[state=checked]:bg-indigo-500"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
 
-          {/* Active Status Filter */}
+          {/* Active Status Filter - Switch */}
           <div className="space-y-2.5">
             <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               {t("filters.status")}
             </Label>
-            <Select value={localFilters.isActive} onValueChange={handleActiveChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("filters.status")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filters.allStates")}</SelectItem>
-                <SelectItem value="true">{t("filters.active")}</SelectItem>
-                <SelectItem value="false">{t("filters.inactive")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <label className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
+              <span className="text-sm text-slate-700">
+                {t("filters.showOnlyActive", { defaultValue: "Mostrar solo activos" })}
+              </span>
+              <Switch
+                checked={localFilters.isActive === true}
+                onCheckedChange={handleActiveChange}
+                className="data-[state=checked]:bg-indigo-500"
+              />
+            </label>
           </div>
         </div>
 

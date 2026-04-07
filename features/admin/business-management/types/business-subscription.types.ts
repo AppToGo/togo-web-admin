@@ -42,7 +42,7 @@ export interface BusinessWithSubscription extends Business {
 
 export interface BusinessFilters {
   plan?: number;
-  paymentStatus?: string;
+  paymentStatuses?: string[];
   search?: string;
   isActive?: boolean;
   page?: number;

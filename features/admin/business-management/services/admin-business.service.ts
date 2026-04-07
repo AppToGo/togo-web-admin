@@ -191,8 +191,10 @@ export async function getBusinesses(
     if (filters?.plan !== undefined) {
       filtered = filtered.filter((b) => b.subscription?.plan === filters.plan);
     }
-    if (filters?.paymentStatus) {
-      filtered = filtered.filter((b) => b.subscription?.paymentStatus === filters.paymentStatus);
+    if (filters?.paymentStatuses && filters.paymentStatuses.length > 0) {
+      filtered = filtered.filter((b) => 
+        b.subscription?.paymentStatus && filters.paymentStatuses?.includes(b.subscription.paymentStatus)
+      );
     }
     if (filters?.search) {
       const search = filters.search.toLowerCase();
@@ -226,7 +228,9 @@ export async function getBusinesses(
 
   const params = new URLSearchParams();
   if (filters?.plan !== undefined) params.append("plan", String(filters.plan));
-  if (filters?.paymentStatus) params.append("paymentStatus", filters.paymentStatus);
+  if (filters?.paymentStatuses && filters.paymentStatuses.length > 0) {
+    params.append("paymentStatuses", filters.paymentStatuses.join(","));
+  }
   if (filters?.search) params.append("search", filters.search);
   if (filters?.isActive !== undefined) params.append("isActive", String(filters.isActive));
   if (filters?.page) params.append("page", String(filters.page));

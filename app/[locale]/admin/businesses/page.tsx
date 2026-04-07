@@ -181,7 +181,7 @@ export default function BusinessManagementPage() {
   // Check if there are active filters (excluding search)
   const hasActiveFilters =
     filters.plan !== undefined ||
-    filters.paymentStatus !== undefined ||
+    (filters.paymentStatuses && filters.paymentStatuses.length > 0) ||
     filters.isActive !== undefined;
 
   if (isAuthLoading) {
@@ -299,11 +299,11 @@ export default function BusinessManagementPage() {
                   }
                 />
               )}
-              {filters.paymentStatus && (
+              {filters.paymentStatuses && filters.paymentStatuses.length > 0 && (
                 <FilterTag
-                  label={`${t("filters.paymentStatus")}: ${filters.paymentStatus}`}
+                  label={`${t("filters.paymentStatus")}: ${filters.paymentStatuses.join(", ")}`}
                   onRemove={() =>
-                    handleFiltersChange({ ...filters, paymentStatus: undefined, page: 1 })
+                    handleFiltersChange({ ...filters, paymentStatuses: undefined, page: 1 })
                   }
                 />
               )}
