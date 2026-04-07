@@ -1,0 +1,96 @@
+{
+  "page": {
+    "title": "Gestión de Negocios",
+    "description": "Administra suscripciones y pagos de los negocios",
+    "alerts": "{count, plural, =1 {1 alerta} other {# alertas}}"
+  },
+  "errors": {
+    "unauthorized": "Acceso no autorizado",
+    "superAdminRequired": "Se requiere ser Super Admin para acceder a esta página"
+  },
+  "alerts": {
+    "title": "{count, plural, =1 {Alerta de Pago} other {Alertas de Pago}}",
+    "description": "Hay negocios con pagos vencidos o próximos a vencer. Revisa las acciones pendientes."
+  },
+  "pagination": {
+    "showing": "Mostrando {from} - {to} de {total}",
+    "previous": "Anterior",
+    "page": "Página {current} de {total}",
+    "next": "Siguiente"
+  },
+  "table": {
+    "noBusinesses": "No se encontraron negocios",
+    "business": "Negocio",
+    "plan": "Plan",
+    "paymentStatus": "Estado de Pago",
+    "dueDate": "Fecha de Vencimiento",
+    "branches": "Sedes",
+    "status": "Estado",
+    "actions": "Acciones"
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "actions": {
+    "recordPayment": "Registrar Pago",
+    "editBranches": "Editar Límite de Sedes",
+    "sendNotification": "Enviar Notificación",
+    "deactivate": "Desactivar",
+    "activate": "Activar"
+  },
+  "filters": {
+    "searchPlaceholder": "Buscar negocios...",
+    "plan": "Plan",
+    "allPlans": "Todos los planes",
+    "paymentStatus": "Estado de Pago",
+    "allStatuses": "Todos los estados",
+    "status": "Estado",
+    "allStates": "Todos",
+    "active": "Activos",
+    "inactive": "Inactivos",
+    "clearFilters": "Limpiar filtros"
+  },
+  "modals": {
+    "cancel": "Cancelar",
+    "editBranches": {
+      "title": "Editar Límite de Sedes",
+      "description": "Modificando: {businessName}",
+      "currentPlan": "Plan actual",
+      "planLimit": "Límite del plan",
+      "currentBranches": "Sedes actuales",
+      "useOverride": "Usar límite personalizado",
+      "overrideDescription": "Activar para establecer un límite de sedes diferente al del plan",
+      "overrideValue": "Límite personalizado",
+      "overrideHint": "Debe ser mayor o igual a las sedes actuales",
+      "submit": "Guardar Cambios"
+    },
+    "recordPayment": {
+      "title": "Registrar Pago",
+      "description": "Registrando pago para: {businessName}",
+      "amount": "Monto",
+      "method": "Método de Pago",
+      "selectMethod": "Seleccionar método",
+      "reference": "Referencia",
+      "referencePlaceholder": "Número de transacción o referencia",
+      "paidAt": "Fecha de Pago",
+      "notes": "Notas",
+      "notesPlaceholder": "Notas adicionales sobre el pago...",
+      "submit": "Registrar Pago"
+    },
+    "sendNotification": {
+      "title": "Enviar Notificación",
+      "description": "Enviando notificación a: {businessName}",
+      "type": "Tipo de Notificación",
+      "selectType": "Seleccionar tipo",
+      "subject": "Asunto",
+      "subjectPlaceholder": "Asunto de la notificación",
+      "message": "Mensaje",
+      "messagePlaceholder": "Escribe el mensaje aquí...",
+      "deliveryOptions": "Opciones de Entrega",
+      "sendEmail": "Enviar por correo electrónico",
+      "sendInApp": "Enviar notificación en la aplicación",
+      "submit": "Enviar Notificación"
+    }
+  }
+}
