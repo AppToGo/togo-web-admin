@@ -52,7 +52,13 @@
     "inactive": "Inactive",
     "clearFilters": "Clear filters",
     "clear": "Clear",
-    "apply": "Apply"
+    "apply": "Apply",
+    "showOnlyActive": "Show only active"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close"
   },
   "modals": {
     "cancel": "Cancel",
