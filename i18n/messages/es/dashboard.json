@@ -67,6 +67,11 @@
     "empty": "No hay actividad reciente",
     "emptyDescription": "Los pedidos y acciones aparecerán aquí"
   },
+  "filters": {
+    "allBranches": "Todas las sedes",
+    "selectBranch": "Seleccionar sede",
+    "noBranches": "No hay sedes disponibles"
+  },
   "errors": {
     "noBusiness": {
       "title": "No tienes un negocio asignado",

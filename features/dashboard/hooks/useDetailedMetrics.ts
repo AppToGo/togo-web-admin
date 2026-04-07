@@ -3,11 +3,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/stores/auth.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
+import { useDashboardBranchId } from '../stores/branch-filter.store';
 import apiClient from '@/services/api.service';
 import { DetailedMetrics } from '../types/dashboard.types';
 
 const DETAILED_STALE_TIME = 2 * 60 * 1000; // 2 minutes
 const DETAILED_GC_TIME = 5 * 60 * 1000; // 5 minutes
+
+export interface UseDetailedMetricsOptions {
+  enabled?: boolean;
+  branchId?: string | null;
+}
 
 interface DetailedMetricsResponse {
   metodosPago: Array<{
@@ -50,15 +56,22 @@ interface DetailedMetricsResponse {
 async function fetchDetailedMetrics(
   businessId: string,
   dateFrom: string,
-  dateTo: string
+  dateTo: string,
+  branchId?: string | null
 ): Promise<DetailedMetrics> {
+  const params: Record<string, string> = {
+    dateFrom,
+    dateTo,
+  };
+  
+  if (branchId) {
+    params.branchId = branchId;
+  }
+  
   const { data } = await apiClient.get<DetailedMetricsResponse>(
     `/businesses/${businessId}/orders/metrics`,
     {
-      params: {
-        dateFrom,
-        dateTo,
-      },
+      params,
     }
   );
 
@@ -92,14 +105,18 @@ async function fetchDetailedMetrics(
   };
 }
 
-export function useDetailedMetrics(options?: { enabled?: boolean }) {
+export function useDetailedMetrics(options?: UseDetailedMetricsOptions) {
   const user = useCurrentUser();
   const businessId = user?.businessId;
   const dateRange = useDateFilterRange();
+  const dashboardBranchId = useDashboardBranchId();
+  
+  // Usar branchId de las opciones si se proporciona, sino usar el del store
+  const branchId = options?.branchId !== undefined ? options.branchId : dashboardBranchId;
 
   return useQuery({
-    queryKey: ['dashboard', 'detailed', businessId, dateRange.from, dateRange.to],
-    queryFn: () => fetchDetailedMetrics(businessId!, dateRange.from, dateRange.to),
+    queryKey: ['dashboard', 'detailed', businessId, dateRange.from, dateRange.to, branchId],
+    queryFn: () => fetchDetailedMetrics(businessId!, dateRange.from, dateRange.to, branchId),
     enabled: options?.enabled !== false && !!businessId,
     staleTime: DETAILED_STALE_TIME,
     gcTime: DETAILED_GC_TIME,

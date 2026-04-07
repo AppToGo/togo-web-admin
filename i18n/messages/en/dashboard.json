@@ -67,6 +67,11 @@
     "empty": "No recent activity",
     "emptyDescription": "Orders and actions will appear here"
   },
+  "filters": {
+    "allBranches": "All branches",
+    "selectBranch": "Select branch",
+    "noBranches": "No branches available"
+  },
   "errors": {
     "noBusiness": {
       "title": "You don't have a business assigned",
