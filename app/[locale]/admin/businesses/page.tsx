@@ -7,6 +7,7 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
@@ -156,21 +157,24 @@ export default function BusinessManagementPage() {
 
   if (!isSuperAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <ShieldIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
-            {t("errors.unauthorized")}
-          </h1>
-          <p className="text-slate-500">{t("errors.superAdminRequired")}</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <ShieldIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              {t("errors.unauthorized")}
+            </h1>
+            <p className="text-slate-500">{t("errors.superAdminRequired")}</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   const alertCount = alerts?.length || 0;
 
   return (
+    <DashboardLayout>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -298,6 +302,7 @@ export default function BusinessManagementPage() {
         isSubmitting={sendNotification.isPending}
       />
     </div>
+    </DashboardLayout>
   );
 }
 
