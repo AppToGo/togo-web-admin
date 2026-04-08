@@ -110,29 +110,29 @@ export default function BusinessSettingsPage() {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "El nombre es requerido";
+      newErrors.name = tb("validation.nameRequired");
     }
 
     if (!formData.slug.trim()) {
-      newErrors.slug = "El slug es requerido";
+      newErrors.slug = tb("validation.slugRequired");
     } else if (formData.slug.length < 3) {
-      newErrors.slug = "El slug debe tener al menos 3 caracteres";
+      newErrors.slug = tb("validation.slugMinLength");
     } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-      newErrors.slug = "Solo letras minúsculas, números y guiones";
+      newErrors.slug = tb("validation.slugFormat");
     }
 
     if (
       formData.primaryColor &&
       !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.primaryColor)
     ) {
-      newErrors.primaryColor = "Formato de color inválido";
+      newErrors.primaryColor = tb("validation.colorFormat");
     }
 
     if (
       formData.accentColor &&
       !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.accentColor)
     ) {
-      newErrors.accentColor = "Formato de color inválido";
+      newErrors.accentColor = tb("validation.colorFormat");
     }
 
     setErrors(newErrors);
@@ -200,7 +200,7 @@ export default function BusinessSettingsPage() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{tb("error.carga")}</AlertTitle>
             <AlertDescription>
-              {error?.message || "No se pudo cargar la información del negocio"}
+              {error?.message || tb("errors.loadFailed")}
             </AlertDescription>
           </Alert>
         </div>
@@ -247,7 +247,7 @@ export default function BusinessSettingsPage() {
                     id="name"
                     value={formData.name}
                     onChange={(e) => handleChange("name", e.target.value)}
-                    placeholder="Ej: Mi Restaurante"
+                    placeholder={tb("placeholders.name")}
                   />
                   {errors.name && (
                     <p className="text-sm text-red-500">{errors.name}</p>
@@ -265,7 +265,7 @@ export default function BusinessSettingsPage() {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="Ej: +52 55 1234 5678"
+                    placeholder={tb("placeholders.phone")}
                   />
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function BusinessSettingsPage() {
                         e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")
                       )
                     }
-                    placeholder="mi-negocio"
+                    placeholder={tb("placeholders.slug")}
                     className="flex-1"
                   />
                 </div>
@@ -371,7 +371,7 @@ export default function BusinessSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="catalogMode">Modo del catálogo</Label>
+                  <Label htmlFor="catalogMode">{tb("catalog.mode.label")}</Label>
                   <Select
                     value={formData.catalogMode}
                     onValueChange={(value) =>
@@ -382,15 +382,9 @@ export default function BusinessSettingsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MENU">
-                        Menú - Para restaurantes
-                      </SelectItem>
-                      <SelectItem value="MARKETPLACE">
-                        Marketplace - Para tiendas
-                      </SelectItem>
-                      <SelectItem value="HYBRID">
-                        Híbrido - Ambos modos
-                      </SelectItem>
+                      <SelectItem value="MENU">{tb("catalog.mode.menu")}</SelectItem>
+                      <SelectItem value="MARKETPLACE">{tb("catalog.mode.marketplace")}</SelectItem>
+                      <SelectItem value="HYBRID">{tb("catalog.mode.hybrid")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -403,13 +397,13 @@ export default function BusinessSettingsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Palette className="h-5 w-5 text-indigo-600" />
-                Branding
+                {tb("branding.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Logo */}
               <div className="space-y-2">
-                <Label>Logo del negocio</Label>
+                <Label>{tb("branding.logo.label")}</Label>
                 <div className="flex items-center gap-4">
                   {formData.logoUrl ? (
                     <img
@@ -430,7 +424,7 @@ export default function BusinessSettingsPage() {
                     />
                     <Button type="button" variant="outline" size="sm">
                       <Upload className="h-4 w-4 mr-2" />
-                      Subir logo
+                      {tb("branding.logo.upload")}
                     </Button>
                   </div>
                 </div>
@@ -438,7 +432,7 @@ export default function BusinessSettingsPage() {
 
               {/* Banner */}
               <div className="space-y-2">
-                <Label>Banner del catálogo</Label>
+                <Label>{tb("branding.banner.label")}</Label>
                 <div className="space-y-2">
                   {formData.bannerUrl ? (
                     <img
@@ -454,7 +448,7 @@ export default function BusinessSettingsPage() {
                   <Input
                     value={formData.bannerUrl}
                     onChange={(e) => handleChange("bannerUrl", e.target.value)}
-                    placeholder="URL del banner"
+                    placeholder={tb("placeholders.bannerUrl")}
                   />
                 </div>
               </div>
@@ -462,7 +456,7 @@ export default function BusinessSettingsPage() {
               {/* Colors */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="primaryColor">Color principal</Label>
+                  <Label htmlFor="primaryColor">{tb("branding.colors.primary")}</Label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -488,7 +482,7 @@ export default function BusinessSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="accentColor">Color de acento</Label>
+                  <Label htmlFor="accentColor">{tb("branding.colors.accent")}</Label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -518,7 +512,7 @@ export default function BusinessSettingsPage() {
           <div className="flex justify-end gap-4">
             <Link href="/dashboard">
               <Button type="button" variant="outline">
-                Cancelar
+                {tb("buttons.cancel")}
               </Button>
             </Link>
             <Button

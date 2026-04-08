@@ -89,6 +89,25 @@
       "label": "Mensaje de bienvenida",
       "placeholder": "Mensaje que verán tus clientes al entrar al catálogo..."
     },
+    "validation": {
+      "nameRequired": "El nombre es requerido",
+      "slugRequired": "El slug es requerido",
+      "slugMinLength": "El slug debe tener al menos 3 caracteres",
+      "slugFormat": "Solo letras minúsculas, números y guiones",
+      "colorFormat": "Formato de color inválido"
+    },
+    "errors": {
+      "loadFailed": "No se pudo cargar la información del negocio"
+    },
+    "placeholders": {
+      "name": "Ej: Mi Restaurante",
+      "phone": "Ej: +52 55 1234 5678",
+      "slug": "mi-negocio",
+      "bannerUrl": "URL del banner"
+    },
+    "buttons": {
+      "cancel": "Cancelar"
+    },
     "saveSuccess": "Datos del negocio guardados correctamente",
     "saveError": "Error al guardar los datos del negocio"
   },
@@ -155,5 +174,39 @@
     "success": "Cambios guardados exitosamente",
     "error": "Error al guardar los cambios"
   },
-  "error": { "carga": "Error al cargar el negocio" }
+  "error": { "carga": "Error al cargar el negocio" },
+  "adminBusinesses": {
+    "page": {
+      "title": "Gestión de Negocios",
+      "description": "Administra suscripciones y pagos de los negocios",
+      "alerts": "{count, plural, =1 {1 alerta} other {# alertas}}"
+    },
+    "errors": {
+      "unauthorized": "Acceso no autorizado",
+      "superAdminRequired": "Se requiere ser Super Admin para acceder a esta página"
+    },
+    "alerts": {
+      "title": "{count, plural, =1 {Alerta de Pago} other {Alertas de Pago}}",
+      "description": "Hay negocios con pagos vencidos o próximos a vencer. Revisa las acciones pendientes."
+    },
+    "filters": {
+      "title": "Filtros",
+      "searchPlaceholder": "Buscar negocios...",
+      "plan": "Plan",
+      "paymentStatus": "Estado de Pago",
+      "status": "Estado",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "activeFilter": "Filtros activos"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "showing": "Mostrando {from} - {to} de {total}",
+      "page": "Página {current} de {total}"
+    },
+    "buttons": {
+      "clearAll": "Limpiar todo"
+    }
+  }
 }
