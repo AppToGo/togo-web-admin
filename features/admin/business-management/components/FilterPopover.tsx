@@ -158,7 +158,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
             )}
           >
             <SlidersHorizontal className="w-4 h-4" />
-            <span className="hidden sm:inline">{t("filters.title", { defaultValue: "Filters" })}</span>
+            <span className="hidden sm:inline">{t("filters.title")}</span>
             {hasActiveFilters && (
               <span className="absolute -top-2 -right-2 w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {activeFiltersCount}
@@ -171,14 +171,14 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
           <h3 className="font-semibold text-sm text-slate-900">
-            {t("filters.title", { defaultValue: "Filters" })}
+            {t("filters.title")}
           </h3>
           {hasActiveFilters && (
             <button
               onClick={handleClear}
               className="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
             >
-              {t("filters.clear", { defaultValue: "Clear all" })}
+              {t("filters.clear")}
             </button>
           )}
         </div>
@@ -230,7 +230,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
           {/* Status Filter - Radio Buttons */}
           <div className="space-y-2.5">
             <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              {t("filters.statusFilter", { defaultValue: "Estado del negocio" })}
+              {t("filters.statusFilter")}
             </Label>
             <RadioGroup
               value={localFilters.statusFilter}
@@ -240,19 +240,19 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
               <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
                 <RadioGroupItem value="all" id="status-all" />
                 <Label htmlFor="status-all" className="text-sm text-slate-700 cursor-pointer flex-1">
-                  {t("filters.all", { defaultValue: "Todos" })}
+                  {t("filters.all")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
                 <RadioGroupItem value="active" id="status-active" />
                 <Label htmlFor="status-active" className="text-sm text-slate-700 cursor-pointer flex-1">
-                  {t("filters.activeOnly", { defaultValue: "Solo activos" })}
+                  {t("filters.activeOnly")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors">
                 <RadioGroupItem value="inactive" id="status-inactive" />
                 <Label htmlFor="status-inactive" className="text-sm text-slate-700 cursor-pointer flex-1">
-                  {t("filters.inactiveOnly", { defaultValue: "Solo inactivos" })}
+                  {t("filters.inactiveOnly")}
                 </Label>
               </div>
             </RadioGroup>
@@ -267,7 +267,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
             onClick={() => setIsOpen(false)}
             className="text-slate-600 hover:text-slate-900"
           >
-            {t("common.cancel", { defaultValue: "Cancel" })}
+            {t("common.cancel")}
           </Button>
           <Button
             size="sm"
@@ -275,7 +275,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
             disabled={!hasLocalChanges && !hasActiveFilters}
             className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >
-            {t("filters.apply", { defaultValue: "Apply" })}
+            {t("filters.apply")}
           </Button>
         </div>
       </PopoverContent>

@@ -31,6 +31,25 @@
     "email": "Correo de contacto",
     "timezone": "Zona horaria",
     "currency": "Moneda",
+    "information": {
+      "title": "Información General",
+      "name": "Nombre del negocio",
+      "phone": "Teléfono del negocio",
+      "phoneDescription": "Teléfono de contacto general del negocio",
+      "slug": "Slug (URL)",
+      "slugDescription": "Este será tu URL personalizada en el catálogo",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describe tu negocio...",
+      "menssage": "Mensaje de bienvenida",
+      "menssagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+    },
+    "config": {
+      "title": "Configuración del Catálogo",
+      "visibility": "Visibilidad del catálogo",
+      "visibilityPublic": "Público - Cualquiera puede ver",
+      "visibilityPrivate": "Privado - Solo con acceso",
+      "visibilityRestricted": "Restringido - Solo usuarios registrados"
+    },
     "slug": {
       "label": "URL personalizada",
       "placeholder": "mi-negocio",
@@ -135,5 +154,6 @@
     "button": "Guardar cambios",
     "success": "Cambios guardados exitosamente",
     "error": "Error al guardar los cambios"
-  }
+  },
+  "error": { "carga": "Error al cargar el negocio" }
 }

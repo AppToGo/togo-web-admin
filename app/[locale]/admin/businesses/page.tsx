@@ -242,7 +242,7 @@ export default function BusinessManagementPage() {
                   "h-10 w-10 relative",
                   hasActiveFilters && "border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
                 )}
-                title={t("filters.title", { defaultValue: "Filters" })}
+                title={t("filters.title")}
               >
                 <Filter className="w-4 h-4" />
               </Button>
@@ -279,7 +279,7 @@ export default function BusinessManagementPage() {
         {/* Active Filters Indicator */}
         {hasActiveFilters && (
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-500">{t("filters.active")}:</span>
+            <span className="text-slate-500">{t("filters.activeFilters")}:</span>
             <div className="flex items-center gap-2">
               {filters.plan !== undefined && (
                 <FilterTag
@@ -316,7 +316,7 @@ export default function BusinessManagementPage() {
               }
               className="text-xs text-indigo-600 hover:text-indigo-700 font-medium ml-2"
             >
-              {tc("buttons.clearAll", { defaultValue: "Clear all" })}
+              {tc("buttons.clearAll")}
             </button>
           </div>
         )}

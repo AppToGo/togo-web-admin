@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { OrdersTodayCard } from './OrdersTodayCard';
-import { RevenueTodayCard } from './RevenueTodayCard';
-import { TotalOrdersCard } from './TotalOrdersCard';
-import { AverageTicketCard } from './AverageTicketCard';
+import { OrdersTodayCard } from "./OrdersTodayCard";
+import { RevenueTodayCard } from "./RevenueTodayCard";
+import { TotalOrdersCard } from "./TotalOrdersCard";
+import { AverageTicketCard } from "./AverageTicketCard";
 
 export function KpiSection() {
   return (

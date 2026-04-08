@@ -31,6 +31,18 @@
     "email": "Contact email",
     "timezone": "Timezone",
     "currency": "Currency",
+    "information": {
+      "title": "Información General",
+      "name": "Nombre del negocio",
+      "phone": "Teléfono del negocio",
+      "phoneDescription": "Teléfono de contacto general del negocio",
+      "slug": "Slug (URL)",
+      "slugDescription": "Este será tu URL personalizada en el catálogo",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describe tu negocio...",
+      "menssage": "Mensaje de bienvenida",
+      "menssagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+    },
     "slug": {
       "label": "Custom URL",
       "placeholder": "my-business",
@@ -135,5 +147,6 @@
     "button": "Save changes",
     "success": "Changes saved successfully",
     "error": "Error saving changes"
-  }
+  },
+  "error": { "carga": "Error al cargar el negocio" }
 }

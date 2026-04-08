@@ -26,16 +26,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Link } from "@/i18n/routing";
-import {
-  useCurrentBusiness,
-  useUpdateBusiness,
-} from "@/features/business";
+import { useCurrentBusiness, useUpdateBusiness } from "@/features/business";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-type CatalogVisibility = 'PUBLIC' | 'PRIVATE' | 'RESTRICTED';
-type CatalogMode = 'MENU' | 'MARKETPLACE' | 'HYBRID';
+type CatalogVisibility = "PUBLIC" | "PRIVATE" | "RESTRICTED";
+type CatalogMode = "MENU" | "MARKETPLACE" | "HYBRID";
 
 interface FormData {
   name: string;
@@ -79,7 +76,9 @@ export default function BusinessSettingsPage() {
   const updateBusiness = useUpdateBusiness();
 
   const [formData, setFormData] = useState<FormData>(defaultFormData);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {}
+  );
 
   // Initialize form data when business loads
   useEffect(() => {
@@ -122,11 +121,17 @@ export default function BusinessSettingsPage() {
       newErrors.slug = "Solo letras minúsculas, números y guiones";
     }
 
-    if (formData.primaryColor && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.primaryColor)) {
+    if (
+      formData.primaryColor &&
+      !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.primaryColor)
+    ) {
       newErrors.primaryColor = "Formato de color inválido";
     }
 
-    if (formData.accentColor && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.accentColor)) {
+    if (
+      formData.accentColor &&
+      !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.accentColor)
+    ) {
       newErrors.accentColor = "Formato de color inválido";
     }
 
@@ -134,45 +139,48 @@ export default function BusinessSettingsPage() {
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!business?.id) return;
-    if (!validateForm()) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    await updateBusiness.mutateAsync({
-      businessId: business.id,
-      data: {
-        name: formData.name,
-        slug: formData.slug,
-        phone: formData.phone || undefined,
-        industryId: formData.industryId || undefined,
-        catalogVisibility: formData.catalogVisibility,
-        catalogMode: formData.catalogMode,
-        logoUrl: formData.logoUrl || undefined,
-        bannerUrl: formData.bannerUrl || undefined,
-        primaryColor: formData.primaryColor || undefined,
-        accentColor: formData.accentColor || undefined,
-        description: formData.description || undefined,
-        welcomeMessage: formData.welcomeMessage || undefined,
-      },
-    });
-  }, [business?.id, formData, updateBusiness, validateForm]);
+      if (!business?.id) return;
+      if (!validateForm()) return;
 
-  const isDirty = business ? (
-    formData.name !== (business.name || "") ||
-    formData.slug !== (business.slug || "") ||
-    formData.phone !== (business.phone || "") ||
-    formData.industryId !== (business.industryId || "") ||
-    formData.catalogVisibility !== (business.catalogVisibility || "PUBLIC") ||
-    formData.catalogMode !== (business.catalogMode || "MENU") ||
-    formData.logoUrl !== (business.logoUrl || "") ||
-    formData.bannerUrl !== (business.bannerUrl || "") ||
-    formData.primaryColor !== (business.primaryColor || "#4F46E5") ||
-    formData.accentColor !== (business.accentColor || "#10B981") ||
-    formData.description !== (business.description || "") ||
-    formData.welcomeMessage !== (business.welcomeMessage || "")
-  ) : false;
+      await updateBusiness.mutateAsync({
+        businessId: business.id,
+        data: {
+          name: formData.name,
+          slug: formData.slug,
+          phone: formData.phone || undefined,
+          industryId: formData.industryId || undefined,
+          catalogVisibility: formData.catalogVisibility,
+          catalogMode: formData.catalogMode,
+          logoUrl: formData.logoUrl || undefined,
+          bannerUrl: formData.bannerUrl || undefined,
+          primaryColor: formData.primaryColor || undefined,
+          accentColor: formData.accentColor || undefined,
+          description: formData.description || undefined,
+          welcomeMessage: formData.welcomeMessage || undefined,
+        },
+      });
+    },
+    [business?.id, formData, updateBusiness, validateForm]
+  );
+
+  const isDirty = business
+    ? formData.name !== (business.name || "") ||
+      formData.slug !== (business.slug || "") ||
+      formData.phone !== (business.phone || "") ||
+      formData.industryId !== (business.industryId || "") ||
+      formData.catalogVisibility !== (business.catalogVisibility || "PUBLIC") ||
+      formData.catalogMode !== (business.catalogMode || "MENU") ||
+      formData.logoUrl !== (business.logoUrl || "") ||
+      formData.bannerUrl !== (business.bannerUrl || "") ||
+      formData.primaryColor !== (business.primaryColor || "#4F46E5") ||
+      formData.accentColor !== (business.accentColor || "#10B981") ||
+      formData.description !== (business.description || "") ||
+      formData.welcomeMessage !== (business.welcomeMessage || "")
+    : false;
 
   if (isLoading) {
     return (
@@ -190,7 +198,7 @@ export default function BusinessSettingsPage() {
         <div className="max-w-2xl mx-auto mt-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error al cargar el negocio</AlertTitle>
+            <AlertTitle>{tb("error.carga")}</AlertTitle>
             <AlertDescription>
               {error?.message || "No se pudo cargar la información del negocio"}
             </AlertDescription>
@@ -202,7 +210,7 @@ export default function BusinessSettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Link href="/dashboard">
@@ -221,18 +229,19 @@ export default function BusinessSettingsPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Information */}
-          <Card>
+          <Card variant="glass">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Globe className="h-5 w-5 text-indigo-600" />
-                Información General
+                {tb("information.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">
-                    Nombre del negocio <span className="text-red-500">*</span>
+                    {tb("information.name")}{" "}
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="name"
@@ -246,59 +255,75 @@ export default function BusinessSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="slug">
-                    Slug (URL) <span className="text-red-500">*</span>
+                  <Label htmlFor="phone" className="flex justify-between">
+                    {tb("information.phone")}
+                    <span className="text-xs text-slate-500 mr-2">
+                      {tb("information.phoneDescription")}
+                    </span>
                   </Label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-500">togo.com/</span>
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) => handleChange("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                      placeholder="mi-negocio"
-                      className="flex-1"
-                    />
-                  </div>
-                  {errors.slug && (
-                    <p className="text-sm text-red-500">{errors.slug}</p>
-                  )}
-                  <p className="text-xs text-slate-500">
-                    Este será tu URL personalizada en el catálogo
-                  </p>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    placeholder="Ej: +52 55 1234 5678"
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Teléfono del negocio</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                  placeholder="Ej: +52 55 1234 5678"
-                />
-                <p className="text-xs text-slate-500">
-                  Teléfono de contacto general del negocio
-                </p>
+                <Label htmlFor="slug">
+                  {tb("information.slug")}{" "}
+                  <span className="text-red-500">*</span>
+                  <span className="text-xs text-slate-500 ml-4">
+                    {tb("information.slugDescription")}
+                  </span>
+                </Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500">togo.com/</span>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    readOnly
+                    disabled
+                    onChange={(e) =>
+                      handleChange(
+                        "slug",
+                        e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")
+                      )
+                    }
+                    placeholder="mi-negocio"
+                    className="flex-1"
+                  />
+                </div>
+                {errors.slug && (
+                  <p className="text-sm text-red-500">{errors.slug}</p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
+                <Label htmlFor="description">
+                  {tb("information.description")}
+                </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
-                  placeholder="Describe tu negocio..."
+                  placeholder={tb("information.descriptionPlaceholder")}
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="welcomeMessage">Mensaje de bienvenida</Label>
+                <Label htmlFor="welcomeMessage">
+                  {tb("information.menssage")}
+                </Label>
                 <Textarea
                   id="welcomeMessage"
                   value={formData.welcomeMessage}
-                  onChange={(e) => handleChange("welcomeMessage", e.target.value)}
-                  placeholder="Mensaje que verán tus clientes al entrar al catálogo..."
+                  onChange={(e) =>
+                    handleChange("welcomeMessage", e.target.value)
+                  }
+                  placeholder={tb("information.menssagePlaceholder")}
                   rows={2}
                 />
               </div>
@@ -306,33 +331,40 @@ export default function BusinessSettingsPage() {
           </Card>
 
           {/* Catalog Configuration */}
-          <Card>
+          <Card variant="glass">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5 text-indigo-600" />
-                Configuración del Catálogo
+                {tb("config.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="catalogVisibility">Visibilidad del catálogo</Label>
+                  <Label htmlFor="catalogVisibility">
+                    {tb("config.visibility")}
+                  </Label>
                   <Select
                     value={formData.catalogVisibility}
-                    onValueChange={(value) => handleChange("catalogVisibility", value as CatalogVisibility)}
+                    onValueChange={(value) =>
+                      handleChange(
+                        "catalogVisibility",
+                        value as CatalogVisibility
+                      )
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="PUBLIC">
-                        Público - Cualquiera puede ver
+                        {tb("config.visibilityPublic")}
                       </SelectItem>
                       <SelectItem value="PRIVATE">
-                        Privado - Solo con acceso
+                        {tb("config.visibilityPrivate")}
                       </SelectItem>
                       <SelectItem value="RESTRICTED">
-                        Restringido - Solo usuarios registrados
+                        {tb("config.visibilityRestricted")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -342,7 +374,9 @@ export default function BusinessSettingsPage() {
                   <Label htmlFor="catalogMode">Modo del catálogo</Label>
                   <Select
                     value={formData.catalogMode}
-                    onValueChange={(value) => handleChange("catalogMode", value as CatalogMode)}
+                    onValueChange={(value) =>
+                      handleChange("catalogMode", value as CatalogMode)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -365,7 +399,7 @@ export default function BusinessSettingsPage() {
           </Card>
 
           {/* Branding */}
-          <Card>
+          <Card variant="glass">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Palette className="h-5 w-5 text-indigo-600" />
@@ -433,12 +467,16 @@ export default function BusinessSettingsPage() {
                     <input
                       type="color"
                       value={formData.primaryColor}
-                      onChange={(e) => handleChange("primaryColor", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("primaryColor", e.target.value)
+                      }
                       className="w-10 h-10 rounded cursor-pointer border-0 p-0"
                     />
                     <Input
                       value={formData.primaryColor}
-                      onChange={(e) => handleChange("primaryColor", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("primaryColor", e.target.value)
+                      }
                       className="flex-1 uppercase"
                     />
                   </div>
@@ -455,19 +493,21 @@ export default function BusinessSettingsPage() {
                     <input
                       type="color"
                       value={formData.accentColor}
-                      onChange={(e) => handleChange("accentColor", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("accentColor", e.target.value)
+                      }
                       className="w-10 h-10 rounded cursor-pointer border-0 p-0"
                     />
                     <Input
                       value={formData.accentColor}
-                      onChange={(e) => handleChange("accentColor", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("accentColor", e.target.value)
+                      }
                       className="flex-1 uppercase"
                     />
                   </div>
                   {errors.accentColor && (
-                    <p className="text-sm text-red-500">
-                      {errors.accentColor}
-                    </p>
+                    <p className="text-sm text-red-500">{errors.accentColor}</p>
                   )}
                 </div>
               </div>

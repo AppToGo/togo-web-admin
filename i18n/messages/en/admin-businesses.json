@@ -50,10 +50,13 @@
     "allStates": "All",
     "active": "Active",
     "inactive": "Inactive",
+    "activePlural": "Active",
+    "inactivePlural": "Inactive",
     "statusFilter": "Business status",
     "all": "All",
     "activeOnly": "Active only",
     "inactiveOnly": "Inactive only",
+    "activeFilters": "Active filters",
     "clearFilters": "Clear filters",
     "clear": "Clear",
     "apply": "Apply"
