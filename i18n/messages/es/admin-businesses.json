@@ -111,6 +111,8 @@
     "notificationSent": "Notificación enviada exitosamente",
     "limitUpdated": "Límite de sedes actualizado",
     "branchesLimitUpdated": "Límite de sedes actualizado exitosamente",
-    "statusUpdated": "Estado actualizado exitosamente"
+    "statusUpdated": "Estado actualizado exitosamente",
+    "businessDeactivated": "Negocio desactivado exitosamente",
+    "businessActivated": "Negocio activado exitosamente"
   }
 }

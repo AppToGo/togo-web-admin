@@ -111,6 +111,8 @@
     "notificationSent": "Notification sent successfully",
     "limitUpdated": "Branch limit updated",
     "branchesLimitUpdated": "Branch limit updated successfully",
-    "statusUpdated": "Status updated successfully"
+    "statusUpdated": "Status updated successfully",
+    "businessDeactivated": "Business deactivated successfully",
+    "businessActivated": "Business activated successfully"
   }
 }
