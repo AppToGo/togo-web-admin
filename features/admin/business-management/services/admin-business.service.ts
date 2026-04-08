@@ -36,7 +36,7 @@ export async function getBusinesses(
   const params = new URLSearchParams();
   if (filters?.plan !== undefined) params.append("plan", String(filters.plan));
   if (filters?.paymentStatuses?.length) {
-    params.append("paymentStatuses", filters.paymentStatuses.join(","));
+    filters.paymentStatuses.forEach(s => params.append("paymentStatuses", s));
   }
   if (filters?.search) params.append("search", filters.search);
   if (filters?.statusFilter && filters.statusFilter !== "all") {
