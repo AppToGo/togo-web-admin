@@ -47,7 +47,8 @@ export function EditBranchesLimitModal({
 
   useEffect(() => {
     if (business) {
-      const hasOverride = currentOverride !== null && currentOverride !== undefined;
+      const hasOverride =
+        currentOverride !== null && currentOverride !== undefined;
       setUseOverride(hasOverride);
       setOverrideValue(hasOverride ? String(currentOverride) : "");
     }
@@ -56,9 +57,7 @@ export function EditBranchesLimitModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      maxBranchesOverride: useOverride
-        ? parseInt(overrideValue, 10)
-        : null,
+      maxBranchesOverride: useOverride ? parseInt(overrideValue, 10) : null,
     });
   };
 
@@ -69,7 +68,8 @@ export function EditBranchesLimitModal({
   };
 
   const planLabel =
-    PLAN_OPTIONS.find((p) => p.value === currentPlan)?.label || `Plan ${currentPlan}`;
+    PLAN_OPTIONS.find((p) => p.value === currentPlan)?.label ||
+    `Plan ${currentPlan}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -79,12 +79,12 @@ export function EditBranchesLimitModal({
             <DialogTitle>{t("modals.editBranches.title")}</DialogTitle>
             <DialogDescription>
               {t("modals.editBranches.description", {
-                businessName: business?.name,
+                businessName: business?.name ?? "",
               })}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 py-4">
+          <div className="grid gap-6 p-7">
             {/* Current Plan Info */}
             <div className="p-4 bg-slate-50 rounded-lg">
               <div className="flex justify-between items-center mb-2">

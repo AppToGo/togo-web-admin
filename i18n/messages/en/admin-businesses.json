@@ -104,5 +104,13 @@
       "sendInApp": "Send in-app notification",
       "submit": "Send Notification"
     }
+  },
+  "notifications": {
+    "paymentRecorded": "Payment recorded successfully",
+    "paymentError": "Error recording payment",
+    "notificationSent": "Notification sent successfully",
+    "limitUpdated": "Branch limit updated",
+    "branchesLimitUpdated": "Branch limit updated successfully",
+    "statusUpdated": "Status updated successfully"
   }
 }

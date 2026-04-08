@@ -35,7 +35,11 @@ interface SendNotificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: {
-    type: "PAYMENT_REMINDER" | "OVERDUE_WARNING" | "GRACE_PERIOD_NOTICE" | "CUSTOM";
+    type:
+      | "PAYMENT_REMINDER"
+      | "OVERDUE_WARNING"
+      | "GRACE_PERIOD_NOTICE"
+      | "CUSTOM";
     subject: string;
     message: string;
     sendEmail?: boolean;
@@ -98,12 +102,12 @@ export function SendNotificationModal({
             <DialogTitle>{t("modals.sendNotification.title")}</DialogTitle>
             <DialogDescription>
               {t("modals.sendNotification.description", {
-                businessName: business?.name,
+                businessName: business?.name ?? "",
               })}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 p-7">
             {/* Notification Type */}
             <div className="grid gap-2">
               <Label htmlFor="type">

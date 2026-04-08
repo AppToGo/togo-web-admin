@@ -104,5 +104,13 @@
       "sendInApp": "Enviar notificación en la aplicación",
       "submit": "Enviar Notificación"
     }
+  },
+  "notifications": {
+    "paymentRecorded": "Pago registrado exitosamente",
+    "paymentError": "Error al registrar el pago",
+    "notificationSent": "Notificación enviada exitosamente",
+    "limitUpdated": "Límite de sedes actualizado",
+    "branchesLimitUpdated": "Límite de sedes actualizado exitosamente",
+    "statusUpdated": "Estado actualizado exitosamente"
   }
 }

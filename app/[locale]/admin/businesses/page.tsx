@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertBadge } from "@/components/ui/alert-badge";
 import { Input } from "@/components/ui/input";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, Shield, X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useBusinesses,
@@ -182,7 +182,7 @@ export default function BusinessManagementPage() {
   const hasActiveFilters =
     filters.plan !== undefined ||
     (filters.paymentStatuses && filters.paymentStatuses.length > 0) ||
-    filters.isActive !== undefined;
+    (filters.statusFilter !== undefined && filters.statusFilter !== "all");
 
   if (isAuthLoading) {
     return null; // Let the loading.tsx handle this
@@ -193,7 +193,7 @@ export default function BusinessManagementPage() {
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <ShieldIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <Shield className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
               {t("errors.unauthorized")}
             </h1>
@@ -238,7 +238,7 @@ export default function BusinessManagementPage() {
                   onClick={() => setSearchQuery("")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
-                  <XIcon className="w-4 h-4" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -273,7 +273,7 @@ export default function BusinessManagementPage() {
         {alertCount > 0 && (
           <Card className="p-4 border-amber-200 bg-amber-50/50">
             <div className="flex items-start gap-3">
-              <AlertTriangleIcon className="w-5 h-5 text-amber-600 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
               <div>
                 <h3 className="font-medium text-amber-900">
                   {t("alerts.title", { count: alertCount })}
@@ -307,11 +307,11 @@ export default function BusinessManagementPage() {
                   }
                 />
               )}
-              {filters.isActive !== undefined && (
+              {filters.statusFilter && filters.statusFilter !== "all" && (
                 <FilterTag
-                  label={`${t("filters.status")}: ${filters.isActive ? t("filters.active") : t("filters.inactive")}`}
+                  label={`${t("filters.status")}: ${filters.statusFilter === "active" ? t("filters.active") : t("filters.inactive")}`}
                   onRemove={() =>
-                    handleFiltersChange({ ...filters, isActive: undefined, page: 1 })
+                    handleFiltersChange({ ...filters, statusFilter: undefined, page: 1 })
                   }
                 />
               )}
@@ -430,63 +430,8 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
         onClick={onRemove}
         className="ml-1 hover:text-indigo-900 focus:outline-none"
       >
-        <XIcon className="w-3 h-3" />
+        <X className="w-3 h-3" />
       </button>
     </span>
-  );
-}
-
-// Icons
-function ShieldIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-      />
-    </svg>
-  );
-}
-
-function AlertTriangleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-      />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M6 18L18 6M6 6l12 12"
-      />
-    </svg>
   );
 }

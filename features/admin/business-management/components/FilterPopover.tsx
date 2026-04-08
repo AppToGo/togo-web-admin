@@ -118,7 +118,7 @@ export function FilterPopover({ filters, onChange, children }: FilterPopoverProp
 
   // Handle status filter change
   const handleStatusFilterChange = (value: string) => {
-    setLocalFilters((prev) => ({ ...prev, statusFilter: value }));
+    setLocalFilters((prev) => ({ ...prev, statusFilter: value as 'all' | 'active' | 'inactive' }));
   };
 
   // Check if local filters differ from applied filters

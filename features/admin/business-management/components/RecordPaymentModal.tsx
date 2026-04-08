@@ -5,7 +5,7 @@
  * Modal for recording a new payment for a business
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -55,9 +55,18 @@ export function RecordPaymentModal({
   const [method, setMethod] = useState("");
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
-  const [paidAt, setPaidAt] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [paidAt, setPaidAt] = useState(new Date().toISOString().split("T")[0]);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setAmount("");
+      setMethod("");
+      setReference("");
+      setNotes("");
+      setPaidAt(new Date().toISOString().split("T")[0]);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,12 +97,12 @@ export function RecordPaymentModal({
             <DialogTitle>{t("modals.recordPayment.title")}</DialogTitle>
             <DialogDescription>
               {t("modals.recordPayment.description", {
-                businessName: business?.name,
+                businessName: business?.name ?? "",
               })}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 p-7">
             {/* Amount */}
             <div className="grid gap-2">
               <Label htmlFor="amount">
@@ -147,9 +156,7 @@ export function RecordPaymentModal({
 
             {/* Payment Date */}
             <div className="grid gap-2">
-              <Label htmlFor="paidAt">
-                {t("modals.recordPayment.paidAt")}
-              </Label>
+              <Label htmlFor="paidAt">{t("modals.recordPayment.paidAt")}</Label>
               <Input
                 id="paidAt"
                 type="date"
@@ -160,9 +167,7 @@ export function RecordPaymentModal({
 
             {/* Notes */}
             <div className="grid gap-2">
-              <Label htmlFor="notes">
-                {t("modals.recordPayment.notes")}
-              </Label>
+              <Label htmlFor="notes">{t("modals.recordPayment.notes")}</Label>
               <Textarea
                 id="notes"
                 placeholder={t("modals.recordPayment.notesPlaceholder")}
