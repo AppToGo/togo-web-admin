@@ -39,9 +39,6 @@
     "deactivate": "Deactivate",
     "activate": "Activate"
   },
-  "buttons": {
-    "clearAll": "Clear all"
-  },
   "filters": {
     "title": "Filters",
     "searchPlaceholder": "Search businesses...",

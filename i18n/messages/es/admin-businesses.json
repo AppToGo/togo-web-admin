@@ -39,9 +39,6 @@
     "deactivate": "Desactivar",
     "activate": "Activar"
   },
-  "buttons": {
-    "clearAll": "Limpiar todo"
-  },
   "filters": {
     "title": "Filtros",
     "searchPlaceholder": "Buscar negocios...",

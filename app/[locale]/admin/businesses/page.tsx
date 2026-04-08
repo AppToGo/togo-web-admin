@@ -39,22 +39,12 @@ import type {
   SendNotificationDto,
 } from "@/features/admin/business-management/types/business-subscription.types";
 
+import { useDebounce } from "@/hooks/useDebounce";
+
 const DEFAULT_FILTERS: BusinessFiltersType = {
   page: 1,
   limit: 20,
 };
-
-// Debounce hook for search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
 
 export default function BusinessManagementPage() {
   const t = useTranslations("admin-businesses");
