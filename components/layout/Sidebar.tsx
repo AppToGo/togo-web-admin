@@ -14,6 +14,7 @@ import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
+import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
 
 
 interface SidebarProps {
@@ -44,6 +45,10 @@ export function Sidebar({
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
+
+  // Fetch payment alerts for badge
+  const { data: paymentAlerts } = usePaymentAlerts(isSuperAdmin);
+  const alertCount = paymentAlerts?.length || 0;
 
 
   // Navigation items with translation keys
@@ -131,6 +136,11 @@ export function Sidebar({
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [
     {
+      name: t("sidebar.businesses"),
+      href: "/admin/businesses",
+      icon: BuildingStoreIcon,
+    },
+    {
       name: t("sidebar.globalCatalog"),
       href: "/admin/global-products",
       icon: GlobeIcon,
@@ -203,14 +213,21 @@ export function Sidebar({
             )}
             <nav className="px-3 pb-3 space-y-1">
               {adminNavigation.map((item) => (
-                <CollapsibleNavItem
-                  key={item.name}
-                  item={item}
-                  pathname={pathname}
-                  isCollapsed={isCollapsed}
-                  isAdmin
-                  onMenuClick={onMenuClick}
-                />
+                <div key={item.name} className="relative">
+                  <CollapsibleNavItem
+                    item={item}
+                    pathname={pathname}
+                    isCollapsed={isCollapsed}
+                    isAdmin
+                    onMenuClick={onMenuClick}
+                  />
+                  {/* Alert badge for Businesses link */}
+                  {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
+                      {alertCount > 9 ? "9+" : alertCount}
+                    </span>
+                  )}
+                </div>
               ))}
             </nav>
           </>
@@ -822,6 +839,24 @@ function StoreIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M3 9h18M9 3v6M15 3v6"
+      />
+    </svg>
+  );
+}
+
+function BuildingStoreIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13 10V3L4 14h7v7l9-11h-7z"
       />
     </svg>
   );
