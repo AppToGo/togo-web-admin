@@ -11,6 +11,7 @@ import {
   useAuthStore,
 } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -25,12 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, User, Shield, Building2 } from "lucide-react";
@@ -140,8 +136,10 @@ export default function UserDetailPage() {
   const [selectedProfileId, setSelectedProfileId] = useState<string>("none");
 
   const { data: user, isLoading: isLoadingUser } = useUser(id);
-  const { data: permissions, isLoading: isLoadingPermissions } = useUserPermissions(id);
-  const { data: profiles, isLoading: isLoadingProfiles } = useOperatorProfiles();
+  const { data: permissions, isLoading: isLoadingPermissions } =
+    useUserPermissions(id);
+  const { data: profiles, isLoading: isLoadingProfiles } =
+    useOperatorProfiles();
   const assignProfile = useAssignOperatorProfile();
 
   // Set initial selected profile when permissions load
@@ -234,7 +232,7 @@ export default function UserDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={handleBack}>
@@ -262,70 +260,83 @@ export default function UserDetailPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="general" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              {t("tabs.general")}
-            </TabsTrigger>
-            <TabsTrigger value="permissions" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              {t("tabs.permissions")}
-            </TabsTrigger>
-            <TabsTrigger value="branches" className="flex items-center gap-2">
-              <Building2 className="w-4 h-4" />
-              {t("tabs.branches")}
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Tab navigation — mismo patrón que ViewToggle */}
+          <div
+            className="inline-flex bg-white border border-slate-100 rounded-lg p-1 gap-1"
+            role="tablist"
+          >
+            {(
+              [
+                { value: "general", icon: User, label: t("tabs.general") },
+                { value: "permissions", icon: Shield, label: t("tabs.permissions") },
+                { value: "branches", icon: Building2, label: t("tabs.branches") },
+              ] as const
+            ).map(({ value, icon: Icon, label }) => (
+              <button
+                key={value}
+                role="tab"
+                aria-selected={activeTab === value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                  activeTab === value
+                    ? "bg-indigo-100 text-indigo-600"
+                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            ))}
+          </div>
 
           {/* General Tab */}
-          <TabsContent value="general" className="mt-6">
-            <Card>
+          <TabsContent value="general" className="space-y-6">
+            <Card variant="glass">
               <CardHeader>
                 <CardTitle>{t("general.title")}</CardTitle>
                 <CardDescription>{t("general.description")}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      {t("general.fields.name")}
-                    </label>
-                    <p className="text-slate-900">{user.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      {t("general.fields.email")}
-                    </label>
-                    <p className="text-slate-900">{user.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      {t("general.fields.role")}
-                    </label>
-                    <p className="text-slate-900">{t(`roles.${user.role}`)}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-700">
-                      {tc("fields.created")}
-                    </label>
-                    <p className="text-slate-900">
-                      {new Date(user.createdAt).toLocaleDateString(locale, {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Input
+                    label={t("general.fields.name")}
+                    value={user.name}
+                    readOnly
+                    className="bg-white/60"
+                  />
+                  <Input
+                    label={t("general.fields.email")}
+                    value={user.email}
+                    readOnly
+                    className="bg-white/60"
+                  />
+                  <Input
+                    label={t("general.fields.role")}
+                    value={t(`roles.${user.role}`)}
+                    readOnly
+                    className="bg-white/60"
+                  />
+                  <Input
+                    label={tc("fields.created")}
+                    value={new Date(user.createdAt).toLocaleDateString(locale, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                    readOnly
+                    className="bg-white/60"
+                  />
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Permissions Tab */}
-          <TabsContent value="permissions" className="mt-6 space-y-6">
+          <TabsContent value="permissions" className="space-y-6">
             {/* Operator Profile Selector */}
-            <Card>
+            <Card variant="glass">
               <CardHeader>
                 <CardTitle>{t("permissions.operatorProfile")}</CardTitle>
                 <CardDescription>
@@ -342,7 +353,9 @@ export default function UserDetailPage() {
                       onValueChange={setSelectedProfileId}
                     >
                       <SelectTrigger className="flex-1">
-                        <SelectValue placeholder={t("permissions.selectProfile")} />
+                        <SelectValue
+                          placeholder={t("permissions.selectProfile")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">
@@ -377,7 +390,7 @@ export default function UserDetailPage() {
           </TabsContent>
 
           {/* Branches Tab */}
-          <TabsContent value="branches" className="mt-6">
+          <TabsContent value="branches" className="space-y-6">
             <BranchAssignmentManager userId={id} />
           </TabsContent>
         </Tabs>

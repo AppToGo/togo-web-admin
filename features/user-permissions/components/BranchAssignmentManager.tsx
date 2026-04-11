@@ -172,7 +172,7 @@ export const BranchAssignmentManager = memo(function BranchAssignmentManager({
                 <SelectContent>
                   {isLoadingBranches ? (
                     <SelectItem value="loading" disabled>
-                      {tCommon("loading")}
+                      {tCommon("status.loading")}
                     </SelectItem>
                   ) : availableBranches?.length === 0 ? (
                     <SelectItem value="none" disabled>
