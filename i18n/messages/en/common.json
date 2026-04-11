@@ -50,6 +50,7 @@
     "selectAll": "Select all",
     "deselectAll": "Deselect all",
     "processing": "Processing...",
+    "deleting": "Deleting...",
     "send": "Send",
     "showMore": "Show more",
     "showLess": "Show less"
