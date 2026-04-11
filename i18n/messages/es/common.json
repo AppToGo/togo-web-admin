@@ -50,6 +50,7 @@
     "selectAll": "Seleccionar todo",
     "deselectAll": "Deseleccionar todo",
     "processing": "Procesando...",
+    "deleting": "Eliminando...",
     "send": "Enviar",
     "showMore": "Mostrar más",
     "showLess": "Mostrar menos"
