@@ -47,7 +47,7 @@ const DEFAULT_FILTERS: BusinessFiltersType = {
 };
 
 export default function BusinessManagementPage() {
-  const t = useTranslations("admin-businesses");
+  const t = useTranslations("settings");
   const tc = useTranslations("common");
   const { isLoading: isAuthLoading } = useAuthGuard();
   const isSuperAdmin = useIsSuperAdmin();
@@ -185,9 +185,9 @@ export default function BusinessManagementPage() {
           <div className="text-center">
             <Shield className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
-              {t("errors.unauthorized")}
+              {t("adminBusinesses.errors.unauthorized")}
             </h1>
-            <p className="text-slate-500">{t("errors.superAdminRequired")}</p>
+            <p className="text-slate-500">{t("adminBusinesses.errors.superAdminRequired")}</p>
           </div>
         </div>
       </DashboardLayout>
@@ -203,9 +203,9 @@ export default function BusinessManagementPage() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {t("page.title")}
+              {t("adminBusinesses.page.title")}
             </h1>
-            <p className="text-slate-500 mt-1 text-sm">{t("page.description")}</p>
+            <p className="text-slate-500 mt-1 text-sm">{t("adminBusinesses.page.description")}</p>
           </div>
 
           {/* Search and Filter Controls */}
@@ -215,7 +215,7 @@ export default function BusinessManagementPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 type="text"
-                placeholder={t("filters.searchPlaceholder")}
+                placeholder={t("adminBusinesses.filters.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
@@ -242,7 +242,7 @@ export default function BusinessManagementPage() {
                   "h-10 w-10 relative",
                   hasActiveFilters && "border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
                 )}
-                title={t("filters.title")}
+                title={t("adminBusinesses.filters.title")}
               >
                 <Filter className="w-4 h-4" />
               </Button>
@@ -252,7 +252,7 @@ export default function BusinessManagementPage() {
             {alertCount > 0 && (
               <AlertBadge
                 count={alertCount}
-                label={t("page.alerts", { count: alertCount })}
+                label={t("adminBusinesses.page.alerts", { count: alertCount })}
                 variant="destructive"
               />
             )}
@@ -266,10 +266,10 @@ export default function BusinessManagementPage() {
               <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
               <div>
                 <h3 className="font-medium text-amber-900">
-                  {t("alerts.title", { count: alertCount })}
+                  {t("adminBusinesses.alerts.title", { count: alertCount })}
                 </h3>
                 <p className="text-sm text-amber-700 mt-1">
-                  {t("alerts.description")}
+                  {t("adminBusinesses.alerts.description")}
                 </p>
               </div>
             </div>
@@ -279,11 +279,11 @@ export default function BusinessManagementPage() {
         {/* Active Filters Indicator */}
         {hasActiveFilters && (
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-500">{t("filters.activeFilters")}:</span>
+            <span className="text-slate-500">{t("adminBusinesses.filters.activeFilters")}:</span>
             <div className="flex items-center gap-2">
               {filters.plan !== undefined && (
                 <FilterTag
-                  label={`${t("filters.plan")}: ${filters.plan}`}
+                  label={`${t("adminBusinesses.filters.plan")}: ${filters.plan}`}
                   onRemove={() =>
                     handleFiltersChange({ ...filters, plan: undefined, page: 1 })
                   }
@@ -291,7 +291,7 @@ export default function BusinessManagementPage() {
               )}
               {filters.paymentStatuses && filters.paymentStatuses.length > 0 && (
                 <FilterTag
-                  label={`${t("filters.paymentStatus")}: ${filters.paymentStatuses.join(", ")}`}
+                  label={`${t("adminBusinesses.filters.paymentStatus")}: ${filters.paymentStatuses.join(", ")}`}
                   onRemove={() =>
                     handleFiltersChange({ ...filters, paymentStatuses: undefined, page: 1 })
                   }
@@ -299,7 +299,7 @@ export default function BusinessManagementPage() {
               )}
               {filters.statusFilter && filters.statusFilter !== "all" && (
                 <FilterTag
-                  label={`${t("filters.status")}: ${filters.statusFilter === "active" ? t("filters.active") : t("filters.inactive")}`}
+                  label={`${t("adminBusinesses.filters.status")}: ${filters.statusFilter === "active" ? t("adminBusinesses.filters.active") : t("adminBusinesses.filters.inactive")}`}
                   onRemove={() =>
                     handleFiltersChange({ ...filters, statusFilter: undefined, page: 1 })
                   }
@@ -316,7 +316,7 @@ export default function BusinessManagementPage() {
               }
               className="text-xs text-indigo-600 hover:text-indigo-700 font-medium ml-2"
             >
-              {tc("buttons.clearAll")}
+              {t("adminBusinesses.buttons.clearAll")}
             </button>
           </div>
         )}
@@ -336,7 +336,7 @@ export default function BusinessManagementPage() {
           {businessesData?.meta && businessesData.meta.totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-4 border-t">
               <div className="text-sm text-slate-500">
-                {t("pagination.showing", {
+                {t("adminBusinesses.pagination.showing", {
                   from: ((filters.page ?? 1) - 1) * (filters.limit ?? 20) + 1,
                   to: Math.min(
                     (filters.page ?? 1) * (filters.limit ?? 20),
@@ -352,10 +352,10 @@ export default function BusinessManagementPage() {
                   onClick={handlePreviousPage}
                   disabled={filters.page === 1}
                 >
-                  {t("pagination.previous")}
+                  {t("adminBusinesses.pagination.previous")}
                 </Button>
                 <span className="text-sm text-slate-600">
-                  {t("pagination.page", {
+                  {t("adminBusinesses.pagination.page", {
                     current: filters.page ?? 1,
                     total: businessesData.meta.totalPages,
                   })}
@@ -366,7 +366,7 @@ export default function BusinessManagementPage() {
                   onClick={handleNextPage}
                   disabled={filters.page === businessesData.meta.totalPages}
                 >
-                  {t("pagination.next")}
+                  {t("adminBusinesses.pagination.next")}
                 </Button>
               </div>
             </div>

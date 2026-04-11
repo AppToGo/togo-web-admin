@@ -4,7 +4,13 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
 import { Users, Plus, User } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,7 +59,7 @@ export default function UsersPage() {
         </div>
 
         {/* Users List */}
-        <Card>
+        <Card variant="glass">
           <CardHeader>
             <CardTitle>{t("list.title")}</CardTitle>
             <CardDescription>{t("list.description")}</CardDescription>
@@ -115,7 +121,9 @@ export default function UsersPage() {
                             : "bg-slate-100 text-slate-600 hover:bg-slate-100"
                         )}
                       >
-                        {user.active ? tc("status.active") : tc("status.inactive")}
+                        {user.active
+                          ? tc("status.active")
+                          : tc("status.inactive")}
                       </Badge>
                     </div>
                   </Link>
