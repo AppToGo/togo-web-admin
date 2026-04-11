@@ -72,6 +72,7 @@
   "noPermissionsAssigned": "No hay permisos asignados",
   "addAssignment": "Agregar Asignación",
   "currentAssignments": "Asignaciones Actuales",
+  "noAvailableBranches": "No hay sedes disponibles para asignar",
   "noAssignments": "Sin asignaciones",
   "noAssignmentsDescription": "El usuario no tiene sedes asignadas",
   "assignedAt": "Asignado el",
