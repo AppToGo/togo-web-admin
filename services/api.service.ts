@@ -110,13 +110,14 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    // Extract user-friendly error message from backend response
+    // Extract user-friendly error message from backend response.
+    // Axios default is "Request failed with status code XXX" — always prefer
+    // the backend message when available.
     if (error.response?.data) {
       const data = error.response.data as any;
-      // Use backend error message if available
-      if (data.message && !error.message.includes("Request failed")) {
+      if (data.message) {
         error.message = data.message;
-      } else if (data.error && !error.message.includes("Request failed")) {
+      } else if (data.error) {
         error.message = data.error;
       }
     }
