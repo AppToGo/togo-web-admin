@@ -23,11 +23,22 @@ import axios, {
 import { APP_CONFIG } from "@/config/app.config";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
-import { 
-  isRefreshInProgress, 
+import {
+  isRefreshInProgress,
   startGlobalRefresh,
-  clearGlobalRefreshState 
+  clearGlobalRefreshState
 } from "@/services/auth-sync.service";
+import { locales, defaultLocale } from "@/i18n/config";
+
+/**
+ * Extracts the active locale from the current URL path.
+ * Falls back to defaultLocale if the path segment is not a known locale.
+ */
+function getLocaleFromPath(): string {
+  if (typeof window === "undefined") return defaultLocale;
+  const segment = window.location.pathname.split("/")[1];
+  return (locales as readonly string[]).includes(segment) ? segment : defaultLocale;
+}
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -169,7 +180,7 @@ apiClient.interceptors.response.use(
         // Refresh failed
         useAuthStore.getState().clearAuth();
         if (typeof window !== "undefined") {
-          window.location.href = "/login?session_expired=true";
+          window.location.href = `/${getLocaleFromPath()}/login?session_expired=true`;
         }
         return Promise.reject(error);
       }
@@ -221,9 +232,9 @@ apiClient.interceptors.response.use(
       useAuthStore.getState().clearAuth();
       clearGlobalRefreshState();
 
-      // Redirect to login
+      // Redirect to login preserving the active locale
       if (typeof window !== "undefined") {
-        window.location.href = "/login?session_expired=true";
+        window.location.href = `/${getLocaleFromPath()}/login?session_expired=true`;
       }
 
       return Promise.reject(refreshError);

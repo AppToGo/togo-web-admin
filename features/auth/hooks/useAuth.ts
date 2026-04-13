@@ -11,7 +11,7 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { LoginCredentials, RegisterRequest } from "@/types/auth.types";
@@ -98,51 +98,38 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("[useLogout] Calling logout proxy...");
-      }
-      // Call backend logout - it should read from cookie or we pass dummy
-      await fetch("/api/auth/logout-proxy", { 
+      // Cancel all in-flight queries FIRST to prevent background refetches
+      // from triggering the 401 interceptor redirect during logout
+      queryClient.cancelQueries();
+      clearAuth();
+
+      await fetch("/api/auth/logout-proxy", {
         method: "POST",
         credentials: "include",
       });
     },
     onSuccess: async () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("[useLogout] Clearing cookie...");
-      }
-      // Clear cookie
-      await fetch("/api/auth/clear-cookie", { 
+      await fetch("/api/auth/clear-cookie", {
         method: "POST",
         credentials: "include",
       });
-      
-      if (process.env.NODE_ENV === "development") {
-        console.log("[useLogout] Clearing cache and state...");
-      }
-      // Clear all queries from cache
+
       queryClient.clear();
-      
-      // Clear auth state
-      clearAuth();
-      
+
       toast.success("Sesión cerrada correctamente");
-      
-      // Redirect to login
+
+      // router.push() from @/i18n/routing automatically prepends the active locale
       router.push("/login");
     },
     onError: async (error) => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("[useLogout] Error, forcing cleanup...");
-      }
       toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
-      // Even if API fails, clear local state
-      await fetch("/api/auth/clear-cookie", { 
+      // Even if API fails, clear local state and redirect
+      await fetch("/api/auth/clear-cookie", {
         method: "POST",
         credentials: "include",
       });
       queryClient.clear();
-      clearAuth();
+      // router.push() from @/i18n/routing automatically prepends the active locale
       router.push("/login");
     },
   });
