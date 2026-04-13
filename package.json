@@ -11,7 +11,12 @@
     "clean:build": "npm run clean && npm run build",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "styles:check": "node scripts/check-tailwind.js",
-    "styles:debug": "DEBUG=tailwindcss npm run dev"
+    "styles:debug": "DEBUG=tailwindcss npm run dev",
+    "test:e2e": "node --env-file-if-exists=.env.e2e node_modules/.bin/playwright test",
+    "test:e2e:ui": "node --env-file-if-exists=.env.e2e node_modules/.bin/playwright test --ui",
+    "test:e2e:debug": "node --env-file-if-exists=.env.e2e node_modules/.bin/playwright test --debug",
+    "test:e2e:ci": "CI=true node_modules/.bin/playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
