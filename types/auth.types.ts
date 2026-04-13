@@ -50,7 +50,6 @@ export interface AuthState {
 // Auth Actions
 export interface AuthActions {
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
   setAuthData: (data: LoginResponse) => void;
   clearAuth: () => void;

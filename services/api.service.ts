@@ -28,17 +28,7 @@ import {
   startGlobalRefresh,
   clearGlobalRefreshState
 } from "@/services/auth-sync.service";
-import { locales, defaultLocale } from "@/i18n/config";
-
-/**
- * Extracts the active locale from the current URL path.
- * Falls back to defaultLocale if the path segment is not a known locale.
- */
-function getLocaleFromPath(): string {
-  if (typeof window === "undefined") return defaultLocale;
-  const segment = window.location.pathname.split("/")[1];
-  return (locales as readonly string[]).includes(segment) ? segment : defaultLocale;
-}
+import { forceLogout } from "@/services/session.service";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -177,11 +167,9 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch {
-        // Refresh failed
+        // Refresh failed — signal AuthProvider to handle navigation
         useAuthStore.getState().clearAuth();
-        if (typeof window !== "undefined") {
-          window.location.href = `/${getLocaleFromPath()}/login?session_expired=true`;
-        }
+        forceLogout("session_expired");
         return Promise.reject(error);
       }
     }
@@ -232,10 +220,8 @@ apiClient.interceptors.response.use(
       useAuthStore.getState().clearAuth();
       clearGlobalRefreshState();
 
-      // Redirect to login preserving the active locale
-      if (typeof window !== "undefined") {
-        window.location.href = `/${getLocaleFromPath()}/login?session_expired=true`;
-      }
+      // Signal AuthProvider to handle navigation (locale-aware, no full reload)
+      forceLogout("session_expired");
 
       return Promise.reject(refreshError);
     }

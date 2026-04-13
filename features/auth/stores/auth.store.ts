@@ -23,7 +23,6 @@ import {
 } from "@/types/auth.types";
 import {
   login as loginApi,
-  logout as logoutApi,
   refreshTokens,
 } from "@/features/auth/services/auth.service";
 import { APP_CONFIG } from "@/config/app.config";
@@ -87,23 +86,6 @@ export const useAuthStore = create<AuthStore>()(
           get().setAuthData(response);
         } finally {
           set({ isLoading: false });
-        }
-      },
-
-      /**
-       * Logout action
-       * Clears both memory state and httpOnly cookie
-       */
-      logout: async () => {
-        try {
-          // Call API to revoke token on backend
-          await logoutApi("dummy"); // Backend reads from cookie
-        } catch (error) {
-          console.warn("Logout API error:", error);
-        } finally {
-          // Always clear cookie and state
-          await fetch("/api/auth/clear-cookie", { method: "POST" });
-          get().clearAuth();
         }
       },
 

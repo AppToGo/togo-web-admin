@@ -86,10 +86,8 @@ export function useLogin() {
  * Hook for logout mutation
  * 
  * Flow:
- * 1. Call backend logout (revokes token)
- * 2. Clear httpOnly cookie (via /api/auth/clear-cookie)
- * 3. Clear in-memory state
- * 4. Redirect to login
+ * 1. POST /api/auth/logout — atomically revokes token AND clears cookie
+ * 2. onSettled: clear in-memory state and navigate to login
  */
 export function useLogout() {
   const router = useRouter();
@@ -98,38 +96,22 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      // Cancel in-flight queries first to prevent background refetches from
-      // triggering the 401 interceptor redirect concurrently with logout
-      await queryClient.cancelQueries();
-
-      await fetch("/api/auth/logout-proxy", {
+      // Single atomic endpoint: revokes backend token AND clears cookie in one call
+      await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
     },
-    onSuccess: async () => {
-      // Clear cookie BEFORE clearing memory state so the middleware stops
-      // granting access to protected routes during this transition
-      await fetch("/api/auth/clear-cookie", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      queryClient.clear();
-      clearAuth();
-
+    onSuccess: () => {
       toast.success("Sesión cerrada correctamente");
-
-      // router.push() from @/i18n/routing automatically prepends the active locale
-      router.push("/login");
     },
-    onError: async (error) => {
+    onError: (error) => {
       toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
-      // Even if API fails, clear cookie and local state
-      await fetch("/api/auth/clear-cookie", {
-        method: "POST",
-        credentials: "include",
-      });
+    },
+    onSettled: () => {
+      // Always clean up regardless of success or failure:
+      // the /api/auth/logout route guarantees the cookie is cleared
+      // via try/finally, so it's safe to clear local state here.
       queryClient.clear();
       clearAuth();
       // router.push() from @/i18n/routing automatically prepends the active locale
