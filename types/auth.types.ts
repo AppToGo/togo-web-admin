@@ -55,13 +55,41 @@ export interface AuthActions {
   clearAuth: () => void;
 }
 
-// Registration (prepared for future implementation)
+// Registration status
+export type RegistrationStatus = 'INCOMPLETE' | 'PENDING_PAYMENT' | 'ACTIVE';
+
+// Registration API response
+export interface RegistrationResponse {
+  businessId: string;
+  registrationToken: string;
+  registrationStatus: RegistrationStatus;
+}
+
+// Registration request
 export interface RegisterRequest {
   name: string;
   email: string;
   phoneNumber: string;
   password: string;
   businessName: string;
+  plan?: number;
+}
+
+// Update plan request
+export interface UpdatePlanRequest {
+  businessId: string;
+  registrationToken: string;
+  plan: number;
+}
+
+// Registration wizard state (persisted in localStorage for multi-step flow)
+export interface RegistrationWizardState {
+  currentStep: 1 | 2 | 3;
+  businessId: string | null;
+  registrationToken: string | null;
+  selectedPlan: number | null;
+  registrationStatus: RegistrationStatus | null;
+  createdAt: number | null; // timestamp for TTL check
 }
 
 // Forgot Password (prepared for future implementation)

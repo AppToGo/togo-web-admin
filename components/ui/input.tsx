@@ -32,38 +32,65 @@ export interface InputProps
   label?: string;
   helperText?: string;
   error?: string;
+  prefix?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, helperText, error, variant, id: providedId, ...props }, ref) => {
+  ({ className, type, label, helperText, error, variant, prefix, id: providedId, ...props }, ref) => {
     const generatedId = useId();
     const inputId = providedId || generatedId;
     const helperId = helperText ? `${inputId}-helper` : undefined;
     const errorId = error ? `${inputId}-error` : undefined;
     const ariaDescribedBy = errorId || helperId;
-    
+
     return (
       <div className="w-full">
         {label && (
-          <label 
+          <label
             htmlFor={inputId}
             className="mb-1.5 block text-sm font-medium text-slate-700"
           >
             {label}
           </label>
         )}
-        <input
-          id={inputId}
-          type={type}
-          className={cn(
-            inputVariants({ variant: error ? "error" : variant }),
-            className
-          )}
-          ref={ref}
-          aria-invalid={!!error}
-          aria-describedby={ariaDescribedBy}
-          {...props}
-        />
+        {prefix ? (
+          <div className={cn(
+            "flex h-11 w-full text-sm transition-colors",
+            "rounded-md border border-slate-200 bg-white",
+            error && "border-red-300 ring-1 ring-red-300",
+            "focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20",
+            props.disabled && "cursor-not-allowed opacity-50",
+          )}>
+            <span className="flex items-center px-3 text-slate-500 border-r border-slate-200 bg-slate-50 rounded-l-md select-none text-sm font-medium">
+              {prefix}
+            </span>
+            <input
+              id={inputId}
+              type={type}
+              className={cn(
+                "flex-1 px-3 py-1 text-sm text-slate-700 bg-transparent placeholder:text-slate-400 focus-visible:outline-none disabled:cursor-not-allowed",
+                className
+              )}
+              ref={ref}
+              aria-invalid={!!error}
+              aria-describedby={ariaDescribedBy}
+              {...props}
+            />
+          </div>
+        ) : (
+          <input
+            id={inputId}
+            type={type}
+            className={cn(
+              inputVariants({ variant: error ? "error" : variant }),
+              className
+            )}
+            ref={ref}
+            aria-invalid={!!error}
+            aria-describedby={ariaDescribedBy}
+            {...props}
+          />
+        )}
         {helperText && !error && (
           <p id={helperId} className="mt-1 text-xs text-slate-500">{helperText}</p>
         )}

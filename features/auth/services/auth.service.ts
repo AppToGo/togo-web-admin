@@ -14,6 +14,9 @@ import {
   LoginResponse,
   RefreshTokenRequest,
   SessionResponse,
+  RegisterRequest,
+  RegistrationResponse,
+  UpdatePlanRequest,
 } from "@/types/auth.types";
 
 const AUTH_ENDPOINTS = {
@@ -23,6 +26,9 @@ const AUTH_ENDPOINTS = {
   LOGOUT_ALL: "/auth/logout-all",
   SESSION: "/auth/session",
 } as const;
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 /**
  * Login with email and password
@@ -91,10 +97,58 @@ export async function validateToken(): Promise<boolean> {
  * Get user session data
  * Fetches complete session context including branches, business info, and preferences
  * Should be called after login and on app initialization
- * 
+ *
  * @returns SessionResponse with branches, business info, and user preferences
  */
 export async function getUserSession(): Promise<SessionResponse> {
   const response = await apiClient.get<SessionResponse>(AUTH_ENDPOINTS.SESSION);
   return response.data;
+}
+
+/**
+ * Register a new business
+ *
+ * Uses fetch directly to avoid the Axios interceptor attaching auth tokens
+ * to a public endpoint. Returns a registration token for wizard continuation.
+ */
+export async function register(
+  data: RegisterRequest
+): Promise<RegistrationResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    const message =
+      (error as { message?: string | string[] }).message ?? "Registration failed";
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
+  }
+
+  return response.json() as Promise<RegistrationResponse>;
+}
+
+/**
+ * Update the plan selection during a pending registration
+ *
+ * Uses fetch directly to avoid the Axios interceptor attaching auth tokens
+ * to a public endpoint.
+ */
+export async function updateRegistrationPlan(
+  data: UpdatePlanRequest
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/register/plan`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    const message =
+      (error as { message?: string | string[] }).message ?? "Plan update failed";
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
+  }
 }

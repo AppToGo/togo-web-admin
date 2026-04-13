@@ -14,8 +14,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/routing";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import { LoginCredentials, RegisterRequest } from "@/types/auth.types";
-import { login as loginApi } from "@/features/auth/services/auth.service";
+import { useRegistrationStore } from "@/features/auth/stores/registration.store";
+import {
+  LoginCredentials,
+  RegisterRequest,
+  UpdatePlanRequest,
+} from "@/types/auth.types";
+import {
+  login as loginApi,
+  register as registerApi,
+  updateRegistrationPlan as updatePlanApi,
+} from "@/features/auth/services/auth.service";
 import { extractErrorMessage } from "@/lib/error.utils";
 
 /**
@@ -121,18 +130,70 @@ export function useLogout() {
 }
 
 /**
- * Hook for registration (prepared for future)
+ * Hook for business registration (Step 1 of wizard)
+ *
+ * Calls POST /auth/register and advances the wizard to step 2 or 3
+ * depending on whether a plan was pre-selected via URL param.
  */
 export function useRegister() {
-  const router = useRouter();
+  const { setStep1Complete } = useRegistrationStore();
 
   return useMutation({
-    mutationFn: async (_data: RegisterRequest) => {
-      // TODO: Implement when backend endpoint is ready
-      throw new Error("Registration not implemented yet");
+    mutationFn: (data: RegisterRequest) => registerApi(data),
+    onSuccess: (data, variables) => {
+      setStep1Complete(
+        data.businessId,
+        data.registrationToken,
+        variables.plan ?? null,
+        data.registrationStatus
+      );
     },
-    onSuccess: () => {
-      router.push("/login?registered=true");
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : "Error al crear la cuenta";
+      if (message.includes("REGISTRATION_NOT_AVAILABLE")) {
+        toast.error(
+          "No fue posible completar el registro. Verificá los datos e intentá de nuevo."
+        );
+      } else if (
+        message.includes("429") ||
+        message.toLowerCase().includes("too many")
+      ) {
+        toast.error(
+          "Demasiados intentos. Esperá un minuto e intentá de nuevo."
+        );
+      } else {
+        toast.error(message);
+      }
+    },
+  });
+}
+
+/**
+ * Hook for updating plan selection (Step 2 of wizard)
+ *
+ * Calls PATCH /auth/register/plan and advances the wizard to step 3.
+ */
+export function useUpdateRegistrationPlan() {
+  const { setPlanSelected } = useRegistrationStore();
+
+  return useMutation({
+    mutationFn: (data: UpdatePlanRequest) => updatePlanApi(data),
+    onSuccess: (_, variables) => {
+      setPlanSelected(variables.plan);
+      toast.success("Plan seleccionado correctamente");
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : "Error al seleccionar plan";
+      if (
+        message.toLowerCase().includes("expired") ||
+        message.includes("410")
+      ) {
+        toast.error("Tu sesión de registro expiró. Comenzá de nuevo.");
+      } else {
+        toast.error(message);
+      }
     },
   });
 }
