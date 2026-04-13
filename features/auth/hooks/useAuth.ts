@@ -98,10 +98,9 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      // Cancel all in-flight queries FIRST to prevent background refetches
-      // from triggering the 401 interceptor redirect during logout
-      queryClient.cancelQueries();
-      clearAuth();
+      // Cancel in-flight queries first to prevent background refetches from
+      // triggering the 401 interceptor redirect concurrently with logout
+      await queryClient.cancelQueries();
 
       await fetch("/api/auth/logout-proxy", {
         method: "POST",
@@ -109,12 +108,15 @@ export function useLogout() {
       });
     },
     onSuccess: async () => {
+      // Clear cookie BEFORE clearing memory state so the middleware stops
+      // granting access to protected routes during this transition
       await fetch("/api/auth/clear-cookie", {
         method: "POST",
         credentials: "include",
       });
 
       queryClient.clear();
+      clearAuth();
 
       toast.success("Sesión cerrada correctamente");
 
@@ -123,12 +125,13 @@ export function useLogout() {
     },
     onError: async (error) => {
       toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
-      // Even if API fails, clear local state and redirect
+      // Even if API fails, clear cookie and local state
       await fetch("/api/auth/clear-cookie", {
         method: "POST",
         credentials: "include",
       });
       queryClient.clear();
+      clearAuth();
       // router.push() from @/i18n/routing automatically prepends the active locale
       router.push("/login");
     },
