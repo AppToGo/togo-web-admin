@@ -40,7 +40,14 @@ const DEFAULT_SCHEDULE: BusinessHours = {
 
 export function BusinessHoursSection({ value, onChange }: BusinessHoursSectionProps) {
   const t = useTranslations('branches.settings.businessHours');
-  const hours = value ?? DEFAULT_SCHEDULE;
+  const hours: BusinessHours = {
+    ...DEFAULT_SCHEDULE,
+    ...value,
+    schedule: {
+      ...DEFAULT_SCHEDULE.schedule,
+      ...(value?.schedule ?? {}),
+    },
+  };
 
   const handleDayToggle = (day: DayKey, isOpen: boolean) => {
     onChange({
