@@ -15,7 +15,8 @@
  */
 
 import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { usePathname } from "next/navigation";
 import { useIsAuthenticated, useAuthLoading } from "@/features/auth/stores/auth.store";
 
 interface UseAuthGuardOptions {
@@ -44,11 +45,10 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
     }
 
     // Redirect to login if not authenticated
+    // router.replace() from @/i18n/routing automatically prepends the active locale
     if (!isAuthenticated) {
-      const loginUrl = new URL(redirectTo, window.location.origin);
-      // Save current path to redirect back after login
-      loginUrl.searchParams.set("redirect", pathname);
-      router.replace(loginUrl.toString());
+      const params = new URLSearchParams({ redirect: pathname });
+      router.replace(`${redirectTo}?${params.toString()}`);
     }
   }, [isAuthenticated, isLoading, pathname, redirectTo, router, onLoading]);
 
