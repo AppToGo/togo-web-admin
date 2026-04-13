@@ -17,7 +17,8 @@
  */
 
 import { ReactNode, useEffect, useRef, useState, createContext, useContext } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { usePathname } from "@/i18n/routing";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import {
