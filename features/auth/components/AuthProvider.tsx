@@ -16,14 +16,19 @@
  * SYNCHRONIZATION: Uses auth-sync.service to coordinate with Axios interceptor.
  */
 
-import { ReactNode, useEffect, useState, createContext, useContext } from "react";
+import { ReactNode, useEffect, useRef, useState, createContext, useContext } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import { 
-  startGlobalRefresh, 
+import {
+  startGlobalRefresh,
   clearGlobalRefreshState,
-  isRefreshInProgress 
+  isRefreshInProgress
 } from "@/services/auth-sync.service";
+import {
+  SESSION_LOGOUT_EVENT,
+  type SessionLogoutEventDetail,
+} from "@/services/session.service";
 import { routing } from "@/i18n/routing";
 
 type AuthRestoreState = "checking" | "authenticated" | "unauthenticated";
@@ -51,7 +56,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [restoreState, setRestoreState] = useState<AuthRestoreState>("checking");
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const isRedirecting = useRef(false);
   const { accessToken, isAuthenticated, setAuthData, clearAuth } = useAuthStore();
+
+  // Listen for force-logout events dispatched by the Axios interceptor.
+  // This replaces window.location.href with a locale-aware React navigation,
+  // preventing full-page reloads when a session expires mid-use.
+  useEffect(() => {
+    function handleForceLogout(event: Event) {
+      // Idempotent: ignore if a redirect is already in progress
+      if (isRedirecting.current) return;
+      isRedirecting.current = true;
+
+      const { reason } = (event as CustomEvent<SessionLogoutEventDetail>).detail;
+
+      queryClient.clear();
+      clearAuth();
+
+      const pathSegment = pathname?.split("/")[1];
+      const locale = routing.locales.includes(pathSegment as typeof routing.locales[number])
+        ? pathSegment
+        : routing.defaultLocale;
+
+      const loginPath = `/${locale}/login${reason === "session_expired" ? "?session_expired=true" : ""}`;
+      router.replace(loginPath);
+
+      // Reset the flag after navigation so future force-logout events
+      // (e.g. after the component re-mounts on the login page) are not ignored
+      setTimeout(() => {
+        isRedirecting.current = false;
+      }, 2000);
+    }
+
+    window.addEventListener(SESSION_LOGOUT_EVENT, handleForceLogout);
+    return () => window.removeEventListener(SESSION_LOGOUT_EVENT, handleForceLogout);
+  }, [clearAuth, pathname, queryClient, router]);
 
   useEffect(() => {
     // Check if current route is public
