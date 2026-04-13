@@ -10,7 +10,7 @@ export default function LoginPage() {
   const t = useTranslations("auth.login");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-indigo-50 p-6">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
@@ -20,9 +20,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
             {t("welcomeTitle")}
           </h1>
-          <p className="text-slate-500">
-            {t("welcomeSubtitle")}
-          </p>
+          <p className="text-slate-500">{t("welcomeSubtitle")}</p>
         </div>
 
         {/* Login Card */}
@@ -31,11 +29,9 @@ export default function LoginPage() {
             <h2 className="text-xl font-semibold text-slate-900 mb-2">
               {t("title")}
             </h2>
-            <p className="text-slate-500 text-sm">
-              {t("subtitle")}
-            </p>
+            <p className="text-slate-500 text-sm">{t("subtitle")}</p>
           </div>
-          
+
           <LoginForm />
         </div>
 
