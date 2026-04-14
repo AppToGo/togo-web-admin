@@ -162,3 +162,76 @@ export async function mockExpiredSession(page: Page): Promise<void> {
     })
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Registration mocks
+//
+// The PLG register flow involves ONE network call (fetch, NOT Axios):
+//   POST http://localhost:3001/auth/register — create account (Step 2)
+//
+// Step 1 → Step 2 is now client-side only (no API call).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Fake RegistrationResponse used across success mocks */
+const FAKE_REGISTER_RESPONSE = {
+  businessId: "e2e-test-business-id",
+  registrationToken: "e2e-fake-registration-token",
+  registrationStatus: "ACTIVE",
+};
+
+/**
+ * Mock a successful POST /auth/register (Step 1).
+ *
+ * Uses a regex ending with $ to avoid matching /auth/register/plan.
+ * Returns 201 with a fake RegistrationResponse.
+ */
+export async function mockRegisterSuccess(page: Page): Promise<void> {
+  await page.route(/\/auth\/register$/, (route) =>
+    route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(FAKE_REGISTER_RESPONSE),
+    })
+  );
+}
+
+/**
+ * Mock a failed POST /auth/register.
+ *
+ * @param status  - HTTP error status (400 | 409 | 422 | 429 | 500)
+ * @param message - Error message returned by the backend
+ */
+export async function mockRegisterError(
+  page: Page,
+  status: 400 | 409 | 422 | 429 | 500,
+  message: string
+): Promise<void> {
+  await page.route(/\/auth\/register$/, (route) =>
+    route.fulfill({
+      status,
+      contentType: "application/json",
+      body: JSON.stringify({ message, statusCode: status }),
+    })
+  );
+}
+
+/**
+ * Mock a slow POST /auth/register to test the loading state.
+ * Adds an artificial delay before resolving, then returns 201.
+ *
+ * @param delayMs - Milliseconds to wait before resolving (default: 1500ms)
+ */
+export async function mockRegisterWithDelay(
+  page: Page,
+  delayMs = 1500
+): Promise<void> {
+  await page.route(/\/auth\/register$/, async (route) => {
+    await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(FAKE_REGISTER_RESPONSE),
+    });
+  });
+}
+
