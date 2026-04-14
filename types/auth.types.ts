@@ -53,6 +53,7 @@ export interface AuthActions {
   refreshAccessToken: () => Promise<boolean>;
   setAuthData: (data: LoginResponse) => void;
   clearAuth: () => void;
+  setSubscriptionPlan: (plan: number) => void;
 }
 
 // Registration status

@@ -4,7 +4,11 @@ import * as React from "react";
 import { Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export function FreePlanBanner() {
+interface FreePlanBannerProps {
+  onUpgrade: () => void;
+}
+
+export function FreePlanBanner({ onUpgrade }: FreePlanBannerProps) {
   const t = useTranslations("dashboard.freePlanBanner");
 
   return (
@@ -20,6 +24,7 @@ export function FreePlanBanner() {
       </div>
       <button
         type="button"
+        onClick={onUpgrade}
         className="flex-shrink-0 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors"
       >
         {t("cta")}

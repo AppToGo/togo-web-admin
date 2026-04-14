@@ -1,0 +1,27 @@
+{
+  "upgradePlanModal": {
+    "title": "Upgrade your plan",
+    "subtitle": "Unlock all ToGo features and grow your business",
+    "pendingBadge": "Payment pending",
+    "mostPopular": "Most popular",
+    "perMonth": "/month",
+    "upgradeButton": "Upgrade to {planName}",
+    "upgradingButton": "Upgrading...",
+    "paymentPendingTitle": "Plan upgraded!",
+    "paymentPendingSubtitle": "Your plan was changed to {planName}. You can now use all its features.",
+    "paymentInstructionsTitle": "Payment instructions",
+    "paymentInstructionsSubtitle": "To complete your payment, make a Nequi transfer:",
+    "nequiPhone": "Nequi number",
+    "nequiName": "Account name",
+    "nequiAmount": "Monthly amount",
+    "nequiConcept": "Reference",
+    "supportTitle": "Already paid?",
+    "supportText": "Send your payment receipt via WhatsApp and an agent will verify it within 24 hours.",
+    "supportButton": "Send receipt",
+    "closeButton": "Got it",
+    "skipButton": "Continue with free plan",
+    "currency": "COP",
+    "copiedToClipboard": "Copied to clipboard",
+    "copyButtonTooltip": "Copy"
+  }
+}

@@ -13,7 +13,9 @@ const Dialog = ({
   children,
   open,
   onOpenChange,
+  className,
 }: {
+  className?: string;
   children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -58,7 +60,9 @@ const Dialog = ({
           onClick={handleClose}
         />
         {/* Content container */}
-        <div className="relative z-101 w-full max-w-lg">{children}</div>
+        <div className={cn("relative z-101 w-full max-w-lg ", className)}>
+          {children}
+        </div>
       </div>
     </DialogContext.Provider>,
     document.body

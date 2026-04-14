@@ -145,3 +145,34 @@ export function supportsMultipleBranches(planNumber: number): boolean {
 export function getBranchMode(branchCount: number): 'SINGLE' | 'MULTI' {
   return branchCount <= 1 ? 'SINGLE' : 'MULTI';
 }
+
+/**
+ * Pricing for each plan (COP)
+ * TODO: Move to backend config when payment integration is implemented
+ */
+export const PLAN_PRICES: Record<Exclude<PlanNumber, 1>, { monthly: number; currency: string }> = {
+  2: { monthly: 89000, currency: 'COP' },
+  3: { monthly: 189000, currency: 'COP' },
+  4: { monthly: 389000, currency: 'COP' },
+};
+
+/**
+ * Features included in each paid plan (for display in upgrade modal)
+ */
+export const PLAN_FEATURES: Record<Exclude<PlanNumber, 1>, string[]> = {
+  2: ['1 sede', 'Hasta 3 usuarios', 'Gestión de pedidos', 'Catálogo básico'],
+  3: ['Hasta 5 sedes', 'Hasta 10 usuarios por sede', 'Métricas avanzadas', 'Soporte prioritario'],
+  4: ['Sedes ilimitadas', 'Usuarios ilimitados', 'Todas las métricas', 'Soporte dedicado'],
+};
+
+/**
+ * Nequi payment info for manual transfers
+ * TODO: Move to backend config when payment integration is implemented
+ */
+export const NEQUI_PAYMENT_INFO = {
+  phone: '300 123 4567', // TODO: replace with real Nequi number
+  name: 'ToGo SAS',
+  concept: 'Pago plan ToGo - {businessName}',
+  instructions: 'Enviá el comprobante de pago por WhatsApp al número de soporte y un agente lo verificará en menos de 24 horas.',
+  supportWhatsApp: '+57 300 000 0000', // TODO: replace with real support number
+} as const;

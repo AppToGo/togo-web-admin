@@ -141,9 +141,23 @@ export const useAuthStore = create<AuthStore>()(
        * Clear all auth data from memory
        */
       clearAuth: () => {
+        // Clear upgrade modal session flags so the modal re-shows on next login
+        if (typeof window !== "undefined") {
+          for (const key of Object.keys(sessionStorage)) {
+            if (key.startsWith("togo-upgrade-modal-shown-")) {
+              sessionStorage.removeItem(key);
+            }
+          }
+        }
         set({
           ...initialState,
         });
+      },
+
+      setSubscriptionPlan: (plan: number) => {
+        const { user } = get();
+        if (!user) return;
+        set({ user: { ...user, subscriptionPlan: plan } });
       },
 
       /**

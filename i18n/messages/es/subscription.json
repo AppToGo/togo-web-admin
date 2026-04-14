@@ -1,0 +1,27 @@
+{
+  "upgradePlanModal": {
+    "title": "Mejorá tu plan",
+    "subtitle": "Desbloqueá todas las funciones de ToGo y hacé crecer tu negocio",
+    "pendingBadge": "Pago pendiente",
+    "mostPopular": "Más popular",
+    "perMonth": "/mes",
+    "upgradeButton": "Actualizar a {planName}",
+    "upgradingButton": "Actualizando...",
+    "paymentPendingTitle": "¡Plan actualizado!",
+    "paymentPendingSubtitle": "Tu plan fue cambiado a {planName}. Ya podés usar todas sus funciones.",
+    "paymentInstructionsTitle": "Instrucciones de pago",
+    "paymentInstructionsSubtitle": "Para activar el pago de tu plan, realizá una transferencia por Nequi:",
+    "nequiPhone": "Número Nequi",
+    "nequiName": "A nombre de",
+    "nequiAmount": "Monto mensual",
+    "nequiConcept": "Concepto",
+    "supportTitle": "¿Ya realizaste el pago?",
+    "supportText": "Enviá tu comprobante por WhatsApp y un agente lo verificará en menos de 24 horas.",
+    "supportButton": "Enviar comprobante",
+    "closeButton": "Entendido",
+    "skipButton": "Continuar con plan gratuito",
+    "currency": "COP",
+    "copiedToClipboard": "Copiado al portapapeles",
+    "copyButtonTooltip": "Copiar"
+  }
+}

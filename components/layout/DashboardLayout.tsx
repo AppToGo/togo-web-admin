@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
 import { useSingleBranchInit } from "@/features/branches/hooks";
+import { UpgradePlanModal, useUpgradePlanModal } from "@/features/subscription";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // BranchMultiSelector is not rendered for them, so without this the store
   // stays empty or holds a stale ID from a previous session.
   useSingleBranchInit();
+  const { open, closeModal } = useUpgradePlanModal();
 
   return (
     <div className="min-h-screen bg-gradient-soft">
@@ -59,6 +61,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-1 flex flex-col max-w-screen-2xl w-full mx-auto">{children}</div>
         </main>
       </div>
+      <UpgradePlanModal open={open} onClose={closeModal} />
     </div>
   );
 }
