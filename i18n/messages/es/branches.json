@@ -164,7 +164,7 @@
       "contactPhone": "Ej: +57 300 123 4567"
     },
     "help": {
-      "slug": "Identificador URL de la sucursal. Se genera automáticamente desde el nombre.",
+      "slug": "Se genera automáticamente desde el nombre.",
       "codeLocked": "El código de la sucursal principal no se puede modificar.",
       "phoneFormat": "Formato internacional E.164, ej: +573001234567",
       "phoneNumberId": "ID del número de teléfono en Meta Business Manager",

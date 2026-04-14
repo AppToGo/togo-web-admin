@@ -21,11 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { UpdateBranchRequest } from "@/features/branches/types";
-import {
-  BranchForm,
-  useBranch,
-  useUpdateBranch,
-} from "@/features/branches";
+import { BranchForm, useBranch, useUpdateBranch } from "@/features/branches";
 import { getPrimaryWhatsApp } from "@/features/branches/utils/branch-helpers";
 
 export default function EditBranchPage() {
@@ -117,10 +113,14 @@ export default function EditBranchPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/branches")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/dashboard/branches")}
+          >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
@@ -152,20 +152,12 @@ export default function EditBranchPage() {
         </div>
 
         {/* Form Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("form.editTitle")}</CardTitle>
-            <CardDescription>{t("form.editDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BranchForm
-              branch={branch}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isLoading={updateBranch.isPending}
-            />
-          </CardContent>
-        </Card>
+        <BranchForm
+          branch={branch}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isLoading={updateBranch.isPending}
+        />
 
         {/* Branch Info Card */}
         <Card className="bg-slate-50 border-slate-200">

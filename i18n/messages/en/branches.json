@@ -160,7 +160,7 @@
       "contactPhone": "E.g.: +1 300 123 4567"
     },
     "help": {
-      "slug": "URL identifier for the branch. Auto-generated from the name.",
+      "slug": "Auto-generated from the name.",
       "codeLocked": "The main branch code cannot be modified.",
       "phoneFormat": "International E.164 format, e.g. +13001234567",
       "phoneNumberId": "Phone number ID from Meta Business Manager",

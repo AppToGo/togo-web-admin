@@ -2,7 +2,17 @@
 
 import { useState, useEffect, useCallback, useId } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, Link2, Hash, Phone, MapPin, Clock, DollarSign, Info, Loader2 } from "lucide-react";
+import {
+  Building2,
+  Link2,
+  Hash,
+  Phone,
+  MapPin,
+  Clock,
+  DollarSign,
+  Info,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +33,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Branch, RoutingMode, CreateBranchRequest, UpdateBranchRequest, DeliveryFeeType, BusinessHours } from "../types";
+import type {
+  Branch,
+  RoutingMode,
+  CreateBranchRequest,
+  UpdateBranchRequest,
+  DeliveryFeeType,
+  BusinessHours,
+} from "../types";
 import { getPrimaryWhatsApp } from "../utils/branch-helpers";
-import { DeliveryConfigSection } from './DeliveryConfigSection';
-import { BusinessHoursSection } from './BusinessHoursSection';
+import { DeliveryConfigSection } from "./DeliveryConfigSection";
+import { BusinessHoursSection } from "./BusinessHoursSection";
 
 interface BranchFormProps {
   branch?: Branch | null;
@@ -98,21 +115,21 @@ export function BranchForm({
   const t = useTranslations("branches");
   const tCommon = useTranslations("common");
   const formId = useId();
-  
+
   const isEditing = !!branch;
   const isMainBranch = branch?.isMainBranch ?? false;
 
   // Default business hours
   const DEFAULT_BUSINESS_HOURS: BusinessHours = {
-    timezone: 'America/Bogota',
+    timezone: "America/Bogota",
     schedule: {
-      monday: { isOpen: true, open: '09:00', close: '18:00' },
-      tuesday: { isOpen: true, open: '09:00', close: '18:00' },
-      wednesday: { isOpen: true, open: '09:00', close: '18:00' },
-      thursday: { isOpen: true, open: '09:00', close: '18:00' },
-      friday: { isOpen: true, open: '09:00', close: '18:00' },
-      saturday: { isOpen: false, open: '09:00', close: '18:00' },
-      sunday: { isOpen: false, open: '09:00', close: '18:00' },
+      monday: { isOpen: true, open: "09:00", close: "18:00" },
+      tuesday: { isOpen: true, open: "09:00", close: "18:00" },
+      wednesday: { isOpen: true, open: "09:00", close: "18:00" },
+      thursday: { isOpen: true, open: "09:00", close: "18:00" },
+      friday: { isOpen: true, open: "09:00", close: "18:00" },
+      saturday: { isOpen: false, open: "09:00", close: "18:00" },
+      sunday: { isOpen: false, open: "09:00", close: "18:00" },
     },
     holidays: [],
   };
@@ -130,7 +147,7 @@ export function BranchForm({
     currency: "COP",
     isActive: true,
     contactPhone: "",
-    deliveryConfig: { type: 'FREE' as DeliveryFeeType },
+    deliveryConfig: { type: "FREE" as DeliveryFeeType },
     businessHours: DEFAULT_BUSINESS_HOURS,
   });
 
@@ -155,7 +172,7 @@ export function BranchForm({
         currency: branch.currency,
         isActive: branch.isActive,
         contactPhone: branch.contactPhone || "",
-        deliveryConfig: branch.deliveryConfig || { type: 'FREE' },
+        deliveryConfig: branch.deliveryConfig || { type: "FREE" },
         businessHours: branch.businessHours || DEFAULT_BUSINESS_HOURS,
       });
       setErrors({});
@@ -172,25 +189,28 @@ export function BranchForm({
   }, [formData.name, slugManuallyEdited, isEditing]);
 
   // Validate field
-  const validateField = useCallback((name: string, value: string): string => {
-    switch (name) {
-      case "name":
-        return !value.trim() ? t("form.errors.nameRequired") : "";
-      case "slug":
-        if (!value.trim()) return t("form.errors.slugRequired");
-        if (!/^[a-z0-9-]+$/.test(value)) return t("form.errors.slugInvalid");
-        return "";
-      case "code":
-        return !value.trim() ? t("form.errors.codeRequired") : "";
-      case "whatsappPhoneNumber":
-        if (value && !E164_REGEX.test(value)) {
-          return t("form.errors.phoneInvalid");
-        }
-        return "";
-      default:
-        return "";
-    }
-  }, [t]);
+  const validateField = useCallback(
+    (name: string, value: string): string => {
+      switch (name) {
+        case "name":
+          return !value.trim() ? t("form.errors.nameRequired") : "";
+        case "slug":
+          if (!value.trim()) return t("form.errors.slugRequired");
+          if (!/^[a-z0-9-]+$/.test(value)) return t("form.errors.slugInvalid");
+          return "";
+        case "code":
+          return !value.trim() ? t("form.errors.codeRequired") : "";
+        case "whatsappPhoneNumber":
+          if (value && !E164_REGEX.test(value)) {
+            return t("form.errors.phoneInvalid");
+          }
+          return "";
+        default:
+          return "";
+      }
+    },
+    [t]
+  );
 
   // Handle input changes
   const handleChange = (
@@ -198,7 +218,7 @@ export function BranchForm({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     if (touched[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
     }
@@ -221,7 +241,9 @@ export function BranchForm({
   };
 
   // Handle blur for validation
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
     setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
@@ -231,7 +253,7 @@ export function BranchForm({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     const fieldsToValidate = ["name", "slug", "code", "whatsappPhoneNumber"];
-    
+
     fieldsToValidate.forEach((field) => {
       const value = formData[field as keyof typeof formData] as string;
       const error = validateField(field, value);
@@ -242,7 +264,7 @@ export function BranchForm({
     setTouched(
       fieldsToValidate.reduce((acc, field) => ({ ...acc, [field]: true }), {})
     );
-    
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -292,7 +314,8 @@ export function BranchForm({
     formData.name.trim() &&
     formData.slug.trim() &&
     formData.code.trim() &&
-    (!formData.whatsappPhoneNumber || E164_REGEX.test(formData.whatsappPhoneNumber));
+    (!formData.whatsappPhoneNumber ||
+      E164_REGEX.test(formData.whatsappPhoneNumber));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -306,43 +329,48 @@ export function BranchForm({
           <CardDescription>{t("form.descriptions.basic")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-name`}>
-              {t("form.fields.name")} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id={`${formId}-name`}
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder={t("form.placeholders.name")}
-              disabled={isLoading}
-              error={errors.name}
-            />
-          </div>
-
-          {/* Slug */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-slug`}>
-              {t("form.fields.slug")} <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="grid grid-cols-2 gap-3">
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-name`}>
+                {t("form.fields.name")} <span className="text-red-500">*</span>
+              </Label>
               <Input
-                id={`${formId}-slug`}
-                name="slug"
-                value={formData.slug}
-                onChange={handleSlugChange}
+                id={`${formId}-name`}
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder={t("form.placeholders.slug")}
+                placeholder={t("form.placeholders.name")}
                 disabled={isLoading}
-                error={errors.slug}
-                className="pl-9"
+                error={errors.name}
               />
             </div>
-            <p className="text-xs text-slate-500">{t("form.help.slug")}</p>
+
+            {/* Slug */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-slug`}>
+                {t("form.fields.slug")} <span className="text-red-500">*</span>{" "}
+                <span className="text-xs text-slate-500">
+                  {t("form.help.slug")}
+                </span>
+              </Label>
+              <div className="relative">
+                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id={`${formId}-slug`}
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleSlugChange}
+                  onBlur={handleBlur}
+                  placeholder={t("form.placeholders.slug")}
+                  disabled={isLoading || (isEditing && isMainBranch)}
+                  readOnly={isEditing && isMainBranch}
+                  error={errors.slug}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Code */}
@@ -362,10 +390,13 @@ export function BranchForm({
                 disabled={isLoading || (isEditing && isMainBranch)}
                 error={errors.code}
                 className="pl-9"
+                readOnly={isEditing && isMainBranch}
               />
             </div>
             {isEditing && isMainBranch && (
-              <p className="text-xs text-amber-600">{t("form.help.codeLocked")}</p>
+              <p className="text-xs text-amber-600">
+                {t("form.help.codeLocked")}
+              </p>
             )}
           </div>
         </CardContent>
@@ -406,8 +437,16 @@ export function BranchForm({
                   </span>
                   {formData.routingMode === mode && (
                     <div className="absolute top-3 right-3 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center">
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <svg
+                        className="w-2.5 h-2.5 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                   )}
@@ -416,43 +455,49 @@ export function BranchForm({
             </div>
           </div>
 
-          {/* WhatsApp Phone Number */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-whatsappPhoneNumber`}>
-              {t("form.fields.whatsappPhoneNumber")}
-            </Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                id={`${formId}-whatsappPhoneNumber`}
-                name="whatsappPhoneNumber"
-                type="tel"
-                value={formData.whatsappPhoneNumber}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="+573001234567"
-                disabled={isLoading}
-                error={errors.whatsappPhoneNumber}
-                className="pl-9"
-              />
+          <div className="grid grid-cols-2 gap-3">
+            {/* WhatsApp Phone Number */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-whatsappPhoneNumber`}>
+                {t("form.fields.whatsappPhoneNumber")}
+              </Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id={`${formId}-whatsappPhoneNumber`}
+                  name="whatsappPhoneNumber"
+                  type="tel"
+                  value={formData.whatsappPhoneNumber}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="+573001234567"
+                  disabled={isLoading}
+                  error={errors.whatsappPhoneNumber}
+                  className="pl-9"
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                {t("form.help.phoneFormat")}
+              </p>
             </div>
-            <p className="text-xs text-slate-500">{t("form.help.phoneFormat")}</p>
-          </div>
 
-          {/* WhatsApp Phone Number ID */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-whatsappPhoneNumberId`}>
-              {t("form.fields.whatsappPhoneNumberId")}
-            </Label>
-            <Input
-              id={`${formId}-whatsappPhoneNumberId`}
-              name="whatsappPhoneNumberId"
-              value={formData.whatsappPhoneNumberId}
-              onChange={handleChange}
-              placeholder={t("form.placeholders.whatsappPhoneNumberId")}
-              disabled={isLoading}
-            />
-            <p className="text-xs text-slate-500">{t("form.help.phoneNumberId")}</p>
+            {/* WhatsApp Phone Number ID */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-whatsappPhoneNumberId`}>
+                {t("form.fields.whatsappPhoneNumberId")}
+              </Label>
+              <Input
+                id={`${formId}-whatsappPhoneNumberId`}
+                name="whatsappPhoneNumberId"
+                value={formData.whatsappPhoneNumberId}
+                onChange={handleChange}
+                placeholder={t("form.placeholders.whatsappPhoneNumberId")}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-slate-500">
+                {t("form.help.phoneNumberId")}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -467,9 +512,65 @@ export function BranchForm({
           <CardDescription>{t("form.descriptions.location")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Timezone */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-timezone`}>
+                {t("form.fields.timezone")}
+              </Label>
+              <Select
+                value={formData.timezone}
+                onValueChange={(value) => handleSelectChange("timezone", value)}
+                disabled={isLoading}
+              >
+                <SelectTrigger id={`${formId}-timezone`} className="h-11">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-slate-400" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTimezones.map((tz) => (
+                    <SelectItem key={tz} value={tz}>
+                      {tz}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Currency */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-currency`}>
+                {t("form.fields.currency")}
+              </Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => handleSelectChange("currency", value)}
+                disabled={isLoading}
+              >
+                <SelectTrigger id={`${formId}-currency`} className="h-11">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-slate-400" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCurrencies.map((curr) => (
+                    <SelectItem key={curr.code} value={curr.code}>
+                      {curr.code} - {curr.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Address */}
           <div className="space-y-2">
-            <Label htmlFor={`${formId}-address`}>{t("form.fields.address")}</Label>
+            <Label htmlFor={`${formId}-address`}>
+              {t("form.fields.address")}
+            </Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
               <Textarea
@@ -483,54 +584,6 @@ export function BranchForm({
                 className="pl-9 resize-none"
               />
             </div>
-          </div>
-
-          {/* Timezone */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-timezone`}>{t("form.fields.timezone")}</Label>
-            <Select
-              value={formData.timezone}
-              onValueChange={(value) => handleSelectChange("timezone", value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger id={`${formId}-timezone`} className="h-11">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  <SelectValue />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {availableTimezones.map((tz) => (
-                  <SelectItem key={tz} value={tz}>
-                    {tz}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Currency */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-currency`}>{t("form.fields.currency")}</Label>
-            <Select
-              value={formData.currency}
-              onValueChange={(value) => handleSelectChange("currency", value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger id={`${formId}-currency`} className="h-11">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-slate-400" />
-                  <SelectValue />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {availableCurrencies.map((curr) => (
-                  <SelectItem key={curr.code} value={curr.code}>
-                    {curr.code} - {curr.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
@@ -557,7 +610,9 @@ export function BranchForm({
               <Switch
                 id={`${formId}-isActive`}
                 checked={formData.isActive}
-                onCheckedChange={(checked) => handleSwitchChange("isActive", checked)}
+                onCheckedChange={(checked) =>
+                  handleSwitchChange("isActive", checked)
+                }
                 disabled={isLoading || isMainBranch}
               />
             </div>
@@ -592,7 +647,9 @@ export function BranchForm({
               placeholder={t("form.placeholders.contactPhone")}
               disabled={isLoading}
             />
-            <p className="text-xs text-slate-500">{t("form.help.contactPhone")}</p>
+            <p className="text-xs text-slate-500">
+              {t("form.help.contactPhone")}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -600,13 +657,17 @@ export function BranchForm({
       {/* Delivery Config */}
       <DeliveryConfigSection
         value={formData.deliveryConfig}
-        onChange={(config) => setFormData((prev) => ({ ...prev, deliveryConfig: config }))}
+        onChange={(config) =>
+          setFormData((prev) => ({ ...prev, deliveryConfig: config }))
+        }
       />
 
       {/* Business Hours */}
       <BusinessHoursSection
         value={formData.businessHours}
-        onChange={(hours) => setFormData((prev) => ({ ...prev, businessHours: hours }))}
+        onChange={(hours) =>
+          setFormData((prev) => ({ ...prev, businessHours: hours }))
+        }
       />
 
       {/* Actions */}
