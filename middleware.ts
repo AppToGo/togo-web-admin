@@ -109,7 +109,7 @@ export function middleware(request: NextRequest) {
       );
     }
     return NextResponse.redirect(
-      new URL(`/${locale}/dashboard`, request.url)
+      new URL(`/${locale}/dashboard/orders`, request.url)
     );
   }
 

@@ -81,7 +81,7 @@ export function useLogin() {
       }
       setAuthData(data);
       toast.success("¡Bienvenido! Inicio de sesión exitoso");
-      router.push("/dashboard");
+      router.push("/dashboard/orders");
     },
     onError: (error) => {
       console.error("[useLogin] Login error:", error);

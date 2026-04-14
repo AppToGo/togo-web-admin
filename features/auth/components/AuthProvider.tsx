@@ -186,7 +186,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const isValidRedirect = (path: string): boolean => {
           return path.startsWith('/') && !path.startsWith('//') && !path.includes(':');
         };
-        const redirectPath = pathname && isValidRedirect(pathname) ? pathname : `/${locale}/dashboard`;
+        const redirectPath = pathname && isValidRedirect(pathname) ? pathname : `/${locale}/dashboard/orders`;
         
         const loginUrl = new URL(`/${locale}/login`, window.location.origin);
         loginUrl.searchParams.set("redirect", redirectPath);

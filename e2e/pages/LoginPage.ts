@@ -90,6 +90,6 @@ export class LoginPage {
   }
 
   async waitForDashboardRedirect(): Promise<void> {
-    await this.page.waitForURL(/\/es\/dashboard/, { timeout: 10_000 });
+    await this.page.waitForURL(/\/es\/dashboard\/orders/, { timeout: 10_000 });
   }
 }
