@@ -5,57 +5,49 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useRegister } from "@/features/auth/hooks/useAuth";
 
-interface Step1BasicDataProps {
-  initialPlan?: number;
+export interface Step1Data {
+  name: string;
+  email: string;
+  localPhone: string;
+  password: string;
 }
 
-export function Step1BasicData({ initialPlan }: Step1BasicDataProps) {
+interface Step1BasicDataProps {
+  onContinue: (data: Step1Data) => void;
+}
+
+export function Step1BasicData({ onContinue }: Step1BasicDataProps) {
   const t = useTranslations("auth.register");
-  const register = useRegister();
 
   const PHONE_PREFIX = "+57";
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Step1Data>({
     name: "",
-    businessName: "",
     email: "",
     localPhone: "",
     password: "",
-    confirmPassword: "",
   });
 
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleChange =
-    (field: keyof typeof formData) =>
+    (field: keyof Step1Data) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
       let value = e.target.value;
       if (field === "localPhone") {
-        // Strip any leading zeros or non-digits
         value = value.replace(/\D/g, "");
       }
       setFormData((prev) => ({ ...prev, [field]: value }));
-      if (field === "email") setEmailError(null);
     };
 
   const passwordMismatch =
-    formData.confirmPassword.length > 0 &&
-    formData.password !== formData.confirmPassword;
+    confirmPassword.length > 0 && formData.password !== confirmPassword;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordMismatch) return;
-
-    register.mutate({
-      name: formData.name,
-      businessName: formData.businessName,
-      email: formData.email,
-      phoneNumber: `${PHONE_PREFIX}${formData.localPhone}`,
-      password: formData.password,
-      plan: initialPlan,
-    });
+    onContinue(formData);
   };
 
   return (
@@ -66,16 +58,6 @@ export function Step1BasicData({ initialPlan }: Step1BasicDataProps) {
         value={formData.name}
         onChange={handleChange("name")}
         required
-        disabled={register.isPending}
-      />
-
-      <Input
-        label={t("businessName.label")}
-        placeholder={t("businessName.placeholder")}
-        value={formData.businessName}
-        onChange={handleChange("businessName")}
-        required
-        disabled={register.isPending}
       />
 
       <Input
@@ -85,8 +67,6 @@ export function Step1BasicData({ initialPlan }: Step1BasicDataProps) {
         value={formData.email}
         onChange={handleChange("email")}
         required
-        disabled={register.isPending}
-        error={emailError ?? undefined}
       />
 
       <Input
@@ -97,7 +77,6 @@ export function Step1BasicData({ initialPlan }: Step1BasicDataProps) {
         value={formData.localPhone}
         onChange={handleChange("localPhone")}
         required
-        disabled={register.isPending}
         helperText={t("phone.helper")}
         maxLength={10}
         inputMode="numeric"
@@ -110,7 +89,6 @@ export function Step1BasicData({ initialPlan }: Step1BasicDataProps) {
         value={formData.password}
         onChange={handleChange("password")}
         required
-        disabled={register.isPending}
         helperText={t("password.helper")}
       />
 
@@ -118,20 +96,18 @@ export function Step1BasicData({ initialPlan }: Step1BasicDataProps) {
         label={t("confirmPassword.label")}
         type="password"
         placeholder={t("confirmPassword.placeholder")}
-        value={formData.confirmPassword}
-        onChange={handleChange("confirmPassword")}
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
         required
-        disabled={register.isPending}
         error={passwordMismatch ? t("wizard.passwordMismatch") : undefined}
       />
 
       <Button
         type="submit"
         className="w-full"
-        isLoading={register.isPending}
-        disabled={register.isPending || passwordMismatch}
+        disabled={passwordMismatch}
       >
-        {register.isPending ? t("creatingAccount") : t("wizard.continueStep1")}
+        {t("wizard.continueStep1")}
       </Button>
     </form>
   );
