@@ -99,5 +99,10 @@
       "title": "No tienes un negocio asignado",
       "description": "Para ver el dashboard, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
     }
+  },
+  "freePlanBanner": {
+    "title": "Estás en el plan gratuito",
+    "subtitle": "Actualizá tu plan para desbloquear funciones avanzadas",
+    "cta": "Elegir plan"
   }
 }

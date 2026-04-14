@@ -16,7 +16,6 @@ import {
   SessionResponse,
   RegisterRequest,
   RegistrationResponse,
-  UpdatePlanRequest,
 } from "@/types/auth.types";
 
 const AUTH_ENDPOINTS = {
@@ -130,25 +129,20 @@ export async function register(
   return response.json() as Promise<RegistrationResponse>;
 }
 
-/**
- * Update the plan selection during a pending registration
- *
- * Uses fetch directly to avoid the Axios interceptor attaching auth tokens
- * to a public endpoint.
- */
-export async function updateRegistrationPlan(
-  data: UpdatePlanRequest
-): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/auth/register/plan`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+export interface IndustryOption {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+}
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    const message =
-      (error as { message?: string | string[] }).message ?? "Plan update failed";
-    throw new Error(Array.isArray(message) ? message.join(", ") : message);
-  }
+/**
+ * Fetch available industries for the registration form.
+ * This endpoint is public — no auth token required.
+ */
+export async function fetchIndustries(): Promise<IndustryOption[]> {
+  const response = await fetch(`${API_BASE_URL}/industries`);
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
 }

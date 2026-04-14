@@ -6,35 +6,25 @@ import { Check } from "lucide-react";
 
 interface RegistrationProgressStepsProps {
   currentStep: 1 | 2 | 3;
-  skipPlanStep?: boolean;
 }
 
 export function RegistrationProgressSteps({
   currentStep,
-  skipPlanStep = false,
 }: RegistrationProgressStepsProps) {
   const t = useTranslations("auth.register.wizard");
 
-  const steps = skipPlanStep
-    ? [
-        { key: "step1", label: t("step1Label") },
-        { key: "step3", label: t("step3Label") },
-      ]
-    : [
-        { key: "step1", label: t("step1Label") },
-        { key: "step2", label: t("step2Label") },
-        { key: "step3", label: t("step3Label") },
-      ];
-
-  // When skipping plan step, map currentStep=3 to display position 2
-  const displayStep = skipPlanStep && currentStep === 3 ? 2 : currentStep;
+  const steps = [
+    { key: "step1", label: t("step1Label") },
+    { key: "step2", label: t("step2Label") },
+    { key: "step3", label: t("step3Label") },
+  ];
 
   return (
     <div className="flex items-center justify-center gap-0 mb-8">
       {steps.map((step, index) => {
         const stepNumber = index + 1;
-        const isCompleted = displayStep > stepNumber;
-        const isActive = displayStep === stepNumber;
+        const isCompleted = currentStep > stepNumber;
+        const isActive = currentStep === stepNumber;
 
         return (
           <React.Fragment key={step.key}>
@@ -76,7 +66,7 @@ export function RegistrationProgressSteps({
               <div
                 className={[
                   "h-[2px] w-12 mx-1 mb-4 transition-all",
-                  displayStep > stepNumber ? "bg-[#6366F1]" : "bg-slate-200",
+                  currentStep > stepNumber ? "bg-[#6366F1]" : "bg-slate-200",
                 ].join(" ")}
               />
             )}

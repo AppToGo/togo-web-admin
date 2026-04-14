@@ -1,8 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { CardContent } from "@/components/ui/card";
@@ -10,15 +8,10 @@ import { RegistrationWizard } from "@/features/auth/components/RegistrationWizar
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 /**
- * Inner component that reads search params (requires Suspense boundary)
+ * Register page — PLG flow (user-data → business-data → success)
  */
-function RegisterPageContent() {
+export default function RegisterPage() {
   const t = useTranslations("auth.register");
-  const searchParams = useSearchParams();
-  const planParam = searchParams.get("plan");
-  const parsedPlan = planParam ? parseInt(planParam, 10) : undefined;
-  const validPlan =
-    parsedPlan && parsedPlan >= 1 && parsedPlan <= 4 ? parsedPlan : undefined;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8FAFC] to-[#EEF2FF] p-4">
@@ -37,7 +30,7 @@ function RegisterPageContent() {
         {/* Registration Card */}
         <div className="border-0 shadow-xl shadow-slate-200/50 rounded-xl bg-white">
           <CardContent className="pt-6">
-            <RegistrationWizard initialPlan={validPlan} />
+            <RegistrationWizard />
           </CardContent>
         </div>
 
@@ -58,21 +51,5 @@ function RegisterPageContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-/**
- * Register page — wraps content in Suspense to satisfy Next.js requirement
- * for components that call useSearchParams() in the page tree.
- */
-export default function RegisterPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8FAFC] to-[#EEF2FF]" />
-      }
-    >
-      <RegisterPageContent />
-    </Suspense>
   );
 }
