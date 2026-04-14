@@ -1,21 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type {
-  RegistrationWizardState,
-  RegistrationStatus,
-} from "@/types/auth.types";
+import type { RegistrationWizardState } from "@/types/auth.types";
 
 const TTL_HOURS = 24;
 const STORE_KEY = "togo-registration-wizard";
 
 interface RegistrationStore extends RegistrationWizardState {
-  setStep1Complete: (
-    businessId: string,
-    token: string,
-    plan: number | null,
-    status: RegistrationStatus
-  ) => void;
-  setPlanSelected: (plan: number) => void;
+  setRegistrationComplete: (businessId: string) => void;
   goToStep: (step: 1 | 2 | 3) => void;
   resetWizard: () => void;
   isExpired: () => boolean;
@@ -24,9 +15,6 @@ interface RegistrationStore extends RegistrationWizardState {
 const initialState: RegistrationWizardState = {
   currentStep: 1,
   businessId: null,
-  registrationToken: null,
-  selectedPlan: null,
-  registrationStatus: null,
   createdAt: null,
 };
 
@@ -40,23 +28,11 @@ export const useRegistrationStore = create<RegistrationStore>()(
     (set, get) => ({
       ...initialState,
 
-      setStep1Complete: (businessId, token, plan, status) => {
-        const step: 1 | 2 | 3 = plan ? 3 : 2;
+      setRegistrationComplete: (businessId) => {
         set({
           businessId,
-          registrationToken: token,
-          selectedPlan: plan,
-          registrationStatus: status,
-          currentStep: step,
-          createdAt: Date.now(),
-        });
-      },
-
-      setPlanSelected: (plan) => {
-        set({
-          selectedPlan: plan,
-          registrationStatus: "PENDING_PAYMENT",
           currentStep: 3,
+          createdAt: Date.now(),
         });
       },
 
@@ -66,7 +42,7 @@ export const useRegistrationStore = create<RegistrationStore>()(
 
       isExpired: () => {
         const { createdAt } = get();
-        if (!createdAt) return true;  // No createdAt = expired
+        if (!createdAt) return false;
         const hoursElapsed = (Date.now() - createdAt) / (1000 * 60 * 60);
         return hoursElapsed > TTL_HOURS;
       },
@@ -77,9 +53,6 @@ export const useRegistrationStore = create<RegistrationStore>()(
       partialize: (state) => ({
         currentStep: state.currentStep,
         businessId: state.businessId,
-        registrationToken: state.registrationToken,
-        selectedPlan: state.selectedPlan,
-        registrationStatus: state.registrationStatus,
         createdAt: state.createdAt,
       }),
     }

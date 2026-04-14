@@ -72,23 +72,15 @@ export interface RegisterRequest {
   phoneNumber: string;
   password: string;
   businessName: string;
-  plan?: number;
+  industryId?: string;
+  address?: string;
+  city?: string;
 }
 
-// Update plan request
-export interface UpdatePlanRequest {
-  businessId: string;
-  registrationToken: string;
-  plan: number;
-}
-
-// Registration wizard state (persisted in localStorage for multi-step flow)
+// Registration wizard state (persisted in sessionStorage for multi-step flow)
 export interface RegistrationWizardState {
   currentStep: 1 | 2 | 3;
   businessId: string | null;
-  registrationToken: string | null;
-  selectedPlan: number | null;
-  registrationStatus: RegistrationStatus | null;
   createdAt: number | null; // timestamp for TTL check
 }
 
