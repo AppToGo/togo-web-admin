@@ -99,5 +99,10 @@
       "title": "You don't have a business assigned",
       "description": "To view the dashboard, you need to have a business assigned to your account. Contact the system administrator."
     }
+  },
+  "freePlanBanner": {
+    "title": "You're on the free plan",
+    "subtitle": "Upgrade your plan to unlock advanced features",
+    "cta": "Choose a plan"
   }
 }
