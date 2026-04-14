@@ -24,6 +24,7 @@ export {
 // Query keys (para uso avanzado)
 export { BRANCHES_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 export { useEffectiveBranches } from "./useEffectiveBranches";
+export { useSingleBranchInit } from "./useSingleBranchInit";
 
 // Branch mode hooks
 export {

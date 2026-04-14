@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
+import { useSingleBranchInit } from "@/features/branches/hooks";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const t = useTranslations("navigation");
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+
+  // Seed branch store for users with exactly one branch.
+  // BranchMultiSelector is not rendered for them, so without this the store
+  // stays empty or holds a stale ID from a previous session.
+  useSingleBranchInit();
 
   return (
     <div className="min-h-screen bg-gradient-soft">
