@@ -31,6 +31,7 @@ import {
   type SessionLogoutEventDetail,
 } from "@/services/session.service";
 import { routing } from "@/i18n/routing";
+import { useBranchStore } from "@/stores/branch.store";
 
 type AuthRestoreState = "checking" | "authenticated" | "unauthenticated";
 
@@ -74,6 +75,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       queryClient.clear();
       clearAuth();
+      // Clear persisted branch selection so the next user starts with a clean state
+      useBranchStore.getState().deselectAllBranches();
 
       const pathSegment = pathname?.split("/")[1];
       const locale = routing.locales.includes(pathSegment as typeof routing.locales[number])
