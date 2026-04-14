@@ -24,6 +24,7 @@ import {
   register as registerApi,
 } from "@/features/auth/services/auth.service";
 import { extractErrorMessage } from "@/lib/error.utils";
+import { useBranchStore } from "@/stores/branch.store";
 
 /**
  * Hook for login mutation
@@ -121,6 +122,8 @@ export function useLogout() {
       // via try/finally, so it's safe to clear local state here.
       queryClient.clear();
       clearAuth();
+      // Clear persisted branch selection so the next user starts with a clean state
+      useBranchStore.getState().deselectAllBranches();
       // router.push() from @/i18n/routing automatically prepends the active locale
       router.push("/login");
     },

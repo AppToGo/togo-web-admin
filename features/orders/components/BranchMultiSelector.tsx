@@ -84,13 +84,13 @@ export function BranchMultiSelector({
   useEffect(() => {
     if (isLoading || !branches.length) return;
 
-    // Si ya hay selección válida, validarla
+    // If there is an existing selection, validate each ID against accessible branches
     if (selectedBranchIds.length > 0) {
       const validIds = selectedBranchIds.filter((id) =>
         branches.some((b) => b.id === id)
       );
       if (validIds.length !== selectedBranchIds.length) {
-        // Limpiar selección inválida
+        // Trim stale IDs that no longer belong to this user
         const validNames = validIds.reduce(
           (acc, id) => {
             const branch = branches.find((b) => b.id === id);
@@ -101,7 +101,9 @@ export function BranchMultiSelector({
         );
         setSelectedBranches(validIds, validNames);
       }
-      return;
+      // Only stop here when at least one ID survived validation.
+      // When ALL IDs were stale (different user), fall through to default initialization.
+      if (validIds.length > 0) return;
     }
 
     // Sin selección previa - usar defaultBranchId si existe
