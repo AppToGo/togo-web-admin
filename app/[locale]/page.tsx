@@ -7,5 +7,5 @@ import { redirect } from "next/navigation";
  * The middleware handles unauthenticated users.
  */
 export default function LocalePage() {
-  redirect("/dashboard");
+  redirect("/dashboard/orders");
 }

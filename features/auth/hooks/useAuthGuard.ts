@@ -64,7 +64,7 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
  * Use this in auth pages (login, register) to prevent authenticated users from accessing them
  */
 export function useAuthRedirect(options: { redirectTo?: string } = {}) {
-  const { redirectTo = "/dashboard" } = options;
+  const { redirectTo = "/dashboard/orders" } = options;
   const router = useRouter();
   const isAuthenticated = useIsAuthenticated();
   const isLoading = useAuthLoading();

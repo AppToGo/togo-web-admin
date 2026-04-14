@@ -55,14 +55,19 @@ export function Sidebar({
   const navigation: NavigationItem[] = React.useMemo(() => {
     const items: NavigationItem[] = [
       {
+        name: t("sidebar.orders"),
+        href: "/dashboard/orders",
+        icon: ShoppingBagIcon,
+      },
+      {
         name: t("sidebar.dashboard"),
         href: "/dashboard",
         icon: LayoutDashboardIcon,
       },
       {
-        name: t("sidebar.orders"),
-        href: "/dashboard/orders",
-        icon: ShoppingBagIcon,
+        name: t("sidebar.customers"),
+        href: "/dashboard/customers",
+        icon: UsersIcon,
       },
       {
         name: t("sidebar.catalog"),
@@ -90,11 +95,6 @@ export function Sidebar({
             icon: TagsIcon,
           },
         ],
-      },
-      {
-        name: t("sidebar.customers"),
-        href: "/dashboard/customers",
-        icon: UsersIcon,
       },
       {
         name: t("sidebar.settings"),
@@ -175,7 +175,7 @@ export function Sidebar({
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link href="/dashboard/orders" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center shrink-0 shadow-card">
               <span className="text-white font-bold text-sm">T</span>
             </div>
