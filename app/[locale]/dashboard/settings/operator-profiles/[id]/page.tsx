@@ -45,6 +45,7 @@ import {
 } from "@/features/operator-profiles";
 import type { UpdateProfileRequest } from "@/features/operator-profiles/types";
 import type { ProfilePermission } from "@/features/operator-profiles/types";
+import { cn } from "@/lib/utils";
 
 export default function EditProfilePage() {
   const t = useTranslations("operatorProfiles");
@@ -152,8 +153,6 @@ export default function EditProfilePage() {
     router.push("/dashboard/settings/operator-profiles");
   };
 
-
-
   if (!hasBusiness && !isSuperAdmin) {
     return (
       <DashboardLayout>
@@ -202,7 +201,9 @@ export default function EditProfilePage() {
           <p className="text-slate-500 text-center max-w-md mb-6">
             {t("notFound.description")}
           </p>
-          <Button onClick={() => router.push("/dashboard/settings/operator-profiles")}>
+          <Button
+            onClick={() => router.push("/dashboard/settings/operator-profiles")}
+          >
             {tc("buttons.back")}
           </Button>
         </div>
@@ -220,7 +221,7 @@ export default function EditProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
@@ -235,13 +236,19 @@ export default function EditProfilePage() {
               <h1 className="text-2xl font-bold text-slate-900">
                 {t("edit.title")}
               </h1>
-              <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
+              <Badge
+                variant="outline"
+                className="bg-indigo-50 text-indigo-700 border-indigo-200"
+              >
                 <Users className="w-3 h-3 mr-1" />
                 {t("card.users", { count: profile.userCount })}
               </Badge>
             </div>
             <p className="text-slate-500 font-mono text-sm">
-              {profile.id.slice(0, 8)} • {t("card.permissions", { count: profile.permissions?.length || 0 })}
+              {profile.id.slice(0, 8)} •{" "}
+              {t("card.permissions", {
+                count: profile.permissions?.length || 0,
+              })}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -268,25 +275,61 @@ export default function EditProfilePage() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
-            <TabsTrigger value="permissions">{t("tabs.permissions")}</TabsTrigger>
-          </TabsList>
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <div
+            className="inline-flex bg-white border border-slate-100 rounded-lg p-1 gap-1"
+            role="tablist"
+          >
+            <button
+              value="general"
+              role="tab"
+              aria-selected={activeTab === "general"}
+              onClick={() => setActiveTab("general")}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                activeTab === "general"
+                  ? "bg-indigo-100 text-indigo-600"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              )}
+            >
+              {t("tabs.general")}
+            </button>
+            <button
+              value="permissions"
+              role="tab"
+              aria-selected={activeTab === "permissions"}
+              onClick={() => setActiveTab("permissions")}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                activeTab === "permissions"
+                  ? "bg-indigo-100 text-indigo-600"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              )}
+            >
+              {t("tabs.permissions")}
+            </button>
+          </div>
 
           <TabsContent value="general" className="space-y-6">
-            <Card>
+            <Card variant="glass">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Shield className="w-4 h-4 text-indigo-500" />
                   {t("form.sections.basic")}
                 </CardTitle>
-                <CardDescription>{t("form.descriptions.basic")}</CardDescription>
+                <CardDescription>
+                  {t("form.descriptions.basic")}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="profile-name">
-                    {t("form.fields.name")} <span className="text-red-500">*</span>
+                    {t("form.fields.name")}{" "}
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="profile-name"
@@ -297,7 +340,9 @@ export default function EditProfilePage() {
                     error={nameError || undefined}
                     maxLength={100}
                   />
-                  <p className="text-xs text-slate-500">{t("form.help.name")}</p>
+                  <p className="text-xs text-slate-500">
+                    {t("form.help.name")}
+                  </p>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
@@ -311,7 +356,11 @@ export default function EditProfilePage() {
                   </Button>
                   <Button
                     onClick={handleSaveGeneral}
-                    disabled={updateProfile.isPending || !isNameValid || !hasUnsavedNameChanges}
+                    disabled={
+                      updateProfile.isPending ||
+                      !isNameValid ||
+                      !hasUnsavedNameChanges
+                    }
                     isLoading={updateProfile.isPending}
                   >
                     <Save className="w-4 h-4 mr-2" />
@@ -328,7 +377,9 @@ export default function EditProfilePage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{tc("fields.created")}:</span>
+                  <span className="text-slate-500">
+                    {tc("fields.created")}:
+                  </span>
                   <span className="text-slate-700">
                     {new Date(profile.createdAt).toLocaleDateString(locale, {
                       year: "numeric",
@@ -338,7 +389,9 @@ export default function EditProfilePage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{tc("fields.lastUpdated")}:</span>
+                  <span className="text-slate-500">
+                    {tc("fields.lastUpdated")}:
+                  </span>
                   <span className="text-slate-700">
                     {new Date(profile.updatedAt).toLocaleDateString(locale, {
                       year: "numeric",
@@ -352,13 +405,15 @@ export default function EditProfilePage() {
           </TabsContent>
 
           <TabsContent value="permissions" className="space-y-6">
-            <Card>
+            <Card variant="glass">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Shield className="w-4 h-4 text-indigo-500" />
                   {t("permissions.title")}
                 </CardTitle>
-                <CardDescription>{t("permissions.description")}</CardDescription>
+                <CardDescription>
+                  {t("permissions.description")}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {isLoadingPermissions ? (
@@ -382,14 +437,19 @@ export default function EditProfilePage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setSelectedPermissions(profile.permissions || [])}
+                    onClick={() =>
+                      setSelectedPermissions(profile.permissions || [])
+                    }
                     disabled={assignPermissions.isPending}
                   >
                     {tc("buttons.reset")}
                   </Button>
                   <Button
                     onClick={handleSavePermissions}
-                    disabled={assignPermissions.isPending || !hasUnsavedPermissionChanges}
+                    disabled={
+                      assignPermissions.isPending ||
+                      !hasUnsavedPermissionChanges
+                    }
                     isLoading={assignPermissions.isPending}
                   >
                     <Save className="w-4 h-4 mr-2" />
@@ -402,7 +462,10 @@ export default function EditProfilePage() {
         </Tabs>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{t("delete.title")}</AlertDialogTitle>
