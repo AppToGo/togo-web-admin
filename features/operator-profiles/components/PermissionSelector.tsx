@@ -65,17 +65,19 @@ export function PermissionSelector({
     const query = searchQuery.toLowerCase();
     const filtered: GroupedPermissions = {};
 
-    Object.entries(groupedPermissions).forEach(([domain, domainPermissions]) => {
-      const matching = domainPermissions.filter(
-        (p) =>
-          p.code.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query) ||
-          p.domain.toLowerCase().includes(query)
-      );
-      if (matching.length > 0) {
-        filtered[domain] = matching;
+    Object.entries(groupedPermissions).forEach(
+      ([domain, domainPermissions]) => {
+        const matching = domainPermissions.filter(
+          (p) =>
+            p.code.toLowerCase().includes(query) ||
+            p.description.toLowerCase().includes(query) ||
+            p.domain.toLowerCase().includes(query)
+        );
+        if (matching.length > 0) {
+          filtered[domain] = matching;
+        }
       }
-    });
+    );
 
     return filtered;
   }, [groupedPermissions, searchQuery]);
@@ -94,7 +96,9 @@ export function PermissionSelector({
       const isSelected = isPermissionSelected(permission.code);
       if (isSelected) {
         onChange(
-          selectedPermissions.filter((p) => p.permissionCode !== permission.code)
+          selectedPermissions.filter(
+            (p) => p.permissionCode !== permission.code
+          )
         );
       } else {
         onChange([
@@ -210,7 +214,9 @@ export function PermissionSelector({
       {/* Summary */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-slate-600">
-          {t("permissions.selectedCount", { count: selectedPermissions.length })}
+          {t("permissions.selectedCount", {
+            count: selectedPermissions.length,
+          })}
         </span>
         <span className="text-slate-400">
           {t("permissions.totalCount", { count: permissions.length })}
@@ -218,106 +224,111 @@ export function PermissionSelector({
       </div>
 
       {/* Permission Groups */}
-      <ScrollArea className="h-[400px] pr-2">
+      <ScrollArea className="pr-2">
         <div className="space-y-3">
-          {Object.entries(filteredGroupedPermissions).map(([domain, domainPermissions]) => (
-            <div
-              key={domain}
-              className="border border-slate-200 rounded-lg overflow-hidden bg-white/50"
-            >
-              {/* Domain Header */}
+          {Object.entries(filteredGroupedPermissions).map(
+            ([domain, domainPermissions]) => (
               <div
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 bg-slate-50/80 cursor-pointer select-none",
-                  "hover:bg-slate-100/80 transition-colors"
-                )}
-                onClick={() => toggleDomainExpansion(domain)}
+                key={domain}
+                className="border border-slate-200 rounded-lg overflow-hidden bg-white/50"
               >
-                <button
-                  type="button"
-                  className="p-0.5 hover:bg-slate-200 rounded transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDomainExpansion(domain);
-                  }}
-                >
-                  {expandedDomains.has(domain) ? (
-                    <ChevronDown className="w-4 h-4 text-slate-500" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
-                  )}
-                </button>
-
-                <div className="flex-1 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-indigo-500" />
-                  <span className="font-medium text-slate-900">
-                    {getDomainLabel(domain)}
-                  </span>
-                  <Badge variant="outline" className="text-xs">
-                    {domainPermissions.length}
-                  </Badge>
-                </div>
-
+                {/* Domain Header */}
                 <div
-                  className="flex items-center gap-2"
-                  onClick={(e) => e.stopPropagation()}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 bg-slate-50/80 cursor-pointer select-none",
+                    "hover:bg-slate-100/80 transition-colors"
+                  )}
+                  onClick={() => toggleDomainExpansion(domain)}
                 >
-                  <Checkbox
-                    id={`domain-${domain}`}
-                    checked={isDomainFullySelected(domain)}
-                    data-state={
-                      isDomainPartiallySelected(domain) ? "indeterminate" : undefined
-                    }
-                    onCheckedChange={() => toggleDomain(domain)}
-                  />
-                  <Label
-                    htmlFor={`domain-${domain}`}
-                    className="text-xs text-slate-600 cursor-pointer"
+                  <button
+                    type="button"
+                    className="p-0.5 hover:bg-slate-200 rounded transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDomainExpansion(domain);
+                    }}
                   >
-                    {t("permissions.selectAll")}
-                  </Label>
-                </div>
-              </div>
+                    {expandedDomains.has(domain) ? (
+                      <ChevronDown className="w-4 h-4 text-slate-500" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                    )}
+                  </button>
 
-              {/* Domain Permissions */}
-              {expandedDomains.has(domain) && (
-                <div className="divide-y divide-slate-100">
-                  {domainPermissions.map((permission) => (
-                    <div
-                      key={permission.code}
-                      className={cn(
-                        "flex items-start gap-3 px-3 py-3 hover:bg-slate-50/50 transition-colors",
-                        isPermissionSelected(permission.code) && "bg-indigo-50/30"
-                      )}
+                  <div className="flex-1 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-indigo-500" />
+                    <span className="font-medium text-slate-900">
+                      {getDomainLabel(domain)}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      {domainPermissions.length}
+                    </Badge>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Checkbox
+                      id={`domain-${domain}`}
+                      checked={isDomainFullySelected(domain)}
+                      data-state={
+                        isDomainPartiallySelected(domain)
+                          ? "indeterminate"
+                          : undefined
+                      }
+                      onCheckedChange={() => toggleDomain(domain)}
+                    />
+                    <Label
+                      htmlFor={`domain-${domain}`}
+                      className="text-xs text-slate-600 cursor-pointer"
                     >
-                      <Checkbox
-                        id={`permission-${permission.code}`}
-                        checked={isPermissionSelected(permission.code)}
-                        onCheckedChange={() => togglePermission(permission)}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <Label
-                          htmlFor={`permission-${permission.code}`}
-                          className="text-sm font-medium text-slate-900 cursor-pointer flex items-center gap-2"
-                        >
-                          {permission.code}
-                          {permission.requiresParams && (
-                            <Lock className="w-3 h-3 text-amber-500" />
-                          )}
-                        </Label>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {permission.description}
-                        </p>
-                      </div>
-                      {isPermissionSelected(permission.code) && (
-                        <Check className="w-4 h-4 text-indigo-500 shrink-0" />
-                      )}
-                    </div>
-                  ))}
+                      {t("permissions.selectAll")}
+                    </Label>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
+
+                {/* Domain Permissions */}
+                {expandedDomains.has(domain) && (
+                  <div className="divide-y divide-slate-100">
+                    {domainPermissions.map((permission) => (
+                      <div
+                        key={permission.code}
+                        className={cn(
+                          "flex items-start gap-3 px-3 py-3 hover:bg-slate-50/50 transition-colors",
+                          isPermissionSelected(permission.code) &&
+                            "bg-indigo-50/30"
+                        )}
+                      >
+                        <Checkbox
+                          id={`permission-${permission.code}`}
+                          checked={isPermissionSelected(permission.code)}
+                          onCheckedChange={() => togglePermission(permission)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <Label
+                            htmlFor={`permission-${permission.code}`}
+                            className="text-sm font-medium text-slate-900 cursor-pointer flex items-center gap-2"
+                          >
+                            {permission.code}
+                            {permission.requiresParams && (
+                              <Lock className="w-3 h-3 text-amber-500" />
+                            )}
+                          </Label>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {permission.description}
+                          </p>
+                        </div>
+                        {isPermissionSelected(permission.code) && (
+                          <Check className="w-4 h-4 text-indigo-500 shrink-0" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          )}
 
           {Object.keys(filteredGroupedPermissions).length === 0 && (
             <div className="text-center py-8 text-slate-500">
