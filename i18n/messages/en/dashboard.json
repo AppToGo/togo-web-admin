@@ -70,7 +70,7 @@
   "charts": {
     "conversionFunnel": {
       "title": "Conversion Funnel",
-      "confirmed": "Confirmed",
+      "confirmed": "New",
       "paid": "Paid",
       "completed": "Completed",
       "ofTotal": "% of total"
