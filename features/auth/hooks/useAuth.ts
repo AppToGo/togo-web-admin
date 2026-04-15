@@ -22,6 +22,8 @@ import {
 import {
   login as loginApi,
   register as registerApi,
+  forgotPassword as forgotPasswordApi,
+  resetPassword as resetPasswordApi,
 } from "@/features/auth/services/auth.service";
 import { extractErrorMessage } from "@/lib/error.utils";
 import { useBranchStore } from "@/stores/branch.store";
@@ -165,24 +167,40 @@ export function useRegister() {
 }
 
 /**
- * Hook for forgot password (prepared for future)
+ * Hook for forgot password
+ *
+ * Calls POST /auth/forgot-password.
+ * The backend always responds 200 regardless of whether the email exists.
  */
 export function useForgotPassword() {
   return useMutation({
-    mutationFn: async (email: string) => {
-      // TODO: Implement when backend endpoint is ready
-      if (process.env.NODE_ENV === "development") {
-        console.log("Forgot password requested for:", email);
-      }
-      // Mock success
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { message: "Password reset email sent" };
-    },
+    mutationFn: (email: string) => forgotPasswordApi(email),
     onSuccess: () => {
-      toast.success("Te hemos enviado un correo con las instrucciones");
+      toast.success("Si el correo está registrado, recibirás instrucciones en tu bandeja de entrada");
     },
     onError: (error) => {
       toast.error(extractErrorMessage(error, "Error al solicitar recuperación de contraseña"));
+    },
+  });
+}
+
+/**
+ * Hook for resetting the password using the token from the email link.
+ *
+ * On success redirects to /login.
+ */
+export function useResetPassword() {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
+      resetPasswordApi(token, newPassword),
+    onSuccess: () => {
+      toast.success("Contraseña actualizada. Por favor iniciá sesión con tu nueva contraseña.");
+      router.push("/login");
+    },
+    onError: (error) => {
+      toast.error(extractErrorMessage(error, "El link de recuperación es inválido o expiró"));
     },
   });
 }

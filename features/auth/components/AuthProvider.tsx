@@ -52,7 +52,7 @@ interface AuthProviderProps {
 }
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
+const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [restoreState, setRestoreState] = useState<AuthRestoreState>("checking");
