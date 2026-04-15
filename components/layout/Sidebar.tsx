@@ -164,6 +164,7 @@ export function Sidebar({
 
       {/* Sidebar */}
       <aside
+        data-tour-step="sidebar"
         className={cn(
           "fixed top-0 left-0 z-50 h-full",
           "glass-strong border-r border-white/50",

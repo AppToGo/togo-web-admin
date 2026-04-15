@@ -22,6 +22,7 @@ import {
   Clock,
   Home,
   Store,
+  HelpCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -40,8 +41,24 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { useOrdersRealtime } from "@/features/orders/hooks";
+import { TourProvider, useTourContext } from "@/components/tour";
+import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
 
 type CardViewMode = "card" | "list";
+
+function TourHelpButton() {
+  const { startTour } = useTourContext();
+  const t = useTranslations("orders.tour");
+  return (
+    <button
+      onClick={startTour}
+      className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+      title={t("startButton")}
+    >
+      <HelpCircle className="w-4 h-4" />
+    </button>
+  );
+}
 
 function OrdersLoading() {
   return (
@@ -72,6 +89,21 @@ function OrdersLoading() {
 }
 
 export default function OrdersPage() {
+  return (
+    <OrdersPageWithTour />
+  );
+}
+
+function OrdersPageWithTour() {
+  const { isLoading: isLoadingBranches } = useEffectiveBranches();
+  return (
+    <TourProvider tourId="orders" steps={ORDERS_TOUR_STEPS} readyToStart={!isLoadingBranches}>
+      <OrdersPageInner />
+    </TourProvider>
+  );
+}
+
+function OrdersPageInner() {
   const t = useTranslations("orders");
   const tc = useTranslations("common");
 
@@ -180,7 +212,10 @@ export default function OrdersPage() {
         {/* Header con título, buscador, filtro de fecha y toggle de vista */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+              <TourHelpButton />
+            </div>
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
@@ -189,7 +224,7 @@ export default function OrdersPage() {
             <div className="flex items-center gap-2">
 
               {/* Buscador */}
-              <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
+              <div data-tour-step="search" className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
                   type="text"
@@ -206,6 +241,7 @@ export default function OrdersPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button
+                    data-tour-step="filters"
                     className={cn(
                       "relative flex items-center justify-center w-10 h-10 rounded-card transition-all duration-200",
                       hasAnyFilter
@@ -376,14 +412,16 @@ export default function OrdersPage() {
               </Popover>
 
               {/* Toggle de vista de cards */}
-              <ViewToggle
-                value={cardViewMode}
-                onChange={(value) => setCardViewMode(value as CardViewMode)}
-                options={[
-                  { value: "card", icon: LayoutGrid, title: t("view.card") },
-                  { value: "list", icon: List, title: t("view.list") },
-                ]}
-              />
+              <div data-tour-step="view-toggle">
+                <ViewToggle
+                  value={cardViewMode}
+                  onChange={(value) => setCardViewMode(value as CardViewMode)}
+                  options={[
+                    { value: "card", icon: LayoutGrid, title: t("view.card") },
+                    { value: "list", icon: List, title: t("view.list") },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         </div>
