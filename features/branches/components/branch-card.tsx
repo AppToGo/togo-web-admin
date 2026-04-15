@@ -68,7 +68,9 @@ export const BranchCard = memo(function BranchCard({
   const t = useTranslations("branches");
   const tCommon = useTranslations("common");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { data: metrics } = useBranchMetrics(branch.isActive ? branch.id : null);
+  const { data: metrics } = useBranchMetrics(
+    branch.isActive ? branch.id : null
+  );
 
   const routingMode = routingModeConfig[branch.routingMode];
   const RoutingIcon = routingMode.icon;
@@ -173,18 +175,26 @@ export const BranchCard = memo(function BranchCard({
         {metrics && (
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100/60">
             <div className="text-center">
-              <p className="text-lg font-bold text-slate-900">{metrics.ordersToday}</p>
-              <p className="text-xs text-slate-500">{t("metrics.ordersToday")}</p>
+              <p className="text-lg font-bold text-slate-900">
+                {metrics.ordersToday}
+              </p>
+              <p className="text-xs text-slate-500">
+                {t("metrics.ordersToday")}
+              </p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-amber-600">{metrics.pendingOrders}</p>
+              <p className="text-lg font-bold text-amber-600">
+                {metrics.pendingOrders}
+              </p>
               <p className="text-xs text-slate-500">{t("metrics.pending")}</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-emerald-600">
                 {metrics.revenueToday.toLocaleString()}
               </p>
-              <p className="text-xs text-slate-500">{t("metrics.revenueToday")}</p>
+              <p className="text-xs text-slate-500">
+                {t("metrics.revenueToday")}
+              </p>
             </div>
           </div>
         )}
@@ -202,16 +212,7 @@ export const BranchCard = memo(function BranchCard({
             {tCommon("buttons.edit")}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-            onClick={() => onConfigure?.(branch)}
-            disabled={isLoading}
-          >
-            <Settings className="w-4 h-4 mr-1.5" />
-            {tCommon("buttons.configure")}
-          </Button>
+          <div className="flex-1" />
 
           {!branch.isMainBranch && (
             <Button

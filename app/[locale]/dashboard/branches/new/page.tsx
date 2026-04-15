@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import type { CreateBranchRequest, UpdateBranchRequest } from "@/features/branches/types";
+import type {
+  CreateBranchRequest,
+  UpdateBranchRequest,
+} from "@/features/branches/types";
 import {
   BranchForm,
   useCreateBranch,
@@ -35,7 +38,8 @@ export default function CreateBranchPage() {
   const isSuperAdmin = useIsSuperAdmin();
 
   const createBranch = useCreateBranch();
-  const { data: canCreate, isLoading: isLoadingCanCreate } = useCanCreateBranch();
+  const { data: canCreate, isLoading: isLoadingCanCreate } =
+    useCanCreateBranch();
 
   const handleSubmit = (data: CreateBranchRequest | UpdateBranchRequest) => {
     createBranch.mutate(data as CreateBranchRequest, {
@@ -72,7 +76,11 @@ export default function CreateBranchPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/branches")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push("/dashboard/branches")}
+            >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
@@ -111,10 +119,14 @@ export default function CreateBranchPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/branches")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/dashboard/branches")}
+          >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
@@ -126,28 +138,20 @@ export default function CreateBranchPage() {
         </div>
 
         {/* Form Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("form.title")}</CardTitle>
-            <CardDescription>{t("form.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingCanCreate ? (
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-32" />
-              </div>
-            ) : (
-              <BranchForm
-                onSubmit={handleSubmit}
-                onCancel={handleCancel}
-                isLoading={createBranch.isPending}
-              />
-            )}
-          </CardContent>
-        </Card>
+        {isLoadingCanCreate ? (
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        ) : (
+          <BranchForm
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            isLoading={createBranch.isPending}
+          />
+        )}
 
         {/* Tips Card */}
         <Card className="bg-slate-50 border-slate-200">

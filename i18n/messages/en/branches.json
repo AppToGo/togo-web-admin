@@ -110,7 +110,7 @@
   "routingMode": "Routing mode",
   "card": {
     "mainBranch": "Main",
-    "makeMain": "Set as main",
+    "makeMain": "Is main",
     "cannotDeleteMain": "The main branch cannot be deleted"
   },
   "metrics": {

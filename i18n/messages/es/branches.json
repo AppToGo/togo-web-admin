@@ -114,7 +114,7 @@
   "routingMode": "Modo de enrutamiento",
   "card": {
     "mainBranch": "Principal",
-    "makeMain": "Establecer como principal",
+    "makeMain": "Principal",
     "cannotDeleteMain": "La sucursal principal no se puede eliminar"
   },
   "metrics": {
