@@ -29,6 +29,10 @@ export interface Branch {
   whatsappNumbersExtra: WhatsAppNumberExtra[] | null;
   routingMode: RoutingMode;
   address: string | null;
+  /** Department (state/province) of the branch location */
+  department?: string | null;
+  /** City of the branch location */
+  city?: string | null;
   timezone: string;
   currency: string;
   createdAt: string;
@@ -63,6 +67,10 @@ export interface CreateBranchRequest {
   whatsappPhoneNumberId?: string;
   routingMode: RoutingMode;
   address?: string;
+  /** Department (state/province) of the branch location */
+  department?: string;
+  /** City of the branch location */
+  city?: string;
   timezone?: string;
   currency?: string;
   /** Teléfono de contacto de la sede */
@@ -84,6 +92,10 @@ export interface UpdateBranchRequest {
   whatsappPhoneNumberId?: string;
   routingMode?: RoutingMode;
   address?: string;
+  /** Department (state/province) of the branch location */
+  department?: string;
+  /** City of the branch location */
+  city?: string;
   timezone?: string;
   currency?: string;
   isActive?: boolean;

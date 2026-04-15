@@ -140,7 +140,7 @@
     "descriptions": {
       "basic": "Nombre, código único y URL amigable de la sucursal",
       "whatsapp": "Número y modo de enrutamiento de WhatsApp",
-      "location": "Dirección, zona horaria y moneda"
+      "location": "Ciudad, dirección, zona horaria y moneda"
     },
     "fields": {
       "name": "Nombre",
@@ -153,7 +153,9 @@
       "timezone": "Zona horaria",
       "currency": "Moneda",
       "isActive": "Sucursal activa",
-      "contactPhone": "Teléfono de contacto"
+      "contactPhone": "Teléfono de contacto",
+      "department": "Departamento",
+      "city": "Ciudad"
     },
     "placeholders": {
       "name": "Ej: Sucursal Centro",
@@ -161,7 +163,10 @@
       "code": "SC-001",
       "whatsappPhoneNumberId": "ID del número en Meta Business",
       "address": "Calle Principal 123, Ciudad",
-      "contactPhone": "Ej: +57 300 123 4567"
+      "contactPhone": "Ej: +57 300 123 4567",
+      "department": "Seleccionar departamento...",
+      "city": "Seleccionar ciudad...",
+      "citySelectDepartmentFirst": "Seleccioná primero un departamento"
     },
     "help": {
       "slug": "Se genera automáticamente desde el nombre.",
