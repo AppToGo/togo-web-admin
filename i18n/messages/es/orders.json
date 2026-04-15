@@ -99,7 +99,7 @@
   },
   "status": {
     "DRAFT": "Borrador",
-    "CONFIRMED": "Confirmada",
+    "CONFIRMED": "Nueva",
     "PAYMENT_PENDING": "Pago pendiente",
     "PAID": "Pagada",
     "IN_PROGRESS": "En proceso",
@@ -246,7 +246,7 @@
       },
       "kanbanBoard": {
         "title": "Tablero de pedidos",
-        "description": "Los pedidos se organizan en columnas por estado: Confirmado → En proceso → Listo → En camino → Completado. Arrastrá o usá el dropdown para moverlos."
+        "description": "Los pedidos se organizan en columnas por estado: Nueva → En proceso → Listo → En camino → Completado. Arrastrá o usá el dropdown para moverlos."
       },
       "orderCard": {
         "title": "Cambiar estado de un pedido",

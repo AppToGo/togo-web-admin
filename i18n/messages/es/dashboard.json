@@ -70,7 +70,7 @@
   "charts": {
     "conversionFunnel": {
       "title": "Embudo de Conversión",
-      "confirmed": "Confirmadas",
+      "confirmed": "Nuevas",
       "paid": "Pagadas",
       "completed": "Completadas",
       "ofTotal": "% del total"

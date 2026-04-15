@@ -19,7 +19,7 @@ const statusConfig: Record<
     className: "bg-slate-100 text-slate-700",
   },
   CONFIRMED: {
-    label: "Confirmado",
+    label: "Nueva",
     variant: "default",
     className: "bg-blue-100 text-blue-700",
   },

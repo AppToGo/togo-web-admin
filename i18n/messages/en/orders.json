@@ -99,7 +99,7 @@
   },
   "status": {
     "DRAFT": "Draft",
-    "CONFIRMED": "Confirmed",
+    "CONFIRMED": "New",
     "PAYMENT_PENDING": "Payment pending",
     "PAID": "Paid",
     "IN_PROGRESS": "In progress",
@@ -246,7 +246,7 @@
       },
       "kanbanBoard": {
         "title": "Orders board",
-        "description": "Orders are organized in columns by state: Confirmed → In progress → Ready → On the way → Completed. Drag or use the dropdown to move them."
+        "description": "Orders are organized in columns by state: New → In progress → Ready → On the way → Completed. Drag or use the dropdown to move them."
       },
       "orderCard": {
         "title": "Change an order status",
