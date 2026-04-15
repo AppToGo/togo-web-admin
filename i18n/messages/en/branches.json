@@ -136,7 +136,7 @@
     "descriptions": {
       "basic": "Branch name, unique code and URL-friendly slug",
       "whatsapp": "WhatsApp number and routing mode",
-      "location": "Address, timezone and currency"
+      "location": "City, address, timezone and currency"
     },
     "fields": {
       "name": "Name",
@@ -149,7 +149,9 @@
       "timezone": "Timezone",
       "currency": "Currency",
       "isActive": "Branch active",
-      "contactPhone": "Contact phone"
+      "contactPhone": "Contact phone",
+      "department": "Department",
+      "city": "City"
     },
     "placeholders": {
       "name": "Ex: Downtown Branch",
@@ -157,7 +159,10 @@
       "code": "DB-001",
       "whatsappPhoneNumberId": "Meta Business phone number ID",
       "address": "123 Main Street, City",
-      "contactPhone": "E.g.: +1 300 123 4567"
+      "contactPhone": "E.g.: +1 300 123 4567",
+      "department": "Select department...",
+      "city": "Select city...",
+      "citySelectDepartmentFirst": "Select a department first"
     },
     "help": {
       "slug": "Auto-generated from the name.",

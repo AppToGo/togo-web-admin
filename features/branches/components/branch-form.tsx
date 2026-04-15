@@ -13,6 +13,7 @@ import {
   Info,
   Loader2,
 } from "lucide-react";
+import { COLOMBIA_DEPARTMENTS } from "@/lib/colombia-cities";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ import type {
   CreateBranchRequest,
   UpdateBranchRequest,
   DeliveryFeeType,
+  DeliveryConfig,
   BusinessHours,
 } from "../types";
 import { getPrimaryWhatsApp } from "../utils/branch-helpers";
@@ -119,7 +121,7 @@ export function BranchForm({
   const isEditing = !!branch;
   const isMainBranch = branch?.isMainBranch ?? false;
 
-  // Default business hours
+  // Default business hours — defined before useState so it can be used in lazy initializer
   const DEFAULT_BUSINESS_HOURS: BusinessHours = {
     timezone: "America/Bogota",
     schedule: {
@@ -134,32 +136,66 @@ export function BranchForm({
     holidays: [],
   };
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    code: "",
-    whatsappPhoneNumber: "",
-    whatsappPhoneNumberId: "",
-    routingMode: "DEDICATED" as RoutingMode,
-    address: "",
-    timezone: "America/Bogota",
-    currency: "COP",
-    isActive: true,
-    contactPhone: "",
-    deliveryConfig: { type: "FREE" as DeliveryFeeType },
-    businessHours: DEFAULT_BUSINESS_HOURS,
+  // Form state — lazy initializer reads from branch prop on first render
+  // This guarantees department/city are populated immediately without waiting for useEffect
+  const [formData, setFormData] = useState(() => {
+    if (!branch) {
+      return {
+        name: "",
+        slug: "",
+        code: "",
+        whatsappPhoneNumber: "",
+        whatsappPhoneNumberId: "",
+        routingMode: "DEDICATED" as RoutingMode,
+        address: "",
+        department: "",
+        city: "",
+        timezone: "America/Bogota",
+        currency: "COP",
+        isActive: true,
+        contactPhone: "",
+        deliveryConfig: { type: "FREE" as DeliveryFeeType },
+        businessHours: DEFAULT_BUSINESS_HOURS,
+      };
+    }
+    const phone = getPrimaryWhatsApp(branch);
+    const bh = branch.businessHours as BusinessHours | null;
+    return {
+      name: branch.name,
+      slug: branch.slug,
+      code: branch.code,
+      whatsappPhoneNumber: phone || "",
+      whatsappPhoneNumberId: branch.whatsappPhoneNumberId || "",
+      routingMode: branch.routingMode,
+      address: branch.address || "",
+      department: branch.department || "",
+      city: branch.city || "",
+      timezone: branch.timezone,
+      currency: branch.currency,
+      isActive: branch.isActive,
+      contactPhone: branch.contactPhone || "",
+      deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
+        ? (branch.deliveryConfig as DeliveryConfig)
+        : { type: "FREE" as DeliveryFeeType },
+      businessHours: bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+    };
   });
+
+  // Cities available for the selected department
+  const availableCities =
+    COLOMBIA_DEPARTMENTS.find((d) => d.name === formData.department)?.cities ??
+    [];
 
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!branch);
 
-  // Initialize form with branch data when editing
+  // Sync form when branch prop changes (e.g. after React Query background refetch)
   useEffect(() => {
     if (branch) {
       const phone = getPrimaryWhatsApp(branch);
+      const bh = branch.businessHours as BusinessHours | null;
       setFormData({
         name: branch.name,
         slug: branch.slug,
@@ -168,12 +204,17 @@ export function BranchForm({
         whatsappPhoneNumberId: branch.whatsappPhoneNumberId || "",
         routingMode: branch.routingMode,
         address: branch.address || "",
+        department: branch.department || "",
+        city: branch.city || "",
         timezone: branch.timezone,
         currency: branch.currency,
         isActive: branch.isActive,
         contactPhone: branch.contactPhone || "",
-        deliveryConfig: branch.deliveryConfig || { type: "FREE" },
-        businessHours: branch.businessHours || DEFAULT_BUSINESS_HOURS,
+        deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
+          ? (branch.deliveryConfig as DeliveryConfig)
+          : { type: "FREE" as DeliveryFeeType },
+        businessHours:
+          bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
       });
       setErrors({});
       setTouched({});
@@ -235,6 +276,11 @@ export function BranchForm({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle department change — persists department and resets city
+  const handleDepartmentChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, department: value, city: "" }));
+  };
+
   // Handle switch changes
   const handleSwitchChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
@@ -268,6 +314,17 @@ export function BranchForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  // Normalize JSON config fields before submit — guards against empty {} from Prisma defaults
+  const normalizeDeliveryConfig = (cfg: unknown): DeliveryConfig =>
+    (cfg as DeliveryConfig)?.type
+      ? (cfg as DeliveryConfig)
+      : { type: "FREE" as DeliveryFeeType };
+
+  const normalizeBusinessHours = (bh: unknown): BusinessHours => {
+    const typed = bh as BusinessHours | null;
+    return typed?.timezone && typed?.schedule ? typed : DEFAULT_BUSINESS_HOURS;
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,12 +341,14 @@ export function BranchForm({
           whatsappPhoneNumberId: formData.whatsappPhoneNumberId || undefined,
           routingMode: formData.routingMode,
           address: formData.address || undefined,
+          department: formData.department || undefined,
+          city: formData.city || undefined,
           timezone: formData.timezone,
           currency: formData.currency,
           isActive: formData.isActive,
           contactPhone: formData.contactPhone || undefined,
-          deliveryConfig: formData.deliveryConfig,
-          businessHours: formData.businessHours,
+          deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
+          businessHours: normalizeBusinessHours(formData.businessHours),
         }
       : {
           // Create: send all required fields
@@ -300,11 +359,13 @@ export function BranchForm({
           whatsappPhoneNumberId: formData.whatsappPhoneNumberId || undefined,
           routingMode: formData.routingMode,
           address: formData.address || undefined,
+          department: formData.department || undefined,
+          city: formData.city || undefined,
           timezone: formData.timezone,
           currency: formData.currency,
           contactPhone: formData.contactPhone || undefined,
-          deliveryConfig: formData.deliveryConfig,
-          businessHours: formData.businessHours,
+          deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
+          businessHours: normalizeBusinessHours(formData.businessHours),
         };
 
     onSubmit(data);
@@ -566,6 +627,70 @@ export function BranchForm({
             </div>
           </div>
 
+          {/* Department & City */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Department */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-department`}>
+                {t("form.fields.department")}
+              </Label>
+              <Select
+                value={formData.department}
+                onValueChange={handleDepartmentChange}
+                disabled={isLoading}
+              >
+                <SelectTrigger id={`${formId}-department`} className="h-11">
+                  <span
+                    className={cn(
+                      "flex-1 text-left truncate text-sm",
+                      !formData.department && "text-slate-400"
+                    )}
+                  >
+                    {formData.department || t("form.placeholders.department")}
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  {COLOMBIA_DEPARTMENTS.map((dept) => (
+                    <SelectItem key={dept.name} value={dept.name}>
+                      {dept.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* City */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-city`}>{t("form.fields.city")}</Label>
+              <Select
+                value={formData.city}
+                onValueChange={(v) => handleSelectChange("city", v)}
+                disabled={!formData.department || isLoading}
+              >
+                <SelectTrigger id={`${formId}-city`} className="h-11">
+                  <span
+                    className={cn(
+                      "flex-1 text-left truncate text-sm",
+                      !formData.city && "text-slate-400"
+                    )}
+                  >
+                    {formData.city ||
+                      (!formData.department
+                        ? t("form.placeholders.citySelectDepartmentFirst")
+                        : t("form.placeholders.city"))}
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCities.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Address */}
           <div className="space-y-2">
             <Label htmlFor={`${formId}-address`}>
@@ -573,13 +698,12 @@ export function BranchForm({
             </Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <Textarea
+              <Input
                 id={`${formId}-address`}
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 placeholder={t("form.placeholders.address")}
-                rows={3}
                 disabled={isLoading}
                 className="pl-9 resize-none"
               />
