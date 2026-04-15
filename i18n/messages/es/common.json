@@ -193,5 +193,12 @@
   "doNotClosePage": "Por favor no cierres esta página",
   "search": {
     "placeholder": "Buscar..."
+  },
+  "tour": {
+    "skip": "Saltar tour",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "stepIndicator": "{current} de {total}"
   }
 }

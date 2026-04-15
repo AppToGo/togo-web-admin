@@ -221,5 +221,42 @@
     "oneBranch": "1 sucursal",
     "multipleBranches": "{count} sucursales",
     "selectBusinessFirst": "Selecciona un negocio primero"
+  },
+  "tour": {
+    "steps": {
+      "metrics": {
+        "title": "Métricas del día",
+        "description": "Aquí ves en tiempo real cuántos pedidos hay en cada estado, el revenue del período y las métricas de entrega."
+      },
+      "search": {
+        "title": "Buscar pedidos",
+        "description": "Buscá pedidos por número de orden o por nombre del cliente."
+      },
+      "filters": {
+        "title": "Filtros avanzados",
+        "description": "Filtrá por rango de fechas, estado de pago (pagado/pendiente) y tipo de envío (domicilio/retiro)."
+      },
+      "viewToggle": {
+        "title": "Vista de tarjetas o lista",
+        "description": "Cambiá entre vista de tarjetas (kanban) o lista compacta según tu preferencia."
+      },
+      "columnVisibility": {
+        "title": "Mostrar u ocultar columnas",
+        "description": "Con este control podés ocultar los estados que no necesitás ver en este momento para simplificar la pantalla."
+      },
+      "kanbanBoard": {
+        "title": "Tablero de pedidos",
+        "description": "Los pedidos se organizan en columnas por estado: Confirmado → En proceso → Listo → En camino → Completado. Arrastrá o usá el dropdown para moverlos."
+      },
+      "orderCard": {
+        "title": "Cambiar estado de un pedido",
+        "description": "Hacé clic en el badge de estado de cualquier tarjeta para desplegar el menú y avanzar el pedido al siguiente estado."
+      },
+      "sidebar": {
+        "title": "Menú de navegación",
+        "description": "Desde aquí accedés a todas las secciones: pedidos, clientes, productos, sucursales, configuración y más."
+      }
+    },
+    "startButton": "Ver tour"
   }
 }

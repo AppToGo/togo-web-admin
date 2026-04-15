@@ -39,6 +39,8 @@ export interface KanbanColumnProps {
   hasMore?: boolean;
   isFetchingNextPage?: boolean;
   onLoadMore?: () => void;
+  // Tour: data-tour-step value to apply to the first card wrapper
+  firstCardTourStep?: string;
 }
 
 export const KanbanColumn = memo(function KanbanColumn({
@@ -55,6 +57,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   hasMore = false,
   isFetchingNextPage = false,
   onLoadMore,
+  firstCardTourStep,
 }: KanbanColumnProps) {
   const t = useTranslations("orders");
   const [isDragOver, setIsDragOver] = useState(false);
@@ -196,15 +199,19 @@ export const KanbanColumn = memo(function KanbanColumn({
           </div>
         ) : (
           <>
-            {orders.map((order) => (
-              <OrderCard
+            {orders.map((order, index) => (
+              <div
                 key={order.id}
-                order={order}
-                onStatusChange={onStatusChange}
-                onClick={() => onOrderClick?.(order.id)}
-                currentStatus={status}
-                viewMode={viewMode}
-              />
+                data-tour-step={index === 0 && firstCardTourStep ? firstCardTourStep : undefined}
+              >
+                <OrderCard
+                  order={order}
+                  onStatusChange={onStatusChange}
+                  onClick={() => onOrderClick?.(order.id)}
+                  currentStatus={status}
+                  viewMode={viewMode}
+                />
+              </div>
             ))}
             
             {/* Sentinel div for infinite scroll (archive columns only) */}

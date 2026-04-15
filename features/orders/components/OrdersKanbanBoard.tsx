@@ -277,6 +277,7 @@ export function OrdersKanbanBoard({
       <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
         {/* Main Kanban Container - con overflow controlado */}
         <div
+          data-tour-step="kanban-board"
           className={cn(
             "relative rounded-card-xl flex flex-col min-h-0 overflow-hidden",
             "bg-white/30 backdrop-blur-xl border border-white/40",
@@ -296,7 +297,7 @@ export function OrdersKanbanBoard({
                     : `${visibleColumnCount * 320}px`,
               }}
             >
-              {columns.map((column) => {
+              {columns.map((column, colIndex) => {
                 const isCompletedColumn = column.id === "COMPLETED";
                 // Loading específico por tipo de columna
                 const columnIsLoading = isCompletedColumn
@@ -323,6 +324,8 @@ export function OrdersKanbanBoard({
                     }
                     onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
                     totalCount={metrics?.porEstadoOrden[column.id]}
+                    // Tour step: mark the first card of the first column
+                    firstCardTourStep={colIndex === 0 ? "order-card" : undefined}
                   />
                 );
               })}
@@ -354,7 +357,7 @@ export function OrdersKanbanBoard({
             </div>
 
             {/* Stats Content - Métricas de órdenes */}
-            <div className="space-y-6">
+            <div data-tour-step="metrics" className="space-y-6">
               {isLoadingLive ? <OrderMetricsSkeleton /> : <OrderMetrics />}
             </div>
           </div>
@@ -362,11 +365,13 @@ export function OrdersKanbanBoard({
       </div>
 
       {/* Column Visibility Floating Bar */}
-      <ColumnVisibilityBar
-        onVisibilityChange={setColumnVisibility}
-        isSidebarOpen={isSidebarOpen}
-        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
+      <div data-tour-step="column-visibility">
+        <ColumnVisibilityBar
+          onVisibilityChange={setColumnVisibility}
+          isSidebarOpen={isSidebarOpen}
+          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+      </div>
 
       {/* Dialog de detalle de orden - Solo renderizar cuando hay orderId seleccionado */}
       {selectedOrderId && (

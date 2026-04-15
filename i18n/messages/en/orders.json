@@ -221,5 +221,42 @@
     "oneBranch": "1 branch",
     "multipleBranches": "{count} branches",
     "selectBusinessFirst": "Select a business first"
+  },
+  "tour": {
+    "steps": {
+      "metrics": {
+        "title": "Daily metrics",
+        "description": "Here you can see in real time how many orders are in each state, the period revenue and delivery metrics."
+      },
+      "search": {
+        "title": "Search orders",
+        "description": "Search orders by order number or by customer name."
+      },
+      "filters": {
+        "title": "Advanced filters",
+        "description": "Filter by date range, payment status (paid/pending) and delivery type (delivery/pickup)."
+      },
+      "viewToggle": {
+        "title": "Card or list view",
+        "description": "Switch between card (kanban) view or compact list view according to your preference."
+      },
+      "columnVisibility": {
+        "title": "Show or hide columns",
+        "description": "With this control you can hide the states you don't need to see right now to simplify the screen."
+      },
+      "kanbanBoard": {
+        "title": "Orders board",
+        "description": "Orders are organized in columns by state: Confirmed → In progress → Ready → On the way → Completed. Drag or use the dropdown to move them."
+      },
+      "orderCard": {
+        "title": "Change an order status",
+        "description": "Click on the status badge of any card to open the menu and advance the order to the next state."
+      },
+      "sidebar": {
+        "title": "Navigation menu",
+        "description": "From here you can access all sections: orders, customers, products, branches, settings and more."
+      }
+    },
+    "startButton": "View tour"
   }
 }
