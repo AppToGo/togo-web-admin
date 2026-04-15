@@ -1,6 +1,7 @@
 export { LoginForm } from "./LoginForm";
 export { RegisterForm } from "./RegisterForm";
 export { ForgotPasswordForm } from "./ForgotPasswordForm";
+export { ResetPasswordForm } from "./ResetPasswordForm";
 export { RegistrationWizard } from "./RegistrationWizard";
 export { Step1BasicData } from "./Step1BasicData";
 export type { Step1Data } from "./Step1BasicData";

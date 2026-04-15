@@ -24,6 +24,8 @@ const AUTH_ENDPOINTS = {
   LOGOUT: "/auth/logout",
   LOGOUT_ALL: "/auth/logout-all",
   SESSION: "/auth/session",
+  FORGOT_PASSWORD: "/auth/forgot-password",
+  RESET_PASSWORD: "/auth/reset-password",
 } as const;
 
 const API_BASE_URL =
@@ -127,6 +129,48 @@ export async function register(
   }
 
   return response.json() as Promise<RegistrationResponse>;
+}
+
+/**
+ * Request password reset email.
+ * Always succeeds (backend never reveals if email exists).
+ */
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}${AUTH_ENDPOINTS.FORGOT_PASSWORD}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    const message = (error as { message?: string }).message ?? "Error al solicitar recuperación de contraseña";
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<{ message: string }>;
+}
+
+/**
+ * Reset password using the token from the email link.
+ *
+ * @param token - Plain 64-char hex token from URL
+ * @param newPassword - New password (min 8 chars)
+ */
+export async function resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}${AUTH_ENDPOINTS.RESET_PASSWORD}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    const message = (error as { message?: string | string[] }).message ?? "Error al restablecer la contraseña";
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
+  }
+
+  return response.json() as Promise<{ message: string }>;
 }
 
 export interface IndustryOption {

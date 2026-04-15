@@ -19,9 +19,10 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { locales } from "./i18n/config";
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
+const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 // Routes that should redirect to dashboard if already authenticated
 const AUTH_ROUTES = ["/login", "/register"];
@@ -63,9 +64,12 @@ export function middleware(request: NextRequest) {
   }
 
   // Extract locale from path (e.g., /es/login -> es)
+  // Only treat the first segment as locale if it's a known locale (es, en)
   const localeMatch = pathname.match(/^\/([^\/]+)(\/.*)?$/);
-  const locale = localeMatch ? localeMatch[1] : null;
-  const pathWithoutLocale = localeMatch && localeMatch[2] ? localeMatch[2] : "/";
+  const maybeLocale = localeMatch ? localeMatch[1] : null;
+  const isKnownLocale = maybeLocale ? (locales as readonly string[]).includes(maybeLocale) : false;
+  const locale = isKnownLocale ? maybeLocale : null;
+  const pathWithoutLocale = isKnownLocale && localeMatch?.[2] ? localeMatch[2] : pathname;
 
   if (isDev) {
     console.log("[Middleware] Locale:", locale);
@@ -114,13 +118,14 @@ export function middleware(request: NextRequest) {
   }
 
   // 2. Non-authenticated user trying to access protected route -> redirect to login
-  if (!hasCookie && !isPublicRoute && locale) {
+  if (!hasCookie && !isPublicRoute && (locale || !isKnownLocale)) {
     if (isDev) {
       console.log(
         "[Middleware] No cookie + protected route -> redirect to login"
       );
     }
-    const loginUrl = new URL(`/${locale}/login`, request.url);
+    const effectiveLocale = locale ?? "es";
+    const loginUrl = new URL(`/${effectiveLocale}/login`, request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
