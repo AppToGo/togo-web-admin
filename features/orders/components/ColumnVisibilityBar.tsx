@@ -17,6 +17,7 @@ const KANBAN_STATUSES: OrderStatus[] = [
   "IN_PROGRESS",
   "READY",
   "COMPLETED",
+  "CANCELLED",
 ];
 
 export interface ColumnVisibilityConfig {
@@ -24,6 +25,7 @@ export interface ColumnVisibilityConfig {
   IN_PROGRESS: boolean;
   READY: boolean;
   COMPLETED: boolean;
+  CANCELLED: boolean;
 }
 
 
@@ -40,6 +42,7 @@ const defaultVisibility: ColumnVisibilityConfig = {
   IN_PROGRESS: true,
   READY: true,
   COMPLETED: true,
+  CANCELLED: false,
 };
 
 interface ColumnVisibilityBarProps {

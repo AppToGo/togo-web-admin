@@ -118,6 +118,7 @@ export function OrdersKanbanBoard({
       IN_PROGRESS: true,
       READY: true,
       COMPLETED: true,
+      CANCELLED: false,
     });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);

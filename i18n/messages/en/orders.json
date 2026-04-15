@@ -105,7 +105,7 @@
     "IN_PROGRESS": "In progress",
     "READY": "Ready",
     "ON_THE_WAY": "On the way",
-    "COMPLETED": "Completed",
+    "COMPLETED": "Delivered",
     "CANCELLED": "Cancelled",
     "ABANDONED": "Abandoned",
     "PENDING": "Pending",
