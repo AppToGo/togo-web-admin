@@ -25,7 +25,25 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
     setHydrated(true);
   }, []);
 
-  // Auto-start the tour after delay if it hasn't been completed
+  // Signal isTourRunning immediately on mount — no hydration guard.
+  // React runs children effects before parent effects, so this fires before
+  // DashboardLayout's useUpgradePlanModal effect. Reading from getState() bypasses
+  // the stale-closure problem: Zustand rehydrates from localStorage before effects
+  // run (sync storage completes in a microtask prior to the effects flush).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const alreadyDone = useTourStore.getState().completedTours[tourKey] === true;
+    if (!alreadyDone) {
+      useTourStore.getState().setTourRunning(true);
+    }
+    return () => {
+      useTourStore.getState().setTourRunning(false);
+    };
+  // tourKey changes only when user/business changes — intentional single-run per mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourKey]);
+
+  // Auto-start the visual tour after delay if it hasn't been completed
   useEffect(() => {
     if (!hydrated) return; // Wait for hydration — avoids SSR key mismatch
     if (!readyToStart) return; // Wait until caller signals data is ready
@@ -33,10 +51,6 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
 
     const alreadyDone = isTourCompleted(tourKey);
     if (alreadyDone) return;
-
-    // Signal immediately (before the visual delay) so other effects that depend
-    // on isTourRunning (e.g. upgrade modal) see it synchronously on the same flush.
-    setTourRunning(true);
 
     timerRef.current = setTimeout(() => {
       setIsActive(true);
@@ -46,8 +60,6 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
     return () => {
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
-        // Component unmounted before tour started — clear the running flag
-        setTourRunning(false);
       }
     };
     // Only run once on mount — tourKey changes only when user/business changes
