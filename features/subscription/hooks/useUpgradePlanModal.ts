@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useTourStore } from "@/stores/tour.store";
 
 const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
 
@@ -31,12 +32,24 @@ const useUpgradePlanModalStore = create<UpgradePlanModalStore>((set) => ({
 export function useUpgradePlanModal() {
   const user = useCurrentUser();
   const { open, openModal, closeModal } = useUpgradePlanModalStore();
+  // Subscribe for re-renders when isTourRunning changes (so the effect below
+  // re-runs when the tour ends). The actual gate check inside the effect reads
+  // via getState() to avoid a stale closure from concurrent sibling effects:
+  // React runs children effects before parent effects, so useTour (child) calls
+  // setTourRunning(true) before this effect runs — getState() sees that update.
+  const isTourRunning = useTourStore((state) => state.isTourRunning);
 
-  // Auto-open once per session for free-plan users, on any page
+  // Auto-open once per session for free-plan users, on any page.
+  // Deferred while any tour is active so they don't overlap on first login.
   useEffect(() => {
     if (!user?.userId) return;
     if (user.subscriptionPlan === undefined) return;
     if (user.subscriptionPlan !== 1) return;
+
+    // Read current store state directly — avoids stale closure when a sibling
+    // effect (useTour, which runs first as a child component) updated the store
+    // in the same effects flush before this effect ran.
+    if (useTourStore.getState().isTourRunning) return;
 
     const flagKey = `${SESSION_FLAG_PREFIX}${user.userId}-${user.businessId}`;
     const alreadyShown = sessionStorage.getItem(flagKey);
@@ -49,7 +62,7 @@ export function useUpgradePlanModal() {
       // sessionStorage unavailable (private mode, quota exceeded) — skip flag
     }
     openModal();
-  }, [user?.userId, user?.subscriptionPlan, user?.businessId, openModal]);
+  }, [user?.userId, user?.subscriptionPlan, user?.businessId, isTourRunning, openModal]);
 
   return { open, closeModal };
 }
