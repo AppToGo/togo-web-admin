@@ -32,24 +32,22 @@ const useUpgradePlanModalStore = create<UpgradePlanModalStore>((set) => ({
 export function useUpgradePlanModal() {
   const user = useCurrentUser();
   const { open, openModal, closeModal } = useUpgradePlanModalStore();
-  // Subscribe for re-renders when isTourRunning changes (so the effect below
-  // re-runs when the tour ends). The actual gate check inside the effect reads
-  // via getState() to avoid a stale closure from concurrent sibling effects:
-  // React runs children effects before parent effects, so useTour (child) calls
-  // setTourRunning(true) before this effect runs — getState() sees that update.
-  const isTourRunning = useTourStore((state) => state.isTourRunning);
+
+  // Subscribe to completedTours so the effect re-runs when a tour is marked done.
+  const completedTours = useTourStore((state) => state.completedTours);
 
   // Auto-open once per session for free-plan users, on any page.
-  // Deferred while any tour is active so they don't overlap on first login.
   useEffect(() => {
     if (!user?.userId) return;
     if (user.subscriptionPlan === undefined) return;
     if (user.subscriptionPlan !== 1) return;
 
-    // Read current store state directly — avoids stale closure when a sibling
-    // effect (useTour, which runs first as a child component) updated the store
-    // in the same effects flush before this effect ran.
-    if (useTourStore.getState().isTourRunning) return;
+    // Don't show the modal until the onboarding tour has been completed or skipped.
+    // On first login the tour runs on the orders page; showing the modal at the same
+    // time creates a confusing overlap. Once markCompleted() fires (via goNext or skip),
+    // completedTours updates, this effect re-runs, and the modal opens.
+    const tourKey = `orders:${user.userId}:${user.businessId}`;
+    if (!completedTours[tourKey]) return;
 
     const flagKey = `${SESSION_FLAG_PREFIX}${user.userId}-${user.businessId}`;
     const alreadyShown = sessionStorage.getItem(flagKey);
@@ -62,7 +60,7 @@ export function useUpgradePlanModal() {
       // sessionStorage unavailable (private mode, quota exceeded) — skip flag
     }
     openModal();
-  }, [user?.userId, user?.subscriptionPlan, user?.businessId, isTourRunning, openModal]);
+  }, [user?.userId, user?.subscriptionPlan, user?.businessId, completedTours, openModal]);
 
   return { open, closeModal };
 }
