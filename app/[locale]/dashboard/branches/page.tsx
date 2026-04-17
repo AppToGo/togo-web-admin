@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -19,6 +20,12 @@ import {
   BranchCard,
   BranchLimitIndicator,
 } from "@/features/branches";
+import {
+  useWhatsAppAccounts,
+  useWhatsAppRoutings,
+  WhatsAppConnectDialog,
+} from "@/features/whatsapp";
+import type { Branch } from "@/features/branches";
 
 function BranchesLoading() {
   return (
@@ -75,6 +82,15 @@ export default function BranchesPage() {
   const deleteBranch = useDeleteBranch();
   const setMainBranch = useSetMainBranch();
 
+  // WhatsApp data
+  const { data: whatsappAccounts } = useWhatsAppAccounts();
+  const { data: whatsappRoutings } = useWhatsAppRoutings();
+
+  // WhatsApp dialog state
+  const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
+  const [whatsappDialogBranch, setWhatsappDialogBranch] =
+    useState<Branch | null>(null);
+
   const handleCreateBranch = () => {
     router.push("/dashboard/branches/new");
   };
@@ -99,6 +115,22 @@ export default function BranchesPage() {
     router.push("/dashboard/settings");
   };
 
+  const handleConnectWhatsApp = (branch: Branch) => {
+    setWhatsappDialogBranch(branch);
+    setWhatsappDialogOpen(true);
+  };
+
+  // Helpers to find the active routing and account for a given branch
+  const getRoutingForBranch = (branchId: string) =>
+    whatsappRoutings?.find(
+      (r) => r.branchId === branchId && r.isActive
+    ) ?? null;
+
+  const getAccountForRouting = (whatsappAccountId: string | undefined) => {
+    if (!whatsappAccountId) return null;
+    return whatsappAccounts?.find((a) => a.id === whatsappAccountId) ?? null;
+  };
+
   if (!hasBusiness && !isSuperAdmin) {
     return (
       <DashboardLayout>
@@ -116,6 +148,14 @@ export default function BranchesPage() {
       </DashboardLayout>
     );
   }
+
+  // Derived data for the dialog
+  const dialogRouting = whatsappDialogBranch
+    ? getRoutingForBranch(whatsappDialogBranch.id)
+    : null;
+  const dialogAccount = dialogRouting
+    ? getAccountForRouting(dialogRouting.whatsappAccountId)
+    : null;
 
   return (
     <DashboardLayout>
@@ -157,22 +197,48 @@ export default function BranchesPage() {
               <EmptyBranchesState onCreate={handleCreateBranch} />
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {branches.map((branch) => (
-                  <BranchCard
-                    key={branch.id}
-                    branch={branch}
-                    onEdit={(b) => handleEditBranch(b.id)}
-                    onConfigure={(b) => handleConfigureBranch(b.id)}
-                    onDelete={(b) => handleDeleteBranch(b.id)}
-                    onMakeMain={(b) => handleSetMainBranch(b.id)}
-                    isLoading={deleteBranch.isPending || setMainBranch.isPending}
-                  />
-                ))}
+                {branches.map((branch) => {
+                  const routing = getRoutingForBranch(branch.id);
+                  const account = getAccountForRouting(
+                    routing?.whatsappAccountId
+                  );
+                  return (
+                    <BranchCard
+                      key={branch.id}
+                      branch={branch}
+                      onEdit={(b) => handleEditBranch(b.id)}
+                      onConfigure={(b) => handleConfigureBranch(b.id)}
+                      onDelete={(b) => handleDeleteBranch(b.id)}
+                      onMakeMain={(b) => handleSetMainBranch(b.id)}
+                      onConnectWhatsApp={handleConnectWhatsApp}
+                      whatsappRouting={routing}
+                      whatsappAccount={account}
+                      isLoading={
+                        deleteBranch.isPending || setMainBranch.isPending
+                      }
+                    />
+                  );
+                })}
               </div>
             )}
           </>
         )}
       </div>
+
+      {/* WhatsApp Connect/Edit Dialog */}
+      {whatsappDialogBranch && (
+        <WhatsAppConnectDialog
+          open={whatsappDialogOpen}
+          onOpenChange={(open) => {
+            setWhatsappDialogOpen(open);
+            if (!open) setWhatsappDialogBranch(null);
+          }}
+          branchId={whatsappDialogBranch.id}
+          branchName={whatsappDialogBranch.name}
+          account={dialogAccount}
+          existingRouting={dialogRouting}
+        />
+      )}
     </DashboardLayout>
   );
 }
