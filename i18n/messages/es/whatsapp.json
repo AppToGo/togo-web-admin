@@ -1,0 +1,56 @@
+{
+  "accounts": {
+    "connect": "Conectar WhatsApp",
+    "edit": "Editar conexión",
+    "connected": "Conectado",
+    "notConnected": "Sin WhatsApp",
+    "createTitle": "Conectar WhatsApp a {branchName}",
+    "createTitleBusiness": "Configurar número compartido",
+    "editTitle": "Editar conexión WhatsApp",
+    "fields": {
+      "phoneNumber": "Número de teléfono",
+      "phoneNumberPlaceholder": "Ej: +573001234567",
+      "metaWabaId": "ID de WABA (Meta Business)",
+      "metaWabaIdPlaceholder": "Ej: 1789410171747255",
+      "phoneNumberId": "ID de número (Meta)",
+      "phoneNumberIdPlaceholder": "Ej: 980675348470004",
+      "accessToken": "Token de acceso",
+      "accessTokenPlaceholder": "EAAxxxxxxxxxxxxxxxx",
+      "accessTokenEdit": "Nuevo token (dejar vacío para mantener el actual)",
+      "displayName": "Nombre de visualización (opcional)",
+      "displayNamePlaceholder": "Ej: Soporte ToGo"
+    },
+    "where": "¿Dónde encontrar estos datos?",
+    "whereHint": "En Meta for Developers → Tu app → WhatsApp → API Setup",
+    "createSuccess": "WhatsApp conectado exitosamente",
+    "updateSuccess": "Conexión WhatsApp actualizada",
+    "deleteSuccess": "WhatsApp desconectado",
+    "errors": {
+      "createFailed": "Error al conectar WhatsApp",
+      "updateFailed": "Error al actualizar la conexión",
+      "deleteFailed": "Error al desconectar WhatsApp"
+    },
+    "validation": {
+      "phoneRequired": "El número de teléfono es requerido",
+      "phoneInvalid": "Formato inválido. Usa E.164: +573001234567",
+      "wabaIdRequired": "El ID de WABA es requerido",
+      "phoneNumberIdRequired": "El ID de número de teléfono es requerido",
+      "accessTokenRequired": "El token de acceso es requerido"
+    },
+    "disconnect": "Desconectar",
+    "disconnectTitle": "Desconectar WhatsApp",
+    "disconnectDescription": "¿Estás seguro? Se eliminará la cuenta y sus reglas de enrutamiento."
+  },
+  "routing": {
+    "autoAssign": "Número compartido",
+    "autoAssignDescription": "Un número único para todas las sedes. El bot pregunta a qué sede desea hacer el pedido.",
+    "directBranch": "Número dedicado",
+    "sharedInbox": "Bandeja compartida"
+  },
+  "business": {
+    "sectionTitle": "WhatsApp Compartido",
+    "sectionDescription": "Número único para todas las sedes. Los clientes elegirán la sede al hacer su pedido.",
+    "configure": "Configurar número compartido",
+    "configured": "Número activo"
+  }
+}

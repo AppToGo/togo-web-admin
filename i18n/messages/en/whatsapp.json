@@ -1,0 +1,56 @@
+{
+  "accounts": {
+    "connect": "Connect WhatsApp",
+    "edit": "Edit connection",
+    "connected": "Connected",
+    "notConnected": "No WhatsApp",
+    "createTitle": "Connect WhatsApp to {branchName}",
+    "createTitleBusiness": "Configure shared number",
+    "editTitle": "Edit WhatsApp connection",
+    "fields": {
+      "phoneNumber": "Phone number",
+      "phoneNumberPlaceholder": "E.g.: +13001234567",
+      "metaWabaId": "WABA ID (Meta Business)",
+      "metaWabaIdPlaceholder": "E.g.: 1789410171747255",
+      "phoneNumberId": "Phone number ID (Meta)",
+      "phoneNumberIdPlaceholder": "E.g.: 980675348470004",
+      "accessToken": "Access token",
+      "accessTokenPlaceholder": "EAAxxxxxxxxxxxxxxxx",
+      "accessTokenEdit": "New token (leave empty to keep current)",
+      "displayName": "Display name (optional)",
+      "displayNamePlaceholder": "E.g.: ToGo Support"
+    },
+    "where": "Where to find this data?",
+    "whereHint": "In Meta for Developers → Your app → WhatsApp → API Setup",
+    "createSuccess": "WhatsApp connected successfully",
+    "updateSuccess": "WhatsApp connection updated",
+    "deleteSuccess": "WhatsApp disconnected",
+    "errors": {
+      "createFailed": "Failed to connect WhatsApp",
+      "updateFailed": "Failed to update connection",
+      "deleteFailed": "Failed to disconnect WhatsApp"
+    },
+    "validation": {
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Invalid format. Use E.164: +13001234567",
+      "wabaIdRequired": "WABA ID is required",
+      "phoneNumberIdRequired": "Phone number ID is required",
+      "accessTokenRequired": "Access token is required"
+    },
+    "disconnect": "Disconnect",
+    "disconnectTitle": "Disconnect WhatsApp",
+    "disconnectDescription": "Are you sure? The account and all routing rules will be deleted."
+  },
+  "routing": {
+    "autoAssign": "Shared number",
+    "autoAssignDescription": "One number for all branches. The bot asks which branch the customer wants to order from.",
+    "directBranch": "Dedicated number",
+    "sharedInbox": "Shared inbox"
+  },
+  "business": {
+    "sectionTitle": "Shared WhatsApp",
+    "sectionDescription": "One number for all branches. Customers will choose their branch when placing an order.",
+    "configure": "Configure shared number",
+    "configured": "Number active"
+  }
+}
