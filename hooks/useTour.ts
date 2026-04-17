@@ -9,7 +9,7 @@ const TOUR_START_DELAY_MS = 600;
 
 export function useTour(tourId: string, steps: TourStep[], readyToStart = true): TourContextValue {
   const user = useAuthStore((state) => state.user);
-  const { markCompleted, isTourCompleted } = useTourStore();
+  const { markCompleted, isTourCompleted, setTourRunning } = useTourStore();
 
   const userId = user?.userId ?? "anonymous";
   const businessId = user?.businessId ?? "none";
@@ -34,6 +34,10 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
     const alreadyDone = isTourCompleted(tourKey);
     if (alreadyDone) return;
 
+    // Signal immediately (before the visual delay) so other effects that depend
+    // on isTourRunning (e.g. upgrade modal) see it synchronously on the same flush.
+    setTourRunning(true);
+
     timerRef.current = setTimeout(() => {
       setIsActive(true);
       setCurrentStepIndex(0);
@@ -42,6 +46,8 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
     return () => {
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
+        // Component unmounted before tour started — clear the running flag
+        setTourRunning(false);
       }
     };
     // Only run once on mount — tourKey changes only when user/business changes
@@ -50,20 +56,22 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
 
   const startTour = useCallback(() => {
     setCurrentStepIndex(0);
+    setTourRunning(true);
     setIsActive(true);
-  }, []);
+  }, [setTourRunning]);
 
   const goNext = useCallback(() => {
     const next = currentStepIndex + 1;
     if (next >= steps.length) {
-      // Tour finished — mark completed and reset before deactivating
+      // Tour finished — mark completed and signal end before deactivating
       setCurrentStepIndex(0);
       markCompleted(tourKey);
+      setTourRunning(false);
       setIsActive(false);
     } else {
       setCurrentStepIndex(next);
     }
-  }, [currentStepIndex, steps.length, tourKey, markCompleted]);
+  }, [currentStepIndex, steps.length, tourKey, markCompleted, setTourRunning]);
 
   const goPrev = useCallback(() => {
     setCurrentStepIndex((prev) => Math.max(0, prev - 1));
@@ -72,8 +80,9 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
   const skip = useCallback(() => {
     setIsActive(false);
     markCompleted(tourKey);
+    setTourRunning(false);
     setCurrentStepIndex(0);
-  }, [tourKey, markCompleted]);
+  }, [tourKey, markCompleted, setTourRunning]);
 
   const currentStep = isActive && steps.length > 0 ? (steps[currentStepIndex] ?? null) : null;
 

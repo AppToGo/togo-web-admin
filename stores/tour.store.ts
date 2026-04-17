@@ -11,6 +11,8 @@ import { persist, createJSONStorage } from "zustand/middleware";
 interface TourStoreState {
   /** Record of completed tours. Key format: `${tourId}:${userId}:${businessId}` */
   completedTours: Record<string, boolean>;
+  /** Whether any tour is currently running (not persisted — runtime only) */
+  isTourRunning: boolean;
 }
 
 interface TourStoreActions {
@@ -20,12 +22,15 @@ interface TourStoreActions {
   resetTour: (key: string) => void;
   /** Check whether a given tour has been completed */
   isTourCompleted: (key: string) => boolean;
+  /** Signal that a tour has started or ended */
+  setTourRunning: (value: boolean) => void;
 }
 
 type TourStore = TourStoreState & TourStoreActions;
 
 const initialState: TourStoreState = {
   completedTours: {},
+  isTourRunning: false,
 };
 
 function getStorage(): Storage {
@@ -65,10 +70,16 @@ export const useTourStore = create<TourStore>()(
       isTourCompleted: (key: string) => {
         return get().completedTours[key] === true;
       },
+
+      setTourRunning: (value: boolean) => {
+        set({ isTourRunning: value });
+      },
     }),
     {
       name: "togo-tour-completed-v1",
       storage: createJSONStorage(() => getStorage()),
+      // Only persist completedTours — isTourRunning is runtime state only
+      partialize: (state) => ({ completedTours: state.completedTours }),
     }
   )
 );
