@@ -5,13 +5,7 @@
  * Basado en los DTOs del backend.
  */
 
-import type { WhatsAppNumberExtra } from "../utils/branch-helpers";
 import type { DeliveryConfig, BusinessHours } from './branch-config.types';
-
-/**
- * Modo de enrutamiento de WhatsApp para una sucursal
- */
-export type RoutingMode = "DEDICATED" | "SINGLE_NUMBER";
 
 /**
  * Información de una sucursal
@@ -24,10 +18,6 @@ export interface Branch {
   code: string;
   isMainBranch: boolean;
   isActive: boolean;
-  whatsappPhoneNumber: string | null;
-  whatsappPhoneNumberId: string | null;
-  whatsappNumbersExtra: WhatsAppNumberExtra[] | null;
-  routingMode: RoutingMode;
   address: string | null;
   /** Department (state/province) of the branch location */
   department?: string | null;
@@ -63,9 +53,6 @@ export interface CreateBranchRequest {
   name: string;
   slug: string;
   code: string;
-  whatsappPhoneNumber?: string;
-  whatsappPhoneNumberId?: string;
-  routingMode: RoutingMode;
   address?: string;
   /** Department (state/province) of the branch location */
   department?: string;
@@ -88,9 +75,6 @@ export interface UpdateBranchRequest {
   name?: string;
   slug?: string;
   code?: string;
-  whatsappPhoneNumber?: string;
-  whatsappPhoneNumberId?: string;
-  routingMode?: RoutingMode;
   address?: string;
   /** Department (state/province) of the branch location */
   department?: string;

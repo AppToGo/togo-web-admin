@@ -11,14 +11,12 @@ import {
   Clock,
   DollarSign,
   Info,
-  Loader2,
 } from "lucide-react";
 import { COLOMBIA_DEPARTMENTS } from "@/lib/colombia-cities";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -36,14 +34,12 @@ import {
 } from "@/components/ui/card";
 import type {
   Branch,
-  RoutingMode,
   CreateBranchRequest,
   UpdateBranchRequest,
   DeliveryFeeType,
   DeliveryConfig,
   BusinessHours,
 } from "../types";
-import { getPrimaryWhatsApp } from "../utils/branch-helpers";
 import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
 
@@ -91,9 +87,6 @@ const DEFAULT_CURRENCIES = [
   { code: "CRC", name: "Colón Costarricense" },
 ];
 
-// E.164 phone validation regex
-const E164_REGEX = /^\+[1-9]\d{1,14}$/;
-
 // Slug generation from name
 const generateSlug = (name: string): string => {
   return name
@@ -137,16 +130,12 @@ export function BranchForm({
   };
 
   // Form state — lazy initializer reads from branch prop on first render
-  // This guarantees department/city are populated immediately without waiting for useEffect
   const [formData, setFormData] = useState(() => {
     if (!branch) {
       return {
         name: "",
         slug: "",
         code: "",
-        whatsappPhoneNumber: "",
-        whatsappPhoneNumberId: "",
-        routingMode: "DEDICATED" as RoutingMode,
         address: "",
         department: "",
         city: "",
@@ -158,15 +147,11 @@ export function BranchForm({
         businessHours: DEFAULT_BUSINESS_HOURS,
       };
     }
-    const phone = getPrimaryWhatsApp(branch);
     const bh = branch.businessHours as BusinessHours | null;
     return {
       name: branch.name,
       slug: branch.slug,
       code: branch.code,
-      whatsappPhoneNumber: phone || "",
-      whatsappPhoneNumberId: branch.whatsappPhoneNumberId || "",
-      routingMode: branch.routingMode,
       address: branch.address || "",
       department: branch.department || "",
       city: branch.city || "",
@@ -194,15 +179,11 @@ export function BranchForm({
   // Sync form when branch prop changes (e.g. after React Query background refetch)
   useEffect(() => {
     if (branch) {
-      const phone = getPrimaryWhatsApp(branch);
       const bh = branch.businessHours as BusinessHours | null;
       setFormData({
         name: branch.name,
         slug: branch.slug,
         code: branch.code,
-        whatsappPhoneNumber: phone || "",
-        whatsappPhoneNumberId: branch.whatsappPhoneNumberId || "",
-        routingMode: branch.routingMode,
         address: branch.address || "",
         department: branch.department || "",
         city: branch.city || "",
@@ -241,11 +222,6 @@ export function BranchForm({
           return "";
         case "code":
           return !value.trim() ? t("form.errors.codeRequired") : "";
-        case "whatsappPhoneNumber":
-          if (value && !E164_REGEX.test(value)) {
-            return t("form.errors.phoneInvalid");
-          }
-          return "";
         default:
           return "";
       }
@@ -298,7 +274,7 @@ export function BranchForm({
   // Validate all fields
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const fieldsToValidate = ["name", "slug", "code", "whatsappPhoneNumber"];
+    const fieldsToValidate = ["name", "slug", "code"];
 
     fieldsToValidate.forEach((field) => {
       const value = formData[field as keyof typeof formData] as string;
@@ -333,13 +309,9 @@ export function BranchForm({
 
     const data = isEditing
       ? {
-          // Update: send only changed fields
           name: formData.name,
           slug: formData.slug,
           code: formData.code,
-          whatsappPhoneNumber: formData.whatsappPhoneNumber || undefined,
-          whatsappPhoneNumberId: formData.whatsappPhoneNumberId || undefined,
-          routingMode: formData.routingMode,
           address: formData.address || undefined,
           department: formData.department || undefined,
           city: formData.city || undefined,
@@ -351,13 +323,9 @@ export function BranchForm({
           businessHours: normalizeBusinessHours(formData.businessHours),
         }
       : {
-          // Create: send all required fields
           name: formData.name,
           slug: formData.slug,
           code: formData.code,
-          whatsappPhoneNumber: formData.whatsappPhoneNumber || undefined,
-          whatsappPhoneNumberId: formData.whatsappPhoneNumberId || undefined,
-          routingMode: formData.routingMode,
           address: formData.address || undefined,
           department: formData.department || undefined,
           city: formData.city || undefined,
@@ -372,11 +340,7 @@ export function BranchForm({
   };
 
   const isFormValid =
-    formData.name.trim() &&
-    formData.slug.trim() &&
-    formData.code.trim() &&
-    (!formData.whatsappPhoneNumber ||
-      E164_REGEX.test(formData.whatsappPhoneNumber));
+    formData.name.trim() && formData.slug.trim() && formData.code.trim();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -459,106 +423,6 @@ export function BranchForm({
                 {t("form.help.codeLocked")}
               </p>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* WhatsApp Configuration */}
-      <Card variant="glass">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Phone className="w-4 h-4 text-emerald-500" />
-            {t("form.sections.whatsapp")}
-          </CardTitle>
-          <CardDescription>{t("form.descriptions.whatsapp")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Routing Mode */}
-          <div className="space-y-3">
-            <Label>{t("form.fields.routingMode")}</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(["DEDICATED", "SINGLE_NUMBER"] as RoutingMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => handleSelectChange("routingMode", mode)}
-                  disabled={isLoading}
-                  className={cn(
-                    "relative flex flex-col items-start p-4 rounded-lg border text-left transition-all",
-                    formData.routingMode === mode
-                      ? "border-indigo-500 bg-indigo-50/50 ring-1 ring-indigo-500"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  )}
-                >
-                  <span className="font-medium text-slate-900">
-                    {t(`routingModes.${mode}.title`)}
-                  </span>
-                  <span className="text-xs text-slate-500 mt-1">
-                    {t(`routingModes.${mode}.description`)}
-                  </span>
-                  {formData.routingMode === mode && (
-                    <div className="absolute top-3 right-3 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center">
-                      <svg
-                        className="w-2.5 h-2.5 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {/* WhatsApp Phone Number */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-whatsappPhoneNumber`}>
-                {t("form.fields.whatsappPhoneNumber")}
-              </Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  id={`${formId}-whatsappPhoneNumber`}
-                  name="whatsappPhoneNumber"
-                  type="tel"
-                  value={formData.whatsappPhoneNumber}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="+573001234567"
-                  disabled={isLoading}
-                  error={errors.whatsappPhoneNumber}
-                  className="pl-9"
-                />
-              </div>
-              <p className="text-xs text-slate-500">
-                {t("form.help.phoneFormat")}
-              </p>
-            </div>
-
-            {/* WhatsApp Phone Number ID */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-whatsappPhoneNumberId`}>
-                {t("form.fields.whatsappPhoneNumberId")}
-              </Label>
-              <Input
-                id={`${formId}-whatsappPhoneNumberId`}
-                name="whatsappPhoneNumberId"
-                value={formData.whatsappPhoneNumberId}
-                onChange={handleChange}
-                placeholder={t("form.placeholders.whatsappPhoneNumberId")}
-                disabled={isLoading}
-              />
-              <p className="text-xs text-slate-500">
-                {t("form.help.phoneNumberId")}
-              </p>
-            </div>
           </div>
         </CardContent>
       </Card>

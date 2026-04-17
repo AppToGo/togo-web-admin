@@ -4,4 +4,4 @@
  * Funciones helper para la gestión de sucursales.
  */
 
-export * from "./branch-helpers";
+// Note: WhatsApp-specific helpers have been moved to features/whatsapp

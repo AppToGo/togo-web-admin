@@ -8,9 +8,6 @@
 // Types
 export * from "./types";
 
-// Utils
-export * from "./utils";
-
 // Components
 export * from "./components";
 

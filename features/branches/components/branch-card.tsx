@@ -8,11 +8,8 @@ import {
   Star,
   Building2,
   MapPin,
-  Phone,
   Hash,
-  Smartphone,
-  Route,
-  Settings,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,9 +25,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { Branch, RoutingMode } from "../types";
-import { getPrimaryWhatsApp } from "../utils/branch-helpers";
+import type { Branch } from "../types";
 import { useBranchMetrics } from "../hooks/useBranches";
+import type {
+  WhatsAppAccount,
+  WhatsAppRouting,
+} from "@/features/whatsapp/types";
 
 interface BranchCardProps {
   branch: Branch;
@@ -38,24 +38,11 @@ interface BranchCardProps {
   onConfigure?: (branch: Branch) => void;
   onDelete?: (branch: Branch) => void;
   onMakeMain?: (branch: Branch) => void;
+  onConnectWhatsApp?: (branch: Branch) => void;
+  whatsappAccount?: WhatsAppAccount | null;
+  whatsappRouting?: WhatsAppRouting | null;
   isLoading?: boolean;
 }
-
-const routingModeConfig: Record<
-  RoutingMode,
-  { label: string; color: string; icon: typeof Route }
-> = {
-  DEDICATED: {
-    label: "routingModes.DEDICATED.title",
-    color: "bg-purple-100 text-purple-700 border-purple-200",
-    icon: Smartphone,
-  },
-  SINGLE_NUMBER: {
-    label: "routingModes.SINGLE_NUMBER.title",
-    color: "bg-blue-100 text-blue-700 border-blue-200",
-    icon: Route,
-  },
-};
 
 export const BranchCard = memo(function BranchCard({
   branch,
@@ -63,17 +50,20 @@ export const BranchCard = memo(function BranchCard({
   onConfigure,
   onDelete,
   onMakeMain,
+  onConnectWhatsApp,
+  whatsappAccount,
+  whatsappRouting,
   isLoading = false,
 }: BranchCardProps) {
   const t = useTranslations("branches");
   const tCommon = useTranslations("common");
+  const tWa = useTranslations("whatsapp");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { data: metrics } = useBranchMetrics(
     branch.isActive ? branch.id : null
   );
 
-  const routingMode = routingModeConfig[branch.routingMode];
-  const RoutingIcon = routingMode.icon;
+  const isWhatsAppConnected = !!whatsappRouting?.isActive && !!whatsappAccount;
 
   return (
     <Card
@@ -95,6 +85,12 @@ export const BranchCard = memo(function BranchCard({
                 <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">
                   <Star className="w-3 h-3 mr-1 fill-amber-600" />
                   {t("card.mainBranch")}
+                </Badge>
+              )}
+              {isWhatsAppConnected && (
+                <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                  <MessageCircle className="w-3 h-3 mr-1" />
+                  {whatsappAccount?.displayName ?? whatsappAccount?.phoneNumber}
                 </Badge>
               )}
             </div>
@@ -127,31 +123,6 @@ export const BranchCard = memo(function BranchCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* Routing Mode Badge */}
-        <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-md border",
-              routingMode.color
-            )}
-            title={t("routingMode")}
-          >
-            <RoutingIcon className="w-3.5 h-3.5" />
-            {t(routingMode.label)}
-          </span>
-        </div>
-
-        {/* Contact Info */}
-        {(() => {
-          const primaryNumber = getPrimaryWhatsApp(branch);
-          return primaryNumber ? (
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-              <span className="truncate">{primaryNumber}</span>
-            </div>
-          ) : null;
-        })()}
-
         {/* Address */}
         {branch.address && (
           <div className="flex items-start gap-2 text-sm text-slate-600">
@@ -200,7 +171,7 @@ export const BranchCard = memo(function BranchCard({
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-1 pt-3 border-t border-slate-100 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
@@ -210,6 +181,20 @@ export const BranchCard = memo(function BranchCard({
           >
             <Edit2 className="w-4 h-4 mr-1.5" />
             {tCommon("buttons.edit")}
+          </Button>
+
+          {/* WhatsApp Connect / Edit button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+            onClick={() => onConnectWhatsApp?.(branch)}
+            disabled={isLoading}
+          >
+            <MessageCircle className="w-4 h-4 mr-1.5" />
+            {isWhatsAppConnected
+              ? tWa("accounts.edit")
+              : tWa("accounts.connect")}
           </Button>
 
           <div className="flex-1" />
@@ -226,8 +211,6 @@ export const BranchCard = memo(function BranchCard({
               {t("card.makeMain")}
             </Button>
           )}
-
-          <div className="flex-1" />
 
           <Button
             variant="ghost"
