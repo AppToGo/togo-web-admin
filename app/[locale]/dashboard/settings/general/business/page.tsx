@@ -12,6 +12,8 @@ import {
   Palette,
   Globe,
   ShoppingBag,
+  MessageCircle,
+  Edit2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,11 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
 import { useCurrentBusiness, useUpdateBusiness } from "@/features/business";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import {
+  useWhatsAppAccounts,
+  useWhatsAppRoutings,
+  WhatsAppConnectDialog,
+} from "@/features/whatsapp";
 
 type CatalogVisibility = "PUBLIC" | "PRIVATE" | "RESTRICTED";
 type CatalogMode = "MENU" | "MARKETPLACE" | "HYBRID";
@@ -68,6 +76,7 @@ export default function BusinessSettingsPage() {
   const t = useTranslations("settings");
   const tb = useTranslations("settings.business");
   const tc = useTranslations("common");
+  const tWa = useTranslations("whatsapp");
 
   useAuthGuard();
 
@@ -79,6 +88,22 @@ export default function BusinessSettingsPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {}
   );
+
+  // WhatsApp state
+  const { data: whatsappAccounts } = useWhatsAppAccounts();
+  const { data: whatsappRoutings } = useWhatsAppRoutings();
+  const [waDialogOpen, setWaDialogOpen] = useState(false);
+
+  // Find AUTO_ASSIGN routing (business-level, branchId is null)
+  const autoAssignRouting =
+    whatsappRoutings?.find(
+      (r) => r.strategy === "AUTO_ASSIGN" && r.isActive
+    ) ?? null;
+  const autoAssignAccount = autoAssignRouting
+    ? (whatsappAccounts?.find(
+        (a) => a.id === autoAssignRouting.whatsappAccountId
+      ) ?? null)
+    : null;
 
   // Initialize form data when business loads
   useEffect(() => {
@@ -524,7 +549,69 @@ export default function BusinessSettingsPage() {
             </Button>
           </div>
         </form>
+
+        {/* WhatsApp Compartido (AUTO_ASSIGN) */}
+        <Card variant="glass">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-green-600" />
+              {tWa("business.sectionTitle")}
+            </CardTitle>
+            <p className="text-sm text-slate-500 mt-1">
+              {tWa("business.sectionDescription")}
+            </p>
+          </CardHeader>
+          <CardContent>
+            {autoAssignAccount && autoAssignRouting ? (
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-100 text-green-700 border-green-200">
+                    <MessageCircle className="w-3 h-3 mr-1" />
+                    {tWa("business.configured")}
+                  </Badge>
+                  <span className="text-sm font-mono text-slate-700">
+                    {autoAssignAccount.displayName ?? autoAssignAccount.phoneNumber}
+                  </span>
+                  {autoAssignAccount.displayName && (
+                    <span className="text-xs text-slate-500">
+                      ({autoAssignAccount.phoneNumber})
+                    </span>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWaDialogOpen(true)}
+                  className="ml-auto"
+                >
+                  <Edit2 className="w-4 h-4 mr-1.5" />
+                  {tWa("accounts.edit")}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setWaDialogOpen(true)}
+                className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                {tWa("business.configure")}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* WhatsApp Dialog — branchId=null means AUTO_ASSIGN */}
+      <WhatsAppConnectDialog
+        open={waDialogOpen}
+        onOpenChange={setWaDialogOpen}
+        branchId={null}
+        account={autoAssignAccount}
+        existingRouting={autoAssignRouting}
+      />
     </DashboardLayout>
   );
 }

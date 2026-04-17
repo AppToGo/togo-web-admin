@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { UpdateBranchRequest } from "@/features/branches/types";
 import { BranchForm, useBranch, useUpdateBranch } from "@/features/branches";
-import { getPrimaryWhatsApp } from "@/features/branches/utils/branch-helpers";
 
 export default function EditBranchPage() {
   const t = useTranslations("branches");
@@ -190,15 +189,6 @@ export default function EditBranchPage() {
                 })}
               </span>
             </div>
-            {(() => {
-              const phone = getPrimaryWhatsApp(branch);
-              return phone ? (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">WhatsApp:</span>
-                  <span className="text-slate-700">{phone}</span>
-                </div>
-              ) : null;
-            })()}
             <div className="flex justify-between">
               <span className="text-slate-500">{t("timezone")}:</span>
               <span className="text-slate-700">{branch.timezone}</span>
