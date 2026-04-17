@@ -122,7 +122,8 @@ export function WhatsAppConnectDialog({
     if (isEditMode && account) {
       // EDIT mode: only update displayName and/or accessToken
       const hasChanges =
-        displayName !== (account.displayName ?? "") || accessToken.trim() !== "";
+        displayName !== (account.displayName ?? "") ||
+        accessToken.trim() !== "";
 
       if (!hasChanges) {
         onOpenChange(false);
@@ -190,8 +191,8 @@ export function WhatsAppConnectDialog({
   const dialogTitle = isEditMode
     ? t("accounts.editTitle")
     : branchId
-    ? t("accounts.createTitle", { branchName: branchName ?? "" })
-    : t("accounts.createTitleBusiness");
+      ? t("accounts.createTitle", { branchName: branchName ?? "" })
+      : t("accounts.createTitleBusiness");
 
   return (
     <>
@@ -211,7 +212,7 @@ export function WhatsAppConnectDialog({
             )}
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 px-7">
             {/* Phone Number — read-only in edit mode */}
             <div className="space-y-1.5">
               <Label htmlFor="wa-phone">
@@ -390,7 +391,7 @@ export function WhatsAppConnectDialog({
             )}
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
+          <div className="flex items-center gap-2 p-7">
             {/* Disconnect button in edit mode */}
             {isEditMode && (
               <Button
@@ -435,9 +436,7 @@ export function WhatsAppConnectDialog({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("accounts.disconnectTitle")}
-            </AlertDialogTitle>
+            <AlertDialogTitle>{t("accounts.disconnectTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("accounts.disconnectDescription")}
             </AlertDialogDescription>
