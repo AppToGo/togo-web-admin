@@ -32,21 +32,32 @@
     "timezone": "Timezone",
     "currency": "Currency",
     "information": {
-      "title": "Información General",
-      "name": "Nombre del negocio",
-      "phone": "Teléfono del negocio",
-      "phoneDescription": "Teléfono de contacto general del negocio",
+      "title": "General Information",
+      "name": "Business name",
+      "phone": "Business phone",
+      "phoneDescription": "General business contact phone",
       "slug": "Slug (URL)",
-      "slugDescription": "Este será tu URL personalizada en el catálogo",
-      "description": "Descripción",
-      "descriptionPlaceholder": "Describe tu negocio...",
-      "menssage": "Mensaje de bienvenida",
-      "menssagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+      "slugDescription": "This will be your personalized URL in the catalog",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe your business...",
+      "menssage": "Welcome message",
+      "menssagePlaceholder": "Message that customers will see when entering the catalog..."
     },
     "slug": {
       "label": "Custom URL",
       "placeholder": "my-business",
       "help": "This will be your URL in the catalog: togo.com/your-business"
+    },
+    "config": {
+      "title": "Catalog Configuration",
+      "visibility": "Catalog visibility",
+      "visibilityPublic": "Public - Anyone can view",
+      "visibilityPrivate": "Private - Access required",
+      "visibilityRestricted": "Restricted - Registered users only",
+      "useProductImages": {
+        "label": "Show product images",
+        "description": "Shows the product image in the catalog. If the product has no image, initials will be shown."
+      }
     },
     "catalog": {
       "visibility": {
@@ -167,7 +178,7 @@
     "success": "Changes saved successfully",
     "error": "Error saving changes"
   },
-  "error": { "carga": "Error al cargar el negocio" },
+  "error": { "carga": "Error loading business" },
   "adminBusinesses": {
     "page": {
       "title": "Business Management",

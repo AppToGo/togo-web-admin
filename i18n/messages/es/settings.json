@@ -48,7 +48,11 @@
       "visibility": "Visibilidad del catálogo",
       "visibilityPublic": "Público - Cualquiera puede ver",
       "visibilityPrivate": "Privado - Solo con acceso",
-      "visibilityRestricted": "Restringido - Solo usuarios registrados"
+      "visibilityRestricted": "Restringido - Solo usuarios registrados",
+      "useProductImages": {
+        "label": "Mostrar imágenes de productos",
+        "description": "Muestra la imagen del producto en el catálogo. Si el producto no tiene imagen, se mostrarán sus iniciales."
+      }
     },
     "slug": {
       "label": "URL personalizada",

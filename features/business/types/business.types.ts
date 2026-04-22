@@ -8,38 +8,28 @@ export interface Business {
   name: string;
   slug: string;
   isActive: boolean;
-  logoUrl?: string;
-  bannerUrl?: string;
-  primaryColor?: string;
-  accentColor?: string;
   phone?: string;
-  description?: string;
-  welcomeMessage?: string;
   industryId?: string;
   industry?: {
     id: string;
     name: string;
   };
-  catalogVisibility: 'PUBLIC' | 'PRIVATE' | 'RESTRICTED';
-  catalogMode: 'MENU' | 'MARKETPLACE' | 'HYBRID';
+  catalogVisibility: 'TOKEN_ONLY' | 'PUBLIC' | 'DISABLED';
+  catalogMode: 'MANUAL' | 'AUTO_GENERATED' | 'HYBRID';
   createdAt: string;
   updatedAt: string;
   subscriptionPlan?: number;
+  settings?: Record<string, unknown>;
 }
 
 export interface UpdateBusinessRequest {
   name?: string;
   slug?: string;
   phone?: string;
-  description?: string;
-  welcomeMessage?: string;
   industryId?: string;
-  catalogVisibility?: 'PUBLIC' | 'PRIVATE' | 'RESTRICTED';
-  catalogMode?: 'MENU' | 'MARKETPLACE' | 'HYBRID';
-  logoUrl?: string;
-  bannerUrl?: string;
-  primaryColor?: string;
-  accentColor?: string;
+  catalogVisibility?: 'TOKEN_ONLY' | 'PUBLIC' | 'DISABLED';
+  catalogMode?: 'MANUAL' | 'AUTO_GENERATED' | 'HYBRID';
+  settings?: Record<string, unknown>;
 }
 
 export interface BusinessFormData {
@@ -47,8 +37,8 @@ export interface BusinessFormData {
   slug: string;
   phone: string;
   industryId: string;
-  catalogVisibility: 'PUBLIC' | 'PRIVATE' | 'RESTRICTED';
-  catalogMode: 'MENU' | 'MARKETPLACE' | 'HYBRID';
+  catalogVisibility: 'TOKEN_ONLY' | 'PUBLIC' | 'DISABLED';
+  catalogMode: 'MANUAL' | 'AUTO_GENERATED' | 'HYBRID';
   logoUrl: string;
   bannerUrl: string;
   primaryColor: string;

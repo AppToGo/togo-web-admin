@@ -15,18 +15,12 @@ import {
   MessageCircle,
   Edit2,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
 import { useCurrentBusiness, useUpdateBusiness } from "@/features/business";
@@ -39,22 +33,19 @@ import {
   WhatsAppConnectDialog,
 } from "@/features/whatsapp";
 
-type CatalogVisibility = "PUBLIC" | "PRIVATE" | "RESTRICTED";
-type CatalogMode = "MENU" | "MARKETPLACE" | "HYBRID";
 
 interface FormData {
   name: string;
   slug: string;
   phone: string;
   industryId: string;
-  catalogVisibility: CatalogVisibility;
-  catalogMode: CatalogMode;
   logoUrl: string;
   bannerUrl: string;
   primaryColor: string;
   accentColor: string;
   description: string;
   welcomeMessage: string;
+  useProductImages: boolean;
 }
 
 const defaultFormData: FormData = {
@@ -62,14 +53,13 @@ const defaultFormData: FormData = {
   slug: "",
   phone: "",
   industryId: "",
-  catalogVisibility: "PUBLIC",
-  catalogMode: "MENU",
   logoUrl: "",
   bannerUrl: "",
   primaryColor: "#4F46E5",
   accentColor: "#10B981",
   description: "",
   welcomeMessage: "",
+  useProductImages: false,
 };
 
 export default function BusinessSettingsPage() {
@@ -108,19 +98,19 @@ export default function BusinessSettingsPage() {
   // Initialize form data when business loads
   useEffect(() => {
     if (business) {
+      const s = (business.settings as Record<string, unknown>) ?? {};
       setFormData({
         name: business.name || "",
         slug: business.slug || "",
         phone: business.phone || "",
         industryId: business.industryId || "",
-        catalogVisibility: business.catalogVisibility || "PUBLIC",
-        catalogMode: business.catalogMode || "MENU",
-        logoUrl: business.logoUrl || "",
-        bannerUrl: business.bannerUrl || "",
-        primaryColor: business.primaryColor || "#4F46E5",
-        accentColor: business.accentColor || "#10B981",
-        description: business.description || "",
-        welcomeMessage: business.welcomeMessage || "",
+        logoUrl: (s.logo as string) || (s.logoUrl as string) || "",
+        bannerUrl: (s.banner as string) || (s.bannerUrl as string) || "",
+        primaryColor: (s.primaryColor as string) || "#4F46E5",
+        accentColor: (s.accentColor as string) || "#10B981",
+        description: (s.description as string) || "",
+        welcomeMessage: (s.welcomeMessage as string) || "",
+        useProductImages: Boolean(s.useProductImages),
       });
     }
   }, [business]);
@@ -129,6 +119,10 @@ export default function BusinessSettingsPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when field changes
     setErrors((prev) => ({ ...prev, [field]: undefined }));
+  }, []);
+
+  const handleBooleanChange = useCallback((field: keyof FormData, value: boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   const validateForm = useCallback((): boolean => {
@@ -178,14 +172,17 @@ export default function BusinessSettingsPage() {
           slug: formData.slug,
           phone: formData.phone || undefined,
           industryId: formData.industryId || undefined,
-          catalogVisibility: formData.catalogVisibility,
-          catalogMode: formData.catalogMode,
-          logoUrl: formData.logoUrl || undefined,
-          bannerUrl: formData.bannerUrl || undefined,
-          primaryColor: formData.primaryColor || undefined,
-          accentColor: formData.accentColor || undefined,
-          description: formData.description || undefined,
-          welcomeMessage: formData.welcomeMessage || undefined,
+          catalogVisibility: 'PUBLIC',
+          settings: {
+            ...((business.settings as Record<string, unknown>) ?? {}),
+            logo: formData.logoUrl || undefined,
+            banner: formData.bannerUrl || undefined,
+            primaryColor: formData.primaryColor || undefined,
+            accentColor: formData.accentColor || undefined,
+            description: formData.description || undefined,
+            welcomeMessage: formData.welcomeMessage || undefined,
+            useProductImages: formData.useProductImages,
+          },
         },
       });
     },
@@ -193,18 +190,22 @@ export default function BusinessSettingsPage() {
   );
 
   const isDirty = business
-    ? formData.name !== (business.name || "") ||
-      formData.slug !== (business.slug || "") ||
-      formData.phone !== (business.phone || "") ||
-      formData.industryId !== (business.industryId || "") ||
-      formData.catalogVisibility !== (business.catalogVisibility || "PUBLIC") ||
-      formData.catalogMode !== (business.catalogMode || "MENU") ||
-      formData.logoUrl !== (business.logoUrl || "") ||
-      formData.bannerUrl !== (business.bannerUrl || "") ||
-      formData.primaryColor !== (business.primaryColor || "#4F46E5") ||
-      formData.accentColor !== (business.accentColor || "#10B981") ||
-      formData.description !== (business.description || "") ||
-      formData.welcomeMessage !== (business.welcomeMessage || "")
+    ? (() => {
+        const s = (business.settings as Record<string, unknown>) ?? {};
+        return (
+          formData.name !== (business.name || "") ||
+          formData.slug !== (business.slug || "") ||
+          formData.phone !== (business.phone || "") ||
+          formData.industryId !== (business.industryId || "") ||
+          formData.logoUrl !== ((s.logo as string) || (s.logoUrl as string) || "") ||
+          formData.bannerUrl !== ((s.banner as string) || (s.bannerUrl as string) || "") ||
+          formData.primaryColor !== ((s.primaryColor as string) || "#4F46E5") ||
+          formData.accentColor !== ((s.accentColor as string) || "#10B981") ||
+          formData.description !== ((s.description as string) || "") ||
+          formData.welcomeMessage !== ((s.welcomeMessage as string) || "") ||
+          formData.useProductImages !== Boolean(s.useProductImages)
+        );
+      })()
     : false;
 
   if (isLoading) {
@@ -364,55 +365,20 @@ export default function BusinessSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="catalogVisibility">
-                    {tb("config.visibility")}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="useProductImages" className="text-base">
+                    {tb("config.useProductImages.label")}
                   </Label>
-                  <Select
-                    value={formData.catalogVisibility}
-                    onValueChange={(value) =>
-                      handleChange(
-                        "catalogVisibility",
-                        value as CatalogVisibility
-                      )
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PUBLIC">
-                        {tb("config.visibilityPublic")}
-                      </SelectItem>
-                      <SelectItem value="PRIVATE">
-                        {tb("config.visibilityPrivate")}
-                      </SelectItem>
-                      <SelectItem value="RESTRICTED">
-                        {tb("config.visibilityRestricted")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <p className="text-sm text-slate-500">
+                    {tb("config.useProductImages.description")}
+                  </p>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="catalogMode">{tb("catalog.mode.label")}</Label>
-                  <Select
-                    value={formData.catalogMode}
-                    onValueChange={(value) =>
-                      handleChange("catalogMode", value as CatalogMode)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MENU">{tb("catalog.mode.menu")}</SelectItem>
-                      <SelectItem value="MARKETPLACE">{tb("catalog.mode.marketplace")}</SelectItem>
-                      <SelectItem value="HYBRID">{tb("catalog.mode.hybrid")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Switch
+                  id="useProductImages"
+                  checked={formData.useProductImages}
+                  onCheckedChange={(checked) => handleBooleanChange("useProductImages", checked)}
+                />
               </div>
             </CardContent>
           </Card>
