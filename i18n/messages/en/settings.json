@@ -40,8 +40,8 @@
       "slugDescription": "This will be your personalized URL in the catalog",
       "description": "Description",
       "descriptionPlaceholder": "Describe your business...",
-      "menssage": "Welcome message",
-      "menssagePlaceholder": "Message that customers will see when entering the catalog..."
+      "message": "Welcome message",
+      "messagePlaceholder": "Message that customers will see when entering the catalog..."
     },
     "slug": {
       "label": "Custom URL",
@@ -78,11 +78,11 @@
       "logo": {
         "label": "Business logo",
         "upload": "Upload logo",
-        "placeholder": "Logo URL"
-      },
-      "banner": {
-        "label": "Catalog banner",
-        "placeholder": "Banner URL"
+        "uploading": "Uploading...",
+        "uploadSuccess": "Logo updated successfully",
+        "uploadError": "Error uploading logo",
+        "invalidType": "Invalid format. Use PNG, JPG or WebP",
+        "tooLarge": "File is too large. Maximum 2MB"
       },
       "colors": {
         "primary": "Primary color",
@@ -106,8 +106,7 @@
     "placeholders": {
       "name": "Ex: My Restaurant",
       "phone": "Ex: +1 555 123 4567",
-      "slug": "my-business",
-      "bannerUrl": "Banner URL"
+      "slug": "my-business"
     },
     "buttons": {
       "cancel": "Cancel"

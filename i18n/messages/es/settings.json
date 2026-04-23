@@ -40,8 +40,8 @@
       "slugDescription": "Este será tu URL personalizada en el catálogo",
       "description": "Descripción",
       "descriptionPlaceholder": "Describe tu negocio...",
-      "menssage": "Mensaje de bienvenida",
-      "menssagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+      "message": "Mensaje de bienvenida",
+      "messagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
     },
     "config": {
       "title": "Configuración del Catálogo",
@@ -78,11 +78,11 @@
       "logo": {
         "label": "Logo del negocio",
         "upload": "Subir logo",
-        "placeholder": "URL del logo"
-      },
-      "banner": {
-        "label": "Banner del catálogo",
-        "placeholder": "URL del banner"
+        "uploading": "Subiendo...",
+        "uploadSuccess": "Logo actualizado correctamente",
+        "uploadError": "Error al subir el logo",
+        "invalidType": "Formato inválido. Usa PNG, JPG o WebP",
+        "tooLarge": "El archivo es demasiado grande. Máximo 2MB"
       },
       "colors": {
         "primary": "Color principal",
@@ -106,8 +106,7 @@
     "placeholders": {
       "name": "Ej: Mi Restaurante",
       "phone": "Ej: +52 55 1234 5678",
-      "slug": "mi-negocio",
-      "bannerUrl": "URL del banner"
+      "slug": "mi-negocio"
     },
     "buttons": {
       "cancel": "Cancelar"

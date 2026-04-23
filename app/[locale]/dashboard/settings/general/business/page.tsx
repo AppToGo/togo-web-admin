@@ -3,7 +3,7 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Store,
   ArrowLeft,
@@ -23,8 +23,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
-import { useCurrentBusiness, useUpdateBusiness } from "@/features/business";
-import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import {
+  useCurrentBusiness,
+  useUpdateBusiness,
+  useUploadBusinessLogo,
+} from "@/features/business";
+import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import {
@@ -33,14 +37,11 @@ import {
   WhatsAppConnectDialog,
 } from "@/features/whatsapp";
 
-
 interface FormData {
   name: string;
   slug: string;
   phone: string;
   industryId: string;
-  logoUrl: string;
-  bannerUrl: string;
   primaryColor: string;
   accentColor: string;
   description: string;
@@ -53,8 +54,6 @@ const defaultFormData: FormData = {
   slug: "",
   phone: "",
   industryId: "",
-  logoUrl: "",
-  bannerUrl: "",
   primaryColor: "#4F46E5",
   accentColor: "#10B981",
   description: "",
@@ -70,9 +69,10 @@ export default function BusinessSettingsPage() {
 
   useAuthGuard();
 
-  const user = useCurrentUser();
   const { data: business, isLoading, error } = useCurrentBusiness();
   const updateBusiness = useUpdateBusiness();
+  const uploadLogo = useUploadBusinessLogo();
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
@@ -86,9 +86,8 @@ export default function BusinessSettingsPage() {
 
   // Find AUTO_ASSIGN routing (business-level, branchId is null)
   const autoAssignRouting =
-    whatsappRoutings?.find(
-      (r) => r.strategy === "AUTO_ASSIGN" && r.isActive
-    ) ?? null;
+    whatsappRoutings?.find((r) => r.strategy === "AUTO_ASSIGN" && r.isActive) ??
+    null;
   const autoAssignAccount = autoAssignRouting
     ? (whatsappAccounts?.find(
         (a) => a.id === autoAssignRouting.whatsappAccountId
@@ -104,8 +103,6 @@ export default function BusinessSettingsPage() {
         slug: business.slug || "",
         phone: business.phone || "",
         industryId: business.industryId || "",
-        logoUrl: (s.logo as string) || (s.logoUrl as string) || "",
-        bannerUrl: (s.banner as string) || (s.bannerUrl as string) || "",
         primaryColor: (s.primaryColor as string) || "#4F46E5",
         accentColor: (s.accentColor as string) || "#10B981",
         description: (s.description as string) || "",
@@ -121,9 +118,12 @@ export default function BusinessSettingsPage() {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   }, []);
 
-  const handleBooleanChange = useCallback((field: keyof FormData, value: boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const handleBooleanChange = useCallback(
+    (field: keyof FormData, value: boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
@@ -165,28 +165,45 @@ export default function BusinessSettingsPage() {
       if (!business?.id) return;
       if (!validateForm()) return;
 
-      await updateBusiness.mutateAsync({
-        businessId: business.id,
-        data: {
-          name: formData.name,
-          slug: formData.slug,
-          phone: formData.phone || undefined,
-          industryId: formData.industryId || undefined,
-          catalogVisibility: 'PUBLIC',
-          settings: {
-            ...((business.settings as Record<string, unknown>) ?? {}),
-            logo: formData.logoUrl || undefined,
-            banner: formData.bannerUrl || undefined,
-            primaryColor: formData.primaryColor || undefined,
-            accentColor: formData.accentColor || undefined,
-            description: formData.description || undefined,
-            welcomeMessage: formData.welcomeMessage || undefined,
-            useProductImages: formData.useProductImages,
+      const {
+        logo: _logo,
+        logoKey: _logoKey,
+        ...existingSettings
+      } = (business.settings as Record<string, unknown>) ?? {};
+
+      try {
+        await updateBusiness.mutateAsync({
+          businessId: business.id,
+          data: {
+            name: formData.name,
+            slug: formData.slug,
+            phone: formData.phone || undefined,
+            industryId: formData.industryId || undefined,
+            catalogVisibility: business.catalogVisibility,
+            settings: {
+              ...existingSettings,
+              primaryColor: formData.primaryColor || undefined,
+              accentColor: formData.accentColor || undefined,
+              description: formData.description || undefined,
+              welcomeMessage: formData.welcomeMessage || undefined,
+              useProductImages: formData.useProductImages,
+            },
           },
-        },
-      });
+        });
+        toast.success(tb("saveSuccess"));
+      } catch {
+        toast.error(tb("saveError"));
+      }
     },
-    [business?.id, formData, updateBusiness, validateForm]
+    [
+      business?.id,
+      business?.catalogVisibility,
+      business?.settings,
+      formData,
+      updateBusiness,
+      validateForm,
+      tb,
+    ]
   );
 
   const isDirty = business
@@ -197,8 +214,6 @@ export default function BusinessSettingsPage() {
           formData.slug !== (business.slug || "") ||
           formData.phone !== (business.phone || "") ||
           formData.industryId !== (business.industryId || "") ||
-          formData.logoUrl !== ((s.logo as string) || (s.logoUrl as string) || "") ||
-          formData.bannerUrl !== ((s.banner as string) || (s.bannerUrl as string) || "") ||
           formData.primaryColor !== ((s.primaryColor as string) || "#4F46E5") ||
           formData.accentColor !== ((s.accentColor as string) || "#10B981") ||
           formData.description !== ((s.description as string) || "") ||
@@ -207,6 +222,33 @@ export default function BusinessSettingsPage() {
         );
       })()
     : false;
+
+  const handleLogoUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !business?.id) return;
+
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        toast.error(tb("branding.logo.invalidType"));
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error(tb("branding.logo.tooLarge"));
+        return;
+      }
+
+      try {
+        await uploadLogo.mutateAsync({ businessId: business.id, file });
+        toast.success(tb("branding.logo.uploadSuccess"));
+      } catch {
+        toast.error(tb("branding.logo.uploadError"));
+      } finally {
+        if (logoInputRef.current) logoInputRef.current.value = "";
+      }
+    },
+    [business?.id, uploadLogo, tb]
+  );
 
   if (isLoading) {
     return (
@@ -224,7 +266,7 @@ export default function BusinessSettingsPage() {
         <div className="max-w-2xl mx-auto mt-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{tb("error.carga")}</AlertTitle>
+            <AlertTitle>{t("error.carga")}</AlertTitle>
             <AlertDescription>
               {error?.message || tb("errors.loadFailed")}
             </AlertDescription>
@@ -341,7 +383,7 @@ export default function BusinessSettingsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="welcomeMessage">
-                  {tb("information.menssage")}
+                  {tb("information.message")}
                 </Label>
                 <Textarea
                   id="welcomeMessage"
@@ -349,7 +391,7 @@ export default function BusinessSettingsPage() {
                   onChange={(e) =>
                     handleChange("welcomeMessage", e.target.value)
                   }
-                  placeholder={tb("information.menssagePlaceholder")}
+                  placeholder={tb("information.messagePlaceholder")}
                   rows={2}
                 />
               </div>
@@ -365,7 +407,7 @@ export default function BusinessSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
                 <div className="space-y-0.5">
                   <Label htmlFor="useProductImages" className="text-base">
                     {tb("config.useProductImages.label")}
@@ -377,7 +419,9 @@ export default function BusinessSettingsPage() {
                 <Switch
                   id="useProductImages"
                   checked={formData.useProductImages}
-                  onCheckedChange={(checked) => handleBooleanChange("useProductImages", checked)}
+                  onCheckedChange={(checked) =>
+                    handleBooleanChange("useProductImages", checked)
+                  }
                 />
               </div>
             </CardContent>
@@ -392,62 +436,56 @@ export default function BusinessSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Logo */}
-              <div className="space-y-2">
-                <Label>{tb("branding.logo.label")}</Label>
-                <div className="flex items-center gap-4">
-                  {formData.logoUrl ? (
-                    <img
-                      src={formData.logoUrl}
-                      alt="Logo"
-                      className="w-20 h-20 rounded-lg object-cover border"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-lg bg-slate-100 flex items-center justify-center border">
-                      <Store className="h-8 w-8 text-slate-400" />
+              <div className="grid gap-4 md:grid-cols-3 ">
+                {/* Logo */}
+                <div className="space-y-2 col-span-1">
+                  <Label>{tb("branding.logo.label")}</Label>
+                  <div className="flex gap-4 ">
+                    {(() => {
+                      const logoUrl = (
+                        business?.settings as Record<string, unknown>
+                      )?.logo as string | undefined;
+                      return logoUrl ? (
+                        <img
+                          src={logoUrl}
+                          alt="Logo"
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-200 bg-white"
+                        />
+                      ) : (
+                        <div className="w-20 h-10 rounded-lg bg-slate-100 flex items-center justify-center border border-slate-200">
+                          <Store className="h-8 w-8 text-slate-400" />
+                        </div>
+                      );
+                    })()}
+                    <div className="flex flex-col gap-2 w-full">
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={uploadLogo.isPending}
+                        isLoading={uploadLogo.isPending}
+                        onClick={() => logoInputRef.current?.click()}
+                        className="w-full h-10"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {uploadLogo.isPending
+                          ? tb("branding.logo.uploading")
+                          : tb("branding.logo.upload")}
+                      </Button>
                     </div>
-                  )}
-                  <div className="space-y-2 flex-1">
-                    <Input
-                      value={formData.logoUrl}
-                      onChange={(e) => handleChange("logoUrl", e.target.value)}
-                      placeholder="URL del logo"
-                    />
-                    <Button type="button" variant="outline" size="sm">
-                      <Upload className="h-4 w-4 mr-2" />
-                      {tb("branding.logo.upload")}
-                    </Button>
                   </div>
                 </div>
-              </div>
-
-              {/* Banner */}
-              <div className="space-y-2">
-                <Label>{tb("branding.banner.label")}</Label>
+                {/* Colors */}
                 <div className="space-y-2">
-                  {formData.bannerUrl ? (
-                    <img
-                      src={formData.bannerUrl}
-                      alt="Banner"
-                      className="w-full h-32 rounded-lg object-cover border"
-                    />
-                  ) : (
-                    <div className="w-full h-32 rounded-lg bg-slate-100 flex items-center justify-center border">
-                      <Upload className="h-8 w-8 text-slate-400" />
-                    </div>
-                  )}
-                  <Input
-                    value={formData.bannerUrl}
-                    onChange={(e) => handleChange("bannerUrl", e.target.value)}
-                    placeholder={tb("placeholders.bannerUrl")}
-                  />
-                </div>
-              </div>
-
-              {/* Colors */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="primaryColor">{tb("branding.colors.primary")}</Label>
+                  <Label htmlFor="primaryColor">
+                    {tb("branding.colors.primary")}
+                  </Label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -471,9 +509,10 @@ export default function BusinessSettingsPage() {
                     </p>
                   )}
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="accentColor">{tb("branding.colors.accent")}</Label>
+                  <Label htmlFor="accentColor">
+                    {tb("branding.colors.accent")}
+                  </Label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -536,7 +575,8 @@ export default function BusinessSettingsPage() {
                     {tWa("business.configured")}
                   </Badge>
                   <span className="text-sm font-mono text-slate-700">
-                    {autoAssignAccount.displayName ?? autoAssignAccount.phoneNumber}
+                    {autoAssignAccount.displayName ??
+                      autoAssignAccount.phoneNumber}
                   </span>
                   {autoAssignAccount.displayName && (
                     <span className="text-xs text-slate-500">

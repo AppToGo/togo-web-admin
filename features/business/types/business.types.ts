@@ -39,8 +39,6 @@ export interface BusinessFormData {
   industryId: string;
   catalogVisibility: 'TOKEN_ONLY' | 'PUBLIC' | 'DISABLED';
   catalogMode: 'MANUAL' | 'AUTO_GENERATED' | 'HYBRID';
-  logoUrl: string;
-  bannerUrl: string;
   primaryColor: string;
   accentColor: string;
   description: string;
