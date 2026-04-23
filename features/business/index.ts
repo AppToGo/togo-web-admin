@@ -16,7 +16,6 @@ export {
   useCurrentBusiness,
   useUpdateBusiness,
   useUploadBusinessLogo,
-  useUploadBusinessBanner,
   useCheckSlugAvailability,
 } from "./hooks/useBusiness";
 
@@ -29,7 +28,6 @@ export {
   getCurrentBusiness,
   updateBusiness,
   uploadBusinessLogo,
-  uploadBusinessBanner,
   checkSlugAvailability,
 } from "./services/business.service";
 

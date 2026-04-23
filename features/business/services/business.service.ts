@@ -60,29 +60,6 @@ export async function uploadBusinessLogo(
 }
 
 /**
- * Upload business banner
- * POST /v1/businesses/:id/banner
- */
-export async function uploadBusinessBanner(
-  id: string,
-  file: File
-): Promise<{ bannerUrl: string }> {
-  const formData = new FormData();
-  formData.append("banner", file);
-
-  const { data } = await apiClient.post<{ bannerUrl: string }>(
-    `/businesses/${id}/banner`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return data;
-}
-
-/**
  * Check if slug is available
  * GET /v1/businesses/check-slug?slug=:slug
  */

@@ -12,7 +12,6 @@ import {
   getCurrentBusiness,
   updateBusiness,
   uploadBusinessLogo,
-  uploadBusinessBanner,
   checkSlugAvailability,
 } from "../services/business.service";
 import type {
@@ -84,34 +83,12 @@ export function useUploadBusinessLogo() {
     mutationFn: async ({ businessId, file }: { businessId: string; file: File }) => {
       return uploadBusinessLogo(businessId, file);
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: BUSINESS_KEYS.detail(variables.businessId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: BUSINESS_KEYS.current(),
-      });
-    },
-  });
-}
-
-/**
- * Hook to upload business banner
- */
-export function useUploadBusinessBanner() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ businessId, file }: { businessId: string; file: File }) => {
-      return uploadBusinessBanner(businessId, file);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: BUSINESS_KEYS.detail(variables.businessId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: BUSINESS_KEYS.current(),
-      });
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<Business>(BUSINESS_KEYS.current(), (old) =>
+        old ? { ...old, settings: { ...(old.settings ?? {}), logo: data.logoUrl } } : old,
+      );
+      queryClient.invalidateQueries({ queryKey: BUSINESS_KEYS.detail(variables.businessId) });
+      queryClient.invalidateQueries({ queryKey: BUSINESS_KEYS.current() });
     },
   });
 }
