@@ -45,7 +45,6 @@ interface FormData {
   primaryColor: string;
   accentColor: string;
   description: string;
-  welcomeMessage: string;
   useProductImages: boolean;
 }
 
@@ -57,7 +56,6 @@ const defaultFormData: FormData = {
   primaryColor: "#4F46E5",
   accentColor: "#10B981",
   description: "",
-  welcomeMessage: "",
   useProductImages: false,
 };
 
@@ -106,7 +104,6 @@ export default function BusinessSettingsPage() {
         primaryColor: (s.primaryColor as string) || "#4F46E5",
         accentColor: (s.accentColor as string) || "#10B981",
         description: (s.description as string) || "",
-        welcomeMessage: (s.welcomeMessage as string) || "",
         useProductImages: Boolean(s.useProductImages),
       });
     }
@@ -185,7 +182,6 @@ export default function BusinessSettingsPage() {
               primaryColor: formData.primaryColor || undefined,
               accentColor: formData.accentColor || undefined,
               description: formData.description || undefined,
-              welcomeMessage: formData.welcomeMessage || undefined,
               useProductImages: formData.useProductImages,
             },
           },
@@ -217,7 +213,6 @@ export default function BusinessSettingsPage() {
           formData.primaryColor !== ((s.primaryColor as string) || "#4F46E5") ||
           formData.accentColor !== ((s.accentColor as string) || "#10B981") ||
           formData.description !== ((s.description as string) || "") ||
-          formData.welcomeMessage !== ((s.welcomeMessage as string) || "") ||
           formData.useProductImages !== Boolean(s.useProductImages)
         );
       })()
@@ -378,21 +373,6 @@ export default function BusinessSettingsPage() {
                   onChange={(e) => handleChange("description", e.target.value)}
                   placeholder={tb("information.descriptionPlaceholder")}
                   rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="welcomeMessage">
-                  {tb("information.message")}
-                </Label>
-                <Textarea
-                  id="welcomeMessage"
-                  value={formData.welcomeMessage}
-                  onChange={(e) =>
-                    handleChange("welcomeMessage", e.target.value)
-                  }
-                  placeholder={tb("information.messagePlaceholder")}
-                  rows={2}
                 />
               </div>
             </CardContent>
