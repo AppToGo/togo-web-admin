@@ -1,66 +1,45 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect } from "react";
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  MapMouseEvent,
+  useMap,
+} from "@vis.gl/react-google-maps";
+import { useTranslations } from "next-intl";
 
-// Fix default marker icons broken by webpack
-const markerIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+const FALLBACK_MAP_ID = "togo-branch-map";
+const DEFAULT_ZOOM = 15;
+const MAP_HEIGHT = "300px";
 
-interface ClickHandlerProps {
-  onMapClick: (lat: number, lng: number) => void;
-}
-
-function ClickHandler({ onMapClick }: ClickHandlerProps) {
-  useMapEvents({
-    click(e) {
-      onMapClick(e.latlng.lat, e.latlng.lng);
-    },
-  });
-  return null;
-}
-
-interface DraggableMarkerProps {
-  position: [number, number];
-  onDragEnd: (lat: number, lng: number) => void;
-}
-
-function DraggableMarker({ position, onDragEnd }: DraggableMarkerProps) {
-  const markerRef = useRef<L.Marker>(null);
-
-  return (
-    <Marker
-      draggable
-      position={position}
-      icon={markerIcon}
-      ref={markerRef}
-      eventHandlers={{
-        dragend() {
-          const marker = markerRef.current;
-          if (marker) {
-            const { lat, lng } = marker.getLatLng();
-            onDragEnd(lat, lng);
-          }
-        },
-      }}
-    />
-  );
-}
-
-interface BranchLocationPickerMapProps {
+export interface BranchLocationPickerMapProps {
   latitude: number;
   longitude: number;
   onChange: (lat: number, lng: number) => void;
+}
+
+interface MapPanControllerProps {
+  lat: number;
+  lng: number;
+}
+
+// Imperatively pans the map when coords change (e.g. after geocoding).
+// Lives inside <Map> so it can access the map instance via useMap().
+// Using panTo instead of a controlled `center` prop keeps the map
+// freely draggable — a controlled prop snaps it back on every render.
+function MapPanController({ lat, lng }: MapPanControllerProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (map) {
+      map.panTo({ lat, lng });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng]);
+
+  return null;
 }
 
 export function BranchLocationPickerMap({
@@ -68,22 +47,56 @@ export function BranchLocationPickerMap({
   longitude,
   onChange,
 }: BranchLocationPickerMapProps) {
+  const t = useTranslations("branches");
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? FALLBACK_MAP_ID;
+
+  if (!apiKey) {
+    return (
+      <div
+        className="flex w-full items-center justify-center rounded-lg bg-slate-100 px-4 text-center text-xs text-slate-500"
+        style={{ height: MAP_HEIGHT }}
+      >
+        {t("form.help.mapKeyMissing")}
+      </div>
+    );
+  }
+
+  const center = { lat: latitude, lng: longitude };
+
+  const handleMapClick = (event: MapMouseEvent) => {
+    const lat = event.detail.latLng?.lat;
+    const lng = event.detail.latLng?.lng;
+    if (lat != null && lng != null) {
+      onChange(lat, lng);
+    }
+  };
+
+  const handleMarkerDragEnd = (event: google.maps.MapMouseEvent) => {
+    const lat = event.latLng?.lat();
+    const lng = event.latLng?.lng();
+    if (lat != null && lng != null) {
+      onChange(lat, lng);
+    }
+  };
+
   return (
-    <MapContainer
-      center={[latitude, longitude]}
-      zoom={15}
-      style={{ height: "300px", width: "100%", borderRadius: "8px" }}
-      key={`${latitude.toFixed(4)}-${longitude.toFixed(4)}`}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <ClickHandler onMapClick={onChange} />
-      <DraggableMarker
-        position={[latitude, longitude]}
-        onDragEnd={onChange}
-      />
-    </MapContainer>
+    <APIProvider apiKey={apiKey}>
+      <Map
+        defaultCenter={center}
+        defaultZoom={DEFAULT_ZOOM}
+        mapId={mapId}
+        onClick={handleMapClick}
+        style={{ height: MAP_HEIGHT, width: "100%", borderRadius: "8px" }}
+        gestureHandling="greedy"
+      >
+        <MapPanController lat={latitude} lng={longitude} />
+        <AdvancedMarker
+          position={center}
+          draggable
+          onDragEnd={handleMarkerDragEnd}
+        />
+      </Map>
+    </APIProvider>
   );
 }
