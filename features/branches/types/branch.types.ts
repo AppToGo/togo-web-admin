@@ -29,6 +29,9 @@ export interface Branch {
   updatedAt: string;
   /** Teléfono de contacto de la sede (diferente al WhatsApp) */
   contactPhone?: string | null;
+  /** Coordenadas geográficas de la sede */
+  latitude?: number | null;
+  longitude?: number | null;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
   /** Horarios de atención */
@@ -62,6 +65,9 @@ export interface CreateBranchRequest {
   currency?: string;
   /** Teléfono de contacto de la sede */
   contactPhone?: string;
+  /** Coordenadas geográficas de la sede */
+  latitude?: number;
+  longitude?: number;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
   /** Horarios de atención */
@@ -85,6 +91,9 @@ export interface UpdateBranchRequest {
   isActive?: boolean;
   /** Teléfono de contacto de la sede */
   contactPhone?: string;
+  /** Coordenadas geográficas de la sede */
+  latitude?: number;
+  longitude?: number;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
   /** Horarios de atención */
