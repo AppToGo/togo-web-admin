@@ -179,7 +179,8 @@
       "mainBranchAlwaysActive": "La sucursal principal no puede desactivarse.",
       "contactPhone": "Teléfono de contacto de esta sede para clientes",
       "geocodeNotFound": "No encontramos la dirección en el mapa. Arrastra el pin manualmente.",
-      "noCoordsYet": "Sin coordenadas — ajusta el pin para guardarlas"
+      "noCoordsYet": "Sin coordenadas — ajusta el pin para guardarlas",
+      "mapKeyMissing": "El mapa no está disponible. Configurá la variable NEXT_PUBLIC_GOOGLE_MAPS_API_KEY."
     },
     "errors": {
       "nameRequired": "El nombre es obligatorio",

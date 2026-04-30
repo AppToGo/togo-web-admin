@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { geocodeAddress } from "../utils/geocodeAddress";
 
 const MapComponent = dynamic(
   () =>
@@ -28,28 +29,6 @@ const MapComponent = dynamic(
 );
 
 const COLOMBIA_CENTER: [number, number] = [4.711, -74.0721];
-
-interface NominatimResult {
-  lat: string;
-  lon: string;
-  display_name: string;
-}
-
-async function geocode(query: string): Promise<[number, number] | null> {
-  try {
-    const encoded = encodeURIComponent(query);
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
-      { headers: { "Accept-Language": "es" } }
-    );
-    if (!res.ok) return null;
-    const results: NominatimResult[] = await res.json();
-    if (!results.length) return null;
-    return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
-  } catch {
-    return null;
-  }
-}
 
 export interface BranchLocationPickerProps {
   latitude?: number | null;
@@ -131,7 +110,7 @@ export function BranchLocationPicker({
     debounceTimer.current = setTimeout(async () => {
       setGeocoding(true);
       setGeocodeError(false);
-      const coords = await geocode(query);
+      const coords = await geocodeAddress(query);
       setGeocoding(false);
 
       if (coords) {

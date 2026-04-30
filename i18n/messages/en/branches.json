@@ -89,7 +89,11 @@
     "setMainFailed": "Failed to set main branch",
     "loadFailed": "Failed to load branches",
     "limitReached": "You have reached the branch limit for your plan",
-    "duplicateCode": "A branch with this code already exists"
+    "duplicateCode": "A branch with this code already exists",
+    "loadingFailed": "Failed to load configuration",
+    "loadingFailedDescription": "Could not load branches. Please try again.",
+    "selectBusiness": "Select a business",
+    "selectBusinessDescription": "As an administrator, you must select a business to view its settings."
   },
   "plan": {
     "limitTitle": "Branch limit reached",
@@ -175,7 +179,8 @@
       "mainBranchAlwaysActive": "The main branch cannot be deactivated.",
       "contactPhone": "Contact phone for this branch for customers",
       "geocodeNotFound": "Address not found on the map. Drag the pin manually.",
-      "noCoordsYet": "No coordinates yet — adjust the pin to save them"
+      "noCoordsYet": "No coordinates yet — adjust the pin to save them",
+      "mapKeyMissing": "Map not available. Set the NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable."
     },
     "errors": {
       "nameRequired": "Name is required",
