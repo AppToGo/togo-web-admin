@@ -128,6 +128,7 @@
       "basic": "Basic information",
       "whatsapp": "WhatsApp configuration",
       "location": "Location & settings",
+      "mapLocation": "Location on map",
       "status": "Status",
       "contact": "Contact",
       "delivery": "Delivery",
@@ -136,7 +137,8 @@
     "descriptions": {
       "basic": "Branch name, unique code and URL-friendly slug",
       "whatsapp": "WhatsApp number and routing mode",
-      "location": "City, address, timezone and currency"
+      "location": "City, address, timezone and currency",
+      "mapLocation": "Drag the pin or click the map to set your branch's exact location. Used to calculate delivery costs by distance."
     },
     "fields": {
       "name": "Name",
@@ -171,7 +173,9 @@
       "phoneNumberId": "Phone number ID from Meta Business Manager",
       "isActive": "Inactive branches do not receive new orders.",
       "mainBranchAlwaysActive": "The main branch cannot be deactivated.",
-      "contactPhone": "Contact phone for this branch for customers"
+      "contactPhone": "Contact phone for this branch for customers",
+      "geocodeNotFound": "Address not found on the map. Drag the pin manually.",
+      "noCoordsYet": "No coordinates yet — adjust the pin to save them"
     },
     "errors": {
       "nameRequired": "Name is required",

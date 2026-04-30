@@ -132,6 +132,7 @@
       "basic": "Información básica",
       "whatsapp": "Configuración de WhatsApp",
       "location": "Ubicación y configuración",
+      "mapLocation": "Ubicación en el mapa",
       "status": "Estado",
       "contact": "Contacto",
       "delivery": "Envío",
@@ -140,7 +141,8 @@
     "descriptions": {
       "basic": "Nombre, código único y URL amigable de la sucursal",
       "whatsapp": "Número y modo de enrutamiento de WhatsApp",
-      "location": "Ciudad, dirección, zona horaria y moneda"
+      "location": "Ciudad, dirección, zona horaria y moneda",
+      "mapLocation": "Arrastra el pin o haz clic en el mapa para ubicar exactamente tu sede. Se usa para calcular el costo de domicilio por distancia."
     },
     "fields": {
       "name": "Nombre",
@@ -175,7 +177,9 @@
       "phoneNumberId": "ID del número de teléfono en Meta Business Manager",
       "isActive": "Las sucursales inactivas no reciben pedidos nuevos.",
       "mainBranchAlwaysActive": "La sucursal principal no puede desactivarse.",
-      "contactPhone": "Teléfono de contacto de esta sede para clientes"
+      "contactPhone": "Teléfono de contacto de esta sede para clientes",
+      "geocodeNotFound": "No encontramos la dirección en el mapa. Arrastra el pin manualmente.",
+      "noCoordsYet": "Sin coordenadas — ajusta el pin para guardarlas"
     },
     "errors": {
       "nameRequired": "El nombre es obligatorio",

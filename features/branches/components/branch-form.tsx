@@ -42,6 +42,7 @@ import type {
 } from "../types";
 import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
+import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
   branch?: Branch | null;
@@ -143,6 +144,8 @@ export function BranchForm({
         currency: "COP",
         isActive: true,
         contactPhone: "",
+        latitude: null as number | null,
+        longitude: null as number | null,
         deliveryConfig: { type: "FREE" as DeliveryFeeType },
         businessHours: DEFAULT_BUSINESS_HOURS,
       };
@@ -159,6 +162,8 @@ export function BranchForm({
       currency: branch.currency,
       isActive: branch.isActive,
       contactPhone: branch.contactPhone || "",
+      latitude: branch.latitude ?? null,
+      longitude: branch.longitude ?? null,
       deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
         ? (branch.deliveryConfig as DeliveryConfig)
         : { type: "FREE" as DeliveryFeeType },
@@ -191,6 +196,8 @@ export function BranchForm({
         currency: branch.currency,
         isActive: branch.isActive,
         contactPhone: branch.contactPhone || "",
+        latitude: branch.latitude ?? null,
+        longitude: branch.longitude ?? null,
         deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
           ? (branch.deliveryConfig as DeliveryConfig)
           : { type: "FREE" as DeliveryFeeType },
@@ -319,6 +326,8 @@ export function BranchForm({
           currency: formData.currency,
           isActive: formData.isActive,
           contactPhone: formData.contactPhone || undefined,
+          latitude: formData.latitude ?? undefined,
+          longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
           businessHours: normalizeBusinessHours(formData.businessHours),
         }
@@ -332,6 +341,8 @@ export function BranchForm({
           timezone: formData.timezone,
           currency: formData.currency,
           contactPhone: formData.contactPhone || undefined,
+          latitude: formData.latitude ?? undefined,
+          longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
           businessHours: normalizeBusinessHours(formData.businessHours),
         };
@@ -575,6 +586,18 @@ export function BranchForm({
           </div>
         </CardContent>
       </Card>
+
+      {/* Map location picker */}
+      <BranchLocationPicker
+        latitude={formData.latitude}
+        longitude={formData.longitude}
+        address={formData.address}
+        city={formData.city}
+        department={formData.department}
+        onChange={(lat, lng) =>
+          setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
+        }
+      />
 
       {/* Status (only when editing) */}
       {isEditing && (
