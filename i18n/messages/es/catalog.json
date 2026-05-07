@@ -80,7 +80,13 @@
       "stockLabel": "Stock disponible",
       "skuLabel": "SKU (código interno)",
       "barcodeLabel": "Código de barras",
-      "imageUrl": "URL de la imagen"
+      "imageUrl": "URL de la imagen",
+      "parentCategory": "Categoría",
+      "selectParentCategory": "Seleccionar categoría",
+      "subcategoryOptional": "Subcategoría (opcional)",
+      "selectSubcategory": "Seleccionar subcategoría",
+      "noSubcategoriesInParent": "Esta categoría no tiene subcategorías",
+      "subcategoryFallbackHint": "Sin subcategoría, el producto aparecerá en \"{parentName}\""
     },
     "empty": {
       "title": "No tienes productos aún",

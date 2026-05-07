@@ -125,6 +125,7 @@ function convertSimpleToBackendDto(
     price: data.price,
     stock: data.stock,
     categoryId: data.categoryId,
+    industryCategoryId: data.industryCategoryId,
     customName: data.name,
     customDescription: data.description,
     customImage: data.image,
