@@ -59,6 +59,11 @@
         "title": "Estado del producto",
         "active": "Activos",
         "inactive": "Inactivos"
+      },
+      "source": {
+        "title": "Tipo de producto",
+        "custom": "Personalizados",
+        "catalog": "Del catálogo"
       }
     },
     "form": {

@@ -21,6 +21,7 @@ interface ProductCardProps {
   selected?: boolean;
   onSelect?: () => void;
   showCheckbox?: boolean;
+  showImage?: boolean;
   branchInfo?: { isAvailable: boolean };
   effectivePrice?: number;
 }
@@ -33,6 +34,7 @@ export function ProductCard({
   selected = false,
   onSelect,
   showCheckbox = false,
+  showImage = true,
   branchInfo,
   effectivePrice,
 }: ProductCardProps) {
@@ -111,77 +113,126 @@ export function ProductCard({
         onClick={handleCardClick}
       >
         {/* Image */}
-        <div className="relative aspect-square rounded-card bg-slate-50 mb-4 overflow-hidden">
-          {productImage && !imageError ? (
-            <img
-              src={productImage}
-              alt={displayName}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-100">
-              <ImageOff className="w-12 h-12 text-slate-300" />
-            </div>
-          )}
-
-          {/* Overlay de selección - NUEVO */}
-          {showCheckbox && (
-            <div
-              onClick={handleCheckboxClick}
-              className={cn(
-                "absolute inset-0 flex items-center justify-center transition-opacity cursor-pointer z-[5]",
-                selected
-                  ? "opacity-100 bg-indigo-600/70"
-                  : "opacity-0 group-hover:opacity-100 bg-black/50"
-              )}
-              role="checkbox"
-              aria-checked={selected}
-              aria-label={tCommon("actions.select")}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
-            >
-              <Check
-                className={cn(
-                  "w-16 h-16 drop-shadow-lg",
-                  selected ? "text-white" : "text-white/90"
-                )}
+        {showImage ? (
+          <div className="relative aspect-square rounded-card bg-slate-50 mb-4 overflow-hidden">
+            {productImage && !imageError ? (
+              <img
+                src={productImage}
+                alt={displayName}
+                className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
               />
-            </div>
-          )}
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                <ImageOff className="w-12 h-12 text-slate-300" />
+              </div>
+            )}
 
-          {/* Badge branchInfo */}
-          {branchInfo && (
-            <div className="absolute top-2 right-2 z-10">
-              <span
+            {/* Overlay de selección */}
+            {showCheckbox && (
+              <div
+                onClick={handleCheckboxClick}
                 className={cn(
-                  "px-2 py-1 text-[10px] font-medium rounded-full",
-                  branchInfo.isAvailable
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-200 text-slate-600"
+                  "absolute inset-0 flex items-center justify-center transition-opacity cursor-pointer z-[5]",
+                  selected
+                    ? "opacity-100 bg-indigo-600/70"
+                    : "opacity-0 group-hover:opacity-100 bg-black/50"
                 )}
+                role="checkbox"
+                aria-checked={selected}
+                aria-label={tCommon("actions.select")}
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
               >
-                {branchInfo.isAvailable
-                  ? t("products.status.activeInBranch")
-                  : t("products.status.notActivated")}
-              </span>
-            </div>
-          )}
+                <Check
+                  className={cn(
+                    "w-16 h-16 drop-shadow-lg",
+                    selected ? "text-white" : "text-white/90"
+                  )}
+                />
+              </div>
+            )}
 
-          {/* Badges tipo (global/custom) */}
-          <div className="absolute flex flex-col gap-1 top-2 left-2">
-            {product.globalProductId && (
-              <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
-                {t("title")}
-              </span>
+            {/* Badge branchInfo */}
+            {branchInfo && (
+              <div className="absolute top-2 right-2 z-10">
+                <span
+                  className={cn(
+                    "px-2 py-1 text-[10px] font-medium rounded-full",
+                    branchInfo.isAvailable
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-200 text-slate-600"
+                  )}
+                >
+                  {branchInfo.isAvailable
+                    ? t("products.status.activeInBranch")
+                    : t("products.status.notActivated")}
+                </span>
+              </div>
             )}
-            {!product.globalProductId && (
-              <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
-                {t("status.custom")}
-              </span>
-            )}
+
+            {/* Badges tipo (global/custom) */}
+            <div className="absolute flex flex-col gap-1 top-2 left-2">
+              {product.globalProductId && (
+                <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
+                  {t("title")}
+                </span>
+              )}
+              {!product.globalProductId && (
+                <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
+                  {t("status.custom")}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {showCheckbox && (
+              <div
+                onClick={handleCheckboxClick}
+                className={cn(
+                  "absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer z-[5]",
+                  selected
+                    ? "bg-indigo-500 text-white"
+                    : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
+                )}
+                role="checkbox"
+                aria-checked={selected}
+                aria-label={tCommon("actions.select")}
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
+              >
+                {selected && <Check className="w-4 h-4" />}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1 mb-2">
+              {product.globalProductId && (
+                <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
+                  {t("title")}
+                </span>
+              )}
+              {!product.globalProductId && (
+                <span className="px-2 py-1 text-[10px] font-medium bg-purple-100 text-purple-700 rounded-full">
+                  {t("status.custom")}
+                </span>
+              )}
+              {branchInfo && (
+                <span
+                  className={cn(
+                    "px-2 py-1 text-[10px] font-medium rounded-full",
+                    branchInfo.isAvailable
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-200 text-slate-600"
+                  )}
+                >
+                  {branchInfo.isAvailable
+                    ? t("products.status.activeInBranch")
+                    : t("products.status.notActivated")}
+                </span>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0 space-y-2">
@@ -305,27 +356,29 @@ export function ProductCard({
       )}
 
       {/* Image */}
-      <div className="relative w-16 h-16 rounded-card bg-slate-50 shrink-0 overflow-hidden">
-        {productImage && !imageError ? (
-          <img
-            src={productImage}
-            alt={displayName}
-            className="w-full h-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-slate-100">
-            <Package className="w-6 h-6 text-slate-300" />
-          </div>
-        )}
-      </div>
+      {showImage && (
+        <div className="relative w-16 h-16 rounded-card bg-slate-50 shrink-0 overflow-hidden">
+          {productImage && !imageError ? (
+            <img
+              src={productImage}
+              alt={displayName}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-100">
+              <Package className="w-6 h-6 text-slate-300" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         {/* Título con badges inline */}
         <div className="flex items-start gap-2">
           <h3 className="font-semibold text-slate-900">{displayName}</h3>
-          {product.isFromTemplate ? (
+          {product.globalProductId ? (
             <span className="px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded">
               {t("title")}
             </span>

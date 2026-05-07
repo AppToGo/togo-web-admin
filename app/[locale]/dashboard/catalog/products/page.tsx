@@ -33,7 +33,9 @@ import {
   ProductFilters,
   BulkActionBar,
 } from "@/features/catalog/components";
+import type { SourceFilter } from "@/features/catalog/components/ProductFilters";
 import { useBranches } from "@/features/branches/hooks/useBranches";
+import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
 import { toast } from "sonner";
 import type {
   BusinessProduct,
@@ -149,6 +151,7 @@ interface SelectableProductCardProps {
   viewMode: ViewMode;
   isSelected: boolean;
   showCheckbox: boolean;
+  showImage?: boolean;
   branchActivationStatus?: {
     isAvailable: boolean;
     stock: number;
@@ -164,6 +167,7 @@ function SelectableProductCard({
   viewMode,
   isSelected,
   showCheckbox,
+  showImage,
   branchActivationStatus,
   onToggleSelection,
   onEdit,
@@ -182,6 +186,7 @@ function SelectableProductCard({
       selected={isSelected}
       onSelect={handleSelect}
       showCheckbox={showCheckbox}
+      showImage={showImage}
       branchInfo={branchActivationStatus || undefined}
       effectivePrice={branchActivationStatus?.effectivePrice}
     />
@@ -198,6 +203,7 @@ export default function ProductsPage() {
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
+  const { data: currentBusiness } = useCurrentBusiness();
 
   // Estados existentes
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -232,7 +238,16 @@ export default function ProductsPage() {
     notActivated: true,
   });
 
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>({ custom: true, catalog: true });
+
   const [isBulkStockModalOpen, setIsBulkStockModalOpen] = useState(false);
+
+  const showProductImages = (currentBusiness?.settings as Record<string, unknown> | undefined)?.useProductImages !== false;
+
+  const isFromTemplateFilter =
+    sourceFilter.custom && !sourceFilter.catalog ? false :
+    !sourceFilter.custom && sourceFilter.catalog ? true :
+    undefined;
 
   // Paginación
   const [page, setPage] = useState(1);
@@ -243,18 +258,20 @@ export default function ProductsPage() {
     selectedCategory !== "all",
     selectedBranchId &&
       !(activationFilter.activated && activationFilter.notActivated),
+    !sourceFilter.custom || !sourceFilter.catalog,
   ].filter(Boolean).length;
 
   // Función para limpiar todos los filtros
   const clearAllFilters = () => {
     setSelectedCategory("all");
     setActivationFilter({ activated: true, notActivated: true });
+    setSourceFilter({ custom: true, catalog: true });
   };
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCategory, selectedBranchId, activationFilter]);
+  }, [searchQuery, selectedCategory, selectedBranchId, activationFilter, sourceFilter]);
 
   // Reset selection when branch changes
   useEffect(() => {
@@ -286,6 +303,7 @@ export default function ProductsPage() {
       search: searchQuery || undefined,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
       isActive: true,
+      isFromTemplate: isFromTemplateFilter,
       page,
       limit: pageSize,
     }
@@ -297,6 +315,7 @@ export default function ProductsPage() {
       search: searchQuery || undefined,
       categoryId: selectedCategory === "all" ? undefined : selectedCategory,
       isActive: true,
+      isFromTemplate: isFromTemplateFilter,
       branchId: selectedBranchId || undefined,
       activationStatus: getActivationStatusFromFilter(),
       page,
@@ -543,6 +562,8 @@ export default function ProductsPage() {
             onBranchChange={setSelectedBranchId}
             activationFilter={activationFilter}
             onActivationFilterChange={setActivationFilter}
+            sourceFilter={sourceFilter}
+            onSourceFilterChange={setSourceFilter}
             categories={categories}
             activeFiltersCount={activeFiltersCount}
             onClearFilters={clearAllFilters}
@@ -624,6 +645,7 @@ export default function ProductsPage() {
                 viewMode={viewMode}
                 isSelected={selectedProductIds.has(product.id)}
                 showCheckbox={showCheckboxes}
+                showImage={showProductImages}
                 branchActivationStatus={
                   branchActivationMap.get(product.id) || null
                 }

@@ -624,6 +624,7 @@ export function useProductsWithBranchFilter(
     search?: string;
     categoryId?: string;
     isActive?: boolean;
+    isFromTemplate?: boolean;
     page?: number;
     limit?: number;
   },

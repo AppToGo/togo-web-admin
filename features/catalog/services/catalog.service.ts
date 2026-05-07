@@ -392,17 +392,20 @@ export async function getProductsWithBranchFilter(
     search?: string;
     categoryId?: string;
     isActive?: boolean;
+    isFromTemplate?: boolean;
     page?: number;
     limit?: number;
   }
 ): Promise<PaginatedProductsWithBranchStatus> {
   const searchParams = new URLSearchParams();
-  
+
   if (params.branchId) searchParams.append("branchId", params.branchId);
   if (params.activationStatus) searchParams.append("activationStatus", params.activationStatus);
   if (params.search) searchParams.append("search", params.search);
   if (params.categoryId) searchParams.append("categoryId", params.categoryId);
   if (params.isActive !== undefined) searchParams.append("isActive", String(params.isActive));
+  if (params.isFromTemplate !== undefined)
+    searchParams.append("isFromTemplate", String(params.isFromTemplate));
   if (params.page) searchParams.append("page", String(params.page));
   if (params.limit) searchParams.append("limit", String(params.limit));
 
