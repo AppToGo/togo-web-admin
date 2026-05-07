@@ -47,6 +47,8 @@ export function ProductCard({
   const displayDescription =
     product.customDescription || product.globalProduct?.description;
   const displayBrand = product.globalProduct?.brand;
+  const displayCategoryName =
+    product.category?.name || product.industryCategory?.name || null;
 
   // Format price as currency
   const formatPrice = (price: number) => {
@@ -246,11 +248,11 @@ export function ProductCard({
           </h3>
 
           {/* Categoría - AHORA después del título */}
-          {product.category && (
+          {displayCategoryName && (
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-indigo-500" />
               <span className="text-xs text-slate-500">
-                {product.category.name}
+                {displayCategoryName}
               </span>
             </div>
           )}
@@ -405,10 +407,10 @@ export function ProductCard({
 
         {/* Categoría, Brand, Stock - AHORA categoría primero */}
         <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-          {product.category && (
+          {displayCategoryName && (
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              {product.category.name}
+              {displayCategoryName}
             </span>
           )}
           {displayBrand && <span>{displayBrand}</span>}
