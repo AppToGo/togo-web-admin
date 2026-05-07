@@ -10,7 +10,7 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Search, Filter, Package, Store, Building2, FolderOpen, X } from "lucide-react";
+import { Search, Filter, Package, Store, Building2, FolderOpen, X, Tag } from "lucide-react";
 import { ViewToggle } from "@/components/ui/view-toggle";
 import { Switch } from "@/components/ui/switch";
 
@@ -28,6 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+export type SourceFilter = { custom: boolean; catalog: boolean };
 
 interface Category {
   id: string;
@@ -47,6 +49,8 @@ interface ProductFiltersProps {
   onBranchChange?: (branchId: string | null) => void;
   activationFilter?: { activated: boolean; notActivated: boolean };
   onActivationFilterChange?: (value: { activated: boolean; notActivated: boolean }) => void;
+  sourceFilter?: SourceFilter;
+  onSourceFilterChange?: (value: SourceFilter) => void;
   // Conteo y limpieza de filtros
   activeFiltersCount: number;
   onClearFilters: () => void;
@@ -64,6 +68,8 @@ export function ProductFilters({
   onBranchChange,
   activationFilter,
   onActivationFilterChange,
+  sourceFilter,
+  onSourceFilterChange,
   activeFiltersCount,
   onClearFilters,
 }: ProductFiltersProps) {
@@ -74,8 +80,9 @@ export function ProductFilters({
   const hasCategoryFilter = selectedCategory !== "all";
   const hasActivationFilter = selectedBranchId && activationFilter &&
     (!activationFilter.activated || !activationFilter.notActivated);
-  
-  const hasAnyFilter = hasCategoryFilter || !!hasActivationFilter;
+  const hasSourceFilter = sourceFilter && (!sourceFilter.custom || !sourceFilter.catalog);
+
+  const hasAnyFilter = hasCategoryFilter || !!hasActivationFilter || !!hasSourceFilter;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -144,6 +151,55 @@ export function ProductFilters({
           </div>
 
           <div className="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
+            {/* Filtro de Tipo de producto */}
+            {onSourceFilterChange && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                  <Tag className="w-3.5 h-3.5" />
+                  {t("products.filters.source.title")}
+                </h4>
+                <div className="space-y-2">
+                  <label className="flex items-center justify-between cursor-pointer group">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <Tag className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                        {t("products.filters.source.custom")}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={sourceFilter?.custom ?? true}
+                      onCheckedChange={(checked) =>
+                        onSourceFilterChange({ ...(sourceFilter ?? { custom: true, catalog: true }), custom: checked })
+                      }
+                    />
+                  </label>
+                  <label className="flex items-center justify-between cursor-pointer group">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Tag className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                        {t("products.filters.source.catalog")}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={sourceFilter?.catalog ?? true}
+                      onCheckedChange={(checked) =>
+                        onSourceFilterChange({ ...(sourceFilter ?? { custom: true, catalog: true }), catalog: checked })
+                      }
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Separador solo si hay mas secciones abajo */}
+            {onSourceFilterChange && (categories.length > 0 || (selectedBranchId && activationFilter && onActivationFilterChange)) && (
+              <div className="h-px bg-slate-100" />
+            )}
+
             {/* Filtro de Categoría */}
             <div className="space-y-3">
               <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">

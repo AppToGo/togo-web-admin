@@ -59,6 +59,11 @@
         "title": "Product status",
         "active": "Active",
         "inactive": "Inactive"
+      },
+      "source": {
+        "title": "Product type",
+        "custom": "Custom",
+        "catalog": "From catalog"
       }
     },
     "form": {
@@ -86,7 +91,8 @@
     "selectedCount": "{count} selected",
     "status": {
       "activeInBranch": "Active in branch",
-      "inactiveInBranch": "Inactive in branch"
+      "inactiveInBranch": "Inactive in branch",
+      "notActivated": "Not activated"
     }
   },
   "categories": {
