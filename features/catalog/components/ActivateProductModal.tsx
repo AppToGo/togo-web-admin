@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Package, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,9 @@ import type {
   ActivateGlobalProductDto,
 } from "../types/catalog.types";
 
+const SELECT_NONE = "__none__" as const;
+const SELECT_DISABLED = "__disabled__" as const;
+
 interface ActivateProductModalProps {
   product: GlobalProduct | null;
   categories: BusinessCategory[];
@@ -40,6 +43,7 @@ interface ActivateProductModalProps {
   onClose: () => void;
   onActivate: (data: ActivateGlobalProductDto) => void;
   isLoading?: boolean;
+  showProductImages?: boolean;
 }
 
 export function ActivateProductModal({
@@ -50,6 +54,7 @@ export function ActivateProductModal({
   onClose,
   onActivate,
   isLoading = false,
+  showProductImages = true,
 }: ActivateProductModalProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -58,11 +63,29 @@ export function ActivateProductModal({
     price: "",
     stock: "",
     categoryId: "",
+    industryCategoryId: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [initialInventory, setInitialInventory] = useState<
     InitialInventoryConfig[]
   >([]);
+
+  const parentCategories = useMemo(() => {
+    const seen = new Set<string>();
+    const parents: { id: string; name: string }[] = [];
+    for (const cat of categories) {
+      if (cat.industryCategoryId && cat.industryCategoryName && !seen.has(cat.industryCategoryId)) {
+        seen.add(cat.industryCategoryId);
+        parents.push({ id: cat.industryCategoryId, name: cat.industryCategoryName });
+      }
+    }
+    return parents.sort((a, b) => a.name.localeCompare(b.name));
+  }, [categories]);
+
+  const filteredSubcategories = useMemo(() => {
+    if (!formData.industryCategoryId) return [];
+    return categories.filter(c => c.industryCategoryId === formData.industryCategoryId);
+  }, [categories, formData.industryCategoryId]);
 
   // Reset form when product changes
   useEffect(() => {
@@ -72,6 +95,7 @@ export function ActivateProductModal({
         price: product.basePrice?.toString() ?? "",
         stock: "",
         categoryId: "",
+        industryCategoryId: "",
       });
       setErrors({});
       setInitialInventory([]);
@@ -137,6 +161,7 @@ export function ActivateProductModal({
       price: parseFloat(formData.price),
       stock: formData.stock === "" ? undefined : parseInt(formData.stock, 10),
       categoryId: formData.categoryId || undefined,
+      industryCategoryId: formData.industryCategoryId || undefined,
       initialInventory:
         initialInventory.length > 0 ? initialInventory : undefined,
     };
@@ -169,17 +194,19 @@ export function ActivateProductModal({
         <form onSubmit={handleSubmit} className="space-y-4 mt-4 px-7 pb-7">
           {/* Product Preview */}
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-card">
-            <div className="w-12 h-12 rounded-card bg-white flex items-center justify-center overflow-hidden">
-              {product.image ? (
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Package className="w-6 h-6 text-slate-300" />
-              )}
-            </div>
+            {showProductImages && (
+              <div className="w-12 h-12 rounded-card bg-white flex items-center justify-center overflow-hidden">
+                {product.image ? (
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Package className="w-6 h-6 text-slate-300" />
+                )}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-slate-900 truncate">
                 {product.name}
@@ -257,44 +284,90 @@ export function ActivateProductModal({
             )}
           </div>
 
-          {/* Stock and Category */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="activate-stock">{t("products.stock")}</Label>
-              <Input
-                id="activate-stock"
-                name="stock"
-                type="text"
-                inputMode="numeric"
-                value={formData.stock}
-                onChange={handleNumberChange}
-                placeholder={t("stock.unlimited")}
-                disabled={isLoading}
-              />
-            </div>
+          {/* Stock */}
+          <div className="space-y-2">
+            <Label htmlFor="activate-stock">{t("products.stock")}</Label>
+            <Input
+              id="activate-stock"
+              name="stock"
+              type="text"
+              inputMode="numeric"
+              value={formData.stock}
+              onChange={handleNumberChange}
+              placeholder={t("stock.unlimited")}
+              disabled={isLoading}
+            />
+          </div>
 
+          {/* Category & Subcategory */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Parent Category (IndustryCategory) */}
             <div className="space-y-2">
-              <Label htmlFor="activate-category">
-                {t("products.category")}
-              </Label>
+              <Label htmlFor="activate-parentCategory">{t("products.form.parentCategory")}</Label>
               <Select
-                value={formData.categoryId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, categoryId: value }))
-                }
-                disabled={isLoading || categories.length === 0}
+                value={formData.industryCategoryId || SELECT_NONE}
+                onValueChange={(value) => {
+                  const newParentId = value === SELECT_NONE ? "" : value;
+                  const subcatStillValid = categories.some(
+                    c => c.id === formData.categoryId && c.industryCategoryId === newParentId
+                  );
+                  setFormData(prev => ({
+                    ...prev,
+                    industryCategoryId: newParentId,
+                    categoryId: subcatStillValid ? prev.categoryId : "",
+                  }));
+                }}
+                disabled={isLoading || parentCategories.length === 0}
               >
-                <SelectTrigger id="activate-category">
-                  <SelectValue placeholder={tCommon("actions.select")} />
+                <SelectTrigger id="activate-parentCategory">
+                  <SelectValue placeholder={t("products.form.selectParentCategory")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
+                  <SelectItem value={SELECT_NONE}>{t("products.form.selectParentCategory")}</SelectItem>
+                  {parentCategories.map((parent) => (
+                    <SelectItem key={parent.id} value={parent.id}>
+                      {parent.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Subcategory (BusinessCategory) */}
+            <div className="space-y-2">
+              <Label htmlFor="activate-subcategory">{t("products.form.subcategoryOptional")}</Label>
+              <Select
+                value={formData.categoryId || SELECT_NONE}
+                onValueChange={(value) =>
+                  setFormData(prev => ({ ...prev, categoryId: value === SELECT_NONE ? "" : value }))
+                }
+                disabled={isLoading || !formData.industryCategoryId || filteredSubcategories.length === 0}
+              >
+                <SelectTrigger id="activate-subcategory">
+                  <SelectValue placeholder={t("products.form.selectSubcategory")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SELECT_NONE}>{t("products.form.selectSubcategory")}</SelectItem>
+                  {filteredSubcategories.length === 0 && formData.industryCategoryId ? (
+                    <SelectItem value={SELECT_DISABLED} disabled>
+                      {t("products.form.noSubcategoriesInParent")}
+                    </SelectItem>
+                  ) : (
+                    filteredSubcategories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {formData.industryCategoryId && !formData.categoryId && (
+                <p className="text-xs text-slate-500">
+                  {t("products.form.subcategoryFallbackHint", {
+                    parentName: parentCategories.find(p => p.id === formData.industryCategoryId)?.name ?? "",
+                  })}
+                </p>
+              )}
             </div>
           </div>
 

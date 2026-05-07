@@ -6,6 +6,7 @@ import { Package, Store, Grid3X3 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -107,6 +108,8 @@ export default function GlobalCatalogPage() {
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
+  const { data: currentBusiness } = useCurrentBusiness();
+  const showProductImages = (currentBusiness?.settings as Record<string, unknown> | undefined)?.useProductImages !== false;
 
   if (!businessId) {
     return (
@@ -320,6 +323,7 @@ export default function GlobalCatalogPage() {
         onClose={() => setActivatingProduct(null)}
         onActivate={handleActivateGlobal}
         isLoading={activateGlobal.isPending}
+        showProductImages={showProductImages}
       />
     </DashboardLayout>
   );

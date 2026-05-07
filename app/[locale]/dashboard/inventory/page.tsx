@@ -12,6 +12,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useBranches } from "@/features/branches/hooks/useBranches";
+import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
 import { BranchInventoryManager } from "@/features/branch-inventory/components/BranchInventoryManager";
 import { Store, Package, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -95,6 +96,10 @@ export default function InventoryPage() {
 
   const businessId = useEffectiveBusinessId();
   const { data: branches, isLoading: isLoadingBranches } = useBranches();
+  const { data: currentBusiness } = useCurrentBusiness();
+  const showProductImages =
+    (currentBusiness?.settings as Record<string, unknown> | undefined)
+      ?.useProductImages !== false;
 
   if (!businessId) {
     return (
@@ -126,6 +131,7 @@ export default function InventoryPage() {
       <BranchInventoryManager
         readOnly={true}
         businessId={businessId}
+        showProductImages={showProductImages}
         branches={branches.map((b) => ({
           id: b.id,
           name: b.name,

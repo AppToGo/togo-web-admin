@@ -80,7 +80,13 @@
       "stockLabel": "Available stock",
       "skuLabel": "SKU (internal code)",
       "barcodeLabel": "Barcode",
-      "imageUrl": "Image URL"
+      "imageUrl": "Image URL",
+      "parentCategory": "Category",
+      "selectParentCategory": "Select category",
+      "subcategoryOptional": "Subcategory (optional)",
+      "selectSubcategory": "Select subcategory",
+      "noSubcategoriesInParent": "This category has no subcategories",
+      "subcategoryFallbackHint": "Without subcategory, the product will appear under \"{parentName}\""
     },
     "empty": {
       "title": "You don't have products yet",
@@ -159,9 +165,10 @@
       "title": "Catalog complete",
       "message": "You have activated all available products from the global catalog."
     },
+    "activate": "Activate",
     "filters": {
-      "brand": "Marca",
-      "category": "Categoría"
+      "brand": "Brand",
+      "category": "Category"
     }
   },
   "actions": {

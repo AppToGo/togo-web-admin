@@ -79,6 +79,7 @@ export interface BusinessProduct {
 
   // Categorization
   categoryId?: string | null;
+  industryCategoryId?: string | null;
   category?: BusinessCategory | null;
 
   // Status
@@ -125,6 +126,7 @@ export interface CreateCustomProductDto {
   price: number;
   stock?: number;
   categoryId?: string;
+  industryCategoryId?: string;
   internalSku?: string;
   // Custom overrides
   customName?: string;
@@ -146,6 +148,7 @@ export interface CreateSimpleProductDto {
   description?: string;
   image?: string;
   categoryId?: string;
+  industryCategoryId?: string;
   initialInventory?: {
     branchId: string;
     isAvailable: boolean;
@@ -164,6 +167,7 @@ export interface ActivateGlobalProductDto {
   price: number;
   stock?: number;
   categoryId?: string;
+  industryCategoryId?: string;
   internalSku?: string;
   initialInventory?: {
     branchId: string;
@@ -183,6 +187,7 @@ export interface UpdateProductDto {
   price?: number;
   stock?: number | null;
   categoryId?: string | null;
+  industryCategoryId?: string | null;
   internalSku?: string;
   // Custom overrides
   customName?: string;

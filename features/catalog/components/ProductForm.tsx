@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Package, AlertCircle } from "lucide-react";
-import { useMemo } from "react";
+import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -30,6 +28,9 @@ import type {
 } from "../types/catalog.types";
 import type { BranchAvailability } from "../types/hybrid-catalog.types";
 
+const SELECT_NONE = "__none__" as const;
+const SELECT_DISABLED = "__disabled__" as const;
+
 interface ProductFormProps {
   product?: BusinessProduct | null;
   categories: BusinessCategory[];
@@ -46,6 +47,7 @@ interface ProductFormProps {
   ) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  showProductImages?: boolean;
 }
 
 export function ProductForm({
@@ -56,6 +58,7 @@ export function ProductForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  showProductImages = true,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -70,6 +73,7 @@ export function ProductForm({
     description: "",
     image: "",
     categoryId: "",
+    industryCategoryId: "",
   });
 
   // Initial inventory state (for new products) / Branch inventory state (for editing)
@@ -87,6 +91,25 @@ export function ProductForm({
   // Track which product we've already initialized to prevent re-initialization
   const initializedProductIdRef = useRef<string | null>(null);
 
+  // Derive parent categories (IndustryCategory) from BusinessCategory list
+  const parentCategories = useMemo(() => {
+    const seen = new Set<string>();
+    const parents: { id: string; name: string }[] = [];
+    for (const cat of categories) {
+      if (cat.industryCategoryId && cat.industryCategoryName && !seen.has(cat.industryCategoryId)) {
+        seen.add(cat.industryCategoryId);
+        parents.push({ id: cat.industryCategoryId, name: cat.industryCategoryName });
+      }
+    }
+    return parents.sort((a, b) => a.name.localeCompare(b.name));
+  }, [categories]);
+
+  // Filter subcategories based on selected parent
+  const filteredSubcategories = useMemo(() => {
+    if (!formData.industryCategoryId) return [];
+    return categories.filter(c => c.industryCategoryId === formData.industryCategoryId);
+  }, [categories, formData.industryCategoryId]);
+
   // Initialize form with product data when editing
   useEffect(() => {
     if (!product) {
@@ -95,15 +118,19 @@ export function ProductForm({
       return;
     }
 
-    // Get the category ID from the product (handles both categoryId and category.id)
     const productCategoryId = product.categoryId ?? product.category?.id ?? "";
-
-    // If this is a new product being edited, or if the category just arrived
     const isNewProduct = initializedProductIdRef.current !== product.id;
-    const categoryArrived = !formData.categoryId && productCategoryId;
 
-    if (isNewProduct || categoryArrived) {
-      // For global products (isFromTemplate), use globalProduct as fallback for inherited fields
+    // Re-derive industryCategoryId when categories arrive asynchronously after product
+    const resolvedIndustryCategoryId =
+      product.category?.industryCategoryId ??
+      categories.find(c => c.id === productCategoryId)?.industryCategoryId ??
+      "";
+
+    const industryCategoryArrived =
+      !formData.industryCategoryId && resolvedIndustryCategoryId;
+
+    if (isNewProduct || industryCategoryArrived) {
       const displayName = product.customName ?? product.name ?? product.globalProduct?.name ?? "";
       const displayDescription = product.customDescription ?? product.description ?? product.globalProduct?.description ?? "";
       const displayImage = product.customImage ?? product.image ?? product.globalProduct?.image ?? "";
@@ -115,14 +142,15 @@ export function ProductForm({
         description: displayDescription,
         image: displayImage,
         categoryId: productCategoryId,
+        industryCategoryId: resolvedIndustryCategoryId,
       });
       setImagePreview(displayImage || product.globalProduct?.image || null);
-      
+
       if (isNewProduct) {
         initializedProductIdRef.current = product.id;
       }
     }
-  }, [product, formData.categoryId]);
+  }, [product, categories, formData.industryCategoryId]);
 
   // Initialize branch inventory from branchAvailability when editing
   useEffect(() => {
@@ -188,6 +216,7 @@ export function ProductForm({
         customDescription: formData.description || undefined,
         customImage: formData.image || null,
         categoryId: formData.categoryId || null,
+        industryCategoryId: formData.industryCategoryId || null,
         isActive: true,
       };
 
@@ -213,6 +242,7 @@ export function ProductForm({
         description: formData.description || undefined,
         image: formData.image || undefined,
         categoryId: formData.categoryId || undefined,
+        industryCategoryId: formData.industryCategoryId || undefined,
         // Include initial inventory for branch activation
         initialInventory:
           initialInventory.length > 0
@@ -233,34 +263,35 @@ export function ProductForm({
   const showInventoryWarning =
     !isEditing && branches.length > 0 && initialInventory.length === 0;
 
-  console.log("ProductForm render", formData);
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-7">
       {/* Image Preview */}
-      <div className="flex justify-center">
-        <div className="relative w-32 h-32 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
-          {imagePreview ? (
-            <>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                onError={() => setImagePreview(null)}
-              />
-              {isFromTemplate && product?.globalProduct?.image && (
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-1">
-                  {t("inheritedFromCatalog")}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
-              <Package className="w-10 h-10 mb-1" />
-              <span className="text-xs">{tCommon("status.noImage")}</span>
-            </div>
-          )}
+      {showProductImages && (
+        <div className="flex justify-center">
+          <div className="relative w-32 h-32 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
+            {imagePreview ? (
+              <>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  onError={() => setImagePreview(null)}
+                />
+                {isFromTemplate && product?.globalProduct?.image && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-1">
+                    {t("inheritedFromCatalog")}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                <Package className="w-10 h-10 mb-1" />
+                <span className="text-xs">{tCommon("status.noImage")}</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Name */}
       <div className="space-y-2">
@@ -328,31 +359,76 @@ export function ProductForm({
         </div>
       </div>
 
-      {/* Category */}
-      <div className="space-y-2">
-        <Label htmlFor="category">{t("products.category")}</Label>
-        <Select
-          value={formData.categoryId}
-          onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryId: value }))}
-          disabled={isLoading || categories.length === 0}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t("products.form.selectCategory")} />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.length === 0 ? (
-              <SelectItem value="" disabled>
-                {t("categories.noCategories")}
-              </SelectItem>
-            ) : (
-              categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
+      {/* Category & Subcategory */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Parent Category (IndustryCategory) */}
+        <div className="space-y-2">
+          <Label htmlFor="parentCategory">{t("products.form.parentCategory")}</Label>
+          <Select
+            value={formData.industryCategoryId || SELECT_NONE}
+            onValueChange={(value) => {
+              const newParentId = value === SELECT_NONE ? "" : value;
+              const subcatStillValid = categories.some(
+                c => c.id === formData.categoryId && c.industryCategoryId === newParentId
+              );
+              setFormData(prev => ({
+                ...prev,
+                industryCategoryId: newParentId,
+                categoryId: subcatStillValid ? prev.categoryId : "",
+              }));
+            }}
+            disabled={isLoading || parentCategories.length === 0}
+          >
+            <SelectTrigger id="parentCategory">
+              <SelectValue placeholder={t("products.form.selectParentCategory")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={SELECT_NONE}>{t("products.form.selectParentCategory")}</SelectItem>
+              {parentCategories.map((parent) => (
+                <SelectItem key={parent.id} value={parent.id}>
+                  {parent.name}
                 </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Subcategory (BusinessCategory) */}
+        <div className="space-y-2">
+          <Label htmlFor="subcategory">{t("products.form.subcategoryOptional")}</Label>
+          <Select
+            value={formData.categoryId || SELECT_NONE}
+            onValueChange={(value) =>
+              setFormData(prev => ({ ...prev, categoryId: value === SELECT_NONE ? "" : value }))
+            }
+            disabled={isLoading || !formData.industryCategoryId || filteredSubcategories.length === 0}
+          >
+            <SelectTrigger id="subcategory">
+              <SelectValue placeholder={t("products.form.selectSubcategory")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={SELECT_NONE}>{t("products.form.selectSubcategory")}</SelectItem>
+              {filteredSubcategories.length === 0 && formData.industryCategoryId ? (
+                <SelectItem value={SELECT_DISABLED} disabled>
+                  {t("products.form.noSubcategoriesInParent")}
+                </SelectItem>
+              ) : (
+                filteredSubcategories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+          {formData.industryCategoryId && !formData.categoryId && (
+            <p className="text-xs text-slate-500">
+              {t("products.form.subcategoryFallbackHint", {
+                parentName: parentCategories.find(p => p.id === formData.industryCategoryId)?.name ?? "",
+              })}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Description */}
@@ -377,30 +453,32 @@ export function ProductForm({
       </div>
 
       {/* Image URL */}
-      <div className="space-y-2">
-        <Label htmlFor="image">
-          {t("products.imageUrl")}
+      {showProductImages && (
+        <div className="space-y-2">
+          <Label htmlFor="image">
+            {t("products.imageUrl")}
+            {isFromTemplate && (
+              <span className="ml-2 text-xs text-blue-600">
+                ({t("inheritedFromCatalog")})
+              </span>
+            )}
+          </Label>
+          <Input
+            id="image"
+            name="image"
+            type="url"
+            value={formData.image}
+            onChange={handleImageChange}
+            placeholder={t("products.imagePlaceholder")}
+            disabled={isLoading || isFromTemplate}
+          />
           {isFromTemplate && (
-            <span className="ml-2 text-xs text-blue-600">
-              ({t("inheritedFromCatalog")})
-            </span>
+            <p className="text-xs text-slate-500">
+              {t("imageFallbackDescription")}
+            </p>
           )}
-        </Label>
-        <Input
-          id="image"
-          name="image"
-          type="url"
-          value={formData.image}
-          onChange={handleImageChange}
-          placeholder={t("products.imagePlaceholder")}
-          disabled={isLoading || isFromTemplate}
-        />
-        {isFromTemplate && (
-          <p className="text-xs text-slate-500">
-            {t("imageFallbackDescription")}
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Branch Inventory Selector (for new products) */}
       {!isEditing && branches.length > 0 && (

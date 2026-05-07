@@ -711,6 +711,7 @@ export default function ProductsPage() {
             onSubmit={handleCreateProduct}
             onCancel={() => setIsCreateModalOpen(false)}
             isLoading={createProduct.isPending}
+            showProductImages={showProductImages}
           />
         </DialogContent>
       </Dialog>
@@ -735,6 +736,7 @@ export default function ProductsPage() {
             onSubmit={handleUpdateProduct}
             onCancel={() => setEditingProductId(null)}
             isLoading={updateProduct.isPending || silentBulkBranchUpdate.isPending || isLoadingEditingProduct}
+            showProductImages={showProductImages}
           />
         </DialogContent>
       </Dialog>
