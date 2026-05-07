@@ -81,6 +81,7 @@ export interface BusinessProduct {
   categoryId?: string | null;
   industryCategoryId?: string | null;
   category?: BusinessCategory | null;
+  industryCategory?: { id: string; name: string; slug: string } | null;
 
   // Status
   isActive: boolean;
