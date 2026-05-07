@@ -58,6 +58,7 @@ import { BranchSingleSelector } from "@/features/branches/components";
 
 interface BranchInventoryManagerProps {
   readOnly?: boolean;
+  showProductImages?: boolean;
   businessId: string;
   branches: BranchSummary[];
 }
@@ -245,6 +246,7 @@ export function BranchInventoryManager({
   businessId,
   branches,
   readOnly = false,
+  showProductImages = true,
 }: BranchInventoryManagerProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");
@@ -503,6 +505,7 @@ export function BranchInventoryManager({
           onToggleAvailability={handleToggleAvailability}
           debouncedUpdate={queueUpdate}
           readOnly={readOnly}
+          showProductImages={showProductImages}
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}
         />

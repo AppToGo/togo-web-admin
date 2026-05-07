@@ -65,6 +65,7 @@ interface BranchInventoryTableProps {
     value: number
   ) => void;
   readOnly?: boolean;
+  showProductImages?: boolean;
   globalFilter: string;
   setGlobalFilter: (value: string) => void;
 }
@@ -168,6 +169,7 @@ export function BranchInventoryTable({
   debouncedUpdate,
   onToggleAvailability,
   readOnly = false,
+  showProductImages = true,
   globalFilter,
   setGlobalFilter,
 }: BranchInventoryTableProps) {
@@ -277,7 +279,7 @@ export function BranchInventoryTable({
           const item = row.original;
           return (
             <div className="flex items-center gap-3">
-              {item.productImage ? (
+              {showProductImages && (item.productImage ? (
                 <img
                   src={item.productImage}
                   alt={item.productName}
@@ -287,7 +289,7 @@ export function BranchInventoryTable({
                 <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
                   <Package className="w-5 h-5 text-slate-400" />
                 </div>
-              )}
+              ))}
               <div className="flex flex-col">
                 <span
                   className={cn(
@@ -424,6 +426,7 @@ export function BranchInventoryTable({
       editingPrice,
       onToggleAvailability,
       readOnly,
+      showProductImages,
       t,
     ]
   );
