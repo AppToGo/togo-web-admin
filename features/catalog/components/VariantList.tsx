@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Trash2, Plus, AlertTriangle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Pencil, Trash2, Plus, AlertTriangle, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -43,13 +44,16 @@ interface VariantListProps {
 }
 
 type DialogMode =
-  | { type: "create" }
   | { type: "edit"; variant: ProductVariant }
   | { type: "delete"; variant: ProductVariant }
   | null;
 
 export function VariantList({ productId, businessId, schema }: VariantListProps) {
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
+  const [showInlineCreate, setShowInlineCreate] = useState(false);
+  const [pendingLabel, setPendingLabel] = useState("");
+  const [pendingPrice, setPendingPrice] = useState("");
+  const labelInputRef = useRef<HTMLInputElement>(null);
 
   const { data: variants = [], isLoading } = useVariants(businessId, productId);
   const createVariant = useCreateVariant(businessId, productId);
@@ -58,16 +62,47 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
 
   const activeCount = variants.filter((v) => v.isActive).length;
 
+  // Focus label input when inline create opens
+  useEffect(() => {
+    if (showInlineCreate) {
+      setTimeout(() => labelInputRef.current?.focus(), 50);
+    }
+  }, [showInlineCreate]);
+
+  const openInlineCreate = () => {
+    setPendingLabel("");
+    setPendingPrice("");
+    setShowInlineCreate(true);
+  };
+
+  const cancelInlineCreate = () => {
+    setShowInlineCreate(false);
+    setPendingLabel("");
+    setPendingPrice("");
+  };
+
+  const handleInlineCreate = () => {
+    const label = pendingLabel.trim();
+    const price = parseFloat(pendingPrice);
+    if (!label || isNaN(price) || price <= 0) return;
+
+    createVariant.mutate(
+      { variantLabel: label, price, isActive: true, isDefault: variants.length === 0 },
+      {
+        onSuccess: () => {
+          setPendingLabel("");
+          setPendingPrice("");
+          // Keep inline form open so user can add more
+          setTimeout(() => labelInputRef.current?.focus(), 50);
+        },
+      }
+    );
+  };
+
   const handleToggleActive = (variant: ProductVariant) => {
     updateVariant.mutate({
       variantId: variant.id,
       dto: { isActive: !variant.isActive },
-    });
-  };
-
-  const handleCreate = (dto: CreateVariantDto | UpdateVariantDto) => {
-    createVariant.mutate(dto as CreateVariantDto, {
-      onSuccess: () => setDialogMode(null),
     });
   };
 
@@ -91,38 +126,23 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
   const willLeaveZeroActive =
     deletingVariant?.isActive && activeCount === 1;
 
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700">
-          Variantes ({variants.length})
-        </h3>
-        <Button
-          size="sm"
-          onClick={() => setDialogMode({ type: "create" })}
-          disabled={isLoading}
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Nueva variante
-        </Button>
-      </div>
+  const canAdd =
+    pendingLabel.trim() !== "" &&
+    pendingPrice !== "" &&
+    parseFloat(pendingPrice) > 0;
 
+  return (
+    <div className="space-y-3">
       {/* List */}
       {isLoading ? (
         <p className="text-sm text-slate-400 py-4 text-center">Cargando variantes...</p>
-      ) : variants.length === 0 ? (
-        <p className="text-sm text-slate-400 py-4 text-center">
-          No hay variantes. Crea la primera.
-        </p>
       ) : (
-        <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden">
+        <div className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-100">
           {variants.map((variant) => (
             <div
               key={variant.id}
               className="flex items-center gap-3 px-4 py-3 bg-white hover:bg-slate-50 transition-colors"
             >
-              {/* Label + badges */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-slate-800 truncate">
@@ -142,7 +162,6 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
                 <p className="text-xs text-slate-500 mt-0.5">{formatCOP(variant.price)}</p>
               </div>
 
-              {/* Active toggle */}
               <Switch
                 checked={variant.isActive}
                 onCheckedChange={() => handleToggleActive(variant)}
@@ -150,7 +169,6 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
                 aria-label={`Activar/desactivar ${variant.variantLabel}`}
               />
 
-              {/* Edit */}
               <Button
                 variant="outline"
                 size="icon"
@@ -160,7 +178,6 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
                 <Pencil className="h-4 w-4" />
               </Button>
 
-              {/* Delete */}
               <Button
                 variant="outline"
                 size="icon"
@@ -171,26 +188,90 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
               </Button>
             </div>
           ))}
+
+          {/* Inline create row */}
+          {showInlineCreate && (
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-t border-slate-200">
+              <Input
+                ref={labelInputRef}
+                value={pendingLabel}
+                onChange={(e) => setPendingLabel(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
+                  if (e.key === "Escape") cancelInlineCreate();
+                }}
+                placeholder="Etiqueta (ej: 500ml, Talla M…)"
+                className="flex-1 h-8 text-sm"
+                disabled={createVariant.isPending}
+              />
+              <div className="relative w-28 shrink-0">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                  $
+                </span>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  value={pendingPrice}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === "" || /^\d*\.?\d*$/.test(v)) setPendingPrice(v);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
+                    if (e.key === "Escape") cancelInlineCreate();
+                  }}
+                  placeholder="Precio"
+                  className="pl-5 h-8 text-sm"
+                  disabled={createVariant.isPending}
+                />
+              </div>
+              <Button
+                type="button"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={handleInlineCreate}
+                disabled={!canAdd || createVariant.isPending}
+                isLoading={createVariant.isPending}
+                aria-label="Agregar variante"
+              >
+                {!createVariant.isPending && <Check className="h-4 w-4" />}
+              </Button>
+              <button
+                type="button"
+                onClick={cancelInlineCreate}
+                className="flex items-center justify-center h-8 w-8 shrink-0 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-200 transition-colors"
+                aria-label="Cancelar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Add row trigger */}
+          {!showInlineCreate && (
+            <button
+              type="button"
+              onClick={openInlineCreate}
+              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Nueva variante
+            </button>
+          )}
         </div>
       )}
 
-      {/* Create dialog */}
-      <Dialog
-        open={dialogMode?.type === "create"}
-        onOpenChange={(open) => !open && setDialogMode(null)}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Nueva variante</DialogTitle>
-          </DialogHeader>
-          <VariantForm
-            schema={schema}
-            onSubmit={handleCreate}
-            onCancel={() => setDialogMode(null)}
-            isLoading={createVariant.isPending}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Empty state with inline trigger */}
+      {!isLoading && variants.length === 0 && !showInlineCreate && (
+        <button
+          type="button"
+          onClick={openInlineCreate}
+          className="flex items-center gap-2 w-full px-4 py-3 text-sm text-indigo-600 border border-dashed border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          Agregar primera variante
+        </button>
+      )}
 
       {/* Edit dialog */}
       <Dialog
