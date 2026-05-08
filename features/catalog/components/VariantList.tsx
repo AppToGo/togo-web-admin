@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -20,6 +27,7 @@ import {
   useCreateVariant,
   useUpdateVariant,
   useDeleteVariant,
+  useIndustryCategoryVariantTemplates,
 } from "../hooks/useCatalog";
 import type {
   ProductVariant,
@@ -27,6 +35,8 @@ import type {
   CreateVariantDto,
   UpdateVariantDto,
 } from "../types/catalog.types";
+
+const SELECT_NONE = "__none__" as const;
 
 function formatCOP(value: number): string {
   return new Intl.NumberFormat("es-CO", {
@@ -41,6 +51,7 @@ interface VariantListProps {
   productId: string;
   businessId: string;
   schema?: AttributeSchema;
+  industryCategoryId?: string | null;
 }
 
 type DialogMode =
@@ -48,52 +59,63 @@ type DialogMode =
   | { type: "delete"; variant: ProductVariant }
   | null;
 
-export function VariantList({ productId, businessId, schema }: VariantListProps) {
+export function VariantList({ productId, businessId, schema, industryCategoryId }: VariantListProps) {
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [showInlineCreate, setShowInlineCreate] = useState(false);
-  const [pendingLabel, setPendingLabel] = useState("");
+  const [pendingTemplateId, setPendingTemplateId] = useState("");
   const [pendingPrice, setPendingPrice] = useState("");
-  const labelInputRef = useRef<HTMLInputElement>(null);
+  const priceInputRef = useRef<HTMLInputElement>(null);
 
   const { data: variants = [], isLoading } = useVariants(businessId, productId);
+  const { data: templates = [], isLoading: loadingTemplates } =
+    useIndustryCategoryVariantTemplates(industryCategoryId ?? null);
+
+  const usedLabels = new Set(variants.map((v) => v.variantLabel.toLowerCase()));
+  const availableTemplates = templates.filter(
+    (t) => !usedLabels.has(t.label.toLowerCase())
+  );
   const createVariant = useCreateVariant(businessId, productId);
   const updateVariant = useUpdateVariant(businessId, productId);
   const deleteVariant = useDeleteVariant(businessId, productId);
 
   const activeCount = variants.filter((v) => v.isActive).length;
 
-  // Focus label input when inline create opens
+  // Focus price input when a template is selected
   useEffect(() => {
-    if (showInlineCreate) {
-      setTimeout(() => labelInputRef.current?.focus(), 50);
+    if (pendingTemplateId) {
+      setTimeout(() => priceInputRef.current?.focus(), 50);
     }
-  }, [showInlineCreate]);
+  }, [pendingTemplateId]);
 
   const openInlineCreate = () => {
-    setPendingLabel("");
+    setPendingTemplateId("");
     setPendingPrice("");
     setShowInlineCreate(true);
   };
 
   const cancelInlineCreate = () => {
     setShowInlineCreate(false);
-    setPendingLabel("");
+    setPendingTemplateId("");
     setPendingPrice("");
   };
 
   const handleInlineCreate = () => {
-    const label = pendingLabel.trim();
+    const template = templates.find((t) => t.id === pendingTemplateId);
     const price = parseFloat(pendingPrice);
-    if (!label || isNaN(price) || price <= 0) return;
+    if (!template || isNaN(price) || price <= 0) return;
 
     createVariant.mutate(
-      { variantLabel: label, price, isActive: true, isDefault: variants.length === 0 },
+      {
+        variantLabel: template.label,
+        price,
+        attributes: Object.keys(template.attributes).length > 0 ? template.attributes : undefined,
+        isActive: true,
+        isDefault: variants.length === 0,
+      },
       {
         onSuccess: () => {
-          setPendingLabel("");
+          setPendingTemplateId("");
           setPendingPrice("");
-          // Keep inline form open so user can add more
-          setTimeout(() => labelInputRef.current?.focus(), 50);
         },
       }
     );
@@ -127,7 +149,7 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
     deletingVariant?.isActive && activeCount === 1;
 
   const canAdd =
-    pendingLabel.trim() !== "" &&
+    pendingTemplateId !== "" &&
     pendingPrice !== "" &&
     parseFloat(pendingPrice) > 0;
 
@@ -192,50 +214,72 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
           {/* Inline create row */}
           {showInlineCreate && (
             <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-t border-slate-200">
-              <Input
-                ref={labelInputRef}
-                value={pendingLabel}
-                onChange={(e) => setPendingLabel(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
-                  if (e.key === "Escape") cancelInlineCreate();
-                }}
-                placeholder="Etiqueta (ej: 500ml, Talla M…)"
-                className="flex-1 h-8 text-sm"
-                disabled={createVariant.isPending}
-              />
-              <div className="relative w-28 shrink-0">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-                  $
-                </span>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={pendingPrice}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d*$/.test(v)) setPendingPrice(v);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
-                    if (e.key === "Escape") cancelInlineCreate();
-                  }}
-                  placeholder="Precio"
-                  className="pl-5 h-8 text-sm"
-                  disabled={createVariant.isPending}
-                />
-              </div>
-              <Button
-                type="button"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                onClick={handleInlineCreate}
-                disabled={!canAdd || createVariant.isPending}
-                isLoading={createVariant.isPending}
-                aria-label="Agregar variante"
-              >
-                {!createVariant.isPending && <Check className="h-4 w-4" />}
-              </Button>
+              {!industryCategoryId ? (
+                <p className="flex-1 text-xs text-amber-700">
+                  Seleccioná una categoría para agregar variantes.
+                </p>
+              ) : loadingTemplates ? (
+                <p className="flex-1 text-xs text-slate-400">Cargando variantes…</p>
+              ) : availableTemplates.length === 0 ? (
+                <p className="flex-1 text-xs text-slate-500">
+                  Todas las variantes de esta categoría ya fueron agregadas.
+                </p>
+              ) : (
+                <>
+                  <Select
+                    value={pendingTemplateId || SELECT_NONE}
+                    onValueChange={(v) => setPendingTemplateId(v === SELECT_NONE ? "" : v)}
+                    disabled={createVariant.isPending}
+                  >
+                    <SelectTrigger className="flex-1 h-8 text-sm">
+                      <SelectValue placeholder="Seleccioná variante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={SELECT_NONE}>Seleccioná variante</SelectItem>
+                      {availableTemplates.map((tpl) => (
+                        <SelectItem key={tpl.id} value={tpl.id}>
+                          {tpl.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="relative w-28 shrink-0">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                      $
+                    </span>
+                    <Input
+                      ref={priceInputRef}
+                      type="text"
+                      inputMode="decimal"
+                      value={pendingPrice}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d*\.?\d*$/.test(v)) setPendingPrice(v);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
+                        if (e.key === "Escape") cancelInlineCreate();
+                      }}
+                      placeholder="Precio"
+                      className="pl-5 h-8 text-sm"
+                      disabled={!pendingTemplateId || createVariant.isPending}
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
+                    onClick={handleInlineCreate}
+                    disabled={!canAdd || createVariant.isPending}
+                    isLoading={createVariant.isPending}
+                    aria-label="Agregar variante"
+                  >
+                    {!createVariant.isPending && <Check className="h-4 w-4" />}
+                  </Button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={cancelInlineCreate}

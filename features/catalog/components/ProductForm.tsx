@@ -1208,6 +1208,7 @@ export function ProductForm({
               productId={product.id}
               businessId={businessId}
               schema={product.attributeSchema}
+              industryCategoryId={formData.industryCategoryId || null}
             />
           </div>
 
