@@ -356,7 +356,7 @@ export default function ProductsPage() {
         onOpenChange={(open) => { if (!updateProduct.isPending && !open) setEditingProduct(null); }}
         isLoading={updateProduct.isPending}
       >
-        <DrawerContent size="xl" data-testid="edit-product-drawer">
+        <DrawerContent size="md" data-testid="edit-product-drawer">
           <DrawerHeader>
             <DrawerTitle>{t("products.edit")}</DrawerTitle>
             <DrawerDescription>{editingProduct?.name}</DrawerDescription>
