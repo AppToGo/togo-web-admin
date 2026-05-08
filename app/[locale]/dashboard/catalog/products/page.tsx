@@ -191,7 +191,6 @@ export default function ProductsPage() {
           }
         }
         setIsCreateModalOpen(false);
-        setEditingProduct(created);
       },
     });
   };
