@@ -527,8 +527,6 @@ export function ProductForm({
         image: formData.image || undefined,
         businessCategoryId: formData.businessCategoryId || undefined,
         industryCategoryId: formData.industryCategoryId || undefined,
-        isActive: formData.isActive,
-        isFeatured: formData.isFeatured,
       } as UpdateCatalogProductDto);
       return;
     }
@@ -742,21 +740,6 @@ export function ProductForm({
         </div>
       )}
 
-      {isEditing && (
-        <div className="flex items-center justify-between py-2 border-t">
-          <div>
-            <p className="text-sm font-medium">{t("products.active") || "Activo"}</p>
-            <p className="text-xs text-slate-500">
-              {t("products.activeHint") || "Visible en el catálogo"}
-            </p>
-          </div>
-          <Switch
-            checked={formData.isActive}
-            onCheckedChange={(val) => setFormData((prev) => ({ ...prev, isActive: val }))}
-            disabled={isLoading}
-          />
-        </div>
-      )}
     </>
   );
 
