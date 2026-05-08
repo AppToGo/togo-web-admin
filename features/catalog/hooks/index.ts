@@ -38,4 +38,16 @@ export {
   useProductsWithBranchFilter,
   useProductWithBranchAvailability,
   useBulkBranchUpdate,
+  // Catalog Product Hooks
+  useCatalogProducts,
+  useCatalogProduct,
+  useCreateCatalogProduct,
+  useActivateCatalogProduct,
+  useUpdateCatalogProduct,
+  useDeleteCatalogProduct,
+  useVariants,
+  useCreateVariant,
+  useUpdateVariant,
+  useDeleteVariant,
+  useIndustryCategoryVariantTemplates,
 } from "./useCatalog";

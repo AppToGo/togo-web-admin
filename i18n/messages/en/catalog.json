@@ -30,6 +30,14 @@
     "price": "Price",
     "salePrice": "Sale price",
     "suggestedPrice": "Suggested price",
+    "priceByVariant": "Price per variant",
+    "active": "Active",
+    "activeHint": "Visible in the catalog",
+    "tabs": {
+      "info": "Information",
+      "variants": "Variants",
+      "branches": "Branches"
+    },
     "category": "Category",
     "image": "Image",
     "imageUrl": "Image URL",
@@ -230,7 +238,15 @@
     "categoryActivated": "Category activated successfully",
     "categoryDeactivated": "Category deactivated successfully",
     "bulkUpdateSuccess": "{count} products updated successfully",
-    "errorBulkUpdate": "Error updating products"
+    "errorBulkUpdate": "Error updating products",
+    "variantCreated": "Variant created successfully",
+    "variantUpdated": "Variant updated successfully",
+    "variantDeleted": "Variant deleted successfully",
+    "errorCreatingVariant": "Error creating variant",
+    "errorUpdatingVariant": "Error updating variant",
+    "errorDeletingVariant": "Error deleting variant",
+    "productActivatedInCatalogNew": "Product activated in your catalog",
+    "errorActivatingCatalogProduct": "Error activating product"
   },
   "bulkActions": {
     "selectedCount": "{count, plural, =0 {0 products selected} =1 {1 product selected} other {# products selected}}",

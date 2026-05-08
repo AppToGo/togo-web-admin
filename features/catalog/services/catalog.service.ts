@@ -37,9 +37,18 @@ import type {
   UpdateCategoryDto,
   ProductFilters,
   GlobalCatalogFilters,
+  PaginatedProducts,
+  CatalogProduct,
+  ProductVariant,
+  CreateProductDto,
+  ActivateCatalogProductDto,
+  UpdateCatalogProductDto,
+  CreateVariantDto,
+  UpdateVariantDto,
 } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { PaginatedResponse } from "@/types";
+import type { VariantTemplate } from "../types/catalog.types";
 
 // ============================================================================
 // HELPERS
@@ -371,6 +380,126 @@ export async function getCatalogStats(businessId: string): Promise<{
 }
 
 // ============================================================================
+// CATALOG PRODUCTS API (Product + ProductVariant model)
+// ============================================================================
+
+export async function getCatalogProducts(
+  businessId: string,
+  filters?: { search?: string; page?: number; limit?: number; isActive?: boolean }
+): Promise<PaginatedProducts> {
+  const params = new URLSearchParams();
+  if (filters?.search) params.append("search", filters.search);
+  if (filters?.page) params.append("page", String(filters.page));
+  if (filters?.limit) params.append("limit", String(filters.limit));
+  if (filters?.isActive !== undefined) params.append("isActive", String(filters.isActive));
+
+  const response = await apiClient.get<PaginatedProducts>(
+    `/businesses/${businessId}/products?${params}`
+  );
+  return response.data;
+}
+
+export async function getCatalogProduct(
+  businessId: string,
+  productId: string
+): Promise<CatalogProduct> {
+  const response = await apiClient.get<CatalogProduct>(
+    `/businesses/${businessId}/products/${productId}`
+  );
+  return response.data;
+}
+
+export async function createCatalogProduct(
+  businessId: string,
+  dto: CreateProductDto
+): Promise<CatalogProduct> {
+  const response = await apiClient.post<CatalogProduct>(
+    `/businesses/${businessId}/products`,
+    dto
+  );
+  return response.data;
+}
+
+export async function activateCatalogProduct(
+  businessId: string,
+  dto: ActivateCatalogProductDto
+): Promise<CatalogProduct> {
+  const response = await apiClient.post<CatalogProduct>(
+    `/businesses/${businessId}/products/activate`,
+    dto
+  );
+  return response.data;
+}
+
+export async function updateCatalogProduct(
+  businessId: string,
+  productId: string,
+  dto: UpdateCatalogProductDto
+): Promise<CatalogProduct> {
+  const response = await apiClient.patch<CatalogProduct>(
+    `/businesses/${businessId}/products/${productId}`,
+    dto
+  );
+  return response.data;
+}
+
+export async function deleteCatalogProduct(
+  businessId: string,
+  productId: string
+): Promise<void> {
+  await apiClient.delete(`/businesses/${businessId}/products/${productId}`);
+}
+
+// ============================================================================
+// VARIANTS API
+// ============================================================================
+
+export async function getVariants(
+  businessId: string,
+  productId: string
+): Promise<ProductVariant[]> {
+  const response = await apiClient.get<ProductVariant[]>(
+    `/businesses/${businessId}/products/${productId}/variants`
+  );
+  return response.data;
+}
+
+export async function createVariant(
+  businessId: string,
+  productId: string,
+  dto: CreateVariantDto
+): Promise<ProductVariant> {
+  const response = await apiClient.post<ProductVariant>(
+    `/businesses/${businessId}/products/${productId}/variants`,
+    dto
+  );
+  return response.data;
+}
+
+export async function updateVariant(
+  businessId: string,
+  productId: string,
+  variantId: string,
+  dto: UpdateVariantDto
+): Promise<ProductVariant> {
+  const response = await apiClient.patch<ProductVariant>(
+    `/businesses/${businessId}/products/${productId}/variants/${variantId}`,
+    dto
+  );
+  return response.data;
+}
+
+export async function deleteVariant(
+  businessId: string,
+  productId: string,
+  variantId: string
+): Promise<void> {
+  await apiClient.delete(
+    `/businesses/${businessId}/products/${productId}/variants/${variantId}`
+  );
+}
+
+// ============================================================================
 // HYBRID INVENTORY API (Branch-specific product management)
 // ============================================================================
 
@@ -441,6 +570,19 @@ export async function bulkBranchUpdate(
   const response = await apiClient.post<{ processed: number; errors: string[] }>(
     `/businesses/${businessId}/products/bulk-branch-update`,
     data
+  );
+  return response.data;
+}
+
+/**
+ * Get variant templates for an industry category
+ * GET /api/v1/industry-categories/:id/variant-templates
+ */
+export async function getVariantTemplates(
+  industryCategoryId: string
+): Promise<VariantTemplate[]> {
+  const response = await apiClient.get<VariantTemplate[]>(
+    `/industry-categories/${industryCategoryId}/variant-templates`
   );
   return response.data;
 }

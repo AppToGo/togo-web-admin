@@ -187,13 +187,13 @@ export function BranchInventoryTable({
   const allSelected = useMemo(
     () =>
       data.length > 0 &&
-      data.every((row) => selectedIds.has(row.businessProductId)),
+      data.every((row) => selectedIds.has(row.productVariantId)),
     [data, selectedIds]
   );
 
   const someSelected = useMemo(
     () =>
-      data.some((row) => selectedIds.has(row.businessProductId)) &&
+      data.some((row) => selectedIds.has(row.productVariantId)) &&
       !allSelected,
     [data, selectedIds, allSelected]
   );
@@ -202,7 +202,7 @@ export function BranchInventoryTable({
     if (allSelected) {
       onSelectAll([]);
     } else {
-      onSelectAll(data.map((row) => row.businessProductId));
+      onSelectAll(data.map((row) => row.productVariantId));
     }
   }, [allSelected, data, onSelectAll]);
 
@@ -259,9 +259,9 @@ export function BranchInventoryTable({
         ),
         cell: ({ row }) => (
           <Checkbox
-            checked={selectedIds.has(row.original.businessProductId)}
+            checked={selectedIds.has(row.original.productVariantId)}
             onCheckedChange={() =>
-              onToggleSelection(row.original.businessProductId)
+              onToggleSelection(row.original.productVariantId)
             }
             onClick={(e) => e.stopPropagation()}
             aria-label={t("table.selectRow")}
@@ -322,7 +322,7 @@ export function BranchInventoryTable({
               checked={item.isAvailable}
               onCheckedChange={(checked) => {
                 if (readOnly) return;
-                onToggleAvailability(item.businessProductId, checked);
+                onToggleAvailability(item.productVariantId, checked);
               }}
               disabled={readOnly}
             />
@@ -338,7 +338,7 @@ export function BranchInventoryTable({
         cell: ({ row }) => {
           const item = row.original;
 
-          const editValue = editingStock[item.businessProductId];
+          const editValue = editingStock[item.productVariantId];
           const displayValue =
             editValue !== undefined
               ? editValue
@@ -354,7 +354,7 @@ export function BranchInventoryTable({
                 placeholder="∞"
                 value={displayValue}
                 onChange={(e) =>
-                  handleStockChange(item.businessProductId, e.target.value)
+                  handleStockChange(item.productVariantId, e.target.value)
                 }
                 disabled={readOnly || !item.isAvailable}
                 className="w-20 h-8 text-sm"
@@ -379,7 +379,7 @@ export function BranchInventoryTable({
         cell: ({ row }) => {
           const item = row.original;
 
-          const editValue = editingPrice[item.businessProductId];
+          const editValue = editingPrice[item.productVariantId];
           const displayValue =
             editValue !== undefined
               ? editValue
@@ -396,7 +396,7 @@ export function BranchInventoryTable({
                 placeholder={String(item.basePrice)}
                 value={displayValue}
                 onChange={(e) =>
-                  handlePriceChange(item.businessProductId, e.target.value)
+                  handlePriceChange(item.productVariantId, e.target.value)
                 }
                 disabled={readOnly || !item.isAvailable}
                 className="w-24 h-8 text-sm"
