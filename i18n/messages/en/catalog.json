@@ -219,7 +219,9 @@
   },
   "activateModal": {
     "title": "Activate Product",
-    "description": "Configure how \"{name}\" will appear in your catalog"
+    "description": "Configure how \"{name}\" will appear in your catalog",
+    "noVariants": "This product has no configured variants",
+    "variantsCount": "{count} variants"
   },
   "noBusiness": {
     "title": "You don't have a business assigned",

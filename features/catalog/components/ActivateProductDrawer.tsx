@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import {
   Select,
   SelectContent,
@@ -31,7 +32,7 @@ import { generateSlug } from "../utils/slug";
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
 
-interface ActivateProductModalProps {
+interface ActivateProductDrawerProps {
   product: GlobalProduct | null;
   categories: BusinessCategory[];
   isOpen: boolean;
@@ -41,7 +42,7 @@ interface ActivateProductModalProps {
   showProductImages?: boolean;
 }
 
-export function ActivateProductModal({
+export function ActivateProductDrawer({
   product,
   categories,
   isOpen,
@@ -49,7 +50,7 @@ export function ActivateProductModal({
   onActivate,
   isLoading = false,
   showProductImages = true,
-}: ActivateProductModalProps) {
+}: ActivateProductDrawerProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
 
@@ -75,13 +76,11 @@ export function ActivateProductModal({
     return categories.filter(c => c.industryCategoryId === industryCategoryId);
   }, [categories, industryCategoryId]);
 
-  // Reset form when product changes
   useEffect(() => {
     if (product) {
       setIndustryCategoryId("");
       setBusinessCategoryId("");
       setErrors({});
-      // Pre-fill suggested prices per variant
       const initial: Record<string, string> = {};
       for (const v of product.variants ?? []) {
         initial[v.id] = v.suggestedPrice?.toString() ?? "";
@@ -103,7 +102,7 @@ export function ActivateProductModal({
       }
     }
     if (variants.length === 0) {
-      newErrors.global = "Este producto no tiene variantes configuradas";
+      newErrors.global = t("activateModal.noVariants");
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -125,19 +124,20 @@ export function ActivateProductModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => !isLoading && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Drawer open={isOpen} onOpenChange={() => !isLoading && onClose()} isLoading={isLoading}>
+      <DrawerContent size="md">
+        <DrawerHeader>
+          <DrawerTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-600" />
             {t("activateModal.title")}
-          </DialogTitle>
-          <DialogDescription>
+          </DrawerTitle>
+          <DrawerDescription>
             {t("activateModal.description", { name: product.name })}
-          </DialogDescription>
-        </DialogHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4 px-7 pb-7">
+        <div className="flex-1 overflow-y-auto">
+        <form id="activate-product-form" onSubmit={handleSubmit} className="space-y-4 mt-4 px-7 pb-7">
           {/* Product Preview */}
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-card">
             {showProductImages && (
@@ -158,7 +158,7 @@ export function ActivateProductModal({
                 {variants.length > 1 && (
                   <span className="inline-flex items-center gap-1 text-xs text-indigo-600">
                     <Layers className="w-3 h-3" />
-                    {variants.length} variantes
+                    {t("activateModal.variantsCount", { count: variants.length })}
                   </span>
                 )}
               </div>
@@ -235,7 +235,7 @@ export function ActivateProductModal({
           {/* Variant Prices */}
           <div className="space-y-3">
             <Label>
-              {t("products.priceByVariant") || "Precio por variante"}{" "}
+              {t("products.priceByVariant")}{" "}
               <span className="text-red-500">*</span>
             </Label>
 
@@ -304,22 +304,23 @@ export function ActivateProductModal({
               {t("activateProductNote")}
             </p>
           </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-              {tCommon("buttons.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || variants.length === 0}
-              isLoading={isLoading}
-            >
-              {t("activateModal.title")}
-            </Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+
+        <DrawerFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+            {tCommon("buttons.cancel")}
+          </Button>
+          <Button
+            type="submit"
+            form="activate-product-form"
+            disabled={isLoading || variants.length === 0}
+            isLoading={isLoading}
+          >
+            {t("activateModal.title")}
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

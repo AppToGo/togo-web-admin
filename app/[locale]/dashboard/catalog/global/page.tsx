@@ -17,7 +17,7 @@ import {
 import {
   GlobalProductCard,
   GlobalCatalogFilters,
-  ActivateProductModal,
+  ActivateProductDrawer,
 } from "@/features/catalog/components";
 import type {
   GlobalProduct,
@@ -254,7 +254,7 @@ export default function GlobalCatalogPage() {
         )}
       </div>
 
-      <ActivateProductModal
+      <ActivateProductDrawer
         product={activatingProduct}
         categories={categories}
         isOpen={!!activatingProduct}

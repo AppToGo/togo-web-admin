@@ -91,6 +91,8 @@ export interface ProductFormProps {
   isLoading?: boolean;
   showProductImages?: boolean;
   defaultTab?: "info" | "variants" | "branches";
+  formId?: string;
+  hideActions?: boolean;
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────
@@ -284,6 +286,8 @@ export function ProductForm({
   isLoading = false,
   showProductImages = true,
   defaultTab = "info",
+  formId,
+  hideActions = false,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -1147,25 +1151,27 @@ export function ProductForm({
         </TabsList>
 
         <TabsContent value="info">
-          <form onSubmit={handleSubmit} className="space-y-4 p-7">
+          <form id={formId} onSubmit={handleSubmit} className="space-y-4 p-7">
             {infoFields}
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isLoading}
-              >
-                {tCommon("buttons.cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading || !canSubmit}
-                isLoading={isLoading}
-              >
-                {tCommon("buttons.saveChanges")}
-              </Button>
-            </div>
+            {!hideActions && (
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isLoading}
+                >
+                  {tCommon("buttons.cancel")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !canSubmit}
+                  isLoading={isLoading}
+                >
+                  {tCommon("buttons.saveChanges")}
+                </Button>
+              </div>
+            )}
           </form>
         </TabsContent>
 
@@ -1191,22 +1197,24 @@ export function ProductForm({
   // ─── Create mode ─────────────────────────────────────────────────────────────
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-7">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-4 p-7">
       {infoFields}
       {pricingSection}
       {branchSection}
-      <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-          {tCommon("buttons.cancel")}
-        </Button>
-        <Button
-          type="submit"
-          disabled={isLoading || !canSubmit}
-          isLoading={isLoading}
-        >
-          {t("products.create")}
-        </Button>
-      </div>
+      {!hideActions && (
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            {tCommon("buttons.cancel")}
+          </Button>
+          <Button
+            type="submit"
+            disabled={isLoading || !canSubmit}
+            isLoading={isLoading}
+          >
+            {t("products.create")}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

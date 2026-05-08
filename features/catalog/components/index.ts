@@ -5,7 +5,7 @@
 export { ProductCard } from "./ProductCard";
 export { GlobalProductCard } from "./GlobalProductCard";
 export { ProductForm } from "./ProductForm";
-export { ActivateProductModal } from "./ActivateProductModal";
+export { ActivateProductDrawer } from "./ActivateProductDrawer";
 export { CategoryList } from "./CategoryList";
 export { CategoryActions } from "./CategoryActions";
 export { CategoryFilters } from "./CategoryFilters";

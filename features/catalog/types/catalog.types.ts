@@ -314,18 +314,6 @@ export interface ProductFormProps {
   isLoading?: boolean;
 }
 
-/**
- * Props for activation modal
- */
-export interface ActivateProductModalProps {
-  product: GlobalProduct | null;
-  categories: BusinessCategory[];
-  isOpen: boolean;
-  onClose: () => void;
-  onActivate: (data: ActivateGlobalProductDto) => void;
-  isLoading?: boolean;
-}
-
 // ============================================================================
 // CATALOG PRODUCT (Product + ProductVariant model)
 // ============================================================================

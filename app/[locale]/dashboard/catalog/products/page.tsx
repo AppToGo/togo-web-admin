@@ -8,12 +8,13 @@ import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -308,45 +309,97 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Create Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("products.create")}</DialogTitle>
-            <DialogDescription>{t("products.createDescription")}</DialogDescription>
-          </DialogHeader>
-          <ProductForm
-            businessId={businessId}
-            categories={categories}
-            onSubmit={handleCreateProduct}
-            onCancel={() => setIsCreateModalOpen(false)}
-            isLoading={createProduct.isPending}
-            showProductImages={showProductImages}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Modal — wider to fit tabs */}
-      <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("products.edit")}</DialogTitle>
-            <DialogDescription>{editingProduct?.name}</DialogDescription>
-          </DialogHeader>
-          {editingProduct && (
+      {/* Create Drawer */}
+      <Drawer
+        open={isCreateModalOpen}
+        onOpenChange={(open) => { if (!createProduct.isPending) setIsCreateModalOpen(open); }}
+        isLoading={createProduct.isPending}
+      >
+        <DrawerContent size="md" data-testid="create-product-drawer">
+          <DrawerHeader>
+            <DrawerTitle>{t("products.create")}</DrawerTitle>
+            <DrawerDescription>{t("products.createDescription")}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto">
             <ProductForm
-              product={editingProduct}
+              formId="create-product-form"
+              hideActions
               businessId={businessId}
               categories={categories}
-              onSubmit={handleUpdateProduct}
-              onCancel={() => setEditingProduct(null)}
-              isLoading={updateProduct.isPending}
+              onSubmit={handleCreateProduct}
+              onCancel={() => setIsCreateModalOpen(false)}
+              isLoading={createProduct.isPending}
               showProductImages={showProductImages}
-              defaultTab={editDefaultTab}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+          <DrawerFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+              disabled={createProduct.isPending}
+            >
+              {tc("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              form="create-product-form"
+              isLoading={createProduct.isPending}
+              disabled={createProduct.isPending}
+            >
+              {t("products.create")}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Edit Drawer */}
+      <Drawer
+        open={!!editingProduct}
+        onOpenChange={(open) => { if (!updateProduct.isPending && !open) setEditingProduct(null); }}
+        isLoading={updateProduct.isPending}
+      >
+        <DrawerContent size="xl" data-testid="edit-product-drawer">
+          <DrawerHeader>
+            <DrawerTitle>{t("products.edit")}</DrawerTitle>
+            <DrawerDescription>{editingProduct?.name}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto">
+            {editingProduct && (
+              <ProductForm
+                formId="edit-product-form"
+                hideActions
+                product={editingProduct}
+                businessId={businessId}
+                categories={categories}
+                onSubmit={handleUpdateProduct}
+                onCancel={() => setEditingProduct(null)}
+                isLoading={updateProduct.isPending}
+                showProductImages={showProductImages}
+                defaultTab={editDefaultTab}
+              />
+            )}
+          </div>
+          <DrawerFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingProduct(null)}
+              disabled={updateProduct.isPending}
+            >
+              {tc("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              form="edit-product-form"
+              isLoading={updateProduct.isPending}
+              disabled={updateProduct.isPending}
+            >
+              {tc("buttons.saveChanges")}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </DashboardLayout>
   );
 }
