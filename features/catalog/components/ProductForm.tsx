@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -90,7 +89,6 @@ export interface ProductFormProps {
   onCancel: () => void;
   isLoading?: boolean;
   showProductImages?: boolean;
-  defaultTab?: "info" | "variants" | "branches";
   formId?: string;
   hideActions?: boolean;
 }
@@ -285,15 +283,12 @@ export function ProductForm({
   onCancel,
   isLoading = false,
   showProductImages = true,
-  defaultTab = "info",
   formId,
   hideActions = false,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
   const isEditing = !!product;
-
-  const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -421,10 +416,6 @@ export function ProductForm({
       if (isNewProduct) initializedProductIdRef.current = product.id;
     }
   }, [product, categories, formData.industryCategoryId]);
-
-  useEffect(() => {
-    setActiveTab(defaultTab);
-  }, [product?.id, defaultTab]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
@@ -1127,70 +1118,57 @@ export function ProductForm({
     </div>
   );
 
-  // ─── Edit mode: tabbed ────────────────────────────────────────────────────────
+  // ─── Edit mode: flat layout (same structure as create) ───────────────────────
 
   if (isEditing) {
     return (
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-        <TabsList className="w-full mx-7" style={{ width: "calc(100% - 3.5rem)" }}>
-          <TabsTrigger value="info" className="flex-1">
-            {t("products.tabs.info") || "Información"}
-          </TabsTrigger>
-          <TabsTrigger value="variants" className="flex-1">
-            {t("products.tabs.variants") || "Variantes"}
+      <div className="space-y-4 p-7">
+        <form id={formId} onSubmit={handleSubmit} className="space-y-4">
+          {infoFields}
+          {!hideActions && (
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+                {tCommon("buttons.cancel")}
+              </Button>
+              <Button type="submit" disabled={isLoading || !canSubmit} isLoading={isLoading}>
+                {tCommon("buttons.saveChanges")}
+              </Button>
+            </div>
+          )}
+        </form>
+
+        <div className="space-y-3 border-t pt-4">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-slate-900 flex-1">
+              {t("products.tabs.variants") || "Variantes"}
+            </p>
             {product.variantCount > 0 && (
-              <span className="ml-1.5 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
+              <span className="bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
                 {product.variantCount}
               </span>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="branches" className="flex-1">
-            <MapPin className="w-3.5 h-3.5 mr-1" />
-            {t("products.tabs.branches") || "Sedes"}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="info">
-          <form id={formId} onSubmit={handleSubmit} className="space-y-4 p-7">
-            {infoFields}
-            {!hideActions && (
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isLoading}
-                >
-                  {tCommon("buttons.cancel")}
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isLoading || !canSubmit}
-                  isLoading={isLoading}
-                >
-                  {tCommon("buttons.saveChanges")}
-                </Button>
-              </div>
-            )}
-          </form>
-        </TabsContent>
-
-        <TabsContent value="variants" className="p-7 pt-4">
+          </div>
           <VariantList
             productId={product.id}
             businessId={businessId}
             schema={product.attributeSchema}
           />
-        </TabsContent>
+        </div>
 
-        <TabsContent value="branches" className="p-7 pt-4">
+        <div className="space-y-3 border-t pt-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-slate-400" />
+            <p className="text-sm font-medium text-slate-900 flex-1">
+              {t("products.tabs.branches") || "Sedes"}
+            </p>
+          </div>
           <BranchActivationTab
             businessId={businessId}
             productId={product.id}
             productName={product.name}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     );
   }
 

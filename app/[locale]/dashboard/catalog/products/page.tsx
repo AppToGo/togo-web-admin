@@ -109,7 +109,6 @@ export default function ProductsPage() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
-  const [editDefaultTab, setEditDefaultTab] = useState<"info" | "variants">("info");
 
   const [page, setPage] = useState(1);
   const pageSize = 12;
@@ -193,7 +192,6 @@ export default function ProductsPage() {
         }
         setIsCreateModalOpen(false);
         setEditingProduct(created);
-        setEditDefaultTab("variants");
       },
     });
   };
@@ -209,9 +207,8 @@ export default function ProductsPage() {
     [editingProduct, updateProduct]
   );
 
-  const openEdit = useCallback((product: CatalogProduct, tab: "info" | "variants" = "info") => {
+  const openEdit = useCallback((product: CatalogProduct) => {
     setEditingProduct(product);
-    setEditDefaultTab(tab);
   }, []);
 
   if (!businessId) {
@@ -286,7 +283,7 @@ export default function ProductsPage() {
                 viewMode={viewMode}
                 showImage={showProductImages}
                 categoryName={product.businessCategoryId ? categoryMap.get(product.businessCategoryId) : undefined}
-                onEdit={(p) => openEdit(p, "info")}
+                onEdit={(p) => openEdit(p)}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
               />
             ))}
@@ -376,7 +373,6 @@ export default function ProductsPage() {
                 onCancel={() => setEditingProduct(null)}
                 isLoading={updateProduct.isPending}
                 showProductImages={showProductImages}
-                defaultTab={editDefaultTab}
               />
             )}
           </div>

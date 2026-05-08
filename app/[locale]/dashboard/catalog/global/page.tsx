@@ -19,10 +19,13 @@ import {
   GlobalCatalogFilters,
   ActivateProductDrawer,
 } from "@/features/catalog/components";
+import { getVariants } from "@/features/catalog/services/catalog.service";
+import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
 import type {
   GlobalProduct,
   ActivateCatalogProductDto,
 } from "@/features/catalog/types";
+import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 
 type ViewMode = "grid" | "list";
 
@@ -136,9 +139,35 @@ export default function GlobalCatalogPage() {
 
   const activateGlobal = useActivateCatalogProduct(businessId);
 
-  const handleActivateGlobal = (data: ActivateCatalogProductDto) => {
+  const handleActivateGlobal = (
+    data: ActivateCatalogProductDto,
+    branchActivations?: BranchActivation[]
+  ) => {
     activateGlobal.mutate(data, {
-      onSuccess: () => setActivatingProduct(null),
+      onSuccess: async (created) => {
+        if (branchActivations?.length && businessId) {
+          try {
+            const localVariants = await getVariants(businessId, created.id);
+            await Promise.allSettled(
+              branchActivations.flatMap(({ branchId, variants: variantConfigs }) =>
+                variantConfigs.flatMap((vc) => {
+                  const match = localVariants.find((v) => v.variantLabel === vc.variantLabel);
+                  if (!match) return [];
+                  return [
+                    activateProduct(businessId, branchId, match.id, {
+                      isAvailable: true,
+                      priceOverride: vc.priceOverride,
+                    }),
+                  ];
+                })
+              )
+            );
+          } catch {
+            // Non-critical: catalog product was activated, branch activation failed silently
+          }
+        }
+        setActivatingProduct(null);
+      },
     });
   };
 
