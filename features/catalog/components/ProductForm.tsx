@@ -2,12 +2,21 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Package } from "lucide-react";
+import {
+  Package,
+  Plus,
+  Trash2,
+  AlertCircle,
+  MapPin,
+  ChevronDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -15,88 +24,438 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { VariantList } from "./VariantList";
+import { useIndustryCategoryVariantTemplates } from "../hooks";
+import { useVariants } from "../hooks/useCatalog";
+import { useBranches } from "@/features/branches/hooks/useBranches";
 import {
-  BranchInventorySelector,
-  type InitialInventoryConfig,
-} from "@/features/branch-inventory/components/BranchInventorySelector";
-import type { Branch } from "@/features/branches/types";
+  useBranchInventory,
+  useActivateProduct,
+  useDeactivateProduct,
+  useUpdateInventory,
+} from "@/features/branch-inventory/hooks/useBranchInventory";
 import type {
-  BusinessProduct,
+  CatalogProduct,
   BusinessCategory,
-  CreateSimpleProductDto,
-  UpdateProductDto,
+  CreateProductDto,
+  UpdateCatalogProductDto,
+  ProductVariant,
 } from "../types/catalog.types";
-import type { BranchAvailability } from "../types/hybrid-catalog.types";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
 
-interface ProductFormProps {
-  product?: BusinessProduct | null;
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// ─── Public types ─────────────────────────────────────────────────────────────
+
+export interface VariantActivation {
+  variantLabel: string;
+  isAvailable: boolean;
+  priceOverride?: number;
+}
+
+export interface BranchActivation {
+  branchId: string;
+  variants: VariantActivation[];
+}
+
+// ─── Internal state types ─────────────────────────────────────────────────────
+
+interface SelectedVariant {
+  templateId: string;
+  label: string;
+  attributes: Record<string, string | number>;
+  price: number;
+}
+
+interface VariantBranchConfig {
+  enabled: boolean;
+  priceOverride: string;
+}
+
+interface BranchActivationState {
+  enabled: boolean;
+  simplePriceOverride: string;
+  variants: Record<string, VariantBranchConfig>; // key = templateId
+}
+
+export interface ProductFormProps {
+  product?: CatalogProduct | null;
+  businessId: string;
   categories: BusinessCategory[];
-  branches?: Branch[];
-  branchAvailability?: BranchAvailability[];
   onSubmit: (
-    data: CreateSimpleProductDto | UpdateProductDto,
-    branchInventory?: {
-      branchId: string;
-      isAvailable: boolean;
-      priceOverride?: number;
-      stock?: number;
-    }[]
+    data: CreateProductDto | UpdateCatalogProductDto,
+    branchActivations?: BranchActivation[]
   ) => void;
   onCancel: () => void;
   isLoading?: boolean;
   showProductImages?: boolean;
+  defaultTab?: "info" | "variants" | "branches";
 }
+
+// ─── Edit mode: variant row inside a branch ───────────────────────────────────
+
+interface VariantBranchRowProps {
+  businessId: string;
+  branchId: string;
+  variant: ProductVariant;
+  inventoryItem: import("@/features/branch-inventory/types").InventoryItem | undefined;
+}
+
+function VariantBranchRow({
+  businessId,
+  branchId,
+  variant,
+  inventoryItem,
+}: VariantBranchRowProps) {
+  const isActivated = !!inventoryItem;
+  const [priceOverride, setPriceOverride] = useState(
+    inventoryItem?.priceOverride?.toString() ?? ""
+  );
+
+  const prevItemRef = useRef(inventoryItem);
+  useEffect(() => {
+    if (inventoryItem !== prevItemRef.current) {
+      prevItemRef.current = inventoryItem;
+      setPriceOverride(inventoryItem?.priceOverride?.toString() ?? "");
+    }
+  }, [inventoryItem]);
+
+  const activateMutation = useActivateProduct(businessId, branchId);
+  const deactivateMutation = useDeactivateProduct(businessId, branchId);
+  const updateMutation = useUpdateInventory(businessId, branchId);
+
+  const handleToggle = (enabled: boolean) => {
+    if (enabled) {
+      activateMutation.mutate({
+        productId: variant.id,
+        data: { isAvailable: true },
+      });
+    } else {
+      deactivateMutation.mutate(variant.id);
+    }
+  };
+
+  const handleSavePrice = () => {
+    if (!isActivated) return;
+    const parsed = priceOverride ? parseFloat(priceOverride) : undefined;
+    updateMutation.mutate({ productId: variant.id, data: { priceOverride: parsed } });
+  };
+
+  const isBusy =
+    activateMutation.isPending ||
+    deactivateMutation.isPending ||
+    updateMutation.isPending;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 bg-white">
+      <Switch
+        checked={isActivated}
+        onCheckedChange={handleToggle}
+        disabled={isBusy}
+      />
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-slate-700 truncate">{variant.variantLabel}</span>
+        {isActivated && inventoryItem?.effectivePrice != null && (
+          <span className="text-xs text-slate-400 ml-2">
+            efectivo: ${inventoryItem.effectivePrice}
+          </span>
+        )}
+      </div>
+      <span className="text-xs text-slate-400 shrink-0">${variant.price}</span>
+      {isActivated && (
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="relative w-24">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+              $
+            </span>
+            <Input
+              type="number"
+              min={0}
+              value={priceOverride}
+              onChange={(e) => setPriceOverride(e.target.value)}
+              placeholder="Precio"
+              className="pl-5 h-8 text-xs"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs px-2"
+            onClick={handleSavePrice}
+            disabled={isBusy}
+          >
+            {updateMutation.isPending ? "…" : "OK"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Edit mode: collapsible branch section ────────────────────────────────────
+
+interface BranchActivationSectionProps {
+  businessId: string;
+  branchId: string;
+  productId: string;
+  productName: string;
+  branchName: string;
+  isMainBranch: boolean;
+  variants: ProductVariant[];
+}
+
+function BranchActivationSection({
+  businessId,
+  branchId,
+  productId,
+  productName,
+  branchName,
+  isMainBranch,
+  variants,
+}: BranchActivationSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const { data: inventory } = useBranchInventory(businessId, branchId, {
+    search: productName,
+    limit: 50,
+  });
+
+  const variantIds = useMemo(() => new Set(variants.map((v) => v.id)), [variants]);
+
+  const inventoryByVariantId = useMemo(() => {
+    const map = new Map<string, import("@/features/branch-inventory/types").InventoryItem>();
+    for (const item of inventory?.items ?? []) {
+      if (variantIds.has(item.productVariantId)) {
+        map.set(item.productVariantId, item);
+      }
+    }
+    return map;
+  }, [inventory, variantIds]);
+
+  const activatedCount = inventoryByVariantId.size;
+  const isAnyActivated = activatedCount > 0;
+
+  const activateMutation = useActivateProduct(businessId, branchId);
+  const deactivateMutation = useDeactivateProduct(businessId, branchId);
+
+  const handleToggleAll = (enable: boolean) => {
+    if (enable) {
+      Promise.allSettled(
+        variants
+          .filter((v) => !inventoryByVariantId.has(v.id))
+          .map((v) =>
+            activateMutation.mutateAsync({ productId: v.id, data: { isAvailable: true } })
+          )
+      );
+      setIsExpanded(true);
+    } else {
+      Promise.allSettled(
+        variants
+          .filter((v) => inventoryByVariantId.has(v.id))
+          .map((v) => deactivateMutation.mutateAsync(v.id))
+      );
+    }
+  };
+
+  const isBusy = activateMutation.isPending || deactivateMutation.isPending;
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <div
+        className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
+        onClick={() => setIsExpanded((p) => !p)}
+      >
+        <Switch
+          checked={isAnyActivated}
+          onCheckedChange={handleToggleAll}
+          disabled={isBusy}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-slate-800 truncate">{branchName}</p>
+          {isMainBranch && <span className="text-xs text-indigo-600">Principal</span>}
+        </div>
+        <span className="text-xs text-slate-400 shrink-0">
+          {activatedCount}/{variants.length} variantes
+        </span>
+        <ChevronDown
+          className={cn(
+            "w-4 h-4 text-slate-400 shrink-0 transition-transform",
+            isExpanded && "rotate-180"
+          )}
+        />
+      </div>
+
+      {isExpanded && (
+        <div className="divide-y border-t">
+          {variants.map((variant) => (
+            <VariantBranchRow
+              key={variant.id}
+              businessId={businessId}
+              branchId={branchId}
+              variant={variant}
+              inventoryItem={inventoryByVariantId.get(variant.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Edit mode: branches tab ──────────────────────────────────────────────────
+
+function BranchActivationTab({
+  businessId,
+  productId,
+  productName,
+}: {
+  businessId: string;
+  productId: string;
+  productName: string;
+}) {
+  const { data: variants = [], isLoading: variantsLoading } = useVariants(
+    businessId,
+    productId
+  );
+  const { data: branches = [], isLoading: branchesLoading } = useBranches();
+
+  if (variantsLoading || branchesLoading) {
+    return (
+      <div className="space-y-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="h-14 animate-pulse bg-slate-100 rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+
+  if (variants.length === 0) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+        <AlertCircle className="w-4 h-4 shrink-0" />
+        <span>
+          Este producto no tiene variantes. Creá al menos una variante antes de
+          activarlo en sedes.
+        </span>
+      </div>
+    );
+  }
+
+  if (branches.length === 0) {
+    return (
+      <p className="text-sm text-slate-500 bg-slate-50 border rounded-lg px-3 py-2.5">
+        No hay sedes configuradas para este negocio.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-slate-500 mb-3">
+        Activá el producto en cada sede y configurá precios por variante. Podés
+        desactivar variantes específicas en sedes donde no se vendan.
+      </p>
+      {branches.map((branch) => (
+        <BranchActivationSection
+          key={branch.id}
+          businessId={businessId}
+          branchId={branch.id}
+          productId={productId}
+          productName={productName}
+          branchName={branch.name}
+          isMainBranch={branch.isMainBranch}
+          variants={variants}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Main component ────────────────────────────────────────────────────────────
 
 export function ProductForm({
   product,
+  businessId,
   categories,
-  branches = [],
-  branchAvailability = [],
   onSubmit,
   onCancel,
   isLoading = false,
   showProductImages = true,
+  defaultTab = "info",
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
   const isEditing = !!product;
-  const isFromTemplate = product?.isFromTemplate ?? false;
 
-  // Form state - isActive siempre true (no hay estado global de producto)
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
+
   const [formData, setFormData] = useState({
     name: "",
-    price: "",
-    stock: "",
     description: "",
     image: "",
-    categoryId: "",
+    businessCategoryId: "",
     industryCategoryId: "",
+    isActive: true,
+    isFeatured: false,
   });
 
-  // Initial inventory state (for new products) / Branch inventory state (for editing)
-  const [initialInventory, setInitialInventory] = useState<
-    InitialInventoryConfig[]
-  >([]);
+  // Pricing mode
+  const [pricingMode, setPricingMode] = useState<"simple" | "variants">("simple");
+  const [simplePrice, setSimplePrice] = useState<string>("");
 
-  // Track if branch inventory has been modified during edit
-  const [hasModifiedBranchInventory, setHasModifiedBranchInventory] =
-    useState(false);
+  // Confirmed variant rows
+  const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>([]);
 
-  // Image preview
+  // "Add row" pending state
+  const [pendingTemplateId, setPendingTemplateId] = useState<string>("");
+  const [pendingPrice, setPendingPrice] = useState<string>("");
+
+  // Branch activation state (create mode)
+  const [branchState, setBranchState] = useState<Record<string, BranchActivationState>>({});
+  const branchInitRef = useRef(false);
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Track which product we've already initialized to prevent re-initialization
   const initializedProductIdRef = useRef<string | null>(null);
 
-  // Derive parent categories (IndustryCategory) from BusinessCategory list
+  // Branches
+  const { data: branches = [] } = useBranches();
+
+  // Initialize branch state once (create mode)
+  useEffect(() => {
+    if (!isEditing && branches.length > 0 && !branchInitRef.current) {
+      branchInitRef.current = true;
+      setBranchState(
+        Object.fromEntries(
+          branches.map((b) => [
+            b.id,
+            { enabled: true, simplePriceOverride: "", variants: {} },
+          ])
+        )
+      );
+    }
+  }, [branches, isEditing]);
+
+  // Parent categories
   const parentCategories = useMemo(() => {
     const seen = new Set<string>();
     const parents: { id: string; name: string }[] = [];
     for (const cat of categories) {
-      if (cat.industryCategoryId && cat.industryCategoryName && !seen.has(cat.industryCategoryId)) {
+      if (
+        cat.industryCategoryId &&
+        cat.industryCategoryName &&
+        !seen.has(cat.industryCategoryId)
+      ) {
         seen.add(cat.industryCategoryId);
         parents.push({ id: cat.industryCategoryId, name: cat.industryCategoryName });
       }
@@ -104,71 +463,76 @@ export function ProductForm({
     return parents.sort((a, b) => a.name.localeCompare(b.name));
   }, [categories]);
 
-  // Filter subcategories based on selected parent
   const filteredSubcategories = useMemo(() => {
     if (!formData.industryCategoryId) return [];
-    return categories.filter(c => c.industryCategoryId === formData.industryCategoryId);
+    return categories.filter(
+      (c) => c.industryCategoryId === formData.industryCategoryId
+    );
   }, [categories, formData.industryCategoryId]);
 
-  // Initialize form with product data when editing
+  const { data: variantTemplates = [], isLoading: loadingTemplates } =
+    useIndustryCategoryVariantTemplates(formData.industryCategoryId || null);
+
+  const selectedIds = useMemo(
+    () => new Set(selectedVariants.map((v) => v.templateId)),
+    [selectedVariants]
+  );
+
+  const availableTemplates = useMemo(
+    () => variantTemplates.filter((t) => !selectedIds.has(t.id)),
+    [variantTemplates, selectedIds]
+  );
+
+  // Reset variants when industry category changes
+  useEffect(() => {
+    setPendingTemplateId("");
+    setPendingPrice("");
+    setSelectedVariants([]);
+    setBranchState((prev) => {
+      const next = { ...prev };
+      for (const id of Object.keys(next)) {
+        next[id] = { ...next[id], variants: {} };
+      }
+      return next;
+    });
+  }, [formData.industryCategoryId]);
+
+  // Initialize form when editing
   useEffect(() => {
     if (!product) {
-      // Reset when no product (creating new)
       initializedProductIdRef.current = null;
       return;
     }
-
-    const productCategoryId = product.categoryId ?? product.category?.id ?? "";
     const isNewProduct = initializedProductIdRef.current !== product.id;
-
-    // Re-derive industryCategoryId when categories arrive asynchronously after product
     const resolvedIndustryCategoryId =
-      product.category?.industryCategoryId ??
-      categories.find(c => c.id === productCategoryId)?.industryCategoryId ??
+      product.industryCategoryId ??
+      categories.find((c) => c.id === product.businessCategoryId)
+        ?.industryCategoryId ??
       "";
-
     const industryCategoryArrived =
       !formData.industryCategoryId && resolvedIndustryCategoryId;
 
     if (isNewProduct || industryCategoryArrived) {
-      const displayName = product.customName ?? product.name ?? product.globalProduct?.name ?? "";
-      const displayDescription = product.customDescription ?? product.description ?? product.globalProduct?.description ?? "";
-      const displayImage = product.customImage ?? product.image ?? product.globalProduct?.image ?? "";
-
       setFormData({
-        name: displayName,
-        price: product.price?.toString() ?? "",
-        stock: product.stock?.toString() ?? "",
-        description: displayDescription,
-        image: displayImage,
-        categoryId: productCategoryId,
+        name: product.name ?? "",
+        description: product.description ?? "",
+        image: product.image ?? "",
+        businessCategoryId: product.businessCategoryId ?? "",
         industryCategoryId: resolvedIndustryCategoryId,
+        isActive: product.isActive,
+        isFeatured: product.isFeatured,
       });
-      setImagePreview(displayImage || product.globalProduct?.image || null);
-
-      if (isNewProduct) {
-        initializedProductIdRef.current = product.id;
-      }
+      setImagePreview(product.image ?? null);
+      if (isNewProduct) initializedProductIdRef.current = product.id;
     }
   }, [product, categories, formData.industryCategoryId]);
 
-  // Initialize branch inventory from branchAvailability when editing
   useEffect(() => {
-    if (isEditing && branchAvailability && branchAvailability.length > 0) {
-      const inventoryConfig: InitialInventoryConfig[] = branchAvailability.map(
-        (ba) => ({
-          branchId: ba.branchId,
-          branchName: ba.branchName,
-          isAvailable: ba.isAvailable,
-          priceOverride: ba.priceOverride ?? undefined,
-          stock: ba.stock ?? undefined,
-        })
-      );
-      setInitialInventory(inventoryConfig);
-    }
-  }, [isEditing, branchAvailability]);
+    setActiveTab(defaultTab);
+  }, [product?.id, defaultTab]);
 
-  // Handle input changes
+  // ─── Handlers ───────────────────────────────────────────────────────────────
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -176,132 +540,205 @@ export function ProductForm({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle number inputs
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    // Only allow numbers and decimal point
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  // Handle image URL change
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setFormData((prev) => ({ ...prev, image: url }));
     setImagePreview(url || null);
   };
 
-  // Handle branch inventory changes during edit
-  const handleBranchInventoryChange = (inventory: InitialInventoryConfig[]) => {
-    setInitialInventory(inventory);
-    if (isEditing) {
-      setHasModifiedBranchInventory(true);
-    }
+  const updateBranch = (branchId: string, update: Partial<BranchActivationState>) => {
+    setBranchState((prev) => ({
+      ...prev,
+      [branchId]: { ...prev[branchId], ...update },
+    }));
   };
 
-  // Handle form submission
+  const updateBranchVariant = (
+    branchId: string,
+    templateId: string,
+    update: Partial<VariantBranchConfig>
+  ) => {
+    setBranchState((prev) => ({
+      ...prev,
+      [branchId]: {
+        ...prev[branchId],
+        variants: {
+          ...prev[branchId]?.variants,
+          [templateId]: {
+            ...(prev[branchId]?.variants?.[templateId] ?? {
+              enabled: true,
+              priceOverride: "",
+            }),
+            ...update,
+          },
+        },
+      },
+    }));
+  };
+
+  const addPendingVariant = () => {
+    if (!pendingTemplateId) return;
+    const tpl = variantTemplates.find((t) => t.id === pendingTemplateId);
+    if (!tpl) return;
+    const price = parseFloat(pendingPrice) || 0;
+
+    setSelectedVariants((prev) => [
+      ...prev,
+      { templateId: tpl.id, label: tpl.label, attributes: tpl.attributes, price },
+    ]);
+
+    // Add this variant to every branch's config
+    setBranchState((prev) => {
+      const next = { ...prev };
+      for (const id of Object.keys(next)) {
+        next[id] = {
+          ...next[id],
+          variants: {
+            ...next[id].variants,
+            [tpl.id]: {
+              enabled: true,
+              priceOverride: price > 0 ? price.toString() : "",
+            },
+          },
+        };
+      }
+      return next;
+    });
+
+    setPendingTemplateId("");
+    setPendingPrice("");
+  };
+
+  const updateVariantPrice = (templateId: string, price: number) => {
+    setSelectedVariants((prev) =>
+      prev.map((v) => (v.templateId === templateId ? { ...v, price } : v))
+    );
+  };
+
+  const removeVariant = (templateId: string) => {
+    setSelectedVariants((prev) => prev.filter((v) => v.templateId !== templateId));
+    // Remove from all branches
+    setBranchState((prev) => {
+      const next = { ...prev };
+      for (const id of Object.keys(next)) {
+        const { [templateId]: _removed, ...rest } = next[id]?.variants ?? {};
+        next[id] = { ...next[id], variants: rest };
+      }
+      return next;
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Use simple DTO for forms - service will convert to backend format
-    // isActive siempre true - no hay estado global de producto
     if (isEditing) {
-      // Update: send only product-level fields (NO branchInventory)
-      // Branch inventory updates are handled separately via bulkBranchUpdate
-      const data: UpdateProductDto = {
-        price: parseFloat(formData.price),
-        stock: formData.stock === "" ? null : parseInt(formData.stock, 10),
-        customName: formData.name,
-        customDescription: formData.description || undefined,
-        customImage: formData.image || null,
-        categoryId: formData.categoryId || null,
-        industryCategoryId: formData.industryCategoryId || null,
-        isActive: true,
-      };
-
-      // Pass branch inventory separately if modified
-      const branchInventoryData =
-        hasModifiedBranchInventory && initialInventory.length > 0
-          ? initialInventory.map((inv) => ({
-              branchId: inv.branchId,
-              isAvailable: inv.isAvailable,
-              priceOverride: inv.priceOverride,
-              stock: inv.stock,
-            }))
-          : undefined;
-
-      onSubmit(data, branchInventoryData);
-    } else {
-      // Create: use simple DTO (will be converted by service)
-      const data: CreateSimpleProductDto = {
+      onSubmit({
         name: formData.name,
-        price: parseFloat(formData.price),
-        stock:
-          formData.stock === "" ? undefined : parseInt(formData.stock, 10),
         description: formData.description || undefined,
         image: formData.image || undefined,
-        categoryId: formData.categoryId || undefined,
+        businessCategoryId: formData.businessCategoryId || undefined,
         industryCategoryId: formData.industryCategoryId || undefined,
-        // Include initial inventory for branch activation
-        initialInventory:
-          initialInventory.length > 0
-            ? initialInventory.map((inv) => ({
-                branchId: inv.branchId,
-                isAvailable: inv.isAvailable,
-                priceOverride: inv.priceOverride,
-                stock: inv.stock,
-              }))
-            : undefined,
-      };
-
-      onSubmit(data);
+        isActive: formData.isActive,
+        isFeatured: formData.isFeatured,
+      } as UpdateCatalogProductDto);
+      return;
     }
+
+    const base: CreateProductDto = {
+      name: formData.name,
+      slug: generateSlug(formData.name),
+      description: formData.description || undefined,
+      image: formData.image || undefined,
+      businessCategoryId: formData.businessCategoryId || undefined,
+      industryCategoryId: formData.industryCategoryId || undefined,
+      isActive: true,
+      isFeatured: formData.isFeatured,
+    };
+
+    if (pricingMode === "simple") {
+      const price = parseFloat(simplePrice);
+      if (!isNaN(price) && price >= 0) {
+        base.price = price;
+        base.kind = "SIMPLE";
+      }
+    } else {
+      const valid = selectedVariants.filter((v) => v.price >= 0);
+      if (valid.length > 0) {
+        base.inlineVariants = valid.map((v) => ({
+          label: v.label,
+          price: v.price,
+          attributes:
+            Object.keys(v.attributes).length > 0 ? v.attributes : undefined,
+        }));
+        base.kind = "CONFIGURABLE";
+      }
+    }
+
+    // Build branch activations
+    const enabledBranches = Object.entries(branchState).filter(([, s]) => s.enabled);
+    let activations: BranchActivation[] | undefined;
+
+    if (enabledBranches.length > 0) {
+      if (pricingMode === "simple") {
+        activations = enabledBranches.map(([branchId, s]) => ({
+          branchId,
+          variants: [
+            {
+              variantLabel: "Unidad",
+              isAvailable: true,
+              priceOverride: s.simplePriceOverride
+                ? parseFloat(s.simplePriceOverride)
+                : undefined,
+            },
+          ],
+        }));
+      } else if (selectedVariants.length > 0) {
+        activations = enabledBranches.map(([branchId, s]) => ({
+          branchId,
+          variants: selectedVariants.map((sv) => ({
+            variantLabel: sv.label,
+            isAvailable: s.variants[sv.templateId]?.enabled ?? true,
+            priceOverride: (() => {
+              const po = s.variants[sv.templateId]?.priceOverride;
+              return po ? parseFloat(po) : undefined;
+            })(),
+          })),
+        }));
+      }
+    }
+
+    onSubmit(base, activations);
   };
 
-  // Show warning if no branches selected for new product
-  const showInventoryWarning =
-    !isEditing && branches.length > 0 && initialInventory.length === 0;
+  const canSubmit = formData.name.trim().length > 0;
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6 p-7">
-      {/* Image Preview */}
+  // ─── Info fields ─────────────────────────────────────────────────────────────
+
+  const infoFields = (
+    <>
       {showProductImages && (
         <div className="flex justify-center">
-          <div className="relative w-32 h-32 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
+          <div className="relative w-28 h-28 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
             {imagePreview ? (
-              <>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                  onError={() => setImagePreview(null)}
-                />
-                {isFromTemplate && product?.globalProduct?.image && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-1">
-                    {t("inheritedFromCatalog")}
-                  </div>
-                )}
-              </>
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+                onError={() => setImagePreview(null)}
+              />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
-                <Package className="w-10 h-10 mb-1" />
-                <span className="text-xs">{tCommon("status.noImage")}</span>
+                <Package className="w-8 h-8 mb-1" />
+                <span className="text-[10px]">{tCommon("status.noImage")}</span>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Name */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="name">
           {t("products.name")} <span className="text-red-500">*</span>
-          {isFromTemplate && (
-            <span className="ml-2 text-xs text-blue-600">
-              ({t("inheritedFromCatalog")})
-            </span>
-          )}
         </Label>
         <Input
           id="name"
@@ -310,159 +747,101 @@ export function ProductForm({
           onChange={handleChange}
           placeholder={t("products.form.namePlaceholder")}
           required
-          disabled={isLoading || isFromTemplate}
+          disabled={isLoading}
         />
-        {isFromTemplate && (
-          <p className="text-xs text-slate-500">
-            {t("inheritedFrom", { name: product?.globalProduct?.name ?? "" })}
-          </p>
-        )}
       </div>
 
-      {/* Price and Stock */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="price">
-            {t("products.price")} <span className="text-red-500">*</span>
-          </Label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-              $
-            </span>
-            <Input
-              id="price"
-              name="price"
-              type="text"
-              inputMode="decimal"
-              value={formData.price}
-              onChange={handleNumberChange}
-              placeholder="0"
-              required
-              disabled={isLoading}
-              className="pl-6"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="stock">{t("products.stockOptional")}</Label>
-          <Input
-            id="stock"
-            name="stock"
-            type="text"
-            inputMode="numeric"
-            value={formData.stock}
-            onChange={handleNumberChange}
-            placeholder={t("stock.unlimited")}
-            disabled={isLoading}
-          />
-        </div>
-      </div>
-
-      {/* Category & Subcategory */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Parent Category (IndustryCategory) */}
-        <div className="space-y-2">
-          <Label htmlFor="parentCategory">{t("products.form.parentCategory")}</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label>{t("products.form.parentCategory")}</Label>
           <Select
             value={formData.industryCategoryId || SELECT_NONE}
             onValueChange={(value) => {
               const newParentId = value === SELECT_NONE ? "" : value;
               const subcatStillValid = categories.some(
-                c => c.id === formData.categoryId && c.industryCategoryId === newParentId
+                (c) =>
+                  c.id === formData.businessCategoryId &&
+                  c.industryCategoryId === newParentId
               );
-              setFormData(prev => ({
+              setFormData((prev) => ({
                 ...prev,
                 industryCategoryId: newParentId,
-                categoryId: subcatStillValid ? prev.categoryId : "",
+                businessCategoryId: subcatStillValid ? prev.businessCategoryId : "",
               }));
             }}
             disabled={isLoading || parentCategories.length === 0}
           >
-            <SelectTrigger id="parentCategory">
+            <SelectTrigger>
               <SelectValue placeholder={t("products.form.selectParentCategory")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={SELECT_NONE}>{t("products.form.selectParentCategory")}</SelectItem>
-              {parentCategories.map((parent) => (
-                <SelectItem key={parent.id} value={parent.id}>
-                  {parent.name}
+              <SelectItem value={SELECT_NONE}>
+                {t("products.form.selectParentCategory")}
+              </SelectItem>
+              {parentCategories.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Subcategory (BusinessCategory) */}
-        <div className="space-y-2">
-          <Label htmlFor="subcategory">{t("products.form.subcategoryOptional")}</Label>
+        <div className="space-y-1.5">
+          <Label>{t("products.form.subcategoryOptional")}</Label>
           <Select
-            value={formData.categoryId || SELECT_NONE}
+            value={formData.businessCategoryId || SELECT_NONE}
             onValueChange={(value) =>
-              setFormData(prev => ({ ...prev, categoryId: value === SELECT_NONE ? "" : value }))
+              setFormData((prev) => ({
+                ...prev,
+                businessCategoryId: value === SELECT_NONE ? "" : value,
+              }))
             }
-            disabled={isLoading || !formData.industryCategoryId || filteredSubcategories.length === 0}
+            disabled={
+              isLoading ||
+              !formData.industryCategoryId ||
+              filteredSubcategories.length === 0
+            }
           >
-            <SelectTrigger id="subcategory">
+            <SelectTrigger>
               <SelectValue placeholder={t("products.form.selectSubcategory")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={SELECT_NONE}>{t("products.form.selectSubcategory")}</SelectItem>
+              <SelectItem value={SELECT_NONE}>
+                {t("products.form.selectSubcategory")}
+              </SelectItem>
               {filteredSubcategories.length === 0 && formData.industryCategoryId ? (
                 <SelectItem value={SELECT_DISABLED} disabled>
                   {t("products.form.noSubcategoriesInParent")}
                 </SelectItem>
               ) : (
-                filteredSubcategories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
+                filteredSubcategories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
                   </SelectItem>
                 ))
               )}
             </SelectContent>
           </Select>
-          {formData.industryCategoryId && !formData.categoryId && (
-            <p className="text-xs text-slate-500">
-              {t("products.form.subcategoryFallbackHint", {
-                parentName: parentCategories.find(p => p.id === formData.industryCategoryId)?.name ?? "",
-              })}
-            </p>
-          )}
         </div>
       </div>
 
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">
-          {t("products.description")}
-          {isFromTemplate && (
-            <span className="ml-2 text-xs text-blue-600">
-              ({t("inheritedFromCatalog")})
-            </span>
-          )}
-        </Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="description">{t("products.description")}</Label>
         <Textarea
           id="description"
           name="description"
           value={formData.description}
           onChange={handleChange}
           placeholder={t("products.form.descriptionPlaceholder")}
-          rows={3}
-          disabled={isLoading || isFromTemplate}
+          rows={2}
+          disabled={isLoading}
         />
       </div>
 
-      {/* Image URL */}
       {showProductImages && (
-        <div className="space-y-2">
-          <Label htmlFor="image">
-            {t("products.imageUrl")}
-            {isFromTemplate && (
-              <span className="ml-2 text-xs text-blue-600">
-                ({t("inheritedFromCatalog")})
-              </span>
-            )}
-          </Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="image">{t("products.imageUrl")}</Label>
           <Input
             id="image"
             name="image"
@@ -470,66 +849,471 @@ export function ProductForm({
             value={formData.image}
             onChange={handleImageChange}
             placeholder={t("products.imagePlaceholder")}
-            disabled={isLoading || isFromTemplate}
+            disabled={isLoading}
           />
-          {isFromTemplate && (
+        </div>
+      )}
+
+      {isEditing && (
+        <div className="flex items-center justify-between py-2 border-t">
+          <div>
+            <p className="text-sm font-medium">{t("products.active") || "Activo"}</p>
             <p className="text-xs text-slate-500">
-              {t("imageFallbackDescription")}
+              {t("products.activeHint") || "Visible en el catálogo"}
             </p>
+          </div>
+          <Switch
+            checked={formData.isActive}
+            onCheckedChange={(val) => setFormData((prev) => ({ ...prev, isActive: val }))}
+            disabled={isLoading}
+          />
+        </div>
+      )}
+    </>
+  );
+
+  // ─── Pricing section ─────────────────────────────────────────────────────────
+
+  const pricingSection = (
+    <div className="space-y-4 border-t pt-4">
+      <div className="flex items-center gap-3">
+        <p className="text-sm font-medium text-slate-900 flex-1">Precio</p>
+        <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
+          <button
+            type="button"
+            onClick={() => setPricingMode("simple")}
+            className={cn(
+              "px-3 py-1 text-xs rounded-md transition-colors font-medium",
+              pricingMode === "simple"
+                ? "bg-white shadow-sm text-slate-900"
+                : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            Precio único
+          </button>
+          <button
+            type="button"
+            onClick={() => setPricingMode("variants")}
+            className={cn(
+              "px-3 py-1 text-xs rounded-md transition-colors font-medium",
+              pricingMode === "variants"
+                ? "bg-white shadow-sm text-slate-900"
+                : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            Variantes
+          </button>
+        </div>
+      </div>
+
+      {pricingMode === "simple" ? (
+        <div className="space-y-1.5">
+          <Label htmlFor="simplePrice">Precio</Label>
+          <div className="relative max-w-48">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+              $
+            </span>
+            <Input
+              id="simplePrice"
+              type="number"
+              min={0}
+              value={simplePrice}
+              onChange={(e) => setSimplePrice(e.target.value)}
+              placeholder="0"
+              className="pl-6"
+              disabled={isLoading}
+            />
+          </div>
+          <p className="text-xs text-slate-500">
+            Podés ajustar el precio después desde el listado de variantes.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {!formData.industryCategoryId ? (
+            <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>Seleccioná una categoría para ver las variantes disponibles.</span>
+            </div>
+          ) : loadingTemplates ? (
+            <p className="text-sm text-slate-400 py-1">Cargando variantes…</p>
+          ) : variantTemplates.length === 0 ? (
+            <p className="text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
+              No hay variantes predefinidas para esta categoría.
+            </p>
+          ) : (
+            <>
+              {selectedVariants.length > 0 && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_7rem_2rem] gap-2 text-xs text-slate-400 font-medium px-1">
+                    <span>Variante</span>
+                    <span>Precio base</span>
+                    <span />
+                  </div>
+                  {selectedVariants.map((v) => (
+                    <div
+                      key={v.templateId}
+                      className="grid grid-cols-[1fr_7rem_2rem] gap-2 items-center"
+                    >
+                      <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 truncate">
+                        {v.label}
+                      </div>
+                      <div className="relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                          $
+                        </span>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={v.price === 0 ? "" : v.price}
+                          onChange={(e) =>
+                            updateVariantPrice(
+                              v.templateId,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          placeholder="0"
+                          className="pl-5 h-8 text-sm"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeVariant(v.templateId)}
+                        className="flex items-center justify-center h-8 w-8 text-slate-300 hover:text-red-400 transition-colors rounded-md hover:bg-red-50"
+                        tabIndex={-1}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {availableTemplates.length > 0 && <div className="pt-1" />}
+                </div>
+              )}
+
+              {availableTemplates.length > 0 && (
+                <div className="grid grid-cols-[1fr_7rem_auto] gap-2 items-end">
+                  <div className="space-y-1">
+                    {selectedVariants.length === 0 && (
+                      <p className="text-xs text-slate-400 mb-1">
+                        Elegí una variante y asignale el precio base
+                      </p>
+                    )}
+                    <Select
+                      value={pendingTemplateId || SELECT_NONE}
+                      onValueChange={(v) =>
+                        setPendingTemplateId(v === SELECT_NONE ? "" : v)
+                      }
+                    >
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder="Seleccioná una variante" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={SELECT_NONE}>
+                          Seleccioná una variante
+                        </SelectItem>
+                        {availableTemplates.map((tpl) => (
+                          <SelectItem key={tpl.id} value={tpl.id}>
+                            {tpl.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                      $
+                    </span>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={pendingPrice}
+                      onChange={(e) => setPendingPrice(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" &&
+                        (e.preventDefault(), addPendingVariant())
+                      }
+                      placeholder="0"
+                      className="pl-5 h-9 text-sm"
+                      disabled={!pendingTemplateId}
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-3 gap-1.5"
+                    onClick={addPendingVariant}
+                    disabled={!pendingTemplateId}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Agregar
+                  </Button>
+                </div>
+              )}
+
+              {availableTemplates.length === 0 && selectedVariants.length > 0 && (
+                <p className="text-xs text-slate-400 text-center py-1">
+                  Todas las variantes disponibles ya fueron agregadas.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
+    </div>
+  );
 
-      {/* Branch Inventory Selector (for new products) */}
-      {!isEditing && branches.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-200">
-          <BranchInventorySelector
-            branches={branches}
-            basePrice={parseFloat(formData.price) || 0}
-            value={initialInventory}
-            onChange={handleBranchInventoryChange}
-          />
+  // ─── Branch section (create mode) ────────────────────────────────────────────
+
+  const branchSection = (
+    <div className="space-y-3 border-t pt-4">
+      <div className="flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-slate-400" />
+        <p className="text-sm font-medium text-slate-900 flex-1">Sedes</p>
+        <p className="text-xs text-slate-400">Disponibilidad y precio por sede</p>
+      </div>
+
+      {branches.length === 0 ? (
+        <p className="text-sm text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
+          No hay sedes configuradas.
+        </p>
+      ) : pricingMode === "simple" ? (
+        // Simple mode: one price override per branch
+        <div className="space-y-2">
+          {branches.map((branch) => {
+            const state = branchState[branch.id] ?? {
+              enabled: true,
+              simplePriceOverride: "",
+              variants: {},
+            };
+            return (
+              <div
+                key={branch.id}
+                className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50"
+              >
+                <Switch
+                  checked={state.enabled}
+                  onCheckedChange={(val) => updateBranch(branch.id, { enabled: val })}
+                  disabled={isLoading}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-800 truncate">
+                    {branch.name}
+                  </p>
+                  {branch.isMainBranch && (
+                    <span className="text-xs text-indigo-600">Principal</span>
+                  )}
+                </div>
+                {state.enabled && (
+                  <div className="relative w-28 shrink-0">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                      $
+                    </span>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={state.simplePriceOverride}
+                      onChange={(e) =>
+                        updateBranch(branch.id, { simplePriceOverride: e.target.value })
+                      }
+                      placeholder="Precio (opc)"
+                      className="pl-5 h-8 text-sm"
+                      disabled={isLoading}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : selectedVariants.length === 0 ? (
+        // Variants mode but no variants added yet
+        <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-slate-400" />
+          <span>Agregá variantes para configurar precios por sede.</span>
+        </div>
+      ) : (
+        // Variants mode: per-variant per-branch pricing
+        <div className="space-y-2">
+          {branches.map((branch) => {
+            const state = branchState[branch.id] ?? {
+              enabled: true,
+              simplePriceOverride: "",
+              variants: {},
+            };
+            const enabledVariantCount = selectedVariants.filter(
+              (sv) => state.variants[sv.templateId]?.enabled !== false
+            ).length;
+
+            return (
+              <div key={branch.id} className="border rounded-lg overflow-hidden">
+                {/* Branch header */}
+                <div className="flex items-center gap-3 p-3 bg-slate-50">
+                  <Switch
+                    checked={state.enabled}
+                    onCheckedChange={(val) => updateBranch(branch.id, { enabled: val })}
+                    disabled={isLoading}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">
+                      {branch.name}
+                    </p>
+                    {branch.isMainBranch && (
+                      <span className="text-xs text-indigo-600">Principal</span>
+                    )}
+                  </div>
+                  {state.enabled && (
+                    <span className="text-xs text-slate-400 shrink-0">
+                      {enabledVariantCount}/{selectedVariants.length} variantes
+                    </span>
+                  )}
+                </div>
+
+                {/* Per-variant rows */}
+                {state.enabled && (
+                  <div className="divide-y border-t">
+                    {selectedVariants.map((sv) => {
+                      const varState = state.variants[sv.templateId] ?? {
+                        enabled: true,
+                        priceOverride: sv.price > 0 ? sv.price.toString() : "",
+                      };
+                      return (
+                        <div
+                          key={sv.templateId}
+                          className="flex items-center gap-3 px-4 py-2.5 bg-white"
+                        >
+                          <Switch
+                            checked={varState.enabled}
+                            onCheckedChange={(val) =>
+                              updateBranchVariant(branch.id, sv.templateId, {
+                                enabled: val,
+                              })
+                            }
+                            disabled={isLoading}
+                          />
+                          <span className="flex-1 text-sm text-slate-700 truncate">
+                            {sv.label}
+                          </span>
+                          <span className="text-xs text-slate-400 shrink-0">
+                            base: ${sv.price}
+                          </span>
+                          {varState.enabled && (
+                            <div className="relative w-24 shrink-0">
+                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                                $
+                              </span>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={varState.priceOverride}
+                                onChange={(e) =>
+                                  updateBranchVariant(branch.id, sv.templateId, {
+                                    priceOverride: e.target.value,
+                                  })
+                                }
+                                placeholder="Precio"
+                                className="pl-5 h-8 text-xs"
+                                disabled={isLoading}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
+    </div>
+  );
 
-      {/* Branch Inventory Editor (for editing products) */}
-      {isEditing && branches.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-200">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-700">
-              {t("products.branchAvailability")}
-            </span>
-            {hasModifiedBranchInventory && (
-              <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                {t("products.modified")}
+  // ─── Edit mode: tabbed ────────────────────────────────────────────────────────
+
+  if (isEditing) {
+    return (
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+        <TabsList className="w-full mx-7" style={{ width: "calc(100% - 3.5rem)" }}>
+          <TabsTrigger value="info" className="flex-1">
+            {t("products.tabs.info") || "Información"}
+          </TabsTrigger>
+          <TabsTrigger value="variants" className="flex-1">
+            {t("products.tabs.variants") || "Variantes"}
+            {product.variantCount > 0 && (
+              <span className="ml-1.5 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
+                {product.variantCount}
               </span>
             )}
-          </div>
-          <BranchInventorySelector
-            branches={branches}
-            basePrice={parseFloat(formData.price) || 0}
-            value={initialInventory}
-            onChange={handleBranchInventoryChange}
-          />
-        </div>
-      )}
+          </TabsTrigger>
+          <TabsTrigger value="branches" className="flex-1">
+            <MapPin className="w-3.5 h-3.5 mr-1" />
+            {t("products.tabs.branches") || "Sedes"}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
+        <TabsContent value="info">
+          <form onSubmit={handleSubmit} className="space-y-4 p-7">
+            {infoFields}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isLoading}
+              >
+                {tCommon("buttons.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isLoading || !canSubmit}
+                isLoading={isLoading}
+              >
+                {tCommon("buttons.saveChanges")}
+              </Button>
+            </div>
+          </form>
+        </TabsContent>
+
+        <TabsContent value="variants" className="p-7 pt-4">
+          <VariantList
+            productId={product.id}
+            businessId={businessId}
+            schema={product.attributeSchema}
+          />
+        </TabsContent>
+
+        <TabsContent value="branches" className="p-7 pt-4">
+          <BranchActivationTab
+            businessId={businessId}
+            productId={product.id}
+            productName={product.name}
+          />
+        </TabsContent>
+      </Tabs>
+    );
+  }
+
+  // ─── Create mode ─────────────────────────────────────────────────────────────
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 p-7">
+      {infoFields}
+      {pricingSection}
+      {branchSection}
+      <div className="flex justify-end gap-3 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           {tCommon("buttons.cancel")}
         </Button>
         <Button
           type="submit"
-          disabled={isLoading || !formData.name || !formData.price}
+          disabled={isLoading || !canSubmit}
           isLoading={isLoading}
         >
-          {isEditing ? tCommon("buttons.saveChanges") : t("products.create")}
+          {t("products.create")}
         </Button>
       </div>
     </form>

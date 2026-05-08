@@ -30,6 +30,14 @@
     "price": "Precio",
     "salePrice": "Precio de venta",
     "suggestedPrice": "Precio sugerido",
+    "priceByVariant": "Precio por variante",
+    "active": "Activo",
+    "activeHint": "Visible en el catálogo",
+    "tabs": {
+      "info": "Información",
+      "variants": "Variantes",
+      "branches": "Sedes"
+    },
     "category": "Categoría",
     "image": "Imagen",
     "imageUrl": "URL de Imagen",

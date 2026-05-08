@@ -26,6 +26,15 @@ export interface PaginatedGlobalCatalog {
  * GlobalProduct - Master product definition managed by TOGO
  * These are template products that businesses can activate
  */
+export interface GlobalProductVariant {
+  id: string;
+  variantLabel: string;
+  suggestedPrice?: number;
+  isDefault: boolean;
+  isActive: boolean;
+  attributes: Record<string, string | number>;
+}
+
 export interface GlobalProduct {
   id: string;
   sku: string;
@@ -36,6 +45,8 @@ export interface GlobalProduct {
   category?: string;
   basePrice?: number; // Suggested retail price
   unit?: string; // e.g., "350ml", "500g", "unidad"
+  kind?: 'SIMPLE' | 'CONFIGURABLE';
+  variants?: GlobalProductVariant[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -313,4 +324,130 @@ export interface ActivateProductModalProps {
   onClose: () => void;
   onActivate: (data: ActivateGlobalProductDto) => void;
   isLoading?: boolean;
+}
+
+// ============================================================================
+// CATALOG PRODUCT (Product + ProductVariant model)
+// ============================================================================
+
+export interface AttributeSchema {
+  keys: string[];
+  required: string[];
+  allowCustomKeys: boolean;
+  valueHints?: Record<string, string[]>;
+}
+
+export interface CatalogProduct {
+  id: string;
+  businessId: string;
+  globalProductId?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  kind: 'SIMPLE' | 'CONFIGURABLE';
+  attributeSchema?: AttributeSchema;
+  globalTemplateVersion?: number;
+  outOfSync?: boolean;
+  businessCategoryId?: string;
+  industryCategoryId?: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  deletedAt?: string;
+  variantCount: number;
+  priceFrom?: number;
+  priceTo?: number;
+  variants?: ProductVariant[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  businessId: string;
+  globalVariantId?: string;
+  attributes: Record<string, string | number>;
+  variantLabel: string;
+  price: number;
+  internalSku?: string;
+  barcode?: string;
+  isActive: boolean;
+  isDefault: boolean;
+  deletedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InlineVariant {
+  label: string;
+  price: number;
+  attributes?: Record<string, string | number>;
+}
+
+export interface VariantTemplate {
+  id: string;
+  label: string;
+  attributes: Record<string, string | number>;
+  aliases: string[];
+  displayOrder: number;
+}
+
+export interface CreateProductDto {
+  name: string;
+  slug?: string;
+  description?: string;
+  image?: string;
+  kind?: 'SIMPLE' | 'CONFIGURABLE';
+  attributeSchema?: AttributeSchema;
+  businessCategoryId?: string;
+  industryCategoryId?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  // Inline pricing on creation
+  price?: number;
+  inlineVariants?: InlineVariant[];
+}
+
+export interface ActivateCatalogProductDto {
+  globalProductId: string;
+  slug: string;
+  businessCategoryId?: string;
+  variantPrices: Array<{ globalVariantId: string; price: number }>;
+}
+
+export interface UpdateCatalogProductDto {
+  name?: string;
+  description?: string;
+  image?: string;
+  attributeSchema?: AttributeSchema;
+  businessCategoryId?: string;
+  industryCategoryId?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
+}
+
+export interface CreateVariantDto {
+  variantLabel: string;
+  price: number;
+  attributes?: Record<string, string | number>;
+  internalSku?: string;
+  barcode?: string;
+  isDefault?: boolean;
+  isActive?: boolean;
+}
+
+export interface UpdateVariantDto {
+  variantLabel?: string;
+  price?: number;
+  attributes?: Record<string, string | number>;
+  internalSku?: string;
+  barcode?: string;
+  isDefault?: boolean;
+  isActive?: boolean;
+}
+
+export interface PaginatedProducts {
+  items: CatalogProduct[];
+  meta: { total: number; page: number; limit: number; totalPages: number };
 }

@@ -6,33 +6,27 @@ import { Package, Store, Grid3X3 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
-import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useGlobalCatalog,
   useIndustryCategories,
-  useActivateGlobalProduct,
+  useActivateCatalogProduct,
   useCategories,
 } from "@/features/catalog/hooks";
-import { useBranches } from "@/features/branches/hooks";
 import {
   GlobalProductCard,
-  ActivateProductModal,
   GlobalCatalogFilters,
+  ActivateProductModal,
 } from "@/features/catalog/components";
 import type {
   GlobalProduct,
-  ActivateGlobalProductDto,
+  ActivateCatalogProductDto,
 } from "@/features/catalog/types";
 
 type ViewMode = "grid" | "list";
 
 const globalPageSize = 12;
-
-// ============================================================================
-// LOADING SKELETON
-// ============================================================================
 
 function GlobalCatalogLoading() {
   return (
@@ -54,13 +48,8 @@ function GlobalCatalogLoading() {
   );
 }
 
-// ============================================================================
-// EMPTY STATE
-// ============================================================================
-
 function EmptyGlobalCatalogState() {
   const t = useTranslations("catalog");
-
   return (
     <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
@@ -76,13 +65,8 @@ function EmptyGlobalCatalogState() {
   );
 }
 
-// ============================================================================
-// ERROR STATE
-// ============================================================================
-
 function ErrorState({ error }: { error: Error | null }) {
   const t = useTranslations("catalog");
-
   return (
     <div className="text-center py-16 bg-red-50 rounded-card-lg border border-red-200">
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
@@ -98,18 +82,12 @@ function ErrorState({ error }: { error: Error | null }) {
   );
 }
 
-// ============================================================================
-// MAIN PAGE COMPONENT
-// ============================================================================
-
 export default function GlobalCatalogPage() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
-  const { data: currentBusiness } = useCurrentBusiness();
-  const showProductImages = (currentBusiness?.settings as Record<string, unknown> | undefined)?.useProductImages !== false;
 
   if (!businessId) {
     return (
@@ -129,50 +107,36 @@ export default function GlobalCatalogPage() {
     );
   }
 
-  // Estados
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
-  const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<
-    string[]
-  >([]);
+  const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [globalPage, setGlobalPage] = useState(1);
   const [globalViewMode, setGlobalViewMode] = useState<ViewMode>("grid");
-  const [activatingProduct, setActivatingProduct] =
-    useState<GlobalProduct | null>(null);
+  const [activatingProduct, setActivatingProduct] = useState<GlobalProduct | null>(null);
 
-  // Hooks
-  const {
-    data: globalProductsData,
-    isLoading: isLoadingGlobal,
-    error: globalProductsError,
-  } = useGlobalCatalog(businessId, {
-    search: globalSearchQuery || undefined,
-    industryCategoryIds:
-      selectedIndustryCategories.length > 0
-        ? selectedIndustryCategories.join(",")
-        : undefined,
-    brand: selectedBrand === "all" ? undefined : selectedBrand,
-    page: globalPage,
-    limit: globalPageSize,
-  });
+  const { data: globalProductsData, isLoading: isLoadingGlobal, error: globalProductsError } =
+    useGlobalCatalog(businessId, {
+      search: globalSearchQuery || undefined,
+      industryCategoryIds:
+        selectedIndustryCategories.length > 0
+          ? selectedIndustryCategories.join(",")
+          : undefined,
+      brand: selectedBrand === "all" ? undefined : selectedBrand,
+      page: globalPage,
+      limit: globalPageSize,
+    });
 
   const { data: industryCategoriesData } = useIndustryCategories();
   const { data: categoriesData } = useCategories(businessId);
-  const { data: branchesData } = useBranches();
 
-  const globalProducts = globalProductsData?.items || [];
+  const globalProducts = (globalProductsData?.items ?? []) as GlobalProduct[];
   const globalMeta = globalProductsData?.meta;
-  const industryCategories = Array.isArray(industryCategoriesData)
-    ? industryCategoriesData
-    : [];
+  const industryCategories = Array.isArray(industryCategoriesData) ? industryCategoriesData : [];
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
-  const branches = Array.isArray(branchesData) ? branchesData : [];
 
-  // Mutaciones
-  const activateGlobal = useActivateGlobalProduct(businessId);
+  const activateGlobal = useActivateCatalogProduct(businessId);
 
-  // Handler
-  const handleActivateGlobal = (data: ActivateGlobalProductDto) => {
+  const handleActivateGlobal = (data: ActivateCatalogProductDto) => {
     activateGlobal.mutate(data, {
       onSuccess: () => setActivatingProduct(null),
     });
@@ -181,7 +145,6 @@ export default function GlobalCatalogPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header con título y filtros */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
@@ -202,11 +165,7 @@ export default function GlobalCatalogPage() {
               setGlobalPage(1);
             }}
             brands={Array.from(
-              new Set(
-                globalProducts
-                  .map((p) => p.brand)
-                  .filter((b): b is string => !!b)
-              )
+              new Set(globalProducts.map((p) => p.brand).filter((b): b is string => !!b))
             )}
             selectedBrand={selectedBrand}
             onBrandChange={(value) => {
@@ -218,7 +177,6 @@ export default function GlobalCatalogPage() {
           />
         </div>
 
-        {/* Global Products */}
         {isLoadingGlobal ? (
           <GlobalCatalogLoading />
         ) : globalProductsError ? (
@@ -227,42 +185,32 @@ export default function GlobalCatalogPage() {
           <EmptyGlobalCatalogState />
         ) : globalViewMode === "list" ? (
           <div className="space-y-3">
-            {globalProducts.map((product: GlobalProduct) => (
+            {globalProducts.map((product) => (
               <div
                 key={product.id}
-                className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card  hover:shadow-sm transition-shadow"
+                className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-xl border border-white/80 rounded-card hover:shadow-sm transition-shadow"
               >
-                {/* Imagen */}
                 <div className="w-16 h-16 rounded-card shrink-0 bg-slate-100 overflow-hidden">
                   {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Package className="w-6 h-6 text-slate-400" />
                     </div>
                   )}
                 </div>
-
-                {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-slate-900 truncate">
-                    {product.name}
-                  </h4>
+                  <h4 className="font-medium text-slate-900 truncate">{product.name}</h4>
                   <p className="text-sm text-slate-500">
                     {product.brand || "Sin marca"} • {product.sku}
+                    {product.variants && product.variants.length > 1 && (
+                      <span className="ml-2 text-indigo-600">
+                        {product.variants.length} variantes
+                      </span>
+                    )}
                   </p>
                 </div>
-
-                {/* Action */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActivatingProduct(product)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setActivatingProduct(product)}>
                   <Store className="w-4 h-4 mr-2" />
                   {t("globalCatalog.activate")}
                 </Button>
@@ -271,7 +219,7 @@ export default function GlobalCatalogPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {globalProducts.map((product: GlobalProduct) => (
+            {globalProducts.map((product) => (
               <GlobalProductCard
                 key={product.id}
                 product={product}
@@ -281,7 +229,6 @@ export default function GlobalCatalogPage() {
           </div>
         )}
 
-        {/* Pagination */}
         {globalMeta && globalMeta.totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-4">
             <Button
@@ -293,19 +240,12 @@ export default function GlobalCatalogPage() {
               {tc("pagination.previous")}
             </Button>
             <span className="text-sm text-slate-500">
-              {tc("pagination.pageOf", {
-                page: globalPage,
-                totalPages: globalMeta.totalPages,
-              })}
+              {tc("pagination.pageOf", { page: globalPage, totalPages: globalMeta.totalPages })}
             </span>
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setGlobalPage((prev) =>
-                  Math.min(globalMeta.totalPages, prev + 1)
-                )
-              }
+              onClick={() => setGlobalPage((prev) => Math.min(globalMeta.totalPages, prev + 1))}
               disabled={globalPage === globalMeta.totalPages}
             >
               {tc("pagination.next")}
@@ -314,16 +254,13 @@ export default function GlobalCatalogPage() {
         )}
       </div>
 
-      {/* Activate Global Product Modal */}
       <ActivateProductModal
         product={activatingProduct}
         categories={categories}
-        branches={branches}
         isOpen={!!activatingProduct}
         onClose={() => setActivatingProduct(null)}
         onActivate={handleActivateGlobal}
         isLoading={activateGlobal.isPending}
-        showProductImages={showProductImages}
       />
     </DashboardLayout>
   );

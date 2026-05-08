@@ -340,7 +340,7 @@ export function BranchInventoryManager({
 
       activateMutation.mutate(
         {
-          productId: activatingProduct.businessProductId,
+          productId: activatingProduct.productVariantId,
           data,
         },
         {

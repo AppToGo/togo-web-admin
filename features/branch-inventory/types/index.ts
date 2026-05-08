@@ -7,18 +7,20 @@
 
 /**
  * Inventory item as returned by the admin inventory endpoint (LEFT JOIN)
- * Shows all products with their branch status
+ * Shows all variants with their branch status (variant-scoped)
  */
 export interface InventoryItem {
   id: string;
   businessId: string;
   branchId: string;
-  businessProductId: string;
+  productVariantId: string;
   productName: string;
   productSlug: string;
+  variantLabel?: string;
   basePrice: number;
   stock: number | null;
   isAvailable: boolean;
+  isActivated: boolean;
   priceOverride: number | null;
   effectivePrice: number;
   productImage?: string | null;

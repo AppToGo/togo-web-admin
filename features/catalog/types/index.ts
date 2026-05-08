@@ -19,6 +19,16 @@ export type {
   GlobalProductCardProps,
   ProductFormProps,
   ActivateProductModalProps,
+  GlobalProductVariant,
+  AttributeSchema,
+  CatalogProduct,
+  ProductVariant,
+  CreateProductDto,
+  ActivateCatalogProductDto,
+  UpdateCatalogProductDto,
+  CreateVariantDto,
+  UpdateVariantDto,
+  PaginatedProducts,
 } from "./catalog.types";
 
 /**
