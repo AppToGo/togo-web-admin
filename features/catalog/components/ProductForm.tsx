@@ -32,8 +32,8 @@ import {
   useBranchInventory,
   useActivateProduct,
   useDeactivateProduct,
-  useUpdateInventory,
 } from "@/features/branch-inventory/hooks/useBranchInventory";
+import { VariantBranchRow } from "@/features/branch-inventory/components/VariantBranchRow";
 import type {
   CatalogProduct,
   BusinessCategory,
@@ -41,18 +41,10 @@ import type {
   UpdateCatalogProductDto,
   ProductVariant,
 } from "../types/catalog.types";
+import { generateSlug } from "../utils/slug";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
-
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -99,107 +91,6 @@ export interface ProductFormProps {
   isLoading?: boolean;
   showProductImages?: boolean;
   defaultTab?: "info" | "variants" | "branches";
-}
-
-// ─── Edit mode: variant row inside a branch ───────────────────────────────────
-
-interface VariantBranchRowProps {
-  businessId: string;
-  branchId: string;
-  variant: ProductVariant;
-  inventoryItem: import("@/features/branch-inventory/types").InventoryItem | undefined;
-}
-
-function VariantBranchRow({
-  businessId,
-  branchId,
-  variant,
-  inventoryItem,
-}: VariantBranchRowProps) {
-  const isActivated = !!inventoryItem;
-  const [priceOverride, setPriceOverride] = useState(
-    inventoryItem?.priceOverride?.toString() ?? ""
-  );
-
-  const prevItemRef = useRef(inventoryItem);
-  useEffect(() => {
-    if (inventoryItem !== prevItemRef.current) {
-      prevItemRef.current = inventoryItem;
-      setPriceOverride(inventoryItem?.priceOverride?.toString() ?? "");
-    }
-  }, [inventoryItem]);
-
-  const activateMutation = useActivateProduct(businessId, branchId);
-  const deactivateMutation = useDeactivateProduct(businessId, branchId);
-  const updateMutation = useUpdateInventory(businessId, branchId);
-
-  const handleToggle = (enabled: boolean) => {
-    if (enabled) {
-      activateMutation.mutate({
-        productId: variant.id,
-        data: { isAvailable: true },
-      });
-    } else {
-      deactivateMutation.mutate(variant.id);
-    }
-  };
-
-  const handleSavePrice = () => {
-    if (!isActivated) return;
-    const parsed = priceOverride ? parseFloat(priceOverride) : undefined;
-    updateMutation.mutate({ productId: variant.id, data: { priceOverride: parsed } });
-  };
-
-  const isBusy =
-    activateMutation.isPending ||
-    deactivateMutation.isPending ||
-    updateMutation.isPending;
-
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 bg-white">
-      <Switch
-        checked={isActivated}
-        onCheckedChange={handleToggle}
-        disabled={isBusy}
-      />
-      <div className="flex-1 min-w-0">
-        <span className="text-sm text-slate-700 truncate">{variant.variantLabel}</span>
-        {isActivated && inventoryItem?.effectivePrice != null && (
-          <span className="text-xs text-slate-400 ml-2">
-            efectivo: ${inventoryItem.effectivePrice}
-          </span>
-        )}
-      </div>
-      <span className="text-xs text-slate-400 shrink-0">${variant.price}</span>
-      {isActivated && (
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="relative w-24">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-              $
-            </span>
-            <Input
-              type="number"
-              min={0}
-              value={priceOverride}
-              onChange={(e) => setPriceOverride(e.target.value)}
-              placeholder="Precio"
-              className="pl-5 h-8 text-xs"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs px-2"
-            onClick={handleSavePrice}
-            disabled={isBusy}
-          >
-            {updateMutation.isPending ? "…" : "OK"}
-          </Button>
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────

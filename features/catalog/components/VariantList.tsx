@@ -249,8 +249,13 @@ export function VariantList({ productId, businessId, schema }: VariantListProps)
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={deleteVariant.isPending}
+              disabled={deleteVariant.isPending || !!willLeaveZeroActive}
               isLoading={deleteVariant.isPending}
+              title={
+                willLeaveZeroActive
+                  ? "No es posible eliminar la última variante activa del producto"
+                  : undefined
+              }
             >
               Eliminar
             </Button>

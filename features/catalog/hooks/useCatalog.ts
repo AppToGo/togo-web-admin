@@ -715,6 +715,17 @@ export function useBulkBranchUpdate(
 // CATALOG PRODUCTS HOOKS
 // ============================================================================
 
+/**
+ * NOTE: The `filters` object is included directly in the queryKey. To avoid
+ * unnecessary re-fetches caused by new object references on each render, callers
+ * should stabilize the filters object with `useMemo`:
+ *
+ * @example
+ * ```tsx
+ * const filters = useMemo(() => ({ search, page, limit }), [search, page, limit]);
+ * const { data } = useCatalogProducts(businessId, filters);
+ * ```
+ */
 export function useCatalogProducts(
   businessId: string,
   filters?: { search?: string; page?: number; limit?: number; isActive?: boolean },
@@ -741,69 +752,99 @@ export function useCatalogProduct(
   });
 }
 
-export function useCreateCatalogProduct(businessId: string) {
+export function useCreateCatalogProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (dto: CreateProductDto) =>
       catalogService.createCatalogProduct(businessId, dto),
     onSuccess: () => {
-      toast.success("Producto creado exitosamente");
+      toast.success(messages?.productCreated ?? "Producto creado exitosamente");
       queryClient.invalidateQueries({ queryKey: catalogKeys.catalogProducts(businessId) });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al crear el producto");
+      toast.error(
+        error.message ||
+          messages?.errorCreatingProduct ||
+          "Error al crear el producto"
+      );
     },
   });
 }
 
-export function useActivateCatalogProduct(businessId: string) {
+export function useActivateCatalogProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (dto: ActivateCatalogProductDto) =>
       catalogService.activateCatalogProduct(businessId, dto),
     onSuccess: () => {
-      toast.success("Producto activado en tu catálogo");
+      toast.success(
+        messages?.productActivatedInCatalog ?? "Producto activado en tu catálogo"
+      );
       queryClient.invalidateQueries({ queryKey: catalogKeys.catalogProducts(businessId) });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al activar el producto");
+      toast.error(
+        error.message ||
+          messages?.errorActivatingProduct ||
+          "Error al activar el producto"
+      );
     },
   });
 }
 
-export function useUpdateCatalogProduct(businessId: string) {
+export function useUpdateCatalogProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ productId, dto }: { productId: string; dto: UpdateCatalogProductDto }) =>
       catalogService.updateCatalogProduct(businessId, productId, dto),
     onSuccess: (_, variables) => {
-      toast.success("Producto actualizado exitosamente");
+      toast.success(messages?.productUpdated ?? "Producto actualizado exitosamente");
       queryClient.invalidateQueries({ queryKey: catalogKeys.catalogProducts(businessId) });
       queryClient.invalidateQueries({
         queryKey: catalogKeys.catalogProduct(businessId, variables.productId),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al actualizar el producto");
+      toast.error(
+        error.message ||
+          messages?.errorUpdatingProduct ||
+          "Error al actualizar el producto"
+      );
     },
   });
 }
 
-export function useDeleteCatalogProduct(businessId: string) {
+export function useDeleteCatalogProduct(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (productId: string) =>
       catalogService.deleteCatalogProduct(businessId, productId),
     onSuccess: () => {
-      toast.success("Producto eliminado exitosamente");
+      toast.success(messages?.productDeleted ?? "Producto eliminado exitosamente");
       queryClient.invalidateQueries({ queryKey: catalogKeys.catalogProducts(businessId) });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al eliminar el producto");
+      toast.error(
+        error.message ||
+          messages?.errorDeletingProduct ||
+          "Error al eliminar el producto"
+      );
     },
   });
 }
@@ -825,14 +866,18 @@ export function useVariants(
   });
 }
 
-export function useCreateVariant(businessId: string, productId: string) {
+export function useCreateVariant(
+  businessId: string,
+  productId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (dto: CreateVariantDto) =>
       catalogService.createVariant(businessId, productId, dto),
     onSuccess: () => {
-      toast.success("Variante creada exitosamente");
+      toast.success(messages?.variantCreated ?? "Variante creada exitosamente");
       queryClient.invalidateQueries({
         queryKey: catalogKeys.variants(businessId, productId),
       });
@@ -841,19 +886,27 @@ export function useCreateVariant(businessId: string, productId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al crear la variante");
+      toast.error(
+        error.message ||
+          messages?.errorCreatingVariant ||
+          "Error al crear la variante"
+      );
     },
   });
 }
 
-export function useUpdateVariant(businessId: string, productId: string) {
+export function useUpdateVariant(
+  businessId: string,
+  productId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ variantId, dto }: { variantId: string; dto: UpdateVariantDto }) =>
       catalogService.updateVariant(businessId, productId, variantId, dto),
     onSuccess: (_, variables) => {
-      toast.success("Variante actualizada exitosamente");
+      toast.success(messages?.variantUpdated ?? "Variante actualizada exitosamente");
       queryClient.invalidateQueries({
         queryKey: catalogKeys.variants(businessId, productId),
       });
@@ -862,19 +915,27 @@ export function useUpdateVariant(businessId: string, productId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al actualizar la variante");
+      toast.error(
+        error.message ||
+          messages?.errorUpdatingVariant ||
+          "Error al actualizar la variante"
+      );
     },
   });
 }
 
-export function useDeleteVariant(businessId: string, productId: string) {
+export function useDeleteVariant(
+  businessId: string,
+  productId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (variantId: string) =>
       catalogService.deleteVariant(businessId, productId, variantId),
     onSuccess: () => {
-      toast.success("Variante eliminada exitosamente");
+      toast.success(messages?.variantDeleted ?? "Variante eliminada exitosamente");
       queryClient.invalidateQueries({
         queryKey: catalogKeys.variants(businessId, productId),
       });
@@ -883,7 +944,11 @@ export function useDeleteVariant(businessId: string, productId: string) {
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Error al eliminar la variante");
+      toast.error(
+        error.message ||
+          messages?.errorDeletingVariant ||
+          "Error al eliminar la variante"
+      );
     },
   });
 }

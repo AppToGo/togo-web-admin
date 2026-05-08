@@ -63,7 +63,7 @@ export function VariantForm({
     onSubmit(dto);
   };
 
-  const isValid = variantLabel.trim() !== "" && price !== "" && parseFloat(price) >= 0;
+  const isValid = variantLabel.trim() !== "" && price !== "" && parseFloat(price) > 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 p-6">

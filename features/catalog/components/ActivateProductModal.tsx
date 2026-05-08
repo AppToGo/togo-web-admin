@@ -26,18 +26,10 @@ import type {
   BusinessCategory,
   ActivateCatalogProductDto,
 } from "../types/catalog.types";
+import { generateSlug } from "../utils/slug";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
-
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 interface ActivateProductModalProps {
   product: GlobalProduct | null;

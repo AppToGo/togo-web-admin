@@ -36,6 +36,13 @@ export interface CatalogToastMessages {
   errorDeletingCategory: string;
   bulkUpdateSuccess?: string;
   errorBulkUpdate?: string;
+  // Variant messages
+  variantCreated: string;
+  variantUpdated: string;
+  variantDeleted: string;
+  errorCreatingVariant: string;
+  errorUpdatingVariant: string;
+  errorDeletingVariant: string;
 }
 
 export function useCatalogTranslations(): CatalogToastMessages {
@@ -65,5 +72,13 @@ export function useCatalogTranslations(): CatalogToastMessages {
     errorCreatingCategory: tCommon("errors.createFailed"),
     errorUpdatingCategory: tCommon("errors.updateFailed"),
     errorDeletingCategory: tCommon("errors.deleteFailed"),
+
+    // Variant messages
+    variantCreated: t("notifications.variantCreated"),
+    variantUpdated: t("notifications.variantUpdated"),
+    variantDeleted: t("notifications.variantDeleted"),
+    errorCreatingVariant: t("notifications.errorCreatingVariant"),
+    errorUpdatingVariant: t("notifications.errorUpdatingVariant"),
+    errorDeletingVariant: t("notifications.errorDeletingVariant"),
   };
 }
