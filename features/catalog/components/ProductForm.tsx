@@ -204,7 +204,7 @@ function BranchActivationSection({
   );
 }
 
-// ─── Edit mode: branches tab ──────────────────────────────────────────────────
+// ─── Edit mode: branches section ──────────────────────────────────────────────
 
 function BranchActivationTab({
   businessId,
@@ -300,25 +300,21 @@ export function ProductForm({
     isFeatured: false,
   });
 
-  // Pricing mode
+  // Pricing mode (create only)
   const [pricingMode, setPricingMode] = useState<"simple" | "variants">("simple");
   const [simplePrice, setSimplePrice] = useState<string>("");
-
-  // Confirmed variant rows
   const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>([]);
-
-  // "Add row" pending state
   const [pendingTemplateId, setPendingTemplateId] = useState<string>("");
   const [pendingPrice, setPendingPrice] = useState<string>("");
 
   // Branch activation state (create mode)
   const [branchState, setBranchState] = useState<Record<string, BranchActivationState>>({});
+  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set());
   const branchInitRef = useRef(false);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const initializedProductIdRef = useRef<string | null>(null);
 
-  // Branches
   const { data: branches = [] } = useBranches();
 
   // Initialize branch state once (create mode)
@@ -462,6 +458,15 @@ export function ProductForm({
     }));
   };
 
+  const toggleBranchExpand = (branchId: string) => {
+    setExpandedBranches((prev) => {
+      const next = new Set(prev);
+      if (next.has(branchId)) next.delete(branchId);
+      else next.add(branchId);
+      return next;
+    });
+  };
+
   const addPendingVariant = () => {
     if (!pendingTemplateId) return;
     const tpl = variantTemplates.find((t) => t.id === pendingTemplateId);
@@ -473,7 +478,6 @@ export function ProductForm({
       { templateId: tpl.id, label: tpl.label, attributes: tpl.attributes, price },
     ]);
 
-    // Add this variant to every branch's config
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -503,7 +507,6 @@ export function ProductForm({
 
   const removeVariant = (templateId: string) => {
     setSelectedVariants((prev) => prev.filter((v) => v.templateId !== templateId));
-    // Remove from all branches
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -560,7 +563,6 @@ export function ProductForm({
       }
     }
 
-    // Build branch activations
     const enabledBranches = Object.entries(branchState).filter(([, s]) => s.enabled);
     let activations: BranchActivation[] | undefined;
 
@@ -758,7 +760,7 @@ export function ProductForm({
     </>
   );
 
-  // ─── Pricing section ─────────────────────────────────────────────────────────
+  // ─── Pricing section (create mode only) ──────────────────────────────────────
 
   const pricingSection = (
     <div className="space-y-4 border-t pt-4">
@@ -951,7 +953,7 @@ export function ProductForm({
     </div>
   );
 
-  // ─── Branch section (create mode) ────────────────────────────────────────────
+  // ─── Branch section (create mode) — accordion ────────────────────────────────
 
   const branchSection = (
     <div className="space-y-3 border-t pt-4">
@@ -966,7 +968,6 @@ export function ProductForm({
           No hay sedes configuradas.
         </p>
       ) : pricingMode === "simple" ? (
-        // Simple mode: one price override per branch
         <div className="space-y-2">
           {branches.map((branch) => {
             const state = branchState[branch.id] ?? {
@@ -974,73 +975,22 @@ export function ProductForm({
               simplePriceOverride: "",
               variants: {},
             };
-            return (
-              <div
-                key={branch.id}
-                className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50"
-              >
-                <Switch
-                  checked={state.enabled}
-                  onCheckedChange={(val) => updateBranch(branch.id, { enabled: val })}
-                  disabled={isLoading}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 truncate">
-                    {branch.name}
-                  </p>
-                  {branch.isMainBranch && (
-                    <span className="text-xs text-indigo-600">Principal</span>
-                  )}
-                </div>
-                {state.enabled && (
-                  <div className="relative w-28 shrink-0">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-                      $
-                    </span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={state.simplePriceOverride}
-                      onChange={(e) =>
-                        updateBranch(branch.id, { simplePriceOverride: e.target.value })
-                      }
-                      placeholder="Precio (opc)"
-                      className="pl-5 h-8 text-sm"
-                      disabled={isLoading}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : selectedVariants.length === 0 ? (
-        // Variants mode but no variants added yet
-        <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-slate-400" />
-          <span>Agregá variantes para configurar precios por sede.</span>
-        </div>
-      ) : (
-        // Variants mode: per-variant per-branch pricing
-        <div className="space-y-2">
-          {branches.map((branch) => {
-            const state = branchState[branch.id] ?? {
-              enabled: true,
-              simplePriceOverride: "",
-              variants: {},
-            };
-            const enabledVariantCount = selectedVariants.filter(
-              (sv) => state.variants[sv.templateId]?.enabled !== false
-            ).length;
+            const isExpanded = expandedBranches.has(branch.id);
 
             return (
               <div key={branch.id} className="border rounded-lg overflow-hidden">
-                {/* Branch header */}
-                <div className="flex items-center gap-3 p-3 bg-slate-50">
+                <div
+                  className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
+                  onClick={() => state.enabled && toggleBranchExpand(branch.id)}
+                >
                   <Switch
                     checked={state.enabled}
-                    onCheckedChange={(val) => updateBranch(branch.id, { enabled: val })}
+                    onCheckedChange={(val) => {
+                      updateBranch(branch.id, { enabled: val });
+                      if (val) toggleBranchExpand(branch.id);
+                    }}
                     disabled={isLoading}
+                    onClick={(e) => e.stopPropagation()}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -1051,14 +1001,101 @@ export function ProductForm({
                     )}
                   </div>
                   {state.enabled && (
-                    <span className="text-xs text-slate-400 shrink-0">
-                      {enabledVariantCount}/{selectedVariants.length} variantes
-                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "w-4 h-4 text-slate-400 shrink-0 transition-transform",
+                        isExpanded && "rotate-180"
+                      )}
+                    />
                   )}
                 </div>
 
-                {/* Per-variant rows */}
-                {state.enabled && (
+                {state.enabled && isExpanded && (
+                  <div className="px-4 py-3 border-t bg-white">
+                    <div className="flex items-center gap-3">
+                      <Label className="text-xs text-slate-500 shrink-0">
+                        Precio (opcional)
+                      </Label>
+                      <div className="relative w-32">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                          $
+                        </span>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={state.simplePriceOverride}
+                          onChange={(e) =>
+                            updateBranch(branch.id, { simplePriceOverride: e.target.value })
+                          }
+                          placeholder="0"
+                          className="pl-5 h-8 text-sm"
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : selectedVariants.length === 0 ? (
+        <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-slate-400" />
+          <span>Agregá variantes para configurar precios por sede.</span>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {branches.map((branch) => {
+            const state = branchState[branch.id] ?? {
+              enabled: true,
+              simplePriceOverride: "",
+              variants: {},
+            };
+            const isExpanded = expandedBranches.has(branch.id);
+            const enabledVariantCount = selectedVariants.filter(
+              (sv) => state.variants[sv.templateId]?.enabled !== false
+            ).length;
+
+            return (
+              <div key={branch.id} className="border rounded-lg overflow-hidden">
+                <div
+                  className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
+                  onClick={() => state.enabled && toggleBranchExpand(branch.id)}
+                >
+                  <Switch
+                    checked={state.enabled}
+                    onCheckedChange={(val) => {
+                      updateBranch(branch.id, { enabled: val });
+                      if (val) toggleBranchExpand(branch.id);
+                    }}
+                    disabled={isLoading}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">
+                      {branch.name}
+                    </p>
+                    {branch.isMainBranch && (
+                      <span className="text-xs text-indigo-600">Principal</span>
+                    )}
+                  </div>
+                  {state.enabled && (
+                    <>
+                      <span className="text-xs text-slate-400 shrink-0">
+                        {enabledVariantCount}/{selectedVariants.length} variantes
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 text-slate-400 shrink-0 transition-transform",
+                          isExpanded && "rotate-180"
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+
+                {state.enabled && isExpanded && (
                   <div className="divide-y border-t">
                     {selectedVariants.map((sv) => {
                       const varState = state.variants[sv.templateId] ?? {
@@ -1118,81 +1155,78 @@ export function ProductForm({
     </div>
   );
 
-  // ─── Edit mode: flat layout (same structure as create) ───────────────────────
-
-  if (isEditing) {
-    return (
-      <div className="space-y-4 p-7">
-        <form id={formId} onSubmit={handleSubmit} className="space-y-4">
-          {infoFields}
-          {!hideActions && (
-            <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-                {tCommon("buttons.cancel")}
-              </Button>
-              <Button type="submit" disabled={isLoading || !canSubmit} isLoading={isLoading}>
-                {tCommon("buttons.saveChanges")}
-              </Button>
-            </div>
-          )}
-        </form>
-
-        <div className="space-y-3 border-t pt-4">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-slate-900 flex-1">
-              {t("products.tabs.variants") || "Variantes"}
-            </p>
-            {product.variantCount > 0 && (
-              <span className="bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
-                {product.variantCount}
-              </span>
-            )}
-          </div>
-          <VariantList
-            productId={product.id}
-            businessId={businessId}
-            schema={product.attributeSchema}
-          />
-        </div>
-
-        <div className="space-y-3 border-t pt-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-slate-400" />
-            <p className="text-sm font-medium text-slate-900 flex-1">
-              {t("products.tabs.branches") || "Sedes"}
-            </p>
-          </div>
-          <BranchActivationTab
-            businessId={businessId}
-            productId={product.id}
-            productName={product.name}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Create mode ─────────────────────────────────────────────────────────────
+  // ─── Single layout for both create and edit ───────────────────────────────────
 
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-4 p-7">
-      {infoFields}
-      {pricingSection}
-      {branchSection}
-      {!hideActions && (
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            {tCommon("buttons.cancel")}
-          </Button>
-          <Button
-            type="submit"
-            disabled={isLoading || !canSubmit}
-            isLoading={isLoading}
-          >
-            {t("products.create")}
-          </Button>
-        </div>
+    <div className="space-y-0">
+      {/*
+        The <form> only wraps fields that submit with handleSubmit.
+        VariantList and BranchActivationTab (edit mode) live outside the form
+        because they contain Buttons without explicit type="button" that would
+        otherwise trigger form submission.
+      */}
+      <form id={formId} onSubmit={handleSubmit} className="space-y-4 p-7 pb-4">
+        {infoFields}
+        {!isEditing && pricingSection}
+        {!isEditing && branchSection}
+        {!hideActions && (
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoading}
+            >
+              {tCommon("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading || !canSubmit}
+              isLoading={isLoading}
+            >
+              {isEditing ? tCommon("buttons.saveChanges") : t("products.create")}
+            </Button>
+          </div>
+        )}
+      </form>
+
+      {/* Edit-only sections — outside <form> to avoid accidental submit */}
+      {isEditing && (
+        <>
+          <div className="space-y-3 px-7 pt-2 pb-4 border-t">
+            <div className="flex items-center gap-2 pt-4">
+              <p className="text-sm font-medium text-slate-900 flex-1">
+                {t("products.tabs.variants") || "Variantes"}
+              </p>
+              {product.variantCount > 0 && (
+                <span className="bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
+                  {product.variantCount}
+                </span>
+              )}
+            </div>
+            <VariantList
+              productId={product.id}
+              businessId={businessId}
+              schema={product.attributeSchema}
+            />
+          </div>
+
+          <div className="space-y-3 px-7 pt-2 pb-7 border-t">
+            <div className="flex items-center gap-2 pt-4">
+              <MapPin className="w-4 h-4 text-slate-400" />
+              <p className="text-sm font-medium text-slate-900 flex-1">
+                {t("products.tabs.branches") || "Sedes"}
+              </p>
+              <p className="text-xs text-slate-400">Disponibilidad y precio por sede</p>
+            </div>
+            <BranchActivationTab
+              businessId={businessId}
+              productId={product.id}
+              productName={product.name}
+            />
+          </div>
+        </>
       )}
-    </form>
+    </div>
   );
 }
