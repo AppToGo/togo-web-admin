@@ -55,7 +55,8 @@ interface VariantListProps {
 
 interface InlineEditState {
   variantId: string;
-  label: string;
+  templateId: string; // UNIDAD_ID or template.id
+  label: string;      // resolved label (read-only after selection)
   price: string;
 }
 
@@ -74,8 +75,18 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
     useIndustryCategoryVariantTemplates(industryCategoryId ?? null);
 
   const usedLabels = new Set(variants.map((v) => v.variantLabel.toLowerCase()));
+
+  // For create: exclude all used labels
   const availableTemplates = templates.filter(
     (t) => !usedLabels.has(t.label.toLowerCase())
+  );
+
+  // For edit: exclude labels used by OTHER variants (allow own label)
+  const editingVariantLabel = inlineEdit
+    ? variants.find((v) => v.id === inlineEdit.variantId)?.variantLabel.toLowerCase()
+    : undefined;
+  const availableEditTemplates = templates.filter(
+    (t) => !usedLabels.has(t.label.toLowerCase()) || t.label.toLowerCase() === editingVariantLabel
   );
 
   const createVariant = useCreateVariant(businessId, productId);
@@ -102,8 +113,13 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
 
   const openInlineEdit = (variant: ProductVariant) => {
     setShowInlineCreate(false);
+    const isUnidad = variant.variantLabel.toLowerCase() === "unidad";
+    const matchedTemplate = templates.find(
+      (t) => t.label.toLowerCase() === variant.variantLabel.toLowerCase()
+    );
     setInlineEdit({
       variantId: variant.id,
+      templateId: isUnidad ? UNIDAD_ID : (matchedTemplate?.id ?? UNIDAD_ID),
       label: variant.variantLabel,
       price: variant.price.toString(),
     });
@@ -114,7 +130,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
   const confirmInlineEdit = () => {
     if (!inlineEdit) return;
     const price = parseFloat(inlineEdit.price);
-    if (!inlineEdit.label.trim() || isNaN(price) || price <= 0) return;
+    if (!inlineEdit.templateId || !inlineEdit.label.trim() || isNaN(price) || price <= 0) return;
 
     updateVariant.mutate(
       {
@@ -186,6 +202,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
 
   const canConfirmEdit =
     !!inlineEdit &&
+    inlineEdit.templateId !== "" &&
     inlineEdit.label.trim() !== "" &&
     inlineEdit.price !== "" &&
     parseFloat(inlineEdit.price) > 0;
@@ -205,17 +222,32 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
               // ── Inline edit row ──────────────────────────────────────────
               return (
                 <div key={variant.id} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50">
-                  <Input
-                    value={inlineEdit.label}
-                    onChange={(e) => setInlineEdit((s) => s && ({ ...s, label: e.target.value }))}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") { e.preventDefault(); confirmInlineEdit(); }
-                      if (e.key === "Escape") cancelInlineEdit();
+                  <Select
+                    value={inlineEdit.templateId || SELECT_NONE}
+                    onValueChange={(v) => {
+                      if (v === SELECT_NONE) return;
+                      const isUnidad = v === UNIDAD_ID;
+                      const tpl = isUnidad ? null : templates.find((t) => t.id === v);
+                      const label = isUnidad ? "Unidad" : (tpl?.label ?? "");
+                      setInlineEdit((s) => s && ({ ...s, templateId: v, label }));
+                      setTimeout(() => editPriceRef.current?.focus(), 50);
                     }}
-                    placeholder="Etiqueta"
-                    className="flex-1 h-8 text-sm bg-white"
                     disabled={updateVariant.isPending}
-                  />
+                  >
+                    <SelectTrigger className="flex-1 h-8 text-sm bg-white">
+                      <SelectValue placeholder="Seleccioná variante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(!usedLabels.has("unidad") || editingVariantLabel === "unidad") && (
+                        <SelectItem value={UNIDAD_ID}>Unidad</SelectItem>
+                      )}
+                      {availableEditTemplates.map((tpl) => (
+                        <SelectItem key={tpl.id} value={tpl.id}>
+                          {tpl.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <div className="relative w-28 shrink-0">
                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">$</span>
                     <Input
