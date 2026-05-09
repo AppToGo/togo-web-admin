@@ -37,6 +37,7 @@ import type {
 } from "../types/catalog.types";
 
 const SELECT_NONE = "__none__" as const;
+const UNIDAD_ID = "__unidad__" as const;
 
 function formatCOP(value: number): string {
   return new Intl.NumberFormat("es-CO", {
@@ -100,9 +101,14 @@ export function VariantList({ productId, businessId, schema, industryCategoryId 
   };
 
   const handleInlineCreate = () => {
-    const template = templates.find((t) => t.id === pendingTemplateId);
     const price = parseFloat(pendingPrice);
-    if (!template || isNaN(price) || price <= 0) return;
+    if (!pendingTemplateId || isNaN(price) || price <= 0) return;
+
+    const isUnidad = pendingTemplateId === UNIDAD_ID;
+    const template = isUnidad
+      ? { label: "Unidad", attributes: {} as Record<string, string | number> }
+      : templates.find((t) => t.id === pendingTemplateId);
+    if (!template) return;
 
     createVariant.mutate(
       {
@@ -220,7 +226,7 @@ export function VariantList({ productId, businessId, schema, industryCategoryId 
                 </p>
               ) : loadingTemplates ? (
                 <p className="flex-1 text-xs text-slate-400">Cargando variantes…</p>
-              ) : availableTemplates.length === 0 ? (
+              ) : availableTemplates.length === 0 && usedLabels.has("unidad") ? (
                 <p className="flex-1 text-xs text-slate-500">
                   Todas las variantes de esta categoría ya fueron agregadas.
                 </p>
@@ -236,6 +242,9 @@ export function VariantList({ productId, businessId, schema, industryCategoryId 
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={SELECT_NONE}>Seleccioná variante</SelectItem>
+                      {!usedLabels.has("unidad") && (
+                        <SelectItem value={UNIDAD_ID}>Unidad</SelectItem>
+                      )}
                       {availableTemplates.map((tpl) => (
                         <SelectItem key={tpl.id} value={tpl.id}>
                           {tpl.label}

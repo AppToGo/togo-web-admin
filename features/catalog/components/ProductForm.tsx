@@ -44,6 +44,7 @@ import { generateSlug } from "../utils/slug";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
+const UNIDAD_ID = "__unidad__" as const;
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -469,9 +470,13 @@ export function ProductForm({
 
   const addPendingVariant = () => {
     if (!pendingTemplateId) return;
-    const tpl = variantTemplates.find((t) => t.id === pendingTemplateId);
-    if (!tpl) return;
     const price = parseFloat(pendingPrice) || 0;
+
+    const isUnidad = pendingTemplateId === UNIDAD_ID;
+    const tpl = isUnidad
+      ? { id: UNIDAD_ID, label: "Unidad", attributes: {} as Record<string, string | number> }
+      : variantTemplates.find((t) => t.id === pendingTemplateId);
+    if (!tpl) return;
 
     setSelectedVariants((prev) => [
       ...prev,
@@ -861,7 +866,7 @@ export function ProductForm({
                 </div>
               )}
 
-              {availableTemplates.length > 0 && (
+              {(availableTemplates.length > 0 || !selectedIds.has(UNIDAD_ID)) && (
                 <div className="grid grid-cols-[1fr_7rem_auto] gap-2 items-end">
                   <div className="space-y-1">
                     {selectedVariants.length === 0 && (
@@ -882,6 +887,9 @@ export function ProductForm({
                         <SelectItem value={SELECT_NONE}>
                           Seleccioná una variante
                         </SelectItem>
+                        {!selectedIds.has(UNIDAD_ID) && (
+                          <SelectItem value={UNIDAD_ID}>Unidad</SelectItem>
+                        )}
                         {availableTemplates.map((tpl) => (
                           <SelectItem key={tpl.id} value={tpl.id}>
                             {tpl.label}
@@ -924,7 +932,7 @@ export function ProductForm({
                 </div>
               )}
 
-              {availableTemplates.length === 0 && selectedVariants.length > 0 && (
+              {availableTemplates.length === 0 && selectedIds.has(UNIDAD_ID) && selectedVariants.length > 0 && (
                 <p className="text-xs text-slate-400 text-center py-1">
                   Todas las variantes disponibles ya fueron agregadas.
                 </p>
