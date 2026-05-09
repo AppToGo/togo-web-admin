@@ -18,7 +18,6 @@ export type {
   ProductCardProps,
   GlobalProductCardProps,
   ProductFormProps,
-  ActivateProductModalProps,
   GlobalProductVariant,
   AttributeSchema,
   CatalogProduct,

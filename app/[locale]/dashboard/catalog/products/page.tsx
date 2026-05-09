@@ -8,12 +8,13 @@ import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -108,7 +109,6 @@ export default function ProductsPage() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
-  const [editDefaultTab, setEditDefaultTab] = useState<"info" | "variants">("info");
 
   const [page, setPage] = useState(1);
   const pageSize = 12;
@@ -168,7 +168,7 @@ export default function ProductsPage() {
         if (branchActivations?.length && businessId) {
           try {
             const variants = await getVariants(businessId, created.id);
-            await Promise.allSettled(
+            const results = await Promise.allSettled(
               branchActivations.flatMap(({ branchId, variants: variantConfigs }) =>
                 variantConfigs
                   .filter((vc) => vc.isAvailable)
@@ -186,13 +186,15 @@ export default function ProductsPage() {
                   })
               )
             );
+            const failed = results.filter((r) => r.status === "rejected");
+            if (failed.length > 0) {
+              console.warn(`[handleCreateProduct] ${failed.length} branch activation(s) failed.`, failed);
+            }
           } catch {
             // Non-critical: product was created, branch activation failed silently
           }
         }
         setIsCreateModalOpen(false);
-        setEditingProduct(created);
-        setEditDefaultTab("variants");
       },
     });
   };
@@ -208,9 +210,8 @@ export default function ProductsPage() {
     [editingProduct, updateProduct]
   );
 
-  const openEdit = useCallback((product: CatalogProduct, tab: "info" | "variants" = "info") => {
+  const openEdit = useCallback((product: CatalogProduct) => {
     setEditingProduct(product);
-    setEditDefaultTab(tab);
   }, []);
 
   if (!businessId) {
@@ -285,7 +286,7 @@ export default function ProductsPage() {
                 viewMode={viewMode}
                 showImage={showProductImages}
                 categoryName={product.businessCategoryId ? categoryMap.get(product.businessCategoryId) : undefined}
-                onEdit={(p) => openEdit(p, "info")}
+                onEdit={(p) => openEdit(p)}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
               />
             ))}
@@ -308,45 +309,96 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Create Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("products.create")}</DialogTitle>
-            <DialogDescription>{t("products.createDescription")}</DialogDescription>
-          </DialogHeader>
-          <ProductForm
-            businessId={businessId}
-            categories={categories}
-            onSubmit={handleCreateProduct}
-            onCancel={() => setIsCreateModalOpen(false)}
-            isLoading={createProduct.isPending}
-            showProductImages={showProductImages}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Modal — wider to fit tabs */}
-      <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("products.edit")}</DialogTitle>
-            <DialogDescription>{editingProduct?.name}</DialogDescription>
-          </DialogHeader>
-          {editingProduct && (
+      {/* Create Drawer */}
+      <Drawer
+        open={isCreateModalOpen}
+        onOpenChange={(open) => { if (!createProduct.isPending) setIsCreateModalOpen(open); }}
+        isLoading={createProduct.isPending}
+      >
+        <DrawerContent size="md" data-testid="create-product-drawer">
+          <DrawerHeader>
+            <DrawerTitle>{t("products.create")}</DrawerTitle>
+            <DrawerDescription>{t("products.createDescription")}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto">
             <ProductForm
-              product={editingProduct}
+              formId="create-product-form"
+              hideActions
               businessId={businessId}
               categories={categories}
-              onSubmit={handleUpdateProduct}
-              onCancel={() => setEditingProduct(null)}
-              isLoading={updateProduct.isPending}
+              onSubmit={handleCreateProduct}
+              onCancel={() => setIsCreateModalOpen(false)}
+              isLoading={createProduct.isPending}
               showProductImages={showProductImages}
-              defaultTab={editDefaultTab}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+          <DrawerFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+              disabled={createProduct.isPending}
+            >
+              {tc("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              form="create-product-form"
+              isLoading={createProduct.isPending}
+              disabled={createProduct.isPending}
+            >
+              {t("products.create")}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Edit Drawer */}
+      <Drawer
+        open={!!editingProduct}
+        onOpenChange={(open) => { if (!updateProduct.isPending && !open) setEditingProduct(null); }}
+        isLoading={updateProduct.isPending}
+      >
+        <DrawerContent key={editingProduct?.id} size="md" data-testid="edit-product-drawer">
+          <DrawerHeader>
+            <DrawerTitle>{t("products.edit")}</DrawerTitle>
+            <DrawerDescription>{editingProduct?.name}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto">
+            {editingProduct && (
+              <ProductForm
+                formId="edit-product-form"
+                hideActions
+                product={editingProduct}
+                businessId={businessId}
+                categories={categories}
+                onSubmit={handleUpdateProduct}
+                onCancel={() => setEditingProduct(null)}
+                isLoading={updateProduct.isPending}
+                showProductImages={showProductImages}
+              />
+            )}
+          </div>
+          <DrawerFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingProduct(null)}
+              disabled={updateProduct.isPending}
+            >
+              {tc("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              form="edit-product-form"
+              isLoading={updateProduct.isPending}
+              disabled={updateProduct.isPending}
+            >
+              {tc("buttons.saveChanges")}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </DashboardLayout>
   );
 }

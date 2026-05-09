@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -45,6 +44,7 @@ import { generateSlug } from "../utils/slug";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
+const UNIDAD_ID = "__unidad__" as const;
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -90,7 +90,8 @@ export interface ProductFormProps {
   onCancel: () => void;
   isLoading?: boolean;
   showProductImages?: boolean;
-  defaultTab?: "info" | "variants" | "branches";
+  formId?: string;
+  hideActions?: boolean;
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────
@@ -114,6 +115,7 @@ function BranchActivationSection({
   isMainBranch,
   variants,
 }: BranchActivationSectionProps) {
+  const t = useTranslations("catalog");
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: inventory } = useBranchInventory(businessId, branchId, {
@@ -147,14 +149,24 @@ function BranchActivationSection({
           .map((v) =>
             activateMutation.mutateAsync({ productId: v.id, data: { isAvailable: true } })
           )
-      );
+      ).then((results) => {
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length > 0) {
+          console.warn(`[BranchActivationSection] ${failed.length} variant(s) failed to activate.`, failed);
+        }
+      });
       setIsExpanded(true);
     } else {
       Promise.allSettled(
         variants
           .filter((v) => inventoryByVariantId.has(v.id))
           .map((v) => deactivateMutation.mutateAsync(v.id))
-      );
+      ).then((results) => {
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length > 0) {
+          console.warn(`[BranchActivationSection] ${failed.length} variant(s) failed to deactivate.`, failed);
+        }
+      });
     }
   };
 
@@ -171,13 +183,14 @@ function BranchActivationSection({
           onCheckedChange={handleToggleAll}
           disabled={isBusy}
           onClick={(e) => e.stopPropagation()}
+          aria-label={t("products.activateInBranch", { name: branchName })}
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-slate-800 truncate">{branchName}</p>
           {isMainBranch && <span className="text-xs text-indigo-600">Principal</span>}
         </div>
         <span className="text-xs text-slate-400 shrink-0">
-          {activatedCount}/{variants.length} variantes
+          {activatedCount}/{variants.length} {t("products.tabs.variants").toLowerCase()}
         </span>
         <ChevronDown
           className={cn(
@@ -204,7 +217,7 @@ function BranchActivationSection({
   );
 }
 
-// ─── Edit mode: branches tab ──────────────────────────────────────────────────
+// ─── Edit mode: branches section ──────────────────────────────────────────────
 
 function BranchActivationTab({
   businessId,
@@ -215,6 +228,7 @@ function BranchActivationTab({
   productId: string;
   productName: string;
 }) {
+  const t = useTranslations("catalog");
   const { data: variants = [], isLoading: variantsLoading } = useVariants(
     businessId,
     productId
@@ -236,8 +250,7 @@ function BranchActivationTab({
       <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
         <AlertCircle className="w-4 h-4 shrink-0" />
         <span>
-          Este producto no tiene variantes. Creá al menos una variante antes de
-          activarlo en sedes.
+          {t("products.noVariantsCreateFirst")}
         </span>
       </div>
     );
@@ -246,7 +259,7 @@ function BranchActivationTab({
   if (branches.length === 0) {
     return (
       <p className="text-sm text-slate-500 bg-slate-50 border rounded-lg px-3 py-2.5">
-        No hay sedes configuradas para este negocio.
+        {t("products.noBranchesConfigured")}
       </p>
     );
   }
@@ -254,8 +267,7 @@ function BranchActivationTab({
   return (
     <div className="space-y-2">
       <p className="text-xs text-slate-500 mb-3">
-        Activá el producto en cada sede y configurá precios por variante. Podés
-        desactivar variantes específicas en sedes donde no se vendan.
+        {t("products.branchActivationHint")}
       </p>
       {branches.map((branch) => (
         <BranchActivationSection
@@ -283,13 +295,12 @@ export function ProductForm({
   onCancel,
   isLoading = false,
   showProductImages = true,
-  defaultTab = "info",
+  formId,
+  hideActions = false,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
   const isEditing = !!product;
-
-  const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -301,25 +312,21 @@ export function ProductForm({
     isFeatured: false,
   });
 
-  // Pricing mode
+  // Pricing mode (create only)
   const [pricingMode, setPricingMode] = useState<"simple" | "variants">("simple");
   const [simplePrice, setSimplePrice] = useState<string>("");
-
-  // Confirmed variant rows
   const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>([]);
-
-  // "Add row" pending state
   const [pendingTemplateId, setPendingTemplateId] = useState<string>("");
   const [pendingPrice, setPendingPrice] = useState<string>("");
 
   // Branch activation state (create mode)
   const [branchState, setBranchState] = useState<Record<string, BranchActivationState>>({});
+  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set());
   const branchInitRef = useRef(false);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const initializedProductIdRef = useRef<string | null>(null);
 
-  // Branches
   const { data: branches = [] } = useBranches();
 
   // Initialize branch state once (create mode)
@@ -418,10 +425,6 @@ export function ProductForm({
     }
   }, [product, categories, formData.industryCategoryId]);
 
-  useEffect(() => {
-    setActiveTab(defaultTab);
-  }, [product?.id, defaultTab]);
-
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
   const handleChange = (
@@ -467,18 +470,30 @@ export function ProductForm({
     }));
   };
 
+  const toggleBranchExpand = (branchId: string) => {
+    setExpandedBranches((prev) => {
+      const next = new Set(prev);
+      if (next.has(branchId)) next.delete(branchId);
+      else next.add(branchId);
+      return next;
+    });
+  };
+
   const addPendingVariant = () => {
     if (!pendingTemplateId) return;
-    const tpl = variantTemplates.find((t) => t.id === pendingTemplateId);
-    if (!tpl) return;
     const price = parseFloat(pendingPrice) || 0;
+
+    const isUnidad = pendingTemplateId === UNIDAD_ID;
+    const tpl = isUnidad
+      ? { id: UNIDAD_ID, label: "Unidad", attributes: {} as Record<string, string | number> }
+      : variantTemplates.find((t) => t.id === pendingTemplateId);
+    if (!tpl) return;
 
     setSelectedVariants((prev) => [
       ...prev,
       { templateId: tpl.id, label: tpl.label, attributes: tpl.attributes, price },
     ]);
 
-    // Add this variant to every branch's config
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -508,7 +523,6 @@ export function ProductForm({
 
   const removeVariant = (templateId: string) => {
     setSelectedVariants((prev) => prev.filter((v) => v.templateId !== templateId));
-    // Remove from all branches
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -529,8 +543,6 @@ export function ProductForm({
         image: formData.image || undefined,
         businessCategoryId: formData.businessCategoryId || undefined,
         industryCategoryId: formData.industryCategoryId || undefined,
-        isActive: formData.isActive,
-        isFeatured: formData.isFeatured,
       } as UpdateCatalogProductDto);
       return;
     }
@@ -565,7 +577,6 @@ export function ProductForm({
       }
     }
 
-    // Build branch activations
     const enabledBranches = Object.entries(branchState).filter(([, s]) => s.enabled);
     let activations: BranchActivation[] | undefined;
 
@@ -745,30 +756,15 @@ export function ProductForm({
         </div>
       )}
 
-      {isEditing && (
-        <div className="flex items-center justify-between py-2 border-t">
-          <div>
-            <p className="text-sm font-medium">{t("products.active") || "Activo"}</p>
-            <p className="text-xs text-slate-500">
-              {t("products.activeHint") || "Visible en el catálogo"}
-            </p>
-          </div>
-          <Switch
-            checked={formData.isActive}
-            onCheckedChange={(val) => setFormData((prev) => ({ ...prev, isActive: val }))}
-            disabled={isLoading}
-          />
-        </div>
-      )}
     </>
   );
 
-  // ─── Pricing section ─────────────────────────────────────────────────────────
+  // ─── Pricing section (create mode only) ──────────────────────────────────────
 
   const pricingSection = (
     <div className="space-y-4 border-t pt-4">
       <div className="flex items-center gap-3">
-        <p className="text-sm font-medium text-slate-900 flex-1">Precio</p>
+        <p className="text-sm font-medium text-slate-900 flex-1">{t("products.price")}</p>
         <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
           <button
             type="button"
@@ -780,7 +776,7 @@ export function ProductForm({
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            Precio único
+            {t("products.singlePrice")}
           </button>
           <button
             type="button"
@@ -792,14 +788,14 @@ export function ProductForm({
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            Variantes
+            {t("products.tabs.variants")}
           </button>
         </div>
       </div>
 
       {pricingMode === "simple" ? (
         <div className="space-y-1.5">
-          <Label htmlFor="simplePrice">Precio</Label>
+          <Label htmlFor="simplePrice">{t("products.price")}</Label>
           <div className="relative max-w-48">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
               $
@@ -816,7 +812,7 @@ export function ProductForm({
             />
           </div>
           <p className="text-xs text-slate-500">
-            Podés ajustar el precio después desde el listado de variantes.
+            {t("products.variantPriceHint")}
           </p>
         </div>
       ) : (
@@ -824,10 +820,10 @@ export function ProductForm({
           {!formData.industryCategoryId ? (
             <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>Seleccioná una categoría para ver las variantes disponibles.</span>
+              <span>{t("products.variants.selectCategoryFirst")}</span>
             </div>
           ) : loadingTemplates ? (
-            <p className="text-sm text-slate-400 py-1">Cargando variantes…</p>
+            <p className="text-sm text-slate-400 py-1">{t("products.variants.loading")}</p>
           ) : variantTemplates.length === 0 ? (
             <p className="text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
               No hay variantes predefinidas para esta categoría.
@@ -837,8 +833,8 @@ export function ProductForm({
               {selectedVariants.length > 0 && (
                 <div className="space-y-2">
                   <div className="grid grid-cols-[1fr_7rem_2rem] gap-2 text-xs text-slate-400 font-medium px-1">
-                    <span>Variante</span>
-                    <span>Precio base</span>
+                    <span>{t("products.tabs.variants")}</span>
+                    <span>{t("products.basePrice")}</span>
                     <span />
                   </div>
                   {selectedVariants.map((v) => (
@@ -881,12 +877,12 @@ export function ProductForm({
                 </div>
               )}
 
-              {availableTemplates.length > 0 && (
+              {(availableTemplates.length > 0 || !selectedIds.has(UNIDAD_ID)) && (
                 <div className="grid grid-cols-[1fr_7rem_auto] gap-2 items-end">
                   <div className="space-y-1">
                     {selectedVariants.length === 0 && (
                       <p className="text-xs text-slate-400 mb-1">
-                        Elegí una variante y asignale el precio base
+                        {t("products.variants.selectCategoryFirst")}
                       </p>
                     )}
                     <Select
@@ -896,12 +892,15 @@ export function ProductForm({
                       }
                     >
                       <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="Seleccioná una variante" />
+                        <SelectValue placeholder={t("products.variants.selectPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={SELECT_NONE}>
-                          Seleccioná una variante
+                          {t("products.variants.selectPlaceholder")}
                         </SelectItem>
+                        {!selectedIds.has(UNIDAD_ID) && (
+                          <SelectItem value={UNIDAD_ID}>{t("products.variants.unitLabel")}</SelectItem>
+                        )}
                         {availableTemplates.map((tpl) => (
                           <SelectItem key={tpl.id} value={tpl.id}>
                             {tpl.label}
@@ -939,14 +938,14 @@ export function ProductForm({
                     disabled={!pendingTemplateId}
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Agregar
+                    {tCommon("buttons.add")}
                   </Button>
                 </div>
               )}
 
-              {availableTemplates.length === 0 && selectedVariants.length > 0 && (
+              {availableTemplates.length === 0 && selectedIds.has(UNIDAD_ID) && selectedVariants.length > 0 && (
                 <p className="text-xs text-slate-400 text-center py-1">
-                  Todas las variantes disponibles ya fueron agregadas.
+                  {t("products.variants.allAdded")}
                 </p>
               )}
             </>
@@ -956,22 +955,21 @@ export function ProductForm({
     </div>
   );
 
-  // ─── Branch section (create mode) ────────────────────────────────────────────
+  // ─── Branch section (create mode) — accordion ────────────────────────────────
 
   const branchSection = (
     <div className="space-y-3 border-t pt-4">
       <div className="flex items-center gap-2">
         <MapPin className="w-4 h-4 text-slate-400" />
-        <p className="text-sm font-medium text-slate-900 flex-1">Sedes</p>
-        <p className="text-xs text-slate-400">Disponibilidad y precio por sede</p>
+        <p className="text-sm font-medium text-slate-900 flex-1">{t("products.tabs.branches")}</p>
+        <p className="text-xs text-slate-400">{t("products.branchAvailability")}</p>
       </div>
 
       {branches.length === 0 ? (
         <p className="text-sm text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-          No hay sedes configuradas.
+          {t("products.noBranchesConfigured")}
         </p>
       ) : pricingMode === "simple" ? (
-        // Simple mode: one price override per branch
         <div className="space-y-2">
           {branches.map((branch) => {
             const state = branchState[branch.id] ?? {
@@ -979,73 +977,23 @@ export function ProductForm({
               simplePriceOverride: "",
               variants: {},
             };
-            return (
-              <div
-                key={branch.id}
-                className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50"
-              >
-                <Switch
-                  checked={state.enabled}
-                  onCheckedChange={(val) => updateBranch(branch.id, { enabled: val })}
-                  disabled={isLoading}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 truncate">
-                    {branch.name}
-                  </p>
-                  {branch.isMainBranch && (
-                    <span className="text-xs text-indigo-600">Principal</span>
-                  )}
-                </div>
-                {state.enabled && (
-                  <div className="relative w-28 shrink-0">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-                      $
-                    </span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={state.simplePriceOverride}
-                      onChange={(e) =>
-                        updateBranch(branch.id, { simplePriceOverride: e.target.value })
-                      }
-                      placeholder="Precio (opc)"
-                      className="pl-5 h-8 text-sm"
-                      disabled={isLoading}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : selectedVariants.length === 0 ? (
-        // Variants mode but no variants added yet
-        <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-slate-400" />
-          <span>Agregá variantes para configurar precios por sede.</span>
-        </div>
-      ) : (
-        // Variants mode: per-variant per-branch pricing
-        <div className="space-y-2">
-          {branches.map((branch) => {
-            const state = branchState[branch.id] ?? {
-              enabled: true,
-              simplePriceOverride: "",
-              variants: {},
-            };
-            const enabledVariantCount = selectedVariants.filter(
-              (sv) => state.variants[sv.templateId]?.enabled !== false
-            ).length;
+            const isExpanded = expandedBranches.has(branch.id);
 
             return (
               <div key={branch.id} className="border rounded-lg overflow-hidden">
-                {/* Branch header */}
-                <div className="flex items-center gap-3 p-3 bg-slate-50">
+                <div
+                  className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
+                  onClick={() => state.enabled && toggleBranchExpand(branch.id)}
+                >
                   <Switch
                     checked={state.enabled}
-                    onCheckedChange={(val) => updateBranch(branch.id, { enabled: val })}
+                    onCheckedChange={(val) => {
+                      updateBranch(branch.id, { enabled: val });
+                      if (val) toggleBranchExpand(branch.id);
+                    }}
                     disabled={isLoading}
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t("products.activateInBranch", { name: branch.name })}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -1056,14 +1004,102 @@ export function ProductForm({
                     )}
                   </div>
                   {state.enabled && (
-                    <span className="text-xs text-slate-400 shrink-0">
-                      {enabledVariantCount}/{selectedVariants.length} variantes
-                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "w-4 h-4 text-slate-400 shrink-0 transition-transform",
+                        isExpanded && "rotate-180"
+                      )}
+                    />
                   )}
                 </div>
 
-                {/* Per-variant rows */}
-                {state.enabled && (
+                {state.enabled && isExpanded && (
+                  <div className="px-4 py-3 border-t bg-white">
+                    <div className="flex items-center gap-3">
+                      <Label className="text-xs text-slate-500 shrink-0">
+                        {t("activateModal.priceOptional")}
+                      </Label>
+                      <div className="relative w-32">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                          $
+                        </span>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={state.simplePriceOverride}
+                          onChange={(e) =>
+                            updateBranch(branch.id, { simplePriceOverride: e.target.value })
+                          }
+                          placeholder="0"
+                          className="pl-5 h-8 text-sm"
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : selectedVariants.length === 0 ? (
+        <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-slate-400" />
+          <span>{t("products.variants.selectCategoryFirst")}</span>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {branches.map((branch) => {
+            const state = branchState[branch.id] ?? {
+              enabled: true,
+              simplePriceOverride: "",
+              variants: {},
+            };
+            const isExpanded = expandedBranches.has(branch.id);
+            const enabledVariantCount = selectedVariants.filter(
+              (sv) => state.variants[sv.templateId]?.enabled !== false
+            ).length;
+
+            return (
+              <div key={branch.id} className="border rounded-lg overflow-hidden">
+                <div
+                  className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
+                  onClick={() => state.enabled && toggleBranchExpand(branch.id)}
+                >
+                  <Switch
+                    checked={state.enabled}
+                    onCheckedChange={(val) => {
+                      updateBranch(branch.id, { enabled: val });
+                      if (val) toggleBranchExpand(branch.id);
+                    }}
+                    disabled={isLoading}
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t("products.activateInBranch", { name: branch.name })}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">
+                      {branch.name}
+                    </p>
+                    {branch.isMainBranch && (
+                      <span className="text-xs text-indigo-600">Principal</span>
+                    )}
+                  </div>
+                  {state.enabled && (
+                    <>
+                      <span className="text-xs text-slate-400 shrink-0">
+                        {enabledVariantCount}/{selectedVariants.length} {t("products.tabs.variants").toLowerCase()}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 text-slate-400 shrink-0 transition-transform",
+                          isExpanded && "rotate-180"
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+
+                {state.enabled && isExpanded && (
                   <div className="divide-y border-t">
                     {selectedVariants.map((sv) => {
                       const varState = state.variants[sv.templateId] ?? {
@@ -1083,12 +1119,13 @@ export function ProductForm({
                               })
                             }
                             disabled={isLoading}
+                            aria-label={t("products.activateInBranch", { name: sv.label })}
                           />
                           <span className="flex-1 text-sm text-slate-700 truncate">
                             {sv.label}
                           </span>
                           <span className="text-xs text-slate-400 shrink-0">
-                            base: ${sv.price}
+                            {t("products.basePrice")}: ${sv.price}
                           </span>
                           {varState.enabled && (
                             <div className="relative w-24 shrink-0">
@@ -1104,7 +1141,7 @@ export function ProductForm({
                                     priceOverride: e.target.value,
                                   })
                                 }
-                                placeholder="Precio"
+                                placeholder={t("products.price")}
                                 className="pl-5 h-8 text-xs"
                                 disabled={isLoading}
                               />
@@ -1123,90 +1160,79 @@ export function ProductForm({
     </div>
   );
 
-  // ─── Edit mode: tabbed ────────────────────────────────────────────────────────
-
-  if (isEditing) {
-    return (
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-        <TabsList className="w-full mx-7" style={{ width: "calc(100% - 3.5rem)" }}>
-          <TabsTrigger value="info" className="flex-1">
-            {t("products.tabs.info") || "Información"}
-          </TabsTrigger>
-          <TabsTrigger value="variants" className="flex-1">
-            {t("products.tabs.variants") || "Variantes"}
-            {product.variantCount > 0 && (
-              <span className="ml-1.5 bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
-                {product.variantCount}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="branches" className="flex-1">
-            <MapPin className="w-3.5 h-3.5 mr-1" />
-            {t("products.tabs.branches") || "Sedes"}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="info">
-          <form onSubmit={handleSubmit} className="space-y-4 p-7">
-            {infoFields}
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isLoading}
-              >
-                {tCommon("buttons.cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading || !canSubmit}
-                isLoading={isLoading}
-              >
-                {tCommon("buttons.saveChanges")}
-              </Button>
-            </div>
-          </form>
-        </TabsContent>
-
-        <TabsContent value="variants" className="p-7 pt-4">
-          <VariantList
-            productId={product.id}
-            businessId={businessId}
-            schema={product.attributeSchema}
-          />
-        </TabsContent>
-
-        <TabsContent value="branches" className="p-7 pt-4">
-          <BranchActivationTab
-            businessId={businessId}
-            productId={product.id}
-            productName={product.name}
-          />
-        </TabsContent>
-      </Tabs>
-    );
-  }
-
-  // ─── Create mode ─────────────────────────────────────────────────────────────
+  // ─── Single layout for both create and edit ───────────────────────────────────
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-7">
-      {infoFields}
-      {pricingSection}
-      {branchSection}
-      <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-          {tCommon("buttons.cancel")}
-        </Button>
-        <Button
-          type="submit"
-          disabled={isLoading || !canSubmit}
-          isLoading={isLoading}
-        >
-          {t("products.create")}
-        </Button>
-      </div>
-    </form>
+    <div className="space-y-0">
+      {/*
+        The <form> only wraps fields that submit with handleSubmit.
+        VariantList and BranchActivationTab (edit mode) live outside the form
+        because they contain Buttons without explicit type="button" that would
+        otherwise trigger form submission.
+      */}
+      <form id={formId} onSubmit={handleSubmit} className="space-y-4 p-7 pb-4">
+        {infoFields}
+        {!isEditing && pricingSection}
+        {!isEditing && branchSection}
+        {!hideActions && (
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoading}
+            >
+              {tCommon("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading || !canSubmit}
+              isLoading={isLoading}
+            >
+              {isEditing ? tCommon("buttons.saveChanges") : t("products.create")}
+            </Button>
+          </div>
+        )}
+      </form>
+
+      {/* Edit-only sections — outside <form> to avoid accidental submit */}
+      {isEditing && (
+        <>
+          <div className="space-y-3 px-7 pt-2 pb-4 border-t">
+            <div className="flex items-center gap-2 pt-4">
+              <p className="text-sm font-medium text-slate-900 flex-1">
+                {t("products.tabs.variants")}
+              </p>
+              {product.variantCount > 0 && (
+                <span className="bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
+                  {product.variantCount}
+                </span>
+              )}
+            </div>
+            <VariantList
+              productId={product.id}
+              businessId={businessId}
+              schema={product.attributeSchema}
+              industryCategoryId={formData.industryCategoryId || null}
+            />
+          </div>
+
+          <div className="space-y-3 px-7 pt-2 pb-7 border-t">
+            <div className="flex items-center gap-2 pt-4">
+              <MapPin className="w-4 h-4 text-slate-400" />
+              <p className="text-sm font-medium text-slate-900 flex-1">
+                {t("products.tabs.branches")}
+              </p>
+              <p className="text-xs text-slate-400">{t("products.branchAvailability")}</p>
+            </div>
+            <BranchActivationTab
+              businessId={businessId}
+              productId={product.id}
+              productName={product.name}
+            />
+          </div>
+        </>
+      )}
+    </div>
   );
 }
