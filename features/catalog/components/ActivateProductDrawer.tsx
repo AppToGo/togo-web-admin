@@ -51,6 +51,7 @@ const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
 
 interface BranchVariantConfig {
+  enabled: boolean;
   priceOverride: string;
 }
 
@@ -144,13 +145,25 @@ export function ActivateProductDrawer({
   // Initialize branch configs when branches load
   useEffect(() => {
     if (!product || branches.length === 0) return;
+    const currentVariants = product.variants ?? [];
     setBranchConfigs((prev) => {
       const newEntries = branches.filter((b) => !(b.id in prev));
       if (newEntries.length === 0) return prev;
       return {
         ...prev,
         ...Object.fromEntries(
-          newEntries.map((b) => [b.id, { enabled: true, variants: {} }])
+          newEntries.map((b) => [
+            b.id,
+            {
+              enabled: true,
+              variants: Object.fromEntries(
+                currentVariants.map((v) => [
+                  v.id,
+                  { enabled: true, priceOverride: "" },
+                ])
+              ),
+            },
+          ])
         ),
       };
     });
@@ -185,10 +198,11 @@ export function ActivateProductDrawer({
     const branchActivations: BranchActivation[] = enabledBranches.map((b) => ({
       branchId: b.id,
       variants: variants.map((v) => {
-        const override = branchConfigs[b.id]?.variants[v.id]?.priceOverride;
+        const varConfig = branchConfigs[b.id]?.variants[v.id];
+        const override = varConfig?.priceOverride;
         return {
           variantLabel: v.variantLabel,
-          isAvailable: true,
+          isAvailable: varConfig?.enabled ?? true,
           priceOverride: override ? parseFloat(override) : undefined,
         };
       }),
@@ -224,10 +238,10 @@ export function ActivateProductDrawer({
     }));
   };
 
-  const updateBranchVariantOverride = (
+  const updateBranchVariant = (
     branchId: string,
     variantId: string,
-    priceOverride: string
+    update: Partial<BranchVariantConfig>
   ) => {
     setBranchConfigs((prev) => ({
       ...prev,
@@ -235,7 +249,11 @@ export function ActivateProductDrawer({
         ...prev[branchId],
         variants: {
           ...prev[branchId]?.variants,
-          [variantId]: { priceOverride },
+          [variantId]: {
+            ...({ enabled: true, priceOverride: "" } as BranchVariantConfig),
+            ...prev[branchId]?.variants?.[variantId],
+            ...update,
+          },
         },
       },
     }));
@@ -551,11 +569,9 @@ export function ActivateProductDrawer({
                                   onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "" || /^\d*\.?\d*$/.test(val)) {
-                                      updateBranchVariantOverride(
-                                        branch.id,
-                                        variants[0].id,
-                                        val
-                                      );
+                                      updateBranchVariant(branch.id, variants[0].id, {
+                                        priceOverride: val,
+                                      });
                                     }
                                   }}
                                   placeholder={t("activateModal.priceOptional")}
@@ -565,69 +581,80 @@ export function ActivateProductDrawer({
                               </div>
                             )}
 
-                          {/* Multi-variant: expand toggle */}
+                          {/* Multi-variant: enabled count + expand toggle */}
                           {hasMultipleVariants && config.enabled && (
-                            <ChevronDown
-                              className={cn(
-                                "w-4 h-4 text-slate-400 shrink-0 transition-transform",
-                                isExpanded && "rotate-180"
-                              )}
-                            />
+                            <>
+                              <span className="text-xs text-slate-400 shrink-0">
+                                {variants.filter((v) => config.variants[v.id]?.enabled !== false).length}/
+                                {variants.length}{" "}
+                                {t("products.tabs.variants").toLowerCase()}
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "w-4 h-4 text-slate-400 shrink-0 transition-transform",
+                                  isExpanded && "rotate-180"
+                                )}
+                              />
+                            </>
                           )}
                         </div>
 
-                        {/* Multi-variant: per-variant price overrides */}
+                        {/* Multi-variant: per-variant switch + price overrides */}
                         {hasMultipleVariants &&
                           config.enabled &&
                           isExpanded && (
                             <div className="divide-y border-t border-slate-200">
-                              {variants.map((v) => (
-                                <div
-                                  key={v.id}
-                                  className="flex items-center gap-3 px-4 py-2.5 bg-white"
-                                >
-                                  <span className="flex-1 text-sm text-slate-700 truncate">
-                                    {v.variantLabel}
-                                  </span>
-                                  <span className="text-xs text-slate-400 shrink-0">
-                                    {t("products.basePrice")}:{" "}
-                                    {variantPrices[v.id]
-                                      ? formatCOP(
-                                          parseFloat(variantPrices[v.id])
-                                        )
-                                      : formatCOP(0)}
-                                  </span>
-                                  <div className="relative w-24 shrink-0">
-                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-                                      $
-                                    </span>
-                                    <Input
-                                      type="text"
-                                      inputMode="decimal"
-                                      value={
-                                        config.variants[v.id]?.priceOverride ??
-                                        ""
+                              {variants.map((v) => {
+                                const varConfig = config.variants[v.id] ?? {
+                                  enabled: true,
+                                  priceOverride: "",
+                                };
+                                return (
+                                  <div
+                                    key={v.id}
+                                    className="flex items-center gap-3 px-4 py-2.5 bg-white"
+                                  >
+                                    <Switch
+                                      checked={varConfig.enabled}
+                                      onCheckedChange={(val) =>
+                                        updateBranchVariant(branch.id, v.id, { enabled: val })
                                       }
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (
-                                          val === "" ||
-                                          /^\d*\.?\d*$/.test(val)
-                                        ) {
-                                          updateBranchVariantOverride(
-                                            branch.id,
-                                            v.id,
-                                            val
-                                          );
-                                        }
-                                      }}
-                                      placeholder={t("products.price")}
-                                      className="pl-5 h-8 text-xs"
                                       disabled={isLoading}
+                                      aria-label={t("activateModal.activateInBranch", { name: v.variantLabel })}
                                     />
+                                    <span className="flex-1 text-sm text-slate-700 truncate">
+                                      {v.variantLabel}
+                                    </span>
+                                    <span className="text-xs text-slate-400 shrink-0">
+                                      {t("products.basePrice")}:{" "}
+                                      {variantPrices[v.id]
+                                        ? formatCOP(parseFloat(variantPrices[v.id]))
+                                        : formatCOP(0)}
+                                    </span>
+                                    {varConfig.enabled && (
+                                      <div className="relative w-24 shrink-0">
+                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                                          $
+                                        </span>
+                                        <Input
+                                          type="text"
+                                          inputMode="decimal"
+                                          value={varConfig.priceOverride}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                                              updateBranchVariant(branch.id, v.id, { priceOverride: val });
+                                            }
+                                          }}
+                                          placeholder={t("activateModal.priceOptional")}
+                                          className="pl-5 h-8 text-xs"
+                                          disabled={isLoading}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                       </div>
