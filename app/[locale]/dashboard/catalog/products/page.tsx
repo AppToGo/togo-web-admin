@@ -168,7 +168,7 @@ export default function ProductsPage() {
         if (branchActivations?.length && businessId) {
           try {
             const variants = await getVariants(businessId, created.id);
-            await Promise.allSettled(
+            const results = await Promise.allSettled(
               branchActivations.flatMap(({ branchId, variants: variantConfigs }) =>
                 variantConfigs
                   .filter((vc) => vc.isAvailable)
@@ -186,6 +186,10 @@ export default function ProductsPage() {
                   })
               )
             );
+            const failed = results.filter((r) => r.status === "rejected");
+            if (failed.length > 0) {
+              console.warn(`[handleCreateProduct] ${failed.length} branch activation(s) failed.`, failed);
+            }
           } catch {
             // Non-critical: product was created, branch activation failed silently
           }
@@ -355,7 +359,7 @@ export default function ProductsPage() {
         onOpenChange={(open) => { if (!updateProduct.isPending && !open) setEditingProduct(null); }}
         isLoading={updateProduct.isPending}
       >
-        <DrawerContent size="md" data-testid="edit-product-drawer">
+        <DrawerContent key={editingProduct?.id} size="md" data-testid="edit-product-drawer">
           <DrawerHeader>
             <DrawerTitle>{t("products.edit")}</DrawerTitle>
             <DrawerDescription>{editingProduct?.name}</DrawerDescription>

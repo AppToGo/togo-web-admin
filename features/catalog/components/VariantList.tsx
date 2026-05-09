@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Pencil, Trash2, Plus, AlertTriangle, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,8 @@ interface InlineEditState {
 }
 
 export function VariantList({ productId, businessId, schema: _schema, industryCategoryId }: VariantListProps) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const [deleteTarget, setDeleteTarget] = useState<ProductVariant | null>(null);
   const [inlineEdit, setInlineEdit] = useState<InlineEditState | null>(null);
   const [showInlineCreate, setShowInlineCreate] = useState(false);
@@ -78,7 +81,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
 
   // For create: exclude all used labels
   const availableTemplates = templates.filter(
-    (t) => !usedLabels.has(t.label.toLowerCase())
+    (tmpl) => !usedLabels.has(tmpl.label.toLowerCase())
   );
 
   // For edit: exclude labels used by OTHER variants (allow own label)
@@ -86,7 +89,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
     ? variants.find((v) => v.id === inlineEdit.variantId)?.variantLabel.toLowerCase()
     : undefined;
   const availableEditTemplates = templates.filter(
-    (t) => !usedLabels.has(t.label.toLowerCase()) || t.label.toLowerCase() === editingVariantLabel
+    (tmpl) => !usedLabels.has(tmpl.label.toLowerCase()) || tmpl.label.toLowerCase() === editingVariantLabel
   );
 
   const createVariant = useCreateVariant(businessId, productId);
@@ -115,7 +118,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
     setShowInlineCreate(false);
     const isUnidad = variant.variantLabel.toLowerCase() === "unidad";
     const matchedTemplate = templates.find(
-      (t) => t.label.toLowerCase() === variant.variantLabel.toLowerCase()
+      (tmpl) => tmpl.label.toLowerCase() === variant.variantLabel.toLowerCase()
     );
     setInlineEdit({
       variantId: variant.id,
@@ -162,8 +165,8 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
 
     const isUnidad = pendingTemplateId === UNIDAD_ID;
     const template = isUnidad
-      ? { label: "Unidad", attributes: {} as Record<string, string | number> }
-      : templates.find((t) => t.id === pendingTemplateId);
+      ? { label: t("products.variants.unitLabel"), attributes: {} as Record<string, string | number> }
+      : templates.find((tmpl) => tmpl.id === pendingTemplateId);
     if (!template) return;
 
     const dto: CreateVariantDto = {
@@ -212,7 +215,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
   return (
     <div className="space-y-3">
       {isLoading ? (
-        <p className="text-sm text-slate-400 py-4 text-center">Cargando variantes...</p>
+        <p className="text-sm text-slate-400 py-4 text-center">{t("products.variants.loading")}</p>
       ) : (
         <div className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-100">
           {variants.map((variant) => {
@@ -227,19 +230,19 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     onValueChange={(v) => {
                       if (v === SELECT_NONE) return;
                       const isUnidad = v === UNIDAD_ID;
-                      const tpl = isUnidad ? null : templates.find((t) => t.id === v);
-                      const label = isUnidad ? "Unidad" : (tpl?.label ?? "");
+                      const tpl = isUnidad ? null : templates.find((tmpl) => tmpl.id === v);
+                      const label = isUnidad ? t("products.variants.unitLabel") : (tpl?.label ?? "");
                       setInlineEdit((s) => s && ({ ...s, templateId: v, label }));
                       setTimeout(() => editPriceRef.current?.focus(), 50);
                     }}
                     disabled={updateVariant.isPending}
                   >
                     <SelectTrigger className="flex-1 h-8 text-sm bg-white">
-                      <SelectValue placeholder="Seleccioná variante" />
+                      <SelectValue placeholder={t("products.variants.selectPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {(!usedLabels.has("unidad") || editingVariantLabel === "unidad") && (
-                        <SelectItem value={UNIDAD_ID}>Unidad</SelectItem>
+                        <SelectItem value={UNIDAD_ID}>{t("products.variants.unitLabel")}</SelectItem>
                       )}
                       {availableEditTemplates.map((tpl) => (
                         <SelectItem key={tpl.id} value={tpl.id}>
@@ -264,7 +267,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                         if (e.key === "Enter") { e.preventDefault(); confirmInlineEdit(); }
                         if (e.key === "Escape") cancelInlineEdit();
                       }}
-                      placeholder="Precio"
+                      placeholder={t("products.price")}
                       className="pl-5 h-8 text-sm bg-white"
                       disabled={updateVariant.isPending}
                     />
@@ -276,7 +279,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     onClick={confirmInlineEdit}
                     disabled={!canConfirmEdit || updateVariant.isPending}
                     isLoading={updateVariant.isPending}
-                    aria-label="Guardar"
+                    aria-label={t("products.variants.save")}
                   >
                     {!updateVariant.isPending && <Check className="h-4 w-4" />}
                   </Button>
@@ -284,7 +287,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     type="button"
                     onClick={cancelInlineEdit}
                     className="flex items-center justify-center h-8 w-8 shrink-0 text-slate-400 hover:text-slate-600 rounded-md hover:bg-indigo-100 transition-colors"
-                    aria-label="Cancelar"
+                    aria-label={tCommon("buttons.cancel")}
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -305,12 +308,12 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     </span>
                     {variant.isDefault && (
                       <Badge className="text-[10px] px-1.5 py-0 bg-indigo-100 text-indigo-700 border-indigo-200">
-                        Por defecto
+                        {t("products.variants.default")}
                       </Badge>
                     )}
                     {!variant.isActive && (
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        Inactiva
+                        {t("products.variants.inactive")}
                       </Badge>
                     )}
                   </div>
@@ -350,13 +353,13 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
             <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50">
               {!industryCategoryId ? (
                 <p className="flex-1 text-xs text-amber-700">
-                  Seleccioná una categoría para agregar variantes.
+                  {t("products.variants.selectCategoryFirst")}
                 </p>
               ) : loadingTemplates ? (
-                <p className="flex-1 text-xs text-slate-400">Cargando variantes…</p>
+                <p className="flex-1 text-xs text-slate-400">{t("products.variants.loading")}</p>
               ) : availableTemplates.length === 0 && usedLabels.has("unidad") ? (
                 <p className="flex-1 text-xs text-slate-500">
-                  Todas las variantes de esta categoría ya fueron agregadas.
+                  {t("products.variants.allAdded")}
                 </p>
               ) : (
                 <>
@@ -366,12 +369,12 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     disabled={createVariant.isPending}
                   >
                     <SelectTrigger className="flex-1 h-8 text-sm">
-                      <SelectValue placeholder="Seleccioná variante" />
+                      <SelectValue placeholder={t("products.variants.selectPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={SELECT_NONE}>Seleccioná variante</SelectItem>
+                      <SelectItem value={SELECT_NONE}>{t("products.variants.selectPlaceholder")}</SelectItem>
                       {!usedLabels.has("unidad") && (
-                        <SelectItem value={UNIDAD_ID}>Unidad</SelectItem>
+                        <SelectItem value={UNIDAD_ID}>{t("products.variants.unitLabel")}</SelectItem>
                       )}
                       {availableTemplates.map((tpl) => (
                         <SelectItem key={tpl.id} value={tpl.id}>
@@ -396,7 +399,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                         if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
                         if (e.key === "Escape") cancelInlineCreate();
                       }}
-                      placeholder="Precio"
+                      placeholder={t("products.price")}
                       className="pl-5 h-8 text-sm"
                       disabled={!pendingTemplateId || createVariant.isPending}
                     />
@@ -409,7 +412,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     onClick={handleInlineCreate}
                     disabled={!canAdd || createVariant.isPending}
                     isLoading={createVariant.isPending}
-                    aria-label="Agregar variante"
+                    aria-label={t("products.variants.add")}
                   >
                     {!createVariant.isPending && <Check className="h-4 w-4" />}
                   </Button>
@@ -419,7 +422,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                 type="button"
                 onClick={cancelInlineCreate}
                 className="flex items-center justify-center h-8 w-8 shrink-0 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-200 transition-colors"
-                aria-label="Cancelar"
+                aria-label={tCommon("buttons.cancel")}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -434,7 +437,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
               className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-indigo-600 hover:bg-indigo-50 transition-colors"
             >
               <Plus className="h-4 w-4" />
-              Nueva variante
+              {t("products.variants.new")}
             </button>
           )}
         </div>
@@ -448,7 +451,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
           className="flex items-center gap-2 w-full px-4 py-3 text-sm text-indigo-600 border border-dashed border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
         >
           <Plus className="h-4 w-4" />
-          Agregar primera variante
+          {t("products.variants.addFirst")}
         </button>
       )}
 
@@ -459,11 +462,9 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Eliminar variante</DialogTitle>
+            <DialogTitle>{t("products.variants.deleteTitle")}</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que quieres eliminar{" "}
-              <strong>{deleteTarget?.variantLabel}</strong>? Esta acción no
-              se puede deshacer.
+              {t("products.variants.deleteConfirm", { name: deleteTarget?.variantLabel ?? "" })}
             </DialogDescription>
           </DialogHeader>
 
@@ -471,7 +472,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
             <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 mx-6 text-sm text-amber-800">
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>
-                Al eliminar esta variante el producto quedará sin variantes activas.
+                {t("products.variants.deleteLastActiveWarning")}
               </span>
             </div>
           )}
@@ -482,20 +483,15 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
               onClick={() => setDeleteTarget(null)}
               disabled={deleteVariant.isPending}
             >
-              Cancelar
+              {tCommon("buttons.cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteVariant.isPending || !!willLeaveZeroActive}
               isLoading={deleteVariant.isPending}
-              title={
-                willLeaveZeroActive
-                  ? "No es posible eliminar la última variante activa del producto"
-                  : undefined
-              }
             >
-              Eliminar
+              {t("products.variants.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

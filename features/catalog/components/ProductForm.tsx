@@ -115,6 +115,7 @@ function BranchActivationSection({
   isMainBranch,
   variants,
 }: BranchActivationSectionProps) {
+  const t = useTranslations("catalog");
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: inventory } = useBranchInventory(businessId, branchId, {
@@ -148,14 +149,24 @@ function BranchActivationSection({
           .map((v) =>
             activateMutation.mutateAsync({ productId: v.id, data: { isAvailable: true } })
           )
-      );
+      ).then((results) => {
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length > 0) {
+          console.warn(`[BranchActivationSection] ${failed.length} variant(s) failed to activate.`, failed);
+        }
+      });
       setIsExpanded(true);
     } else {
       Promise.allSettled(
         variants
           .filter((v) => inventoryByVariantId.has(v.id))
           .map((v) => deactivateMutation.mutateAsync(v.id))
-      );
+      ).then((results) => {
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length > 0) {
+          console.warn(`[BranchActivationSection] ${failed.length} variant(s) failed to deactivate.`, failed);
+        }
+      });
     }
   };
 
@@ -172,13 +183,14 @@ function BranchActivationSection({
           onCheckedChange={handleToggleAll}
           disabled={isBusy}
           onClick={(e) => e.stopPropagation()}
+          aria-label={t("products.activateInBranch", { name: branchName })}
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-slate-800 truncate">{branchName}</p>
           {isMainBranch && <span className="text-xs text-indigo-600">Principal</span>}
         </div>
         <span className="text-xs text-slate-400 shrink-0">
-          {activatedCount}/{variants.length} variantes
+          {activatedCount}/{variants.length} {t("products.tabs.variants").toLowerCase()}
         </span>
         <ChevronDown
           className={cn(
@@ -216,6 +228,7 @@ function BranchActivationTab({
   productId: string;
   productName: string;
 }) {
+  const t = useTranslations("catalog");
   const { data: variants = [], isLoading: variantsLoading } = useVariants(
     businessId,
     productId
@@ -237,8 +250,7 @@ function BranchActivationTab({
       <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
         <AlertCircle className="w-4 h-4 shrink-0" />
         <span>
-          Este producto no tiene variantes. Creá al menos una variante antes de
-          activarlo en sedes.
+          {t("products.noVariantsCreateFirst")}
         </span>
       </div>
     );
@@ -247,7 +259,7 @@ function BranchActivationTab({
   if (branches.length === 0) {
     return (
       <p className="text-sm text-slate-500 bg-slate-50 border rounded-lg px-3 py-2.5">
-        No hay sedes configuradas para este negocio.
+        {t("products.noBranchesConfigured")}
       </p>
     );
   }
@@ -255,8 +267,7 @@ function BranchActivationTab({
   return (
     <div className="space-y-2">
       <p className="text-xs text-slate-500 mb-3">
-        Activá el producto en cada sede y configurá precios por variante. Podés
-        desactivar variantes específicas en sedes donde no se vendan.
+        {t("products.branchActivationHint")}
       </p>
       {branches.map((branch) => (
         <BranchActivationSection
@@ -753,7 +764,7 @@ export function ProductForm({
   const pricingSection = (
     <div className="space-y-4 border-t pt-4">
       <div className="flex items-center gap-3">
-        <p className="text-sm font-medium text-slate-900 flex-1">Precio</p>
+        <p className="text-sm font-medium text-slate-900 flex-1">{t("products.price")}</p>
         <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
           <button
             type="button"
@@ -765,7 +776,7 @@ export function ProductForm({
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            Precio único
+            {t("products.singlePrice")}
           </button>
           <button
             type="button"
@@ -777,14 +788,14 @@ export function ProductForm({
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            Variantes
+            {t("products.tabs.variants")}
           </button>
         </div>
       </div>
 
       {pricingMode === "simple" ? (
         <div className="space-y-1.5">
-          <Label htmlFor="simplePrice">Precio</Label>
+          <Label htmlFor="simplePrice">{t("products.price")}</Label>
           <div className="relative max-w-48">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
               $
@@ -801,7 +812,7 @@ export function ProductForm({
             />
           </div>
           <p className="text-xs text-slate-500">
-            Podés ajustar el precio después desde el listado de variantes.
+            {t("products.variantPriceHint")}
           </p>
         </div>
       ) : (
@@ -809,10 +820,10 @@ export function ProductForm({
           {!formData.industryCategoryId ? (
             <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>Seleccioná una categoría para ver las variantes disponibles.</span>
+              <span>{t("products.variants.selectCategoryFirst")}</span>
             </div>
           ) : loadingTemplates ? (
-            <p className="text-sm text-slate-400 py-1">Cargando variantes…</p>
+            <p className="text-sm text-slate-400 py-1">{t("products.variants.loading")}</p>
           ) : variantTemplates.length === 0 ? (
             <p className="text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
               No hay variantes predefinidas para esta categoría.
@@ -822,8 +833,8 @@ export function ProductForm({
               {selectedVariants.length > 0 && (
                 <div className="space-y-2">
                   <div className="grid grid-cols-[1fr_7rem_2rem] gap-2 text-xs text-slate-400 font-medium px-1">
-                    <span>Variante</span>
-                    <span>Precio base</span>
+                    <span>{t("products.tabs.variants")}</span>
+                    <span>{t("products.basePrice")}</span>
                     <span />
                   </div>
                   {selectedVariants.map((v) => (
@@ -871,7 +882,7 @@ export function ProductForm({
                   <div className="space-y-1">
                     {selectedVariants.length === 0 && (
                       <p className="text-xs text-slate-400 mb-1">
-                        Elegí una variante y asignale el precio base
+                        {t("products.variants.selectCategoryFirst")}
                       </p>
                     )}
                     <Select
@@ -881,14 +892,14 @@ export function ProductForm({
                       }
                     >
                       <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="Seleccioná una variante" />
+                        <SelectValue placeholder={t("products.variants.selectPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={SELECT_NONE}>
-                          Seleccioná una variante
+                          {t("products.variants.selectPlaceholder")}
                         </SelectItem>
                         {!selectedIds.has(UNIDAD_ID) && (
-                          <SelectItem value={UNIDAD_ID}>Unidad</SelectItem>
+                          <SelectItem value={UNIDAD_ID}>{t("products.variants.unitLabel")}</SelectItem>
                         )}
                         {availableTemplates.map((tpl) => (
                           <SelectItem key={tpl.id} value={tpl.id}>
@@ -927,14 +938,14 @@ export function ProductForm({
                     disabled={!pendingTemplateId}
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Agregar
+                    {tCommon("buttons.add")}
                   </Button>
                 </div>
               )}
 
               {availableTemplates.length === 0 && selectedIds.has(UNIDAD_ID) && selectedVariants.length > 0 && (
                 <p className="text-xs text-slate-400 text-center py-1">
-                  Todas las variantes disponibles ya fueron agregadas.
+                  {t("products.variants.allAdded")}
                 </p>
               )}
             </>
@@ -950,13 +961,13 @@ export function ProductForm({
     <div className="space-y-3 border-t pt-4">
       <div className="flex items-center gap-2">
         <MapPin className="w-4 h-4 text-slate-400" />
-        <p className="text-sm font-medium text-slate-900 flex-1">Sedes</p>
-        <p className="text-xs text-slate-400">Disponibilidad y precio por sede</p>
+        <p className="text-sm font-medium text-slate-900 flex-1">{t("products.tabs.branches")}</p>
+        <p className="text-xs text-slate-400">{t("products.branchAvailability")}</p>
       </div>
 
       {branches.length === 0 ? (
         <p className="text-sm text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-          No hay sedes configuradas.
+          {t("products.noBranchesConfigured")}
         </p>
       ) : pricingMode === "simple" ? (
         <div className="space-y-2">
@@ -982,6 +993,7 @@ export function ProductForm({
                     }}
                     disabled={isLoading}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label={t("products.activateInBranch", { name: branch.name })}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -1005,7 +1017,7 @@ export function ProductForm({
                   <div className="px-4 py-3 border-t bg-white">
                     <div className="flex items-center gap-3">
                       <Label className="text-xs text-slate-500 shrink-0">
-                        Precio (opcional)
+                        {t("activateModal.priceOptional")}
                       </Label>
                       <div className="relative w-32">
                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
@@ -1033,7 +1045,7 @@ export function ProductForm({
       ) : selectedVariants.length === 0 ? (
         <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
           <AlertCircle className="w-4 h-4 shrink-0 text-slate-400" />
-          <span>Agregá variantes para configurar precios por sede.</span>
+          <span>{t("products.variants.selectCategoryFirst")}</span>
         </div>
       ) : (
         <div className="space-y-2">
@@ -1062,6 +1074,7 @@ export function ProductForm({
                     }}
                     disabled={isLoading}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label={t("products.activateInBranch", { name: branch.name })}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -1074,7 +1087,7 @@ export function ProductForm({
                   {state.enabled && (
                     <>
                       <span className="text-xs text-slate-400 shrink-0">
-                        {enabledVariantCount}/{selectedVariants.length} variantes
+                        {enabledVariantCount}/{selectedVariants.length} {t("products.tabs.variants").toLowerCase()}
                       </span>
                       <ChevronDown
                         className={cn(
@@ -1106,12 +1119,13 @@ export function ProductForm({
                               })
                             }
                             disabled={isLoading}
+                            aria-label={t("products.activateInBranch", { name: sv.label })}
                           />
                           <span className="flex-1 text-sm text-slate-700 truncate">
                             {sv.label}
                           </span>
                           <span className="text-xs text-slate-400 shrink-0">
-                            base: ${sv.price}
+                            {t("products.basePrice")}: ${sv.price}
                           </span>
                           {varState.enabled && (
                             <div className="relative w-24 shrink-0">
@@ -1127,7 +1141,7 @@ export function ProductForm({
                                     priceOverride: e.target.value,
                                   })
                                 }
-                                placeholder="Precio"
+                                placeholder={t("products.price")}
                                 className="pl-5 h-8 text-xs"
                                 disabled={isLoading}
                               />
@@ -1187,7 +1201,7 @@ export function ProductForm({
           <div className="space-y-3 px-7 pt-2 pb-4 border-t">
             <div className="flex items-center gap-2 pt-4">
               <p className="text-sm font-medium text-slate-900 flex-1">
-                {t("products.tabs.variants") || "Variantes"}
+                {t("products.tabs.variants")}
               </p>
               {product.variantCount > 0 && (
                 <span className="bg-indigo-100 text-indigo-700 text-xs px-1.5 py-0.5 rounded-full">
@@ -1207,9 +1221,9 @@ export function ProductForm({
             <div className="flex items-center gap-2 pt-4">
               <MapPin className="w-4 h-4 text-slate-400" />
               <p className="text-sm font-medium text-slate-900 flex-1">
-                {t("products.tabs.branches") || "Sedes"}
+                {t("products.tabs.branches")}
               </p>
-              <p className="text-xs text-slate-400">Disponibilidad y precio por sede</p>
+              <p className="text-xs text-slate-400">{t("products.branchAvailability")}</p>
             </div>
             <BranchActivationTab
               businessId={businessId}

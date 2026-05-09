@@ -3,6 +3,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Package, AlertCircle, Layers, MapPin, ChevronDown } from "lucide-react";
+
+function formatCOP(value: number): string {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,7 +173,7 @@ export function ActivateProductDrawer({
         businessCategoryId: businessCategoryId || undefined,
         variantPrices: variants.map((v) => ({
           globalVariantId: v.id,
-          price: parseFloat(variantPrices[v.id] || "0"),
+          price: variantPrices[v.id] ? parseFloat(variantPrices[v.id]) : 0,
         })),
       },
       branchActivations.length > 0 ? branchActivations : undefined
@@ -330,11 +339,7 @@ export function ActivateProductDrawer({
                     {variant.suggestedPrice && (
                       <p className="text-xs text-slate-500">
                         {t("products.suggestedPrice")}:{" "}
-                        {new Intl.NumberFormat("es-CO", {
-                          style: "currency",
-                          currency: "COP",
-                          minimumFractionDigits: 0,
-                        }).format(variant.suggestedPrice)}
+                        {formatCOP(variant.suggestedPrice)}
                       </p>
                     )}
                   </div>
@@ -378,13 +383,13 @@ export function ActivateProductDrawer({
             <div className="space-y-3 border-t pt-4">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-slate-400" />
-                <p className="text-sm font-medium text-slate-900 flex-1">Sedes</p>
-                <p className="text-xs text-slate-400">Disponibilidad y precio por sede</p>
+                <p className="text-sm font-medium text-slate-900 flex-1">{t("activateModal.branches")}</p>
+                <p className="text-xs text-slate-400">{t("activateModal.branchesDescription")}</p>
               </div>
 
               {branches.length === 0 ? (
                 <p className="text-sm text-slate-400 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-                  No hay sedes configuradas.
+                  {t("products.noBranchesConfigured")}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -405,6 +410,7 @@ export function ActivateProductDrawer({
                             onCheckedChange={(val) => updateBranchEnabled(branch.id, val)}
                             disabled={isLoading}
                             onClick={(e) => e.stopPropagation()}
+                            aria-label={t("activateModal.activateInBranch", { name: branch.name })}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-800 truncate">{branch.name}</p>
@@ -430,7 +436,7 @@ export function ActivateProductDrawer({
                                     updateBranchVariantOverride(branch.id, variants[0].id, val);
                                   }
                                 }}
-                                placeholder="Precio (opc)"
+                                placeholder={t("activateModal.priceOptional")}
                                 className="pl-5 h-8 text-sm"
                                 disabled={isLoading}
                               />
@@ -455,7 +461,7 @@ export function ActivateProductDrawer({
                               <div key={v.id} className="flex items-center gap-3 px-4 py-2.5 bg-white">
                                 <span className="flex-1 text-sm text-slate-700 truncate">{v.variantLabel}</span>
                                 <span className="text-xs text-slate-400 shrink-0">
-                                  base: ${variantPrices[v.id] || "0"}
+                                  {t("products.basePrice")}: {variantPrices[v.id] ? formatCOP(parseFloat(variantPrices[v.id])) : formatCOP(0)}
                                 </span>
                                 <div className="relative w-24 shrink-0">
                                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">$</span>
@@ -469,7 +475,7 @@ export function ActivateProductDrawer({
                                         updateBranchVariantOverride(branch.id, v.id, val);
                                       }
                                     }}
-                                    placeholder="Precio"
+                                    placeholder={t("products.price")}
                                     className="pl-5 h-8 text-xs"
                                     disabled={isLoading}
                                   />
