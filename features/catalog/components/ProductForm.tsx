@@ -123,10 +123,16 @@ function BranchActivationSection({
     limit: 50,
   });
 
-  const variantIds = useMemo(() => new Set(variants.map((v) => v.id)), [variants]);
+  const variantIds = useMemo(
+    () => new Set(variants.map((v) => v.id)),
+    [variants]
+  );
 
   const inventoryByVariantId = useMemo(() => {
-    const map = new Map<string, import("@/features/branch-inventory/types").InventoryItem>();
+    const map = new Map<
+      string,
+      import("@/features/branch-inventory/types").InventoryItem
+    >();
     for (const item of inventory?.items ?? []) {
       if (variantIds.has(item.productVariantId)) {
         map.set(item.productVariantId, item);
@@ -147,12 +153,18 @@ function BranchActivationSection({
         variants
           .filter((v) => !inventoryByVariantId.has(v.id))
           .map((v) =>
-            activateMutation.mutateAsync({ productId: v.id, data: { isAvailable: true } })
+            activateMutation.mutateAsync({
+              productId: v.id,
+              data: { isAvailable: true },
+            })
           )
       ).then((results) => {
         const failed = results.filter((r) => r.status === "rejected");
         if (failed.length > 0) {
-          console.warn(`[BranchActivationSection] ${failed.length} variant(s) failed to activate.`, failed);
+          console.warn(
+            `[BranchActivationSection] ${failed.length} variant(s) failed to activate.`,
+            failed
+          );
         }
       });
       setIsExpanded(true);
@@ -164,7 +176,10 @@ function BranchActivationSection({
       ).then((results) => {
         const failed = results.filter((r) => r.status === "rejected");
         if (failed.length > 0) {
-          console.warn(`[BranchActivationSection] ${failed.length} variant(s) failed to deactivate.`, failed);
+          console.warn(
+            `[BranchActivationSection] ${failed.length} variant(s) failed to deactivate.`,
+            failed
+          );
         }
       });
     }
@@ -186,11 +201,16 @@ function BranchActivationSection({
           aria-label={t("products.activateInBranch", { name: branchName })}
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-800 truncate">{branchName}</p>
-          {isMainBranch && <span className="text-xs text-indigo-600">Principal</span>}
+          <p className="text-sm font-medium text-slate-800 truncate">
+            {branchName}
+          </p>
+          {isMainBranch && (
+            <span className="text-xs text-indigo-600">Principal</span>
+          )}
         </div>
         <span className="text-xs text-slate-400 shrink-0">
-          {activatedCount}/{variants.length} {t("products.tabs.variants").toLowerCase()}
+          {activatedCount}/{variants.length}{" "}
+          {t("products.tabs.variants").toLowerCase()}
         </span>
         <ChevronDown
           className={cn(
@@ -249,9 +269,7 @@ function BranchActivationTab({
     return (
       <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
         <AlertCircle className="w-4 h-4 shrink-0" />
-        <span>
-          {t("products.noVariantsCreateFirst")}
-        </span>
+        <span>{t("products.noVariantsCreateFirst")}</span>
       </div>
     );
   }
@@ -313,15 +331,23 @@ export function ProductForm({
   });
 
   // Pricing mode (create only)
-  const [pricingMode, setPricingMode] = useState<"simple" | "variants">("simple");
+  const [pricingMode, setPricingMode] = useState<"simple" | "variants">(
+    "simple"
+  );
   const [simplePrice, setSimplePrice] = useState<string>("");
-  const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>([]);
+  const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>(
+    []
+  );
   const [pendingTemplateId, setPendingTemplateId] = useState<string>("");
   const [pendingPrice, setPendingPrice] = useState<string>("");
 
   // Branch activation state (create mode)
-  const [branchState, setBranchState] = useState<Record<string, BranchActivationState>>({});
-  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(new Set());
+  const [branchState, setBranchState] = useState<
+    Record<string, BranchActivationState>
+  >({});
+  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(
+    new Set()
+  );
   const branchInitRef = useRef(false);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -355,7 +381,10 @@ export function ProductForm({
         !seen.has(cat.industryCategoryId)
       ) {
         seen.add(cat.industryCategoryId);
-        parents.push({ id: cat.industryCategoryId, name: cat.industryCategoryName });
+        parents.push({
+          id: cat.industryCategoryId,
+          name: cat.industryCategoryName,
+        });
       }
     }
     return parents.sort((a, b) => a.name.localeCompare(b.name));
@@ -440,7 +469,10 @@ export function ProductForm({
     setImagePreview(url || null);
   };
 
-  const updateBranch = (branchId: string, update: Partial<BranchActivationState>) => {
+  const updateBranch = (
+    branchId: string,
+    update: Partial<BranchActivationState>
+  ) => {
     setBranchState((prev) => ({
       ...prev,
       [branchId]: { ...prev[branchId], ...update },
@@ -485,13 +517,22 @@ export function ProductForm({
 
     const isUnidad = pendingTemplateId === UNIDAD_ID;
     const tpl = isUnidad
-      ? { id: UNIDAD_ID, label: "Unidad", attributes: {} as Record<string, string | number> }
+      ? {
+          id: UNIDAD_ID,
+          label: "Unidad",
+          attributes: {} as Record<string, string | number>,
+        }
       : variantTemplates.find((t) => t.id === pendingTemplateId);
     if (!tpl) return;
 
     setSelectedVariants((prev) => [
       ...prev,
-      { templateId: tpl.id, label: tpl.label, attributes: tpl.attributes, price },
+      {
+        templateId: tpl.id,
+        label: tpl.label,
+        attributes: tpl.attributes,
+        price,
+      },
     ]);
 
     setBranchState((prev) => {
@@ -522,7 +563,9 @@ export function ProductForm({
   };
 
   const removeVariant = (templateId: string) => {
-    setSelectedVariants((prev) => prev.filter((v) => v.templateId !== templateId));
+    setSelectedVariants((prev) =>
+      prev.filter((v) => v.templateId !== templateId)
+    );
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -577,7 +620,9 @@ export function ProductForm({
       }
     }
 
-    const enabledBranches = Object.entries(branchState).filter(([, s]) => s.enabled);
+    const enabledBranches = Object.entries(branchState).filter(
+      ([, s]) => s.enabled
+    );
     let activations: BranchActivation[] | undefined;
 
     if (enabledBranches.length > 0) {
@@ -668,13 +713,17 @@ export function ProductForm({
               setFormData((prev) => ({
                 ...prev,
                 industryCategoryId: newParentId,
-                businessCategoryId: subcatStillValid ? prev.businessCategoryId : "",
+                businessCategoryId: subcatStillValid
+                  ? prev.businessCategoryId
+                  : "",
               }));
             }}
             disabled={isLoading || parentCategories.length === 0}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("products.form.selectParentCategory")} />
+              <SelectValue
+                placeholder={t("products.form.selectParentCategory")}
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={SELECT_NONE}>
@@ -712,7 +761,8 @@ export function ProductForm({
               <SelectItem value={SELECT_NONE}>
                 {t("products.form.selectSubcategory")}
               </SelectItem>
-              {filteredSubcategories.length === 0 && formData.industryCategoryId ? (
+              {filteredSubcategories.length === 0 &&
+              formData.industryCategoryId ? (
                 <SelectItem value={SELECT_DISABLED} disabled>
                   {t("products.form.noSubcategoriesInParent")}
                 </SelectItem>
@@ -755,16 +805,17 @@ export function ProductForm({
           />
         </div>
       )}
-
     </>
   );
 
   // ─── Pricing section (create mode only) ──────────────────────────────────────
 
   const pricingSection = (
-    <div className="space-y-4 border-t pt-4">
+    <div className="space-y-4 border-t border-slate-200 pt-4">
       <div className="flex items-center gap-3">
-        <p className="text-sm font-medium text-slate-900 flex-1">{t("products.price")}</p>
+        <p className="text-sm font-medium text-slate-900 flex-1">
+          {t("products.price")}
+        </p>
         <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg">
           <button
             type="button"
@@ -823,7 +874,9 @@ export function ProductForm({
               <span>{t("products.variants.selectCategoryFirst")}</span>
             </div>
           ) : loadingTemplates ? (
-            <p className="text-sm text-slate-400 py-1">{t("products.variants.loading")}</p>
+            <p className="text-sm text-slate-400 py-1">
+              {t("products.variants.loading")}
+            </p>
           ) : variantTemplates.length === 0 ? (
             <p className="text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
               No hay variantes predefinidas para esta categoría.
@@ -877,7 +930,8 @@ export function ProductForm({
                 </div>
               )}
 
-              {(availableTemplates.length > 0 || !selectedIds.has(UNIDAD_ID)) && (
+              {(availableTemplates.length > 0 ||
+                !selectedIds.has(UNIDAD_ID)) && (
                 <div className="grid grid-cols-[1fr_7rem_auto] gap-2 items-end">
                   <div className="space-y-1">
                     {selectedVariants.length === 0 && (
@@ -892,14 +946,18 @@ export function ProductForm({
                       }
                     >
                       <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder={t("products.variants.selectPlaceholder")} />
+                        <SelectValue
+                          placeholder={t("products.variants.selectPlaceholder")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={SELECT_NONE}>
                           {t("products.variants.selectPlaceholder")}
                         </SelectItem>
                         {!selectedIds.has(UNIDAD_ID) && (
-                          <SelectItem value={UNIDAD_ID}>{t("products.variants.unitLabel")}</SelectItem>
+                          <SelectItem value={UNIDAD_ID}>
+                            {t("products.variants.unitLabel")}
+                          </SelectItem>
                         )}
                         {availableTemplates.map((tpl) => (
                           <SelectItem key={tpl.id} value={tpl.id}>
@@ -943,11 +1001,13 @@ export function ProductForm({
                 </div>
               )}
 
-              {availableTemplates.length === 0 && selectedIds.has(UNIDAD_ID) && selectedVariants.length > 0 && (
-                <p className="text-xs text-slate-400 text-center py-1">
-                  {t("products.variants.allAdded")}
-                </p>
-              )}
+              {availableTemplates.length === 0 &&
+                selectedIds.has(UNIDAD_ID) &&
+                selectedVariants.length > 0 && (
+                  <p className="text-xs text-slate-400 text-center py-1">
+                    {t("products.variants.allAdded")}
+                  </p>
+                )}
             </>
           )}
         </div>
@@ -958,11 +1018,15 @@ export function ProductForm({
   // ─── Branch section (create mode) — accordion ────────────────────────────────
 
   const branchSection = (
-    <div className="space-y-3 border-t pt-4">
+    <div className="space-y-3 border-t border-slate-200 pt-4">
       <div className="flex items-center gap-2">
         <MapPin className="w-4 h-4 text-slate-400" />
-        <p className="text-sm font-medium text-slate-900 flex-1">{t("products.tabs.branches")}</p>
-        <p className="text-xs text-slate-400">{t("products.branchAvailability")}</p>
+        <p className="text-sm font-medium text-slate-900 flex-1">
+          {t("products.tabs.branches")}
+        </p>
+        <p className="text-xs text-slate-400">
+          {t("products.branchAvailability")}
+        </p>
       </div>
 
       {branches.length === 0 ? (
@@ -980,7 +1044,10 @@ export function ProductForm({
             const isExpanded = expandedBranches.has(branch.id);
 
             return (
-              <div key={branch.id} className="border rounded-lg overflow-hidden">
+              <div
+                key={branch.id}
+                className="border border-slate-200 rounded-lg overflow-hidden"
+              >
                 <div
                   className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
                   onClick={() => state.enabled && toggleBranchExpand(branch.id)}
@@ -993,7 +1060,9 @@ export function ProductForm({
                     }}
                     disabled={isLoading}
                     onClick={(e) => e.stopPropagation()}
-                    aria-label={t("products.activateInBranch", { name: branch.name })}
+                    aria-label={t("products.activateInBranch", {
+                      name: branch.name,
+                    })}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -1014,7 +1083,7 @@ export function ProductForm({
                 </div>
 
                 {state.enabled && isExpanded && (
-                  <div className="px-4 py-3 border-t bg-white">
+                  <div className="px-4 py-3 border-t border-slate-200 bg-white">
                     <div className="flex items-center gap-3">
                       <Label className="text-xs text-slate-500 shrink-0">
                         {t("activateModal.priceOptional")}
@@ -1028,7 +1097,9 @@ export function ProductForm({
                           min={0}
                           value={state.simplePriceOverride}
                           onChange={(e) =>
-                            updateBranch(branch.id, { simplePriceOverride: e.target.value })
+                            updateBranch(branch.id, {
+                              simplePriceOverride: e.target.value,
+                            })
                           }
                           placeholder="0"
                           className="pl-5 h-8 text-sm"
@@ -1061,7 +1132,10 @@ export function ProductForm({
             ).length;
 
             return (
-              <div key={branch.id} className="border rounded-lg overflow-hidden">
+              <div
+                key={branch.id}
+                className="border rounded-lg overflow-hidden"
+              >
                 <div
                   className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
                   onClick={() => state.enabled && toggleBranchExpand(branch.id)}
@@ -1074,7 +1148,9 @@ export function ProductForm({
                     }}
                     disabled={isLoading}
                     onClick={(e) => e.stopPropagation()}
-                    aria-label={t("products.activateInBranch", { name: branch.name })}
+                    aria-label={t("products.activateInBranch", {
+                      name: branch.name,
+                    })}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -1087,7 +1163,8 @@ export function ProductForm({
                   {state.enabled && (
                     <>
                       <span className="text-xs text-slate-400 shrink-0">
-                        {enabledVariantCount}/{selectedVariants.length} {t("products.tabs.variants").toLowerCase()}
+                        {enabledVariantCount}/{selectedVariants.length}{" "}
+                        {t("products.tabs.variants").toLowerCase()}
                       </span>
                       <ChevronDown
                         className={cn(
@@ -1119,7 +1196,9 @@ export function ProductForm({
                               })
                             }
                             disabled={isLoading}
-                            aria-label={t("products.activateInBranch", { name: sv.label })}
+                            aria-label={t("products.activateInBranch", {
+                              name: sv.label,
+                            })}
                           />
                           <span className="flex-1 text-sm text-slate-700 truncate">
                             {sv.label}
@@ -1137,9 +1216,13 @@ export function ProductForm({
                                 min={0}
                                 value={varState.priceOverride}
                                 onChange={(e) =>
-                                  updateBranchVariant(branch.id, sv.templateId, {
-                                    priceOverride: e.target.value,
-                                  })
+                                  updateBranchVariant(
+                                    branch.id,
+                                    sv.templateId,
+                                    {
+                                      priceOverride: e.target.value,
+                                    }
+                                  )
                                 }
                                 placeholder={t("products.price")}
                                 className="pl-5 h-8 text-xs"
@@ -1189,7 +1272,9 @@ export function ProductForm({
               disabled={isLoading || !canSubmit}
               isLoading={isLoading}
             >
-              {isEditing ? tCommon("buttons.saveChanges") : t("products.create")}
+              {isEditing
+                ? tCommon("buttons.saveChanges")
+                : t("products.create")}
             </Button>
           </div>
         )}
@@ -1223,7 +1308,9 @@ export function ProductForm({
               <p className="text-sm font-medium text-slate-900 flex-1">
                 {t("products.tabs.branches")}
               </p>
-              <p className="text-xs text-slate-400">{t("products.branchAvailability")}</p>
+              <p className="text-xs text-slate-400">
+                {t("products.branchAvailability")}
+              </p>
             </div>
             <BranchActivationTab
               businessId={businessId}
