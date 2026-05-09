@@ -789,6 +789,7 @@ export function useActivateCatalogProduct(
         messages?.productActivatedInCatalog ?? "Producto activado en tu catálogo"
       );
       queryClient.invalidateQueries({ queryKey: catalogKeys.catalogProducts(businessId) });
+      queryClient.invalidateQueries({ queryKey: catalogKeys.globalCatalog(businessId) });
     },
     onError: (error: Error) => {
       toast.error(
