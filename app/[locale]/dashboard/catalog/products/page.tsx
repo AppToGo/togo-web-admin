@@ -48,7 +48,10 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-card border border-slate-100">
+          <div
+            key={i}
+            className="flex items-center gap-4 p-4 bg-white rounded-card border border-slate-100"
+          >
             <Skeleton className="w-16 h-16 rounded-card shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-5 w-48" />
@@ -63,7 +66,10 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-card-lg p-4 border border-slate-100">
+        <div
+          key={i}
+          className="bg-white rounded-card-lg p-4 border border-slate-100"
+        >
           <Skeleton className="aspect-square rounded-card mb-4" />
           <Skeleton className="h-5 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2 mb-4" />
@@ -82,8 +88,12 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
         <Package className="w-8 h-8 text-slate-400" />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-2">{t("products.empty.title")}</h3>
-      <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">{t("products.empty.message")}</p>
+      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+        {t("products.empty.title")}
+      </h3>
+      <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+        {t("products.empty.message")}
+      </p>
       <div className="flex justify-center gap-3">
         <Button onClick={onCreate} variant="outline">
           <Plus className="w-4 h-4 mr-2" />
@@ -105,16 +115,22 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sourceFilter, setSourceFilter] = useState<SourceFilter>({ custom: true, catalog: true });
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>({
+    custom: true,
+    catalog: true,
+  });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null);
+  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(
+    null
+  );
 
   const [page, setPage] = useState(1);
   const pageSize = 12;
 
   const showProductImages =
-    (currentBusiness?.settings as Record<string, unknown> | undefined)?.useProductImages !== false;
+    (currentBusiness?.settings as Record<string, unknown> | undefined)
+      ?.useProductImages !== false;
 
   const activeFiltersCount = [
     selectedCategory !== "all",
@@ -131,14 +147,22 @@ export default function ProductsPage() {
   }, [searchQuery, selectedCategory, sourceFilter]);
 
   const { data: categoriesData } = useCategories(businessId ?? "");
-  const categories: BusinessCategory[] = Array.isArray(categoriesData) ? categoriesData : [];
+  const categories: BusinessCategory[] = Array.isArray(categoriesData)
+    ? categoriesData
+    : [];
 
   const isFromTemplateFilter =
-    sourceFilter.custom && !sourceFilter.catalog ? false :
-    !sourceFilter.custom && sourceFilter.catalog ? true :
-    undefined;
+    sourceFilter.custom && !sourceFilter.catalog
+      ? false
+      : !sourceFilter.custom && sourceFilter.catalog
+        ? true
+        : undefined;
 
-  const { data: productsData, isLoading, error } = useCatalogProducts(businessId ?? "", {
+  const {
+    data: productsData,
+    isLoading,
+    error,
+  } = useCatalogProducts(businessId ?? "", {
     search: searchQuery || undefined,
     page,
     limit: pageSize,
@@ -169,26 +193,30 @@ export default function ProductsPage() {
           try {
             const variants = await getVariants(businessId, created.id);
             const results = await Promise.allSettled(
-              branchActivations.flatMap(({ branchId, variants: variantConfigs }) =>
-                variantConfigs
-                  .filter((vc) => vc.isAvailable)
-                  .flatMap((vc) => {
-                    const match = variants.find(
-                      (v) => v.variantLabel === vc.variantLabel
-                    );
-                    if (!match) return [];
-                    return [
-                      activateProduct(businessId, branchId, match.id, {
-                        isAvailable: true,
-                        priceOverride: vc.priceOverride,
-                      }),
-                    ];
-                  })
+              branchActivations.flatMap(
+                ({ branchId, variants: variantConfigs }) =>
+                  variantConfigs
+                    .filter((vc) => vc.isAvailable)
+                    .flatMap((vc) => {
+                      const match = variants.find(
+                        (v) => v.variantLabel === vc.variantLabel
+                      );
+                      if (!match) return [];
+                      return [
+                        activateProduct(businessId, branchId, match.id, {
+                          isAvailable: true,
+                          priceOverride: vc.priceOverride,
+                        }),
+                      ];
+                    })
               )
             );
             const failed = results.filter((r) => r.status === "rejected");
             if (failed.length > 0) {
-              console.warn(`[handleCreateProduct] ${failed.length} branch activation(s) failed.`, failed);
+              console.warn(
+                `[handleCreateProduct] ${failed.length} branch activation(s) failed.`,
+                failed
+              );
             }
           } catch {
             // Non-critical: product was created, branch activation failed silently
@@ -200,7 +228,10 @@ export default function ProductsPage() {
   };
 
   const handleUpdateProduct = useCallback(
-    (data: CreateProductDto | UpdateCatalogProductDto, _branchActivations?: BranchActivation[]) => {
+    (
+      data: CreateProductDto | UpdateCatalogProductDto,
+      _branchActivations?: BranchActivation[]
+    ) => {
       if (!editingProduct) return;
       updateProduct.mutate(
         { productId: editingProduct.id, dto: data as UpdateCatalogProductDto },
@@ -221,8 +252,12 @@ export default function ProductsPage() {
           <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
             <Store className="w-8 h-8 text-amber-500" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">{t("noBusiness.title")}</h2>
-          <p className="text-slate-500 text-center max-w-md">{t("noBusiness.description")}</p>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("noBusiness.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("noBusiness.description")}
+          </p>
         </div>
       </DashboardLayout>
     );
@@ -234,7 +269,9 @@ export default function ProductsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{t("tabs.products")}</h1>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {t("tabs.products")}
+            </h1>
             <p className="text-slate-500 mt-1">{t("subtitle")}</p>
           </div>
 
@@ -258,7 +295,10 @@ export default function ProductsPage() {
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => setIsCreateModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
             <Plus className="w-4 h-4 mr-2" />
             {t("products.create")}
           </Button>
@@ -274,18 +314,24 @@ export default function ProductsPage() {
         ) : products.length === 0 ? (
           <EmptyProductsState onCreate={() => setIsCreateModalOpen(true)} />
         ) : (
-          <div className={cn(
-            viewMode === "grid"
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-              : "space-y-3"
-          )}>
+          <div
+            className={cn(
+              viewMode === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                : "space-y-3"
+            )}
+          >
             {products.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 viewMode={viewMode}
                 showImage={showProductImages}
-                categoryName={product.businessCategoryId ? categoryMap.get(product.businessCategoryId) : undefined}
+                categoryName={
+                  product.businessCategoryId
+                    ? categoryMap.get(product.businessCategoryId)
+                    : undefined
+                }
                 onEdit={(p) => openEdit(p)}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
               />
@@ -296,13 +342,23 @@ export default function ProductsPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-4">
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
               {tc("pagination.previous")}
             </Button>
             <span className="text-sm text-slate-500">
               {tc("pagination.pageOf", { page, totalPages })}
             </span>
-            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
               {tc("pagination.next")}
             </Button>
           </div>
@@ -312,13 +368,17 @@ export default function ProductsPage() {
       {/* Create Drawer */}
       <Drawer
         open={isCreateModalOpen}
-        onOpenChange={(open) => { if (!createProduct.isPending) setIsCreateModalOpen(open); }}
+        onOpenChange={(open) => {
+          if (!createProduct.isPending) setIsCreateModalOpen(open);
+        }}
         isLoading={createProduct.isPending}
       >
         <DrawerContent size="md" data-testid="create-product-drawer">
           <DrawerHeader>
             <DrawerTitle>{t("products.create")}</DrawerTitle>
-            <DrawerDescription>{t("products.createDescription")}</DrawerDescription>
+            <DrawerDescription>
+              {t("products.createDescription")}
+            </DrawerDescription>
           </DrawerHeader>
           <div className="flex-1 overflow-y-auto">
             <ProductForm
@@ -332,7 +392,7 @@ export default function ProductsPage() {
               showProductImages={showProductImages}
             />
           </div>
-          <DrawerFooter>
+          <DrawerFooter className="border-t-slate-200 ">
             <Button
               type="button"
               variant="outline"
@@ -356,10 +416,16 @@ export default function ProductsPage() {
       {/* Edit Drawer */}
       <Drawer
         open={!!editingProduct}
-        onOpenChange={(open) => { if (!updateProduct.isPending && !open) setEditingProduct(null); }}
+        onOpenChange={(open) => {
+          if (!updateProduct.isPending && !open) setEditingProduct(null);
+        }}
         isLoading={updateProduct.isPending}
       >
-        <DrawerContent key={editingProduct?.id} size="md" data-testid="edit-product-drawer">
+        <DrawerContent
+          key={editingProduct?.id}
+          size="md"
+          data-testid="edit-product-drawer"
+        >
           <DrawerHeader>
             <DrawerTitle>{t("products.edit")}</DrawerTitle>
             <DrawerDescription>{editingProduct?.name}</DrawerDescription>
@@ -379,7 +445,7 @@ export default function ProductsPage() {
               />
             )}
           </div>
-          <DrawerFooter>
+          <DrawerFooter className="border-t border-slate-200 ">
             <Button
               type="button"
               variant="outline"

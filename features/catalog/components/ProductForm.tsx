@@ -188,7 +188,7 @@ function BranchActivationSection({
   const isBusy = activateMutation.isPending || deactivateMutation.isPending;
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
       <div
         className="flex items-center gap-3 p-3 bg-slate-50 cursor-pointer select-none"
         onClick={() => setIsExpanded((p) => !p)}
@@ -1283,7 +1283,7 @@ export function ProductForm({
       {/* Edit-only sections — outside <form> to avoid accidental submit */}
       {isEditing && (
         <>
-          <div className="space-y-3 px-7 pt-2 pb-4 border-t">
+          <div className="space-y-3 px-7 pt-2 pb-4 border-t border-slate-200">
             <div className="flex items-center gap-2 pt-4">
               <p className="text-sm font-medium text-slate-900 flex-1">
                 {t("products.tabs.variants")}
@@ -1302,7 +1302,7 @@ export function ProductForm({
             />
           </div>
 
-          <div className="space-y-3 px-7 pt-2 pb-7 border-t">
+          <div className="space-y-3 px-7 pt-2 pb-7 border-t border-slate-200">
             <div className="flex items-center gap-2 pt-4">
               <MapPin className="w-4 h-4 text-slate-400" />
               <p className="text-sm font-medium text-slate-900 flex-1">
