@@ -45,6 +45,7 @@ import type {
   UpdateCatalogProductDto,
   CreateVariantDto,
   UpdateVariantDto,
+  CatalogProductsFilters,
 } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { PaginatedResponse } from "@/types";
@@ -383,20 +384,31 @@ export async function getCatalogStats(businessId: string): Promise<{
 // CATALOG PRODUCTS API (Product + ProductVariant model)
 // ============================================================================
 
+type BackendProductsResponse = {
+  items: CatalogProduct[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 export async function getCatalogProducts(
   businessId: string,
-  filters?: { search?: string; page?: number; limit?: number; isActive?: boolean }
+  filters?: CatalogProductsFilters
 ): Promise<PaginatedProducts> {
   const params = new URLSearchParams();
   if (filters?.search) params.append("search", filters.search);
   if (filters?.page) params.append("page", String(filters.page));
   if (filters?.limit) params.append("limit", String(filters.limit));
   if (filters?.isActive !== undefined) params.append("isActive", String(filters.isActive));
+  if (filters?.businessCategoryId) params.append("businessCategoryId", filters.businessCategoryId);
+  if (filters?.isFromTemplate !== undefined) params.append("isFromTemplate", String(filters.isFromTemplate));
 
-  const response = await apiClient.get<PaginatedProducts>(
+  const response = await apiClient.get<BackendProductsResponse>(
     `/businesses/${businessId}/products?${params}`
   );
-  return response.data;
+  const { items, total, page, limit } = response.data;
+  const totalPages = Math.ceil(total / limit);
+  return { items, meta: { total, page, limit, totalPages } };
 }
 
 export async function getCatalogProduct(

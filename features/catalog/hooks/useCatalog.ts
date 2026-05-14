@@ -33,6 +33,7 @@ import type {
   CreateVariantDto,
   UpdateVariantDto,
   VariantTemplate,
+  CatalogProductsFilters,
 } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { Business } from "@/types";
@@ -728,7 +729,7 @@ export function useBulkBranchUpdate(
  */
 export function useCatalogProducts(
   businessId: string,
-  filters?: { search?: string; page?: number; limit?: number; isActive?: boolean },
+  filters?: CatalogProductsFilters,
   options?: UseQueryOptions<PaginatedProducts, Error>
 ) {
   return useQuery({
