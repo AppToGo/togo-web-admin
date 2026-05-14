@@ -407,7 +407,7 @@ export async function getCatalogProducts(
     `/businesses/${businessId}/products?${params}`
   );
   const { items, total, page, limit } = response.data;
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
   return { items, meta: { total, page, limit, totalPages } };
 }
 
