@@ -439,3 +439,12 @@ export interface PaginatedProducts {
   items: CatalogProduct[];
   meta: { total: number; page: number; limit: number; totalPages: number };
 }
+
+export interface CatalogProductsFilters {
+  search?: string;
+  page?: number;
+  limit?: number;
+  isActive?: boolean;
+  businessCategoryId?: string;
+  isFromTemplate?: boolean;
+}

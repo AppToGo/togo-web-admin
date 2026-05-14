@@ -158,15 +158,19 @@ export default function ProductsPage() {
         ? true
         : undefined;
 
+  const filters = useMemo(() => ({
+    search: searchQuery || undefined,
+    page,
+    limit: pageSize,
+    businessCategoryId: selectedCategory !== "all" ? selectedCategory : undefined,
+    isFromTemplate: isFromTemplateFilter !== undefined ? isFromTemplateFilter : undefined,
+  }), [searchQuery, page, pageSize, selectedCategory, isFromTemplateFilter]);
+
   const {
     data: productsData,
     isLoading,
     error,
-  } = useCatalogProducts(businessId ?? "", {
-    search: searchQuery || undefined,
-    page,
-    limit: pageSize,
-  });
+  } = useCatalogProducts(businessId ?? "", filters);
 
   const products = productsData?.items ?? [];
   const total = productsData?.meta?.total ?? 0;
