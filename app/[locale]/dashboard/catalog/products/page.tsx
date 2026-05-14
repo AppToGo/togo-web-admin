@@ -151,20 +151,21 @@ export default function ProductsPage() {
     ? categoriesData
     : [];
 
-  const isFromTemplateFilter =
-    sourceFilter.custom && !sourceFilter.catalog
-      ? false
-      : !sourceFilter.custom && sourceFilter.catalog
-        ? true
-        : undefined;
-
-  const filters = useMemo(() => ({
-    search: searchQuery || undefined,
-    page,
-    limit: pageSize,
-    businessCategoryId: selectedCategory !== "all" ? selectedCategory : undefined,
-    isFromTemplate: isFromTemplateFilter !== undefined ? isFromTemplateFilter : undefined,
-  }), [searchQuery, page, pageSize, selectedCategory, isFromTemplateFilter]);
+  const filters = useMemo(() => {
+    const isFromTemplate =
+      sourceFilter.custom && !sourceFilter.catalog
+        ? false
+        : !sourceFilter.custom && sourceFilter.catalog
+          ? true
+          : undefined;
+    return {
+      search: searchQuery || undefined,
+      page,
+      limit: pageSize,
+      businessCategoryId: selectedCategory !== "all" ? selectedCategory : undefined,
+      isFromTemplate,
+    };
+  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter]);
 
   const {
     data: productsData,
@@ -173,8 +174,7 @@ export default function ProductsPage() {
   } = useCatalogProducts(businessId ?? "", filters);
 
   const products = productsData?.items ?? [];
-  const total = productsData?.meta?.total ?? 0;
-  const totalPages = Math.ceil(total / pageSize);
+  const totalPages = productsData?.meta?.totalPages ?? 0;
 
   // Build a category lookup map for name resolution in cards
   const categoryMap = useMemo(() => {
