@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Package, Store } from "lucide-react";
+import { Plus, Package, Store, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -33,6 +33,7 @@ import type { SourceFilter } from "@/features/catalog/components/ProductFilters"
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
 import { getVariants } from "@/features/catalog/services/catalog.service";
+import { ImportWizardDrawer } from "@/features/products/import";
 import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
 import type {
   CatalogProduct,
@@ -121,6 +122,7 @@ export default function ProductsPage() {
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImportDrawerOpen, setIsImportDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(
     null
   );
@@ -298,7 +300,14 @@ export default function ProductsPage() {
           />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsImportDrawerOpen(true)}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {t("products.import")}
+          </Button>
           <Button
             onClick={() => setIsCreateModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-700"
@@ -469,6 +478,13 @@ export default function ProductsPage() {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
+
+      {/* Import Wizard Drawer */}
+      <ImportWizardDrawer
+        businessId={businessId}
+        isOpen={isImportDrawerOpen}
+        onClose={() => setIsImportDrawerOpen(false)}
+      />
     </DashboardLayout>
   );
 }

@@ -429,5 +429,49 @@
     "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
     "productsLink": "Productos",
     "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
+  },
+  "import": {
+    "title": "Importar productos",
+    "description": "Subí un Excel, CSV, PDF o imagen con tu lista de productos",
+    "button": "Importar productos",
+    "step": {
+      "upload": "Subir archivo",
+      "review": "Revisar productos",
+      "confirm": "Confirmar"
+    },
+    "dropzone": {
+      "hint": "Arrastrá o hacé clic para seleccionar",
+      "subHint": "Excel, CSV, PDF o imagen — máx. 10 MB",
+      "invalidType": "Tipo de archivo no admitido. Use Excel, CSV, PDF o imagen.",
+      "tooLarge": "El archivo supera el límite de 10 MB."
+    },
+    "processing": {
+      "title": "Analizando con IA...",
+      "subtitle": "Esto puede demorar unos segundos"
+    },
+    "review": {
+      "noProducts": "No se detectaron productos en el archivo.",
+      "columns": {
+        "name": "Nombre",
+        "price": "Precio",
+        "category": "Categoría",
+        "suggestion": "Sugerencia IA"
+      }
+    },
+    "confirm": {
+      "title": "Resumen de importación",
+      "detected": "Productos detectados",
+      "selected": "Productos seleccionados",
+      "confirmButton": "Confirmar importación",
+      "importing": "Importando productos..."
+    },
+    "success": {
+      "title": "¡Importación completada!",
+      "subtitle": "{count} productos importados exitosamente."
+    },
+    "error": {
+      "title": "Error en el análisis",
+      "subtitle": "Ocurrió un error inesperado. Intentá con otro archivo."
+    }
   }
 }

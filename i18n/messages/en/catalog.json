@@ -423,5 +423,49 @@
       "confirmAdjustStock": "Apply Adjustment",
       "stockAdjustmentHint": "Stock will be increased or decreased by the specified amount"
     }
+  },
+  "import": {
+    "title": "Import products",
+    "description": "Upload an Excel, CSV, PDF or image with your product list",
+    "button": "Import products",
+    "step": {
+      "upload": "Upload file",
+      "review": "Review products",
+      "confirm": "Confirm"
+    },
+    "dropzone": {
+      "hint": "Drag or click to select",
+      "subHint": "Excel, CSV, PDF or image — max. 10 MB",
+      "invalidType": "Unsupported file type. Use Excel, CSV, PDF or image.",
+      "tooLarge": "File exceeds the 10 MB limit."
+    },
+    "processing": {
+      "title": "Analyzing with AI...",
+      "subtitle": "This may take a few seconds"
+    },
+    "review": {
+      "noProducts": "No products detected in the file.",
+      "columns": {
+        "name": "Name",
+        "price": "Price",
+        "category": "Category",
+        "suggestion": "AI Suggestion"
+      }
+    },
+    "confirm": {
+      "title": "Import summary",
+      "detected": "Detected products",
+      "selected": "Selected products",
+      "confirmButton": "Confirm import",
+      "importing": "Importing products..."
+    },
+    "success": {
+      "title": "Import completed!",
+      "subtitle": "{count} products imported successfully."
+    },
+    "error": {
+      "title": "Analysis error",
+      "subtitle": "An unexpected error occurred. Try with another file."
+    }
   }
 }
