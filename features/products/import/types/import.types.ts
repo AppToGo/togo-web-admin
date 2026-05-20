@@ -30,10 +30,11 @@ export interface ImportItem {
 export interface ImportJob {
   id: string;
   businessId: string;
+  uploadedByUserId: string | null; // FIX O
   source: ImportJobSource;
   status: ImportJobStatus;
   fileName: string;
-  fileKey: string;
+  // FIX R: fileKey removed — internal storage key is not exposed by the API
   fileSize: number;
   mimeType: string;
   totalDetected: number;

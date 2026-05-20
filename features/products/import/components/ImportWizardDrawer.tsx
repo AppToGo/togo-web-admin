@@ -82,6 +82,8 @@ export function ImportWizardDrawer({
 
   const uploadMutation = useUploadImportFile(businessId);
   const { data: jobData } = useImportJob(businessId, currentJobId);
+  // FIX Q: pass empty string when no jobId is available; the confirm button is disabled
+  // when currentJobId is null so the mutation will never fire without a real jobId.
   const confirmMutation = useConfirmImportJob(businessId, currentJobId ?? "");
 
   const isProcessing =
