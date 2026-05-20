@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Upload,
-  Download,
   FileSpreadsheet,
   Check,
-  X,
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -26,127 +25,562 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useBulkImportProducts } from "@/features/admin/catalog/hooks";
-import { downloadImportTemplate } from "@/features/admin/catalog/services/admin-catalog.service";
-import type { BulkImportResult } from "@/features/admin/catalog/types";
+import {
+  useCreateGlobalImportJob,
+  useGlobalImportJob,
+  useUpdateGlobalImportItem,
+  useConfirmGlobalImportJob,
+} from "@/features/admin/catalog/hooks";
+import type { ImportJobDto } from "@/features/admin/catalog/types";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-type ImportStep = "upload" | "preview" | "importing" | "results";
+type ImportStep = "upload" | "processing" | "review" | "results";
 
-interface CsvRow {
-  row: number;
-  data: Record<string, string>;
-  isValid: boolean;
-  errors: string[];
+// ============================================================================
+// STEP INDICATOR
+// ============================================================================
+
+interface StepIndicatorProps {
+  currentStep: ImportStep;
+}
+
+function StepIndicator({ currentStep }: StepIndicatorProps) {
+  const t = useTranslations("common");
+
+  const steps: { id: ImportStep; label: string }[] = [
+    { id: "upload", label: t("steps.uploadFile") },
+    { id: "processing", label: t("steps.importing") },
+    { id: "review", label: t("steps.preview") },
+    { id: "results", label: t("steps.results") },
+  ];
+
+  const stepOrder: ImportStep[] = ["upload", "processing", "review", "results"];
+
+  return (
+    <div className="flex items-center gap-4 flex-wrap">
+      {steps.map((step, index) => {
+        const currentIndex = stepOrder.indexOf(currentStep);
+        const isCompleted = index < currentIndex;
+        const isActive = step.id === currentStep;
+
+        return (
+          <div key={step.id} className="flex items-center gap-2">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                isActive
+                  ? "bg-indigo-600 text-white"
+                  : isCompleted
+                  ? "bg-green-500 text-white"
+                  : "bg-slate-200 text-slate-500"
+              }`}
+            >
+              {isCompleted ? <Check className="w-4 h-4" /> : index + 1}
+            </div>
+            <span
+              className={`text-sm ${
+                isActive ? "text-slate-900 font-medium" : "text-slate-500"
+              }`}
+            >
+              {step.label}
+            </span>
+            {index < steps.length - 1 && (
+              <div className="w-8 h-px bg-slate-200 mx-2" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // ============================================================================
-// COMPONENT
+// UPLOAD STEP
+// ============================================================================
+
+interface UploadStepProps {
+  onJobCreated: (job: ImportJobDto) => void;
+}
+
+function UploadStep({ onJobCreated }: UploadStepProps) {
+  const t = useTranslations("admin-catalog");
+  const tCommon = useTranslations("common");
+  const [isDragging, setIsDragging] = useState(false);
+  const createJob = useCreateGlobalImportJob();
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      try {
+        const job = await createJob.mutateAsync(file);
+        onJobCreated(job);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : t("errors.importProducts");
+        toast.error(message);
+      }
+    },
+    [createJob, onJobCreated, t]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("importProducts")}</CardTitle>
+        <CardDescription>{t("uploadFileFormats")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
+            isDragging
+              ? "border-indigo-500 bg-indigo-50"
+              : "border-slate-300 hover:border-slate-400"
+          }`}
+        >
+          {createJob.isPending ? (
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-12 h-12 animate-spin text-indigo-600" />
+              <p className="text-lg font-medium text-slate-700">
+                {t("processingFile")}
+              </p>
+            </div>
+          ) : (
+            <>
+              <FileSpreadsheet className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+              <p className="text-lg font-medium text-slate-700 mb-2">
+                {t("dragDropFile")}
+              </p>
+              <p className="text-sm text-slate-500 mb-4">o</p>
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file);
+                }}
+                className="hidden"
+                id="import-upload"
+                disabled={createJob.isPending}
+              />
+              <label htmlFor="import-upload">
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  disabled={createJob.isPending}
+                  onClick={() => document.getElementById("import-upload")?.click()}
+                  type="button"
+                >
+                  {tCommon("buttons.selectFile")}
+                </Button>
+              </label>
+              <p className="text-xs text-slate-400 mt-4">
+                {t("uploadFileFormats")}
+              </p>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// PROCESSING STEP
+// ============================================================================
+
+interface ProcessingStepProps {
+  jobId: string;
+  onReady: () => void;
+  onFailed: () => void;
+}
+
+function ProcessingStep({ jobId, onReady, onFailed }: ProcessingStepProps) {
+  const t = useTranslations("admin-catalog");
+  const { data: job } = useGlobalImportJob(jobId, true);
+
+  useEffect(() => {
+    if (job?.status === "READY_FOR_REVIEW") {
+      onReady();
+    } else if (job?.status === "FAILED") {
+      onFailed();
+    }
+  }, [job?.status, onReady, onFailed]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("processingFile")}</CardTitle>
+        <CardDescription>{t("importingDescription")}</CardDescription>
+      </CardHeader>
+      <CardContent className="py-12">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-14 h-14 animate-spin text-indigo-600" />
+          <p className="text-lg font-medium text-slate-700">
+            {t("analyzingWithAI")}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// REVIEW STEP
+// ============================================================================
+
+interface ReviewStepProps {
+  jobId: string;
+  onConfirmed: (job: ImportJobDto) => void;
+  onBack: () => void;
+}
+
+function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
+  const t = useTranslations("admin-catalog");
+  const tCommon = useTranslations("common");
+  const { data: job } = useGlobalImportJob(jobId, true);
+  const updateItem = useUpdateGlobalImportItem();
+  const confirmJob = useConfirmGlobalImportJob();
+
+  const items = job?.items ?? [];
+  const selectedItems = items.filter((item) => item.isSelected);
+  const selectedCount = selectedItems.length;
+  const allSelected = items.length > 0 && selectedCount === items.length;
+
+  const handleToggleItem = (itemId: string, currentSelected: boolean) => {
+    updateItem.mutate({
+      jobId,
+      itemId,
+      payload: { isSelected: !currentSelected },
+    });
+  };
+
+  const handleSelectAll = () => {
+    items.forEach((item) => {
+      if (!item.isSelected) {
+        updateItem.mutate({
+          jobId,
+          itemId: item.id,
+          payload: { isSelected: true },
+        });
+      }
+    });
+  };
+
+  const handleDeselectAll = () => {
+    items.forEach((item) => {
+      if (item.isSelected) {
+        updateItem.mutate({
+          jobId,
+          itemId: item.id,
+          payload: { isSelected: false },
+        });
+      }
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (selectedCount === 0) {
+      toast.error(t("noItemsSelected"));
+      return;
+    }
+    try {
+      const confirmedJob = await confirmJob.mutateAsync({
+        jobId,
+        itemIds: selectedItems.map((i) => i.id),
+      });
+      onConfirmed(confirmedJob);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t("errors.importProducts");
+      toast.error(message);
+    }
+  };
+
+  const confirmLabel =
+    selectedCount === 1
+      ? t("confirmSelectedOne")
+      : t("confirmSelected", { count: selectedCount });
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <CardTitle>{t("reviewItems")}</CardTitle>
+            <CardDescription>{t("reviewItemsDescription")}</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleSelectAll}>
+              {t("selectAll")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDeselectAll}>
+              {t("deselectAll")}
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto max-h-[500px]">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 sticky top-0">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-slate-700 w-12" />
+                  <th className="px-4 py-3 text-left font-medium text-slate-700">
+                    {tCommon("fields.name")}
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-700">
+                    {tCommon("fields.sku")}
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-700">
+                    {tCommon("fields.brand")}
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-700">
+                    {tCommon("fields.status")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {items.map((item) => {
+                  const isDuplicate = item.suggestedGlobalProductId !== null;
+                  return (
+                    <tr
+                      key={item.id}
+                      className={isDuplicate ? "bg-amber-50" : ""}
+                    >
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={item.isSelected}
+                          onChange={() =>
+                            handleToggleItem(item.id, item.isSelected)
+                          }
+                          disabled={updateItem.isPending}
+                          className="w-4 h-4 accent-indigo-600 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <span className="font-medium text-slate-900">
+                            {item.name}
+                          </span>
+                          {isDuplicate && (
+                            <div>
+                              <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs font-normal">
+                                {t("duplicateOf", {
+                                  name:
+                                    item.suggestedGlobalProductName ?? "—",
+                                })}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-slate-600">
+                        {item.sku ?? (
+                          <span className="italic text-slate-400">
+                            {t("autoGenerated")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {item.brand ?? "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isDuplicate ? (
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-300">
+                            {t("possibleDuplicate")}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-700 border-green-300">
+                            <Check className="w-3 h-3 mr-1" />
+                            {tCommon("status.valid")}
+                          </Badge>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <Button variant="outline" onClick={onBack}>
+            {tCommon("buttons.back")}
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={selectedCount === 0 || confirmJob.isPending}
+          >
+            {confirmJob.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4 mr-2" />
+            )}
+            {confirmLabel}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// RESULTS STEP
+// ============================================================================
+
+interface ResultsStepProps {
+  job: ImportJobDto;
+  onNewImport: () => void;
+}
+
+function ResultsStep({ job, onNewImport }: ResultsStepProps) {
+  const t = useTranslations("admin-catalog");
+  const router = useRouter();
+
+  const errorItems = job.items.filter((item) => item.importError !== null);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("importCompleted")}</CardTitle>
+        <CardDescription>{t("importSummary")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-slate-50 rounded-lg p-4 text-center">
+            <p className="text-2xl font-bold text-slate-900">
+              {job.totalDetected}
+            </p>
+            <p className="text-sm text-slate-500">{t("totalDetected")}</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4 text-center">
+            <p className="text-2xl font-bold text-green-600">
+              {job.totalImported}
+            </p>
+            <p className="text-sm text-green-600">{t("imported")}</p>
+          </div>
+          <div className="bg-red-50 rounded-lg p-4 text-center">
+            <p className="text-2xl font-bold text-red-600">
+              {errorItems.length}
+            </p>
+            <p className="text-sm text-red-600">{t("withErrors")}</p>
+          </div>
+        </div>
+
+        {errorItems.length > 0 && (
+          <>
+            <Alert variant="destructive">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>{t("someProductsFailed")}</AlertDescription>
+            </Alert>
+
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-medium text-slate-700">
+                      Nombre
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-slate-700">
+                      Error
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {errorItems.map((item) => (
+                    <tr key={item.id} className="bg-red-50">
+                      <td className="px-4 py-2 text-slate-700">{item.name}</td>
+                      <td className="px-4 py-2 text-red-600">
+                        {item.importError}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/global-products")}
+          >
+            {t("viewCatalog")}
+          </Button>
+          <Button onClick={onNewImport}>{t("newImport")}</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// PAGE COMPONENT
 // ============================================================================
 
 export default function ImportGlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
-  const { admin, common, catalog } = useAdminCatalogTranslations();
+  const t = useTranslations("admin-catalog");
+  const tCommon = useTranslations("common");
 
-  // State
-  const [currentStep, setCurrentStep] = useState<ImportStep>("upload");
-  const [file, setFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<CsvRow[]>([]);
-  const [importResult, setImportResult] = useState<BulkImportResult | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [currentStep, setCurrentStep] =
+    useState<ImportStep>("upload");
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [confirmedJob, setConfirmedJob] = useState<ImportJobDto | null>(null);
 
-  // Mutation
-  const importProducts = useBulkImportProducts();
-
-  // Parse CSV file
-  const parseCSV = (content: string): CsvRow[] => {
-    const lines = content.split("\n").filter((line) => line.trim());
-    if (lines.length < 2) return [];
-
-    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
-    const rows: CsvRow[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(",").map((v) => v.trim());
-      const data: Record<string, string> = {};
-      const errors: string[] = [];
-
-      headers.forEach((header, index) => {
-        data[header] = values[index] || "";
-      });
-
-      // Validation
-      if (!data.sku) errors.push(admin('validation.skuRequired'));
-      if (!data.name) errors.push(admin('validation.nameRequired'));
-      if (!data.industryid) errors.push(admin('validation.industryIdRequired'));
-
-      rows.push({
-        row: i,
-        data,
-        isValid: errors.length === 0,
-        errors,
-      });
-    }
-
-    return rows;
-  };
-
-  // Handle file selection
-  const handleFileSelect = (selectedFile: File) => {
-    if (selectedFile.type !== "text/csv" && !selectedFile.name.endsWith(".csv")) {
-      alert(admin('validation.selectCsvFile'));
-      return;
-    }
-
-    setFile(selectedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      const parsed = parseCSV(content);
-      setParsedData(parsed);
-      setCurrentStep("preview");
-    };
-    reader.readAsText(selectedFile);
-  };
-
-  // Handle drop
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      handleFileSelect(droppedFile);
+  const handleJobCreated = useCallback((job: ImportJobDto) => {
+    setJobId(job.id);
+    if (job.status === "READY_FOR_REVIEW") {
+      setCurrentStep("review");
+    } else {
+      setCurrentStep("processing");
     }
   }, []);
 
-  // Handle import
-  const handleImport = async () => {
-    if (!file) return;
+  const handleProcessingReady = useCallback(() => {
+    setCurrentStep("review");
+  }, []);
 
-    setCurrentStep("importing");
+  const handleProcessingFailed = useCallback(() => {
+    toast.error(t("importJobFailed"));
+    setCurrentStep("upload");
+    setJobId(null);
+  }, [t]);
 
-    try {
-      const result = await importProducts.mutateAsync(file);
-      setImportResult(result);
-      setCurrentStep("results");
-    } catch (error) {
-      setCurrentStep("preview");
-    }
-  };
+  const handleConfirmed = useCallback((job: ImportJobDto) => {
+    setConfirmedJob(job);
+    setCurrentStep("results");
+  }, []);
 
-  // Download template
-  const handleDownloadTemplate = () => {
-    downloadImportTemplate();
-  };
+  const handleNewImport = useCallback(() => {
+    setCurrentStep("upload");
+    setJobId(null);
+    setConfirmedJob(null);
+  }, []);
 
-  // Check access
   if (!isSuperAdmin) {
     return (
       <DashboardLayout>
@@ -155,26 +589,15 @@ export default function ImportGlobalProductsPage() {
             <Upload className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {common('errors.accessDenied')}
+            {tCommon("errors.accessDenied")}
           </h2>
           <p className="text-slate-500 text-center max-w-md">
-            {admin('superAdminOnly')}
+            {t("superAdminOnly")}
           </p>
         </div>
       </DashboardLayout>
     );
   }
-
-  // Count valid/invalid rows
-  const validRows = parsedData.filter((row) => row.isValid);
-  const invalidRows = parsedData.filter((row) => !row.isValid);
-
-  const steps = [
-    { id: "upload", label: common('steps.uploadFile') },
-    { id: "preview", label: common('steps.preview') },
-    { id: "importing", label: common('steps.importing') },
-    { id: "results", label: common('steps.results') },
-  ];
 
   return (
     <DashboardLayout>
@@ -186,348 +609,41 @@ export default function ImportGlobalProductsPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {admin('importProducts')}
+              {t("importProducts")}
             </h1>
-            <p className="text-slate-500">
-              {admin('importDescription')}
-            </p>
+            <p className="text-slate-500">{t("importDescription")}</p>
           </div>
         </div>
 
         {/* Step Indicator */}
-        <div className="flex items-center gap-4">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center gap-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep === step.id
-                    ? "bg-indigo-600 text-white"
-                    : ["preview", "importing", "results"].includes(currentStep) &&
-                      index < ["upload", "preview", "importing", "results"].indexOf(currentStep)
-                    ? "bg-green-500 text-white"
-                    : "bg-slate-200 text-slate-500"
-                }`}
-              >
-                {["preview", "importing", "results"].includes(currentStep) &&
-                index < ["upload", "preview", "importing", "results"].indexOf(currentStep) ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  index + 1
-                )}
-              </div>
-              <span
-                className={`text-sm ${
-                  currentStep === step.id ? "text-slate-900 font-medium" : "text-slate-500"
-                }`}
-              >
-                {step.label}
-              </span>
-              {index < 3 && <div className="w-8 h-px bg-slate-200 mx-2" />}
-            </div>
-          ))}
-        </div>
+        <StepIndicator currentStep={currentStep} />
 
-        {/* Upload Step */}
+        {/* Steps */}
         {currentStep === "upload" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{admin('uploadCsvFile')}</CardTitle>
-              <CardDescription>
-                {admin('csvColumnsDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Drop Zone */}
-              <div
-                onDrop={handleDrop}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
-                  isDragging
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-slate-300 hover:border-slate-400"
-                }`}
-              >
-                <FileSpreadsheet className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p className="text-lg font-medium text-slate-700 mb-2">
-                  {admin('dragDropCsv')}
-                </p>
-                <p className="text-sm text-slate-500 mb-4">o</p>
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                  className="hidden"
-                  id="csv-upload"
-                />
-                <label htmlFor="csv-upload">
-                  <Button variant="outline" className="cursor-pointer" asChild>
-                    <span>{common('buttons.selectFile')}</span>
-                  </Button>
-                </label>
-              </div>
-
-              {/* Download Template */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-700">{admin('noFormatQuestion')}</p>
-                    <p className="text-sm text-slate-500">
-                      {admin('downloadTemplateDescription')}
-                    </p>
-                  </div>
-                  <Button variant="outline" onClick={handleDownloadTemplate}>
-                    <Download className="w-4 h-4 mr-2" />
-                    {common('buttons.downloadTemplate')}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="space-y-2">
-                <p className="font-medium text-slate-700">{common('instructions')}:</p>
-                <ul className="text-sm text-slate-600 space-y-1 list-disc list-inside">
-                  <li>{admin('csvFormatInstruction')}</li>
-                  <li>{admin('firstRowHeaders')}</li>
-                  <li>{admin('requiredFields')}</li>
-                  <li>{admin('skuUpdateNote')}</li>
-                  <li>{admin('maxRows')}</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+          <UploadStep onJobCreated={handleJobCreated} />
         )}
 
-        {/* Preview Step */}
-        {currentStep === "preview" && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{common('steps.preview')}</CardTitle>
-                  <CardDescription>
-                    {admin('reviewBeforeImport')}
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="default" className="bg-green-100 text-green-700">
-                    <Check className="w-3 h-3 mr-1" />
-                    {validRows.length === 1 
-                      ? admin('validCountOne') 
-                      : admin('validCount', { count: validRows.length })}
-                  </Badge>
-                  {invalidRows.length > 0 && (
-                    <Badge variant="destructive">
-                      <X className="w-3 h-3 mr-1" />
-                      {invalidRows.length === 1 
-                        ? admin('errorsCountOne') 
-                        : admin('errorsCount', { count: invalidRows.length })}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Validation Alert */}
-              {invalidRows.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="w-4 h-4" />
-                  <AlertDescription>
-                    {admin('errorsInRows', { count: invalidRows.length })}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Preview Table */}
-              <div className="border rounded-lg overflow-hidden">
-                <div className="overflow-x-auto max-h-96">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 sticky top-0">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.row')}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.sku')}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.name')}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.brand')}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.status')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {parsedData.slice(0, 50).map((row) => (
-                        <tr key={row.row} className={!row.isValid ? "bg-red-50" : ""}>
-                          <td className="px-4 py-2 text-slate-500">{row.row}</td>
-                          <td className="px-4 py-2 font-mono">{row.data.sku}</td>
-                          <td className="px-4 py-2">{row.data.name}</td>
-                          <td className="px-4 py-2 text-slate-600">{row.data.brand}</td>
-                          <td className="px-4 py-2">
-                            {row.isValid ? (
-                              <Badge variant="default" className="bg-green-100 text-green-700">
-                                <Check className="w-3 h-3 mr-1" />
-                                {common('status.valid')}
-                              </Badge>
-                            ) : (
-                              <div className="flex flex-col gap-1">
-                                <Badge variant="destructive">
-                                  <X className="w-3 h-3 mr-1" />
-                                  {common('status.error')}
-                                </Badge>
-                                <span className="text-xs text-red-600">
-                                  {row.errors.join(", ")}
-                                </span>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {parsedData.length > 50 && (
-                  <p className="text-center text-sm text-slate-500 py-2 border-t">
-                    Y {parsedData.length - 50} filas más...
-                  </p>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentStep("upload")}>
-                  {common('buttons.back')}
-                </Button>
-                <Button
-                  onClick={handleImport}
-                  disabled={validRows.length === 0 || importProducts.isPending}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {validRows.length === 1 
-                    ? admin('importCountProductsOne') 
-                    : admin('importCountProducts', { count: validRows.length })}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {currentStep === "processing" && jobId && (
+          <ProcessingStep
+            jobId={jobId}
+            onReady={handleProcessingReady}
+            onFailed={handleProcessingFailed}
+          />
         )}
 
-        {/* Importing Step */}
-        {currentStep === "importing" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{admin('importingProducts')}</CardTitle>
-              <CardDescription>
-                {admin('importingDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 py-8">
-              <div className="flex flex-col items-center">
-                <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mb-4" />
-                <p className="text-lg font-medium text-slate-700">
-                  {common('status.processingFile')}
-                </p>
-                <p className="text-sm text-slate-500">
-                  {common('doNotClosePage')}
-                </p>
-              </div>
-              <Progress value={45} className="w-full" />
-            </CardContent>
-          </Card>
+        {currentStep === "review" && jobId && (
+          <ReviewStep
+            jobId={jobId}
+            onConfirmed={handleConfirmed}
+            onBack={() => {
+              setCurrentStep("upload");
+              setJobId(null);
+            }}
+          />
         )}
 
-        {/* Results Step */}
-        {currentStep === "results" && importResult && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{admin('importCompleted')}</CardTitle>
-              <CardDescription>
-                {admin('importSummary')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Summary */}
-              <div className="grid grid-cols-4 gap-4">
-                <div className="bg-slate-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-slate-900">
-                    {importResult.totalRows}
-                  </p>
-                  <p className="text-sm text-slate-500">{common('fields.total')}</p>
-                </div>
-                <div className="bg-green-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-green-600">
-                    {importResult.imported}
-                  </p>
-                  <p className="text-sm text-green-600">{admin('imported')}</p>
-                </div>
-                <div className="bg-amber-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-amber-600">
-                    {importResult.skipped}
-                  </p>
-                  <p className="text-sm text-amber-600">{admin('skipped')}</p>
-                </div>
-                <div className="bg-red-50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-red-600">
-                    {importResult.failed}
-                  </p>
-                  <p className="text-sm text-red-600">{common('status.failed')}</p>
-                </div>
-              </div>
-
-              {/* Error Details */}
-              {importResult.failed > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="w-4 h-4" />
-                  <AlertDescription>
-                    {admin('someProductsFailed')}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {importResult.results.filter((r) => !r.success).length > 0 && (
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.row')}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('fields.sku')}</th>
-                        <th className="px-4 py-2 text-left font-medium text-slate-700">{common('errors.error')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {importResult.results
-                        .filter((r) => !r.success)
-                        .map((result, index) => (
-                          <tr key={index} className="bg-red-50">
-                            <td className="px-4 py-2 text-slate-500">{result.row}</td>
-                            <td className="px-4 py-2 font-mono">{result.sku}</td>
-                            <td className="px-4 py-2 text-red-600">{result.error}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => router.push("/admin/global-products")}
-                >
-                  {admin('viewCatalog')}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setCurrentStep("upload");
-                    setFile(null);
-                    setParsedData([]);
-                    setImportResult(null);
-                  }}
-                >
-                  {admin('importMoreProducts')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {currentStep === "results" && confirmedJob && (
+          <ResultsStep job={confirmedJob} onNewImport={handleNewImport} />
         )}
       </div>
     </DashboardLayout>

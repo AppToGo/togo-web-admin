@@ -19,4 +19,13 @@ export type {
   AdminGlobalProductCardProps,
   JsonAttributesEditorProps,
   ImageUploadProps,
+  // Import Job (staged flow)
+  ProductImportStatus,
+  ProductImportSource,
+  ProductImportTarget,
+  ImportItemDto,
+  ImportJobDto,
+  PaginatedImportJobsDto,
+  UpdateImportItemPayload,
+  ConfirmImportPayload,
 } from "./admin-catalog.types";

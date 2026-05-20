@@ -25,6 +25,9 @@ import type {
   GlobalCatalogStats,
   Industry,
   IndustryCategory,
+  ImportJobDto,
+  ImportItemDto,
+  UpdateImportItemPayload,
 } from "../types/admin-catalog.types";
 import * as adminCatalogService from "../services/admin-catalog.service";
 
@@ -42,6 +45,7 @@ export const adminCatalogKeys = {
     [...adminCatalogKeys.industries(), JSON.stringify([...industryIds].sort()), "categories"] as const,
   brands: () => [...adminCatalogKeys.all, "brands"] as const,
   stats: () => [...adminCatalogKeys.all, "stats"] as const,
+  importJob: (jobId: string) => [...adminCatalogKeys.all, "import-job", jobId] as const,
 };
 
 // ============================================================================
@@ -301,6 +305,113 @@ export function useBulkImportProducts() {
     },
     onError: (error: Error) => {
       toast.error(error.message || t("errors.importProducts"));
+    },
+  });
+}
+
+// ============================================================================
+// IMPORT JOB HOOKS (staged flow)
+// ============================================================================
+
+/**
+ * Hook to create a new global import job (upload file)
+ */
+export function useCreateGlobalImportJob() {
+  return useMutation({
+    mutationFn: (file: File) => adminCatalogService.createGlobalImportJob(file),
+  });
+}
+
+/**
+ * Hook to poll a global import job until it's ready for review
+ * Automatically polls every 2s when status is PENDING or PROCESSING
+ */
+export function useGlobalImportJob(jobId: string | null, enabled: boolean) {
+  return useQuery<ImportJobDto, Error>({
+    queryKey: adminCatalogKeys.importJob(jobId ?? ""),
+    queryFn: () => adminCatalogService.getGlobalImportJob(jobId!),
+    enabled: !!jobId && enabled,
+    refetchInterval: (query) =>
+      ["PENDING", "PROCESSING"].includes(query.state.data?.status ?? "")
+        ? 2000
+        : false,
+  });
+}
+
+/**
+ * Hook to update a single import item (e.g. toggle isSelected, edit fields)
+ */
+export function useUpdateGlobalImportItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      jobId,
+      itemId,
+      payload,
+    }: {
+      jobId: string;
+      itemId: string;
+      payload: UpdateImportItemPayload;
+    }) => adminCatalogService.updateGlobalImportItem(jobId, itemId, payload),
+    onSuccess: (updatedItem: ImportItemDto) => {
+      // Optimistically update the cached job data
+      queryClient.setQueryData<ImportJobDto>(
+        adminCatalogKeys.importJob(updatedItem.jobId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            items: old.items.map((item) =>
+              item.id === updatedItem.id ? updatedItem : item
+            ),
+          };
+        }
+      );
+    },
+  });
+}
+
+/**
+ * Hook to soft-delete an import item
+ */
+export function useDeleteGlobalImportItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ jobId, itemId }: { jobId: string; itemId: string }) =>
+      adminCatalogService.deleteGlobalImportItem(jobId, itemId),
+    onSuccess: (_, variables) => {
+      queryClient.setQueryData<ImportJobDto>(
+        adminCatalogKeys.importJob(variables.jobId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            items: old.items.filter((item) => item.id !== variables.itemId),
+          };
+        }
+      );
+    },
+  });
+}
+
+/**
+ * Hook to confirm a global import job with selected item IDs
+ */
+export function useConfirmGlobalImportJob() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ jobId, itemIds }: { jobId: string; itemIds: string[] }) =>
+      adminCatalogService.confirmGlobalImportJob(jobId, itemIds),
+    onSuccess: (confirmedJob: ImportJobDto) => {
+      queryClient.setQueryData<ImportJobDto>(
+        adminCatalogKeys.importJob(confirmedJob.id),
+        confirmedJob
+      );
+      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.products() });
+      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.stats() });
     },
   });
 }

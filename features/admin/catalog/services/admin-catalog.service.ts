@@ -33,6 +33,9 @@ import type {
   GlobalCatalogStats,
   Industry,
   IndustryCategory,
+  ImportJobDto,
+  ImportItemDto,
+  UpdateImportItemPayload,
 } from "../types/admin-catalog.types";
 
 // ============================================================================
@@ -631,11 +634,90 @@ export function downloadImportTemplate(): void {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
-  
+
   link.setAttribute("href", url);
   link.setAttribute("download", "global-products-template.csv");
   link.style.visibility = "hidden";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+// ============================================================================
+// IMPORT JOB API (staged flow)
+// ============================================================================
+
+/**
+ * Create a new global import job by uploading a file
+ * POST /admin/global-products/import
+ */
+export async function createGlobalImportJob(file: File): Promise<ImportJobDto> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiClient.post<ImportJobDto>(
+    "/admin/global-products/import",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+}
+
+/**
+ * Get import job status and items
+ * GET /admin/global-products/import/:jobId
+ */
+export async function getGlobalImportJob(jobId: string): Promise<ImportJobDto> {
+  const response = await apiClient.get<ImportJobDto>(
+    `/admin/global-products/import/${jobId}`
+  );
+  return response.data;
+}
+
+/**
+ * Update a single import item (e.g. toggle isSelected)
+ * PATCH /admin/global-products/import/:jobId/items/:itemId
+ */
+export async function updateGlobalImportItem(
+  jobId: string,
+  itemId: string,
+  payload: UpdateImportItemPayload
+): Promise<ImportItemDto> {
+  const response = await apiClient.patch<ImportItemDto>(
+    `/admin/global-products/import/${jobId}/items/${itemId}`,
+    payload
+  );
+  return response.data;
+}
+
+/**
+ * Soft-delete an import item
+ * DELETE /admin/global-products/import/:jobId/items/:itemId
+ */
+export async function deleteGlobalImportItem(
+  jobId: string,
+  itemId: string
+): Promise<void> {
+  await apiClient.delete(
+    `/admin/global-products/import/${jobId}/items/${itemId}`
+  );
+}
+
+/**
+ * Confirm the import job with selected item IDs
+ * POST /admin/global-products/import/:jobId/confirm
+ */
+export async function confirmGlobalImportJob(
+  jobId: string,
+  itemIds: string[]
+): Promise<ImportJobDto> {
+  const response = await apiClient.post<ImportJobDto>(
+    `/admin/global-products/import/${jobId}/confirm`,
+    { itemIds }
+  );
+  return response.data;
 }
