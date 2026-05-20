@@ -29,7 +29,6 @@ import type {
   UpdateGlobalProductDto,
   GlobalProductFilters,
   PaginatedGlobalProducts,
-  BulkImportResult,
   GlobalCatalogStats,
   Industry,
   IndustryCategory,
@@ -567,82 +566,6 @@ export async function getBrands(): Promise<string[]> {
 
 // ============================================================================
 // BULK IMPORT API
-// ============================================================================
-
-/**
- * Import products from CSV/Excel
- * POST /admin/global-products/import
- */
-export async function bulkImportProducts(file: File): Promise<BulkImportResult> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    // Simulate processing
-    return {
-      success: true,
-      totalRows: 10,
-      imported: 8,
-      failed: 1,
-      skipped: 1,
-      results: [
-        { row: 1, sku: "TEST-001", success: true, productId: "gp_new_1" },
-        { row: 2, sku: "TEST-002", success: true, productId: "gp_new_2" },
-        { row: 9, sku: "EXISTING", success: false, error: "El SKU ya existe" },
-      ],
-    };
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await apiClient.post<BulkImportResult>(
-    "/admin/global-products/import",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return response.data;
-}
-
-/**
- * Generate CSV import template
- */
-export function generateImportTemplate(): string {
-  const headers = ["sku", "name", "description", "brand", "industryId", "industryCategoryId", "imageUrl", "attributes"];
-  const example = [
-    "COCA-COLA-350ML",
-    "Coca Cola 350ml",
-    "Refresco de cola en lata",
-    "Coca Cola",
-    "ind1",
-    "cat1",
-    "https://example.com/image.jpg",
-    '{"volume":"350ml","packaging":"Lata"}',
-  ];
-  
-  return [headers.join(","), example.join(",")].join("\n");
-}
-
-/**
- * Download import template
- */
-export function downloadImportTemplate(): void {
-  const csv = generateImportTemplate();
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-
-  link.setAttribute("href", url);
-  link.setAttribute("download", "global-products-template.csv");
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 // ============================================================================
 // IMPORT JOB API (staged flow)
 // ============================================================================

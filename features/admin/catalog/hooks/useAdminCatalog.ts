@@ -21,7 +21,6 @@ import type {
   UpdateGlobalProductDto,
   GlobalProductFilters,
   PaginatedGlobalProducts,
-  BulkImportResult,
   GlobalCatalogStats,
   Industry,
   IndustryCategory,
@@ -273,43 +272,6 @@ export function useBrands(options?: UseQueryOptions<string[], Error>) {
 // ============================================================================
 // BULK IMPORT HOOKS
 // ============================================================================
-
-/**
- * Hook to bulk import products
- */
-export function useBulkImportProducts() {
-  const queryClient = useQueryClient();
-  const t = useTranslations("admin-catalog");
-
-  return useMutation({
-    mutationFn: (file: File) => adminCatalogService.bulkImportProducts(file),
-    onSuccess: (result: BulkImportResult) => {
-      if (result.success) {
-        toast.success(
-          t("notifications.importCompleted", { count: result.imported })
-        );
-        if (result.failed > 0) {
-          toast.error(
-            t("notifications.productsFailed", { count: result.failed })
-          );
-        }
-      } else {
-        toast.error(t("notifications.importFailed"));
-      }
-      queryClient.invalidateQueries({
-        queryKey: adminCatalogKeys.products(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: adminCatalogKeys.stats(),
-      });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t("errors.importProducts"));
-    },
-  });
-}
-
-// ============================================================================
 // IMPORT JOB HOOKS (staged flow)
 // ============================================================================
 
@@ -343,6 +305,7 @@ export function useGlobalImportJob(jobId: string | null, enabled: boolean) {
  */
 export function useUpdateGlobalImportItem() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: ({
@@ -355,7 +318,6 @@ export function useUpdateGlobalImportItem() {
       payload: UpdateImportItemPayload;
     }) => adminCatalogService.updateGlobalImportItem(jobId, itemId, payload),
     onSuccess: (updatedItem: ImportItemDto) => {
-      // Optimistically update the cached job data
       queryClient.setQueryData<ImportJobDto>(
         adminCatalogKeys.importJob(updatedItem.jobId),
         (old) => {
@@ -369,6 +331,12 @@ export function useUpdateGlobalImportItem() {
         }
       );
     },
+    onError: (error: Error, variables) => {
+      toast.error(error.message || t("errors.importProducts"));
+      queryClient.invalidateQueries({
+        queryKey: adminCatalogKeys.importJob(variables.jobId),
+      });
+    },
   });
 }
 
@@ -377,6 +345,7 @@ export function useUpdateGlobalImportItem() {
  */
 export function useDeleteGlobalImportItem() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-catalog");
 
   return useMutation({
     mutationFn: ({ jobId, itemId }: { jobId: string; itemId: string }) =>
@@ -392,6 +361,12 @@ export function useDeleteGlobalImportItem() {
           };
         }
       );
+    },
+    onError: (error: Error, variables) => {
+      toast.error(error.message || t("errors.importProducts"));
+      queryClient.invalidateQueries({
+        queryKey: adminCatalogKeys.importJob(variables.jobId),
+      });
     },
   });
 }

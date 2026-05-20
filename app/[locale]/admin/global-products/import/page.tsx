@@ -259,40 +259,37 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
   const confirmJob = useConfirmGlobalImportJob();
 
   const items = job?.items ?? [];
-  const selectedItems = items.filter((item) => item.isSelected);
-  const selectedCount = selectedItems.length;
+
+  // Selection is managed locally to avoid N parallel PATCH requests on select-all/deselect-all.
+  // Initialized once from server state; polling updates to item data do not reset selection.
+  const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(new Set());
+  const [selectionInitialized, setSelectionInitialized] = useState(false);
+
+  useEffect(() => {
+    if (items.length > 0 && !selectionInitialized) {
+      setLocalSelectedIds(new Set(items.filter((i) => i.isSelected).map((i) => i.id)));
+      setSelectionInitialized(true);
+    }
+  }, [items, selectionInitialized]);
+
+  const selectedCount = localSelectedIds.size;
   const allSelected = items.length > 0 && selectedCount === items.length;
 
-  const handleToggleItem = (itemId: string, currentSelected: boolean) => {
-    updateItem.mutate({
-      jobId,
-      itemId,
-      payload: { isSelected: !currentSelected },
+  const handleToggleItem = (itemId: string) => {
+    setLocalSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
+      return next;
     });
   };
 
   const handleSelectAll = () => {
-    items.forEach((item) => {
-      if (!item.isSelected) {
-        updateItem.mutate({
-          jobId,
-          itemId: item.id,
-          payload: { isSelected: true },
-        });
-      }
-    });
+    setLocalSelectedIds(new Set(items.map((i) => i.id)));
   };
 
   const handleDeselectAll = () => {
-    items.forEach((item) => {
-      if (item.isSelected) {
-        updateItem.mutate({
-          jobId,
-          itemId: item.id,
-          payload: { isSelected: false },
-        });
-      }
-    });
+    setLocalSelectedIds(new Set());
   };
 
   const handleConfirm = async () => {
@@ -303,7 +300,7 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
     try {
       const confirmedJob = await confirmJob.mutateAsync({
         jobId,
-        itemIds: selectedItems.map((i) => i.id),
+        itemIds: Array.from(localSelectedIds),
       });
       onConfirmed(confirmedJob);
     } catch (err) {
@@ -368,11 +365,8 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
                       <td className="px-4 py-3">
                         <input
                           type="checkbox"
-                          checked={item.isSelected}
-                          onChange={() =>
-                            handleToggleItem(item.id, item.isSelected)
-                          }
-                          disabled={updateItem.isPending}
+                          checked={localSelectedIds.has(item.id)}
+                          onChange={() => handleToggleItem(item.id)}
                           className="w-4 h-4 accent-indigo-600 cursor-pointer"
                         />
                       </td>
@@ -499,10 +493,10 @@ function ResultsStep({ job, onNewImport }: ResultsStepProps) {
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-4 py-2 text-left font-medium text-slate-700">
-                      Nombre
+                      {tCommon("fields.name")}
                     </th>
                     <th className="px-4 py-2 text-left font-medium text-slate-700">
-                      Error
+                      {tCommon("fields.error")}
                     </th>
                   </tr>
                 </thead>
