@@ -123,7 +123,7 @@ export function useOrdersRealtime(): RealtimeState {
   });
 
   useEffect(() => {
-    if (!APP_CONFIG.features.enableWebSockets || !businessId || !getToken()) {
+    if (!APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || user?.role === 'SUPER_ADMIN') {
       setState({ isConnected: false, isConnecting: false, error: null });
       return;
     }
