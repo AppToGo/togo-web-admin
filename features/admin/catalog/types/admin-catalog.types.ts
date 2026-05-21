@@ -66,7 +66,7 @@ export interface GlobalProduct {
   brand?: string;
   industryId?: string; // Opcional - se deriva de industryCategoryId
   industry?: Industry;
-  industryCategoryId: string; // Ahora obligatorio
+  industryCategoryId?: string;
   industryCategory?: IndustryCategory;
   attributes?: Record<string, unknown>; // Flexible attributes (JSON)
   isActive: boolean;
@@ -113,7 +113,7 @@ export interface CreateGlobalProductDto {
   image?: string;
   brand?: string;
   industryId?: string; // Opcional - se deriva de industryCategoryId en el backend
-  industryCategoryId: string; // Ahora obligatorio
+  industryCategoryId: string;
   attributes?: Record<string, unknown>;
   isActive?: boolean;
 }
