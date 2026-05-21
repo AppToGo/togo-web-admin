@@ -44,6 +44,16 @@ export interface IndustryCategory {
 }
 
 /**
+ * Variant of a global product with suggested price
+ */
+export interface GlobalProductVariant {
+  id: string;
+  variantLabel: string;
+  suggestedPrice?: number;
+  isDefault: boolean;
+}
+
+/**
  * GlobalProduct - Master product definition managed by TOGO Super Admin
  * Includes usage statistics and full attribute support
  */
@@ -70,6 +80,8 @@ export interface GlobalProduct {
   };
   // Extended stats (fetched separately)
   stats?: GlobalProductStats;
+  // Active variants with suggested price
+  variants?: GlobalProductVariant[];
 }
 
 /**

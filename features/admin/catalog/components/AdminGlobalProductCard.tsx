@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Edit, Trash2, MoreHorizontal, Store, Eye, EyeOff } from "lucide-react";
+import { Edit, Trash2, MoreHorizontal, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,18 +14,59 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import type { GlobalProduct } from "../types/admin-catalog.types";
+import type {
+  GlobalProduct,
+  GlobalProductVariant,
+  AdminGlobalProductCardProps,
+} from "../types/admin-catalog.types";
 
-// ============================================================================
-// TYPES
-// ============================================================================
+const MAX_VISIBLE_VARIANTS = 3;
 
-interface AdminGlobalProductCardProps {
-  product: GlobalProduct;
-  onEdit?: (product: GlobalProduct) => void;
-  onDelete?: (product: GlobalProduct) => void;
-  onToggleStatus?: (product: GlobalProduct, isActive: boolean) => void;
-  viewMode?: "grid" | "list";
+// TODO: support multi-currency when platform expands beyond Colombia
+function formatSuggestedPrice(price: number | undefined): string {
+  if (price == null) return "—";
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+  }).format(price);
+}
+
+function VariantList({ variants }: { variants: GlobalProductVariant[] }) {
+  const t = useTranslations("admin-catalog");
+  const visible = variants.slice(0, MAX_VISIBLE_VARIANTS);
+  const remaining = variants.length - MAX_VISIBLE_VARIANTS;
+
+  return (
+    <div className="border-t border-slate-100 mt-3 pt-3 space-y-1.5">
+      {variants.length === 0 ? (
+        <p className="text-xs text-slate-400">{t("variants.noVariants")}</p>
+      ) : (
+        <>
+          {visible.map((v) => (
+            <div key={v.id} className="flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-slate-600 truncate">{v.variantLabel}</span>
+                {v.isDefault && (
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 leading-none shrink-0">
+                    {t("variants.defaultBadge")}
+                  </Badge>
+                )}
+              </div>
+              <span className="font-semibold text-slate-900 shrink-0">
+                {formatSuggestedPrice(v.suggestedPrice)}
+              </span>
+            </div>
+          ))}
+          {remaining > 0 && (
+            <p className="text-xs text-slate-400">
+              {t("variants.moreVariants", { count: remaining })}
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 // ============================================================================
@@ -42,13 +83,14 @@ export function AdminGlobalProductCard({
   const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
   const activationCount = product._count?.businessProducts || 0;
+  const variants = product.variants ?? [];
 
   // Grid View
   if (viewMode === "grid") {
     return (
       <div
         className={cn(
-          "group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden",
+          "group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden flex flex-col h-full",
           product.isActive
             ? "border-slate-200 hover:border-indigo-300 hover:shadow-md"
             : "border-slate-200 opacity-75"
@@ -104,7 +146,7 @@ export function AdminGlobalProductCard({
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 flex flex-col flex-1">
           {/* SKU */}
           <p className="text-xs font-mono text-slate-500 mb-1">{product.sku}</p>
 
@@ -127,8 +169,13 @@ export function AdminGlobalProductCard({
             )}
           </div>
 
+          {/* Variants — flex-1 pushes actions to the bottom */}
+          <div className="flex-1">
+            <VariantList variants={variants} />
+          </div>
+
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t">
+          <div className="flex items-center justify-between pt-3 border-t mt-3">
             <div className="flex items-center gap-2">
               <Switch
                 checked={product.isActive}
@@ -239,6 +286,13 @@ export function AdminGlobalProductCard({
           )}
         </div>
       </div>
+
+      {/* Variants (list view) */}
+      {variants.length > 0 && (
+        <div className="min-w-[160px] max-w-[220px] border-l pl-4">
+          <VariantList variants={variants} />
+        </div>
+      )}
 
       {/* Activation Count */}
       <div className="flex items-center gap-2 px-4 border-l">
