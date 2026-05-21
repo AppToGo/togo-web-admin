@@ -133,5 +133,10 @@
   "dragDropFile": "Drag and drop your file here",
   "importJobFailed": "File processing failed. Please try again.",
   "selectAll": "Select all",
-  "deselectAll": "Deselect all"
+  "deselectAll": "Deselect all",
+  "variants": {
+    "noVariants": "No variants",
+    "moreVariants": "+{count} more",
+    "defaultBadge": "Default"
+  }
 }

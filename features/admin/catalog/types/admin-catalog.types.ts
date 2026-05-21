@@ -44,6 +44,16 @@ export interface IndustryCategory {
 }
 
 /**
+ * Variant of a global product with suggested price
+ */
+export interface GlobalProductVariant {
+  id: string;
+  variantLabel: string;
+  suggestedPrice?: number;
+  isDefault: boolean;
+}
+
+/**
  * GlobalProduct - Master product definition managed by TOGO Super Admin
  * Includes usage statistics and full attribute support
  */
@@ -56,7 +66,7 @@ export interface GlobalProduct {
   brand?: string;
   industryId?: string; // Opcional - se deriva de industryCategoryId
   industry?: Industry;
-  industryCategoryId: string; // Ahora obligatorio
+  industryCategoryId?: string;
   industryCategory?: IndustryCategory;
   attributes?: Record<string, unknown>; // Flexible attributes (JSON)
   isActive: boolean;
@@ -70,6 +80,8 @@ export interface GlobalProduct {
   };
   // Extended stats (fetched separately)
   stats?: GlobalProductStats;
+  // Active variants with suggested price
+  variants?: GlobalProductVariant[];
 }
 
 /**
@@ -101,7 +113,7 @@ export interface CreateGlobalProductDto {
   image?: string;
   brand?: string;
   industryId?: string; // Opcional - se deriva de industryCategoryId en el backend
-  industryCategoryId: string; // Ahora obligatorio
+  industryCategoryId: string;
   attributes?: Record<string, unknown>;
   isActive?: boolean;
 }

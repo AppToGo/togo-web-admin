@@ -133,5 +133,10 @@
   "dragDropFile": "Arrastrá y soltá tu archivo aquí",
   "importJobFailed": "El procesamiento del archivo falló. Intentá de nuevo.",
   "selectAll": "Seleccionar todos",
-  "deselectAll": "Deseleccionar todos"
+  "deselectAll": "Deseleccionar todos",
+  "variants": {
+    "noVariants": "Sin variantes",
+    "moreVariants": "+{count} más",
+    "defaultBadge": "Default"
+  }
 }
