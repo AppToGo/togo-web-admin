@@ -22,8 +22,6 @@ export {
   useIndustries,
   useIndustryCategoriesByIds,
   useBrands,
-  // Bulk Import
-  useBulkImportProducts,
   // Import Job (staged flow)
   useCreateGlobalImportJob,
   useGlobalImportJob,

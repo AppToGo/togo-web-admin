@@ -58,7 +58,7 @@ export interface GlobalProduct {
   industry?: Industry;
   industryCategoryId: string; // Ahora obligatorio
   industryCategory?: IndustryCategory;
-  attributes?: Record<string, any>; // Flexible attributes (JSON)
+  attributes?: Record<string, unknown>; // Flexible attributes (JSON)
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -102,7 +102,7 @@ export interface CreateGlobalProductDto {
   brand?: string;
   industryId?: string; // Opcional - se deriva de industryCategoryId en el backend
   industryCategoryId: string; // Ahora obligatorio
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
   isActive?: boolean;
 }
 
@@ -117,7 +117,7 @@ export interface UpdateGlobalProductDto {
   brand?: string;
   industryId?: string; // Opcional - se deriva de industryCategoryId en el backend
   industryCategoryId?: string;
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
   isActive?: boolean;
 }
 
@@ -147,54 +147,6 @@ export interface PaginatedGlobalProducts {
     limit: number;
     totalPages: number;
   };
-}
-
-// ============================================================================
-// BULK IMPORT TYPES
-// ============================================================================
-
-/**
- * CSV import row structure
- */
-export interface ImportProductRow {
-  sku: string;
-  name: string;
-  description?: string;
-  brand?: string;
-  industryId: string;
-  industryCategoryId?: string;
-  imageUrl?: string;
-  attributes?: string; // JSON string
-}
-
-/**
- * Import validation result
- */
-export interface ImportValidationResult {
-  row: number;
-  sku: string;
-  name: string;
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-}
-
-/**
- * Bulk import result
- */
-export interface BulkImportResult {
-  success: boolean;
-  totalRows: number;
-  imported: number;
-  failed: number;
-  skipped: number;
-  results: {
-    row: number;
-    sku: string;
-    success: boolean;
-    error?: string;
-    productId?: string;
-  }[];
 }
 
 // ============================================================================
@@ -263,8 +215,8 @@ export interface AdminGlobalProductCardProps {
  * Props for JSON attributes editor
  */
 export interface JsonAttributesEditorProps {
-  value: Record<string, any>;
-  onChange: (value: Record<string, any>) => void;
+  value: Record<string, unknown>;
+  onChange: (value: Record<string, unknown>) => void;
   disabled?: boolean;
 }
 
@@ -293,7 +245,7 @@ export interface GlobalProductFormState {
   image: string;
   brand: string;
   industryCategoryId: string;
-  attributes: Record<string, string>;
+  attributes: Record<string, unknown>;
   isActive: boolean;
 }
 

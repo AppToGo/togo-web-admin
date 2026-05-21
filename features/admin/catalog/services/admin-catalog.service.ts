@@ -1,8 +1,8 @@
 /**
  * Admin Catalog Service
- * 
+ *
  * API service for Super Admin global product catalog management.
- * 
+ *
  * Backend endpoints:
  * - GET /admin/global-products
  * - POST /admin/global-products
@@ -14,7 +14,7 @@
  * - GET /admin/global-products/stats
  * - GET /api/v1/admin/industries
  * - GET /api/v1/admin/industries/:id/categories
- * 
+ *
  * Error Handling:
  * - Uses apiClient interceptors for auth (401 redirects)
  * - Error messages extracted from backend responses
@@ -38,154 +38,6 @@ import type {
 } from "../types/admin-catalog.types";
 
 // ============================================================================
-// CONFIGURATION
-// ============================================================================
-
-// Toggle between mock and real API
-// Set to true during development without backend
-const USE_MOCK = false;
-
-// ============================================================================
-// MOCK DATA (for development)
-// ============================================================================
-
-const mockIndustries: Industry[] = [
-  { id: "ind1", name: "Bebidas", slug: "bebidas", description: "Bebidas y refrescos", isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "ind2", name: "Alimentos", slug: "alimentos", description: "Productos alimenticios", isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "ind3", name: "Farmacia", slug: "farmacia", description: "Productos farmacéuticos", isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "ind4", name: "Limpieza", slug: "limpieza", description: "Productos de limpieza", isActive: true, createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-];
-
-const mockIndustryCategories: IndustryCategory[] = [
-  { id: "cat1", name: "Refrescos", slug: "refrescos", order: 1, isActive: true, industries: [{ id: "ind1", name: "Bebidas" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "cat2", name: "Jugos", slug: "jugos", order: 2, isActive: true, industries: [{ id: "ind1", name: "Bebidas" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "cat3", name: "Snacks", slug: "snacks", order: 1, isActive: true, industries: [{ id: "ind2", name: "Alimentos" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-  { id: "cat4", name: "Abarrotes", slug: "abarrotes", order: 2, isActive: true, industries: [{ id: "ind2", name: "Alimentos" }], createdAt: "2024-01-01", updatedAt: "2024-01-01" },
-];
-
-const mockGlobalProducts: GlobalProduct[] = [
-  {
-    id: "gp1",
-    sku: "COCA-COLA-350ML",
-    name: "Coca Cola 350ml",
-    description: "Refresco de cola en lata de 350ml",
-    brand: "Coca Cola",
-    industryId: "ind1",
-    industry: mockIndustries[0],
-    industryCategoryId: "cat1",
-    industryCategory: mockIndustryCategories[0],
-    image: "https://placehold.co/400x400/e53935/ffffff?text=Coca+Cola",
-    attributes: { volume: "350ml", packaging: "Lata", type: "Regular" },
-    isActive: true,
-    createdAt: "2024-01-15T10:00:00Z",
-    updatedAt: "2024-03-10T14:30:00Z",
-    _count: { businessProducts: 150 },
-  },
-  {
-    id: "gp2",
-    sku: "COCA-COLA-1.5L",
-    name: "Coca Cola 1.5L",
-    description: "Refresco de cola en botella de 1.5 litros",
-    brand: "Coca Cola",
-    industryId: "ind1",
-    industry: mockIndustries[0],
-    industryCategoryId: "cat1",
-    industryCategory: mockIndustryCategories[0],
-    image: "https://placehold.co/400x400/e53935/ffffff?text=Coca+Cola+1.5L",
-    attributes: { volume: "1.5L", packaging: "Botella", type: "Regular" },
-    isActive: true,
-    createdAt: "2024-01-15T10:00:00Z",
-    updatedAt: "2024-03-10T14:30:00Z",
-    _count: { businessProducts: 120 },
-  },
-  {
-    id: "gp3",
-    sku: "PEPSI-350ML",
-    name: "Pepsi 350ml",
-    description: "Refresco de cola Pepsi en lata",
-    brand: "Pepsi",
-    industryId: "ind1",
-    industry: mockIndustries[0],
-    industryCategoryId: "cat1",
-    industryCategory: mockIndustryCategories[0],
-    image: "https://placehold.co/400x400/1565c0/ffffff?text=Pepsi",
-    attributes: { volume: "350ml", packaging: "Lata", type: "Regular" },
-    isActive: true,
-    createdAt: "2024-01-20T10:00:00Z",
-    updatedAt: "2024-03-12T14:30:00Z",
-    _count: { businessProducts: 95 },
-  },
-  {
-    id: "gp4",
-    sku: "DORITOS-NACHO",
-    name: "Doritos Nacho Cheese",
-    description: "Botana de maíz sabor queso nacho",
-    brand: "Doritos",
-    industryId: "ind2",
-    industry: mockIndustries[1],
-    industryCategoryId: "cat3",
-    industryCategory: mockIndustryCategories[2],
-    image: "https://placehold.co/400x400/ff6f00/ffffff?text=Doritos",
-    attributes: { weight: "62g", flavor: "Nacho Cheese" },
-    isActive: true,
-    createdAt: "2024-02-01T10:00:00Z",
-    updatedAt: "2024-03-15T14:30:00Z",
-    _count: { businessProducts: 80 },
-  },
-  {
-    id: "gp5",
-    sku: "SABRITAS-ORIGINAL",
-    name: "Sabritas Original",
-    description: "Papas fritas clásicas",
-    brand: "Sabritas",
-    industryId: "ind2",
-    industry: mockIndustries[1],
-    industryCategoryId: "cat3",
-    industryCategory: mockIndustryCategories[2],
-    image: "https://placehold.co/400x400/fbc02d/ffffff?text=Sabritas",
-    attributes: { weight: "55g", flavor: "Original" },
-    isActive: true,
-    createdAt: "2024-02-01T10:00:00Z",
-    updatedAt: "2024-03-15T14:30:00Z",
-    _count: { businessProducts: 110 },
-  },
-  {
-    id: "gp6",
-    sku: "PARACETAMOL-500MG",
-    name: "Paracetamol 500mg",
-    description: "Analgésico y antipirético",
-    brand: "Genérico",
-    industryId: "ind3",
-    industry: mockIndustries[2],
-    industryCategoryId: "cat5",
-    industryCategory: mockIndustryCategories[4],
-    image: "https://placehold.co/400x400/4caf50/ffffff?text=Paracetamol",
-    attributes: { dosage: "500mg", presentation: "Tabletas", quantity: "20" },
-    isActive: true,
-    createdAt: "2024-02-10T10:00:00Z",
-    updatedAt: "2024-03-20T14:30:00Z",
-    _count: { businessProducts: 200 },
-  },
-  {
-    id: "gp7",
-    sku: "CLOROX-1L",
-    name: "Clorox 1 Litro",
-    description: "Blanqueador multiusos",
-    brand: "Clorox",
-    industryId: "ind4",
-    industry: mockIndustries[3],
-    industryCategoryId: "cat6",
-    industryCategory: mockIndustryCategories[5],
-    image: "https://placehold.co/400x400/00acc1/ffffff?text=Clorox",
-    attributes: { volume: "1L", type: "Original" },
-    isActive: false,
-    createdAt: "2024-02-15T10:00:00Z",
-    updatedAt: "2024-03-25T14:30:00Z",
-    _count: { businessProducts: 45 },
-  },
-];
-
-// ============================================================================
 // GLOBAL PRODUCTS API
 // ============================================================================
 
@@ -196,52 +48,6 @@ const mockGlobalProducts: GlobalProduct[] = [
 export async function getGlobalProducts(
   filters?: GlobalProductFilters
 ): Promise<PaginatedGlobalProducts> {
-  if (USE_MOCK) {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    let filtered = [...mockGlobalProducts];
-
-    // Apply filters
-    if (filters?.industryIds?.length) {
-      filtered = filtered.filter((p) => p.industryId && filters.industryIds?.includes(p.industryId));
-    }
-    if (filters?.industryCategoryIds?.length) {
-      filtered = filtered.filter((p) => filters.industryCategoryIds?.includes(p.industryCategoryId));
-    }
-    if (filters?.brand) {
-      filtered = filtered.filter((p) => p.brand === filters.brand);
-    }
-    if (filters?.search) {
-      const search = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.sku.toLowerCase().includes(search) ||
-          p.name.toLowerCase().includes(search)
-      );
-    }
-    if (filters?.isActive !== undefined) {
-      filtered = filtered.filter((p) => p.isActive === filters.isActive);
-    }
-
-    // Pagination
-    const page = filters?.page || 1;
-    const limit = filters?.limit || 20;
-    const start = (page - 1) * limit;
-    const end = start + limit;
-    const paginatedData = filtered.slice(start, end);
-
-    return {
-      data: paginatedData,
-      meta: {
-        total: filtered.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filtered.length / limit),
-      },
-    };
-  }
-
   const params = new URLSearchParams();
   if (filters?.industryIds?.length) params.append("industryIds", filters.industryIds.join(","));
   if (filters?.industryCategoryIds?.length) params.append("industryCategoryIds", filters.industryCategoryIds.join(","));
@@ -265,13 +71,6 @@ export async function getGlobalProducts(
  * GET /admin/global-products/:id
  */
 export async function getGlobalProduct(id: string): Promise<GlobalProduct> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const product = mockGlobalProducts.find((p) => p.id === id);
-    if (!product) throw new Error("Producto no encontrado");
-    return product;
-  }
-
   const response = await apiClient.get<GlobalProduct>(`/admin/global-products/${id}`);
   return response.data;
 }
@@ -283,32 +82,6 @@ export async function getGlobalProduct(id: string): Promise<GlobalProduct> {
 export async function createGlobalProduct(
   data: CreateGlobalProductDto
 ): Promise<GlobalProduct> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    // Check SKU uniqueness
-    if (mockGlobalProducts.some((p) => p.sku === data.sku)) {
-      throw new Error("El SKU ya existe");
-    }
-
-    const industry = mockIndustries.find((i) => i.id === data.industryId);
-    const category = mockIndustryCategories.find((c) => c.id === data.industryCategoryId);
-
-    const newProduct: GlobalProduct = {
-      id: `gp${Date.now()}`,
-      ...data,
-      industry,
-      industryCategory: category,
-      isActive: data.isActive ?? true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      _count: { businessProducts: 0 },
-    };
-
-    mockGlobalProducts.push(newProduct);
-    return newProduct;
-  }
-
   const response = await apiClient.post<GlobalProduct>("/admin/global-products", data);
   return response.data;
 }
@@ -321,37 +94,6 @@ export async function updateGlobalProduct(
   id: string,
   data: UpdateGlobalProductDto
 ): Promise<GlobalProduct> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    const index = mockGlobalProducts.findIndex((p) => p.id === id);
-    if (index === -1) throw new Error("Producto no encontrado");
-
-    // Check SKU uniqueness if changing
-    if (data.sku && data.sku !== mockGlobalProducts[index].sku) {
-      if (mockGlobalProducts.some((p) => p.sku === data.sku && p.id !== id)) {
-        throw new Error("El SKU ya existe");
-      }
-    }
-
-    const industry = data.industryId
-      ? mockIndustries.find((i) => i.id === data.industryId)
-      : mockGlobalProducts[index].industry;
-    const category = data.industryCategoryId
-      ? mockIndustryCategories.find((c) => c.id === data.industryCategoryId)
-      : mockGlobalProducts[index].industryCategory;
-
-    mockGlobalProducts[index] = {
-      ...mockGlobalProducts[index],
-      ...data,
-      industry,
-      industryCategory: category,
-      updatedAt: new Date().toISOString(),
-    };
-
-    return mockGlobalProducts[index];
-  }
-
   const response = await apiClient.patch<GlobalProduct>(`/admin/global-products/${id}`, data);
   return response.data;
 }
@@ -361,14 +103,6 @@ export async function updateGlobalProduct(
  * DELETE /admin/global-products/:id
  */
 export async function deleteGlobalProduct(id: string): Promise<void> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const index = mockGlobalProducts.findIndex((p) => p.id === id);
-    if (index === -1) throw new Error("Producto no encontrado");
-    mockGlobalProducts.splice(index, 1);
-    return;
-  }
-
   await apiClient.delete(`/admin/global-products/${id}`);
 }
 
@@ -391,14 +125,6 @@ export async function checkSkuAvailability(
   sku: string,
   excludeId?: string
 ): Promise<{ available: boolean }> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const exists = mockGlobalProducts.some(
-      (p) => p.sku === sku && p.id !== excludeId
-    );
-    return { available: !exists };
-  }
-
   const params = new URLSearchParams();
   params.append("sku", sku);
   if (excludeId) params.append("excludeId", excludeId);
@@ -418,32 +144,6 @@ export async function checkSkuAvailability(
  * GET /admin/global-products/:id/stats
  */
 export async function getGlobalProductStats(id: string): Promise<GlobalProductStats> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    
-    const product = mockGlobalProducts.find((p) => p.id === id);
-    if (!product) throw new Error("Producto no encontrado");
-
-    return {
-      totalActivations: product._count?.businessProducts || 0,
-      byIndustry: {
-        "Farmacias": Math.floor((product._count?.businessProducts || 0) * 0.4),
-        "Minimarkets": Math.floor((product._count?.businessProducts || 0) * 0.35),
-        "Tiendas de conveniencia": Math.floor((product._count?.businessProducts || 0) * 0.25),
-      },
-      byBusinessType: {
-        "Independiente": 60,
-        "Franquicia": 40,
-      },
-      lastActivatedAt: new Date().toISOString(),
-      topBusinesses: [
-        { businessId: "b1", businessName: "Farmacia San Pablo", count: 15 },
-        { businessId: "b2", businessName: "OXXO Centro", count: 12 },
-        { businessId: "b3", businessName: "Minisuper La Esquina", count: 8 },
-      ],
-    };
-  }
-
   const response = await apiClient.get<GlobalProductStats>(`/admin/global-products/${id}/stats`);
   return response.data;
 }
@@ -453,56 +153,6 @@ export async function getGlobalProductStats(id: string): Promise<GlobalProductSt
  * GET /admin/global-products/stats
  */
 export async function getGlobalCatalogStats(): Promise<GlobalCatalogStats> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const activeProducts = mockGlobalProducts.filter((p) => p.isActive);
-    const inactiveProducts = mockGlobalProducts.filter((p) => !p.isActive);
-
-    // Group by industry
-    const byIndustry = mockIndustries.map((ind) => ({
-      industryId: ind.id,
-      industryName: ind.name,
-      count: mockGlobalProducts.filter((p) => p.industryId === ind.id).length,
-    }));
-
-    // Top brands
-    const brandCount: Record<string, number> = {};
-    mockGlobalProducts.forEach((p) => {
-      if (p.brand) {
-        brandCount[p.brand] = (brandCount[p.brand] || 0) + 1;
-      }
-    });
-    const topBrands = Object.entries(brandCount)
-      .map(([brand, count]) => ({ brand, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-    // Most activated
-    const mostActivated = [...mockGlobalProducts]
-      .sort((a, b) => (b._count?.businessProducts || 0) - (a._count?.businessProducts || 0))
-      .slice(0, 5)
-      .map((p) => ({
-        productId: p.id,
-        sku: p.sku,
-        name: p.name,
-        activationCount: p._count?.businessProducts || 0,
-      }));
-
-    return {
-      totalProducts: mockGlobalProducts.length,
-      activeProducts: activeProducts.length,
-      inactiveProducts: inactiveProducts.length,
-      productsByIndustry: byIndustry,
-      topBrands,
-      mostActivatedProducts: mostActivated,
-      recentActivity: [
-        { action: "created", productId: "gp1", productName: "Coca Cola 350ml", userId: "u1", userName: "Admin", timestamp: new Date().toISOString() },
-        { action: "updated", productId: "gp2", productName: "Coca Cola 1.5L", userId: "u1", userName: "Admin", timestamp: new Date(Date.now() - 86400000).toISOString() },
-      ],
-    };
-  }
-
   const response = await apiClient.get<GlobalCatalogStats>("/admin/global-products/stats");
   return response.data;
 }
@@ -516,11 +166,6 @@ export async function getGlobalCatalogStats(): Promise<GlobalCatalogStats> {
  * GET /api/v1/admin/industries
  */
 export async function getIndustries(): Promise<Industry[]> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return mockIndustries;
-  }
-
   const response = await apiClient.get<Industry[]>("/industries");
   return response.data;
 }
@@ -530,13 +175,6 @@ export async function getIndustries(): Promise<Industry[]> {
  * GET /industry-categories?industryIds=
  */
 export async function getIndustryCategories(industryIds: string[]): Promise<IndustryCategory[]> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return mockIndustryCategories.filter((c) => 
-      c.industries.some(ind => industryIds.includes(ind.id))
-    );
-  }
-
   const params = new URLSearchParams();
   if (industryIds.length) params.append("industryIds", industryIds.join(","));
 
@@ -551,15 +189,6 @@ export async function getIndustryCategories(industryIds: string[]): Promise<Indu
  * GET /admin/global-products/brands
  */
 export async function getBrands(): Promise<string[]> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    const brands = new Set<string>();
-    mockGlobalProducts.forEach((p) => {
-      if (p.brand) brands.add(p.brand);
-    });
-    return Array.from(brands).sort();
-  }
-
   const response = await apiClient.get<string[]>("/admin/global-products/brands");
   return response.data;
 }

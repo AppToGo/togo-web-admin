@@ -290,7 +290,7 @@ export function useCreateGlobalImportJob() {
  */
 export function useGlobalImportJob(jobId: string | null, enabled: boolean) {
   return useQuery<ImportJobDto, Error>({
-    queryKey: adminCatalogKeys.importJob(jobId ?? ""),
+    queryKey: jobId ? adminCatalogKeys.importJob(jobId) : ["admin-catalog", "import-job", "none"],
     queryFn: () => adminCatalogService.getGlobalImportJob(jobId!),
     enabled: !!jobId && enabled,
     refetchInterval: (query) =>

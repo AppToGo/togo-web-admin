@@ -207,7 +207,7 @@ export function GlobalProductForm({
         }
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, unknown>
     );
 
     // Preparar datos para enviar al backend (sin industryId, con industryCategoryId obligatorio)

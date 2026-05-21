@@ -449,6 +449,7 @@ interface ResultsStepProps {
 
 function ResultsStep({ job, onNewImport }: ResultsStepProps) {
   const t = useTranslations("admin-catalog");
+  const tCommon = useTranslations("common");
   const router = useRouter();
 
   const errorItems = job.items.filter((item) => item.importError !== null);
