@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
@@ -46,6 +46,26 @@ export function ImportItemEditForm({ formId, item, onSubmit, isLoading }: Import
   const [imageUrlError, setImageUrlError] = useState<string | null>(null);
 
   const { data: industries } = useIndustries();
+
+  // When the item already has an industryCategoryId, we need to resolve which
+  // industry it belongs to. Fetch all categories (across all industries) so we
+  // can look up the parent industry and pre-fill the first select.
+  // Pass an empty array when there's nothing to look up — the hook skips the
+  // query automatically when the array is empty (enabled: ids.length > 0).
+  const allIndustryIds = industries?.map((ind) => ind.id) ?? [];
+  const prefillIndustryIds =
+    item.industryCategoryId && allIndustryIds.length > 0 ? allIndustryIds : [];
+  const { data: allCategories } = useIndustryCategoriesByIds(prefillIndustryIds);
+
+  // Pre-fill selectedIndustryId once we have the full category list
+  useEffect(() => {
+    if (selectedIndustryId || !item.industryCategoryId || !allCategories) return;
+    const match = allCategories.find((cat) => cat.id === item.industryCategoryId);
+    if (match && match.industries.length > 0) {
+      setSelectedIndustryId(match.industries[0].id);
+    }
+  }, [allCategories, item.industryCategoryId, selectedIndustryId]);
+
   const { data: categories } = useIndustryCategoriesByIds(
     selectedIndustryId ? [selectedIndustryId] : [],
   );
