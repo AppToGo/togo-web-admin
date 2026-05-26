@@ -68,7 +68,8 @@
     "brand": "Marca",
     "description": "Descripción",
     "actions": "Acciones",
-    "variants": "Variantes"
+    "variants": "Variantes",
+    "error": "Error"
   },
   "filters": {
     "all": "Todos",

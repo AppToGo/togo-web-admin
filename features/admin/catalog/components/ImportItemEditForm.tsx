@@ -84,16 +84,23 @@ export function ImportItemEditForm({ formId, item, onSubmit, isLoading }: Import
     e.preventDefault();
     if (imageUrlError) return;
 
+    const filteredVariants = variants.filter((v) => v.variantLabel.trim());
     const parsedPrice = price ? parseFloat(price) : undefined;
+    const resolvedPrice =
+      filteredVariants.length > 0
+        ? undefined
+        : parsedPrice !== undefined && isFinite(parsedPrice)
+          ? parsedPrice
+          : undefined;
     const payload: UpdateImportItemPayload = {
       name: name.trim() || item.name,
       sku: sku.trim() || undefined,
       brand: brand.trim() || undefined,
       description: description.trim() || undefined,
-      price: parsedPrice !== undefined && isFinite(parsedPrice) ? parsedPrice : undefined,
+      price: resolvedPrice,
       imageUrl: imageUrl.trim() || undefined,
       industryCategoryId: industryCategoryId.trim() || undefined,
-      variants: variants.filter((v) => v.variantLabel.trim()),
+      variants: filteredVariants,
     };
     void onSubmit(payload);
   };
