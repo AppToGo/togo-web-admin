@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { formatSuggestedPrice } from "../utils/format-price";
 import type {
   GlobalProduct,
   GlobalProductVariant,
@@ -21,16 +22,6 @@ import type {
 } from "../types/admin-catalog.types";
 
 const MAX_VISIBLE_VARIANTS = 3;
-
-// TODO: support multi-currency when platform expands beyond Colombia
-function formatSuggestedPrice(price: number | undefined): string {
-  if (price == null) return "—";
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-  }).format(price);
-}
 
 function VariantList({ variants }: { variants: GlobalProductVariant[] }) {
   const t = useTranslations("admin-catalog");

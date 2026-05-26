@@ -298,6 +298,7 @@ export interface ImportItemDto {
   imageUrl: string | null;
   industryCategoryId: string | null;
   attributes: Record<string, unknown> | null;
+  variants: ImportVariantDraft[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -329,6 +330,12 @@ export interface PaginatedImportJobsDto {
   limit: number;
 }
 
+export interface ImportVariantDraft {
+  variantLabel: string;
+  suggestedPrice?: number;
+  internalSku?: string;
+}
+
 export interface UpdateImportItemPayload {
   name?: string;
   description?: string;
@@ -339,6 +346,7 @@ export interface UpdateImportItemPayload {
   industryCategoryId?: string;
   isSelected?: boolean;
   attributes?: Record<string, unknown>;
+  variants?: ImportVariantDraft[];
 }
 
 export interface ConfirmImportPayload {

@@ -26,12 +26,26 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
+import {
   useCreateGlobalImportJob,
   useGlobalImportJob,
   useUpdateGlobalImportItem,
   useConfirmGlobalImportJob,
 } from "@/features/admin/catalog/hooks";
-import type { ImportJobDto } from "@/features/admin/catalog/types";
+import { ImportItemCard } from "@/features/admin/catalog/components/ImportItemCard";
+import { ImportItemEditForm } from "@/features/admin/catalog/components/ImportItemEditForm";
+import type {
+  ImportJobDto,
+  ImportItemDto,
+  UpdateImportItemPayload,
+} from "@/features/admin/catalog/types";
 
 // ============================================================================
 // TYPES
@@ -73,8 +87,8 @@ function StepIndicator({ currentStep }: StepIndicatorProps) {
                 isActive
                   ? "bg-indigo-600 text-white"
                   : isCompleted
-                  ? "bg-green-500 text-white"
-                  : "bg-slate-200 text-slate-500"
+                    ? "bg-green-500 text-white"
+                    : "bg-slate-200 text-slate-500"
               }`}
             >
               {isCompleted ? <Check className="w-4 h-4" /> : index + 1}
@@ -184,7 +198,9 @@ function UploadStep({ onJobCreated }: UploadStepProps) {
                   variant="outline"
                   className="cursor-pointer"
                   disabled={createJob.isPending}
-                  onClick={() => document.getElementById("import-upload")?.click()}
+                  onClick={() =>
+                    document.getElementById("import-upload")?.click()
+                  }
                   type="button"
                 >
                   {tCommon("buttons.selectFile")}
@@ -262,18 +278,22 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
 
   // Selection is managed locally to avoid N parallel PATCH requests on select-all/deselect-all.
   // Initialized once from server state; polling updates to item data do not reset selection.
-  const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(new Set());
+  const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(
+    new Set()
+  );
   const [selectionInitialized, setSelectionInitialized] = useState(false);
+  const [editingItem, setEditingItem] = useState<ImportItemDto | null>(null);
 
   useEffect(() => {
     if (items.length > 0 && !selectionInitialized) {
-      setLocalSelectedIds(new Set(items.filter((i) => i.isSelected).map((i) => i.id)));
+      setLocalSelectedIds(
+        new Set(items.filter((i) => i.isSelected).map((i) => i.id))
+      );
       setSelectionInitialized(true);
     }
   }, [items, selectionInitialized]);
 
   const selectedCount = localSelectedIds.size;
-  const allSelected = items.length > 0 && selectedCount === items.length;
 
   const handleToggleItem = (itemId: string) => {
     setLocalSelectedIds((prev) => {
@@ -310,131 +330,137 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
     }
   };
 
+  const handleUpdateItem = async (payload: UpdateImportItemPayload) => {
+    if (!editingItem) return;
+    await updateItem.mutateAsync({ jobId, itemId: editingItem.id, payload });
+    setEditingItem(null);
+  };
+
   const confirmLabel =
     selectedCount === 1
       ? t("confirmSelectedOne")
       : t("confirmSelected", { count: selectedCount });
 
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <CardTitle>{t("reviewItems")}</CardTitle>
-            <CardDescription>{t("reviewItemsDescription")}</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleSelectAll}>
-              {t("selectAll")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDeselectAll}>
-              {t("deselectAll")}
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto max-h-[500px]">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 sticky top-0">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium text-slate-700 w-12" />
-                  <th className="px-4 py-3 text-left font-medium text-slate-700">
-                    {tCommon("fields.name")}
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-700">
-                    {tCommon("fields.sku")}
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-700">
-                    {tCommon("fields.brand")}
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-700">
-                    {tCommon("fields.status")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {items.map((item) => {
-                  const isDuplicate = item.suggestedGlobalProductId !== null;
-                  return (
-                    <tr
-                      key={item.id}
-                      className={isDuplicate ? "bg-amber-50" : ""}
-                    >
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={localSelectedIds.has(item.id)}
-                          onChange={() => handleToggleItem(item.id)}
-                          className="w-4 h-4 accent-indigo-600 cursor-pointer"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="space-y-1">
-                          <span className="font-medium text-slate-900">
-                            {item.name}
-                          </span>
-                          {isDuplicate && (
-                            <div>
-                              <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs font-normal">
-                                {t("duplicateOf", {
-                                  name:
-                                    item.suggestedGlobalProductName ?? "—",
-                                })}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-slate-600">
-                        {item.sku ?? (
-                          <span className="italic text-slate-400">
-                            {t("autoGenerated")}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {item.brand ?? "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        {isDuplicate ? (
-                          <Badge className="bg-amber-100 text-amber-800 border-amber-300">
-                            {t("possibleDuplicate")}
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-green-100 text-green-700 border-green-300">
-                            <Check className="w-3 h-3 mr-1" />
-                            {tCommon("status.valid")}
-                          </Badge>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+  const duplicateCount = items.filter((i) => i.suggestedGlobalProductId).length;
 
-        <div className="flex justify-between items-center">
-          <Button variant="outline" onClick={onBack}>
-            {tCommon("buttons.back")}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={selectedCount === 0 || confirmJob.isPending}
-          >
-            {confirmJob.isPending ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="w-4 h-4 mr-2" />
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <CardTitle>{t("reviewItems")}</CardTitle>
+              <CardDescription>{t("reviewItemsDescription")}</CardDescription>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <span>
+                  {t("totalDetected")}:{" "}
+                  <strong className="text-slate-900">{items.length}</strong>
+                </span>
+                <span>·</span>
+                <span>
+                  {tCommon("status.selected")}:{" "}
+                  <strong className="text-indigo-700">{selectedCount}</strong>
+                </span>
+                {duplicateCount > 0 && (
+                  <>
+                    <span>·</span>
+                    <span className="text-yellow-700">
+                      {t("withErrors")}: <strong>{duplicateCount}</strong>
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleSelectAll}>
+                  {t("selectAll")}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleDeselectAll}>
+                  {t("deselectAll")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {items.map((item) => (
+              <ImportItemCard
+                key={item.id}
+                item={item}
+                isSelected={localSelectedIds.has(item.id)}
+                onToggleSelect={handleToggleItem}
+                onEdit={setEditingItem}
+              />
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center pt-2">
+            <Button variant="outline" onClick={onBack}>
+              {tCommon("buttons.back")}
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={selectedCount === 0 || confirmJob.isPending}
+            >
+              {confirmJob.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4 mr-2" />
+              )}
+              {confirmLabel}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Edit Drawer */}
+      <Drawer
+        open={!!editingItem}
+        onOpenChange={(open) => {
+          if (!updateItem.isPending && !open) setEditingItem(null);
+        }}
+        isLoading={updateItem.isPending}
+      >
+        <DrawerContent key={editingItem?.id} size="md">
+          <DrawerHeader>
+            <DrawerTitle>{t("editImportItem")}</DrawerTitle>
+            <DrawerDescription>{editingItem?.name}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto">
+            {editingItem && (
+              <ImportItemEditForm
+                formId="edit-import-item-form"
+                item={editingItem}
+                onSubmit={handleUpdateItem}
+                isLoading={updateItem.isPending}
+              />
             )}
-            {confirmLabel}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+          <DrawerFooter className="border-t border-slate-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingItem(null)}
+              disabled={updateItem.isPending}
+            >
+              {tCommon("buttons.cancel")}
+            </Button>
+            <Button
+              type="submit"
+              form="edit-import-item-form"
+              disabled={updateItem.isPending}
+            >
+              {updateItem.isPending && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
+              {tCommon("buttons.saveChanges")}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }
 
@@ -541,8 +567,7 @@ export default function ImportGlobalProductsPage() {
   const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
 
-  const [currentStep, setCurrentStep] =
-    useState<ImportStep>("upload");
+  const [currentStep, setCurrentStep] = useState<ImportStep>("upload");
   const [jobId, setJobId] = useState<string | null>(null);
   const [confirmedJob, setConfirmedJob] = useState<ImportJobDto | null>(null);
 
@@ -596,7 +621,7 @@ export default function ImportGlobalProductsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
