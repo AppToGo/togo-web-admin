@@ -67,7 +67,9 @@
     "sku": "SKU",
     "brand": "Brand",
     "description": "Description",
-    "actions": "Actions"
+    "actions": "Actions",
+    "variants": "Variants",
+    "error": "Error"
   },
   "filters": {
     "all": "All",
@@ -100,7 +102,8 @@
     "deleting": "Deleting...",
     "valid": "Valid",
     "failed": "Failed",
-    "processingFile": "Processing file..."
+    "processingFile": "Processing file...",
+    "selected": "selected"
   },
   "empty": {
     "title": "No data",

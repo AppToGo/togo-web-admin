@@ -138,5 +138,20 @@
     "noVariants": "No variants",
     "moreVariants": "+{count} more",
     "defaultBadge": "Default"
+  },
+  "editImportItem": "Edit import item",
+  "importItemStatus": {
+    "ready": "Ready"
+  },
+  "importItemVariants": "{count} variant(s)",
+  "imageMustBeHttps": "URL must use HTTPS",
+  "importItemFields": {
+    "name": "Name",
+    "sku": "SKU",
+    "brand": "Brand",
+    "description": "Description",
+    "price": "Suggested price",
+    "imageUrl": "Image URL",
+    "industryCategory": "Industry category"
   }
 }
