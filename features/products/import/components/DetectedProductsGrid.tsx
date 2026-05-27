@@ -70,7 +70,7 @@ export function DetectedProductsGrid({
         {items.map((item) => {
           const product = importItemToCatalogProduct(item);
           const categoryName = item.businessCategoryId
-            ? categories.find((c) => c.id === item.businessCategoryId)?.name
+            ? (categories.find((c) => c.id === item.businessCategoryId)?.name ?? item.rawCategory ?? undefined)
             : item.industryCategoryId
               ? (industryCategories?.find((ic) => ic.id === item.industryCategoryId)?.name ?? item.rawCategory ?? undefined)
               : item.rawCategory ?? undefined;

@@ -71,7 +71,7 @@ export const catalogKeys = {
   business: (businessId: string) =>
     [...catalogKeys.all, "business", businessId] as const,
   catalogProducts: (businessId: string) =>
-    [...catalogKeys.all, "products", businessId] as const,
+    [...catalogKeys.all, "catalog-products", businessId] as const,
   catalogProduct: (businessId: string, productId: string) =>
     [...catalogKeys.catalogProducts(businessId), productId] as const,
   variants: (businessId: string, productId: string) =>

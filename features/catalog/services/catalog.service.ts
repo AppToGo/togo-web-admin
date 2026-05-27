@@ -67,21 +67,6 @@ function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, ""); // Trim hyphens
 }
 
-/**
- * Generate a unique ID (for optimistic updates)
- */
-function generateId(): string {
-  return `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
-
-// Toggle between mock and real API
-// Set to true during development without backend
-const USE_MOCK = false;
-
 // ============================================================================
 // MY PRODUCTS API
 // ============================================================================
