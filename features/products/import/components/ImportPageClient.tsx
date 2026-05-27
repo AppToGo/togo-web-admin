@@ -165,7 +165,7 @@ export function ImportPageClient({
     if (!selectedFile) return;
     uploadMutation.mutate(selectedFile, {
       onSuccess: (job: ImportJob) => {
-        setCurrentJobId(job.id);
+        setCurrentJobId(isValidJobId(job.id) ? job.id : null);
         setStep("review");
       },
     });
