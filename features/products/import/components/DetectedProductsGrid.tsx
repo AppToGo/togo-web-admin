@@ -102,6 +102,7 @@ export function DetectedProductsGrid({
         businessId={businessId}
         jobId={jobId}
         categories={categories}
+        industryCategories={industryCategories}
         isOpen={editingItem !== null}
         onClose={() => setEditingItem(null)}
       />

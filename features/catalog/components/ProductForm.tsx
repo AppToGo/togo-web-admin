@@ -86,6 +86,7 @@ export interface ProductFormInitialValues {
   businessCategoryId?: string;
   industryCategoryId?: string;
   price?: number;
+  inlineVariants?: Array<{ label: string; price: number }>;
 }
 
 export interface ProductFormProps {
@@ -102,6 +103,7 @@ export interface ProductFormProps {
   formId?: string;
   hideActions?: boolean;
   initialValues?: ProductFormInitialValues;
+  industryCategoriesPool?: Array<{ id: string; name: string }>;
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────
@@ -215,7 +217,7 @@ function BranchActivationSection({
             {branchName}
           </p>
           {isMainBranch && (
-            <span className="text-xs text-indigo-600">Principal</span>
+            <span className="text-xs text-indigo-600">{t("products.variants.mainBranchLabel")}</span>
           )}
         </div>
         <span className="text-xs text-slate-400 shrink-0">
@@ -326,6 +328,7 @@ export function ProductForm({
   formId,
   hideActions = false,
   initialValues,
+  industryCategoriesPool = [],
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -342,15 +345,44 @@ export function ProductForm({
   });
 
   // Pricing mode (create only)
-  const [pricingMode, setPricingMode] = useState<"simple" | "variants">(
-    "simple"
-  );
-  const [simplePrice, setSimplePrice] = useState<string>(
-    initialValues?.price !== undefined ? String(initialValues.price) : ""
-  );
-  const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>(
-    []
-  );
+  const [pricingMode, setPricingMode] = useState<"simple" | "variants">(() => {
+    if (initialValues?.inlineVariants && initialValues.inlineVariants.length > 0) {
+      if (
+        initialValues.inlineVariants.length === 1 &&
+        initialValues.inlineVariants[0].label === "Unidad"
+      ) {
+        return "simple";
+      }
+      return "variants";
+    }
+    return "simple";
+  });
+  const [simplePrice, setSimplePrice] = useState<string>(() => {
+    if (initialValues?.price !== undefined) return String(initialValues.price);
+    if (
+      initialValues?.inlineVariants?.length === 1 &&
+      initialValues.inlineVariants[0].label === "Unidad"
+    ) {
+      return String(initialValues.inlineVariants[0].price);
+    }
+    return "";
+  });
+  const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>(() => {
+    if (!initialValues?.inlineVariants || initialValues.inlineVariants.length === 0) return [];
+    if (
+      initialValues.inlineVariants.length === 1 &&
+      initialValues.inlineVariants[0].label === "Unidad"
+    ) {
+      return [];
+    }
+    // Use namespaced templateId to avoid collisions with real template UUIDs
+    return initialValues.inlineVariants.map((v) => ({
+      templateId: `__inline__:${v.label}`,
+      label: v.label,
+      attributes: {},
+      price: v.price,
+    }));
+  });
   const [pendingTemplateId, setPendingTemplateId] = useState<string>("");
   const [pendingPrice, setPendingPrice] = useState<string>("");
 
@@ -372,16 +404,27 @@ export function ProductForm({
   useEffect(() => {
     if (!isEditing && branches.length > 0 && !branchInitRef.current) {
       branchInitRef.current = true;
+      const initialVariants: Record<string, VariantBranchConfig> = {};
+      if (initialValues?.inlineVariants) {
+        for (const v of initialValues.inlineVariants) {
+          if (v.label !== "Unidad") {
+            initialVariants[`__inline__:${v.label}`] = {
+              enabled: true,
+              priceOverride: v.price > 0 ? String(v.price) : "",
+            };
+          }
+        }
+      }
       setBranchState(
         Object.fromEntries(
           branches.map((b) => [
             b.id,
-            { enabled: true, simplePriceOverride: "", variants: {} },
+            { enabled: true, simplePriceOverride: "", variants: initialVariants },
           ])
         )
       );
     }
-  }, [branches, isEditing]);
+  }, [branches, isEditing, initialValues?.inlineVariants]);
 
   // Parent categories
   const parentCategories = useMemo(() => {
@@ -400,8 +443,14 @@ export function ProductForm({
         });
       }
     }
+    for (const ic of industryCategoriesPool) {
+      if (!seen.has(ic.id)) {
+        seen.add(ic.id);
+        parents.push({ id: ic.id, name: ic.name });
+      }
+    }
     return parents.sort((a, b) => a.name.localeCompare(b.name));
-  }, [categories]);
+  }, [categories, industryCategoriesPool]);
 
   const filteredSubcategories = useMemo(() => {
     if (!formData.industryCategoryId) return [];
@@ -422,20 +471,6 @@ export function ProductForm({
     () => variantTemplates.filter((t) => !selectedIds.has(t.id)),
     [variantTemplates, selectedIds]
   );
-
-  // Reset variants when industry category changes
-  useEffect(() => {
-    setPendingTemplateId("");
-    setPendingPrice("");
-    setSelectedVariants([]);
-    setBranchState((prev) => {
-      const next = { ...prev };
-      for (const id of Object.keys(next)) {
-        next[id] = { ...next[id], variants: {} };
-      }
-      return next;
-    });
-  }, [formData.industryCategoryId]);
 
   // Initialize form when editing
   useEffect(() => {
@@ -730,6 +765,17 @@ export function ProductForm({
                   ? prev.businessCategoryId
                   : "",
               }));
+              // Reset variant state when user changes parent category
+              setPendingTemplateId("");
+              setPendingPrice("");
+              setSelectedVariants([]);
+              setBranchState((prev) => {
+                const next = { ...prev };
+                for (const id of Object.keys(next)) {
+                  next[id] = { ...next[id], variants: {} };
+                }
+                return next;
+              });
             }}
             disabled={isLoading || parentCategories.length === 0}
           >
@@ -892,7 +938,7 @@ export function ProductForm({
             </p>
           ) : variantTemplates.length === 0 ? (
             <p className="text-sm text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-              No hay variantes predefinidas para esta categoría.
+              {t("products.variants.noTemplatesForCategory")}
             </p>
           ) : (
             <>
@@ -1082,7 +1128,7 @@ export function ProductForm({
                       {branch.name}
                     </p>
                     {branch.isMainBranch && (
-                      <span className="text-xs text-indigo-600">Principal</span>
+                      <span className="text-xs text-indigo-600">{t("products.variants.mainBranchLabel")}</span>
                     )}
                   </div>
                   {state.enabled && (
@@ -1170,7 +1216,7 @@ export function ProductForm({
                       {branch.name}
                     </p>
                     {branch.isMainBranch && (
-                      <span className="text-xs text-indigo-600">Principal</span>
+                      <span className="text-xs text-indigo-600">{t("products.variants.mainBranchLabel")}</span>
                     )}
                   </div>
                   {state.enabled && (

@@ -60,6 +60,8 @@
       "selectPlaceholder": "Seleccioná variante",
       "selectCategoryFirst": "Seleccioná una categoría para agregar variantes.",
       "allAdded": "Todas las variantes de esta categoría ya fueron agregadas.",
+      "noTemplatesForCategory": "No hay variantes predefinidas para esta categoría.",
+      "mainBranchLabel": "Principal",
       "labelPlaceholder": "Etiqueta",
       "add": "Agregar variante",
       "save": "Guardar",

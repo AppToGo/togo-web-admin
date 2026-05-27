@@ -60,6 +60,8 @@
       "selectPlaceholder": "Select variant",
       "selectCategoryFirst": "Select a category to add variants.",
       "allAdded": "All variants for this category have already been added.",
+      "noTemplatesForCategory": "No predefined variants for this category.",
+      "mainBranchLabel": "Main",
       "labelPlaceholder": "Label",
       "add": "Add variant",
       "save": "Save",
