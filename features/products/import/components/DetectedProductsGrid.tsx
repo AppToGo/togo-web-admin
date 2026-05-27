@@ -72,7 +72,7 @@ export function DetectedProductsGrid({
           const categoryName = item.businessCategoryId
             ? categories.find((c) => c.id === item.businessCategoryId)?.name
             : item.industryCategoryId
-              ? industryCategories?.find((ic) => ic.id === item.industryCategoryId)?.name
+              ? (industryCategories?.find((ic) => ic.id === item.industryCategoryId)?.name ?? item.rawCategory ?? undefined)
               : item.rawCategory ?? undefined;
 
           return (
