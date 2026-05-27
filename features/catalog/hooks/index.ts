@@ -50,4 +50,5 @@ export {
   useUpdateVariant,
   useDeleteVariant,
   useIndustryCategoryVariantTemplates,
+  useIndustryCategoriesByIndustry,
 } from "./useCatalog";

@@ -964,4 +964,13 @@ export function useIndustryCategoryVariantTemplates(industryCategoryId: string |
   });
 }
 
+export function useIndustryCategoriesByIndustry(industryId: string | null | undefined) {
+  return useQuery<IndustryCategory[]>({
+    queryKey: ["industryCategories", "byIndustry", industryId],
+    queryFn: () => catalogService.getIndustryCategoriesByIndustry(industryId!),
+    enabled: !!industryId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export type { CatalogToastMessages } from "./useCatalogTranslations";

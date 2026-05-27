@@ -21,12 +21,15 @@ import { useImportJob, importJobKeys } from "../hooks/useImportJob";
 import { useUploadImportFile } from "../hooks/useImportMutations";
 import { confirmImportJob } from "../services/import.service";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
+import { catalogKeys } from "@/features/catalog/hooks";
 import type { ImportJob } from "../types/import.types";
 
 type WizardStep = "upload" | "review" | "confirm";
 
-const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const isValidJobId = (value: string | null): value is string => !!value && UUID_V4_REGEX.test(value);
+// Accepts UUID v4 (xxxxxxxx-xxxx-4xxx-...) and cuid/cuid2 formats used by the backend
+const JOB_ID_REGEX = /^[a-zA-Z0-9_-]{20,36}$/;
+const isValidJobId = (value: string | null): value is string => !!value && JOB_ID_REGEX.test(value);
 
 interface StepIndicatorProps {
   step: WizardStep;
@@ -78,11 +81,13 @@ function StepIndicator({ step }: StepIndicatorProps) {
 interface ImportPageClientProps {
   businessId: string;
   categories: BusinessCategory[];
+  industryCategories?: IndustryCategory[];
 }
 
 export function ImportPageClient({
   businessId,
   categories,
+  industryCategories = [],
 }: ImportPageClientProps) {
   const t = useTranslations("catalog.import");
   const tCommon = useTranslations("common");
@@ -117,6 +122,8 @@ export function ImportPageClient({
       queryClient.invalidateQueries({ queryKey: importJobKeys.job(businessId, jobId) });
       queryClient.invalidateQueries({ queryKey: importJobKeys.jobs(businessId) });
       queryClient.invalidateQueries({ queryKey: ["catalog", "products", businessId] });
+      // Invalidar BusinessCategories para incluir las auto-creadas por el backend al confirmar
+      queryClient.invalidateQueries({ queryKey: catalogKeys.categories(businessId) });
     },
     onError: (err: unknown) => {
       const message =
@@ -227,6 +234,7 @@ export function ImportPageClient({
           jobId={jobData.id}
           items={jobData.items}
           categories={categories}
+          industryCategories={industryCategories}
         />
       );
     }

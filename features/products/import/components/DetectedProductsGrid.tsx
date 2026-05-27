@@ -9,6 +9,7 @@ import { importItemToCatalogProduct } from "../utils/importItemMapper";
 import { EditImportItemFormDrawer } from "./EditImportItemFormDrawer";
 import { DeleteImportItemDialog } from "./DeleteImportItemDialog";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { ImportItem } from "../types/import.types";
 
 interface DetectedProductsGridProps {
@@ -16,6 +17,7 @@ interface DetectedProductsGridProps {
   jobId: string;
   items: ImportItem[];
   categories: BusinessCategory[];
+  industryCategories?: IndustryCategory[];
   showImage?: boolean;
 }
 
@@ -24,6 +26,7 @@ export function DetectedProductsGrid({
   jobId,
   items,
   categories,
+  industryCategories,
   showImage = false,
 }: DetectedProductsGridProps) {
   const t = useTranslations("catalog.import");
@@ -68,7 +71,9 @@ export function DetectedProductsGrid({
           const product = importItemToCatalogProduct(item);
           const categoryName = item.businessCategoryId
             ? categories.find((c) => c.id === item.businessCategoryId)?.name
-            : undefined;
+            : item.industryCategoryId
+              ? industryCategories?.find((ic) => ic.id === item.industryCategoryId)?.name
+              : item.rawCategory ?? undefined;
 
           return (
             <ProductCard

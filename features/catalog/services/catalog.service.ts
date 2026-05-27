@@ -359,6 +359,17 @@ export async function getIndustryCategories(): Promise<IndustryCategory[]> {
   return response.data;
 }
 
+/**
+ * Get industry categories filtered by industry
+ * GET /api/v1/industry-categories/by-industry/:industryId
+ */
+export async function getIndustryCategoriesByIndustry(industryId: string): Promise<IndustryCategory[]> {
+  const response = await apiClient.get<IndustryCategory[]>(
+    `/industry-categories/by-industry/${industryId}`
+  );
+  return response.data;
+}
+
 // ============================================================================
 // STATISTICS
 // ============================================================================

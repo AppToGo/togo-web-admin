@@ -5,9 +5,10 @@ import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
-import { useCategories } from "@/features/catalog/hooks";
+import { useCategories, useBusiness, useIndustryCategoriesByIndustry } from "@/features/catalog/hooks";
 import { ImportPageClient } from "@/features/products/import/components/ImportPageClient";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 
 export default function ImportProductsPage() {
   const t = useTranslations("catalog");
@@ -18,6 +19,14 @@ export default function ImportProductsPage() {
   const { data: categoriesData } = useCategories(businessId ?? "");
   const categories: BusinessCategory[] = Array.isArray(categoriesData)
     ? categoriesData
+    : [];
+
+  const { data: businessData } = useBusiness(businessId ?? "");
+  const industryId = businessData?.industryId ?? null;
+
+  const { data: industryCategoriesData } = useIndustryCategoriesByIndustry(industryId);
+  const industryCategories: IndustryCategory[] = Array.isArray(industryCategoriesData)
+    ? industryCategoriesData
     : [];
 
   if (!businessId) {
@@ -40,7 +49,11 @@ export default function ImportProductsPage() {
 
   return (
     <DashboardLayout>
-      <ImportPageClient businessId={businessId} categories={categories} />
+      <ImportPageClient
+        businessId={businessId}
+        categories={categories}
+        industryCategories={industryCategories}
+      />
     </DashboardLayout>
   );
 }
