@@ -48,6 +48,8 @@ export function EditImportItemFormDrawer({
     if (data.description !== undefined) dto.description = data.description;
     if (data.businessCategoryId !== undefined)
       dto.businessCategoryId = data.businessCategoryId;
+    if (data.industryCategoryId !== undefined)
+      dto.industryCategoryId = data.industryCategoryId;
 
     // price and inlineVariants only exist on CreateProductDto (create mode — product prop is always null here)
     if ("price" in data && data.price !== undefined) {

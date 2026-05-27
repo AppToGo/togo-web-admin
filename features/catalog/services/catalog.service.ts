@@ -67,21 +67,6 @@ function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, ""); // Trim hyphens
 }
 
-/**
- * Generate a unique ID (for optimistic updates)
- */
-function generateId(): string {
-  return `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
-
-// Toggle between mock and real API
-// Set to true during development without backend
-const USE_MOCK = false;
-
 // ============================================================================
 // MY PRODUCTS API
 // ============================================================================
@@ -355,6 +340,17 @@ export async function toggleCategoryStatus(
 export async function getIndustryCategories(): Promise<IndustryCategory[]> {
   const response = await apiClient.get<IndustryCategory[]>(
     "/industry-categories"
+  );
+  return response.data;
+}
+
+/**
+ * Get industry categories filtered by industry
+ * GET /api/v1/industry-categories/by-industry/:industryId
+ */
+export async function getIndustryCategoriesByIndustry(industryId: string): Promise<IndustryCategory[]> {
+  const response = await apiClient.get<IndustryCategory[]>(
+    `/industry-categories/by-industry/${industryId}`
   );
   return response.data;
 }

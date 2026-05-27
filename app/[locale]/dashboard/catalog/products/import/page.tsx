@@ -5,9 +5,10 @@ import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
-import { useCategories } from "@/features/catalog/hooks";
+import { useCategories, useBusiness, useIndustryCategoriesByIndustry } from "@/features/catalog/hooks";
 import { ImportPageClient } from "@/features/products/import/components/ImportPageClient";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 
 export default function ImportProductsPage() {
   const t = useTranslations("catalog");
@@ -19,6 +20,24 @@ export default function ImportProductsPage() {
   const categories: BusinessCategory[] = Array.isArray(categoriesData)
     ? categoriesData
     : [];
+
+  const { data: businessData, isLoading: isBusinessLoading } = useBusiness(businessId ?? "");
+  const industryId = businessData?.industryId ?? null;
+
+  const { data: industryCategoriesData } = useIndustryCategoriesByIndustry(industryId);
+  const industryCategories: IndustryCategory[] = Array.isArray(industryCategoriesData)
+    ? industryCategoriesData
+    : [];
+
+  if (isBusinessLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!businessId) {
     return (
@@ -40,7 +59,11 @@ export default function ImportProductsPage() {
 
   return (
     <DashboardLayout>
-      <ImportPageClient businessId={businessId} categories={categories} />
+      <ImportPageClient
+        businessId={businessId}
+        categories={categories}
+        industryCategories={industryCategories}
+      />
     </DashboardLayout>
   );
 }

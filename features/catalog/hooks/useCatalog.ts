@@ -71,7 +71,7 @@ export const catalogKeys = {
   business: (businessId: string) =>
     [...catalogKeys.all, "business", businessId] as const,
   catalogProducts: (businessId: string) =>
-    [...catalogKeys.all, "products", businessId] as const,
+    [...catalogKeys.all, "catalog-products", businessId] as const,
   catalogProduct: (businessId: string, productId: string) =>
     [...catalogKeys.catalogProducts(businessId), productId] as const,
   variants: (businessId: string, productId: string) =>
@@ -961,6 +961,15 @@ export function useIndustryCategoryVariantTemplates(industryCategoryId: string |
     queryFn: () => catalogService.getVariantTemplates(industryCategoryId!),
     enabled: !!industryCategoryId,
     staleTime: 10 * 60 * 1000, // templates rarely change
+  });
+}
+
+export function useIndustryCategoriesByIndustry(industryId: string | null | undefined) {
+  return useQuery<IndustryCategory[]>({
+    queryKey: ["industryCategories", "byIndustry", industryId],
+    queryFn: () => catalogService.getIndustryCategoriesByIndustry(industryId!),
+    enabled: !!industryId,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
