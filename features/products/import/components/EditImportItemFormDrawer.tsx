@@ -109,6 +109,14 @@ export function EditImportItemFormDrawer({
                   item.industryCategoryId ??
                   categories.find((c) => c.id === item.businessCategoryId)?.industryCategoryId ??
                   undefined,
+                industryCategoryName:
+                  (item.industryCategoryId
+                    ? industryCategories.find((ic) => ic.id === item.industryCategoryId)?.name
+                    : categories.find((c) => c.id === item.businessCategoryId)?.industryCategoryName) ??
+                  item.rawCategory ??
+                  undefined,
+                businessCategoryName:
+                  categories.find((c) => c.id === item.businessCategoryId)?.name ?? undefined,
                 price: item.price ?? undefined,
                 inlineVariants:
                   item.variants && item.variants.length > 0

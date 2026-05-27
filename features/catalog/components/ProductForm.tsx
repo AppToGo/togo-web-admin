@@ -85,6 +85,8 @@ export interface ProductFormInitialValues {
   image?: string;
   businessCategoryId?: string;
   industryCategoryId?: string;
+  industryCategoryName?: string | null;
+  businessCategoryName?: string | null;
   price?: number;
   inlineVariants?: Array<{ label: string; price: number }>;
 }
@@ -449,15 +451,33 @@ export function ProductForm({
         parents.push({ id: ic.id, name: ic.name });
       }
     }
+    // Ensure the currently selected parent always has an option, even when pools haven't loaded yet
+    if (formData.industryCategoryId && !seen.has(formData.industryCategoryId)) {
+      parents.unshift({
+        id: formData.industryCategoryId,
+        name: initialValues?.industryCategoryName ?? formData.industryCategoryId,
+      });
+    }
     return parents.sort((a, b) => a.name.localeCompare(b.name));
-  }, [categories, industryCategoriesPool]);
+  }, [categories, industryCategoriesPool, formData.industryCategoryId, initialValues?.industryCategoryName]);
 
   const filteredSubcategories = useMemo(() => {
     if (!formData.industryCategoryId) return [];
-    return categories.filter(
-      (c) => c.industryCategoryId === formData.industryCategoryId
-    );
-  }, [categories, formData.industryCategoryId]);
+    const filtered = categories
+      .filter((c) => c.industryCategoryId === formData.industryCategoryId)
+      .map((c) => ({ id: c.id, name: c.name }));
+    // Ensure the currently selected subcategory always has an option when categories are still loading
+    if (
+      formData.businessCategoryId &&
+      !filtered.some((c) => c.id === formData.businessCategoryId)
+    ) {
+      filtered.unshift({
+        id: formData.businessCategoryId,
+        name: initialValues?.businessCategoryName ?? formData.businessCategoryId,
+      });
+    }
+    return filtered;
+  }, [categories, formData.industryCategoryId, formData.businessCategoryId, initialValues?.businessCategoryName]);
 
   const { data: variantTemplates = [], isLoading: loadingTemplates } =
     useIndustryCategoryVariantTemplates(formData.industryCategoryId || null);
