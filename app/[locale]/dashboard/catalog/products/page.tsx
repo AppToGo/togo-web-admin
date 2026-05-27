@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Plus, Package, Store, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -33,7 +34,6 @@ import type { SourceFilter } from "@/features/catalog/components/ProductFilters"
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
 import { getVariants } from "@/features/catalog/services/catalog.service";
-import { ImportWizardDrawer } from "@/features/products/import";
 import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
 import type {
   CatalogProduct,
@@ -108,6 +108,7 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
 export default function ProductsPage() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
+  const router = useRouter();
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
@@ -122,7 +123,6 @@ export default function ProductsPage() {
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isImportDrawerOpen, setIsImportDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(
     null
   );
@@ -303,7 +303,7 @@ export default function ProductsPage() {
         <div className="flex justify-end gap-2">
           <Button
             variant="outline"
-            onClick={() => setIsImportDrawerOpen(true)}
+            onClick={() => router.push("/dashboard/catalog/products/import")}
           >
             <Upload className="w-4 h-4 mr-2" />
             {t("products.import")}
@@ -479,12 +479,6 @@ export default function ProductsPage() {
         </DrawerContent>
       </Drawer>
 
-      {/* Import Wizard Drawer */}
-      <ImportWizardDrawer
-        businessId={businessId}
-        isOpen={isImportDrawerOpen}
-        onClose={() => setIsImportDrawerOpen(false)}
-      />
     </DashboardLayout>
   );
 }

@@ -79,6 +79,15 @@ interface BranchActivationState {
   variants: Record<string, VariantBranchConfig>; // key = templateId
 }
 
+export interface ProductFormInitialValues {
+  name?: string;
+  description?: string;
+  image?: string;
+  businessCategoryId?: string;
+  industryCategoryId?: string;
+  price?: number;
+}
+
 export interface ProductFormProps {
   product?: CatalogProduct | null;
   businessId: string;
@@ -92,6 +101,7 @@ export interface ProductFormProps {
   showProductImages?: boolean;
   formId?: string;
   hideActions?: boolean;
+  initialValues?: ProductFormInitialValues;
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────
@@ -315,17 +325,18 @@ export function ProductForm({
   showProductImages = true,
   formId,
   hideActions = false,
+  initialValues,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
   const isEditing = !!product;
 
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    image: "",
-    businessCategoryId: "",
-    industryCategoryId: "",
+    name: initialValues?.name ?? "",
+    description: initialValues?.description ?? "",
+    image: initialValues?.image ?? "",
+    businessCategoryId: initialValues?.businessCategoryId ?? "",
+    industryCategoryId: initialValues?.industryCategoryId ?? "",
     isActive: true,
     isFeatured: false,
   });
@@ -334,7 +345,9 @@ export function ProductForm({
   const [pricingMode, setPricingMode] = useState<"simple" | "variants">(
     "simple"
   );
-  const [simplePrice, setSimplePrice] = useState<string>("");
+  const [simplePrice, setSimplePrice] = useState<string>(
+    initialValues?.price !== undefined ? String(initialValues.price) : ""
+  );
   const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>(
     []
   );
@@ -350,7 +363,7 @@ export function ProductForm({
   );
   const branchInitRef = useRef(false);
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialValues?.image ?? null);
   const initializedProductIdRef = useRef<string | null>(null);
 
   const { data: branches = [] } = useBranches();
