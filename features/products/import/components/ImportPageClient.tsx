@@ -25,6 +25,9 @@ import type { ImportJob } from "../types/import.types";
 
 type WizardStep = "upload" | "review" | "confirm";
 
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const isValidJobId = (value: string | null): value is string => !!value && UUID_V4_REGEX.test(value);
+
 interface StepIndicatorProps {
   step: WizardStep;
 }
@@ -88,8 +91,9 @@ export function ImportPageClient({
 
   const [step, setStep] = useState<WizardStep>("upload");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const rawJobId = searchParams.get("jobId");
   const [currentJobId, setCurrentJobId] = useState<string | null>(
-    searchParams.get("jobId")
+    isValidJobId(rawJobId) ? rawJobId : null
   );
 
   useEffect(() => {

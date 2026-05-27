@@ -4,10 +4,9 @@ import {
   uploadImportFile,
   updateImportItem,
   deleteImportItem,
-  confirmImportJob,
 } from "../services/import.service";
 import { importJobKeys } from "./useImportJob";
-import type { UpdateImportItemDto, ConfirmImportDto } from "../types/import.types";
+import type { UpdateImportItemDto } from "../types/import.types";
 
 export function useUploadImportFile(businessId: string) {
   const queryClient = useQueryClient();
@@ -67,23 +66,3 @@ export function useDeleteImportItem(businessId: string, jobId: string) {
   });
 }
 
-export function useConfirmImportJob(businessId: string, jobId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (dto: ConfirmImportDto) =>
-      confirmImportJob(businessId, jobId, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: importJobKeys.job(businessId, jobId),
-      });
-      queryClient.invalidateQueries({ queryKey: importJobKeys.jobs(businessId) });
-      queryClient.invalidateQueries({ queryKey: ["catalog", "products", businessId] });
-    },
-    onError: (err: unknown) => {
-      const message =
-        err instanceof Error ? err.message : "Error al confirmar la importación";
-      toast.error(message);
-    },
-  });
-}
