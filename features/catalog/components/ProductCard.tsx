@@ -53,9 +53,14 @@ export function ProductCard({
     <div className="border-t border-slate-100 mt-3 pt-3 space-y-1.5">
       {variants.length > 0 ? (
         variants.map((v) => (
-          <div key={v.id} className="flex items-center justify-between gap-2 text-xs">
+          <div
+            key={v.id}
+            className="flex items-center justify-between gap-2 text-xs"
+          >
             <span className="text-slate-600 truncate">{v.variantLabel}</span>
-            <span className="font-semibold text-slate-900 shrink-0">{formatPrice(v.price)}</span>
+            <span className="font-semibold text-slate-900 shrink-0">
+              {formatPrice(v.price)}
+            </span>
           </div>
         ))
       ) : (
@@ -118,7 +123,12 @@ export function ProductCard({
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
               >
-                <Check className={cn("w-16 h-16 drop-shadow-lg", selected ? "text-white" : "text-white/90")} />
+                <Check
+                  className={cn(
+                    "w-16 h-16 drop-shadow-lg",
+                    selected ? "text-white" : "text-white/90"
+                  )}
+                />
               </div>
             )}
 
@@ -145,24 +155,24 @@ export function ProductCard({
           </div>
         ) : (
           <>
-            {showCheckbox && (
-              <div
-                onClick={handleCheckboxClick}
-                className={cn(
-                  "absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer z-[5]",
-                  selected
-                    ? "bg-indigo-500 text-white"
-                    : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
-                )}
-                role="checkbox"
-                aria-checked={selected}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
-              >
-                {selected && <Check className="w-4 h-4" />}
-              </div>
-            )}
             <div className="flex flex-wrap gap-1 mb-2">
+              {showCheckbox && (
+                <div
+                  onClick={handleCheckboxClick}
+                  className={cn(
+                    "w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer z-[5]",
+                    selected
+                      ? "bg-indigo-500 text-white"
+                      : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
+                  )}
+                  role="checkbox"
+                  aria-checked={selected}
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && onSelect?.()}
+                >
+                  {selected && <Check className="w-4 h-4" />}
+                </div>
+              )}
               {product.globalProductId ? (
                 <span className="px-2 py-1 text-[10px] font-medium bg-blue-100 text-blue-700 rounded-full">
                   {t("title")}
@@ -184,7 +194,9 @@ export function ProductCard({
 
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0 space-y-2">
-          <h3 className="font-semibold text-slate-900 line-clamp-1">{product.name}</h3>
+          <h3 className="font-semibold text-slate-900 line-clamp-1">
+            {product.name}
+          </h3>
 
           {categoryName && (
             <div className="flex items-center gap-1.5">
@@ -194,7 +206,9 @@ export function ProductCard({
           )}
 
           {product.description && (
-            <p className="text-xs text-slate-500 line-clamp-2 flex-1">{product.description}</p>
+            <p className="text-xs text-slate-500 line-clamp-2 flex-1">
+              {product.description}
+            </p>
           )}
 
           {variantsList}
@@ -204,9 +218,17 @@ export function ProductCard({
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 bg-white/90 shadow-card-sm hover:bg-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-white/90 shadow-card-sm hover:bg-white"
+              >
                 <span className="sr-only">{tCommon("actions.actions")}</span>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <circle cx="12" cy="6" r="2" />
                   <circle cx="12" cy="12" r="2" />
                   <circle cx="12" cy="18" r="2" />
@@ -214,12 +236,20 @@ export function ProductCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit?.(product); }}>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(product);
+                }}
+              >
                 <Edit2 className="w-4 h-4 mr-2" />
                 {tCommon("buttons.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={(e) => { e.stopPropagation(); onDelete?.(product); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(product);
+                }}
                 className="text-red-600 focus:text-red-600"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -248,7 +278,9 @@ export function ProductCard({
             onClick={handleCheckboxClick}
             className={cn(
               "shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer",
-              selected ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
+              selected
+                ? "bg-indigo-500 text-white"
+                : "bg-slate-200 text-slate-400 group-hover:bg-slate-300"
             )}
             role="checkbox"
             aria-checked={selected}
@@ -308,7 +340,10 @@ export function ProductCard({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={(e) => { e.stopPropagation(); onEdit?.(product); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.(product);
+            }}
           >
             <Edit2 className="w-4 h-4" />
           </Button>
@@ -316,16 +351,17 @@ export function ProductCard({
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-red-600 hover:text-red-700"
-            onClick={(e) => { e.stopPropagation(); onDelete?.(product); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.(product);
+            }}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      <div className="px-4 pb-4">
-        {variantsList}
-      </div>
+      <div className="px-4 pb-4">{variantsList}</div>
     </div>
   );
 }
