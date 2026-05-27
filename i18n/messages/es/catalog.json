@@ -434,6 +434,11 @@
     "title": "Importar productos",
     "description": "Subí un Excel, CSV, PDF o imagen con tu lista de productos",
     "button": "Importar productos",
+    "page": {
+      "title": "Importar productos",
+      "subtitle": "Revisá y editá los productos detectados antes de importarlos",
+      "back": "Volver al catálogo"
+    },
     "step": {
       "upload": "Subir archivo",
       "review": "Revisar productos",
@@ -450,6 +455,8 @@
       "subtitle": "Esto puede demorar unos segundos"
     },
     "review": {
+      "headerTitle": "Productos detectados",
+      "selectedCount": "{selected} de {total} seleccionados",
       "noProducts": "No se detectaron productos en el archivo.",
       "columns": {
         "name": "Nombre",
@@ -457,6 +464,11 @@
         "category": "Categoría",
         "suggestion": "Sugerencia IA"
       }
+    },
+    "editItem": {
+      "title": "Editar producto",
+      "description": "Modificá los datos antes de importar",
+      "save": "Guardar cambios"
     },
     "confirm": {
       "title": "Resumen de importación",
@@ -467,11 +479,14 @@
     },
     "success": {
       "title": "¡Importación completada!",
-      "subtitle": "{count} productos importados exitosamente."
+      "subtitle": "{count} productos importados exitosamente.",
+      "viewProducts": "Ver productos",
+      "importAnother": "Importar otro archivo"
     },
     "error": {
       "title": "Error en el análisis",
-      "subtitle": "Ocurrió un error inesperado. Intentá con otro archivo."
+      "subtitle": "Ocurrió un error inesperado. Intentá con otro archivo.",
+      "confirmFailed": "Error al confirmar la importación. Intentá nuevamente."
     }
   }
 }
