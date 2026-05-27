@@ -1,17 +1,18 @@
-export { ImportWizardDrawer } from "./components/ImportWizardDrawer";
 export { FileDropzone } from "./components/FileDropzone";
 export { ImportProcessingState } from "./components/ImportProcessingState";
-export { DetectedProductsTable } from "./components/DetectedProductsTable";
-export { EditImportItemDrawer } from "./components/EditImportItemDrawer";
 export { DeleteImportItemDialog } from "./components/DeleteImportItemDialog";
+export { EditImportItemFormDrawer } from "./components/EditImportItemFormDrawer";
+export { DetectedProductsGrid } from "./components/DetectedProductsGrid";
+export { ImportPageClient } from "./components/ImportPageClient";
 
 export { useImportJob, importJobKeys } from "./hooks/useImportJob";
 export {
   useUploadImportFile,
   useUpdateImportItem,
   useDeleteImportItem,
-  useConfirmImportJob,
 } from "./hooks/useImportMutations";
+
+export { importItemToCatalogProduct, IMPORT_DEFAULT_VARIANT_LABEL } from "./utils/importItemMapper";
 
 export * from "./services/import.service";
 export * from "./types/import.types";

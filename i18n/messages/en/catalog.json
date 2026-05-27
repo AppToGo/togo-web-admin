@@ -428,6 +428,11 @@
     "title": "Import products",
     "description": "Upload an Excel, CSV, PDF or image with your product list",
     "button": "Import products",
+    "page": {
+      "title": "Import products",
+      "subtitle": "Review and edit the detected products before importing them",
+      "back": "Back to catalog"
+    },
     "step": {
       "upload": "Upload file",
       "review": "Review products",
@@ -444,6 +449,8 @@
       "subtitle": "This may take a few seconds"
     },
     "review": {
+      "headerTitle": "Detected products",
+      "selectedCount": "{selected} of {total} selected",
       "noProducts": "No products detected in the file.",
       "columns": {
         "name": "Name",
@@ -451,6 +458,11 @@
         "category": "Category",
         "suggestion": "AI Suggestion"
       }
+    },
+    "editItem": {
+      "title": "Edit product",
+      "description": "Modify the details before importing",
+      "save": "Save changes"
     },
     "confirm": {
       "title": "Import summary",
@@ -461,11 +473,14 @@
     },
     "success": {
       "title": "Import completed!",
-      "subtitle": "{count} products imported successfully."
+      "subtitle": "{count} products imported successfully.",
+      "viewProducts": "View products",
+      "importAnother": "Import another file"
     },
     "error": {
       "title": "Analysis error",
-      "subtitle": "An unexpected error occurred. Try with another file."
+      "subtitle": "An unexpected error occurred. Try with another file.",
+      "confirmFailed": "Error confirming the import. Please try again."
     }
   }
 }
