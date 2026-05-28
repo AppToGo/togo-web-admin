@@ -44,6 +44,7 @@ import { generateSlug } from "../utils/slug";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
+const SELECT_PROPOSED = "__proposed__" as const;
 const UNIDAD_ID = "__unidad__" as const;
 
 // ─── Public types ─────────────────────────────────────────────────────────────
@@ -106,6 +107,7 @@ export interface ProductFormProps {
   hideActions?: boolean;
   initialValues?: ProductFormInitialValues;
   industryCategoriesPool?: Array<{ id: string; name: string }>;
+  proposedSubcategoryName?: string;
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────
@@ -331,6 +333,7 @@ export function ProductForm({
   hideActions = false,
   initialValues,
   industryCategoriesPool = [],
+  proposedSubcategoryName,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
@@ -820,17 +823,17 @@ export function ProductForm({
         <div className="space-y-1.5">
           <Label>{t("products.form.subcategoryOptional")}</Label>
           <Select
-            value={formData.businessCategoryId || SELECT_NONE}
+            value={formData.businessCategoryId || (proposedSubcategoryName && formData.industryCategoryId ? SELECT_PROPOSED : SELECT_NONE)}
             onValueChange={(value) =>
               setFormData((prev) => ({
                 ...prev,
-                businessCategoryId: value === SELECT_NONE ? "" : value,
+                businessCategoryId: (value === SELECT_NONE || value === SELECT_PROPOSED) ? "" : value,
               }))
             }
             disabled={
               isLoading ||
               !formData.industryCategoryId ||
-              filteredSubcategories.length === 0
+              (filteredSubcategories.length === 0 && !proposedSubcategoryName)
             }
           >
             <SelectTrigger>
@@ -840,8 +843,14 @@ export function ProductForm({
               <SelectItem value={SELECT_NONE}>
                 {t("products.form.selectSubcategory")}
               </SelectItem>
+              {proposedSubcategoryName && formData.industryCategoryId && (
+                <SelectItem value={SELECT_PROPOSED} className="text-slate-500 italic">
+                  {proposedSubcategoryName} {t("products.form.willBeCreated")}
+                </SelectItem>
+              )}
               {filteredSubcategories.length === 0 &&
-              formData.industryCategoryId ? (
+              formData.industryCategoryId &&
+              !proposedSubcategoryName ? (
                 <SelectItem value={SELECT_DISABLED} disabled>
                   {t("products.form.noSubcategoriesInParent")}
                 </SelectItem>

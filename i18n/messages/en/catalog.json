@@ -122,6 +122,7 @@
       "subcategoryOptional": "Subcategory (optional)",
       "selectSubcategory": "Select subcategory",
       "noSubcategoriesInParent": "This category has no subcategories",
+      "willBeCreated": "(will be created on confirm)",
       "subcategoryFallbackHint": "Without subcategory, the product will appear under \"{parentName}\""
     },
     "empty": {

@@ -100,6 +100,9 @@ export function EditImportItemFormDrawer({
               onCancel={onClose}
               isLoading={updateMutation.isPending}
               showProductImages={!!item.imageUrl}
+              proposedSubcategoryName={
+                !item.businessCategoryId && item.rawCategory ? item.rawCategory : undefined
+              }
               initialValues={{
                 name: item.name,
                 description: item.description ?? undefined,
@@ -113,7 +116,6 @@ export function EditImportItemFormDrawer({
                   (item.industryCategoryId
                     ? industryCategories.find((ic) => ic.id === item.industryCategoryId)?.name
                     : categories.find((c) => c.id === item.businessCategoryId)?.industryCategoryName) ??
-                  item.rawCategory ??
                   undefined,
                 businessCategoryName:
                   categories.find((c) => c.id === item.businessCategoryId)?.name ?? undefined,
