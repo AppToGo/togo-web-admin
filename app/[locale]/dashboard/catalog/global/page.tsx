@@ -29,7 +29,7 @@ import type { BranchActivation } from "@/features/catalog/components/ProductForm
 
 type ViewMode = "grid" | "list";
 
-const globalPageSize = 12;
+const globalPageSize = 20;
 
 function GlobalCatalogLoading() {
   return (

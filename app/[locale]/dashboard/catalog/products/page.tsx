@@ -128,7 +128,7 @@ export default function ProductsPage() {
   );
 
   const [page, setPage] = useState(1);
-  const pageSize = 12;
+  const pageSize = 20;
 
   const showProductImages =
     (currentBusiness?.settings as Record<string, unknown> | undefined)
