@@ -207,7 +207,13 @@ export function ImportPageClient({
   const handleConfirm = () => {
     if (!currentJobId || selectedItemIds.length === 0) return;
     confirmMutation.mutate(
-      { jobId: currentJobId, itemIds: selectedItemIds, branchSelectionsByItem: branchSelections },
+      {
+        jobId: currentJobId,
+        itemIds: selectedItemIds,
+        branchSelectionsByItem: Object.fromEntries(
+          selectedItemIds.map((id) => [id, branchSelections[id] ?? activeBranchIds])
+        ),
+      },
       { onSuccess: () => setStep("confirm") }
     );
   };
