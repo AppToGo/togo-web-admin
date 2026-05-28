@@ -396,7 +396,7 @@ export async function getCatalogProducts(
   if (filters?.page) params.append("page", String(filters.page));
   if (filters?.limit) params.append("limit", String(filters.limit));
   if (filters?.isActive !== undefined) params.append("isActive", String(filters.isActive));
-  if (filters?.businessCategoryId) params.append("businessCategoryId", filters.businessCategoryId);
+  if (filters?.businessCategoryId) params.append("categoryId", filters.businessCategoryId);
   if (filters?.isFromTemplate !== undefined) params.append("isFromTemplate", String(filters.isFromTemplate));
 
   const response = await apiClient.get<BackendProductsResponse>(
