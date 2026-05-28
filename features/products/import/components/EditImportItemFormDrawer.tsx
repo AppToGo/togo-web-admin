@@ -20,6 +20,7 @@ import type {
 import type { ImportItem, UpdateImportItemDto } from "../types/import.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
+import type { Branch } from "@/features/branches/types";
 
 interface EditImportItemFormDrawerProps {
   item: ImportItem | null;
@@ -29,6 +30,9 @@ interface EditImportItemFormDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   jobId: string;
+  branches?: Branch[];
+  selectedBranchIds?: string[];
+  onBranchIdsChange?: (itemId: string, ids: string[]) => void;
 }
 
 export function EditImportItemFormDrawer({
@@ -39,9 +43,15 @@ export function EditImportItemFormDrawer({
   isOpen,
   onClose,
   jobId,
+  branches = [],
+  selectedBranchIds = [],
+  onBranchIdsChange,
 }: EditImportItemFormDrawerProps) {
   const t = useTranslations("catalog.import.editItem");
   const tCommon = useTranslations("common");
+  const tImport = useTranslations("catalog.import");
+  const activeBranches = branches.filter((b) => b.isActive);
+  const showBranchSelector = activeBranches.length > 1;
   const updateMutation = useUpdateImportItem(businessId, jobId);
 
   const handleSubmit = (data: CreateProductDto | UpdateCatalogProductDto, _branchActivations?: BranchActivation[]) => {
@@ -131,6 +141,43 @@ export function EditImportItemFormDrawer({
             />
           )}
         </div>
+
+        {showBranchSelector && item && (
+          <div className="px-4 pb-4 border-t border-slate-100 pt-4">
+            <p className="text-sm font-medium text-slate-700 mb-2">
+              {tImport("editItem.branchSelection.title")}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {activeBranches.map((branch) => {
+                const isSelected = selectedBranchIds.includes(branch.id);
+                return (
+                  <button
+                    key={branch.id}
+                    type="button"
+                    onClick={() => {
+                      const next = isSelected
+                        ? selectedBranchIds.filter((id) => id !== branch.id)
+                        : [...selectedBranchIds, branch.id];
+                      onBranchIdsChange?.(item.id, next);
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      isSelected
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400"
+                    }`}
+                  >
+                    {branch.name}
+                  </button>
+                );
+              })}
+            </div>
+            {selectedBranchIds.length === 0 && (
+              <p className="text-xs text-amber-600 mt-1">
+                {tImport("editItem.branchSelection.noneWarning")}
+              </p>
+            )}
+          </div>
+        )}
 
         <DrawerFooter className="border-t border-slate-200">
           <Button

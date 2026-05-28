@@ -11,6 +11,7 @@ import { DeleteImportItemDialog } from "./DeleteImportItemDialog";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { ImportItem } from "../types/import.types";
+import type { Branch } from "@/features/branches/types";
 
 interface DetectedProductsGridProps {
   businessId: string;
@@ -19,6 +20,9 @@ interface DetectedProductsGridProps {
   categories: BusinessCategory[];
   industryCategories?: IndustryCategory[];
   showImage?: boolean;
+  branches?: Branch[];
+  branchSelections?: Record<string, string[]>;
+  onBranchSelectionsChange?: (selections: Record<string, string[]>) => void;
 }
 
 export function DetectedProductsGrid({
@@ -28,6 +32,9 @@ export function DetectedProductsGrid({
   categories,
   industryCategories,
   showImage = false,
+  branches = [],
+  branchSelections = {},
+  onBranchSelectionsChange,
 }: DetectedProductsGridProps) {
   const t = useTranslations("catalog.import");
   const [editingItem, setEditingItem] = useState<ImportItem | null>(null);
@@ -103,6 +110,11 @@ export function DetectedProductsGrid({
         industryCategories={industryCategories}
         isOpen={editingItem !== null}
         onClose={() => setEditingItem(null)}
+        branches={branches}
+        selectedBranchIds={editingItem ? (branchSelections[editingItem.id] ?? branches.filter((b) => b.isActive).map((b) => b.id)) : []}
+        onBranchIdsChange={(itemId, ids) =>
+          onBranchSelectionsChange?.({ ...branchSelections, [itemId]: ids })
+        }
       />
 
       <DeleteImportItemDialog

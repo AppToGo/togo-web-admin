@@ -79,4 +79,9 @@ export interface UpdateImportItemDto {
 
 export interface ConfirmImportDto {
   itemIds: string[];
+  /**
+   * Per-item branch selection. Key = ImportItem.id, value = branchIds to activate in.
+   * Items absent from this map default to all active branches on the backend.
+   */
+  branchSelectionsByItem?: Record<string, string[]>;
 }

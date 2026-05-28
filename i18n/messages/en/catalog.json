@@ -465,7 +465,11 @@
     "editItem": {
       "title": "Edit product",
       "description": "Modify the details before importing",
-      "save": "Save changes"
+      "save": "Save changes",
+      "branchSelection": {
+        "title": "Branches where it will appear",
+        "noneWarning": "Select at least one branch so the product is visible in the catalog"
+      }
     },
     "confirm": {
       "title": "Import summary",

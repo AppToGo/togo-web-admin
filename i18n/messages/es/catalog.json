@@ -471,7 +471,11 @@
     "editItem": {
       "title": "Editar producto",
       "description": "Modificá los datos antes de importar",
-      "save": "Guardar cambios"
+      "save": "Guardar cambios",
+      "branchSelection": {
+        "title": "Sedes donde aparecerá",
+        "noneWarning": "Seleccioná al menos una sede para que el producto sea visible en el catálogo"
+      }
     },
     "confirm": {
       "title": "Resumen de importación",

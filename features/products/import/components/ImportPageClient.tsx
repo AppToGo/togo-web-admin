@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useImportJob, importJobKeys } from "../hooks/useImportJob";
 import { useUploadImportFile } from "../hooks/useImportMutations";
 import { confirmImportJob } from "../services/import.service";
+import { useBranches } from "@/features/branches/hooks/useBranches";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import { catalogKeys } from "@/features/catalog/hooks";
@@ -98,6 +99,10 @@ export function ImportPageClient({
   const [currentJobId, setCurrentJobId] = useState<string | null>(
     isValidJobId(rawJobId) ? rawJobId : null
   );
+  const [branchSelections, setBranchSelections] = useState<Record<string, string[]>>({});
+
+  const { data: branches = [] } = useBranches();
+  const activeBranchIds = branches.filter((b) => b.isActive).map((b) => b.id);
 
   useEffect(() => {
     const currentParam = searchParams.get("jobId");
@@ -114,8 +119,8 @@ export function ImportPageClient({
   const { data: jobData } = useImportJob(businessId, currentJobId);
 
   const confirmMutation = useMutation({
-    mutationFn: ({ jobId, itemIds }: { jobId: string; itemIds: string[] }) =>
-      confirmImportJob(businessId, jobId, { itemIds }),
+    mutationFn: ({ jobId, itemIds, branchSelectionsByItem }: { jobId: string; itemIds: string[]; branchSelectionsByItem: Record<string, string[]> }) =>
+      confirmImportJob(businessId, jobId, { itemIds, branchSelectionsByItem }),
     onSuccess: (_data, { jobId }) => {
       queryClient.invalidateQueries({
         queryKey: importJobKeys.job(businessId, jobId),
@@ -163,6 +168,21 @@ export function ImportPageClient({
     }
   }, [currentJobId, jobData]);
 
+  // Initialize branch selections when items arrive (all active branches selected by default)
+  useEffect(() => {
+    if (!jobData?.items.length || !activeBranchIds.length) return;
+    setBranchSelections((prev) => {
+      const next = { ...prev };
+      for (const item of jobData.items) {
+        if (!next[item.id]) {
+          next[item.id] = activeBranchIds;
+        }
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run when item list or branch list changes
+  }, [jobData?.items.length, activeBranchIds.join(",")]);
+
   const selectedItems = jobData?.items.filter((i) => i.isSelected) ?? [];
   const selectedItemIds = selectedItems.map((i) => i.id);
 
@@ -187,7 +207,7 @@ export function ImportPageClient({
   const handleConfirm = () => {
     if (!currentJobId || selectedItemIds.length === 0) return;
     confirmMutation.mutate(
-      { jobId: currentJobId, itemIds: selectedItemIds },
+      { jobId: currentJobId, itemIds: selectedItemIds, branchSelectionsByItem: branchSelections },
       { onSuccess: () => setStep("confirm") }
     );
   };
@@ -241,6 +261,9 @@ export function ImportPageClient({
           items={jobData.items}
           categories={categories}
           industryCategories={industryCategories}
+          branches={branches}
+          branchSelections={branchSelections}
+          onBranchSelectionsChange={setBranchSelections}
         />
       );
     }
