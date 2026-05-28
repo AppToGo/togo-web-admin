@@ -50,8 +50,11 @@ export function EditImportItemFormDrawer({
     const dto: UpdateImportItemDto = {};
     if (data.name) dto.name = data.name;
     if (data.description !== undefined) dto.description = data.description;
-    if (data.businessCategoryId !== undefined)
+    if (data.businessCategoryId === "") {
+      dto.businessCategoryId = null;
+    } else if (data.businessCategoryId !== undefined) {
       dto.businessCategoryId = data.businessCategoryId;
+    }
     if (data.industryCategoryId !== undefined)
       dto.industryCategoryId = data.industryCategoryId;
 
@@ -101,7 +104,7 @@ export function EditImportItemFormDrawer({
               isLoading={updateMutation.isPending}
               showProductImages={!!item.imageUrl}
               proposedSubcategoryName={
-                !item.businessCategoryId && item.rawCategory ? item.rawCategory : undefined
+                !item.businessCategoryId && item.rawCategory && item.industryCategoryId ? item.rawCategory : undefined
               }
               initialValues={{
                 name: item.name,
