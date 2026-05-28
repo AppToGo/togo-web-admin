@@ -18,11 +18,14 @@ import type {
   UpdateCatalogProductDto,
 } from "@/features/catalog/types/catalog.types";
 import type { ImportItem, UpdateImportItemDto } from "../types/import.types";
+import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
+import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 
 interface EditImportItemFormDrawerProps {
   item: ImportItem | null;
   businessId: string;
   categories: BusinessCategory[];
+  industryCategories?: IndustryCategory[];
   isOpen: boolean;
   onClose: () => void;
   jobId: string;
@@ -32,6 +35,7 @@ export function EditImportItemFormDrawer({
   item,
   businessId,
   categories,
+  industryCategories = [],
   isOpen,
   onClose,
   jobId,
@@ -40,22 +44,30 @@ export function EditImportItemFormDrawer({
   const tCommon = useTranslations("common");
   const updateMutation = useUpdateImportItem(businessId, jobId);
 
-  const handleSubmit = (data: CreateProductDto | UpdateCatalogProductDto) => {
+  const handleSubmit = (data: CreateProductDto | UpdateCatalogProductDto, _branchActivations?: BranchActivation[]) => {
     if (!item) return;
 
     const dto: UpdateImportItemDto = {};
     if (data.name) dto.name = data.name;
     if (data.description !== undefined) dto.description = data.description;
-    if (data.businessCategoryId !== undefined)
+    if (data.businessCategoryId === "") {
+      dto.businessCategoryId = null;
+    } else if (data.businessCategoryId !== undefined) {
       dto.businessCategoryId = data.businessCategoryId;
+    }
     if (data.industryCategoryId !== undefined)
       dto.industryCategoryId = data.industryCategoryId;
 
-    // price and inlineVariants only exist on CreateProductDto (create mode — product prop is always null here)
-    if ("price" in data && data.price !== undefined) {
+    if ("inlineVariants" in data && data.inlineVariants && data.inlineVariants.length > 0) {
+      dto.variants = data.inlineVariants.map((v) => ({
+        variantLabel: v.label,
+        suggestedPrice: v.price,
+      }));
+    } else if ("price" in data && data.price !== undefined) {
       dto.price = data.price;
-    } else if ("inlineVariants" in data && data.inlineVariants && data.inlineVariants.length > 0) {
-      dto.price = data.inlineVariants[0].price;
+    } else if (item.price !== null) {
+      // Fallback: preserve original price if form was submitted without price data
+      dto.price = item.price;
     }
 
     updateMutation.mutate(
@@ -81,25 +93,40 @@ export function EditImportItemFormDrawer({
         <div className="flex-1 overflow-y-auto">
           {item && (
             <ProductForm
+              key={item.id}
               formId="edit-import-item-form"
               hideActions
               businessId={businessId}
               categories={categories}
+              industryCategoriesPool={industryCategories.map((ic) => ({ id: ic.id, name: ic.name }))}
               onSubmit={handleSubmit}
               onCancel={onClose}
               isLoading={updateMutation.isPending}
               showProductImages={!!item.imageUrl}
+              proposedSubcategoryName={
+                !item.businessCategoryId && item.rawCategory && item.industryCategoryId ? item.rawCategory : undefined
+              }
               initialValues={{
                 name: item.name,
                 description: item.description ?? undefined,
                 image: item.imageUrl ?? undefined,
                 businessCategoryId: item.businessCategoryId ?? undefined,
-                // item.industryCategoryId comes directly from the API; fall back to resolving via categories
                 industryCategoryId:
                   item.industryCategoryId ??
                   categories.find((c) => c.id === item.businessCategoryId)?.industryCategoryId ??
                   undefined,
+                industryCategoryName:
+                  (item.industryCategoryId
+                    ? industryCategories.find((ic) => ic.id === item.industryCategoryId)?.name
+                    : categories.find((c) => c.id === item.businessCategoryId)?.industryCategoryName) ??
+                  undefined,
+                businessCategoryName:
+                  categories.find((c) => c.id === item.businessCategoryId)?.name ?? undefined,
                 price: item.price ?? undefined,
+                inlineVariants:
+                  item.variants && item.variants.length > 0
+                    ? item.variants.map((v) => ({ label: v.variantLabel, price: v.suggestedPrice ?? 0 }))
+                    : undefined,
               }}
             />
           )}

@@ -71,9 +71,7 @@ export function DetectedProductsGrid({
           const product = importItemToCatalogProduct(item);
           const categoryName = item.businessCategoryId
             ? (categories.find((c) => c.id === item.businessCategoryId)?.name ?? item.rawCategory ?? undefined)
-            : item.industryCategoryId
-              ? (industryCategories?.find((ic) => ic.id === item.industryCategoryId)?.name ?? item.rawCategory ?? undefined)
-              : item.rawCategory ?? undefined;
+            : item.rawCategory ?? undefined;
 
           return (
             <ProductCard
@@ -102,6 +100,7 @@ export function DetectedProductsGrid({
         businessId={businessId}
         jobId={jobId}
         categories={categories}
+        industryCategories={industryCategories}
         isOpen={editingItem !== null}
         onClose={() => setEditingItem(null)}
       />

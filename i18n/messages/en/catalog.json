@@ -60,6 +60,8 @@
       "selectPlaceholder": "Select variant",
       "selectCategoryFirst": "Select a category to add variants.",
       "allAdded": "All variants for this category have already been added.",
+      "noTemplatesForCategory": "No predefined variants for this category.",
+      "mainBranchLabel": "Main",
       "labelPlaceholder": "Label",
       "add": "Add variant",
       "save": "Save",
@@ -120,6 +122,7 @@
       "subcategoryOptional": "Subcategory (optional)",
       "selectSubcategory": "Select subcategory",
       "noSubcategoriesInParent": "This category has no subcategories",
+      "willBeCreated": "(will be created on confirm)",
       "subcategoryFallbackHint": "Without subcategory, the product will appear under \"{parentName}\""
     },
     "empty": {

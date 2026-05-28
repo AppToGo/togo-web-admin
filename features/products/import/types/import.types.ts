@@ -70,7 +70,7 @@ export interface UpdateImportItemDto {
   name?: string;
   description?: string;
   price?: number;
-  businessCategoryId?: string;
+  businessCategoryId?: string | null;
   industryCategoryId?: string;
   isSelected?: boolean;
   imageUrl?: string;

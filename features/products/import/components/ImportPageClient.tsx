@@ -29,7 +29,8 @@ type WizardStep = "upload" | "review" | "confirm";
 
 // Accepts UUID v4 (xxxxxxxx-xxxx-4xxx-...) and cuid/cuid2 formats used by the backend
 const JOB_ID_REGEX = /^[a-zA-Z0-9_-]{20,36}$/;
-const isValidJobId = (value: string | null): value is string => !!value && JOB_ID_REGEX.test(value);
+const isValidJobId = (value: string | null): value is string =>
+  !!value && JOB_ID_REGEX.test(value);
 
 interface StepIndicatorProps {
   step: WizardStep;
@@ -47,10 +48,7 @@ function StepIndicator({ step }: StepIndicatorProps) {
   return (
     <div className="flex items-center gap-1">
       {steps.map((s, i) => (
-        <div
-          key={s.key}
-          className="flex items-center gap-1 flex-1 last:flex-none"
-        >
+        <div key={s.key} className="flex items-center gap-1 last:flex-none">
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
               i < currentIdx
@@ -108,7 +106,7 @@ export function ImportPageClient({
     } else if (!currentJobId && currentParam) {
       router.replace(`?`, { scroll: false });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only reacts to currentJobId; including router/searchParams would cause a replace→searchParams-change→replace loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only reacts to currentJobId; including router/searchParams would cause a replace→searchParams-change→replace loop
   }, [currentJobId]);
 
   const queryClient = useQueryClient();
@@ -119,11 +117,19 @@ export function ImportPageClient({
     mutationFn: ({ jobId, itemIds }: { jobId: string; itemIds: string[] }) =>
       confirmImportJob(businessId, jobId, { itemIds }),
     onSuccess: (_data, { jobId }) => {
-      queryClient.invalidateQueries({ queryKey: importJobKeys.job(businessId, jobId) });
-      queryClient.invalidateQueries({ queryKey: importJobKeys.jobs(businessId) });
-      queryClient.invalidateQueries({ queryKey: ["catalog", "products", businessId] });
+      queryClient.invalidateQueries({
+        queryKey: importJobKeys.job(businessId, jobId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: importJobKeys.jobs(businessId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["catalog", "products", businessId],
+      });
       // Invalidar BusinessCategories para incluir las auto-creadas por el backend al confirmar
-      queryClient.invalidateQueries({ queryKey: catalogKeys.categories(businessId) });
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.categories(businessId),
+      });
     },
     onError: (err: unknown) => {
       const message =
@@ -302,7 +308,7 @@ export function ImportPageClient({
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)]">
       {/* Page header */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4">
+      <div className="px-6 py-4">
         <button
           onClick={handleBack}
           className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-4"
@@ -319,7 +325,7 @@ export function ImportPageClient({
               <p className="text-slate-500 mt-1">{t("page.subtitle")}</p>
             )}
           </div>
-          <div className="sm:w-72">
+          <div>
             <StepIndicator step={step} />
           </div>
         </div>
@@ -334,11 +340,15 @@ export function ImportPageClient({
 
       {/* Footer actions */}
       {!isCompleted && (
-        <div className="border-t border-slate-200 bg-white px-6 py-4 flex justify-between gap-3">
+        <div className="px-6 py-4 flex justify-end gap-3">
           <Button
             variant="outline"
             onClick={handleBack}
-            disabled={uploadMutation.isPending || confirmMutation.isPending || isJobConfirming}
+            disabled={
+              uploadMutation.isPending ||
+              confirmMutation.isPending ||
+              isJobConfirming
+            }
           >
             {t("page.back")}
           </Button>
