@@ -385,6 +385,7 @@ type BackendProductsResponse = {
   total: number;
   page: number;
   limit: number;
+  counts?: { total: number; fromTemplate: number; custom: number };
 };
 
 export async function getCatalogProducts(
@@ -402,9 +403,9 @@ export async function getCatalogProducts(
   const response = await apiClient.get<BackendProductsResponse>(
     `/businesses/${businessId}/products?${params}`
   );
-  const { items, total, page, limit } = response.data;
+  const { items, total, page, limit, counts } = response.data;
   const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
-  return { items, meta: { total, page, limit, totalPages } };
+  return { items, meta: { total, page, limit, totalPages }, counts };
 }
 
 export async function getCatalogProduct(

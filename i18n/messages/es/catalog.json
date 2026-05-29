@@ -15,6 +15,11 @@
     "error": {
       "title": "Error al cargar productos"
     },
+    "stats": {
+      "total": "{count, plural, one {# producto} other {# productos}}",
+      "custom": "{count, plural, one {# personalizado} other {# personalizados}}",
+      "fromTemplate": "{count, plural, one {# del catálogo global} other {# del catálogo global}}"
+    },
     "title": "Productos",
     "create": "Crear producto",
     "createDescription": "Crea un producto nuevo para tu catálogo",

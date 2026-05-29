@@ -177,6 +177,7 @@ export default function ProductsPage() {
 
   const products = productsData?.items ?? [];
   const totalPages = productsData?.meta?.totalPages ?? 0;
+  const productCounts = productsData?.counts;
 
   // Build a category lookup map for name resolution in cards
   const categoryMap = useMemo(() => {
@@ -300,21 +301,34 @@ export default function ProductsPage() {
           />
         </div>
 
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/catalog/products/import")}
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            {t("products.import")}
-          </Button>
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t("products.create")}
-          </Button>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {productCounts && (
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <span className="font-medium text-slate-700">
+                {t("products.stats.total", { count: productCounts.total })}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span>{t("products.stats.custom", { count: productCounts.custom })}</span>
+              <span className="text-slate-300">·</span>
+              <span>{t("products.stats.fromTemplate", { count: productCounts.fromTemplate })}</span>
+            </div>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/dashboard/catalog/products/import")}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {t("products.import")}
+            </Button>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t("products.create")}
+            </Button>
+          </div>
         </div>
 
         {/* Products */}

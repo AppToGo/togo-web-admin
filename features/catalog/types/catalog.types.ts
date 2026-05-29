@@ -435,9 +435,16 @@ export interface UpdateVariantDto {
   isActive?: boolean;
 }
 
+export interface ProductCounts {
+  total: number;
+  fromTemplate: number;
+  custom: number;
+}
+
 export interface PaginatedProducts {
   items: CatalogProduct[];
   meta: { total: number; page: number; limit: number; totalPages: number };
+  counts?: ProductCounts;
 }
 
 export interface CatalogProductsFilters {

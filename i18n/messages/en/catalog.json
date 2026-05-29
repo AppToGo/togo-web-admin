@@ -15,6 +15,11 @@
     "error": {
       "title": "Error loading products"
     },
+    "stats": {
+      "total": "{count, plural, one {# product} other {# products}}",
+      "custom": "{count, plural, one {# custom} other {# custom}}",
+      "fromTemplate": "{count, plural, one {# from global catalog} other {# from global catalog}}"
+    },
     "title": "Products",
     "create": "Create product",
     "createDescription": "Create a new product for your catalog",
