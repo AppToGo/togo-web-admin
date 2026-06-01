@@ -264,7 +264,7 @@ export function useUpdateOrderStatus() {
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
 
       const livePredicate = (q: { queryKey: readonly unknown[] }) =>
-        q.queryKey[0] === "orders" && q.queryKey.includes("live");
+        q.queryKey[0] === "orders" && q.queryKey[2] === "live";
 
       const previousLive = queryClient.getQueriesData<Order[]>({
         predicate: livePredicate,
@@ -333,7 +333,7 @@ export function useUpdateOrderStatus() {
     onSettled: (_data, _error, { orderId }) => {
       queryClient.invalidateQueries({
         predicate: (q) =>
-          q.queryKey[0] === "orders" && q.queryKey.includes("live"),
+          q.queryKey[0] === "orders" && q.queryKey[2] === "live",
       });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
@@ -372,7 +372,7 @@ export function useUpdateOrderPaymentStatus() {
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
 
       const livePredicate = (q: { queryKey: readonly unknown[] }) =>
-        q.queryKey[0] === "orders" && q.queryKey.includes("live");
+        q.queryKey[0] === "orders" && q.queryKey[2] === "live";
 
       // Save previous state for rollback
       const previousLive = queryClient.getQueriesData<Order[]>({
@@ -450,7 +450,7 @@ export function useUpdateOrderPaymentStatus() {
     onSettled: (_data, _error, { orderId }) => {
       queryClient.invalidateQueries({
         predicate: (q) =>
-          q.queryKey[0] === "orders" && q.queryKey.includes("live"),
+          q.queryKey[0] === "orders" && q.queryKey[2] === "live",
       });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
