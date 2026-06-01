@@ -260,12 +260,15 @@ export function useUpdateOrderStatus() {
       data: UpdateOrderStatusRequest;
     }) => updateOrderStatus(orderId, data, effectiveBusinessId),
 
-    // Optimistic update
     onMutate: async ({ orderId, data }) => {
-      // Cancel in-flight queries
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
 
-      // Save previous state for rollback
+      const livePredicate = (q: { queryKey: readonly unknown[] }) =>
+        q.queryKey[0] === "orders" && q.queryKey.includes("live");
+
+      const previousLive = queryClient.getQueriesData<Order[]>({
+        predicate: livePredicate,
+      });
       const previousOrders = queryClient.getQueryData<Order[]>(
         ORDERS_KEYS.lists()
       );
@@ -273,10 +276,10 @@ export function useUpdateOrderStatus() {
         ORDERS_KEYS.detail(orderId)
       );
 
-      // Update orders list
+      // Update the live cache — this is what the kanban board actually reads
       queryClient.setQueriesData<Order[]>(
-        { queryKey: ORDERS_KEYS.lists() },
-        (old: Order[] | undefined) => {
+        { predicate: livePredicate },
+        (old) => {
           if (!old) return old;
           return old.map((order) =>
             order.id === orderId ? { ...order, status: data.status } : order
@@ -284,17 +287,31 @@ export function useUpdateOrderStatus() {
         }
       );
 
-      // Update order detail
+      // Keep legacy lists() update for any non-kanban consumers
+      queryClient.setQueriesData<Order[]>(
+        { queryKey: ORDERS_KEYS.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((order) =>
+            order.id === orderId ? { ...order, status: data.status } : order
+          );
+        }
+      );
+
       queryClient.setQueryData<Order>(ORDERS_KEYS.detail(orderId), (old) => {
         if (!old) return old;
         return { ...old, status: data.status };
       });
 
-      return { previousOrders, previousOrder };
+      return { previousLive, previousOrders, previousOrder };
     },
 
-    // Rollback on error
     onError: (err, { orderId }, context) => {
+      if (context?.previousLive) {
+        for (const [key, data] of context.previousLive) {
+          queryClient.setQueryData(key, data);
+        }
+      }
       if (context?.previousOrders) {
         queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
       }
@@ -304,19 +321,20 @@ export function useUpdateOrderStatus() {
           context.previousOrder
         );
       }
-      // Extract error message from backend
       const errorMessage = getHumanizedErrorMessage(err);
       toast.error(errorMessage || t("errors.updateStatusFailed"));
     },
 
-    // Success
     onSuccess: (_data, { data }) => {
       const statusLabel = statusLabels[data.status];
       toast.success(t("statusUpdated", { status: statusLabel }));
     },
 
-    // Revalidate after mutation
     onSettled: (_data, _error, { orderId }) => {
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          q.queryKey[0] === "orders" && q.queryKey.includes("live"),
+      });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.history(orderId) });
