@@ -371,12 +371,31 @@ export function useUpdateOrderPaymentStatus() {
       // Cancel in-flight queries
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
 
+      const livePredicate = (q: { queryKey: readonly unknown[] }) =>
+        q.queryKey[0] === "orders" && q.queryKey.includes("live");
+
       // Save previous state for rollback
+      const previousLive = queryClient.getQueriesData<Order[]>({
+        predicate: livePredicate,
+      });
       const previousOrders = queryClient.getQueryData<Order[]>(
         ORDERS_KEYS.lists()
       );
       const previousOrder = queryClient.getQueryData<Order>(
         ORDERS_KEYS.detail(orderId)
+      );
+
+      // Update the live cache — this is what the kanban board actually reads
+      queryClient.setQueriesData<Order[]>(
+        { predicate: livePredicate },
+        (old) => {
+          if (!old) return old;
+          return old.map((order) =>
+            order.id === orderId
+              ? { ...order, paymentStatus: data.paymentStatus }
+              : order
+          );
+        }
       );
 
       // Update orders list
@@ -398,11 +417,16 @@ export function useUpdateOrderPaymentStatus() {
         return { ...old, paymentStatus: data.paymentStatus };
       });
 
-      return { previousOrders, previousOrder };
+      return { previousLive, previousOrders, previousOrder };
     },
 
     // Rollback on error
     onError: (err, { orderId }, context) => {
+      if (context?.previousLive) {
+        for (const [key, data] of context.previousLive) {
+          queryClient.setQueryData(key, data);
+        }
+      }
       if (context?.previousOrders) {
         queryClient.setQueryData(ORDERS_KEYS.lists(), context.previousOrders);
       }
@@ -424,6 +448,10 @@ export function useUpdateOrderPaymentStatus() {
 
     // Revalidate after mutation
     onSettled: (_data, _error, { orderId }) => {
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          q.queryKey[0] === "orders" && q.queryKey.includes("live"),
+      });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
     },
