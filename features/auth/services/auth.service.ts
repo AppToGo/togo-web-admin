@@ -29,7 +29,7 @@ const AUTH_ENDPOINTS = {
 } as const;
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/v1";
 
 /**
  * Login with email and password
