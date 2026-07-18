@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    // Bucket público de producción + MinIO local en dev
+    // Production public bucket + local MinIO in dev
     remotePatterns: [
       {
         protocol: "https",
