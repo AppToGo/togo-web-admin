@@ -231,6 +231,33 @@
         "saturday": "Sábado",
         "sunday": "Domingo"
       }
+    },
+    "transfer": {
+      "title": "Pago por transferencia",
+      "description": "Configura las cuentas bancarias para recibir pagos de esta sede",
+      "enable": "Permitir pago por transferencia",
+      "enableDescription": "Muestra el botón de transferencia en el flujo de pedidos",
+      "accounts": "Cuentas bancarias",
+      "addAccount": "Agregar cuenta",
+      "noAccounts": "Sin cuentas configuradas",
+      "noAccountsDescription": "Agrega al menos una cuenta para activar el pago por transferencia",
+      "maxAccounts": "Máximo 5 cuentas",
+      "accountType": "Tipo",
+      "accountName": "Nombre / Etiqueta",
+      "accountNumber": "Número",
+      "accountHolder": "Titular",
+      "accountAdditionalInfo": "Info adicional",
+      "types": {
+        "NEQUI": "Nequi",
+        "DAVIPLATA": "Daviplata",
+        "BANK_ACCOUNT": "Cuenta bancaria"
+      },
+      "placeholders": {
+        "name": "Ej: Nequi La Zona",
+        "number": "Ej: 3001234567",
+        "holder": "Ej: Juan García",
+        "additionalInfo": "Ej: AHORROS - Bancolombia"
+      }
     }
   }
 }

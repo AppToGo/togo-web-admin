@@ -12,7 +12,9 @@ import { ArrowLeft, Save, Store, Phone } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { DeliveryConfigSection } from './DeliveryConfigSection';
 import { BusinessHoursSection } from './BusinessHoursSection';
-import type { Branch, DeliveryConfig, BusinessHours } from '../types';
+import { TransferOptionsSection } from './TransferOptionsSection';
+import type { Branch, DeliveryConfig, BusinessHours, TransferOptions } from '../types';
+import { DEFAULT_TRANSFER_OPTIONS } from '../types';
 
 interface BranchSettingsFormProps {
   /** Sede a configurar */
@@ -35,6 +37,7 @@ export interface BranchSettingsFormData {
   address: string;
   deliveryConfig?: DeliveryConfig;
   businessHours?: BusinessHours;
+  transferOptions?: TransferOptions;
 }
 
 export function BranchSettingsForm({
@@ -53,6 +56,7 @@ export function BranchSettingsForm({
     contactPhone: branch.contactPhone ?? '',
     address: branch.address ?? '',
     deliveryConfig: branch.deliveryConfig ?? { type: 'FREE' },
+    transferOptions: branch.transferOptions ?? DEFAULT_TRANSFER_OPTIONS,
     businessHours: branch.businessHours ?? {
       timezone: 'America/Bogota',
       schedule: {
@@ -170,6 +174,12 @@ export function BranchSettingsForm({
       <DeliveryConfigSection
         value={formData.deliveryConfig}
         onChange={(config) => updateField('deliveryConfig', config)}
+      />
+
+      {/* Transfer Payment */}
+      <TransferOptionsSection
+        value={formData.transferOptions}
+        onChange={(opts) => updateField('transferOptions', opts)}
       />
 
       {/* Horarios de atención */}

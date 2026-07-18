@@ -39,9 +39,12 @@ import type {
   DeliveryFeeType,
   DeliveryConfig,
   BusinessHours,
+  TransferOptions,
 } from "../types";
+import { DEFAULT_TRANSFER_OPTIONS } from "../types";
 import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
+import { TransferOptionsSection } from "./TransferOptionsSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
@@ -148,9 +151,11 @@ export function BranchForm({
         longitude: null as number | null,
         deliveryConfig: { type: "FREE" as DeliveryFeeType },
         businessHours: DEFAULT_BUSINESS_HOURS,
+        transferOptions: DEFAULT_TRANSFER_OPTIONS,
       };
     }
     const bh = branch.businessHours as BusinessHours | null;
+    const to = branch.transferOptions as TransferOptions | null;
     return {
       name: branch.name,
       slug: branch.slug,
@@ -168,6 +173,7 @@ export function BranchForm({
         ? (branch.deliveryConfig as DeliveryConfig)
         : { type: "FREE" as DeliveryFeeType },
       businessHours: bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+      transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
     };
   });
 
@@ -185,6 +191,7 @@ export function BranchForm({
   useEffect(() => {
     if (branch) {
       const bh = branch.businessHours as BusinessHours | null;
+      const to = branch.transferOptions as TransferOptions | null;
       setFormData({
         name: branch.name,
         slug: branch.slug,
@@ -203,6 +210,7 @@ export function BranchForm({
           : { type: "FREE" as DeliveryFeeType },
         businessHours:
           bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+        transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
       });
       setErrors({});
       setTouched({});
@@ -308,6 +316,11 @@ export function BranchForm({
     return typed?.timezone && typed?.schedule ? typed : DEFAULT_BUSINESS_HOURS;
   };
 
+  const normalizeTransferOptions = (to: unknown): TransferOptions => {
+    const typed = to as TransferOptions | null;
+    return typed?.options !== undefined ? typed : DEFAULT_TRANSFER_OPTIONS;
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,6 +343,7 @@ export function BranchForm({
           longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
           businessHours: normalizeBusinessHours(formData.businessHours),
+          transferOptions: normalizeTransferOptions(formData.transferOptions),
         }
       : {
           name: formData.name,
@@ -345,6 +359,7 @@ export function BranchForm({
           longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
           businessHours: normalizeBusinessHours(formData.businessHours),
+          transferOptions: normalizeTransferOptions(formData.transferOptions),
         };
 
     onSubmit(data);
@@ -678,6 +693,14 @@ export function BranchForm({
         value={formData.businessHours}
         onChange={(hours) =>
           setFormData((prev) => ({ ...prev, businessHours: hours }))
+        }
+      />
+
+      {/* Transfer Payment */}
+      <TransferOptionsSection
+        value={formData.transferOptions}
+        onChange={(opts) =>
+          setFormData((prev) => ({ ...prev, transferOptions: opts }))
         }
       />
 

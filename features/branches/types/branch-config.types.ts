@@ -83,6 +83,34 @@ export interface BusinessHours {
 }
 
 // ============================================================================
+// TRANSFER PAYMENT TYPES
+// ============================================================================
+
+export type TransferOptionType = "NEQUI" | "DAVIPLATA" | "BANK_ACCOUNT";
+
+export interface TransferOption {
+  type: TransferOptionType;
+  /** Display label, e.g. "Nequi La Zona" */
+  name: string;
+  /** Mobile number or bank account number */
+  number: string;
+  /** Account holder name */
+  holder: string;
+  /** Optional extra info, e.g. "AHORROS - Bancolombia" */
+  additionalInfo?: string;
+}
+
+export interface TransferOptions {
+  enabled: boolean;
+  options: TransferOption[];
+}
+
+export const DEFAULT_TRANSFER_OPTIONS: TransferOptions = {
+  enabled: false,
+  options: [],
+};
+
+// ============================================================================
 // CONFIGURACIÓN COMPLETA
 // ============================================================================
 
@@ -94,6 +122,8 @@ export interface BranchSettings {
   delivery?: DeliveryConfig;
   /** Horarios de atención */
   businessHours?: BusinessHours;
+  /** Opciones de pago por transferencia */
+  transferOptions?: TransferOptions;
 }
 
 // ============================================================================

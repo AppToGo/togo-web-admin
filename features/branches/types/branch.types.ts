@@ -5,7 +5,7 @@
  * Basado en los DTOs del backend.
  */
 
-import type { DeliveryConfig, BusinessHours } from './branch-config.types';
+import type { DeliveryConfig, BusinessHours, TransferOptions } from './branch-config.types';
 
 /**
  * Información de una sucursal
@@ -36,6 +36,8 @@ export interface Branch {
   deliveryConfig?: DeliveryConfig;
   /** Horarios de atención */
   businessHours?: BusinessHours;
+  /** Opciones de pago por transferencia */
+  transferOptions?: TransferOptions;
 }
 
 /**
@@ -72,6 +74,8 @@ export interface CreateBranchRequest {
   deliveryConfig?: DeliveryConfig;
   /** Horarios de atención */
   businessHours?: BusinessHours;
+  /** Opciones de pago por transferencia */
+  transferOptions?: TransferOptions;
 }
 
 /**
@@ -98,4 +102,6 @@ export interface UpdateBranchRequest {
   deliveryConfig?: DeliveryConfig;
   /** Horarios de atención */
   businessHours?: BusinessHours;
+  /** Opciones de pago por transferencia */
+  transferOptions?: TransferOptions;
 }
