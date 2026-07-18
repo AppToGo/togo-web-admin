@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -43,9 +44,18 @@ export function TransferOptionsSection({
   onChange,
 }: TransferOptionsSectionProps) {
   const t = useTranslations("branches.settings.transfer");
-  const tc = useTranslations("common");
 
   const config = value ?? DEFAULT_TRANSFER_OPTIONS;
+
+  // Stable render keys per option (index keys break focus/Select state when
+  // removing a middle row). Kept in a ref so they never reach the saved JSON;
+  // regenerated only if the parent replaces the list externally.
+  const optionKeysRef = useRef<string[]>([]);
+  if (optionKeysRef.current.length !== config.options.length) {
+    optionKeysRef.current = config.options.map(
+      (_, i) => optionKeysRef.current[i] ?? crypto.randomUUID()
+    );
+  }
 
   const handleToggle = (enabled: boolean) => {
     onChange({ ...config, enabled });
@@ -53,10 +63,12 @@ export function TransferOptionsSection({
 
   const addOption = () => {
     if (config.options.length >= 5) return;
+    optionKeysRef.current = [...optionKeysRef.current, crypto.randomUUID()];
     onChange({ ...config, options: [...config.options, { ...EMPTY_OPTION }] });
   };
 
   const removeOption = (index: number) => {
+    optionKeysRef.current = optionKeysRef.current.filter((_, i) => i !== index);
     const newOptions = config.options.filter((_, i) => i !== index);
     onChange({ ...config, options: newOptions });
   };
@@ -75,26 +87,28 @@ export function TransferOptionsSection({
   return (
     <Card variant="glass">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>{t("title")}</CardTitle>
-            <CardDescription className="mt-1">{t("description")}</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              id="transfer-enabled"
-              checked={config.enabled}
-              onCheckedChange={handleToggle}
-            />
-            <Label htmlFor="transfer-enabled" className="cursor-pointer text-sm">
-              {t("enable")}
-            </Label>
-          </div>
-        </div>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription className="mt-1">{t("description")}</CardDescription>
       </CardHeader>
 
-      {config.enabled && (
-        <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
+        {/* Enable toggle — same "Status toggle" pattern as branch-form.tsx */}
+        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+          <div>
+            <Label htmlFor="transfer-enabled" className="font-medium cursor-pointer">
+              {t("enable")}
+            </Label>
+            <p className="text-xs text-slate-500 mt-0.5">{t("enableDescription")}</p>
+          </div>
+          <Switch
+            id="transfer-enabled"
+            checked={config.enabled}
+            onCheckedChange={handleToggle}
+          />
+        </div>
+
+        {config.enabled && (
+          <>
           <div className="flex items-center justify-between">
             <Label>{t("accounts")}</Label>
             <Button
@@ -118,7 +132,7 @@ export function TransferOptionsSection({
             <div className="space-y-3">
               {config.options.map((opt, index) => (
                 <div
-                  key={index}
+                  key={optionKeysRef.current[index]}
                   className="p-4 bg-slate-50 rounded-lg space-y-3"
                 >
                   <div className="flex items-center justify-between">
@@ -130,9 +144,9 @@ export function TransferOptionsSection({
                       variant="ghost"
                       size="icon"
                       onClick={() => removeOption(index)}
-                      className="text-red-500 hover:text-red-700 h-7 w-7"
+                      className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
 
@@ -206,8 +220,9 @@ export function TransferOptionsSection({
           {config.options.length >= 5 && (
             <p className="text-xs text-slate-500">{t("maxAccounts")}</p>
           )}
-        </CardContent>
-      )}
+          </>
+        )}
+      </CardContent>
     </Card>
   );
 }

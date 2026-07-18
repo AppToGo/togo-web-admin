@@ -83,20 +83,20 @@ export interface BusinessHours {
 }
 
 // ============================================================================
-// TIPOS DE TRANSFERENCIA
+// TRANSFER PAYMENT TYPES
 // ============================================================================
 
 export type TransferOptionType = "NEQUI" | "DAVIPLATA" | "BANK_ACCOUNT";
 
 export interface TransferOption {
   type: TransferOptionType;
-  /** Etiqueta visible, ej. "Nequi La Zona" */
+  /** Display label, e.g. "Nequi La Zona" */
   name: string;
-  /** Número de celular o número de cuenta bancaria */
+  /** Mobile number or bank account number */
   number: string;
-  /** Nombre del titular de la cuenta */
+  /** Account holder name */
   holder: string;
-  /** Info extra opcional, ej. "AHORROS - Bancolombia" */
+  /** Optional extra info, e.g. "AHORROS - Bancolombia" */
   additionalInfo?: string;
 }
 

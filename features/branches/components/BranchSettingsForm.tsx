@@ -176,7 +176,7 @@ export function BranchSettingsForm({
         onChange={(config) => updateField('deliveryConfig', config)}
       />
 
-      {/* Pago por transferencia */}
+      {/* Transfer Payment */}
       <TransferOptionsSection
         value={formData.transferOptions}
         onChange={(opts) => updateField('transferOptions', opts)}
