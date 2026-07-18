@@ -16,14 +16,22 @@
  * SYNCHRONIZATION: Uses auth-sync.service to coordinate with Axios interceptor.
  */
 
-import { ReactNode, useEffect, useState, createContext, useContext } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useRef, useState, createContext, useContext } from "react";
+import { useRouter } from "next/navigation";
+import { usePathname } from "@/i18n/routing";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import { 
-  startGlobalRefresh, 
+import {
+  startGlobalRefresh,
   clearGlobalRefreshState,
-  isRefreshInProgress 
+  isRefreshInProgress
 } from "@/services/auth-sync.service";
+import {
+  SESSION_LOGOUT_EVENT,
+  type SessionLogoutEventDetail,
+} from "@/services/session.service";
+import { routing } from "@/i18n/routing";
+import { useBranchStore } from "@/stores/branch.store";
 
 type AuthRestoreState = "checking" | "authenticated" | "unauthenticated";
 
@@ -44,13 +52,50 @@ interface AuthProviderProps {
 }
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password"];
+const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [restoreState, setRestoreState] = useState<AuthRestoreState>("checking");
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const isRedirecting = useRef(false);
   const { accessToken, isAuthenticated, setAuthData, clearAuth } = useAuthStore();
+
+  // Listen for force-logout events dispatched by the Axios interceptor.
+  // This replaces window.location.href with a locale-aware React navigation,
+  // preventing full-page reloads when a session expires mid-use.
+  useEffect(() => {
+    function handleForceLogout(event: Event) {
+      // Idempotent: ignore if a redirect is already in progress
+      if (isRedirecting.current) return;
+      isRedirecting.current = true;
+
+      const { reason } = (event as CustomEvent<SessionLogoutEventDetail>).detail;
+
+      queryClient.clear();
+      clearAuth();
+      // Clear persisted branch selection so the next user starts with a clean state
+      useBranchStore.getState().deselectAllBranches();
+
+      const pathSegment = pathname?.split("/")[1];
+      const locale = routing.locales.includes(pathSegment as typeof routing.locales[number])
+        ? pathSegment
+        : routing.defaultLocale;
+
+      const loginPath = `/${locale}/login${reason === "session_expired" ? "?session_expired=true" : ""}`;
+      router.replace(loginPath);
+
+      // Reset the flag after navigation so future force-logout events
+      // (e.g. after the component re-mounts on the login page) are not ignored
+      setTimeout(() => {
+        isRedirecting.current = false;
+      }, 2000);
+    }
+
+    window.addEventListener(SESSION_LOGOUT_EVENT, handleForceLogout);
+    return () => window.removeEventListener(SESSION_LOGOUT_EVENT, handleForceLogout);
+  }, [clearAuth, pathname, queryClient, router]);
 
   useEffect(() => {
     // Check if current route is public
@@ -58,26 +103,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // If we already have an access token in memory, we're good
     if (accessToken) {
-      console.log("[AuthProvider] Access token exists in memory, authenticated");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthProvider] Access token exists in memory, authenticated");
+      }
       setRestoreState("authenticated");
       return;
     }
 
     // If we're on a public route, don't try to restore (no loading state needed)
     if (isPublicRoute) {
-      console.log("[AuthProvider] On public route, skip restore");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthProvider] On public route, skip restore");
+      }
       setRestoreState("unauthenticated");
       return;
     }
 
     // If a global refresh is already in progress, wait for it
     if (isRefreshInProgress()) {
-      console.log("[AuthProvider] Refresh already in progress, waiting...");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthProvider] Refresh already in progress, waiting...");
+      }
       return;
     }
 
     // Attempt to restore session
-    console.log("[AuthProvider] Attempting session restore...");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[AuthProvider] Attempting session restore...");
+    }
     
     async function restoreSession() {
       const token = await startGlobalRefresh(async () => {
@@ -90,15 +143,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.ok) {
             const data = await response.json();
             setAuthData(data);
-            console.log("[AuthProvider] Session restored successfully");
+            if (process.env.NODE_ENV === "development") {
+              console.log("[AuthProvider] Session restored successfully");
+            }
             return { success: true, token: data.access_token };
           } else if (response.status === 401) {
             // No valid session (no cookie or expired)
-            console.log("[AuthProvider] No valid session (401), redirecting to login");
+            if (process.env.NODE_ENV === "development") {
+              console.log("[AuthProvider] No valid session (401), redirecting to login");
+            }
             clearAuth();
             return { success: false, token: null };
           } else {
-            console.log("[AuthProvider] Refresh failed with status:", response.status);
+            if (process.env.NODE_ENV === "development") {
+              console.log("[AuthProvider] Refresh failed with status:", response.status);
+            }
             clearAuth();
             return { success: false, token: null };
           }
@@ -117,9 +176,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setRestoreState("authenticated");
       } else {
         setRestoreState("unauthenticated");
-        // Redirect to login with return URL
-        const loginUrl = new URL("/login", window.location.origin);
-        loginUrl.searchParams.set("redirect", pathname);
+        // Redirect to login with return URL (preserve locale)
+        const extractedLocale = pathname?.split('/')[1];
+        const locale = routing.locales.includes(extractedLocale as typeof routing.locales[number]) 
+          ? extractedLocale 
+          : routing.defaultLocale;
+        
+        // Validate redirect path to prevent open redirect attacks
+        const isValidRedirect = (path: string): boolean => {
+          return path.startsWith('/') && !path.startsWith('//') && !path.includes(':');
+        };
+        const redirectPath = pathname && isValidRedirect(pathname) ? pathname : `/${locale}/dashboard/orders`;
+        
+        const loginUrl = new URL(`/${locale}/login`, window.location.origin);
+        loginUrl.searchParams.set("redirect", redirectPath);
         router.replace(loginUrl.toString());
       }
     }
@@ -138,7 +208,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#6366f1 transparent #6366f1 #6366f1' }} />
-          <p className="text-sm" style={{ color: '#64748b' }}>Restaurando sesión...</p>
         </div>
       </div>
     );

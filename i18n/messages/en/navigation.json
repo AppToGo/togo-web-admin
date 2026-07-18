@@ -1,0 +1,59 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "catalog": "Catalog",
+    "customers": "Customers",
+    "settings": "Settings",
+    "administration": "Administration",
+    "globalCatalog": "Global Catalog",
+    "industryCategories": "Categories",
+    "logout": "Sign out",
+    "user": "User",
+    "notifications": "Notifications",
+    "expandMenu": "Expand menu",
+    "collapseMenu": "Collapse menu",
+    "openMenu": "Open menu",
+    "myProducts": "My Products",
+    "inventory": "Branch Inventory",
+    "categories": "Categories",
+    "branches": "Branches",
+    "operatorProfiles": "Operator Profiles",
+    "general": "Settings",
+    "business": "Business Details",
+    "businesses": "Businesses",
+    "users": "Users"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "catalog": "Catalog",
+    "customers": "Customers",
+    "branches": "Branches",
+    "settings": "Settings",
+    "profile": "Profile",
+    "admin": "Administration",
+    "globalProducts": "Global Products"
+  },
+  "footer": {
+    "copyright": "© {year} Togo. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "support": "Support"
+  },
+  "header": {
+    "search": "Search...",
+    "help": "Help",
+    "account": "My account",
+    "profile": "Profile",
+    "language": "Language"
+  },
+  "language": {
+    "title": "Language",
+    "select": "Select language",
+    "es": "Español",
+    "en": "English",
+    "pt": "Português"
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "deliveryTypes": {
+    "delivery": "Delivery",
+    "table": "Table",
+    "pickup": "Pickup",
+    "DELIVERY": "Delivery",
+    "PICKUP": "Pickup",
+    "DINE_IN": "Dine in"
+  },
+  "paymentMethods": {
+    "CASH": "Cash",
+    "CREDIT_CARD": "Credit Card",
+    "DEBIT_CARD": "Debit Card",
+    "TRANSFER": "Bank Transfer",
+    "NEQUI": "Nequi",
+    "DAVIPLATA": "Daviplata",
+    "PSE": "PSE",
+    "PAYPAL": "PayPal",
+    "MERCADOPAGO": "MercadoPago",
+    "OTHER": "Other",
+    "NOT_SPECIFIED": "Not specified"
+  },
+  "paymentStatus": {
+    "PAID": "Paid",
+    "PENDING": "Pending",
+    "UNKNOWN": "Unknown"
+  },
+  "orderNotFound": "Order not found",
+  "includesDelivery": "Includes delivery: {fee}",
+  "itemsCount": "Products ({count})",
+  "markNoStock": "Mark as out of stock",
+  "paymentInfo": "Payment information",
+  "paymentMethod": "Method: {method}",
+  "unknownCustomer": "Unknown customer",
+  "orderNumber": "Order #{id}",
+  "orderCount": "{count, plural, one {# order} other {# orders}}",
+  "recentActivity": "Recent activity",
+  "whatsappOpened": "WhatsApp opened with message for customer",
+  "statusUpdated": "Status updated to \"{status}\"",
+  "paymentStatusUpdated": "Payment status updated",
+  "errors": {
+    "updateStatusFailed": "Failed to update order status",
+    "updatePaymentFailed": "Failed to update payment status",
+    "cannotComplete": "Cannot complete the order",
+    "alreadyCompleted": "Order is already completed",
+    "cannotCompleteCancelled": "Cannot complete a cancelled or abandoned order",
+    "paymentPending": "Cannot complete the order: payment is pending",
+    "mustBeReadyOrOnTheWay": "Order must be 'Ready' or 'On the way' to be completed",
+    "cannotCancelCompleted": "Cannot cancel an order that is already completed",
+    "cannotCancelDelivered": "Cannot cancel an order that has already been delivered",
+    "invalidStatusTransition": "Invalid status transition"
+  },
+  "history": {
+    "created": "Created: {status}"
+  },
+  "noStockDialog": {
+    "title": "Product out of stock",
+    "description": "Confirm that {productName} is not available? This will send a notification to the customer via WhatsApp.",
+    "messageTemplate": "Hello, we regret to inform you that the product \"{productName}\" is not available at this time for your order {orderNumber}. We apologize and offer alternatives."
+  },
+  "title": "Order Management",
+  "subtitle": "Manage and supervise all your business orders",
+  "newOrders": "New orders",
+  "noBusiness": {
+    "title": "You don't have a business assigned",
+    "description": "To view orders, you need to have a business assigned to your account. Contact the system administrator."
+  },
+  "noBranches": {
+    "title": "No branches selected",
+    "description": "Select at least one branch to view orders."
+  },
+  "search": {
+    "placeholder": "Search by order, customer, address, payment, type..."
+  },
+  "view": {
+    "card": "Card view",
+    "list": "List view"
+  },
+  "filters": {
+    "title": "Filters",
+    "clear": "Clear filters",
+    "dateRange": "Date range",
+    "paymentStatus": {
+      "title": "Payment status",
+      "paid": "Paid",
+      "pending": "Pending"
+    },
+    "deliveryType": {
+      "title": "Delivery type",
+      "delivery": "Delivery",
+      "pickup": "Pickup"
+    },
+    "activeFilters": {
+      "paidOnly": "• Paid only",
+      "pendingOnly": "• Pending only",
+      "deliveryOnly": "• Delivery",
+      "pickupOnly": "• Pickup"
+    }
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "CONFIRMED": "New",
+    "PAYMENT_PENDING": "Payment pending",
+    "PAID": "Paid",
+    "IN_PROGRESS": "In progress",
+    "READY": "Ready",
+    "ON_THE_WAY": "On the way",
+    "COMPLETED": "Delivered",
+    "CANCELLED": "Cancelled",
+    "ABANDONED": "Abandoned",
+    "PENDING": "Pending",
+    "PREPARING": "Preparing",
+    "DELIVERING": "Out for delivery",
+    "DELIVERED": "Delivered",
+    "ACCEPTED": "Accepted",
+    "REJECTED": "Rejected"
+  },
+  "actions": {
+    "accept": "Accept",
+    "reject": "Reject",
+    "prepare": "Prepare",
+    "ready": "Mark ready",
+    "deliver": "Deliver",
+    "view": "View details",
+    "print": "Print",
+    "cancel": "Cancel order",
+    "reopen": "Reopen order",
+    "confirmPayment": "Confirm payment",
+    "showLess": "Show less",
+    "showMore": "Show {count} more"
+  },
+  "kanban": {
+    "newOrders": "New orders",
+    "inProgress": "In preparation",
+    "ready": "Ready",
+    "delivered": "Delivered"
+  },
+  "columnVisibility": {
+    "minOneColumn": "At least one column must be visible",
+    "hideColumn": "Hide {column}",
+    "showColumn": "Show {column}",
+    "hideStatsPanel": "Hide statistics panel",
+    "showStatsPanel": "Show statistics panel",
+    "statistics": "Statistics"
+  },
+  "columns": {
+    "orderNumber": "Order #",
+    "customer": "Customer",
+    "items": "Items",
+    "total": "Total",
+    "status": "Status",
+    "date": "Date",
+    "actions": "Actions",
+    "payment": "Payment",
+    "delivery": "Delivery"
+  },
+  "card": {
+    "items": "{count} item(s)",
+    "delivery": {
+      "delivery": "Delivery",
+      "pickup": "Pickup"
+    },
+    "payment": {
+      "paid": "Paid",
+      "pending": "Pending"
+    }
+  },
+  "detail": {
+    "title": "Order Details",
+    "orderNumber": "Order #{number}",
+    "customerInfo": "Customer",
+    "deliveryAddress": "Delivery address",
+    "orderInfo": "Order information",
+    "items": "Items",
+    "itemsCount": "Products ({count})",
+    "notes": "Notes",
+    "history": "History",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery fee",
+    "discount": "Discount",
+    "tax": "Tax"
+  },
+  "notifications": {
+    "newOrder": "New order {orderNumber}",
+    "orderUpdated": "Order updated",
+    "orderCancelled": "Order cancelled",
+    "orderAccepted": "Order accepted",
+    "orderRejected": "Order rejected",
+    "orderReady": "Order ready",
+    "orderDelivered": "Order delivered"
+  },
+  "empty": {
+    "title": "No orders",
+    "description": "Orders will appear here when customers place them",
+    "noOrdersInProgress": "No orders in progress",
+    "noProducts": "No products",
+    "noOrders": "No orders"
+  },
+  "paymentNotes": {
+    "confirmedFromAdmin": "Payment confirmed from admin panel"
+  },
+  "metrics": {
+    "title": "Metrics",
+    "totalOrders": "Total orders",
+    "completedOrders": "Completed",
+    "cancelledOrders": "Cancelled",
+    "averageTime": "Average time",
+    "totalRevenue": "Total revenue",
+    "paid": "Paid",
+    "pendingPayment": "Pending payment"
+  },
+  "branchSelector": {
+    "placeholder": "Select branches",
+    "searchPlaceholder": "Search branch...",
+    "noResults": "No branches found",
+    "allBranches": "All branches",
+    "clearAll": "Clear",
+    "selectAll": "Select all",
+    "selectedCount": "{count} selected",
+    "oneBranch": "1 branch",
+    "multipleBranches": "{count} branches",
+    "selectBusinessFirst": "Select a business first"
+  },
+  "tour": {
+    "steps": {
+      "metrics": {
+        "title": "Daily metrics",
+        "description": "Here you can see in real time how many orders are in each state, the period revenue and delivery metrics."
+      },
+      "search": {
+        "title": "Search orders",
+        "description": "Search orders by order number or by customer name."
+      },
+      "filters": {
+        "title": "Advanced filters",
+        "description": "Filter by date range, payment status (paid/pending) and delivery type (delivery/pickup)."
+      },
+      "viewToggle": {
+        "title": "Card or list view",
+        "description": "Switch between card (kanban) view or compact list view according to your preference."
+      },
+      "columnVisibility": {
+        "title": "Show or hide columns",
+        "description": "With this control you can hide the states you don't need to see right now to simplify the screen."
+      },
+      "kanbanBoard": {
+        "title": "Orders board",
+        "description": "Orders are organized in columns by state: New → In progress → Ready → On the way → Completed. Drag or use the dropdown to move them."
+      },
+      "orderCard": {
+        "title": "Change an order status",
+        "description": "Click on the status badge of any card to open the menu and advance the order to the next state."
+      },
+      "sidebar": {
+        "title": "Navigation menu",
+        "description": "From here you can access all sections: orders, customers, products, branches, settings and more."
+      }
+    },
+    "startButton": "View tour"
+  }
+}

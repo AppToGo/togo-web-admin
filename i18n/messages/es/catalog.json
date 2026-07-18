@@ -1,0 +1,504 @@
+{
+  "title": "Catálogo",
+  "inheritedFromCatalog": "Heredada de catálogo",
+  "inheritedFrom": "Heredado de: {name}",
+  "imageFallbackDescription": "Si no se especifica, se usará la imagen del catálogo global",
+  "inactiveProductsDescription": "Los productos inactivos no aparecen en el menú",
+  "customizeNameHint": "Puedes personalizar el nombre para tu negocio",
+  "activateProductNote": "Este producto se vinculará al catálogo global de TOGO. La imagen y descripción se heredarán automáticamente.",
+  "subtitle": "Gestiona tus productos y categorías",
+  "tabs": {
+    "products": "Mis Productos",
+    "categories": "Categorías"
+  },
+  "products": {
+    "error": {
+      "title": "Error al cargar productos"
+    },
+    "stats": {
+      "total": "{count, plural, one {# producto} other {# productos}}",
+      "custom": "{count, plural, one {# personalizado} other {# personalizados}}",
+      "fromTemplate": "{count, plural, one {# del catálogo global} other {# del catálogo global}}"
+    },
+    "title": "Productos",
+    "create": "Crear producto",
+    "createDescription": "Crea un producto nuevo para tu catálogo",
+    "edit": "Editar producto",
+    "editDescription": "Modifica los detalles del producto",
+    "delete": "Eliminar producto",
+    "import": "Importar productos",
+    "search": "Buscar productos...",
+    "noProducts": "No hay productos",
+    "noProductsDescription": "Comienza agregando tu primer producto al catálogo",
+    "name": "Nombre",
+    "description": "Descripción",
+    "price": "Precio",
+    "salePrice": "Precio de venta",
+    "suggestedPrice": "Precio sugerido",
+    "priceByVariant": "Precio por variante",
+    "active": "Activo",
+    "activeHint": "Visible en el catálogo",
+    "tabs": {
+      "info": "Información",
+      "variants": "Variantes",
+      "branches": "Sedes"
+    },
+    "category": "Categoría",
+    "image": "Imagen",
+    "imageUrl": "URL de Imagen",
+    "imagePlaceholder": "https://ejemplo.com/imagen.jpg",
+    "stock": "Stock",
+    "stockOptional": "Stock (opcional)",
+    "activeProduct": "Producto activo",
+    "branchAvailability": "Disponibilidad por Sede",
+    "singlePrice": "Precio único",
+    "variantPriceHint": "Podés ajustar el precio después desde el listado de variantes.",
+    "loadingBranches": "Cargando sedes...",
+    "noBranchesConfigured": "No hay sedes configuradas.",
+    "basePrice": "Precio base",
+    "activateInBranch": "Activar en {name}",
+    "noVariantsCreateFirst": "Este producto no tiene variantes. Creá al menos una variante antes de activarlo en sedes.",
+    "branchActivationHint": "Activá el producto en cada sede y configurá precios por variante. Podés desactivar variantes específicas en sedes donde no se vendan.",
+    "variants": {
+      "loading": "Cargando variantes...",
+      "unitLabel": "Unidad",
+      "selectPlaceholder": "Seleccioná variante",
+      "selectCategoryFirst": "Seleccioná una categoría para agregar variantes.",
+      "allAdded": "Todas las variantes de esta categoría ya fueron agregadas.",
+      "noTemplatesForCategory": "No hay variantes predefinidas para esta categoría.",
+      "mainBranchLabel": "Principal",
+      "labelPlaceholder": "Etiqueta",
+      "add": "Agregar variante",
+      "save": "Guardar",
+      "new": "Nueva variante",
+      "addFirst": "Agregar primera variante",
+      "default": "Por defecto",
+      "inactive": "Inactiva",
+      "deleteTitle": "Eliminar variante",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar {name}? Esta acción no se puede deshacer.",
+      "deleteLastActiveWarning": "Al eliminar esta variante el producto quedará sin variantes activas.",
+      "delete": "Eliminar"
+    },
+    "modified": "Modificado",
+    "noInventoryWarning": "El producto se creará pero no estará disponible en ninguna sede hasta que configures su inventario",
+    "presentation": "Presentación: {unit}",
+    "sku": "SKU",
+    "barcode": "Código de barras",
+    "brand": "Marca",
+    "available": "Disponible",
+    "featured": "Destacado",
+    "filters": {
+      "all": "Todos",
+      "category": "Categoría",
+      "status": "Estado",
+      "categoryPlaceholder": "Todas las categorías",
+      "statusPlaceholder": "Todos los estados",
+      "title": "Filtros",
+      "allCategories": "Todas las categorías",
+      "clearAll": "Limpiar todo",
+      "productStatus": {
+        "title": "Estado del producto",
+        "active": "Activos",
+        "inactive": "Inactivos"
+      },
+      "source": {
+        "title": "Tipo de producto",
+        "custom": "Personalizados",
+        "catalog": "Del catálogo"
+      }
+    },
+    "form": {
+      "nameLabel": "Nombre del producto",
+      "namePlaceholder": "Ej: Hamburguesa Clásica",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe tu producto...",
+      "priceLabel": "Precio",
+      "categoryLabel": "Categoría",
+      "selectCategory": "Seleccionar categoría",
+      "imageLabel": "Imagen del producto",
+      "uploadImage": "Subir imagen",
+      "changeImage": "Cambiar imagen",
+      "stockLabel": "Stock disponible",
+      "skuLabel": "SKU (código interno)",
+      "barcodeLabel": "Código de barras",
+      "imageUrl": "URL de la imagen",
+      "parentCategory": "Categoría",
+      "selectParentCategory": "Seleccionar categoría",
+      "subcategoryOptional": "Subcategoría (opcional)",
+      "selectSubcategory": "Seleccionar subcategoría",
+      "noSubcategoriesInParent": "Esta categoría no tiene subcategorías",
+      "willBeCreated": "(se creará al confirmar)",
+      "subcategoryFallbackHint": "Sin subcategoría, el producto aparecerá en \"{parentName}\""
+    },
+    "empty": {
+      "title": "No tienes productos aún",
+      "message": "Comienza creando productos personalizados o activando productos desde el catálogo global de TOGO."
+    },
+    "selectAll": "Seleccionar todos",
+    "select": "Seleccionar",
+    "selectedCount": "{count} seleccionados",
+    "status": {
+      "activeInBranch": "Activo",
+      "inactiveInBranch": "Inactivo",
+      "notActivated": "No activado"
+    }
+  },
+  "categories": {
+    "error": {
+      "title": "Error al cargar categorías"
+    },
+    "title": "Categorías de Productos",
+    "subtitle": "Organiza tus productos en categorías",
+    "new": "Nueva Categoría",
+    "create": "Crear categoría",
+    "edit": "Editar categoría",
+    "delete": "Eliminar categoría",
+    "name": "Nombre",
+    "description": "Descripción",
+    "icon": "Ícono",
+    "color": "Color",
+    "productsCount": "{count} productos",
+    "noCategories": "No hay categorías",
+    "emptyDescription": "Crea categorías para organizar mejor tus productos y facilitar la navegación de tus clientes.",
+    "createFirst": "Crear primera categoría",
+    "editDescription": "Modifica los datos de la categoría",
+    "deleteDescription": "¿Estás seguro de que deseas eliminar la categoría \"{name}\"? Esta acción no se puede deshacer.",
+    "deleteWarning": "Nota: No podrás eliminar esta categoría si tiene productos asociados.",
+    "namePlaceholder": "Ej: Bebidas, Comida Rápida...",
+    "form": {
+      "nameLabel": "Nombre de la categoría",
+      "namePlaceholder": "Ej: Bebidas",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe la categoría..."
+    },
+    "industryCategory": "Categoría de Industria",
+    "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
+    "selectIndustryCategory": "Selecciona una categoría de industria",
+    "descriptionPlaceholder": "Descripción opcional de la categoría",
+    "createDescription": "Crea una nueva categoria para tu catalogo",
+    "noResults": "No se encontraron resultados",
+    "noResultsDescription": "Intenta ajustar tus filtros o límpialos para ver todas las categorías",
+    "result": "resultado",
+    "results": "resultados",
+    "slugDisabled": "El slug no se puede editar después de la creación"
+  },
+  "globalCatalog": {
+    "error": {
+      "title": "Error al cargar el catálogo"
+    },
+    "title": "Catálogo Global",
+    "subtitle": "Gestiona el catálogo de productos global",
+    "search": "Buscar en el catálogo global...",
+    "stats": {
+      "totalProducts": "Total productos",
+      "activeProducts": "Productos activos",
+      "categories": "Categorías",
+      "businessesUsing": "Negocios usando"
+    },
+    "import": {
+      "title": "Importar productos",
+      "description": "Importa productos masivamente desde un archivo Excel",
+      "downloadTemplate": "Descargar plantilla",
+      "uploadFile": "Subir archivo",
+      "processing": "Procesando archivo...",
+      "success": "Productos importados exitosamente"
+    },
+    "empty": {
+      "title": "Catálogo completo",
+      "message": "Has activado todos los productos disponibles del catálogo global."
+    },
+    "filters": {
+      "brand": "Marca",
+      "category": "Categoría"
+    },
+    "activate": "Activar"
+  },
+  "actions": {
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "addProduct": "Agregar producto",
+    "editProduct": "Editar",
+    "deleteProduct": "Eliminar",
+    "duplicate": "Duplicar",
+    "preview": "Vista previa"
+  },
+  "dialogs": {
+    "delete": {
+      "title": "¿Eliminar producto?",
+      "description": "Esta acción no se puede deshacer. El producto \"{name}\" se eliminará permanentemente.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "activate": {
+      "title": "¿Activar producto?",
+      "description": "El producto \"{name}\" estará disponible para los clientes.",
+      "confirm": "Activar",
+      "cancel": "Cancelar"
+    }
+  },
+  "stock": {
+    "unlimited": "Sin límite",
+    "noControl": "Sin control"
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "inStock": "En stock",
+    "outOfStock": "Agotado",
+    "lowStock": "Stock bajo",
+    "lowStockCount": "Stock bajo: {count}",
+    "stockCount": "Stock: {count}",
+    "custom": "Personalizado",
+    "notActivated": "No activado"
+  },
+  "activateModal": {
+    "title": "Activar Producto",
+    "description": "Configura cómo aparecerá \"{name}\" en tu catálogo",
+    "noVariants": "Este producto no tiene variantes configuradas",
+    "variantsCount": "{count} variantes",
+    "branches": "Sedes",
+    "branchesDescription": "Disponibilidad y precio por sede",
+    "priceOptional": "Precio (opc)",
+    "noPrice": "Sin precio",
+    "activateInBranch": "Activar en {name}"
+  },
+  "noBusiness": {
+    "title": "No tienes un negocio asignado",
+    "description": "Para gestionar productos, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
+  },
+  "notifications": {
+    "productCreated": "Producto creado exitosamente",
+    "productUpdated": "Producto actualizado exitosamente",
+    "productDeleted": "Producto eliminado exitosamente",
+    "productActivated": "Producto activado",
+    "productDeactivated": "Producto desactivado",
+    "productActivatedInCatalog": "Producto activado en tu catálogo",
+    "categoryCreated": "Categoría creada exitosamente",
+    "categoryUpdated": "Categoría actualizada exitosamente",
+    "categoryDeleted": "Categoría eliminada exitosamente",
+    "categoryActivated": "Categoría activada exitosamente",
+    "categoryDeactivated": "Categoría desactivada exitosamente",
+    "bulkUpdateSuccess": "{count} productos actualizados exitosamente",
+    "errorBulkUpdate": "Error al actualizar productos",
+    "variantCreated": "Variante creada exitosamente",
+    "variantUpdated": "Variante actualizada exitosamente",
+    "variantDeleted": "Variante eliminada exitosamente",
+    "errorCreatingVariant": "Error al crear la variante",
+    "errorUpdatingVariant": "Error al actualizar la variante",
+    "errorDeletingVariant": "Error al eliminar la variante",
+    "productActivatedInCatalogNew": "Producto activado en tu catálogo",
+    "errorActivatingCatalogProduct": "Error al activar el producto"
+  },
+  "bulkActions": {
+    "selectedCount": "{count, plural, =0 {0 productos seleccionados} =1 {1 producto seleccionado} other {# productos seleccionados}}",
+    "forBranch": "Para la sede seleccionada",
+    "activate": "Activar en sede",
+    "deactivate": "Desactivar",
+    "adjustStock": "Ajustar stock",
+    "adjustStockDescription": "Ajustar stock para {count} productos seleccionados",
+    "comingSoon": "Próximamente"
+  },
+  "hybridFilters": {
+    "filterByBranch": "Filtrar por sede:",
+    "selectBranch": "Seleccionar sede",
+    "allBranches": "Todas las sedes",
+    "activationStatus": "Estado en sede",
+    "allStatuses": "Todos los estados",
+    "activated": "Activados",
+    "notActivated": "No activados",
+    "branchStatus": {
+      "title": "Estado en sede",
+      "activated": "Activados",
+      "notActivated": "No activados"
+    },
+    "noBranches": "No hay sedes disponibles"
+  },
+  "availabilityTab": {
+    "title": "Disponibilidad por Sede",
+    "description": "Gestiona la disponibilidad de este producto en cada sede de tu negocio",
+    "noBranches": "No hay sedes configuradas",
+    "noBranchesDescription": "Configura sedes en tu negocio para gestionar la disponibilidad del producto",
+    "mainBranch": "Sede principal",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "availableForSale": "Disponible para venta",
+    "stock": "Stock",
+    "priceOverride": "Precio en sede"
+  },
+  "inventory": {
+    "title": "Gestión de Inventario por Sede",
+    "subtitle": "Administra la disponibilidad, stock y precios de tus productos por sucursal",
+    "selectBranch": "Seleccionar Sede",
+    "branchPlaceholder": "Elige una sede para gestionar su inventario",
+    "mainBranch": "Principal",
+    "stats": {
+      "total": "Total Productos",
+      "activated": "Activados",
+      "lowStock": "Stock Bajo",
+      "outOfStock": "Agotados"
+    },
+    "noBranch": {
+      "title": "Selecciona una sede",
+      "message": "Elige una sede del menú desplegable para ver y gestionar su inventario"
+    },
+    "noBusiness": {
+      "title": "No hay negocio seleccionado",
+      "description": "Selecciona un negocio para gestionar el inventario por sede"
+    },
+    "noBranches": {
+      "title": "No hay sedes configuradas",
+      "description": "Crea al menos una sede para poder gestionar el inventario"
+    },
+    "table": {
+      "product": "Producto",
+      "category": "Categoría",
+      "activated": "Activado",
+      "available": "Disponible",
+      "stock": "Stock",
+      "basePrice": "Precio Base",
+      "branchPrice": "Precio Sede",
+      "actions": "Acciones",
+      "selectAll": "Seleccionar todos",
+      "selectRow": "Seleccionar fila",
+      "outOfStock": "Agotado",
+      "inStock": "{count} unidades",
+      "search": "Buscar productos...",
+      "showing": "Mostrando {count} de {total} productos",
+      "empty": {
+        "title": "No hay productos",
+        "message": "Crea productos en la sección de Catálogo para gestionar su inventario"
+      }
+    },
+    "selector": {
+      "title": "Disponibilidad por Sede",
+      "available": "Disponible",
+      "priceOverride": "Precio específico",
+      "stock": "Stock inicial",
+      "optional": "opcional",
+      "mainBranch": "Principal",
+      "noBranches": "No hay sedes disponibles",
+      "noSelectionWarning": "Selecciona una sede para gestionar su inventario",
+      "summary": "{count} sedes seleccionadas, {available} disponibles",
+      "discount": "Ahorro: ${amount}",
+      "noStockControl": "Sin control",
+      "selectAll": "Seleccionar todas",
+      "deselectAll": "Deseleccionar todas"
+    },
+    "activate": {
+      "title": "Activar Producto en Sede",
+      "description": "Configura el stock y precio para \"{name}\"",
+      "priceOverride": "Precio específico para esta sede",
+      "basePrice": "Precio base: {price}",
+      "stock": "Stock inicial",
+      "stockPlaceholder": "Dejar vacío para sin control",
+      "available": "Disponible para venta",
+      "cancel": "Cancelar",
+      "confirm": "Activar Producto",
+      "processing": "Activando..."
+    },
+    "notifications": {
+      "activated": "Producto activado en la sede",
+      "activateError": "Error al activar: {error}",
+      "deactivated": "Producto desactivado en la sede",
+      "deactivateError": "Error al desactivar: {error}",
+      "stockUpdated": "Stock actualizado",
+      "stockError": "Error al actualizar stock: {error}",
+      "bulkActivated": "{count} productos activados ({existing} ya existían)",
+      "bulkActivateError": "Error en activación masiva: {error}"
+    },
+    "bulk": {
+      "selected": "{count} seleccionados",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "adjustStock": "Ajustar Stock",
+      "activateTitle": "Activar Productos Seleccionados",
+      "activateDescription": "Configura el stock y disponibilidad para {count} productos",
+      "defaultStock": "Stock inicial por defecto",
+      "stockPlaceholder": "Dejar vacío para sin control",
+      "stockHint": "Se aplicará a todos los productos seleccionados",
+      "makeAvailable": "Disponible para venta",
+      "confirmActivate": "Activar {count} Productos",
+      "deactivateTitle": "Desactivar Productos",
+      "deactivateDescription": "¿Estás seguro de desactivar {count} productos de esta sede?",
+      "deactivateWarning": "Los productos desactivados no aparecerán en el catálogo de esta sede",
+      "confirmDeactivate": "Desactivar Productos",
+      "adjustStockTitle": "Ajustar Stock",
+      "adjustStockDescription": "Modifica el stock de {count} productos",
+      "addStock": "Agregar",
+      "removeStock": "Quitar",
+      "quantity": "Cantidad",
+      "quantityPlaceholder": "Cantidad a ajustar",
+      "confirmAdjustStock": "Aplicar Ajuste",
+      "stockAdjustmentHint": "El stock se incrementará o decrementará según la cantidad especificada"
+    },
+    "readOnlyTitle": "Vista de Solo Lectura",
+    "readOnlySubtitle": "Vista de solo lectura del inventario. Usa la página de",
+    "manageAvailability": "para gestionar disponibilidad.",
+    "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
+    "productsLink": "Productos",
+    "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
+  },
+  "import": {
+    "title": "Importar productos",
+    "description": "Subí un Excel, CSV, PDF o imagen con tu lista de productos",
+    "button": "Importar productos",
+    "page": {
+      "title": "Importar productos",
+      "subtitle": "Revisá y editá los productos detectados antes de importarlos",
+      "back": "Volver al catálogo"
+    },
+    "step": {
+      "upload": "Subir archivo",
+      "review": "Revisar productos",
+      "confirm": "Confirmar"
+    },
+    "dropzone": {
+      "hint": "Arrastrá o hacé clic para seleccionar",
+      "subHint": "Excel, CSV, PDF o imagen — máx. 10 MB",
+      "invalidType": "Tipo de archivo no admitido. Use Excel, CSV, PDF o imagen.",
+      "tooLarge": "El archivo supera el límite de 10 MB."
+    },
+    "processing": {
+      "title": "Analizando con IA...",
+      "subtitle": "Esto puede demorar unos segundos"
+    },
+    "review": {
+      "headerTitle": "Productos detectados",
+      "selectedCount": "{selected} de {total} seleccionados",
+      "noProducts": "No se detectaron productos en el archivo.",
+      "columns": {
+        "name": "Nombre",
+        "price": "Precio",
+        "category": "Categoría",
+        "suggestion": "Sugerencia IA"
+      }
+    },
+    "editItem": {
+      "title": "Editar producto",
+      "description": "Modificá los datos antes de importar",
+      "save": "Guardar cambios",
+      "branchSelection": {
+        "title": "Sedes donde aparecerá",
+        "noneWarning": "Seleccioná al menos una sede para que el producto sea visible en el catálogo"
+      }
+    },
+    "confirm": {
+      "title": "Resumen de importación",
+      "detected": "Productos detectados",
+      "selected": "Productos seleccionados",
+      "confirmButton": "Confirmar importación",
+      "importing": "Importando productos..."
+    },
+    "success": {
+      "title": "¡Importación completada!",
+      "subtitle": "{count} productos importados exitosamente.",
+      "viewProducts": "Ver productos",
+      "importAnother": "Importar otro archivo"
+    },
+    "error": {
+      "title": "Error en el análisis",
+      "subtitle": "Ocurrió un error inesperado. Intentá con otro archivo.",
+      "confirmFailed": "Error al confirmar la importación. Intentá nuevamente."
+    }
+  }
+}

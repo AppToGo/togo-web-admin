@@ -55,6 +55,11 @@ export interface Business {
   logoUrl?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  industryId?: string;
+  industry?: {
+    id: string;
+    name: string;
+  };
 }
 
 // Common entity timestamps

@@ -1,7 +1,8 @@
 "use client";
 
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { OrderCard } from "../OrderCard";
 import type { Order, OrderStatus } from "../../types";
 import type { CardViewMode } from "../OrderCard";
@@ -31,6 +32,15 @@ export interface KanbanColumnProps {
   viewMode?: CardViewMode;
   flexBasis?: string;
   minWidth?: number;
+  // Total count for display (falls back to orders.length if not provided)
+  totalCount?: number;
+  // Infinite scroll props for archive columns
+  isArchive?: boolean;
+  hasMore?: boolean;
+  isFetchingNextPage?: boolean;
+  onLoadMore?: () => void;
+  // Tour: data-tour-step value to apply to the first card wrapper
+  firstCardTourStep?: string;
 }
 
 export const KanbanColumn = memo(function KanbanColumn({
@@ -42,8 +52,16 @@ export const KanbanColumn = memo(function KanbanColumn({
   viewMode = "card",
   flexBasis,
   minWidth = 320,
+  totalCount,
+  isArchive = false,
+  hasMore = false,
+  isFetchingNextPage = false,
+  onLoadMore,
+  firstCardTourStep,
 }: KanbanColumnProps) {
+  const t = useTranslations("orders");
   const [isDragOver, setIsDragOver] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Obtener configuración de la columna desde el dominio
   const config = getColumnConfig(status);
@@ -73,6 +91,32 @@ export const KanbanColumn = memo(function KanbanColumn({
     [status, onStatusChange]
   );
 
+  // IntersectionObserver for infinite scroll (archive columns only)
+  useEffect(() => {
+    if (!isArchive || !onLoadMore || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingNextPage) {
+          onLoadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isArchive, hasMore, isFetchingNextPage, onLoadMore]);
+
   return (
     <div
       className={cn(
@@ -94,7 +138,7 @@ export const KanbanColumn = memo(function KanbanColumn({
           <div className="flex items-center gap-2">
             <div className={dotVariants({ status })} />
             <h3 className="font-semibold text-sm text-slate-700">
-              {config.title}
+              {t(`status.${config.title}`)}
             </h3>
           </div>
           <span
@@ -104,7 +148,7 @@ export const KanbanColumn = memo(function KanbanColumn({
                 : counterTextVariants({ status })
             )}
           >
-            {orders.length}
+            {totalCount ?? orders.length}
           </span>
         </div>
       </div>
@@ -154,36 +198,41 @@ export const KanbanColumn = memo(function KanbanColumn({
             </p>
           </div>
         ) : (
-          orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onStatusChange={onStatusChange}
-              onClick={() => onOrderClick?.(order.id)}
-              currentStatus={status}
-              viewMode={viewMode}
-            />
-          ))
+          <>
+            {orders.map((order, index) => (
+              <div
+                key={order.id}
+                data-tour-step={index === 0 && firstCardTourStep ? firstCardTourStep : undefined}
+              >
+                <OrderCard
+                  order={order}
+                  onStatusChange={onStatusChange}
+                  onClick={() => onOrderClick?.(order.id)}
+                  currentStatus={status}
+                  viewMode={viewMode}
+                />
+              </div>
+            ))}
+            
+            {/* Sentinel div for infinite scroll (archive columns only) */}
+            {isArchive && (
+              <div
+                ref={sentinelRef}
+                className="h-4 w-full"
+                aria-hidden="true"
+              />
+            )}
+            
+            {/* Loading skeleton for next page (archive columns only) */}
+            {isArchive && isFetchingNextPage && (
+              <>
+                <KanbanCardSkeleton />
+                <KanbanCardSkeleton />
+              </>
+            )}
+          </>
         )}
       </div>
-
-      {/* Botón Add Orden */}
-      <button className="mt-3 w-full py-3 text-sm text-slate-500 hover:text-slate-700 hover:bg-white/60 rounded-card transition-colors flex items-center justify-center gap-1">
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        Add Orden
-      </button>
     </div>
   );
 });

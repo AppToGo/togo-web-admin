@@ -13,7 +13,9 @@ const Dialog = ({
   children,
   open,
   onOpenChange,
+  className,
 }: {
+  className?: string;
   children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -28,17 +30,17 @@ const Dialog = ({
   // Cerrar con Escape
   React.useEffect(() => {
     if (!open) return;
-    
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onOpenChange?.(false);
       }
     };
-    
+
     document.addEventListener("keydown", handleEscape);
     // Prevenir scroll del body cuando el dialog está abierto
     document.body.style.overflow = "hidden";
-    
+
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
@@ -51,14 +53,14 @@ const Dialog = ({
 
   return createPortal(
     <DialogContext.Provider value={{ onClose: handleClose }}>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
         {/* Backdrop con blur */}
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
           onClick={handleClose}
         />
         {/* Content container */}
-        <div className="relative z-[101] w-full max-w-lg">
+        <div className={cn("relative z-101 w-full max-w-lg ", className)}>
           {children}
         </div>
       </div>
@@ -79,7 +81,7 @@ const DialogContent = React.forwardRef<
       className={cn(
         // Estilos del proyecto: glass + bordes redondeados
         "relative glass-strong rounded-card-xl",
-        "border border-white/40 shadow-card-xl",
+        "border border-white/40 shadow-card-lg",
         "flex flex-col max-h-[85vh]",
         "animate-in fade-in zoom-in-95 duration-200",
         className
@@ -107,11 +109,9 @@ const DialogContent = React.forwardRef<
         </svg>
         <span className="sr-only">Cerrar</span>
       </button>
-      
+
       {/* Contenido */}
-      <div className="overflow-y-auto">
-        {children}
-      </div>
+      <div className="overflow-y-auto">{children}</div>
     </div>
   );
 });
@@ -138,13 +138,40 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn(
-      "text-lg font-semibold text-slate-900 pr-8",
-      className
-    )}
+    className={cn("text-lg font-semibold text-slate-900 pr-8", className)}
     {...props}
   />
 ));
 DialogTitle.displayName = "DialogTitle";
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle };
+const DialogDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p ref={ref} className={cn("text-sm text-slate-500", className)} {...props} />
+));
+DialogDescription.displayName = "DialogDescription";
+
+const DialogFooter = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "px-6 py-4 border-t border-slate-100/50",
+      className
+    )}
+    {...props}
+  />
+);
+DialogFooter.displayName = "DialogFooter";
+
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+};

@@ -16,7 +16,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 
 const CSRF_SECRET = process.env.CSRF_SECRET || "your-csrf-secret-min-32-chars-long!";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/v1";
 
 /**
  * Generate a CSRF token bound to a specific user session

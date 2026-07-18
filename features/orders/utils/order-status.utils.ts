@@ -1,107 +1,38 @@
 /**
  * Order Status Utils
  *
- * Utilidades para manejar estados de órdenes:
- * - Colores y estilos por estado
- * - Transiciones permitidas
- * - Validaciones de negocio
+ * Order status utilities:
+ * - Colors and styles by status
+ * - Allowed transitions
+ * - Business validations
+ * 
+ * NOTE: Colors are automatically obtained from the Theme System.
+ * @see features/orders/theme/order-status.theme.ts
+ * 
+ * NOTE: This file returns translation keys, not translated text.
+ * Use useTranslations() or useFormatter() from next-intl in components.
  */
 
+import { useTranslations } from "next-intl";
 import type { OrderStatus, PaymentStatus } from "../types";
 
-// Colores por estado para el UI
-export const STATUS_COLORS: Record<
-  OrderStatus,
-  { bg: string; border: string; text: string; dot: string }
-> = {
-  DRAFT: {
-    bg: "bg-slate-50",
-    border: "border-slate-200",
-    text: "text-slate-700",
-    dot: "bg-slate-400",
-  },
-  CONFIRMED: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-700",
-    dot: "bg-blue-500",
-  },
-  PAYMENT_PENDING: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-700",
-    dot: "bg-amber-500",
-  },
-  PAID: {
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    text: "text-emerald-700",
-    dot: "bg-emerald-500",
-  },
-  IN_PROGRESS: {
-    bg: "bg-violet-50",
-    border: "border-violet-200",
-    text: "text-violet-700",
-    dot: "bg-violet-500",
-  },
-  READY: {
-    bg: "bg-cyan-50",
-    border: "border-cyan-200",
-    text: "text-cyan-700",
-    dot: "bg-cyan-500",
-  },
-  ON_THE_WAY: {
-    bg: "bg-indigo-50",
-    border: "border-indigo-200",
-    text: "text-indigo-700",
-    dot: "bg-indigo-500",
-  },
-  COMPLETED: {
-    bg: "bg-green-50",
-    border: "border-green-200",
-    text: "text-green-700",
-    dot: "bg-green-500",
-  },
-  CANCELLED: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-700",
-    dot: "bg-red-500",
-  },
-  ABANDONED: {
-    bg: "bg-gray-50",
-    border: "border-gray-200",
-    text: "text-gray-600",
-    dot: "bg-gray-400",
-  },
-};
-
-// Etiquetas en español
+/**
+ * Status labels as translation keys.
+ * 
+ * @deprecated Use useTranslations('orders.status') instead in components.
+ * These are fallback values for non-React contexts.
+ */
 export const STATUS_LABELS: Record<OrderStatus, string> = {
-  DRAFT: "Borrador",
-  CONFIRMED: "Confirmada",
-  PAYMENT_PENDING: "Pago pendiente",
-  PAID: "Pagada",
-  IN_PROGRESS: "En proceso",
-  READY: "Lista",
-  ON_THE_WAY: "En camino",
-  COMPLETED: "Completada",
-  CANCELLED: "Cancelada",
-  ABANDONED: "Abandonada",
-};
-
-// Descripciones cortas para tooltips
-export const STATUS_DESCRIPTIONS: Record<OrderStatus, string> = {
-  DRAFT: "Orden en proceso de creación",
-  CONFIRMED: "Orden confirmada por el cliente",
-  PAYMENT_PENDING: "Esperando confirmación de pago",
-  PAID: "Pago recibido y confirmado",
-  IN_PROGRESS: "Orden en proceso de preparación",
-  READY: "Orden lista para entrega/recogida",
-  ON_THE_WAY: "En camino a la dirección del cliente",
-  COMPLETED: "Orden entregada y completada",
-  CANCELLED: "Orden cancelada",
-  ABANDONED: "Orden abandonada por inactividad",
+  DRAFT: "DRAFT",
+  CONFIRMED: "CONFIRMED",
+  PAYMENT_PENDING: "PAYMENT_PENDING",
+  PAID: "PAID",
+  IN_PROGRESS: "IN_PROGRESS",
+  READY: "READY",
+  ON_THE_WAY: "ON_THE_WAY",
+  COMPLETED: "COMPLETED",
+  CANCELLED: "CANCELLED",
+  ABANDONED: "ABANDONED",
 };
 
 // Mapa de transiciones permitidas
@@ -164,6 +95,8 @@ export function canChangeStatus(order: {
 /**
  * Validar si se puede completar una orden
  * Requiere que el pago esté confirmado
+ * 
+ * Returns translation keys that should be used with useTranslations('orders.errors')
  */
 export function canCompleteOrder(order: {
   status: OrderStatus;
@@ -171,14 +104,14 @@ export function canCompleteOrder(order: {
 }): { valid: boolean; message?: string } {
   // Si ya está completada, no se puede completar de nuevo
   if (order.status === "COMPLETED") {
-    return { valid: false, message: "La orden ya está completada" };
+    return { valid: false, message: "orders.errors.alreadyCompleted" };
   }
 
   // Si está cancelada o abandonada, no se puede completar
   if (order.status === "CANCELLED" || order.status === "ABANDONED") {
     return {
       valid: false,
-      message: "No se puede completar una orden cancelada o abandonada",
+      message: "orders.errors.cannotCompleteCancelled",
     };
   }
 
@@ -186,7 +119,7 @@ export function canCompleteOrder(order: {
   if (order.paymentStatus === "PENDING") {
     return {
       valid: false,
-      message: "No se puede completar la orden: el pago está pendiente",
+      message: "orders.errors.paymentPending",
     };
   }
 
@@ -195,7 +128,7 @@ export function canCompleteOrder(order: {
   if (!canCompleteFrom.includes(order.status)) {
     return {
       valid: false,
-      message: `La orden debe estar "Lista" o "En camino" para completarse (estado actual: ${STATUS_LABELS[order.status]})`,
+      message: "orders.errors.mustBeReadyOrOnTheWay",
     };
   }
 
@@ -218,6 +151,9 @@ export function isFinalStatus(status: OrderStatus): boolean {
 
 /**
  * Calcular tiempo transcurrido desde la creación
+ * 
+ * @deprecated Use useFormatter from next-intl instead.
+ * Example: const formatter = useFormatter(); formatter.relativeTime(date)
  */
 export function getTimeElapsed(createdAt: Date | string): string {
   const created = new Date(createdAt);
@@ -227,24 +163,22 @@ export function getTimeElapsed(createdAt: Date | string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return "Hace un momento";
-  if (diffMins < 60) return `Hace ${diffMins} min`;
-  if (diffHours < 24) return `Hace ${diffHours} h`;
-  if (diffDays === 1) return "Ayer";
-  return `Hace ${diffDays} días`;
+  if (diffMins < 1) return "justNow";
+  if (diffMins < 60) return `${diffMins}`;
+  if (diffHours < 24) return `${diffHours}`;
+  if (diffDays === 1) return "yesterday";
+  return `${diffDays}`;
 }
 
 /**
  * Formatear fecha para mostrar
+ * 
+ * @deprecated Use useFormatter from next-intl instead.
+ * Example: const formatter = useFormatter(); formatter.dateTime(date, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
  */
 export function formatOrderDate(date: Date | string): string {
   const d = new Date(date);
-  return d.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return d.toISOString();
 }
 
 /**
@@ -287,44 +221,45 @@ export function getPaymentStatusColor(status: PaymentStatus): {
 
 /**
  * Etiqueta del estado de pago
+ * Returns translation keys that should be used with useTranslations('orders.paymentStatus')
  */
 export function getPaymentStatusLabel(status: PaymentStatus): string {
-  return status === "PAID" ? "Pagado" : "Pendiente";
+  return status === "PAID" ? "PAID" : "PENDING";
 }
-
-// Labels para métodos de pago
-export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH: "Efectivo",
-  CREDIT_CARD: "Tarjeta de crédito",
-  DEBIT_CARD: "Tarjeta de débito",
-  TRANSFER: "Transferencia",
-  NEQUI: "Nequi",
-  DAVIPLATA: "Daviplata",
-  PSE: "PSE",
-  PAYPAL: "PayPal",
-  MERCADOPAGO: "MercadoPago",
-  OTHER: "Otro",
-};
 
 /**
  * Etiqueta del método de pago
+ * Returns the method key or "NOT_SPECIFIED" for translation with useTranslations('orders.paymentMethods')
  */
 export function getPaymentMethodLabel(method: string | undefined): string {
-  if (!method) return "No especificado";
-  return PAYMENT_METHOD_LABELS[method] || method;
+  return method || "NOT_SPECIFIED";
 }
-
-// Labels para tipos de entrega
-export const DELIVERY_TYPE_LABELS: Record<string, string> = {
-  DELIVERY: "Domicilio",
-  PICKUP: "Recoger",
-  DINE_IN: "A la mesa",
-};
 
 /**
  * Etiqueta del tipo de entrega
+ * Returns the type key or "NOT_SPECIFIED" for translation with useTranslations('orders.deliveryTypes')
  */
 export function getDeliveryTypeLabel(type: string | undefined): string {
-  if (!type) return "No especificado";
-  return DELIVERY_TYPE_LABELS[type] || type;
+  return type || "NOT_SPECIFIED";
+}
+
+/**
+ * Hook to get translated status labels
+ * Returns a Record of OrderStatus to translated string
+ */
+export function useStatusLabels(): Record<OrderStatus, string> {
+  const t = useTranslations("orders.status");
+  
+  return {
+    DRAFT: t("DRAFT"),
+    CONFIRMED: t("CONFIRMED"),
+    PAYMENT_PENDING: t("PAYMENT_PENDING"),
+    PAID: t("PAID"),
+    IN_PROGRESS: t("IN_PROGRESS"),
+    READY: t("READY"),
+    ON_THE_WAY: t("ON_THE_WAY"),
+    COMPLETED: t("COMPLETED"),
+    CANCELLED: t("CANCELLED"),
+    ABANDONED: t("ABANDONED"),
+  };
 }

@@ -1,0 +1,105 @@
+{
+  "page": {
+    "title": "Categorías por Industria",
+    "description": "Gestiona las categorías de productos globales"
+  },
+  "stats": {
+    "total": "Total Categorías",
+    "active": "Categorías Activas",
+    "inactive": "Categorías Inactivas"
+  },
+  "filters": {
+    "allIndustries": "Todas las industrias",
+    "showInactive": "Mostrar inactivas",
+    "searchPlaceholder": "Buscar por nombre o slug...",
+    "searchIndustries": "Buscar industrias..."
+  },
+  "table": {
+    "icon": "Icono",
+    "name": "Nombre",
+    "industries": "Industrias",
+    "order": "Orden",
+    "status": "Estado",
+    "actions": "Acciones"
+  },
+  "fields": {
+    "name": "Nombre",
+    "slug": "Slug",
+    "industries": "Industrias",
+    "order": "Orden",
+    "icon": "Icono",
+    "color": "Color",
+    "isActive": "Activo"
+  },
+  "placeholders": {
+    "name": "Ej: Refrescos",
+    "slug": "Ej: refrescos",
+    "selectIndustries": "Selecciona industrias",
+    "searchIndustries": "Buscar industrias...",
+    "icon": "Ej: 🍕"
+  },
+  "helpers": {
+    "slug": "Identificador único para URLs",
+    "icon": "Emoji o icono representativo",
+    "isActive": "Determina si la categoría está visible"
+  },
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "actions": {
+    "openMenu": "Abrir menú",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "activate": "Activar",
+    "deactivate": "Desactivar"
+  },
+  "buttons": {
+    "newCategory": "Nueva Categoría",
+    "create": "Crear",
+    "save": "Guardar cambios",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "saving": "Guardando...",
+    "retry": "Reintentar"
+  },
+  "dialog": {
+    "createTitle": "Nueva Categoría",
+    "editTitle": "Editar Categoría"
+  },
+  "deleteDialog": {
+    "title": "¿Eliminar categoría?",
+    "description": "¿Estás seguro de que deseas eliminar la categoría \"{name}\"? Esta acción no se puede deshacer."
+  },
+  "validation": {
+    "nameRequired": "El nombre es obligatorio",
+    "slugRequired": "El slug es obligatorio",
+    "industriesRequired": "Al menos una industria es obligatoria"
+  },
+  "notifications": {
+    "categoryCreated": "Categoría creada exitosamente",
+    "categoryUpdated": "Categoría actualizada exitosamente",
+    "categoryDeleted": "Categoría eliminada exitosamente",
+    "categoryActivated": "Categoría activada exitosamente",
+    "categoryDeactivated": "Categoría desactivada exitosamente"
+  },
+  "errors": {
+    "createCategory": "Error al crear la categoría",
+    "updateCategory": "Error al actualizar la categoría",
+    "deleteCategory": "Error al eliminar la categoría",
+    "activateCategory": "Error al activar la categoría",
+    "deactivateCategory": "Error al desactivar la categoría"
+  },
+  "empty": {
+    "noCategories": "No se encontraron categorías"
+  },
+  "accessDenied": {
+    "title": "Acceso Denegado",
+    "description": "No tienes permisos para acceder a esta sección"
+  },
+  "error": {
+    "title": "Error al cargar categorías",
+    "description": "Hubo un error al cargar las categorías. Por favor intenta de nuevo."
+  }
+}

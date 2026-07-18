@@ -1,0 +1,498 @@
+{
+  "title": "Catalog",
+  "inheritedFromCatalog": "Inherited from catalog",
+  "inheritedFrom": "Inherited from: {name}",
+  "imageFallbackDescription": "If not specified, the image from the global catalog will be used",
+  "inactiveProductsDescription": "Inactive products do not appear in the menu",
+  "customizeNameHint": "You can customize the name for your business",
+  "activateProductNote": "This product will be linked to the TOGO global catalog. Image and description will be inherited automatically.",
+  "subtitle": "Manage your products and categories",
+  "tabs": {
+    "products": "My Products",
+    "categories": "Categories"
+  },
+  "products": {
+    "error": {
+      "title": "Error loading products"
+    },
+    "stats": {
+      "total": "{count, plural, one {# product} other {# products}}",
+      "custom": "{count, plural, one {# custom} other {# custom}}",
+      "fromTemplate": "{count, plural, one {# from global catalog} other {# from global catalog}}"
+    },
+    "title": "Products",
+    "create": "Create product",
+    "createDescription": "Create a new product for your catalog",
+    "edit": "Edit product",
+    "editDescription": "Modify product details",
+    "delete": "Delete product",
+    "import": "Import products",
+    "search": "Search products...",
+    "noProducts": "No products",
+    "noProductsDescription": "Start by adding your first product to the catalog",
+    "name": "Name",
+    "description": "Description",
+    "price": "Price",
+    "salePrice": "Sale price",
+    "suggestedPrice": "Suggested price",
+    "priceByVariant": "Price per variant",
+    "active": "Active",
+    "activeHint": "Visible in the catalog",
+    "tabs": {
+      "info": "Information",
+      "variants": "Variants",
+      "branches": "Branches"
+    },
+    "category": "Category",
+    "image": "Image",
+    "imageUrl": "Image URL",
+    "imagePlaceholder": "https://example.com/image.jpg",
+    "stock": "Stock",
+    "stockOptional": "Stock (optional)",
+    "activeProduct": "Active product",
+    "branchAvailability": "Availability by Branch",
+    "singlePrice": "Single price",
+    "variantPriceHint": "You can adjust the price later from the variant list.",
+    "loadingBranches": "Loading branches...",
+    "noBranchesConfigured": "No branches configured.",
+    "basePrice": "Base price",
+    "activateInBranch": "Activate in {name}",
+    "noVariantsCreateFirst": "This product has no variants. Create at least one variant before activating it in branches.",
+    "branchActivationHint": "Activate the product in each branch and configure prices per variant. You can deactivate specific variants in branches where they are not sold.",
+    "variants": {
+      "loading": "Loading variants...",
+      "unitLabel": "Unit",
+      "selectPlaceholder": "Select variant",
+      "selectCategoryFirst": "Select a category to add variants.",
+      "allAdded": "All variants for this category have already been added.",
+      "noTemplatesForCategory": "No predefined variants for this category.",
+      "mainBranchLabel": "Main",
+      "labelPlaceholder": "Label",
+      "add": "Add variant",
+      "save": "Save",
+      "new": "New variant",
+      "addFirst": "Add first variant",
+      "default": "Default",
+      "inactive": "Inactive",
+      "deleteTitle": "Delete variant",
+      "deleteConfirm": "Are you sure you want to delete {name}? This action cannot be undone.",
+      "deleteLastActiveWarning": "Deleting this variant will leave the product without active variants.",
+      "delete": "Delete"
+    },
+    "modified": "Modified",
+    "noInventoryWarning": "Product will be created but won't be available at any branch until you configure its inventory",
+    "presentation": "Presentation: {unit}",
+    "sku": "SKU",
+    "barcode": "Barcode",
+    "brand": "Brand",
+    "available": "Available",
+    "featured": "Featured",
+    "filters": {
+      "all": "All",
+      "category": "Category",
+      "status": "Status",
+      "categoryPlaceholder": "All categories",
+      "statusPlaceholder": "All statuses",
+      "title": "Filters",
+      "allCategories": "All categories",
+      "clearAll": "Clear all",
+      "productStatus": {
+        "title": "Product status",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "source": {
+        "title": "Product type",
+        "custom": "Custom",
+        "catalog": "From catalog"
+      }
+    },
+    "form": {
+      "nameLabel": "Product name",
+      "namePlaceholder": "Ex: Classic Burger",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe your product...",
+      "priceLabel": "Price",
+      "categoryLabel": "Category",
+      "selectCategory": "Select category",
+      "imageLabel": "Product image",
+      "uploadImage": "Upload image",
+      "changeImage": "Change image",
+      "stockLabel": "Available stock",
+      "skuLabel": "SKU (internal code)",
+      "barcodeLabel": "Barcode",
+      "imageUrl": "Image URL",
+      "parentCategory": "Category",
+      "selectParentCategory": "Select category",
+      "subcategoryOptional": "Subcategory (optional)",
+      "selectSubcategory": "Select subcategory",
+      "noSubcategoriesInParent": "This category has no subcategories",
+      "willBeCreated": "(will be created on confirm)",
+      "subcategoryFallbackHint": "Without subcategory, the product will appear under \"{parentName}\""
+    },
+    "empty": {
+      "title": "You don't have products yet",
+      "message": "Start by creating custom products or activating products from the TOGO global catalog."
+    },
+    "selectAll": "Select all",
+    "select": "Select",
+    "selectedCount": "{count} selected",
+    "status": {
+      "activeInBranch": "Active in branch",
+      "inactiveInBranch": "Inactive in branch",
+      "notActivated": "Not activated"
+    }
+  },
+  "categories": {
+    "error": {
+      "title": "Error loading categories"
+    },
+    "title": "Product Categories",
+    "subtitle": "Organize your products into categories",
+    "new": "New Category",
+    "create": "Create category",
+    "edit": "Edit category",
+    "delete": "Delete category",
+    "name": "Name",
+    "description": "Description",
+    "icon": "Icon",
+    "color": "Color",
+    "productsCount": "{count} products",
+    "noCategories": "No categories",
+    "emptyDescription": "Create categories to better organize your products and facilitate navigation for your customers.",
+    "createFirst": "Create first category",
+    "editDescription": "Modify the category data",
+    "deleteDescription": "Are you sure you want to delete the category \"{name}\"? This action cannot be undone.",
+    "deleteWarning": "Note: You cannot delete this category if it has associated products.",
+    "namePlaceholder": "Ex: Beverages, Fast Food...",
+    "form": {
+      "nameLabel": "Category name",
+      "namePlaceholder": "Ex: Beverages",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe this category..."
+    },
+    "industryCategory": "Industry Category",
+    "slugHelp": "URL-friendly identifier for the category (e.g.: beverages-soft-drinks)",
+    "selectIndustryCategory": "Select an industry category",
+    "descriptionPlaceholder": "Optional category description",
+    "createDescription": "Create a new category for your catalog",
+    "noResults": "No results found",
+    "noResultsDescription": "Try adjusting your filters or clear them to see all categories",
+    "result": "result",
+    "results": "results",
+    "slugDisabled": "Slug cannot be edited after creation"
+  },
+  "globalCatalog": {
+    "error": {
+      "title": "Error loading catalog"
+    },
+    "title": "Global Catalog",
+    "subtitle": "Manage the global product catalog",
+    "search": "Search in global catalog...",
+    "stats": {
+      "totalProducts": "Total products",
+      "activeProducts": "Active products",
+      "categories": "Categories",
+      "businessesUsing": "Businesses using"
+    },
+    "import": {
+      "title": "Import products",
+      "description": "Bulk import products from an Excel file",
+      "downloadTemplate": "Download template",
+      "uploadFile": "Upload file",
+      "processing": "Processing file...",
+      "success": "Products imported successfully"
+    },
+    "empty": {
+      "title": "Catalog complete",
+      "message": "You have activated all available products from the global catalog."
+    },
+    "activate": "Activate",
+    "filters": {
+      "brand": "Brand",
+      "category": "Category"
+    }
+  },
+  "actions": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "addProduct": "Add product",
+    "editProduct": "Edit",
+    "deleteProduct": "Delete",
+    "duplicate": "Duplicate",
+    "preview": "Preview"
+  },
+  "dialogs": {
+    "delete": {
+      "title": "Delete product?",
+      "description": "This action cannot be undone. The product \"{name}\" will be permanently deleted.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "activate": {
+      "title": "Activate product?",
+      "description": "The product \"{name}\" will be available to customers.",
+      "confirm": "Activate",
+      "cancel": "Cancel"
+    }
+  },
+  "stock": {
+    "unlimited": "Unlimited",
+    "noControl": "No control"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "lowStock": "Low stock",
+    "lowStockCount": "Low stock: {count}",
+    "stockCount": "Stock: {count}",
+    "custom": "Custom",
+    "notActivated": "Not activated"
+  },
+  "activateModal": {
+    "title": "Activate Product",
+    "description": "Configure how \"{name}\" will appear in your catalog",
+    "noVariants": "This product has no configured variants",
+    "variantsCount": "{count} variants",
+    "branches": "Branches",
+    "branchesDescription": "Availability and price per branch",
+    "priceOptional": "Price (opt)",
+    "noPrice": "No price",
+    "activateInBranch": "Activate in {name}"
+  },
+  "noBusiness": {
+    "title": "You don't have a business assigned",
+    "description": "To manage products, you need to have a business assigned to your account. Contact the system administrator."
+  },
+  "notifications": {
+    "productCreated": "Product created successfully",
+    "productUpdated": "Product updated successfully",
+    "productDeleted": "Product deleted successfully",
+    "productActivated": "Product activated",
+    "productDeactivated": "Product deactivated",
+    "productActivatedInCatalog": "Product activated in your catalog",
+    "categoryCreated": "Category created successfully",
+    "categoryUpdated": "Category updated successfully",
+    "categoryDeleted": "Category deleted successfully",
+    "categoryActivated": "Category activated successfully",
+    "categoryDeactivated": "Category deactivated successfully",
+    "bulkUpdateSuccess": "{count} products updated successfully",
+    "errorBulkUpdate": "Error updating products",
+    "variantCreated": "Variant created successfully",
+    "variantUpdated": "Variant updated successfully",
+    "variantDeleted": "Variant deleted successfully",
+    "errorCreatingVariant": "Error creating variant",
+    "errorUpdatingVariant": "Error updating variant",
+    "errorDeletingVariant": "Error deleting variant",
+    "productActivatedInCatalogNew": "Product activated in your catalog",
+    "errorActivatingCatalogProduct": "Error activating product"
+  },
+  "bulkActions": {
+    "selectedCount": "{count, plural, =0 {0 products selected} =1 {1 product selected} other {# products selected}}",
+    "forBranch": "For selected branch",
+    "activate": "Activate in branch",
+    "deactivate": "Deactivate",
+    "adjustStock": "Adjust stock",
+    "adjustStockDescription": "Adjust stock for {count} selected products",
+    "comingSoon": "Coming soon"
+  },
+  "hybridFilters": {
+    "filterByBranch": "Filter by branch:",
+    "selectBranch": "Select branch",
+    "allBranches": "All branches",
+    "activationStatus": "Activation status",
+    "allStatuses": "All statuses",
+    "activated": "Activated",
+    "notActivated": "Not activated",
+    "branchStatus": {
+      "title": "Branch status",
+      "activated": "Activated",
+      "notActivated": "Not activated"
+    },
+    "noBranches": "No branches available"
+  },
+  "availabilityTab": {
+    "title": "Availability by Branch",
+    "description": "Manage this product's availability at each branch of your business",
+    "noBranches": "No branches configured",
+    "noBranchesDescription": "Set up branches in your business to manage product availability",
+    "mainBranch": "Main branch",
+    "active": "Active",
+    "inactive": "Inactive",
+    "availableForSale": "Available for sale",
+    "stock": "Stock",
+    "priceOverride": "Branch price"
+  },
+  "inventory": {
+    "title": "Branch Inventory Management",
+    "subtitle": "Manage product availability, stock, and prices by branch",
+    "selectBranch": "Select Branch",
+    "branchPlaceholder": "Choose a branch to manage its inventory",
+    "mainBranch": "Main",
+    "stats": {
+      "total": "Total Products",
+      "activated": "Activated",
+      "lowStock": "Low Stock",
+      "outOfStock": "Out of Stock"
+    },
+    "noBranch": {
+      "title": "Select a branch",
+      "message": "Choose a branch from the dropdown to view and manage its inventory"
+    },
+    "noBusiness": {
+      "title": "No business selected",
+      "description": "Select a business to manage branch inventory"
+    },
+    "noBranches": {
+      "title": "No branches configured",
+      "description": "Create at least one branch to manage inventory"
+    },
+    "table": {
+      "product": "Product",
+      "category": "Category",
+      "activated": "Activated",
+      "available": "Available",
+      "stock": "Stock",
+      "basePrice": "Base Price",
+      "branchPrice": "Branch Price",
+      "actions": "Actions",
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "outOfStock": "Out of stock",
+      "inStock": "{count} units",
+      "search": "Search products...",
+      "showing": "Showing {count} of {total} products",
+      "empty": {
+        "title": "No products",
+        "message": "Create products in the Catalog section to manage their inventory"
+      }
+    },
+    "selector": {
+      "title": "Availability by Branch",
+      "available": "Available",
+      "priceOverride": "Specific price",
+      "stock": "Initial stock",
+      "optional": "optional",
+      "mainBranch": "Main",
+      "noBranches": "No branches available",
+      "noSelectionWarning": "Select a branch to manage its inventory",
+      "summary": "{count} branches selected, {available} available",
+      "discount": "Save: ${amount}",
+      "noStockControl": "No control",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all"
+    },
+    "activate": {
+      "title": "Activate Product in Branch",
+      "description": "Configure stock and price for \"{name}\"",
+      "priceOverride": "Specific price for this branch",
+      "basePrice": "Base price: {price}",
+      "stock": "Initial stock",
+      "stockPlaceholder": "Leave empty for no control",
+      "available": "Available for sale",
+      "cancel": "Cancel",
+      "confirm": "Activate Product",
+      "processing": "Activating..."
+    },
+    "notifications": {
+      "activated": "Product activated in branch",
+      "activateError": "Error activating: {error}",
+      "deactivated": "Product deactivated in branch",
+      "deactivateError": "Error deactivating: {error}",
+      "stockUpdated": "Stock updated",
+      "stockError": "Error updating stock: {error}",
+      "bulkActivated": "{count} products activated ({existing} already existed)",
+      "bulkActivateError": "Bulk activation error: {error}"
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "adjustStock": "Adjust Stock",
+      "activateTitle": "Activate Selected Products",
+      "activateDescription": "Configure stock and availability for {count} products",
+      "defaultStock": "Default initial stock",
+      "stockPlaceholder": "Leave empty for no control",
+      "stockHint": "Will be applied to all selected products",
+      "makeAvailable": "Available for sale",
+      "confirmActivate": "Activate {count} Products",
+      "deactivateTitle": "Deactivate Products",
+      "deactivateDescription": "Are you sure you want to deactivate {count} products from this branch?",
+      "deactivateWarning": "Deactivated products won't appear in this branch's catalog",
+      "confirmDeactivate": "Deactivate Products",
+      "adjustStockTitle": "Adjust Stock",
+      "adjustStockDescription": "Modify stock for {count} products",
+      "addStock": "Add",
+      "removeStock": "Remove",
+      "quantity": "Quantity",
+      "quantityPlaceholder": "Amount to adjust",
+      "confirmAdjustStock": "Apply Adjustment",
+      "stockAdjustmentHint": "Stock will be increased or decreased by the specified amount"
+    }
+  },
+  "import": {
+    "title": "Import products",
+    "description": "Upload an Excel, CSV, PDF or image with your product list",
+    "button": "Import products",
+    "page": {
+      "title": "Import products",
+      "subtitle": "Review and edit the detected products before importing them",
+      "back": "Back to catalog"
+    },
+    "step": {
+      "upload": "Upload file",
+      "review": "Review products",
+      "confirm": "Confirm"
+    },
+    "dropzone": {
+      "hint": "Drag or click to select",
+      "subHint": "Excel, CSV, PDF or image — max. 10 MB",
+      "invalidType": "Unsupported file type. Use Excel, CSV, PDF or image.",
+      "tooLarge": "File exceeds the 10 MB limit."
+    },
+    "processing": {
+      "title": "Analyzing with AI...",
+      "subtitle": "This may take a few seconds"
+    },
+    "review": {
+      "headerTitle": "Detected products",
+      "selectedCount": "{selected} of {total} selected",
+      "noProducts": "No products detected in the file.",
+      "columns": {
+        "name": "Name",
+        "price": "Price",
+        "category": "Category",
+        "suggestion": "AI Suggestion"
+      }
+    },
+    "editItem": {
+      "title": "Edit product",
+      "description": "Modify the details before importing",
+      "save": "Save changes",
+      "branchSelection": {
+        "title": "Branches where it will appear",
+        "noneWarning": "Select at least one branch so the product is visible in the catalog"
+      }
+    },
+    "confirm": {
+      "title": "Import summary",
+      "detected": "Detected products",
+      "selected": "Selected products",
+      "confirmButton": "Confirm import",
+      "importing": "Importing products..."
+    },
+    "success": {
+      "title": "Import completed!",
+      "subtitle": "{count} products imported successfully.",
+      "viewProducts": "View products",
+      "importAnother": "Import another file"
+    },
+    "error": {
+      "title": "Analysis error",
+      "subtitle": "An unexpected error occurred. Try with another file.",
+      "confirmFailed": "Error confirming the import. Please try again."
+    }
+  }
+}

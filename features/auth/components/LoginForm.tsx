@@ -2,12 +2,16 @@
 
 import * as React from "react";
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/features/auth/hooks/useAuth";
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
+  const tv = useTranslations("auth.validation");
+  
   const login = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,9 +26,9 @@ export function LoginForm() {
       {/* Email Field */}
       <div>
         <Input
-          label="Correo electrónico"
+          label={t("email.label")}
           type="email"
-          placeholder="tu@empresa.com"
+          placeholder={t("email.placeholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -36,9 +40,9 @@ export function LoginForm() {
       {/* Password Field */}
       <div>
         <Input
-          label="Contraseña"
+          label={t("password.label")}
           type="password"
-          placeholder="••••••••"
+          placeholder={t("password.placeholder")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -49,7 +53,7 @@ export function LoginForm() {
             href="/forgot-password"
             className="text-sm text-indigo-500 hover:text-indigo-600 hover:underline"
           >
-            ¿Olvidaste tu contraseña?
+            {t("forgotPassword")}
           </Link>
         </div>
       </div>
@@ -61,7 +65,7 @@ export function LoginForm() {
         isLoading={login.isPending}
         disabled={login.isPending}
       >
-        Iniciar sesión
+        {login.isPending ? t("signingIn") : t("submit")}
       </Button>
     </form>
   );

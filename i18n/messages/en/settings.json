@@ -1,0 +1,215 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your account and business settings",
+  "sections": {
+    "account": "Account",
+    "business": "Business",
+    "notifications": "Notifications",
+    "security": "Security",
+    "appearance": "Appearance",
+    "language": "Language"
+  },
+  "account": {
+    "title": "Account information",
+    "subtitle": "Manage your personal information",
+    "name": "Name",
+    "email": "Email address",
+    "phone": "Phone",
+    "role": "Role",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password"
+  },
+  "business": {
+    "title": "Business Details",
+    "subtitle": "General information and branding for your business",
+    "name": "Business name",
+    "description": "Description",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Contact email",
+    "timezone": "Timezone",
+    "currency": "Currency",
+    "information": {
+      "title": "General Information",
+      "name": "Business name",
+      "phone": "Business phone",
+      "phoneDescription": "General business contact phone",
+      "slug": "Slug (URL)",
+      "slugDescription": "This will be your personalized URL in the catalog",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe your business...",
+      "message": "Welcome message",
+      "messagePlaceholder": "Message that customers will see when entering the catalog..."
+    },
+    "slug": {
+      "label": "Custom URL",
+      "placeholder": "my-business",
+      "help": "This will be your URL in the catalog: togo.com/your-business"
+    },
+    "config": {
+      "title": "Catalog Configuration",
+      "visibility": "Catalog visibility",
+      "visibilityPublic": "Public - Anyone can view",
+      "visibilityPrivate": "Private - Access required",
+      "visibilityRestricted": "Restricted - Registered users only",
+      "useProductImages": {
+        "label": "Show product images",
+        "description": "Shows the product image in the catalog. If the product has no image, initials will be shown."
+      }
+    },
+    "catalog": {
+      "visibility": {
+        "label": "Catalog visibility",
+        "public": "Public - Anyone can view",
+        "private": "Private - Access only",
+        "restricted": "Restricted - Registered users only"
+      },
+      "mode": {
+        "label": "Catalog mode",
+        "menu": "Menu - For restaurants",
+        "marketplace": "Marketplace - For stores",
+        "hybrid": "Hybrid - Both modes"
+      }
+    },
+    "branding": {
+      "title": "Branding",
+      "logo": {
+        "label": "Business logo",
+        "upload": "Upload logo",
+        "uploading": "Uploading...",
+        "uploadSuccess": "Logo updated successfully",
+        "uploadError": "Error uploading logo",
+        "invalidType": "Invalid format. Use PNG, JPG or WebP",
+        "tooLarge": "File is too large. Maximum 2MB"
+      },
+      "colors": {
+        "primary": "Primary color",
+        "accent": "Accent color"
+      }
+    },
+    "welcomeMessage": {
+      "label": "Welcome message",
+      "placeholder": "Message your customers will see when entering the catalog..."
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "slugRequired": "Slug is required",
+      "slugMinLength": "Slug must be at least 3 characters",
+      "slugFormat": "Only lowercase letters, numbers and hyphens",
+      "colorFormat": "Invalid color format"
+    },
+    "errors": {
+      "loadFailed": "Could not load business information"
+    },
+    "placeholders": {
+      "name": "Ex: My Restaurant",
+      "phone": "Ex: +1 555 123 4567",
+      "slug": "my-business"
+    },
+    "buttons": {
+      "cancel": "Cancel"
+    },
+    "saveSuccess": "Business details saved successfully",
+    "saveError": "Error saving business details"
+  },
+  "notifications": {
+    "title": "Notification preferences",
+    "subtitle": "Configure how you want to receive notifications",
+    "description": "Customize your notification and sound alert preferences",
+    "email": "Email notifications",
+    "push": "Push notifications",
+    "sms": "SMS notifications",
+    "newOrders": "New orders",
+    "orderUpdates": "Order updates",
+    "promotions": "Promotions and offers",
+    "soundAlerts": {
+      "title": "Sound alerts",
+      "description": "Configure sound alerts for new orders",
+      "enable": "Enable sound alerts for new orders",
+      "help": "Play a sound when a new order arrives"
+    },
+    "toastNotifications": {
+      "title": "Toast notifications",
+      "description": "Configure on-screen toast notifications",
+      "enable": "Enable toast notifications",
+      "help": "Show a notification on screen when a new order arrives"
+    },
+    "note": {
+      "title": "Note",
+      "description": "Your preferences are automatically saved in this browser. Sound alerts may be blocked by the browser's autoplay policy until you interact with the page."
+    }
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Select your preferred language",
+    "current": "Current language",
+    "select": "Select language"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "subtitle": "Customize the application appearance",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your personal information"
+  },
+  "security": {
+    "title": "Security",
+    "description": "Configure your account security"
+  },
+  "users": {
+    "description": "Manage your business users"
+  },
+  "operatorProfiles": {
+    "description": "Manage operator profiles and their permissions"
+  },
+  "branches": {
+    "description": "Manage your business branches"
+  },
+  "save": {
+    "button": "Save changes",
+    "success": "Changes saved successfully",
+    "error": "Error saving changes"
+  },
+  "error": { "carga": "Error loading business" },
+  "adminBusinesses": {
+    "page": {
+      "title": "Business Management",
+      "description": "Manage business subscriptions and payments",
+      "alerts": "{count, plural, =1 {1 alert} other {# alerts}}"
+    },
+    "errors": {
+      "unauthorized": "Unauthorized Access",
+      "superAdminRequired": "Super Admin role is required to access this page"
+    },
+    "alerts": {
+      "title": "{count, plural, =1 {Payment Alert} other {Payment Alerts}}",
+      "description": "There are businesses with overdue or upcoming payment due dates. Review pending actions."
+    },
+    "filters": {
+      "title": "Filters",
+      "searchPlaceholder": "Search businesses...",
+      "plan": "Plan",
+      "paymentStatus": "Payment Status",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activeFilter": "Active filters"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "showing": "Showing {from} - {to} of {total}",
+      "page": "Page {current} of {total}"
+    },
+    "buttons": {
+      "clearAll": "Clear all"
+    }
+  }
+}

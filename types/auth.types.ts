@@ -15,6 +15,7 @@ export interface AuthenticatedUser {
   businessId: string | null;
   businessName: string | null;
   operatorProfileId: string | null;
+  subscriptionPlan?: number;
 }
 
 // Login Request
@@ -49,19 +50,39 @@ export interface AuthState {
 // Auth Actions
 export interface AuthActions {
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
   setAuthData: (data: LoginResponse) => void;
   clearAuth: () => void;
+  setSubscriptionPlan: (plan: number) => void;
 }
 
-// Registration (prepared for future implementation)
+// Registration status
+export type RegistrationStatus = 'INCOMPLETE' | 'PENDING_PAYMENT' | 'ACTIVE';
+
+// Registration API response
+export interface RegistrationResponse {
+  businessId: string;
+  registrationToken: string;
+  registrationStatus: RegistrationStatus;
+}
+
+// Registration request
 export interface RegisterRequest {
   name: string;
   email: string;
   phoneNumber: string;
   password: string;
   businessName: string;
+  industryId?: string;
+  address?: string;
+  city?: string;
+}
+
+// Registration wizard state (persisted in sessionStorage for multi-step flow)
+export interface RegistrationWizardState {
+  currentStep: 1 | 2 | 3;
+  businessId: string | null;
+  createdAt: number | null; // timestamp for TTL check
 }
 
 // Forgot Password (prepared for future implementation)
@@ -72,4 +93,45 @@ export interface ForgotPasswordRequest {
 export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
+}
+
+/**
+ * User Branch Information
+ * Represents a branch the user has access to
+ */
+export interface UserBranch {
+  id: string;
+  name: string;
+  isMainBranch: boolean;
+  role: string;
+}
+
+/**
+ * User Preferences
+ * Stores user-specific preferences
+ */
+export interface UserPreferences {
+  defaultBranchId: string | null;
+}
+
+/**
+ * Business Information
+ * Basic business details for the session
+ */
+export interface SessionBusiness {
+  id: string;
+  name: string;
+  plan: string;
+  maxBranches: number;
+}
+
+/**
+ * Session Response
+ * Complete session data returned from /auth/session endpoint
+ */
+export interface SessionResponse {
+  defaultBranchId: string | null;
+  branches: UserBranch[];
+  business: SessionBusiness;
+  userPreferences: UserPreferences;
 }

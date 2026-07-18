@@ -1,0 +1,121 @@
+{
+  "page": {
+    "title": "Business Management",
+    "description": "Manage business subscriptions and payments",
+    "alerts": "{count, plural, =1 {1 alert} other {# alerts}}"
+  },
+  "errors": {
+    "unauthorized": "Unauthorized Access",
+    "superAdminRequired": "Super Admin role is required to access this page"
+  },
+  "alerts": {
+    "title": "{count, plural, =1 {Payment Alert} other {Payment Alerts}}",
+    "description": "There are businesses with overdue or upcoming payment due dates. Review pending actions."
+  },
+  "pagination": {
+    "showing": "Showing {from} - {to} of {total}",
+    "previous": "Previous",
+    "page": "Page {current} of {total}",
+    "next": "Next"
+  },
+  "table": {
+    "noBusinesses": "No businesses found",
+    "business": "Business",
+    "plan": "Plan",
+    "paymentStatus": "Payment Status",
+    "dueDate": "Due Date",
+    "branches": "Branches",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "actions": {
+    "recordPayment": "Record Payment",
+    "editBranches": "Edit Branch Limit",
+    "sendNotification": "Send Notification",
+    "deactivate": "Deactivate",
+    "activate": "Activate"
+  },
+  "filters": {
+    "title": "Filters",
+    "searchPlaceholder": "Search businesses...",
+    "plan": "Plan",
+    "allPlans": "All plans",
+    "paymentStatus": "Payment Status",
+    "allStatuses": "All statuses",
+    "status": "Status",
+    "allStates": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activePlural": "Active",
+    "inactivePlural": "Inactive",
+    "statusFilter": "Business status",
+    "all": "All",
+    "activeOnly": "Active only",
+    "inactiveOnly": "Inactive only",
+    "activeFilters": "Active filters",
+    "clearFilters": "Clear filters",
+    "clear": "Clear",
+    "apply": "Apply"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close"
+  },
+  "modals": {
+    "cancel": "Cancel",
+    "editBranches": {
+      "title": "Edit Branch Limit",
+      "description": "Modifying: {businessName}",
+      "currentPlan": "Current plan",
+      "planLimit": "Plan limit",
+      "currentBranches": "Current branches",
+      "useOverride": "Use custom limit",
+      "overrideDescription": "Enable to set a different branch limit than the plan allows",
+      "overrideValue": "Custom limit",
+      "overrideHint": "Must be greater than or equal to current branches",
+      "submit": "Save Changes"
+    },
+    "recordPayment": {
+      "title": "Record Payment",
+      "description": "Recording payment for: {businessName}",
+      "amount": "Amount",
+      "method": "Payment Method",
+      "selectMethod": "Select method",
+      "reference": "Reference",
+      "referencePlaceholder": "Transaction number or reference",
+      "paidAt": "Payment Date",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes about the payment...",
+      "submit": "Record Payment"
+    },
+    "sendNotification": {
+      "title": "Send Notification",
+      "description": "Sending notification to: {businessName}",
+      "type": "Notification Type",
+      "selectType": "Select type",
+      "subject": "Subject",
+      "subjectPlaceholder": "Notification subject",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "deliveryOptions": "Delivery Options",
+      "sendEmail": "Send via email",
+      "sendInApp": "Send in-app notification",
+      "submit": "Send Notification"
+    }
+  },
+  "notifications": {
+    "paymentRecorded": "Payment recorded successfully",
+    "paymentError": "Error recording payment",
+    "notificationSent": "Notification sent successfully",
+    "limitUpdated": "Branch limit updated",
+    "branchesLimitUpdated": "Branch limit updated successfully",
+    "statusUpdated": "Status updated successfully",
+    "businessDeactivated": "Business deactivated successfully",
+    "businessActivated": "Business activated successfully"
+  }
+}

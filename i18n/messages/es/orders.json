@@ -1,0 +1,262 @@
+{
+  "deliveryTypes": {
+    "delivery": "Domicilio",
+    "table": "En mesa",
+    "pickup": "Recoger",
+    "DELIVERY": "Domicilio",
+    "PICKUP": "Recoger",
+    "DINE_IN": "A la mesa"
+  },
+  "paymentMethods": {
+    "CASH": "Efectivo",
+    "CREDIT_CARD": "Tarjeta de crédito",
+    "DEBIT_CARD": "Tarjeta de débito",
+    "TRANSFER": "Transferencia",
+    "NEQUI": "Nequi",
+    "DAVIPLATA": "Daviplata",
+    "PSE": "PSE",
+    "PAYPAL": "PayPal",
+    "MERCADOPAGO": "MercadoPago",
+    "OTHER": "Otro",
+    "NOT_SPECIFIED": "No especificado"
+  },
+  "paymentStatus": {
+    "PAID": "Pagado",
+    "PENDING": "Pendiente",
+    "UNKNOWN": "Desconocido"
+  },
+  "orderNotFound": "No se encontró la orden",
+  "includesDelivery": "Incluye domicilio: {fee}",
+  "itemsCount": "Productos ({count})",
+  "markNoStock": "Indicar falta de disponibilidad",
+  "paymentInfo": "Información de pago",
+  "paymentMethod": "Método: {method}",
+  "unknownCustomer": "Cliente desconocido",
+  "orderNumber": "Orden #{id}",
+  "orderCount": "{count, plural, one {# orden} other {# órdenes}}",
+  "recentActivity": "Actividad reciente",
+  "whatsappOpened": "WhatsApp abierto con el mensaje para el cliente",
+  "statusUpdated": "Estado actualizado a \"{status}\"",
+  "paymentStatusUpdated": "Estado de pago actualizado",
+  "errors": {
+    "updateStatusFailed": "No se pudo actualizar el estado de la orden",
+    "updatePaymentFailed": "No se pudo actualizar el estado de pago",
+    "cannotComplete": "No se puede completar la orden",
+    "alreadyCompleted": "La orden ya está completada",
+    "cannotCompleteCancelled": "No se puede completar una orden cancelada o abandonada",
+    "paymentPending": "No se puede completar la orden: el pago está pendiente",
+    "mustBeReadyOrOnTheWay": "La orden debe estar 'Lista' o 'En camino' para completarse",
+    "cannotCancelCompleted": "No se puede cancelar una orden que ya está completada",
+    "cannotCancelDelivered": "No se puede cancelar una orden que ya fue entregada",
+    "invalidStatusTransition": "Transición de estado no válida"
+  },
+  "history": {
+    "created": "Creado: {status}"
+  },
+  "noStockDialog": {
+    "title": "Producto sin disponibilidad",
+    "description": "¿Confirmas que {productName} no está disponible? Esto enviará una notificación al cliente por WhatsApp.",
+    "messageTemplate": "Hola, lamentamos informarte que el producto \"{productName}\" no está disponible en este momento para tu orden {orderNumber}. Te ofrecemos disculpas y alternativas."
+  },
+  "title": "Gestión de Órdenes",
+  "subtitle": "Administra y supervisa todas las órdenes de tu negocio",
+  "newOrders": "Nuevos pedidos",
+  "noBusiness": {
+    "title": "No tienes un negocio asignado",
+    "description": "Para ver las órdenes, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
+  },
+  "noBranches": {
+    "title": "No hay sucursales seleccionadas",
+    "description": "Selecciona al menos una sucursal para ver las órdenes."
+  },
+  "search": {
+    "placeholder": "Buscar por orden, cliente, dirección, pago, tipo..."
+  },
+  "view": {
+    "card": "Vista de tarjetas",
+    "list": "Vista de lista"
+  },
+  "filters": {
+    "title": "Filtros",
+    "clear": "Limpiar filtros",
+    "dateRange": "Período de fechas",
+    "paymentStatus": {
+      "title": "Estado de pago",
+      "paid": "Pagado",
+      "pending": "Pendiente"
+    },
+    "deliveryType": {
+      "title": "Tipo de envío",
+      "delivery": "A domicilio",
+      "pickup": "Recoger en tienda"
+    },
+    "activeFilters": {
+      "paidOnly": "• Solo pagadas",
+      "pendingOnly": "• Solo pendientes",
+      "deliveryOnly": "• A domicilio",
+      "pickupOnly": "• Recoger en tienda"
+    }
+  },
+  "status": {
+    "DRAFT": "Borrador",
+    "CONFIRMED": "Nueva",
+    "PAYMENT_PENDING": "Pago pendiente",
+    "PAID": "Pagada",
+    "IN_PROGRESS": "En proceso",
+    "READY": "Lista",
+    "ON_THE_WAY": "En camino",
+    "COMPLETED": "Entregada",
+    "CANCELLED": "Cancelada",
+    "ABANDONED": "Abandonada",
+    "PENDING": "Pendiente",
+    "PREPARING": "En preparación",
+    "DELIVERING": "En camino",
+    "DELIVERED": "Entregado",
+    "ACCEPTED": "Aceptado",
+    "REJECTED": "Rechazado"
+  },
+  "actions": {
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "prepare": "Preparar",
+    "ready": "Marcar listo",
+    "deliver": "Entregar",
+    "view": "Ver detalle",
+    "print": "Imprimir",
+    "cancel": "Cancelar orden",
+    "reopen": "Reabrir orden",
+    "confirmPayment": "Confirmar pago",
+    "showLess": "Ver menos",
+    "showMore": "Ver {count} más"
+  },
+  "kanban": {
+    "newOrders": "Nuevos pedidos",
+    "inProgress": "En preparación",
+    "ready": "Listos",
+    "delivered": "Entregados"
+  },
+  "columnVisibility": {
+    "minOneColumn": "Debe haber al menos una columna visible",
+    "hideColumn": "Ocultar {column}",
+    "showColumn": "Mostrar {column}",
+    "hideStatsPanel": "Ocultar panel de estadísticas",
+    "showStatsPanel": "Mostrar panel de estadísticas",
+    "statistics": "Estadísticas"
+  },
+  "columns": {
+    "orderNumber": "Pedido #",
+    "customer": "Cliente",
+    "items": "Artículos",
+    "total": "Total",
+    "status": "Estado",
+    "date": "Fecha",
+    "actions": "Acciones",
+    "payment": "Pago",
+    "delivery": "Envío"
+  },
+  "card": {
+    "items": "{count} artículo(s)",
+    "delivery": {
+      "delivery": "A domicilio",
+      "pickup": "Recoger en tienda"
+    },
+    "payment": {
+      "paid": "Pagado",
+      "pending": "Pendiente"
+    }
+  },
+  "detail": {
+    "title": "Detalle del Pedido",
+    "orderNumber": "Pedido #{number}",
+    "customerInfo": "Cliente",
+    "deliveryAddress": "Dirección de entrega",
+    "orderInfo": "Información del pedido",
+    "items": "Artículos",
+    "itemsCount": "Productos ({count})",
+    "notes": "Notas",
+    "history": "Historial",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Domicilio",
+    "discount": "Descuento",
+    "tax": "Impuestos"
+  },
+  "notifications": {
+    "newOrder": "Nueva orden {orderNumber}",
+    "orderUpdated": "Pedido actualizado",
+    "orderCancelled": "Pedido cancelado",
+    "orderAccepted": "Pedido aceptado",
+    "orderRejected": "Pedido rechazado",
+    "orderReady": "Pedido listo",
+    "orderDelivered": "Pedido entregado"
+  },
+  "empty": {
+    "title": "No hay órdenes",
+    "description": "Las órdenes aparecerán aquí cuando los clientes realicen pedidos",
+    "noOrdersInProgress": "No hay órdenes en proceso",
+    "noProducts": "Sin productos",
+    "noOrders": "No hay órdenes"
+  },
+  "paymentNotes": {
+    "confirmedFromAdmin": "Pago confirmado desde panel admin"
+  },
+  "metrics": {
+    "title": "Métricas",
+    "totalOrders": "Total órdenes",
+    "completedOrders": "Completadas",
+    "cancelledOrders": "Canceladas",
+    "averageTime": "Tiempo promedio",
+    "totalRevenue": "Ingresos totales",
+    "paid": "Pagado",
+    "pendingPayment": "Pendiente de pago"
+  },
+  "branchSelector": {
+    "placeholder": "Seleccionar sucursales",
+    "searchPlaceholder": "Buscar sucursal...",
+    "noResults": "No se encontraron sucursales",
+    "allBranches": "Todas las sucursales",
+    "clearAll": "Limpiar",
+    "selectAll": "Seleccionar todo",
+    "selectedCount": "{count} seleccionadas",
+    "oneBranch": "1 sucursal",
+    "multipleBranches": "{count} sucursales",
+    "selectBusinessFirst": "Selecciona un negocio primero"
+  },
+  "tour": {
+    "steps": {
+      "metrics": {
+        "title": "Métricas del día",
+        "description": "Aquí ves en tiempo real cuántos pedidos hay en cada estado, el revenue del período y las métricas de entrega."
+      },
+      "search": {
+        "title": "Buscar pedidos",
+        "description": "Buscá pedidos por número de orden o por nombre del cliente."
+      },
+      "filters": {
+        "title": "Filtros avanzados",
+        "description": "Filtrá por rango de fechas, estado de pago (pagado/pendiente) y tipo de envío (domicilio/retiro)."
+      },
+      "viewToggle": {
+        "title": "Vista de tarjetas o lista",
+        "description": "Cambiá entre vista de tarjetas (kanban) o lista compacta según tu preferencia."
+      },
+      "columnVisibility": {
+        "title": "Mostrar u ocultar columnas",
+        "description": "Con este control podés ocultar los estados que no necesitás ver en este momento para simplificar la pantalla."
+      },
+      "kanbanBoard": {
+        "title": "Tablero de pedidos",
+        "description": "Los pedidos se organizan en columnas por estado: Nueva → En proceso → Listo → En camino → Completado. Arrastrá o usá el dropdown para moverlos."
+      },
+      "orderCard": {
+        "title": "Cambiar estado de un pedido",
+        "description": "Hacé clic en el badge de estado de cualquier tarjeta para desplegar el menú y avanzar el pedido al siguiente estado."
+      },
+      "sidebar": {
+        "title": "Menú de navegación",
+        "description": "Desde aquí accedés a todas las secciones: pedidos, clientes, productos, sucursales, configuración y más."
+      }
+    },
+    "startButton": "Ver tour"
+  }
+}

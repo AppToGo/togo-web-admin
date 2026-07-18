@@ -23,7 +23,6 @@ import {
 } from "@/types/auth.types";
 import {
   login as loginApi,
-  logout as logoutApi,
   refreshTokens,
 } from "@/features/auth/services/auth.service";
 import { APP_CONFIG } from "@/config/app.config";
@@ -91,23 +90,6 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       /**
-       * Logout action
-       * Clears both memory state and httpOnly cookie
-       */
-      logout: async () => {
-        try {
-          // Call API to revoke token on backend
-          await logoutApi("dummy"); // Backend reads from cookie
-        } catch (error) {
-          console.warn("Logout API error:", error);
-        } finally {
-          // Always clear cookie and state
-          await fetch("/api/auth/clear-cookie", { method: "POST" });
-          get().clearAuth();
-        }
-      },
-
-      /**
        * Refresh access token using httpOnly cookie
        * 
        * This uses a lock mechanism to prevent race conditions
@@ -159,9 +141,23 @@ export const useAuthStore = create<AuthStore>()(
        * Clear all auth data from memory
        */
       clearAuth: () => {
+        // Clear upgrade modal session flags so the modal re-shows on next login
+        if (typeof window !== "undefined") {
+          for (const key of Object.keys(sessionStorage)) {
+            if (key.startsWith("togo-upgrade-modal-shown-")) {
+              sessionStorage.removeItem(key);
+            }
+          }
+        }
         set({
           ...initialState,
         });
+      },
+
+      setSubscriptionPlan: (plan: number) => {
+        const { user } = get();
+        if (!user) return;
+        set({ user: { ...user, subscriptionPlan: plan } });
       },
 
       /**

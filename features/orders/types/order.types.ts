@@ -63,6 +63,10 @@ export interface Order {
   paymentProofUrl?: string;
   paymentProofType?: string;
   paymentProofReceivedAt?: Date;
+  subtotal: number;
+  tax: number;
+  total: number;
+  /** @deprecated usar total */
   totalAmount: number;
   customerId: string;
   addressId?: string;
@@ -103,6 +107,7 @@ export interface GetOrdersParams {
   sortOrder?: "asc" | "desc";
   dateFrom?: string;
   dateTo?: string;
+  branchIds?: string[];
 }
 
 // Respuesta paginada de órdenes

@@ -1,0 +1,215 @@
+{
+  "title": "Configuración",
+  "subtitle": "Gestiona la configuración de tu cuenta y negocio",
+  "sections": {
+    "account": "Cuenta",
+    "business": "Negocio",
+    "notifications": "Notificaciones",
+    "security": "Seguridad",
+    "appearance": "Apariencia",
+    "language": "Idioma"
+  },
+  "account": {
+    "title": "Información de cuenta",
+    "subtitle": "Gestiona tu información personal",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "role": "Rol",
+    "changePassword": "Cambiar contraseña",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña"
+  },
+  "business": {
+    "title": "Datos del Negocio",
+    "subtitle": "Información general y branding de tu negocio",
+    "name": "Nombre del negocio",
+    "description": "Descripción",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "email": "Correo de contacto",
+    "timezone": "Zona horaria",
+    "currency": "Moneda",
+    "information": {
+      "title": "Información General",
+      "name": "Nombre del negocio",
+      "phone": "Teléfono del negocio",
+      "phoneDescription": "Teléfono de contacto general del negocio",
+      "slug": "Slug (URL)",
+      "slugDescription": "Este será tu URL personalizada en el catálogo",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describe tu negocio...",
+      "message": "Mensaje de bienvenida",
+      "messagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+    },
+    "config": {
+      "title": "Configuración del Catálogo",
+      "visibility": "Visibilidad del catálogo",
+      "visibilityPublic": "Público - Cualquiera puede ver",
+      "visibilityPrivate": "Privado - Solo con acceso",
+      "visibilityRestricted": "Restringido - Solo usuarios registrados",
+      "useProductImages": {
+        "label": "Mostrar imágenes de productos",
+        "description": "Muestra la imagen del producto en el catálogo. Si el producto no tiene imagen, se mostrarán sus iniciales."
+      }
+    },
+    "slug": {
+      "label": "URL personalizada",
+      "placeholder": "mi-negocio",
+      "help": "Este será tu URL en el catálogo: togo.com/tu-negocio"
+    },
+    "catalog": {
+      "visibility": {
+        "label": "Visibilidad del catálogo",
+        "public": "Público - Cualquiera puede ver",
+        "private": "Privado - Solo con acceso",
+        "restricted": "Restringido - Solo usuarios registrados"
+      },
+      "mode": {
+        "label": "Modo del catálogo",
+        "menu": "Menú - Para restaurantes",
+        "marketplace": "Marketplace - Para tiendas",
+        "hybrid": "Híbrido - Ambos modos"
+      }
+    },
+    "branding": {
+      "title": "Branding",
+      "logo": {
+        "label": "Logo del negocio",
+        "upload": "Subir logo",
+        "uploading": "Subiendo...",
+        "uploadSuccess": "Logo actualizado correctamente",
+        "uploadError": "Error al subir el logo",
+        "invalidType": "Formato inválido. Usa PNG, JPG o WebP",
+        "tooLarge": "El archivo es demasiado grande. Máximo 2MB"
+      },
+      "colors": {
+        "primary": "Color principal",
+        "accent": "Color de acento"
+      }
+    },
+    "welcomeMessage": {
+      "label": "Mensaje de bienvenida",
+      "placeholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+    },
+    "validation": {
+      "nameRequired": "El nombre es requerido",
+      "slugRequired": "El slug es requerido",
+      "slugMinLength": "El slug debe tener al menos 3 caracteres",
+      "slugFormat": "Solo letras minúsculas, números y guiones",
+      "colorFormat": "Formato de color inválido"
+    },
+    "errors": {
+      "loadFailed": "No se pudo cargar la información del negocio"
+    },
+    "placeholders": {
+      "name": "Ej: Mi Restaurante",
+      "phone": "Ej: +52 55 1234 5678",
+      "slug": "mi-negocio"
+    },
+    "buttons": {
+      "cancel": "Cancelar"
+    },
+    "saveSuccess": "Datos del negocio guardados correctamente",
+    "saveError": "Error al guardar los datos del negocio"
+  },
+  "notifications": {
+    "title": "Preferencias de notificaciones",
+    "subtitle": "Configura cómo quieres recibir notificaciones",
+    "description": "Personaliza tus preferencias de notificaciones y alertas de sonido",
+    "email": "Notificaciones por correo",
+    "push": "Notificaciones push",
+    "sms": "Notificaciones SMS",
+    "newOrders": "Nuevos pedidos",
+    "orderUpdates": "Actualizaciones de pedidos",
+    "promotions": "Promociones y ofertas",
+    "soundAlerts": {
+      "title": "Alertas de sonido",
+      "description": "Configura las alertas de sonido para nuevos pedidos",
+      "enable": "Habilitar alertas de sonido para nuevos pedidos",
+      "help": "Reproduce un sonido cuando llega un nuevo pedido"
+    },
+    "toastNotifications": {
+      "title": "Notificaciones emergentes",
+      "description": "Configura las notificaciones emergentes en pantalla",
+      "enable": "Habilitar notificaciones emergentes",
+      "help": "Muestra una notificación en pantalla cuando llega un nuevo pedido"
+    },
+    "note": {
+      "title": "Nota",
+      "description": "Tus preferencias se guardan automáticamente en este navegador. Las alertas de sonido pueden ser bloqueadas por la política de reproducción automática del navegador hasta que interactúes con la página."
+    }
+  },
+  "language": {
+    "title": "Idioma",
+    "subtitle": "Selecciona tu idioma preferido",
+    "current": "Idioma actual",
+    "select": "Seleccionar idioma"
+  },
+  "appearance": {
+    "title": "Apariencia",
+    "subtitle": "Personaliza la apariencia de la aplicación",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "profile": {
+    "title": "Perfil",
+    "description": "Gestiona tu información personal"
+  },
+  "security": {
+    "title": "Seguridad",
+    "description": "Configura la seguridad de tu cuenta"
+  },
+  "users": {
+    "description": "Gestiona los usuarios de tu negocio"
+  },
+  "operatorProfiles": {
+    "description": "Gestiona los perfiles de operador y sus permisos"
+  },
+  "branches": {
+    "description": "Gestiona las sedes de tu negocio"
+  },
+  "save": {
+    "button": "Guardar cambios",
+    "success": "Cambios guardados exitosamente",
+    "error": "Error al guardar los cambios"
+  },
+  "error": { "carga": "Error al cargar el negocio" },
+  "adminBusinesses": {
+    "page": {
+      "title": "Gestión de Negocios",
+      "description": "Administra suscripciones y pagos de los negocios",
+      "alerts": "{count, plural, =1 {1 alerta} other {# alertas}}"
+    },
+    "errors": {
+      "unauthorized": "Acceso no autorizado",
+      "superAdminRequired": "Se requiere ser Super Admin para acceder a esta página"
+    },
+    "alerts": {
+      "title": "{count, plural, =1 {Alerta de Pago} other {Alertas de Pago}}",
+      "description": "Hay negocios con pagos vencidos o próximos a vencer. Revisa las acciones pendientes."
+    },
+    "filters": {
+      "title": "Filtros",
+      "searchPlaceholder": "Buscar negocios...",
+      "plan": "Plan",
+      "paymentStatus": "Estado de Pago",
+      "status": "Estado",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "activeFilter": "Filtros activos"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "showing": "Mostrando {from} - {to} de {total}",
+      "page": "Página {current} de {total}"
+    },
+    "buttons": {
+      "clearAll": "Limpiar todo"
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "page": {
+    "title": "Industry Categories",
+    "description": "Manage global product categories"
+  },
+  "stats": {
+    "total": "Total Categories",
+    "active": "Active Categories",
+    "inactive": "Inactive Categories"
+  },
+  "filters": {
+    "allIndustries": "All industries",
+    "showInactive": "Show inactive",
+    "searchPlaceholder": "Search by name or slug...",
+    "searchIndustries": "Search industries..."
+  },
+  "table": {
+    "icon": "Icon",
+    "name": "Name",
+    "industries": "Industries",
+    "order": "Order",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "fields": {
+    "name": "Name",
+    "slug": "Slug",
+    "industries": "Industries",
+    "order": "Order",
+    "icon": "Icon",
+    "color": "Color",
+    "isActive": "Active"
+  },
+  "placeholders": {
+    "name": "Ex: Soft Drinks",
+    "slug": "Ex: soft-drinks",
+    "selectIndustries": "Select industries",
+    "searchIndustries": "Search industries...",
+    "icon": "Ex: 🍕"
+  },
+  "helpers": {
+    "slug": "Unique identifier for URLs",
+    "icon": "Emoji or representative icon",
+    "isActive": "Determines if the category is visible"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "actions": {
+    "openMenu": "Open menu",
+    "edit": "Edit",
+    "delete": "Delete",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
+  },
+  "buttons": {
+    "newCategory": "New Category",
+    "create": "Create",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+    "retry": "Retry"
+  },
+  "dialog": {
+    "createTitle": "New Category",
+    "editTitle": "Edit Category"
+  },
+  "deleteDialog": {
+    "title": "Delete category?",
+    "description": "Are you sure you want to delete the category \"{name}\"? This action cannot be undone."
+  },
+  "validation": {
+    "nameRequired": "Name is required",
+    "slugRequired": "Slug is required",
+    "industriesRequired": "At least one industry is required"
+  },
+  "notifications": {
+    "categoryCreated": "Category created successfully",
+    "categoryUpdated": "Category updated successfully",
+    "categoryDeleted": "Category deleted successfully",
+    "categoryActivated": "Category activated successfully",
+    "categoryDeactivated": "Category deactivated successfully"
+  },
+  "errors": {
+    "createCategory": "Error creating category",
+    "updateCategory": "Error updating category",
+    "deleteCategory": "Error deleting category",
+    "activateCategory": "Error activating category",
+    "deactivateCategory": "Error deactivating category"
+  },
+  "empty": {
+    "noCategories": "No categories found"
+  },
+  "accessDenied": {
+    "title": "Access Denied",
+    "description": "You don't have permission to access this section"
+  },
+  "error": {
+    "title": "Error loading categories",
+    "description": "There was an error loading the categories. Please try again."
+  }
+}

@@ -3,16 +3,21 @@
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
+import { OrderDetailDialog } from "./OrderDetailDialog";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
-import { RecentActivity, RecentActivitySkeleton } from "./RecentActivity";
-import { OrderDetail } from "./OrderDetail";
 
 import {
   ColumnVisibilityBar,
   type ColumnVisibilityConfig,
 } from "./ColumnVisibilityBar";
 
-import { useOrdersByStatus, useUpdateOrderStatus } from "../hooks/useOrders";
+import {
+  useOrdersByStatus,
+  useUpdateOrderStatus,
+  useCompletedOrdersInfinite,
+  useOrderMetrics,
+} from "../hooks";
+import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
 import type { Order, OrderStatus } from "../types";
 import {
   getKanbanColumns,
@@ -21,12 +26,6 @@ import {
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
 import type { CardViewMode } from "./OrderCard";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface OrdersKanbanBoardProps {
   searchQuery?: string;
@@ -34,6 +33,7 @@ interface OrdersKanbanBoardProps {
   dateFrom?: string;
   dateTo?: string;
   businessId?: string; // Para SUPER_ADMIN
+  branchIds?: string[]; // Filtrar por sucursales seleccionadas
   paymentStatusFilter?: {
     paid: boolean;
     pending: boolean;
@@ -63,12 +63,15 @@ function filterOrdersBySearch(
     const address = order.address?.addressText?.toLowerCase() || "";
 
     // Buscar por valores formateados (lo que ve el usuario en UI)
-    const paymentMethodLabel = getPaymentMethodLabel(order.paymentMethod)
-      .toLowerCase();
-    const paymentStatusLabel = getPaymentStatusLabel(order.paymentStatus)
-      .toLowerCase();
-    const deliveryTypeLabel = getDeliveryTypeLabel(order.deliveryType)
-      .toLowerCase();
+    const paymentMethodLabel = getPaymentMethodLabel(
+      order.paymentMethod
+    ).toLowerCase();
+    const paymentStatusLabel = getPaymentStatusLabel(
+      order.paymentStatus
+    ).toLowerCase();
+    const deliveryTypeLabel = getDeliveryTypeLabel(
+      order.deliveryType
+    ).toLowerCase();
 
     // También buscar por valores crudos (para compatibilidad)
     const paymentMethodRaw = order.paymentMethod?.toLowerCase() || "";
@@ -96,27 +99,63 @@ export function OrdersKanbanBoard({
   dateFrom,
   dateTo,
   businessId,
+  branchIds,
   paymentStatusFilter = { paid: true, pending: true },
   deliveryTypeFilter = { delivery: true, pickup: true },
 }: OrdersKanbanBoardProps) {
+  // Hydrate notification preferences when the orders page mounts
+  useHydrateNotificationPreferences();
+
+  // Get metrics for total counts per status
+  const { data: metrics } = useOrderMetrics();
+
+  // Estado local del sidebar de estadísticas
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibilityConfig>({
       CONFIRMED: true,
       IN_PROGRESS: true,
-      ON_THE_WAY: true,
+      READY: true,
       COMPLETED: true,
+      CANCELLED: false,
     });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
-  
-  const { orders, ordersByStatus, isLoading, error } = useOrdersByStatus({
+
+  // Hook for LIVE orders (all except COMPLETED)
+  const {
+    ordersByStatus,
+    isLoading: isLoadingLive,
+    error: errorLive,
+  } = useOrdersByStatus({
     dateFrom,
     dateTo,
     businessId,
+    branchIds,
   });
+
+  // Hook for COMPLETED orders (infinite scroll)
+  // Solo habilitar si hay businessId (no pasar string vacío)
+  const {
+    orders: completedOrders,
+    isLoading: isLoadingCompleted,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error: errorCompleted,
+  } = useCompletedOrdersInfinite({
+    businessId: businessId,
+    dateFrom,
+    dateTo,
+    branchIds,
+  });
+
   const updateStatus = useUpdateOrderStatus();
+
+  // Combine errors
+  const error = errorLive || errorCompleted;
 
   const allColumns = useMemo(() => getKanbanColumns(), []);
 
@@ -132,10 +171,18 @@ export function OrdersKanbanBoard({
 
   // Filtrar órdenes por búsqueda y filtros adicionales
   const filteredOrdersByStatus = useMemo(() => {
-    if (!ordersByStatus) return ordersByStatus;
+    // Start with LIVE orders from useOrdersByStatus
+    const baseOrders = ordersByStatus
+      ? { ...ordersByStatus }
+      : ({} as Record<OrderStatus, Order[]>);
+
+    // Add COMPLETED orders from infinite scroll
+    if (completedOrders) {
+      baseOrders["COMPLETED"] = completedOrders;
+    }
 
     const filtered: Record<OrderStatus, Order[]> = {} as any;
-    Object.entries(ordersByStatus).forEach(([status, statusOrders]) => {
+    Object.entries(baseOrders).forEach(([status, statusOrders]) => {
       let result = statusOrders;
 
       // Filtro por búsqueda
@@ -146,8 +193,10 @@ export function OrdersKanbanBoard({
       // Filtro por estado de pago
       if (!paymentStatusFilter.paid || !paymentStatusFilter.pending) {
         result = result.filter((order) => {
-          if (order.paymentStatus === "PAID" && !paymentStatusFilter.paid) return false;
-          if (order.paymentStatus === "PENDING" && !paymentStatusFilter.pending) return false;
+          if (order.paymentStatus === "PAID" && !paymentStatusFilter.paid)
+            return false;
+          if (order.paymentStatus === "PENDING" && !paymentStatusFilter.pending)
+            return false;
           return true;
         });
       }
@@ -156,7 +205,7 @@ export function OrdersKanbanBoard({
       if (!deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup) {
         result = result.filter((order) => {
           // Usar deliveryType si está disponible, sino usar addressId como fallback
-          const isDelivery = order.deliveryType 
+          const isDelivery = order.deliveryType
             ? order.deliveryType === "DELIVERY"
             : !!order.addressId;
           if (isDelivery && !deliveryTypeFilter.delivery) return false;
@@ -168,7 +217,13 @@ export function OrdersKanbanBoard({
       filtered[status as OrderStatus] = result;
     });
     return filtered;
-  }, [ordersByStatus, searchQuery, paymentStatusFilter, deliveryTypeFilter]);
+  }, [
+    ordersByStatus,
+    completedOrders,
+    searchQuery,
+    paymentStatusFilter,
+    deliveryTypeFilter,
+  ]);
 
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
@@ -219,20 +274,20 @@ export function OrdersKanbanBoard({
 
   return (
     <>
-      <div
-        className={cn(
-          "relative rounded-card-xl flex flex-row min-h-0 flex-1",
-          "bg-white/30 backdrop-blur-xl border border-white/40"
-        )}
-      >
-        {/* Main Kanban Area */}
+      {/* Contenedor principal - sin overflow para evitar scroll global */}
+      <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
+        {/* Main Kanban Container - con overflow controlado */}
         <div
+          data-tour-step="kanban-board"
           className={cn(
-            "flex-1 min-w-0 py-3 pl-3 flex flex-col min-h-0 transition-all duration-300 pr-3"
+            "relative rounded-card-xl flex flex-col min-h-0 overflow-hidden",
+            "bg-white/30 backdrop-blur-xl border border-white/40",
+            "transition-all duration-300 ease-in-out",
+            "flex-1"
           )}
         >
-          {/* Kanban Columns - Container adaptativo */}
-          <div className="overflow-x-auto pb-4 flex-1 min-h-0 scrollbar-thin">
+          {/* Scroll horizontal solo aquí */}
+          <div className="flex-1 min-w-0 py-3 px-3 overflow-x-auto overflow-y-hidden scrollbar-thin">
             <div
               className="flex gap-5 h-full"
               style={{
@@ -243,33 +298,55 @@ export function OrdersKanbanBoard({
                     : `${visibleColumnCount * 320}px`,
               }}
             >
-              {columns.map((column) => (
-                <KanbanColumn
-                  key={column.id}
-                  status={column.id}
-                  orders={filteredOrdersByStatus?.[column.id] || []}
-                  onStatusChange={handleStatusChange}
-                  onOrderClick={handleOrderClick}
-                  isLoading={isLoading}
-                  viewMode={cardViewMode}
-                  // Distribuir ancho igualitariamente entre columnas visibles
-                  flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
-                  minWidth={320}
-                />
-              ))}
+              {columns.map((column, colIndex) => {
+                const isCompletedColumn = column.id === "COMPLETED";
+                // Loading específico por tipo de columna
+                const columnIsLoading = isCompletedColumn
+                  ? isLoadingCompleted
+                  : isLoadingLive;
+
+                return (
+                  <KanbanColumn
+                    key={column.id}
+                    status={column.id}
+                    orders={filteredOrdersByStatus?.[column.id] || []}
+                    onStatusChange={handleStatusChange}
+                    onOrderClick={handleOrderClick}
+                    isLoading={columnIsLoading}
+                    viewMode={cardViewMode}
+                    // Distribuir ancho igualitariamente entre columnas visibles
+                    flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
+                    minWidth={320}
+                    // Infinite scroll props for COMPLETED column
+                    isArchive={isCompletedColumn}
+                    hasMore={isCompletedColumn ? hasNextPage : false}
+                    isFetchingNextPage={
+                      isCompletedColumn ? isFetchingNextPage : false
+                    }
+                    onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
+                    totalCount={metrics?.porEstadoOrden[column.id]}
+                    // Tour step: mark the first card of the first column
+                    firstCardTourStep={colIndex === 0 ? "order-card" : undefined}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Right Sidebar - Statistics */}
-        <div
+        {/* Right Sidebar - Statistics - fuera del kanban */}
+        <aside
           className={cn(
-            "shrink-0 transition-all duration-300 ease-in-out border-l border-white/40 overflow-hidden",
-            isSidebarOpen ? "w-72 opacity-100" : "w-0 opacity-0 border-l-0"
+            "shrink-0 ml-0 transition-all duration-300 ease-in-out",
+            "rounded-card-xl bg-white/30 backdrop-blur-xl border border-white/40",
+            "flex flex-col overflow-hidden",
+            isSidebarOpen
+              ? "w-72 opacity-100 ml-3"
+              : "w-0 opacity-0 border-0 ml-0"
           )}
         >
-          {/* Inner container with fixed width to prevent content squishing during animation */}
-          <div className="w-72 p-4">
+          {/* Scroll vertical solo en el sidebar */}
+          <div className="w-72 p-4 overflow-y-auto flex-1 min-h-0">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -278,45 +355,33 @@ export function OrdersKanbanBoard({
                   Operación en curso
                 </h3>
               </div>
-              <span className="text-xs font-medium text-slate-500 bg-white/70 px-2 py-0.5 rounded-full">
-                {orders?.length || 0}
-              </span>
             </div>
 
-            {/* Stats Content */}
-            <div className="space-y-4">
-              {isLoading ? <OrderMetricsSkeleton /> : <OrderMetrics />}
-              {isLoading ? <RecentActivitySkeleton /> : <RecentActivity />}
+            {/* Stats Content - Métricas de órdenes */}
+            <div data-tour-step="metrics" className="space-y-6">
+              {isLoadingLive ? <OrderMetricsSkeleton /> : <OrderMetrics />}
             </div>
           </div>
-        </div>
+        </aside>
       </div>
 
       {/* Column Visibility Floating Bar */}
-      <ColumnVisibilityBar
-        onVisibilityChange={setColumnVisibility}
-        isSidebarOpen={isSidebarOpen}
-        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
+      <div data-tour-step="column-visibility">
+        <ColumnVisibilityBar
+          onVisibilityChange={setColumnVisibility}
+          isSidebarOpen={isSidebarOpen}
+          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+      </div>
 
-      {/* Dialog de detalle de orden - Un solo dialog para todas las órdenes */}
-      <Dialog open={isDetailOpen} onOpenChange={(open) => !open && handleCloseDetail()}>
-        <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="text-lg font-semibold text-slate-900">
-              Detalle de Orden
-            </DialogTitle>
-          </DialogHeader>
-          <div className="px-6 py-4">
-            {selectedOrderId && (
-              <OrderDetail
-                orderId={selectedOrderId}
-                onClose={handleCloseDetail}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Dialog de detalle de orden - Solo renderizar cuando hay orderId seleccionado */}
+      {selectedOrderId && (
+        <OrderDetailDialog
+          orderId={selectedOrderId}
+          isOpen={isDetailOpen}
+          onClose={handleCloseDetail}
+        />
+      )}
     </>
   );
 }

@@ -18,7 +18,7 @@ export const APP_CONFIG = {
     tokenExpiryBuffer: 60, // seconds before expiry to refresh
   },
   features: {
-    enableWebSockets: false, // Will be enabled in future
+    enableWebSockets: true, // Activado para órdenes en tiempo real
     enableNotifications: false,
   },
 } as const;

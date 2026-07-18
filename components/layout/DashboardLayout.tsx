@@ -1,20 +1,30 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
+import { useSingleBranchInit } from "@/features/branches/hooks";
+import { UpgradePlanModal, useUpgradePlanModal } from "@/features/subscription";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const t = useTranslations("navigation");
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
+  // Seed branch store for users with exactly one branch.
+  // BranchMultiSelector is not rendered for them, so without this the store
+  // stays empty or holds a stale ID from a previous session.
+  useSingleBranchInit();
+  const { open, closeModal } = useUpgradePlanModal();
+
   return (
     <div className="min-h-screen bg-gradient-soft">
-      {/* Sidebar */}
+      {/* Sidebar izquierdo (menú) */}
       <Sidebar
         isOpen={sidebarOpen}
         isCollapsed={sidebarCollapsed}
@@ -33,7 +43,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           "transition-all duration-300",
           sidebarOpen && "opacity-0 pointer-events-none"
         )}
-        aria-label="Abrir menú"
+        aria-label={t("sidebar.openMenu")}
       >
         <MenuIcon className="w-5 h-5" />
       </button>
@@ -51,6 +61,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-1 flex flex-col max-w-screen-2xl w-full mx-auto">{children}</div>
         </main>
       </div>
+      <UpgradePlanModal open={open} onClose={closeModal} />
     </div>
   );
 }

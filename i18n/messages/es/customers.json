@@ -1,0 +1,157 @@
+{
+  "title": "Gestión de Clientes",
+  "subtitle": "Administra y conoce a tus clientes",
+
+  "table": {
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "email": "Correo",
+    "totalOrders": "Pedidos",
+    "totalSpent": "Total gastado",
+    "lastOrder": "Última compra",
+    "actions": "Acciones",
+    "noName": "Sin nombre",
+    "selectAll": "Seleccionar todos",
+    "spent": "gastado",
+    "viewDetails": "Ver detalle",
+    "selectRow": "Seleccionar fila",
+    "columns": {
+      "orders": "pedidos",
+      "phone": "Teléfono"
+    }
+  },
+
+  "metrics": {
+    "totalCustomers": "Total clientes",
+    "newCustomers": "Nuevos clientes",
+    "frequentCustomers": "Clientes frecuentes",
+    "averageOrderValue": "Ticket promedio",
+    "totalSpent": "Total gastado",
+    "totalOrders": "Total pedidos",
+    "averageOrder": "Ticket promedio",
+    "firstOrder": "Primera compra",
+    "favoriteProducts": "Productos favoritos",
+    "timesOrdered": "{count} veces pedido",
+    "totalSpentOnProduct": "Gastado",
+    "lastOrderDate": "Última compra",
+    "customerSince": "Cliente desde"
+  },
+
+  "topCustomers": {
+    "byFrequency": "Top 10 - Más frecuentes",
+    "bySpending": "Top 10 - Más gastaron",
+    "orders": "pedidos",
+    "spent": "gastado",
+    "noData": "No hay datos",
+    "noDataDescription": "No encontramos datos para este periodo."
+  },
+  "detail": {
+    "title": "Detalle del Cliente",
+    "information": "Información",
+    "metrics": "Métricas",
+    "orderHistory": "Historial de pedidos",
+    "notes": "Notas",
+    "notesPlaceholder": "Agrega notas sobre este cliente...",
+    "customerSince": "Cliente desde",
+    "averageFrequency": "Frecuencia promedio",
+    "favoriteProducts": "Productos favoritos",
+    "noOrders": "Sin pedidos",
+    "noOrdersDescription": "Este cliente aún no ha realizado ningún pedido.",
+    "ordersTable": {
+      "orderId": "Pedido #",
+      "date": "Fecha",
+      "status": "Estado",
+      "payment": "Pago",
+      "amount": "Total",
+      "actions": "Acciones",
+      "viewOrder": "Ver pedido",
+      "showing": "Mostrando {shown} de {total} pedidos"
+    },
+    "noFavorites": "Sin productos favoritos",
+    "noFavoritesDescription": "Este cliente aún no tiene productos favoritos.",
+    "whatsapp": "Abrir WhatsApp",
+    "noPhoneNumber": "Sin número de teléfono",
+    "noAddresses": "Sin dirección",
+    "orders": "pedidos",
+    "basicInfo": "Información basica",
+    "addresses": "Dirección",
+    "notFound": "Cliente no encontrado",
+    "notFoundDescription": "No pudimos encontrar la información de este cliente.",
+    "anonymous": "Cliente anónimo",
+    "default": "Predeterminada",
+    "showLess": "Mostrar menos",
+    "showMore": "Ver {count} más",
+    "customer": "Cliente",
+    "customerInfo": "Información del cliente",
+    "fields": {
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "registered": "Registrado",
+      "addresses": "Dirección"
+    }
+  },
+
+  "customerMetrics": {
+    "totalSpent": "Total gastado",
+    "totalOrders": "Total pedidos",
+    "averageOrder": "Ticket promedio",
+    "frequency": "Frecuencia",
+    "days": "días",
+    "ordersPerMonth": "pedidos/mes"
+  },
+
+  "selection": {
+    "selected": "{count} cliente(s) seleccionado(s)",
+    "selectAll": "Seleccionar todos",
+    "clearSelection": "Limpiar selección",
+    "selectAllPages": "Seleccionar todos los {total} clientes",
+    "allSelected": "Seleccionaste todos los cliente."
+  },
+
+  "filters": {
+    "searchPlaceholder": "Buscar por nombre o teléfono...",
+    "dateRange": "Rango de fechas",
+    "hasOrders": "Con pedidos",
+    "noOrders": "Sin pedidos"
+  },
+
+  "segments": {
+    "NEW": "Nuevo",
+    "ACTIVE": "Activo",
+    "VIP": "VIP",
+    "AT_RISK": "En riesgo",
+    "LOST": "Perdido"
+  },
+
+  "empty": {
+    "title": "No hay clientes",
+    "description": "Los clientes aparecerán aquí cuando realicen su primera compra"
+  },
+
+  "notifications": {
+    "loadError": "Error al cargar clientes",
+    "updateSuccess": "Cliente actualizado",
+    "updateError": "Error al actualizar cliente"
+  },
+
+  "status": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+
+  "pagination": {
+    "showing": "Mostrando {from} a {to} de {total} clientes"
+  },
+
+  "noBusiness": {
+    "title": "No hay clientes"
+  },
+
+  "dates": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "daysAgo": "Hace {count} días",
+    "weeksAgo": "Hace {count} semanas"
+  }
+}

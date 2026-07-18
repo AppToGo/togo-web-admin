@@ -1,0 +1,106 @@
+{
+  "title": "User Permissions",
+  "subtitle": "Manage permissions and branch assignments",
+  "sections": {
+    "permissions": "Permissions",
+    "branches": "Branch Assignments",
+    "profile": "Operator Profile"
+  },
+  "role": {
+    "label": "Role",
+    "BUSINESS_OWNER": "Owner",
+    "OPERATOR": "Operator",
+    "SUPER_ADMIN": "Super Administrator"
+  },
+  "operatorProfile": {
+    "label": "Operator Profile",
+    "none": "No profile assigned",
+    "select": "Select profile",
+    "change": "Change profile"
+  },
+  "permissions": {
+    "title": "Computed Permissions",
+    "description": "These are the effective permissions of the user",
+    "computedAt": "Computed",
+    "noPermissions": "User has no assigned permissions",
+    "groupByDomain": "Group by domain",
+    "operatorProfile": "Operator Profile",
+    "operatorProfileDescription": "Assign an operator profile to define user permissions",
+    "selectProfile": "Select profile",
+    "noProfile": "No profile assigned",
+    "assignProfile": "Assign Profile"
+  },
+  "branchAssignments": {
+    "title": "Assigned Branches",
+    "description": "Manage branches where the user has access",
+    "add": "Add assignment",
+    "empty": "No branches assigned",
+    "columns": {
+      "branch": "Branch",
+      "role": "Role",
+      "assignedAt": "Assigned",
+      "actions": "Actions"
+    }
+  },
+  "assignBranch": {
+    "title": "Assign to Branch",
+    "branchLabel": "Branch",
+    "roleLabel": "Role in branch",
+    "selectBranch": "Select branch",
+    "selectRole": "Select role",
+    "submit": "Assign",
+    "cancel": "Cancel",
+    "success": "User assigned successfully",
+    "error": "Error assigning user"
+  },
+  "removeBranch": {
+    "title": "Remove assignment",
+    "description": "Are you sure you want to remove the assignment from {branchName}?",
+    "success": "Assignment removed successfully",
+    "error": "Error removing assignment"
+  },
+  "errors": {
+    "assignFailed": "Error assigning user to branch",
+    "removeFailed": "Error removing assignment",
+    "loadPermissionsFailed": "Error loading permissions",
+    "loadAssignmentsFailed": "Error loading assignments"
+  },
+  "userRole": "User Role",
+  "roleDescription": "User's role in the system",
+  "operatorProfileDescription": "Profile that determines user permissions",
+  "permissionsCount": "{count} permissions",
+  "noPermissionsAssigned": "No permissions assigned",
+  "addAssignment": "Add Assignment",
+  "currentAssignments": "Current Assignments",
+  "noAvailableBranches": "No branches available to assign",
+  "noAssignments": "No assignments",
+  "noAssignmentsDescription": "User has no assigned branches",
+  "assignedAt": "Assigned on",
+  "assignSuccess": "User assigned successfully",
+  "removeSuccess": "Assignment removed successfully",
+  "profileAssigned": "Profile assigned successfully",
+  "fields": {
+    "branch": "Branch",
+    "role": "Role"
+  },
+  "placeholders": {
+    "selectBranch": "Select branch",
+    "enterRole": "Enter role",
+    "selectRole": "Select role"
+  },
+  "roles": {
+    "branchOperator": "Operator",
+    "branchManager": "Manager",
+    "branchViewer": "Viewer"
+  },
+  "buttons": {
+    "assign": "Assign"
+  },
+  "remove": {
+    "title": "Remove Assignment",
+    "description": "Are you sure you want to remove the assignment from {branchName}?"
+  },
+  "loading": {
+    "branchName": "Loading..."
+  }
+}

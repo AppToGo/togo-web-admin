@@ -1,0 +1,108 @@
+{
+  "title": "Dashboard",
+  "greeting": "¡Hola, {name}!",
+  "welcome": {
+    "withBusiness": "Bienvenido a {businessName}. Aquí podrás gestionar tus pedidos y productos.",
+    "withoutBusiness": "Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos."
+  },
+  "stats": {
+    "ordersToday": {
+      "title": "Pedidos hoy",
+      "description": "{count} completados",
+      "none": "Sin pedidos"
+    },
+    "ordersYesterday": {
+      "title": "Pedidos ayer",
+      "description": "{count} completados",
+      "none": "Sin pedidos"
+    },
+    "ordersWeek": {
+      "title": "Pedidos (7 días)",
+      "description": "{count} completados",
+      "none": "Sin pedidos"
+    },
+    "ordersMonth": {
+      "title": "Pedidos (mes)",
+      "description": "{count} completados",
+      "none": "Sin pedidos"
+    },
+    "revenueToday": {
+      "title": "Ingresos hoy",
+      "description": "{percentage}% vs período anterior",
+      "none": "Sin ventas"
+    },
+    "revenueYesterday": {
+      "title": "Ingresos ayer",
+      "description": "{percentage}% vs período anterior",
+      "none": "Sin ventas"
+    },
+    "revenueWeek": {
+      "title": "Ingresos (7 días)",
+      "description": "{percentage}% vs período anterior",
+      "none": "Sin ventas"
+    },
+    "revenueMonth": {
+      "title": "Ingresos (mes)",
+      "description": "{percentage}% vs período anterior",
+      "none": "Sin ventas"
+    },
+    "totalOrders": {
+      "title": "Total órdenes",
+      "description": "{paid} pagadas · {pending} pendientes",
+      "none": "Sin órdenes"
+    },
+    "averageTicket": {
+      "title": "Ticket promedio",
+      "description": "Por orden pagada"
+    }
+  },
+  "trend": {
+    "up": "↑ {value}%",
+    "down": "↓ {value}%",
+    "neutral": "−"
+  },
+  "activity": {
+    "title": "Actividad reciente",
+    "description": "Tus últimas acciones y pedidos aparecerán aquí",
+    "empty": "No hay actividad reciente",
+    "emptyDescription": "Los pedidos y acciones aparecerán aquí"
+  },
+  "charts": {
+    "conversionFunnel": {
+      "title": "Embudo de Conversión",
+      "confirmed": "Nuevas",
+      "paid": "Pagadas",
+      "completed": "Completadas",
+      "ofTotal": "% del total"
+    },
+    "revenue": {
+      "title": "Ingresos últimos 30 días"
+    },
+    "peakHours": {
+      "title": "Horas Pico",
+      "peakLabel": "Hora pico:",
+      "orders": "órdenes"
+    },
+    "paymentMethods": {
+      "title": "Métodos de Pago",
+      "orders": "órdenes",
+      "noData": "No hay datos de métodos de pago disponibles"
+    }
+  },
+  "filters": {
+    "allBranches": "Todas las sedes",
+    "selectBranch": "Seleccionar sede",
+    "noBranches": "No hay sedes disponibles"
+  },
+  "errors": {
+    "noBusiness": {
+      "title": "No tienes un negocio asignado",
+      "description": "Para ver el dashboard, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
+    }
+  },
+  "freePlanBanner": {
+    "title": "Estás en el plan gratuito",
+    "subtitle": "Actualizá tu plan para desbloquear funciones avanzadas",
+    "cta": "Elegir plan"
+  }
+}

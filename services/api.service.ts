@@ -22,11 +22,13 @@ import axios, {
 } from "axios";
 import { APP_CONFIG } from "@/config/app.config";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import { 
-  isRefreshInProgress, 
+import { useBusinessStore } from "@/features/business/stores/business.store";
+import {
+  isRefreshInProgress,
   startGlobalRefresh,
-  clearGlobalRefreshState 
+  clearGlobalRefreshState
 } from "@/services/auth-sync.service";
+import { forceLogout } from "@/services/session.service";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -34,6 +36,28 @@ const apiClient: AxiosInstance = axios.create({
   timeout: APP_CONFIG.api.timeout,
   headers: {
     "Content-Type": "application/json",
+  },
+  // Serialize arrays without brackets (branchIds=id1&branchIds=id2 instead of branchIds[]=id1)
+  paramsSerializer: (params) => {
+    const searchParams = new URLSearchParams();
+    
+    // Use Object.keys to avoid prototype pollution
+    Object.keys(params).forEach((key) => {
+      const value = params[key];
+      
+      if (Array.isArray(value)) {
+        // Validate each element is a string/number before appending
+        value.forEach((item) => {
+          if (item !== undefined && item !== null) {
+            searchParams.append(key, String(item));
+          }
+        });
+      } else if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+    
+    return searchParams.toString();
   },
 });
 
@@ -55,16 +79,23 @@ apiClient.interceptors.request.use(
     }
 
     // Get access token from memory
-    const { accessToken } = useAuthStore.getState();
+    const { accessToken, user } = useAuthStore.getState();
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    // SECURITY: We intentionally do NOT send X-Business-ID header
-    // The backend should extract businessId from the JWT only
-    // This prevents potential header manipulation attacks
-    // See README.md "Multi-Tenant" section for details
+    // For SUPER_ADMIN: Send selected business ID in header
+    // This allows the backend to know which business context to use
+    const { selectedBusinessId } = useBusinessStore.getState();
+    const isSuperAdmin = user?.role === "SUPER_ADMIN";
+    
+    // Only send x-business-id header when:
+    // 1. User is SUPER_ADMIN
+    // 2. A specific business is selected (not null, not empty string "")
+    if (isSuperAdmin && selectedBusinessId && selectedBusinessId !== "") {
+      config.headers["x-business-id"] = selectedBusinessId;
+    }
 
     return config;
   },
@@ -79,13 +110,14 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    // Extract user-friendly error message from backend response
+    // Extract user-friendly error message from backend response.
+    // Axios default is "Request failed with status code XXX" — always prefer
+    // the backend message when available.
     if (error.response?.data) {
       const data = error.response.data as any;
-      // Use backend error message if available
-      if (data.message && !error.message.includes("Request failed")) {
+      if (data.message) {
         error.message = data.message;
-      } else if (data.error && !error.message.includes("Request failed")) {
+      } else if (data.error) {
         error.message = data.error;
       }
     }
@@ -136,11 +168,9 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch {
-        // Refresh failed
+        // Refresh failed — signal AuthProvider to handle navigation
         useAuthStore.getState().clearAuth();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login?session_expired=true";
-        }
+        forceLogout("session_expired");
         return Promise.reject(error);
       }
     }
@@ -191,10 +221,8 @@ apiClient.interceptors.response.use(
       useAuthStore.getState().clearAuth();
       clearGlobalRefreshState();
 
-      // Redirect to login
-      if (typeof window !== "undefined") {
-        window.location.href = "/login?session_expired=true";
-      }
+      // Signal AuthProvider to handle navigation (locale-aware, no full reload)
+      forceLogout("session_expired");
 
       return Promise.reject(refreshError);
     }

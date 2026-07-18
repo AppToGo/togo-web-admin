@@ -44,17 +44,36 @@ export function extractErrorMessage(err: unknown, defaultMessage: string): strin
 }
 
 /**
- * Mensajes de error comunes mapeados a mensajes amigables
+ * Mensajes de error comunes mapeados a mensajes amigables para el usuario
+ * Las claves son patrones que se buscan en el mensaje de error (case-insensitive)
  */
 export const FRIENDLY_ERROR_MESSAGES: Record<string, string> = {
-  "Invalid payment status transition": "No se puede cambiar el estado de pago de esta manera",
-  "Cannot complete order": "No se puede completar la orden",
-  "Order not found": "Orden no encontrada",
-  "Unauthorized": "No tienes permisos para realizar esta acción",
-  "Forbidden": "Acceso denegado",
-  "Bad Request": "Solicitud inválida",
-  "Network Error": "Error de conexión. Verifica tu internet",
-  "Timeout": "La operación tardó demasiado. Intenta de nuevo",
+  // Errores de órdenes
+  "Order not found": "No pudimos encontrar esta orden. Por favor, verifica e intenta de nuevo.",
+  "Cannot complete order": "No se puede completar la orden.",
+  "Invalid status transition": "No se puede cambiar a este estado desde el estado actual.",
+  
+  // Errores de transición de estado
+  "Cannot transition from": "No se puede cambiar a este estado desde el estado actual.",
+  "Cannot transition": "No se puede cambiar a este estado desde el estado actual.",
+  
+  // Errores de stock/pagos
+  "Insufficient stock": "No hay suficiente stock disponible para este producto.",
+  "Payment failed": "El pago no pudo ser procesado. Intenta con otro método.",
+  "Invalid payment status transition": "No se puede cambiar el estado de pago de esta manera.",
+  
+  // Errores de permisos
+  "Unauthorized": "No tienes permisos para realizar esta acción.",
+  "Forbidden": "Acceso denegado.",
+  
+  // Errores de red/servidor
+  "Network Error": "Hubo un problema de conexión. Verifica tu internet e intenta de nuevo.",
+  "Timeout": "La operación tardó demasiado. Intenta de nuevo.",
+  "Bad Request": "Solicitud inválida.",
+  "Request failed": "No pudimos completar la acción. Intenta de nuevo más tarde.",
+  
+  // Errores genéricos
+  "Internal server error": "Ocurrió un error en el servidor. Por favor, intenta más tarde.",
 };
 
 /**
@@ -71,4 +90,65 @@ export function getFriendlyErrorMessage(err: unknown, defaultMessage: string): s
   }
   
   return message;
+}
+
+/**
+ * Obtiene un mensaje de error humanizado/amigable para mostrar en toasts
+ * Función específica para useMutationWithToast
+ * 
+ * @param error - El error de cualquier tipo
+ * @returns Mensaje humanizado listo para mostrar al usuario
+ */
+export function getHumanizedErrorMessage(error: unknown): string {
+  const defaultMessage = "Ha ocurrido un error. Por favor, intenta de nuevo.";
+  
+  // Si no hay error, retornar mensaje por defecto
+  if (!error) return defaultMessage;
+  
+  // Extraer mensaje del error - PRIORIZAR mensaje del backend ( Axios response.data.message )
+  let rawMessage: unknown = "";
+  
+  // Primero intentar obtener el mensaje del backend (Axios error response)
+  const axiosError = error as any;
+  if (axiosError.response?.data?.message) {
+    rawMessage = axiosError.response.data.message;
+  } else if (axiosError.response?.data?.error) {
+    rawMessage = axiosError.response.data.error;
+  } else if (error instanceof Error) {
+    rawMessage = error.message;
+  } else if (typeof error === "string") {
+    rawMessage = error;
+  } else if (axiosError.message) {
+    rawMessage = axiosError.message;
+  }
+  
+  // Convertir a string si es necesario (manejar arrays y objetos de validación)
+  let messageString: string;
+  if (typeof rawMessage === 'string') {
+    messageString = rawMessage;
+  } else if (Array.isArray(rawMessage)) {
+    messageString = rawMessage.join(', ');
+  } else if (rawMessage && typeof rawMessage === 'object') {
+    messageString = JSON.stringify(rawMessage);
+  } else {
+    messageString = String(rawMessage);
+  }
+  
+  // Buscar coincidencia con mensajes conocidos (case-insensitive, búsqueda parcial)
+  const lowerRawMessage = messageString.toLowerCase();
+  for (const [key, friendlyMessage] of Object.entries(FRIENDLY_ERROR_MESSAGES)) {
+    if (lowerRawMessage.includes(key.toLowerCase())) {
+      return friendlyMessage;
+    }
+  }
+  
+  // Si no hay coincidencia, retornar el mensaje original si es válido
+  // o el mensaje por defecto si es un mensaje técnico genérico
+  if (messageString && 
+      !messageString.includes("Request failed with status code") &&
+      messageString.length < 200) {
+    return messageString;
+  }
+  
+  return defaultMessage;
 }
