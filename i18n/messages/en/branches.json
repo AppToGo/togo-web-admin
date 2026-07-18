@@ -231,6 +231,33 @@
         "saturday": "Saturday",
         "sunday": "Sunday"
       }
+    },
+    "transfer": {
+      "title": "Transfer Payment",
+      "description": "Configure the bank accounts to receive payments for this branch",
+      "enable": "Allow transfer payment",
+      "enableDescription": "Shows the transfer button in the order flow",
+      "accounts": "Bank accounts",
+      "addAccount": "Add account",
+      "noAccounts": "No accounts configured",
+      "noAccountsDescription": "Add at least one account to enable transfer payments",
+      "maxAccounts": "Maximum 5 accounts",
+      "accountType": "Type",
+      "accountName": "Name / Label",
+      "accountNumber": "Number",
+      "accountHolder": "Account holder",
+      "accountAdditionalInfo": "Additional info",
+      "types": {
+        "NEQUI": "Nequi",
+        "DAVIPLATA": "Daviplata",
+        "BANK_ACCOUNT": "Bank account"
+      },
+      "placeholders": {
+        "name": "E.g.: Nequi La Zona",
+        "number": "E.g.: 3001234567",
+        "holder": "E.g.: Juan García",
+        "additionalInfo": "E.g.: SAVINGS - Bancolombia"
+      }
     }
   }
 }
