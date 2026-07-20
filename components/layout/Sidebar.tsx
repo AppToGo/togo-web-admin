@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { locales } from "@/i18n/config";
@@ -177,9 +178,14 @@ export function Sidebar({
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
           <Link href="/dashboard/orders" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-icon bg-gradient-indigo-purple flex items-center justify-center shrink-0 shadow-card">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Togo"
+              width={36}
+              height={36}
+              className="rounded-full shrink-0 shadow-card"
+              priority
+            />
             {!isCollapsed && (
               <span className="font-bold text-xl text-slate-900">Togo</span>
             )}

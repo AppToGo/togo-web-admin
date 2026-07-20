@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { LoginForm } from "@/features/auth/components/LoginForm";
@@ -14,9 +15,14 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500 shadow-lg shadow-indigo-500/30 mb-5">
-            <span className="text-white font-bold text-2xl">T</span>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Togo"
+            width={64}
+            height={64}
+            className="mx-auto rounded-full shadow-lg shadow-indigo-500/30 mb-5"
+            priority
+          />
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
             {t("welcomeTitle")}
           </h1>
