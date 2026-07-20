@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { CardContent } from "@/components/ui/card";
@@ -18,9 +19,14 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg animate-slideIn">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#6366F1] shadow-lg shadow-[#6366F1]/25 mb-4">
-            <span className="text-white font-bold text-2xl">T</span>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Togo"
+            width={56}
+            height={56}
+            className="mx-auto rounded-full shadow-lg shadow-[#6366F1]/25 mb-4"
+            priority
+          />
           <h1 className="text-2xl font-bold text-slate-900">
             {t("welcomeTitle")}
           </h1>
