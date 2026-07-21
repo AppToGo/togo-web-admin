@@ -39,7 +39,22 @@
     },
     "disconnect": "Disconnect",
     "disconnectTitle": "Disconnect WhatsApp",
-    "disconnectDescription": "Are you sure? The account and all routing rules will be deleted."
+    "disconnectDescription": "Are you sure? The account and all routing rules will be deleted.",
+    "embedded": {
+      "tabLabel": "Connect with Facebook",
+      "manualTabLabel": "Manual (advanced)",
+      "title": "Connect your WhatsApp Business",
+      "description": "Sign in with your Facebook account to securely connect your WhatsApp Business. We handle the rest.",
+      "connectButton": "Continue with Facebook",
+      "connecting": "Connecting…",
+      "errors": {
+        "notConfigured": "Assisted connection isn't available right now. Contact support.",
+        "sdkUnavailable": "Couldn't load Facebook sign-in. Please try again.",
+        "loginCancelled": "Facebook sign-in was cancelled.",
+        "noSessionInfo": "We didn't receive your WhatsApp account data. Please try again.",
+        "generic": "Something went wrong connecting to Facebook. Please try again."
+      }
+    }
   },
   "routing": {
     "autoAssign": "Shared number",

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff, Info, MessageCircle } from "lucide-react";
+import { Eye, EyeOff, Info, MessageCircle, Facebook } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,16 +25,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import {
   useCreateWhatsAppAccount,
   useUpdateWhatsAppAccount,
   useDeleteWhatsAppAccount,
   useCreateWhatsAppRouting,
   useDeleteWhatsAppRouting,
+  useEmbeddedSignup,
+  useMetaEmbeddedSignup,
 } from "../hooks";
 import type { WhatsAppAccount, WhatsAppRouting } from "../types";
+import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
+
+type ConnectionMethod = "embedded" | "manual";
 
 interface FormErrors {
   phoneNumber?: string;
@@ -65,6 +72,11 @@ export function WhatsAppConnectDialog({
   const tCommon = useTranslations("common");
 
   const isEditMode = !!account;
+  const isSuperAdmin = useIsSuperAdmin();
+
+  // Método manual: solo SUPER_ADMIN. Los demás roles solo ven Embedded Signup.
+  const [connectionMethod, setConnectionMethod] =
+    useState<ConnectionMethod>("embedded");
 
   const [phoneNumber, setPhoneNumber] = useState(account?.phoneNumber ?? "");
   const [metaWabaId, setMetaWabaId] = useState(account?.metaWabaId ?? "");
@@ -82,17 +94,25 @@ export function WhatsAppConnectDialog({
   const deleteAccount = useDeleteWhatsAppAccount();
   const createRouting = useCreateWhatsAppRouting();
   const deleteRouting = useDeleteWhatsAppRouting();
+  const embeddedSignupMutation = useEmbeddedSignup();
+  const {
+    launch: launchEmbeddedSignup,
+    isLoading: isLaunchingEmbedded,
+    error: embeddedLaunchError,
+  } = useMetaEmbeddedSignup();
 
   const isPending =
     createAccount.isPending ||
     updateAccount.isPending ||
     deleteAccount.isPending ||
-    createRouting.isPending;
+    createRouting.isPending ||
+    embeddedSignupMutation.isPending ||
+    isLaunchingEmbedded;
 
   const validate = useCallback((): boolean => {
     const errors: FormErrors = {};
 
-    if (!isEditMode) {
+    if (!isEditMode && connectionMethod === "manual") {
       if (!phoneNumber.trim()) {
         errors.phoneNumber = t("accounts.validation.phoneRequired");
       } else if (!E164_REGEX.test(phoneNumber.trim())) {
@@ -114,7 +134,15 @@ export function WhatsAppConnectDialog({
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [isEditMode, phoneNumber, metaWabaId, phoneNumberId, accessToken, t]);
+  }, [
+    isEditMode,
+    connectionMethod,
+    phoneNumber,
+    metaWabaId,
+    phoneNumberId,
+    accessToken,
+    t,
+  ]);
 
   const handleSubmit = useCallback(async () => {
     if (!validate()) return;
@@ -140,7 +168,7 @@ export function WhatsAppConnectDialog({
 
       onOpenChange(false);
     } else {
-      // CREATE mode: 1) create account, 2) create routing
+      // CREATE mode (manual, SUPER_ADMIN only): 1) create account, 2) create routing
       const newAccount = await createAccount.mutateAsync({
         phoneNumber: phoneNumber.trim(),
         metaWabaId: metaWabaId.trim(),
@@ -173,6 +201,27 @@ export function WhatsAppConnectDialog({
     branchId,
   ]);
 
+  const handleEmbeddedConnect = useCallback(async () => {
+    try {
+      const {
+        code,
+        wabaId,
+        phoneNumberId: signupPhoneNumberId,
+      } = await launchEmbeddedSignup();
+
+      await embeddedSignupMutation.mutateAsync({
+        code,
+        wabaId,
+        phoneNumberId: signupPhoneNumberId,
+        branchId,
+      });
+
+      onOpenChange(false);
+    } catch {
+      // Los errores ya se muestran vía el estado del hook / toast de la mutación
+    }
+  }, [launchEmbeddedSignup, embeddedSignupMutation, branchId, onOpenChange]);
+
   const handleDisconnect = useCallback(async () => {
     if (!account) return;
 
@@ -194,6 +243,220 @@ export function WhatsAppConnectDialog({
       ? t("accounts.createTitle", { branchName: branchName ?? "" })
       : t("accounts.createTitleBusiness");
 
+  // En modo CREATE: SUPER_ADMIN puede elegir método; el resto solo ve Embedded Signup.
+  const isManualCreate =
+    !isEditMode && isSuperAdmin && connectionMethod === "manual";
+
+  const primaryAction =
+    isEditMode || isManualCreate ? handleSubmit : handleEmbeddedConnect;
+  const primaryLabel = isEditMode
+    ? tCommon("buttons.save")
+    : isManualCreate
+      ? t("accounts.connect")
+      : isLaunchingEmbedded || embeddedSignupMutation.isPending
+        ? t("accounts.embedded.connecting")
+        : t("accounts.embedded.connectButton");
+
+  const manualFormFields = (
+    <div className="space-y-4 py-2 px-7">
+      {/* Phone Number — read-only in edit mode */}
+      <div className="space-y-1.5">
+        <Label htmlFor="wa-phone">
+          {t("accounts.fields.phoneNumber")}
+          {!isEditMode && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        {isEditMode ? (
+          <Input
+            id="wa-phone"
+            value={account?.phoneNumber ?? ""}
+            readOnly
+            disabled
+            className="bg-slate-50 font-mono"
+          />
+        ) : (
+          <>
+            <Input
+              id="wa-phone"
+              value={phoneNumber}
+              onChange={(e) => {
+                setPhoneNumber(e.target.value);
+                setFormErrors((prev) => ({
+                  ...prev,
+                  phoneNumber: undefined,
+                }));
+              }}
+              placeholder={t("accounts.fields.phoneNumberPlaceholder")}
+            />
+            {formErrors.phoneNumber && (
+              <p className="text-xs text-red-500">{formErrors.phoneNumber}</p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* WABA ID — read-only in edit mode */}
+      <div className="space-y-1.5">
+        <Label htmlFor="wa-waba-id">
+          {t("accounts.fields.metaWabaId")}
+          {!isEditMode && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        {isEditMode ? (
+          <Input
+            id="wa-waba-id"
+            value={account?.metaWabaId ?? ""}
+            readOnly
+            disabled
+            className="bg-slate-50 font-mono"
+          />
+        ) : (
+          <>
+            <Input
+              id="wa-waba-id"
+              value={metaWabaId}
+              onChange={(e) => {
+                setMetaWabaId(e.target.value);
+                setFormErrors((prev) => ({
+                  ...prev,
+                  metaWabaId: undefined,
+                }));
+              }}
+              placeholder={t("accounts.fields.metaWabaIdPlaceholder")}
+            />
+            {formErrors.metaWabaId && (
+              <p className="text-xs text-red-500">{formErrors.metaWabaId}</p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Phone Number ID — read-only in edit mode */}
+      <div className="space-y-1.5">
+        <Label htmlFor="wa-phone-id">
+          {t("accounts.fields.phoneNumberId")}
+          {!isEditMode && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        {isEditMode ? (
+          <Input
+            id="wa-phone-id"
+            value={account?.phoneNumberId ?? ""}
+            readOnly
+            disabled
+            className="bg-slate-50 font-mono"
+          />
+        ) : (
+          <>
+            <Input
+              id="wa-phone-id"
+              value={phoneNumberId}
+              onChange={(e) => {
+                setPhoneNumberId(e.target.value);
+                setFormErrors((prev) => ({
+                  ...prev,
+                  phoneNumberId: undefined,
+                }));
+              }}
+              placeholder={t("accounts.fields.phoneNumberIdPlaceholder")}
+            />
+            {formErrors.phoneNumberId && (
+              <p className="text-xs text-red-500">{formErrors.phoneNumberId}</p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Access Token — rotation in edit mode is SUPER_ADMIN only */}
+      {(!isEditMode || isSuperAdmin) && (
+        <div className="space-y-1.5">
+          <Label htmlFor="wa-token">
+            {isEditMode
+              ? t("accounts.fields.accessTokenEdit")
+              : t("accounts.fields.accessToken")}
+            {!isEditMode && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <div className="relative">
+            <Input
+              id="wa-token"
+              type={showToken ? "text" : "password"}
+              value={accessToken}
+              onChange={(e) => {
+                setAccessToken(e.target.value);
+                setFormErrors((prev) => ({
+                  ...prev,
+                  accessToken: undefined,
+                }));
+              }}
+              placeholder={t("accounts.fields.accessTokenPlaceholder")}
+              className="pr-10 font-mono text-sm"
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => setShowToken((v) => !v)}
+              tabIndex={-1}
+              aria-label={showToken ? "Ocultar token" : "Mostrar token"}
+            >
+              {showToken ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+          {formErrors.accessToken && (
+            <p className="text-xs text-red-500">{formErrors.accessToken}</p>
+          )}
+        </div>
+      )}
+
+      {/* Display Name */}
+      <div className="space-y-1.5">
+        <Label htmlFor="wa-display-name">
+          {t("accounts.fields.displayName")}
+        </Label>
+        <Input
+          id="wa-display-name"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder={t("accounts.fields.displayNamePlaceholder")}
+        />
+      </div>
+
+      {/* Where to find data hint */}
+      {!isEditMode && (
+        <Alert className="bg-blue-50 border-blue-200">
+          <Info className="w-4 h-4 text-blue-600" />
+          <AlertDescription className="text-blue-700 text-xs">
+            <span className="font-medium">{t("accounts.where")}</span>{" "}
+            {t("accounts.whereHint")}
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+
+  const embeddedSignupView = (
+    <div className="space-y-4 py-2 px-7">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center space-y-3">
+        <Facebook className="w-8 h-8 mx-auto text-[#1877F2]" />
+        <p className="text-sm font-medium text-slate-900">
+          {t("accounts.embedded.title")}
+        </p>
+        <p className="text-xs text-slate-500">
+          {t("accounts.embedded.description")}
+        </p>
+      </div>
+
+      {(embeddedLaunchError || embeddedSignupMutation.error) && (
+        <Alert className="bg-red-50 border-red-200">
+          <AlertDescription className="text-red-700 text-xs">
+            {embeddedLaunchError ??
+              getHumanizedErrorMessage(embeddedSignupMutation.error)}
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -212,184 +475,29 @@ export function WhatsAppConnectDialog({
             )}
           </DialogHeader>
 
-          <div className="space-y-4 py-2 px-7">
-            {/* Phone Number — read-only in edit mode */}
-            <div className="space-y-1.5">
-              <Label htmlFor="wa-phone">
-                {t("accounts.fields.phoneNumber")}
-                {!isEditMode && <span className="text-red-500 ml-1">*</span>}
-              </Label>
-              {isEditMode ? (
-                <Input
-                  id="wa-phone"
-                  value={account?.phoneNumber ?? ""}
-                  readOnly
-                  disabled
-                  className="bg-slate-50 font-mono"
-                />
-              ) : (
-                <>
-                  <Input
-                    id="wa-phone"
-                    value={phoneNumber}
-                    onChange={(e) => {
-                      setPhoneNumber(e.target.value);
-                      setFormErrors((prev) => ({
-                        ...prev,
-                        phoneNumber: undefined,
-                      }));
-                    }}
-                    placeholder={t("accounts.fields.phoneNumberPlaceholder")}
-                  />
-                  {formErrors.phoneNumber && (
-                    <p className="text-xs text-red-500">
-                      {formErrors.phoneNumber}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* WABA ID — read-only in edit mode */}
-            <div className="space-y-1.5">
-              <Label htmlFor="wa-waba-id">
-                {t("accounts.fields.metaWabaId")}
-                {!isEditMode && <span className="text-red-500 ml-1">*</span>}
-              </Label>
-              {isEditMode ? (
-                <Input
-                  id="wa-waba-id"
-                  value={account?.metaWabaId ?? ""}
-                  readOnly
-                  disabled
-                  className="bg-slate-50 font-mono"
-                />
-              ) : (
-                <>
-                  <Input
-                    id="wa-waba-id"
-                    value={metaWabaId}
-                    onChange={(e) => {
-                      setMetaWabaId(e.target.value);
-                      setFormErrors((prev) => ({
-                        ...prev,
-                        metaWabaId: undefined,
-                      }));
-                    }}
-                    placeholder={t("accounts.fields.metaWabaIdPlaceholder")}
-                  />
-                  {formErrors.metaWabaId && (
-                    <p className="text-xs text-red-500">
-                      {formErrors.metaWabaId}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Phone Number ID — read-only in edit mode */}
-            <div className="space-y-1.5">
-              <Label htmlFor="wa-phone-id">
-                {t("accounts.fields.phoneNumberId")}
-                {!isEditMode && <span className="text-red-500 ml-1">*</span>}
-              </Label>
-              {isEditMode ? (
-                <Input
-                  id="wa-phone-id"
-                  value={account?.phoneNumberId ?? ""}
-                  readOnly
-                  disabled
-                  className="bg-slate-50 font-mono"
-                />
-              ) : (
-                <>
-                  <Input
-                    id="wa-phone-id"
-                    value={phoneNumberId}
-                    onChange={(e) => {
-                      setPhoneNumberId(e.target.value);
-                      setFormErrors((prev) => ({
-                        ...prev,
-                        phoneNumberId: undefined,
-                      }));
-                    }}
-                    placeholder={t("accounts.fields.phoneNumberIdPlaceholder")}
-                  />
-                  {formErrors.phoneNumberId && (
-                    <p className="text-xs text-red-500">
-                      {formErrors.phoneNumberId}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Access Token */}
-            <div className="space-y-1.5">
-              <Label htmlFor="wa-token">
-                {isEditMode
-                  ? t("accounts.fields.accessTokenEdit")
-                  : t("accounts.fields.accessToken")}
-                {!isEditMode && <span className="text-red-500 ml-1">*</span>}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="wa-token"
-                  type={showToken ? "text" : "password"}
-                  value={accessToken}
-                  onChange={(e) => {
-                    setAccessToken(e.target.value);
-                    setFormErrors((prev) => ({
-                      ...prev,
-                      accessToken: undefined,
-                    }));
-                  }}
-                  placeholder={t("accounts.fields.accessTokenPlaceholder")}
-                  className="pr-10 font-mono text-sm"
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  onClick={() => setShowToken((v) => !v)}
-                  tabIndex={-1}
-                  aria-label={showToken ? "Ocultar token" : "Mostrar token"}
-                >
-                  {showToken ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
+          {isEditMode ? (
+            manualFormFields
+          ) : isSuperAdmin ? (
+            <Tabs
+              value={connectionMethod}
+              onValueChange={(v) => setConnectionMethod(v as ConnectionMethod)}
+            >
+              <div className="px-7">
+                <TabsList className="w-full">
+                  <TabsTrigger value="embedded" className="flex-1">
+                    {t("accounts.embedded.tabLabel")}
+                  </TabsTrigger>
+                  <TabsTrigger value="manual" className="flex-1">
+                    {t("accounts.embedded.manualTabLabel")}
+                  </TabsTrigger>
+                </TabsList>
               </div>
-              {formErrors.accessToken && (
-                <p className="text-xs text-red-500">{formErrors.accessToken}</p>
-              )}
-            </div>
-
-            {/* Display Name */}
-            <div className="space-y-1.5">
-              <Label htmlFor="wa-display-name">
-                {t("accounts.fields.displayName")}
-              </Label>
-              <Input
-                id="wa-display-name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder={t("accounts.fields.displayNamePlaceholder")}
-              />
-            </div>
-
-            {/* Where to find data hint */}
-            {!isEditMode && (
-              <Alert className="bg-blue-50 border-blue-200">
-                <Info className="w-4 h-4 text-blue-600" />
-                <AlertDescription className="text-blue-700 text-xs">
-                  <span className="font-medium">{t("accounts.where")}</span>{" "}
-                  {t("accounts.whereHint")}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
+              <TabsContent value="embedded">{embeddedSignupView}</TabsContent>
+              <TabsContent value="manual">{manualFormFields}</TabsContent>
+            </Tabs>
+          ) : (
+            embeddedSignupView
+          )}
 
           <div className="flex items-center gap-2 p-7">
             {/* Disconnect button in edit mode */}
@@ -418,12 +526,12 @@ export function WhatsAppConnectDialog({
 
             <Button
               type="button"
-              onClick={handleSubmit}
+              onClick={primaryAction}
               disabled={isPending}
               isLoading={isPending}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              {isEditMode ? tCommon("buttons.save") : t("accounts.connect")}
+              {primaryLabel}
             </Button>
           </div>
         </DialogContent>

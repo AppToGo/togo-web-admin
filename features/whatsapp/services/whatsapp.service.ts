@@ -13,6 +13,7 @@ import type {
   UpdateWhatsAppAccountRequest,
   CreateWhatsAppRoutingRequest,
   UpdateWhatsAppRoutingRequest,
+  EmbeddedSignupRequest,
 } from "../types";
 
 // ─── WhatsApp Accounts ───────────────────────────────────────────────────────
@@ -54,6 +55,21 @@ export async function updateWhatsAppAccount(
 
 export async function deleteWhatsAppAccount(id: string): Promise<void> {
   await apiClient.delete(`/whatsapp-accounts/${id}`);
+}
+
+/**
+ * Crea la cuenta (+ routing) a partir de un flujo de Meta Embedded Signup.
+ * Disponible para todos los roles (a diferencia de createWhatsAppAccount,
+ * que está restringido a SUPER_ADMIN en el backend).
+ */
+export async function createWhatsAppAccountFromEmbeddedSignup(
+  dto: EmbeddedSignupRequest
+): Promise<WhatsAppAccount> {
+  const { data } = await apiClient.post<WhatsAppAccount>(
+    "/whatsapp-accounts/embedded-signup",
+    dto
+  );
+  return data;
 }
 
 // ─── WhatsApp Routings ────────────────────────────────────────────────────────
