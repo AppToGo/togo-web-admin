@@ -7,9 +7,7 @@
 
 export type WhatsAppAccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 export type RoutingStrategy =
-  | "DIRECT_TO_BRANCH"
-  | "AUTO_ASSIGN"
-  | "SHARED_INBOX";
+  "DIRECT_TO_BRANCH" | "AUTO_ASSIGN" | "SHARED_INBOX";
 
 export interface WhatsAppAccount {
   id: string;
@@ -56,6 +54,19 @@ export interface CreateWhatsAppRoutingRequest {
   strategy: RoutingStrategy;
   isActive?: boolean;
   priority?: number;
+}
+
+/**
+ * Payload enviado tras completar el flujo de Meta Embedded Signup.
+ * El backend intercambia `code` por el access token, registra el número
+ * y crea la cuenta + el routing (AUTO_ASSIGN o DIRECT_TO_BRANCH) en un solo paso.
+ */
+export interface EmbeddedSignupRequest {
+  code: string;
+  wabaId: string;
+  phoneNumberId: string;
+  branchId?: string | null;
+  displayName?: string;
 }
 
 export interface UpdateWhatsAppRoutingRequest {

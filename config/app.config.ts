@@ -1,6 +1,6 @@
 /**
  * App Configuration
- * 
+ *
  * Centralized configuration for the Togo Admin Dashboard
  */
 
@@ -20,6 +20,12 @@ export const APP_CONFIG = {
   features: {
     enableWebSockets: true, // Activado para órdenes en tiempo real
     enableNotifications: false,
+  },
+  meta: {
+    // Meta Embedded Signup — onboarding asistido de WABA (Facebook Login for Business)
+    appId: process.env.NEXT_PUBLIC_META_APP_ID || "",
+    configId: process.env.NEXT_PUBLIC_META_CONFIG_ID || "",
+    graphVersion: process.env.NEXT_PUBLIC_META_GRAPH_VERSION || "v25.0",
   },
 } as const;
 
