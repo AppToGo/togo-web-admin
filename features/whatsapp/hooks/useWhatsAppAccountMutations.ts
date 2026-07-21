@@ -11,15 +11,14 @@ import {
   createWhatsAppAccount,
   updateWhatsAppAccount,
   deleteWhatsAppAccount,
+  createWhatsAppAccountFromEmbeddedSignup,
 } from "../services/whatsapp.service";
-import {
-  WHATSAPP_ACCOUNTS_KEYS,
-  WHATSAPP_ROUTING_KEYS,
-} from "./query-keys";
+import { WHATSAPP_ACCOUNTS_KEYS, WHATSAPP_ROUTING_KEYS } from "./query-keys";
 import type {
   WhatsAppAccount,
   CreateWhatsAppAccountRequest,
   UpdateWhatsAppAccountRequest,
+  EmbeddedSignupRequest,
 } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
@@ -46,6 +45,39 @@ export function useCreateWhatsAppAccount() {
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: WHATSAPP_ACCOUNTS_KEYS.lists(),
+      });
+    },
+  });
+}
+
+/**
+ * Hook para conectar WhatsApp vía Meta Embedded Signup.
+ * El backend crea la cuenta y el routing (AUTO_ASSIGN/DIRECT_TO_BRANCH)
+ * en un solo paso, por eso invalidamos ambos query keys.
+ */
+export function useEmbeddedSignup() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("whatsapp");
+
+  return useMutation({
+    mutationFn: (data: EmbeddedSignupRequest) =>
+      createWhatsAppAccountFromEmbeddedSignup(data),
+
+    onSuccess: () => {
+      toast.success(t("accounts.createSuccess"));
+    },
+
+    onError: (err) => {
+      const errorMessage = getHumanizedErrorMessage(err);
+      toast.error(errorMessage || t("accounts.errors.createFailed"));
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: WHATSAPP_ACCOUNTS_KEYS.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: WHATSAPP_ROUTING_KEYS.lists(),
       });
     },
   });
