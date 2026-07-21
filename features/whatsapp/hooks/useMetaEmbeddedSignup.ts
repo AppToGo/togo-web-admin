@@ -98,9 +98,16 @@ export function useMetaEmbeddedSignup() {
   const t = useTranslations("whatsapp");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const sessionInfoRef = useRef<{ wabaId?: string; phoneNumberId?: string }>(
-    {}
-  );
+
+  // `generation` correlaciona el postMessage con el intento de launch() que lo
+  // espera: sin esto, un mensaje que llega tarde de un intento cancelado
+  // podría combinarse con el `code` de un intento posterior distinto.
+  const generationRef = useRef(0);
+  const sessionInfoRef = useRef<{
+    wabaId?: string;
+    phoneNumberId?: string;
+    generation?: number;
+  }>({});
 
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
@@ -117,6 +124,7 @@ export function useMetaEmbeddedSignup() {
           sessionInfoRef.current = {
             wabaId: data.data?.waba_id,
             phoneNumberId: data.data?.phone_number_id,
+            generation: generationRef.current,
           };
         }
       } catch {
@@ -129,12 +137,16 @@ export function useMetaEmbeddedSignup() {
   }, []);
 
   const waitForSessionInfo = useCallback(
-    (code: string): Promise<EmbeddedSignupResult> => {
+    (code: string, generation: number): Promise<EmbeddedSignupResult> => {
       return new Promise((resolve, reject) => {
         const start = Date.now();
         const poll = () => {
-          const { wabaId, phoneNumberId } = sessionInfoRef.current;
-          if (wabaId && phoneNumberId) {
+          const {
+            wabaId,
+            phoneNumberId,
+            generation: msgGeneration,
+          } = sessionInfoRef.current;
+          if (wabaId && phoneNumberId && msgGeneration === generation) {
             resolve({ code, wabaId, phoneNumberId });
             return;
           }
@@ -153,6 +165,7 @@ export function useMetaEmbeddedSignup() {
   const launch = useCallback((): Promise<EmbeddedSignupResult> => {
     setError(null);
     setIsLoading(true);
+    const myGeneration = ++generationRef.current;
     sessionInfoRef.current = {};
 
     const { appId, configId, graphVersion } = APP_CONFIG.meta;
@@ -191,7 +204,7 @@ export function useMetaEmbeddedSignup() {
         );
       });
 
-      return waitForSessionInfo(code);
+      return waitForSessionInfo(code, myGeneration);
     };
 
     return run()

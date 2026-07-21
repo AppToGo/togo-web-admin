@@ -36,6 +36,7 @@ import {
   useMetaEmbeddedSignup,
 } from "../hooks";
 import type { WhatsAppAccount, WhatsAppRouting } from "../types";
+import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
 
@@ -448,7 +449,8 @@ export function WhatsAppConnectDialog({
       {(embeddedLaunchError || embeddedSignupMutation.error) && (
         <Alert className="bg-red-50 border-red-200">
           <AlertDescription className="text-red-700 text-xs">
-            {embeddedLaunchError ?? t("accounts.errors.createFailed")}
+            {embeddedLaunchError ??
+              getHumanizedErrorMessage(embeddedSignupMutation.error)}
           </AlertDescription>
         </Alert>
       )}
