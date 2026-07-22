@@ -10,6 +10,8 @@ import {
   CreditCard,
   MessageCircle,
   Copy,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -21,14 +23,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  PLANS,
-  PLAN_PRICES,
-  PLAN_FEATURES,
+  QUALITATIVE_PLAN_FEATURES,
   NEQUI_PAYMENT_INFO,
   type PlanNumber,
 } from "@/lib/plan.utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useUpgradePlan } from "../hooks/useUpgradePlan";
+import { usePlanCatalog } from "../hooks/usePlanCatalog";
+import { UNLIMITED_PLAN_LIMIT, type PlanCatalogEntry } from "../services/subscription.service";
 
 interface UpgradePlanModalProps {
   open: boolean;
@@ -45,6 +47,18 @@ const PLAN_ICONS: Record<Exclude<PlanNumber, 1>, React.ElementType> = {
   4: Building2,
 };
 
+function formatBranchesFeature(maxBranches: number): string {
+  if (maxBranches >= UNLIMITED_PLAN_LIMIT) return "Sedes ilimitadas";
+  if (maxBranches === 1) return "1 sede";
+  return `Hasta ${maxBranches} sedes`;
+}
+
+function formatUsersFeature(maxUsers: number): string {
+  if (maxUsers >= UNLIMITED_PLAN_LIMIT) return "Usuarios ilimitados";
+  if (maxUsers === 1) return "1 usuario";
+  return `Hasta ${maxUsers} usuarios`;
+}
+
 export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
   const t = useTranslations("subscription.upgradePlanModal");
   const user = useCurrentUser();
@@ -55,6 +69,9 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
   > | null>(null);
 
   const { mutate: upgradePlan, isPending } = useUpgradePlan();
+  // Solo pide el catálogo cuando el modal realmente está abierto — evita un
+  // fetch innecesario en cada carga del dashboard para negocios que nunca lo abren.
+  const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError, refetch: refetchCatalog } = usePlanCatalog(open);
 
   // Reset view when modal opens
   React.useEffect(() => {
@@ -76,7 +93,7 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
   const formatPrice = (amount: number) =>
     new Intl.NumberFormat("es-CO", {
       style: "currency",
-      currency: "COP",
+      currency: catalog?.currency ?? "COP",
       maximumFractionDigits: 0,
     }).format(amount);
 
@@ -85,8 +102,20 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     toast.success(t("copiedToClipboard"));
   };
 
-  const selectedPlanInfo = selectedPlan ? PLANS[selectedPlan] : null;
-  const selectedPlanPrice = selectedPlan ? PLAN_PRICES[selectedPlan] : null;
+  const getPlanEntry = (planNum: Exclude<PlanNumber, 1>) =>
+    catalog?.plans.find((p) => p.plan === planNum);
+
+  // Los bullets de sedes/usuarios se generan desde el catálogo real (no un
+  // texto hardcodeado) para que nunca queden desactualizados si el backend
+  // cambia un límite por env — antes esto vivía como texto fijo en
+  // lib/plan.utils.ts y había que editarlo a mano en cada cambio de límite.
+  const getPlanFeatures = (planEntry: PlanCatalogEntry): string[] => [
+    formatBranchesFeature(planEntry.maxBranches),
+    formatUsersFeature(planEntry.maxUsers),
+    ...QUALITATIVE_PLAN_FEATURES[planEntry.plan as Exclude<PlanNumber, 1>],
+  ];
+
+  const selectedPlanInfo = selectedPlan ? getPlanEntry(selectedPlan) : null;
 
   return (
     <Dialog
@@ -107,10 +136,27 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
             </DialogHeader>
 
             <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {PAID_PLANS.map((planNum) => {
-                const plan = PLANS[planNum];
-                const price = PLAN_PRICES[planNum];
-                const features = PLAN_FEATURES[planNum];
+              {isCatalogLoading && (
+                <div className="col-span-3 py-8 flex justify-center">
+                  <span className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                </div>
+              )}
+              {!isCatalogLoading && isCatalogError && (
+                <div className="col-span-3 py-8 flex flex-col items-center gap-3 text-center">
+                  <AlertCircle className="w-6 h-6 text-red-500" />
+                  <p className="text-sm text-slate-600">{t("catalogError")}</p>
+                  <Button size="sm" variant="outline" onClick={() => refetchCatalog()}>
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    {t("catalogRetry")}
+                  </Button>
+                </div>
+              )}
+              {!isCatalogLoading &&
+                !isCatalogError &&
+                PAID_PLANS.map((planNum) => {
+                const planEntry = getPlanEntry(planNum);
+                if (!planEntry) return null;
+                const features = getPlanFeatures(planEntry);
                 const Icon = PLAN_ICONS[planNum];
                 const isPopular = planNum === 3;
                 const isLoadingThis = isPending && selectedPlan === planNum;
@@ -147,13 +193,13 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                         />
                       </div>
                       <span className="font-semibold text-slate-900 text-sm">
-                        {plan.displayName}
+                        {planEntry.name}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-2xl font-bold text-slate-900">
-                        {formatPrice(price.monthly)}
+                        {formatPrice(planEntry.priceMonthly)}
                       </span>
                       <span className="text-xs text-slate-500 ml-1">
                         {t("perMonth")}
@@ -189,7 +235,7 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                           {t("upgradingButton")}
                         </span>
                       ) : (
-                        t("upgradeButton", { planName: plan.displayName })
+                        t("upgradeButton", { planName: planEntry.name })
                       )}
                     </Button>
                   </div>
@@ -219,7 +265,7 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                   </DialogTitle>
                   <p className="text-xs text-slate-500">
                     {t("paymentPendingSubtitle", {
-                      planName: selectedPlanInfo?.displayName ?? "",
+                      planName: selectedPlanInfo?.name ?? "",
                     })}
                   </p>
                 </div>
@@ -246,8 +292,8 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                     { label: t("nequiName"), value: NEQUI_PAYMENT_INFO.name },
                     {
                       label: t("nequiAmount"),
-                      value: selectedPlanPrice
-                        ? formatPrice(selectedPlanPrice.monthly)
+                      value: selectedPlanInfo
+                        ? formatPrice(selectedPlanInfo.priceMonthly)
                         : "",
                     },
                     {

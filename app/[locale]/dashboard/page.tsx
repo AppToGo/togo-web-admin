@@ -15,7 +15,6 @@ import {
   BranchSelector,
 } from "@/features/dashboard";
 import { usePlanMetrics } from "@/features/dashboard/hooks/usePlanMetrics";
-import { FreePlanBanner, useOpenUpgradePlanModal } from "@/features/subscription";
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
@@ -26,14 +25,10 @@ export default function DashboardPage() {
   const user = useCurrentUser();
   const currentPreset = useDateFilterPreset();
   const { config, planKey } = usePlanMetrics();
-  const openUpgradeModal = useOpenUpgradePlanModal();
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* PLG Free Plan Banner — shown when user is on free plan (plan 1) */}
-        {user?.subscriptionPlan === 1 && <FreePlanBanner onUpgrade={openUpgradeModal} />}
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

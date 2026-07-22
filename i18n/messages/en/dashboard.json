@@ -100,9 +100,12 @@
       "description": "To view the dashboard, you need to have a business assigned to your account. Contact the system administrator."
     }
   },
-  "freePlanBanner": {
-    "title": "You're on the free plan",
-    "subtitle": "Upgrade your plan to unlock advanced features",
+  "trialBanner": {
+    "daysRemaining": "{days} days left in your free trial",
+    "oneDayRemaining": "1 day left in your free trial",
+    "lastDay": "Your free trial ends today",
+    "expired": "Your free trial has ended",
+    "subtitle": "Choose a plan to keep using ToGo without interruptions",
     "cta": "Choose a plan"
   }
 }

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
 import { useSingleBranchInit } from "@/features/branches/hooks";
-import { UpgradePlanModal, useUpgradePlanModal } from "@/features/subscription";
+import { UpgradePlanModal, useUpgradePlanModal, TrialBanner } from "@/features/subscription";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -56,6 +56,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
         )}
       >
+        {/* Trial banner — global, visible on every dashboard page while Free trial is active */}
+        <TrialBanner />
+
         {/* Page content */}
         <main className="flex-1 flex flex-col p-4 sm:p-6">
           <div className="flex-1 flex flex-col max-w-screen-2xl w-full mx-auto">{children}</div>

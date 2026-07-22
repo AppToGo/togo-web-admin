@@ -34,3 +34,47 @@ export function forceLogout(reason: LogoutReason): void {
     })
   );
 }
+
+export const TRIAL_EXPIRED_EVENT = "subscription:trial-expired" as const;
+
+export interface TrialExpiredEventDetail {
+  message?: string;
+}
+
+/**
+ * Dispatches a custom DOM event when the backend blocks a write with
+ * 402 TRIAL_EXPIRED. Same seam as forceLogout(): the Axios interceptor
+ * only signals "the backend said trial expired" — deciding what to show
+ * (modal, toast) is a UI concern handled by whoever listens
+ * (see features/subscription/hooks/useUpgradePlanModal.ts).
+ */
+export function notifyTrialExpired(message?: string): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<TrialExpiredEventDetail>(TRIAL_EXPIRED_EVENT, {
+      detail: { message },
+    })
+  );
+}
+
+export const PAYMENT_OVERDUE_EVENT = "subscription:payment-overdue" as const;
+
+export interface PaymentOverdueEventDetail {
+  message?: string;
+}
+
+/**
+ * Dispatches a custom DOM event when the backend blocks a write with
+ * 402 PAYMENT_OVERDUE (plan pago con el pago vencido más allá del período de
+ * gracia). A diferencia de TRIAL_EXPIRED_EVENT, no hay modal que abrir aquí
+ * — el negocio no necesita cambiar de plan, necesita pagar (flujo manual),
+ * así que el listener solo muestra un aviso.
+ */
+export function notifyPaymentOverdue(message?: string): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<PaymentOverdueEventDetail>(PAYMENT_OVERDUE_EVENT, {
+      detail: { message },
+    })
+  );
+}
