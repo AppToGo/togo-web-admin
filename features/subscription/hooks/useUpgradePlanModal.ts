@@ -8,6 +8,8 @@ import { useTourStore } from "@/stores/tour.store";
 import {
   TRIAL_EXPIRED_EVENT,
   type TrialExpiredEventDetail,
+  PAYMENT_OVERDUE_EVENT,
+  type PaymentOverdueEventDetail,
 } from "@/services/session.service";
 
 const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
@@ -15,6 +17,7 @@ const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
 // Evita apilar toasts si varios requests paralelos 402an en el mismo tick
 // (ej: KPIs + métricas se disparan juntos al cargar el dashboard).
 const TRIAL_EXPIRED_TOAST_ID = "trial-expired";
+const PAYMENT_OVERDUE_TOAST_ID = "payment-overdue";
 
 // Global store — shared across the entire component tree so any component
 // can open the modal without needing to prop-drill or duplicate state.
@@ -89,6 +92,23 @@ export function useUpgradePlanModal() {
     window.addEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
     return () => window.removeEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
   }, [openModal]);
+
+  // Reacciona a PAYMENT_OVERDUE_EVENT (plan pago con pago vencido más allá
+  // del período de gracia). A diferencia de TRIAL_EXPIRED, NO abre el modal
+  // de upgrade — el negocio no necesita cambiar de plan, necesita pagar
+  // (flujo manual). Solo avisa.
+  useEffect(() => {
+    function handlePaymentOverdue(event: Event) {
+      const { message } = (event as CustomEvent<PaymentOverdueEventDetail>).detail;
+      toast.error(
+        message || "Tu pago está vencido. Regulariza tu suscripción para seguir creando y editando.",
+        { id: PAYMENT_OVERDUE_TOAST_ID },
+      );
+    }
+
+    window.addEventListener(PAYMENT_OVERDUE_EVENT, handlePaymentOverdue);
+    return () => window.removeEventListener(PAYMENT_OVERDUE_EVENT, handlePaymentOverdue);
+  }, []);
 
   return { open, closeModal };
 }
