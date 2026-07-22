@@ -125,7 +125,6 @@ export interface SessionBusiness {
   name: string;
   plan: string;
   maxBranches: number;
-  trialEndsAt?: string | null;
 }
 
 /**

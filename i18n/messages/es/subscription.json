@@ -22,6 +22,8 @@
     "skipButton": "Continuar con plan gratuito",
     "currency": "COP",
     "copiedToClipboard": "Copiado al portapapeles",
-    "copyButtonTooltip": "Copiar"
+    "copyButtonTooltip": "Copiar",
+    "catalogError": "No pudimos cargar los planes. Intentá de nuevo.",
+    "catalogRetry": "Reintentar"
   }
 }

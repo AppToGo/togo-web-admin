@@ -21,6 +21,8 @@ import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PlanBadge } from "./PlanBadge";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
 import { getPlanMaxBranches, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
+import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
+import type { PlanCatalogEntry } from "@/features/subscription/services/subscription.service";
 
 interface BusinessTableProps {
   businesses: BusinessWithSubscription[];
@@ -40,6 +42,7 @@ export function BusinessTable({
   isLoading,
 }: BusinessTableProps) {
   const t = useTranslations("admin-businesses");
+  const { data: catalog } = usePlanCatalog();
 
   if (isLoading) {
     return <BusinessTableSkeleton />;
@@ -114,6 +117,7 @@ export function BusinessTable({
                   count={business.branchesCount}
                   plan={business.subscription?.plan ?? null}
                   override={business.subscription?.maxBranchesOverride}
+                  catalog={catalog?.plans}
                 />
               </TableCell>
 
@@ -195,9 +199,10 @@ interface BranchesCountProps {
   count: number;
   plan: number | null;
   override: number | null | undefined;
+  catalog: PlanCatalogEntry[] | undefined;
 }
 
-function BranchesCount({ count, plan, override }: BranchesCountProps) {
+function BranchesCount({ count, plan, override, catalog }: BranchesCountProps) {
   // If no plan and no override, show simple count
   if (plan === null && override === null) {
     return (
@@ -208,8 +213,8 @@ function BranchesCount({ count, plan, override }: BranchesCountProps) {
       </div>
     );
   }
-  
-  const maxBranches = override ?? getPlanMaxBranches(plan ?? 1);
+
+  const maxBranches = override ?? getPlanMaxBranches(plan ?? 1, catalog);
   const isUnlimited = maxBranches >= UNLIMITED_PLAN_LIMIT;
   const isNearLimit = !isUnlimited && count >= maxBranches * 0.8;
   const isOverLimit = !isUnlimited && count > maxBranches;

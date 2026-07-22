@@ -3,6 +3,11 @@
  * Colors and configurations for payment status visualization
  */
 
+import type { PlanCatalogEntry } from "@/features/subscription/services/subscription.service";
+import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
+
+export { UNLIMITED_PLAN_LIMIT };
+
 export const DUE_DATE_COLORS = {
   // 7+ días: Verde suave
   SAFE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -39,15 +44,10 @@ export const PAYMENT_STATUS_CONFIG = {
   },
 } as const;
 
-/**
- * Sentinel numérico para "sin límite" (Enterprise) — debe coincidir con
- * UNLIMITED_PLAN_LIMIT en features/subscription/services/subscription.service.ts
- * y UNLIMITED en api-togo/src/plan/plan-config.service.ts.
- */
-export const UNLIMITED_PLAN_LIMIT = 999999;
-
-// NOTA: estos límites son solo para display en el panel admin. La fuente de
-// verdad real vive en el backend (PlanConfigService, configurable por env).
+// NOTA: maxBranches aquí es solo el fallback mientras el catálogo en vivo
+// (usePlanCatalog) no ha cargado — getPlanMaxBranches prioriza el catálogo
+// real cuando está disponible. Los nombres (label) sí son estáticos, ya que
+// cambian con mucha menos frecuencia que los límites numéricos.
 export const PLAN_OPTIONS = [
   { value: 1, label: 'Free', maxBranches: 1 },
   { value: 2, label: 'Basic', maxBranches: 1 },
@@ -111,9 +111,16 @@ export function getPlanLabel(plan: number): string {
 }
 
 /**
- * Get plan max branches by plan value
+ * Get plan max branches by plan value.
+ *
+ * Prioriza el catálogo en vivo (usePlanCatalog) cuando está disponible;
+ * cae al fallback estático de PLAN_OPTIONS solo mientras el catálogo carga,
+ * para evitar un parpadeo sin límite mostrado.
  */
-export function getPlanMaxBranches(plan: number): number {
+export function getPlanMaxBranches(plan: number, catalog?: PlanCatalogEntry[]): number {
+  const liveEntry = catalog?.find((p) => p.plan === plan);
+  if (liveEntry) return liveEntry.maxBranches;
+
   const planOption = PLAN_OPTIONS.find(p => p.value === plan);
   return planOption?.maxBranches || 1;
 }

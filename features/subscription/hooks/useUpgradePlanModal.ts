@@ -2,10 +2,19 @@
 
 import { useEffect } from "react";
 import { create } from "zustand";
+import { toast } from "sonner";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useTourStore } from "@/stores/tour.store";
+import {
+  TRIAL_EXPIRED_EVENT,
+  type TrialExpiredEventDetail,
+} from "@/services/session.service";
 
 const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
+
+// Evita apilar toasts si varios requests paralelos 402an en el mismo tick
+// (ej: KPIs + métricas se disparan juntos al cargar el dashboard).
+const TRIAL_EXPIRED_TOAST_ID = "trial-expired";
 
 // Global store — shared across the entire component tree so any component
 // can open the modal without needing to prop-drill or duplicate state.
@@ -62,6 +71,25 @@ export function useUpgradePlanModal() {
     openModal();
   }, [user?.userId, user?.subscriptionPlan, user?.businessId, completedTours, openModal]);
 
+  // Reacciona al evento TRIAL_EXPIRED_EVENT (disparado por el interceptor de Axios
+  // en services/api.service.ts al recibir un 402). El mismo patrón que
+  // SESSION_LOGOUT_EVENT/AuthProvider: el cliente HTTP solo señaliza, esta capa
+  // decide la UI. toast usa un id fijo para no apilar duplicados si varios
+  // requests paralelos 402an en el mismo tick.
+  useEffect(() => {
+    function handleTrialExpired(event: Event) {
+      const { message } = (event as CustomEvent<TrialExpiredEventDetail>).detail;
+      toast.error(
+        message || "Tu período de prueba terminó. Elige un plan para continuar.",
+        { id: TRIAL_EXPIRED_TOAST_ID },
+      );
+      openModal();
+    }
+
+    window.addEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
+    return () => window.removeEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
+  }, [openModal]);
+
   return { open, closeModal };
 }
 
@@ -72,13 +100,4 @@ export function useUpgradePlanModal() {
  */
 export function useOpenUpgradePlanModal(): () => void {
   return useUpgradePlanModalStore((state) => state.openModal);
-}
-
-/**
- * Imperative opener for use OUTSIDE React components (e.g. the Axios
- * response interceptor in services/api.service.ts, which runs before any
- * component tree exists). Prefer useOpenUpgradePlanModal inside components.
- */
-export function openUpgradePlanModal(): void {
-  useUpgradePlanModalStore.getState().openModal();
 }

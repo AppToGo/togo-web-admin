@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { getPlanMaxBranches, PLAN_OPTIONS, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
+import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 
 interface EditBranchesLimitModalProps {
   business: BusinessWithSubscription | null;
@@ -41,8 +42,9 @@ export function EditBranchesLimitModal({
   const [useOverride, setUseOverride] = useState(false);
   const [overrideValue, setOverrideValue] = useState("");
 
+  const { data: catalog } = usePlanCatalog();
   const currentPlan = business?.subscription?.plan || 1;
-  const planMaxBranches = getPlanMaxBranches(currentPlan);
+  const planMaxBranches = getPlanMaxBranches(currentPlan, catalog?.plans);
   const isPlanUnlimited = planMaxBranches >= UNLIMITED_PLAN_LIMIT;
   const currentOverride = business?.subscription?.maxBranchesOverride;
 

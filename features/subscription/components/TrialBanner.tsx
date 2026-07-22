@@ -26,11 +26,16 @@ export function TrialBanner() {
   // Solo aplica a negocios en plan Free con trialEndsAt conocido
   if (user?.subscriptionPlan !== 1 || !user?.trialEndsAt) return null;
 
-  const daysRemaining = Math.ceil(
-    (new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
+  const trialEndsAtMs = new Date(user.trialEndsAt).getTime();
+  if (Number.isNaN(trialEndsAtMs)) return null; // fecha inválida — no mostrar basura al usuario
 
-  const isExpired = daysRemaining < 0;
+  const msRemaining = trialEndsAtMs - Date.now();
+  // isExpired se calcula directo de los ms, no del daysRemaining redondeado:
+  // Math.ceil(-0.4) da 0 (no -1), lo que haría creer que el trial "termina hoy"
+  // hasta 24h después de haber vencido de verdad.
+  const isExpired = msRemaining <= 0;
+  const daysRemaining = isExpired ? 0 : Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+
   const isUrgent = isExpired || daysRemaining <= URGENT_THRESHOLD_DAYS;
 
   const message = isExpired

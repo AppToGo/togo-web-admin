@@ -3,6 +3,5 @@ export {
   useUpgradePlan,
   useUpgradePlanModal,
   useOpenUpgradePlanModal,
-  openUpgradePlanModal,
   usePlanCatalog,
 } from "./hooks";

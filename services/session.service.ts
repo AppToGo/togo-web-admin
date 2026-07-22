@@ -34,3 +34,25 @@ export function forceLogout(reason: LogoutReason): void {
     })
   );
 }
+
+export const TRIAL_EXPIRED_EVENT = "subscription:trial-expired" as const;
+
+export interface TrialExpiredEventDetail {
+  message?: string;
+}
+
+/**
+ * Dispatches a custom DOM event when the backend blocks a write with
+ * 402 TRIAL_EXPIRED. Same seam as forceLogout(): the Axios interceptor
+ * only signals "the backend said trial expired" — deciding what to show
+ * (modal, toast) is a UI concern handled by whoever listens
+ * (see features/subscription/hooks/useUpgradePlanModal.ts).
+ */
+export function notifyTrialExpired(message?: string): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<TrialExpiredEventDetail>(TRIAL_EXPIRED_EVENT, {
+      detail: { message },
+    })
+  );
+}
