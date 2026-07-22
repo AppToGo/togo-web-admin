@@ -19,41 +19,46 @@ export interface PlanInfo {
   displayName: string;
   /** Máximo de sedes permitidas */
   maxBranches: number;
-  /** Máximo de usuarios por sede */
-  maxUsersPerBranch: number;
+  /** Máximo de usuarios del negocio (todas las sedes, no por sede) */
+  maxUsers: number;
 }
 
 /**
- * Configuración de todos los planes
+ * Configuración de todos los planes.
+ *
+ * NOTA: estos valores son solo para display estático (badges, indicadores).
+ * La fuente de verdad real de límites/precios vive en el backend
+ * (PlanConfigService, configurable por env) — ver usePlanCatalog().
+ * Free replica los límites de Basic; solo dura TRIAL_DAYS (ver backend).
  */
 export const PLANS: Record<PlanNumber, PlanInfo> = {
-  1: { 
-    number: 1, 
-    name: 'free', 
-    displayName: 'Free', 
+  1: {
+    number: 1,
+    name: 'free',
+    displayName: 'Free',
     maxBranches: 1,
-    maxUsersPerBranch: 3 
+    maxUsers: 3
   },
-  2: { 
-    number: 2, 
-    name: 'basic', 
-    displayName: 'Basic', 
+  2: {
+    number: 2,
+    name: 'basic',
+    displayName: 'Basic',
     maxBranches: 1,
-    maxUsersPerBranch: 3 
+    maxUsers: 3
   },
-  3: { 
-    number: 3, 
-    name: 'pro', 
-    displayName: 'Pro', 
-    maxBranches: 5,
-    maxUsersPerBranch: 10 
+  3: {
+    number: 3,
+    name: 'pro',
+    displayName: 'Pro',
+    maxBranches: 3,
+    maxUsers: 20
   },
-  4: { 
-    number: 4, 
-    name: 'enterprise', 
-    displayName: 'Enterprise', 
+  4: {
+    number: 4,
+    name: 'enterprise',
+    displayName: 'Enterprise',
     maxBranches: Infinity,
-    maxUsersPerBranch: Infinity 
+    maxUsers: Infinity
   },
 };
 
@@ -85,12 +90,12 @@ export function getMaxBranches(planNumber: number): number {
 }
 
 /**
- * Obtiene el máximo de usuarios por sede para un plan
+ * Obtiene el máximo de usuarios del negocio para un plan (todas las sedes)
  * @param planNumber - Número del plan (1-4)
- * @returns Número máximo de usuarios por sede
+ * @returns Número máximo de usuarios del negocio
  */
-export function getMaxUsersPerBranch(planNumber: number): number {
-  return PLANS[planNumber as PlanNumber]?.maxUsersPerBranch || 3;
+export function getMaxUsers(planNumber: number): number {
+  return PLANS[planNumber as PlanNumber]?.maxUsers || 3;
 }
 
 /**
@@ -147,21 +152,11 @@ export function getBranchMode(branchCount: number): 'SINGLE' | 'MULTI' {
 }
 
 /**
- * Pricing for each plan (COP)
- * TODO: Move to backend config when payment integration is implemented
- */
-export const PLAN_PRICES: Record<Exclude<PlanNumber, 1>, { monthly: number; currency: string }> = {
-  2: { monthly: 89000, currency: 'COP' },
-  3: { monthly: 189000, currency: 'COP' },
-  4: { monthly: 389000, currency: 'COP' },
-};
-
-/**
  * Features included in each paid plan (for display in upgrade modal)
  */
 export const PLAN_FEATURES: Record<Exclude<PlanNumber, 1>, string[]> = {
   2: ['1 sede', 'Hasta 3 usuarios', 'Gestión de pedidos', 'Catálogo básico'],
-  3: ['Hasta 5 sedes', 'Hasta 10 usuarios por sede', 'Métricas avanzadas', 'Soporte prioritario'],
+  3: ['Hasta 3 sedes', 'Hasta 20 usuarios', 'Métricas avanzadas', 'Soporte prioritario'],
   4: ['Sedes ilimitadas', 'Usuarios ilimitados', 'Todas las métricas', 'Soporte dedicado'],
 };
 

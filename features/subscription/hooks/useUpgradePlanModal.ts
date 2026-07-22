@@ -67,9 +67,18 @@ export function useUpgradePlanModal() {
 
 /**
  * Lightweight hook for any component that needs to imperatively open the
- * upgrade modal (e.g. FreePlanBanner CTA, a locked-feature gate).
+ * upgrade modal (e.g. TrialBanner CTA, a locked-feature gate).
  * Does NOT register the auto-show effect.
  */
 export function useOpenUpgradePlanModal(): () => void {
   return useUpgradePlanModalStore((state) => state.openModal);
+}
+
+/**
+ * Imperative opener for use OUTSIDE React components (e.g. the Axios
+ * response interceptor in services/api.service.ts, which runs before any
+ * component tree exists). Prefer useOpenUpgradePlanModal inside components.
+ */
+export function openUpgradePlanModal(): void {
+  useUpgradePlanModalStore.getState().openModal();
 }

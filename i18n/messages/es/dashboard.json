@@ -100,9 +100,12 @@
       "description": "Para ver el dashboard, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
     }
   },
-  "freePlanBanner": {
-    "title": "Estás en el plan gratuito",
-    "subtitle": "Actualizá tu plan para desbloquear funciones avanzadas",
+  "trialBanner": {
+    "daysRemaining": "Te quedan {days} días de prueba gratis",
+    "oneDayRemaining": "Te queda 1 día de prueba gratis",
+    "lastDay": "Tu prueba gratis termina hoy",
+    "expired": "Tu prueba gratis terminó",
+    "subtitle": "Elegí un plan para seguir usando ToGo sin interrupciones",
     "cta": "Elegir plan"
   }
 }

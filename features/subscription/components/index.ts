@@ -1,2 +1,2 @@
-export { FreePlanBanner } from "./FreePlanBanner";
 export { UpgradePlanModal } from "./UpgradePlanModal";
+export { TrialBanner } from "./TrialBanner";

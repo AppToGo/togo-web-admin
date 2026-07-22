@@ -20,7 +20,7 @@ import { DueDateBadge } from "./DueDateBadge";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PlanBadge } from "./PlanBadge";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
-import { getPlanMaxBranches } from "../constants/payment-status";
+import { getPlanMaxBranches, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 
 interface BusinessTableProps {
   businesses: BusinessWithSubscription[];
@@ -210,8 +210,9 @@ function BranchesCount({ count, plan, override }: BranchesCountProps) {
   }
   
   const maxBranches = override ?? getPlanMaxBranches(plan ?? 1);
-  const isNearLimit = count >= maxBranches * 0.8;
-  const isOverLimit = count > maxBranches;
+  const isUnlimited = maxBranches >= UNLIMITED_PLAN_LIMIT;
+  const isNearLimit = !isUnlimited && count >= maxBranches * 0.8;
+  const isOverLimit = !isUnlimited && count > maxBranches;
 
   return (
     <div className="flex flex-col">
@@ -221,7 +222,7 @@ function BranchesCount({ count, plan, override }: BranchesCountProps) {
           isOverLimit ? "text-red-600" : isNearLimit ? "text-amber-600" : "text-slate-700"
         )}
       >
-        {count} / {maxBranches}
+        {count} / {isUnlimited ? "∞" : maxBranches}
       </span>
       {override && (
         <span className="text-xs text-purple-600">Personalizado</span>

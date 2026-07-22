@@ -39,11 +39,20 @@ export const PAYMENT_STATUS_CONFIG = {
   },
 } as const;
 
+/**
+ * Sentinel numérico para "sin límite" (Enterprise) — debe coincidir con
+ * UNLIMITED_PLAN_LIMIT en features/subscription/services/subscription.service.ts
+ * y UNLIMITED en api-togo/src/plan/plan-config.service.ts.
+ */
+export const UNLIMITED_PLAN_LIMIT = 999999;
+
+// NOTA: estos límites son solo para display en el panel admin. La fuente de
+// verdad real vive en el backend (PlanConfigService, configurable por env).
 export const PLAN_OPTIONS = [
   { value: 1, label: 'Free', maxBranches: 1 },
-  { value: 2, label: 'Basic', maxBranches: 3 },
-  { value: 3, label: 'Pro', maxBranches: 10 },
-  { value: 4, label: 'Enterprise', maxBranches: 100 },
+  { value: 2, label: 'Basic', maxBranches: 1 },
+  { value: 3, label: 'Pro', maxBranches: 3 },
+  { value: 4, label: 'Enterprise', maxBranches: UNLIMITED_PLAN_LIMIT },
 ] as const;
 
 export const PAYMENT_METHODS = [

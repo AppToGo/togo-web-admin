@@ -16,6 +16,8 @@ export interface AuthenticatedUser {
   businessName: string | null;
   operatorProfileId: string | null;
   subscriptionPlan?: number;
+  /** Fecha límite del trial Free (ISO string). Solo presente si el negocio está en plan Free. */
+  trialEndsAt?: string | null;
 }
 
 // Login Request
@@ -123,6 +125,7 @@ export interface SessionBusiness {
   name: string;
   plan: string;
   maxBranches: number;
+  trialEndsAt?: string | null;
 }
 
 /**

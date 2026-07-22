@@ -20,6 +20,7 @@ import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
 } from "axios";
+import { toast } from "sonner";
 import { APP_CONFIG } from "@/config/app.config";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
@@ -29,6 +30,9 @@ import {
   clearGlobalRefreshState
 } from "@/services/auth-sync.service";
 import { forceLogout } from "@/services/session.service";
+// Import directly from the hook file (not the feature barrel) to avoid
+// pulling UI components (dialogs, icons) into this low-level HTTP client.
+import { openUpgradePlanModal } from "@/features/subscription/hooks/useUpgradePlanModal";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -125,6 +129,17 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    // Trial Free expirado: el backend bloquea la escritura con 402 + code TRIAL_EXPIRED.
+    // Avisamos y abrimos el modal de upgrade para que el usuario pueda salir del bloqueo.
+    if (error.response?.status === 402) {
+      const data = error.response.data as { code?: string; message?: string };
+      if (data?.code === "TRIAL_EXPIRED") {
+        toast.error(data.message || "Tu período de prueba terminó. Elige un plan para continuar.");
+        openUpgradePlanModal();
+      }
+      return Promise.reject(error);
+    }
 
     // If error is not 401, reject immediately
     if (error.response?.status !== 401) {
