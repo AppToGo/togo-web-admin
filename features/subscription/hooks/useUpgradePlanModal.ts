@@ -2,10 +2,22 @@
 
 import { useEffect } from "react";
 import { create } from "zustand";
+import { toast } from "sonner";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useTourStore } from "@/stores/tour.store";
+import {
+  TRIAL_EXPIRED_EVENT,
+  type TrialExpiredEventDetail,
+  PAYMENT_OVERDUE_EVENT,
+  type PaymentOverdueEventDetail,
+} from "@/services/session.service";
 
 const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
+
+// Evita apilar toasts si varios requests paralelos 402an en el mismo tick
+// (ej: KPIs + métricas se disparan juntos al cargar el dashboard).
+const TRIAL_EXPIRED_TOAST_ID = "trial-expired";
+const PAYMENT_OVERDUE_TOAST_ID = "payment-overdue";
 
 // Global store — shared across the entire component tree so any component
 // can open the modal without needing to prop-drill or duplicate state.
@@ -62,12 +74,48 @@ export function useUpgradePlanModal() {
     openModal();
   }, [user?.userId, user?.subscriptionPlan, user?.businessId, completedTours, openModal]);
 
+  // Reacciona al evento TRIAL_EXPIRED_EVENT (disparado por el interceptor de Axios
+  // en services/api.service.ts al recibir un 402). El mismo patrón que
+  // SESSION_LOGOUT_EVENT/AuthProvider: el cliente HTTP solo señaliza, esta capa
+  // decide la UI. toast usa un id fijo para no apilar duplicados si varios
+  // requests paralelos 402an en el mismo tick.
+  useEffect(() => {
+    function handleTrialExpired(event: Event) {
+      const { message } = (event as CustomEvent<TrialExpiredEventDetail>).detail;
+      toast.error(
+        message || "Tu período de prueba terminó. Elige un plan para continuar.",
+        { id: TRIAL_EXPIRED_TOAST_ID },
+      );
+      openModal();
+    }
+
+    window.addEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
+    return () => window.removeEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
+  }, [openModal]);
+
+  // Reacciona a PAYMENT_OVERDUE_EVENT (plan pago con pago vencido más allá
+  // del período de gracia). A diferencia de TRIAL_EXPIRED, NO abre el modal
+  // de upgrade — el negocio no necesita cambiar de plan, necesita pagar
+  // (flujo manual). Solo avisa.
+  useEffect(() => {
+    function handlePaymentOverdue(event: Event) {
+      const { message } = (event as CustomEvent<PaymentOverdueEventDetail>).detail;
+      toast.error(
+        message || "Tu pago está vencido. Regulariza tu suscripción para seguir creando y editando.",
+        { id: PAYMENT_OVERDUE_TOAST_ID },
+      );
+    }
+
+    window.addEventListener(PAYMENT_OVERDUE_EVENT, handlePaymentOverdue);
+    return () => window.removeEventListener(PAYMENT_OVERDUE_EVENT, handlePaymentOverdue);
+  }, []);
+
   return { open, closeModal };
 }
 
 /**
  * Lightweight hook for any component that needs to imperatively open the
- * upgrade modal (e.g. FreePlanBanner CTA, a locked-feature gate).
+ * upgrade modal (e.g. TrialBanner CTA, a locked-feature gate).
  * Does NOT register the auto-show effect.
  */
 export function useOpenUpgradePlanModal(): () => void {

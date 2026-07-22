@@ -28,7 +28,7 @@ import {
   startGlobalRefresh,
   clearGlobalRefreshState
 } from "@/services/auth-sync.service";
-import { forceLogout } from "@/services/session.service";
+import { forceLogout, notifyTrialExpired, notifyPaymentOverdue } from "@/services/session.service";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -125,6 +125,21 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    // Trial Free expirado o pago vencido (plan pago): el backend bloquea la
+    // escritura con 402 + un code distinto según el motivo. Solo señalizamos
+    // el evento correspondiente (mismo patrón que forceLogout/SESSION_LOGOUT_EVENT)
+    // — decidir qué mostrar (modal, toast, deduplicación) es responsabilidad
+    // de quien escucha, no de este cliente HTTP de bajo nivel.
+    if (error.response?.status === 402) {
+      const data = error.response.data as { code?: string; message?: string };
+      if (data?.code === "TRIAL_EXPIRED") {
+        notifyTrialExpired(data.message);
+      } else if (data?.code === "PAYMENT_OVERDUE") {
+        notifyPaymentOverdue(data.message);
+      }
+      return Promise.reject(error);
+    }
 
     // If error is not 401, reject immediately
     if (error.response?.status !== 401) {

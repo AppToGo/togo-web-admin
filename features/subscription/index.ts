@@ -1,2 +1,7 @@
-export { FreePlanBanner, UpgradePlanModal } from "./components";
-export { useUpgradePlan, useUpgradePlanModal, useOpenUpgradePlanModal } from "./hooks";
+export { UpgradePlanModal, TrialBanner } from "./components";
+export {
+  useUpgradePlan,
+  useUpgradePlanModal,
+  useOpenUpgradePlanModal,
+  usePlanCatalog,
+} from "./hooks";
