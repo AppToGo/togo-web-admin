@@ -284,6 +284,12 @@ export function useCreateGlobalImportJob() {
   });
 }
 
+const GLOBAL_IMPORT_POLLING_STATUSES = new Set(["PENDING", "PROCESSING", "CONFIRMING"]);
+
+// Deja de pollear después de 5 minutos para no pollear para siempre un job
+// atascado (mismo fix ya aplicado en el hook hermano, features/products/import/hooks/useImportJob.ts).
+const GLOBAL_IMPORT_POLLING_TIMEOUT_MS = 5 * 60 * 1000;
+
 /**
  * Hook to poll a global import job until it's ready for review
  * Automatically polls every 2s when status is PENDING or PROCESSING
@@ -293,10 +299,19 @@ export function useGlobalImportJob(jobId: string | null, enabled: boolean) {
     queryKey: jobId ? adminCatalogKeys.importJob(jobId) : ["admin-catalog", "import-job", "none"],
     queryFn: () => adminCatalogService.getGlobalImportJob(jobId!),
     enabled: !!jobId && enabled,
-    refetchInterval: (query) =>
-      ["PENDING", "PROCESSING"].includes(query.state.data?.status ?? "")
-        ? 2000
-        : false,
+    // CONFIRMING se incluye porque confirmJob() ahora encola la creación de
+    // productos en un worker async y responde de inmediato — sin esto, la UI
+    // no se enteraría cuando el job realmente termine (ver useConfirmGlobalImportJob).
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (!status || !GLOBAL_IMPORT_POLLING_STATUSES.has(status)) return false;
+      const referenceTimestamp = query.state.data?.startedAt ?? query.state.data?.createdAt;
+      if (referenceTimestamp) {
+        const elapsed = Date.now() - new Date(referenceTimestamp).getTime();
+        if (elapsed > GLOBAL_IMPORT_POLLING_TIMEOUT_MS) return false;
+      }
+      return 2000;
+    },
   });
 }
 
@@ -373,6 +388,12 @@ export function useDeleteGlobalImportItem() {
 
 /**
  * Hook to confirm a global import job with selected item IDs
+ *
+ * confirmJob() en el backend ahora solo valida + encola la creación de
+ * productos en un worker async — la respuesta siempre es el job en estado
+ * CONFIRMING, nunca el resultado final. Por eso ya no invalidamos products()/
+ * stats() acá (todavía no se creó nada): eso pasa en el efecto de ResultsStep
+ * cuando el polling de useGlobalImportJob detecta que el job llegó a COMPLETED.
  */
 export function useConfirmGlobalImportJob() {
   const queryClient = useQueryClient();
@@ -381,12 +402,12 @@ export function useConfirmGlobalImportJob() {
     mutationFn: ({ jobId, itemIds }: { jobId: string; itemIds: string[] }) =>
       adminCatalogService.confirmGlobalImportJob(jobId, itemIds),
     onSuccess: (confirmedJob: ImportJobDto) => {
+      // Escribe el snapshot (CONFIRMING) de una vez en la cache para que
+      // ResultsStep no muestre un parpadeo de "sin datos" antes del primer poll.
       queryClient.setQueryData<ImportJobDto>(
         adminCatalogKeys.importJob(confirmedJob.id),
         confirmedJob
       );
-      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.products() });
-      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.stats() });
     },
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -19,7 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useImportJob, importJobKeys } from "../hooks/useImportJob";
 import { useUploadImportFile } from "../hooks/useImportMutations";
-import { confirmImportJob } from "../services/import.service";
+import { confirmImportJob, getImportJob } from "../services/import.service";
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
@@ -122,24 +122,60 @@ export function ImportPageClient({
     mutationFn: ({ jobId, itemIds, branchSelectionsByItem }: { jobId: string; itemIds: string[]; branchSelectionsByItem: Record<string, string[]> }) =>
       confirmImportJob(businessId, jobId, { itemIds, branchSelectionsByItem }),
     onSuccess: (_data, { jobId }) => {
+      // confirmJob() ahora solo encola la creación (responde con CONFIRMING,
+      // nada creado todavía) — invalidar el catálogo de productos/categorías
+      // acá sería prematuro. Esa invalidación se dispara en el useEffect de
+      // abajo, cuando el polling detecta que el job realmente llegó a COMPLETED.
       queryClient.invalidateQueries({
         queryKey: importJobKeys.job(businessId, jobId),
       });
       queryClient.invalidateQueries({
         queryKey: importJobKeys.jobs(businessId),
       });
-      queryClient.invalidateQueries({
-        queryKey: ["catalog", "products", businessId],
-      });
-      // Invalidar BusinessCategories para incluir las auto-creadas por el backend al confirmar
-      queryClient.invalidateQueries({
-        queryKey: catalogKeys.categories(businessId),
-      });
     },
-    onError: (err: unknown) => {
-      const message =
-        err instanceof Error ? err.message : t("error.confirmFailed");
-      toast.error(message);
+    onError: async (err: unknown, { jobId }) => {
+      // Un error acá (ej. timeout del cliente, o un 409 por un reintento/doble
+      // click) no significa que el import haya fallado de verdad: el job puede
+      // seguir procesándose (o ya haber terminado) en el backend. Antes de
+      // mostrar un error al usuario, refrescamos el estado real del job.
+      //
+      // Usamos queryClient.fetchQuery (no una llamada suelta al servicio) para
+      // participar en la deduplicación de react-query — si el polling en
+      // background ya tiene un fetch en vuelo para este mismo job, reutiliza
+      // esa respuesta en vez de disparar un segundo GET que podría resolver
+      // fuera de orden y pisar un estado más fresco.
+      //
+      // staleTime: 0 es obligatorio acá — sin esto, fetchQuery puede devolver
+      // el snapshot cacheado (ej. READY_FOR_REVIEW de antes de confirmar) sin
+      // ir a la red si todavía está "fresco" según el staleTime global (60s),
+      // que es el caso común (el usuario suele confirmar segundos después de
+      // revisar). Eso anularía por completo el propósito de esta reconciliación.
+      try {
+        const freshJob = await queryClient.fetchQuery({
+          queryKey: importJobKeys.job(businessId, jobId),
+          queryFn: () => getImportJob(businessId, jobId),
+          staleTime: 0,
+        });
+        if (freshJob.status === "CONFIRMING" || freshJob.status === "COMPLETED") {
+          // El job sí avanzó pese al error del request original — no es un
+          // error real, el polling ya refleja (o reflejará) el estado correcto.
+          return;
+        }
+        // FAILED, o el job nunca llegó a encolarse (sigue READY_FOR_REVIEW) —
+        // en ambos casos el intento de confirmar genuinamente no funcionó.
+        const message =
+          freshJob.status === "FAILED"
+            ? (freshJob.errorMessage ?? t("error.confirmFailed"))
+            : err instanceof Error
+              ? err.message
+              : t("error.confirmFailed");
+        toast.error(message);
+      } catch {
+        // Ni siquiera pudimos confirmar el estado real del job: ahí sí avisamos.
+        const message =
+          err instanceof Error ? err.message : t("error.confirmFailed");
+        toast.error(message);
+      }
     },
   });
 
@@ -149,6 +185,19 @@ export function ImportPageClient({
   const isCompleted = jobData?.status === "COMPLETED";
   const isFailed = jobData?.status === "FAILED";
   const isJobConfirming = jobData?.status === "CONFIRMING";
+
+  useEffect(() => {
+    if (isCompleted) {
+      queryClient.invalidateQueries({
+        queryKey: ["catalog", "products", businessId],
+      });
+      // Invalidar BusinessCategories para incluir las auto-creadas por el backend al confirmar
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.categories(businessId),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo debe reaccionar a la transición a COMPLETED, no a cambios de queryClient/businessId
+  }, [isCompleted]);
 
   useEffect(() => {
     if (currentJobId && jobData) {
@@ -204,8 +253,15 @@ export function ImportPageClient({
     });
   };
 
+  // Lock síncrono adicional al `disabled` reactivo del botón: un doble-click
+  // muy rápido puede disparar dos `onClick` antes de que React re-renderice
+  // con `confirmMutation.isPending` en true, así que blindamos con un ref.
+  const isConfirmingRef = useRef(false);
+
   const handleConfirm = () => {
+    if (isConfirmingRef.current) return;
     if (!currentJobId || selectedItemIds.length === 0) return;
+    isConfirmingRef.current = true;
     confirmMutation.mutate(
       {
         jobId: currentJobId,
@@ -214,7 +270,12 @@ export function ImportPageClient({
           selectedItemIds.map((id) => [id, branchSelections[id] ?? activeBranchIds])
         ),
       },
-      { onSuccess: () => setStep("confirm") }
+      {
+        onSuccess: () => setStep("confirm"),
+        onSettled: () => {
+          isConfirmingRef.current = false;
+        },
+      }
     );
   };
 
