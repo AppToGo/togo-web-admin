@@ -293,8 +293,11 @@ export function useGlobalImportJob(jobId: string | null, enabled: boolean) {
     queryKey: jobId ? adminCatalogKeys.importJob(jobId) : ["admin-catalog", "import-job", "none"],
     queryFn: () => adminCatalogService.getGlobalImportJob(jobId!),
     enabled: !!jobId && enabled,
+    // CONFIRMING se incluye porque confirmJob() ahora encola la creación de
+    // productos en un worker async y responde de inmediato — sin esto, la UI
+    // no se enteraría cuando el job realmente termine (ver useConfirmGlobalImportJob).
     refetchInterval: (query) =>
-      ["PENDING", "PROCESSING"].includes(query.state.data?.status ?? "")
+      ["PENDING", "PROCESSING", "CONFIRMING"].includes(query.state.data?.status ?? "")
         ? 2000
         : false,
   });
@@ -373,6 +376,12 @@ export function useDeleteGlobalImportItem() {
 
 /**
  * Hook to confirm a global import job with selected item IDs
+ *
+ * confirmJob() en el backend ahora solo valida + encola la creación de
+ * productos en un worker async — la respuesta siempre es el job en estado
+ * CONFIRMING, nunca el resultado final. Por eso ya no invalidamos products()/
+ * stats() acá (todavía no se creó nada): eso pasa en el efecto de ResultsStep
+ * cuando el polling de useGlobalImportJob detecta que el job llegó a COMPLETED.
  */
 export function useConfirmGlobalImportJob() {
   const queryClient = useQueryClient();
@@ -381,12 +390,12 @@ export function useConfirmGlobalImportJob() {
     mutationFn: ({ jobId, itemIds }: { jobId: string; itemIds: string[] }) =>
       adminCatalogService.confirmGlobalImportJob(jobId, itemIds),
     onSuccess: (confirmedJob: ImportJobDto) => {
+      // Escribe el snapshot (CONFIRMING) de una vez en la cache para que
+      // ResultsStep no muestre un parpadeo de "sin datos" antes del primer poll.
       queryClient.setQueryData<ImportJobDto>(
         adminCatalogKeys.importJob(confirmedJob.id),
         confirmedJob
       );
-      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.products() });
-      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.stats() });
     },
   });
 }

@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -38,7 +39,9 @@ import {
   useGlobalImportJob,
   useUpdateGlobalImportItem,
   useConfirmGlobalImportJob,
+  adminCatalogKeys,
 } from "@/features/admin/catalog/hooks";
+import * as adminCatalogService from "@/features/admin/catalog/services/admin-catalog.service";
 import { ImportItemCard } from "@/features/admin/catalog/components/ImportItemCard";
 import { ImportItemEditForm } from "@/features/admin/catalog/components/ImportItemEditForm";
 import type {
@@ -263,7 +266,7 @@ function ProcessingStep({ jobId, onReady, onFailed }: ProcessingStepProps) {
 
 interface ReviewStepProps {
   jobId: string;
-  onConfirmed: (job: ImportJobDto) => void;
+  onConfirmed: () => void;
   onBack: () => void;
 }
 
@@ -318,15 +321,30 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
       return;
     }
     try {
-      const confirmedJob = await confirmJob.mutateAsync({
+      await confirmJob.mutateAsync({
         jobId,
         itemIds: Array.from(localSelectedIds),
       });
-      onConfirmed(confirmedJob);
+      onConfirmed();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : t("errors.importProducts");
-      toast.error(message);
+      // Un error acá (timeout, 409 por doble-click) no significa que el
+      // import haya fallado de verdad: el job puede seguir procesándose (o
+      // ya haber terminado) en el backend. Reconciliamos contra el estado
+      // real antes de decidir si mostrar un error.
+      try {
+        const freshJob = await adminCatalogService.getGlobalImportJob(jobId);
+        if (freshJob.status === "FAILED") {
+          toast.error(freshJob.errorMessage ?? t("errors.importProducts"));
+          return;
+        }
+        // CONFIRMING/COMPLETED: no es un error real, seguimos a resultados
+        // y dejamos que el polling de ResultsStep refleje el estado real.
+        onConfirmed();
+      } catch {
+        const message =
+          err instanceof Error ? err.message : t("errors.importProducts");
+        toast.error(message);
+      }
     }
   };
 
@@ -469,14 +487,73 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
 // ============================================================================
 
 interface ResultsStepProps {
-  job: ImportJobDto;
+  jobId: string;
   onNewImport: () => void;
 }
 
-function ResultsStep({ job, onNewImport }: ResultsStepProps) {
+function ResultsStep({ jobId, onNewImport }: ResultsStepProps) {
   const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const queryClient = useQueryClient();
+  // confirmJob() ahora encola la creación de productos en un worker async —
+  // seguimos haciendo polling (vía useGlobalImportJob) hasta que el job
+  // realmente termine, en vez de asumir que la respuesta de confirmar ya es
+  // el resultado final.
+  const { data: job } = useGlobalImportJob(jobId, true);
+
+  useEffect(() => {
+    if (job?.status === "COMPLETED") {
+      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.products() });
+      queryClient.invalidateQueries({ queryKey: adminCatalogKeys.stats() });
+    }
+  }, [job?.status, queryClient]);
+
+  if (!job || job.status === "CONFIRMING") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("importCompleted")}</CardTitle>
+          <CardDescription>{t("importingDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent className="py-12">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-14 h-14 animate-spin text-indigo-600" />
+            <p className="text-lg font-medium text-slate-700">
+              {t("importingProducts")}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (job.status === "FAILED") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("importJobFailed")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Alert variant="destructive">
+            <AlertCircle className="w-4 h-4" />
+            <AlertDescription>
+              {job.errorMessage ?? t("someProductsFailed")}
+            </AlertDescription>
+          </Alert>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin/global-products")}
+            >
+              {t("viewCatalog")}
+            </Button>
+            <Button onClick={onNewImport}>{t("newImport")}</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const errorItems = job.items.filter((item) => item.importError !== null);
 
@@ -569,7 +646,6 @@ export default function ImportGlobalProductsPage() {
 
   const [currentStep, setCurrentStep] = useState<ImportStep>("upload");
   const [jobId, setJobId] = useState<string | null>(null);
-  const [confirmedJob, setConfirmedJob] = useState<ImportJobDto | null>(null);
 
   const handleJobCreated = useCallback((job: ImportJobDto) => {
     setJobId(job.id);
@@ -590,15 +666,13 @@ export default function ImportGlobalProductsPage() {
     setJobId(null);
   }, [t]);
 
-  const handleConfirmed = useCallback((job: ImportJobDto) => {
-    setConfirmedJob(job);
+  const handleConfirmed = useCallback(() => {
     setCurrentStep("results");
   }, []);
 
   const handleNewImport = useCallback(() => {
     setCurrentStep("upload");
     setJobId(null);
-    setConfirmedJob(null);
   }, []);
 
   if (!isSuperAdmin) {
@@ -662,8 +736,8 @@ export default function ImportGlobalProductsPage() {
           />
         )}
 
-        {currentStep === "results" && confirmedJob && (
-          <ResultsStep job={confirmedJob} onNewImport={handleNewImport} />
+        {currentStep === "results" && jobId && (
+          <ResultsStep jobId={jobId} onNewImport={handleNewImport} />
         )}
       </div>
     </DashboardLayout>

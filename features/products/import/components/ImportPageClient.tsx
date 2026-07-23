@@ -140,16 +140,32 @@ export function ImportPageClient({
       // Un error acá (ej. timeout del cliente, o un 409 por un reintento/doble
       // click) no significa que el import haya fallado de verdad: el job puede
       // seguir procesándose (o ya haber terminado) en el backend. Antes de
-      // mostrar un error al usuario, refrescamos el estado real del job y solo
-      // avisamos si efectivamente quedó en FAILED.
+      // mostrar un error al usuario, refrescamos el estado real del job.
+      //
+      // Usamos queryClient.fetchQuery (no una llamada suelta al servicio) para
+      // participar en la deduplicación de react-query — si el polling en
+      // background ya tiene un fetch en vuelo para este mismo job, reutiliza
+      // esa respuesta en vez de disparar un segundo GET que podría resolver
+      // fuera de orden y pisar un estado más fresco.
       try {
-        const freshJob = await getImportJob(businessId, jobId);
-        queryClient.setQueryData(importJobKeys.job(businessId, jobId), freshJob);
-        if (freshJob.status === "FAILED") {
-          toast.error(freshJob.errorMessage ?? t("error.confirmFailed"));
+        const freshJob = await queryClient.fetchQuery({
+          queryKey: importJobKeys.job(businessId, jobId),
+          queryFn: () => getImportJob(businessId, jobId),
+        });
+        if (freshJob.status === "CONFIRMING" || freshJob.status === "COMPLETED") {
+          // El job sí avanzó pese al error del request original — no es un
+          // error real, el polling ya refleja (o reflejará) el estado correcto.
+          return;
         }
-        // CONFIRMING / COMPLETED / READY_FOR_REVIEW: no es un error real, el
-        // polling (o el setQueryData de arriba) ya refleja el estado correcto.
+        // FAILED, o el job nunca llegó a encolarse (sigue READY_FOR_REVIEW) —
+        // en ambos casos el intento de confirmar genuinamente no funcionó.
+        const message =
+          freshJob.status === "FAILED"
+            ? (freshJob.errorMessage ?? t("error.confirmFailed"))
+            : err instanceof Error
+              ? err.message
+              : t("error.confirmFailed");
+        toast.error(message);
       } catch {
         // Ni siquiera pudimos confirmar el estado real del job: ahí sí avisamos.
         const message =
