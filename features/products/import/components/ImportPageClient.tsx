@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -19,7 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useImportJob, importJobKeys } from "../hooks/useImportJob";
 import { useUploadImportFile } from "../hooks/useImportMutations";
-import { confirmImportJob } from "../services/import.service";
+import { confirmImportJob, getImportJob } from "../services/import.service";
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
@@ -136,10 +136,26 @@ export function ImportPageClient({
         queryKey: catalogKeys.categories(businessId),
       });
     },
-    onError: (err: unknown) => {
-      const message =
-        err instanceof Error ? err.message : t("error.confirmFailed");
-      toast.error(message);
+    onError: async (err: unknown, { jobId }) => {
+      // Un error acá (ej. timeout del cliente, o un 409 por un reintento/doble
+      // click) no significa que el import haya fallado de verdad: el job puede
+      // seguir procesándose (o ya haber terminado) en el backend. Antes de
+      // mostrar un error al usuario, refrescamos el estado real del job y solo
+      // avisamos si efectivamente quedó en FAILED.
+      try {
+        const freshJob = await getImportJob(businessId, jobId);
+        queryClient.setQueryData(importJobKeys.job(businessId, jobId), freshJob);
+        if (freshJob.status === "FAILED") {
+          toast.error(freshJob.errorMessage ?? t("error.confirmFailed"));
+        }
+        // CONFIRMING / COMPLETED / READY_FOR_REVIEW: no es un error real, el
+        // polling (o el setQueryData de arriba) ya refleja el estado correcto.
+      } catch {
+        // Ni siquiera pudimos confirmar el estado real del job: ahí sí avisamos.
+        const message =
+          err instanceof Error ? err.message : t("error.confirmFailed");
+        toast.error(message);
+      }
     },
   });
 
@@ -204,8 +220,15 @@ export function ImportPageClient({
     });
   };
 
+  // Lock síncrono adicional al `disabled` reactivo del botón: un doble-click
+  // muy rápido puede disparar dos `onClick` antes de que React re-renderice
+  // con `confirmMutation.isPending` en true, así que blindamos con un ref.
+  const isConfirmingRef = useRef(false);
+
   const handleConfirm = () => {
+    if (isConfirmingRef.current) return;
     if (!currentJobId || selectedItemIds.length === 0) return;
+    isConfirmingRef.current = true;
     confirmMutation.mutate(
       {
         jobId: currentJobId,
@@ -214,7 +237,12 @@ export function ImportPageClient({
           selectedItemIds.map((id) => [id, branchSelections[id] ?? activeBranchIds])
         ),
       },
-      { onSuccess: () => setStep("confirm") }
+      {
+        onSuccess: () => setStep("confirm"),
+        onSettled: () => {
+          isConfirmingRef.current = false;
+        },
+      }
     );
   };
 
