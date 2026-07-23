@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -316,11 +316,18 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
     setLocalSelectedIds(new Set());
   };
 
+  // Lock síncrono adicional al `disabled` reactivo del botón (mismo patrón
+  // que ImportPageClient.tsx): un doble-click muy rápido puede disparar dos
+  // `onClick` antes de que React re-renderice con `confirmJob.isPending` en true.
+  const isConfirmingRef = useRef(false);
+
   const handleConfirm = async () => {
+    if (isConfirmingRef.current) return;
     if (selectedCount === 0) {
       toast.error(t("noItemsSelected"));
       return;
     }
+    isConfirmingRef.current = true;
     try {
       await confirmJob.mutateAsync({
         jobId,
@@ -345,18 +352,30 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
           queryFn: () => adminCatalogService.getGlobalImportJob(jobId),
           staleTime: 0,
         });
-        if (freshJob.status === "FAILED") {
-          toast.error(freshJob.errorMessage ?? t("errors.importProducts"));
+        if (freshJob.status === "CONFIRMING" || freshJob.status === "COMPLETED") {
+          // El job sí avanzó pese al error del request original — no es un
+          // error real, dejamos que el polling de ResultsStep refleje el
+          // estado correcto.
+          onConfirmed();
           return;
         }
-        // CONFIRMING/COMPLETED: no es un error real, seguimos a resultados
-        // y dejamos que el polling de ResultsStep refleje el estado real.
-        onConfirmed();
+        // FAILED, o el job nunca llegó a encolarse (sigue READY_FOR_REVIEW,
+        // ej. el backend lo revirtió porque falló el encolado) — en ambos
+        // casos el intento de confirmar genuinamente no funcionó.
+        const message =
+          freshJob.status === "FAILED"
+            ? (freshJob.errorMessage ?? t("errors.importProducts"))
+            : err instanceof Error
+              ? err.message
+              : t("errors.importProducts");
+        toast.error(message);
       } catch {
         const message =
           err instanceof Error ? err.message : t("errors.importProducts");
         toast.error(message);
       }
+    } finally {
+      isConfirmingRef.current = false;
     }
   };
 
