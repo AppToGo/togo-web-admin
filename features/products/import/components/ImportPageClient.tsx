@@ -147,10 +147,17 @@ export function ImportPageClient({
       // background ya tiene un fetch en vuelo para este mismo job, reutiliza
       // esa respuesta en vez de disparar un segundo GET que podría resolver
       // fuera de orden y pisar un estado más fresco.
+      //
+      // staleTime: 0 es obligatorio acá — sin esto, fetchQuery puede devolver
+      // el snapshot cacheado (ej. READY_FOR_REVIEW de antes de confirmar) sin
+      // ir a la red si todavía está "fresco" según el staleTime global (60s),
+      // que es el caso común (el usuario suele confirmar segundos después de
+      // revisar). Eso anularía por completo el propósito de esta reconciliación.
       try {
         const freshJob = await queryClient.fetchQuery({
           queryKey: importJobKeys.job(businessId, jobId),
           queryFn: () => getImportJob(businessId, jobId),
+          staleTime: 0,
         });
         if (freshJob.status === "CONFIRMING" || freshJob.status === "COMPLETED") {
           // El job sí avanzó pese al error del request original — no es un

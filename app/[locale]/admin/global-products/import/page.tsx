@@ -273,6 +273,7 @@ interface ReviewStepProps {
 function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
   const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
+  const queryClient = useQueryClient();
   const { data: job } = useGlobalImportJob(jobId, true);
   const updateItem = useUpdateGlobalImportItem();
   const confirmJob = useConfirmGlobalImportJob();
@@ -331,8 +332,19 @@ function ReviewStep({ jobId, onConfirmed, onBack }: ReviewStepProps) {
       // import haya fallado de verdad: el job puede seguir procesándose (o
       // ya haber terminado) en el backend. Reconciliamos contra el estado
       // real antes de decidir si mostrar un error.
+      //
+      // Usamos fetchQuery (staleTime: 0, para forzar red) en vez de una
+      // llamada suelta al servicio, y escribimos el resultado en la MISMA
+      // query key que lee ResultsStep — sin esto, ResultsStep podía montar y
+      // leer el snapshot viejo (READY_FOR_REVIEW) todavía "fresco" en cache,
+      // reintroduciendo el bug de "0 importados" que este flujo async fue
+      // pensado para resolver.
       try {
-        const freshJob = await adminCatalogService.getGlobalImportJob(jobId);
+        const freshJob = await queryClient.fetchQuery({
+          queryKey: adminCatalogKeys.importJob(jobId),
+          queryFn: () => adminCatalogService.getGlobalImportJob(jobId),
+          staleTime: 0,
+        });
         if (freshJob.status === "FAILED") {
           toast.error(freshJob.errorMessage ?? t("errors.importProducts"));
           return;

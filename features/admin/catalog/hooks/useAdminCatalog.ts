@@ -284,6 +284,12 @@ export function useCreateGlobalImportJob() {
   });
 }
 
+const GLOBAL_IMPORT_POLLING_STATUSES = new Set(["PENDING", "PROCESSING", "CONFIRMING"]);
+
+// Deja de pollear después de 5 minutos para no pollear para siempre un job
+// atascado (mismo fix ya aplicado en el hook hermano, features/products/import/hooks/useImportJob.ts).
+const GLOBAL_IMPORT_POLLING_TIMEOUT_MS = 5 * 60 * 1000;
+
 /**
  * Hook to poll a global import job until it's ready for review
  * Automatically polls every 2s when status is PENDING or PROCESSING
@@ -296,10 +302,16 @@ export function useGlobalImportJob(jobId: string | null, enabled: boolean) {
     // CONFIRMING se incluye porque confirmJob() ahora encola la creación de
     // productos en un worker async y responde de inmediato — sin esto, la UI
     // no se enteraría cuando el job realmente termine (ver useConfirmGlobalImportJob).
-    refetchInterval: (query) =>
-      ["PENDING", "PROCESSING", "CONFIRMING"].includes(query.state.data?.status ?? "")
-        ? 2000
-        : false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (!status || !GLOBAL_IMPORT_POLLING_STATUSES.has(status)) return false;
+      const referenceTimestamp = query.state.data?.startedAt ?? query.state.data?.createdAt;
+      if (referenceTimestamp) {
+        const elapsed = Date.now() - new Date(referenceTimestamp).getTime();
+        if (elapsed > GLOBAL_IMPORT_POLLING_TIMEOUT_MS) return false;
+      }
+      return 2000;
+    },
   });
 }
 
