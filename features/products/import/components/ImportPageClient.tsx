@@ -122,18 +122,15 @@ export function ImportPageClient({
     mutationFn: ({ jobId, itemIds, branchSelectionsByItem }: { jobId: string; itemIds: string[]; branchSelectionsByItem: Record<string, string[]> }) =>
       confirmImportJob(businessId, jobId, { itemIds, branchSelectionsByItem }),
     onSuccess: (_data, { jobId }) => {
+      // confirmJob() ahora solo encola la creación (responde con CONFIRMING,
+      // nada creado todavía) — invalidar el catálogo de productos/categorías
+      // acá sería prematuro. Esa invalidación se dispara en el useEffect de
+      // abajo, cuando el polling detecta que el job realmente llegó a COMPLETED.
       queryClient.invalidateQueries({
         queryKey: importJobKeys.job(businessId, jobId),
       });
       queryClient.invalidateQueries({
         queryKey: importJobKeys.jobs(businessId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["catalog", "products", businessId],
-      });
-      // Invalidar BusinessCategories para incluir las auto-creadas por el backend al confirmar
-      queryClient.invalidateQueries({
-        queryKey: catalogKeys.categories(businessId),
       });
     },
     onError: async (err: unknown, { jobId }) => {
@@ -188,6 +185,19 @@ export function ImportPageClient({
   const isCompleted = jobData?.status === "COMPLETED";
   const isFailed = jobData?.status === "FAILED";
   const isJobConfirming = jobData?.status === "CONFIRMING";
+
+  useEffect(() => {
+    if (isCompleted) {
+      queryClient.invalidateQueries({
+        queryKey: ["catalog", "products", businessId],
+      });
+      // Invalidar BusinessCategories para incluir las auto-creadas por el backend al confirmar
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.categories(businessId),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo debe reaccionar a la transición a COMPLETED, no a cambios de queryClient/businessId
+  }, [isCompleted]);
 
   useEffect(() => {
     if (currentJobId && jobData) {
