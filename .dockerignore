@@ -1,0 +1,19 @@
+node_modules
+  .next
+  npm-debug.log
+  .git
+  .gitignore
+  .env
+  .env.local
+  .env.*.local
+  .env.e2e
+  .env.e2e.example
+  .vscode
+  .idea
+  *.md
+  !README.md
+  coverage
+  test-results
+  playwright-report
+  .DS_Store
+  .nvmrc
