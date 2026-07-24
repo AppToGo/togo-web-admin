@@ -18,7 +18,7 @@ COPY . .
 
 # Variables NEXT_PUBLIC_* se "hornean" en el bundle del cliente
 # en tiempo de BUILD, no de runtime. Deben pasarse como build args
-# desde Dokploy (ver guia de despliegue).
+# desde Dokploy (ver guía de despliegue).
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_WS_URL
 ARG NEXT_PUBLIC_APP_NAME
@@ -31,38 +31,37 @@ ARG NEXT_PUBLIC_META_GRAPH_VERSION
 
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL \
-        NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME \
-            NEXT_PUBLIC_APP_VERSION=$NEXT_PUBLIC_APP_VERSION \
-                NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY \
-                    NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=$NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID \
-                        NEXT_PUBLIC_META_APP_ID=$NEXT_PUBLIC_META_APP_ID \
-                            NEXT_PUBLIC_META_CONFIG_ID=$NEXT_PUBLIC_META_CONFIG_ID \
-                                NEXT_PUBLIC_META_GRAPH_VERSION=$NEXT_PUBLIC_META_GRAPH_VERSION \
-                                    NEXT_TELEMETRY_DISABLED=1
+    NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME \
+    NEXT_PUBLIC_APP_VERSION=$NEXT_PUBLIC_APP_VERSION \
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY \
+    NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=$NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID \
+    NEXT_PUBLIC_META_APP_ID=$NEXT_PUBLIC_META_APP_ID \
+    NEXT_PUBLIC_META_CONFIG_ID=$NEXT_PUBLIC_META_CONFIG_ID \
+    NEXT_PUBLIC_META_GRAPH_VERSION=$NEXT_PUBLIC_META_GRAPH_VERSION \
+    NEXT_TELEMETRY_DISABLED=1
 
-                                    RUN npm run build
+RUN npm run build
 
-                                    # ─────────────────────────────────────────────────────────
-                                    # 3) runner: imagen final, solo lo necesario para correr
-                                    # ─────────────────────────────────────────────────────────
-                                    FROM node:20-alpine AS runner
-                                    WORKDIR /app
+# ─────────────────────────────────────────────────────────
+# 3) runner: imagen final, solo lo necesario para correr
+# ─────────────────────────────────────────────────────────
+FROM node:20-alpine AS runner
+WORKDIR /app
 
-                                    ENV NODE_ENV=production \
-                                        NEXT_TELEMETRY_DISABLED=1 \
-                                            PORT=3002 \
-                                                HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3002 \
+    HOSTNAME="0.0.0.0"
 
-                                                RUN addgroup -g 1001 -S nodejs && \
-                                                    adduser -S nextjs -u 1001
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
 
-                                                    COPY --from=builder /app/public ./public
-                                                    COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-                                                    COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-                                                    USER nextjs
+USER nextjs
 
-                                                    EXPOSE 3002
+EXPOSE 3002
 
-                                                    CMD ["node", "server.js"]
-                                                    
+CMD ["node", "server.js"]
