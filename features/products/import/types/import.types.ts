@@ -1,3 +1,5 @@
+import type { KeywordEntry } from '@/features/catalog/types';
+
 export type ImportJobStatus =
   | 'PENDING'
   | 'PROCESSING'
@@ -35,6 +37,7 @@ export interface ImportItem {
   brand: string | null;
   imageUrl: string | null;
   variants: ImportItemVariant[] | null;
+  searchKeywords: KeywordEntry[];
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +77,8 @@ export interface UpdateImportItemDto {
   isSelected?: boolean;
   imageUrl?: string;
   variants?: ImportItemVariant[];
+  // Solo entradas 'manual'/'ai' — las heredadas las calcula el backend.
+  searchKeywords?: KeywordEntry[];
 }
 
 export interface ConfirmImportDto {

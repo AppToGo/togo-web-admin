@@ -18,6 +18,7 @@ import {
   useUpdateCategory,
   useDeleteCategory,
   useToggleCategoryStatus,
+  useRegenerateCategoryKeywords,
 } from "@/features/catalog/hooks";
 
 export default function CategoriesPage() {
@@ -45,6 +46,7 @@ export default function CategoriesPage() {
   const updateCategory = useUpdateCategory(businessId ?? "");
   const deleteCategory = useDeleteCategory(businessId ?? "");
   const toggleCategory = useToggleCategoryStatus(businessId ?? "");
+  const regenerateKeywords = useRegenerateCategoryKeywords(businessId ?? "");
 
   // Guard consolidado, después de todos los hooks
   if (!businessId || (!hasBusiness && !isSuperAdmin)) {
@@ -98,6 +100,7 @@ export default function CategoriesPage() {
                 slug: data.slug,
                 industryCategoryId: data.industryCategoryId,
                 description: data.description,
+                searchKeywords: data.searchKeywords,
               })
             }
             onUpdate={(id, data) =>
@@ -108,6 +111,7 @@ export default function CategoriesPage() {
                   slug: data.slug,
                   industryCategoryId: data.industryCategoryId,
                   description: data.description,
+                  searchKeywords: data.searchKeywords,
                 },
               })
             }
@@ -115,6 +119,8 @@ export default function CategoriesPage() {
             onToggleStatus={(id, isActive) =>
               toggleCategory.mutate({ categoryId: id, isActive })
             }
+            onRegenerateKeywords={(id) => regenerateKeywords.mutate(id)}
+            isRegeneratingKeywords={regenerateKeywords.isPending}
             isLoading={
               createCategory.isPending ||
               updateCategory.isPending ||

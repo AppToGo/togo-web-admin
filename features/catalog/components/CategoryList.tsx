@@ -43,7 +43,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CategoryActions } from "./CategoryActions";
 import { CategoryFilters } from "./CategoryFilters";
-import type { BusinessCategory, CategoryFilters as CategoryFiltersType } from "../types/catalog.types";
+import { KeywordsInput } from "@/components/ui/keywords-input";
+import { EDITABLE_KEYWORD_SOURCES } from "../types/catalog.types";
+import type { BusinessCategory, CategoryFilters as CategoryFiltersType, KeywordEntry } from "../types/catalog.types";
 
 // Industry category option type
 interface IndustryCategoryOption {
@@ -59,6 +61,7 @@ interface CategoryListProps {
     slug: string;
     industryCategoryId: string;
     description?: string;
+    searchKeywords?: KeywordEntry[];
   }) => void;
   onUpdate: (
     id: string,
@@ -67,10 +70,13 @@ interface CategoryListProps {
       slug: string;
       industryCategoryId: string;
       description?: string;
+      searchKeywords?: KeywordEntry[];
     }
   ) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
+  onRegenerateKeywords?: (id: string) => void;
+  isRegeneratingKeywords?: boolean;
   isLoading?: boolean;
 }
 
@@ -81,6 +87,8 @@ export function CategoryList({
   onUpdate,
   onDelete,
   onToggleStatus,
+  onRegenerateKeywords,
+  isRegeneratingKeywords,
   isLoading = false,
 }: CategoryListProps) {
   const t = useTranslations("catalog");
@@ -107,6 +115,7 @@ export function CategoryList({
     industryCategoryId: "",
     description: "",
   });
+  const [searchKeywords, setSearchKeywords] = useState<KeywordEntry[]>([]);
 
   // Filter categories locally
   const filteredCategories = categories.filter((cat) => {
@@ -161,6 +170,7 @@ export function CategoryList({
       industryCategoryId: "",
       description: "",
     });
+    setSearchKeywords([]);
   };
 
   // Open create dialog
@@ -178,6 +188,7 @@ export function CategoryList({
       industryCategoryId: category.industryCategoryId,
       description: category.description || "",
     });
+    setSearchKeywords(category.searchKeywords ?? []);
     setEditingCategory(category);
     setIsModalOpen(true);
   };
@@ -204,12 +215,19 @@ export function CategoryList({
     )
       return;
 
+    // El backend recalcula las heredadas (categoría de industria, nombre) —
+    // solo se envían las entradas que el usuario controla directamente.
+    const editableKeywords = searchKeywords.filter((k) =>
+      EDITABLE_KEYWORD_SOURCES.includes(k.source)
+    );
+
     if (isEditing && editingCategory) {
       onUpdate(editingCategory.id, {
         name: formData.name.trim(),
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
         description: formData.description.trim() || undefined,
+        searchKeywords: editableKeywords,
       });
     } else {
       onCreate({
@@ -217,6 +235,7 @@ export function CategoryList({
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
         description: formData.description.trim() || undefined,
+        searchKeywords: editableKeywords,
       });
     }
     closeModal();
@@ -501,6 +520,22 @@ export function CategoryList({
                 disabled={isLoading}
               />
             </div>
+
+            <KeywordsInput
+              value={searchKeywords}
+              onChange={setSearchKeywords}
+              label={t("categories.form.keywordsLabel")}
+              placeholder={t("categories.form.keywordsPlaceholder")}
+              helperText={t("categories.form.keywordsHelp")}
+              disabled={isLoading}
+              onRegenerateAi={
+                isEditing && editingCategory
+                  ? () => onRegenerateKeywords?.(editingCategory.id)
+                  : undefined
+              }
+              isRegenerating={isRegeneratingKeywords}
+              regenerateLabel={t("categories.form.keywordsRegenerate")}
+            />
 
             <div className="flex justify-end gap-3 pt-2">
               <Button

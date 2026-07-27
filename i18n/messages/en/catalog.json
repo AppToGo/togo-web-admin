@@ -128,7 +128,11 @@
       "selectSubcategory": "Select subcategory",
       "noSubcategoriesInParent": "This category has no subcategories",
       "willBeCreated": "(will be created on confirm)",
-      "subcategoryFallbackHint": "Without subcategory, the product will appear under \"{parentName}\""
+      "subcategoryFallbackHint": "Without subcategory, the product will appear under \"{parentName}\"",
+      "keywordsLabel": "Search keywords",
+      "keywordsPlaceholder": "Type and press Enter to add",
+      "keywordsHelp": "Helps the bot find this product even when the customer doesn't type the exact name. Category and name ones are generated automatically.",
+      "keywordsRegenerate": "Regenerate with AI"
     },
     "empty": {
       "title": "You don't have products yet",
@@ -169,7 +173,11 @@
       "nameLabel": "Category name",
       "namePlaceholder": "Ex: Beverages",
       "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Describe this category..."
+      "descriptionPlaceholder": "Describe this category...",
+      "keywordsLabel": "Search keywords",
+      "keywordsPlaceholder": "Type and press Enter to add",
+      "keywordsHelp": "Helps the bot find products in this category even when the customer types something different.",
+      "keywordsRegenerate": "Regenerate with AI"
     },
     "industryCategory": "Industry Category",
     "slugHelp": "URL-friendly identifier for the category (e.g.: beverages-soft-drinks)",
@@ -287,7 +295,9 @@
     "errorUpdatingVariant": "Error updating variant",
     "errorDeletingVariant": "Error deleting variant",
     "productActivatedInCatalogNew": "Product activated in your catalog",
-    "errorActivatingCatalogProduct": "Error activating product"
+    "errorActivatingCatalogProduct": "Error activating product",
+    "keywordsRegenerateQueued": "Keyword regeneration queued, this may take a few seconds",
+    "errorRegeneratingKeywords": "Error regenerating keywords"
   },
   "bulkActions": {
     "selectedCount": "{count, plural, =0 {0 products selected} =1 {1 product selected} other {# products selected}}",

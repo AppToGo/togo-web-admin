@@ -68,6 +68,8 @@ export function EditImportItemFormDrawer({
     if (data.industryCategoryId !== undefined)
       dto.industryCategoryId = data.industryCategoryId;
 
+    if (data.searchKeywords !== undefined) dto.searchKeywords = data.searchKeywords;
+
     if ("inlineVariants" in data && data.inlineVariants && data.inlineVariants.length > 0) {
       dto.variants = data.inlineVariants.map((v) => ({
         variantLabel: v.label,
@@ -137,6 +139,7 @@ export function EditImportItemFormDrawer({
                   item.variants && item.variants.length > 0
                     ? item.variants.map((v) => ({ label: v.variantLabel, price: v.suggestedPrice ?? 0 }))
                     : undefined,
+                searchKeywords: item.searchKeywords,
               }}
             />
           )}

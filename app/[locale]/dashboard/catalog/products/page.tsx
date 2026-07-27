@@ -22,6 +22,7 @@ import {
   useCatalogProducts,
   useCreateCatalogProduct,
   useUpdateCatalogProduct,
+  useRegenerateCatalogProductKeywords,
   useDeleteCatalogProduct,
   useCategories,
 } from "@/features/catalog/hooks";
@@ -188,6 +189,7 @@ export default function ProductsPage() {
 
   const createProduct = useCreateCatalogProduct(businessId ?? "");
   const updateProduct = useUpdateCatalogProduct(businessId ?? "");
+  const regenerateKeywords = useRegenerateCatalogProductKeywords(businessId ?? "");
   const deleteProduct = useDeleteCatalogProduct(businessId ?? "");
 
   const handleCreateProduct = (
@@ -469,6 +471,10 @@ export default function ProductsPage() {
                 onCancel={() => setEditingProduct(null)}
                 isLoading={updateProduct.isPending}
                 showProductImages={showProductImages}
+                onRegenerateKeywords={() =>
+                  editingProduct && regenerateKeywords.mutate(editingProduct.id)
+                }
+                isRegeneratingKeywords={regenerateKeywords.isPending}
               />
             )}
           </div>
