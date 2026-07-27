@@ -5,6 +5,32 @@
  * Supports the Rappi-style architecture: GlobalProduct + BusinessProduct
  */
 
+// ============================================================================
+// SEARCH KEYWORDS
+// ============================================================================
+
+/**
+ * Procedencia de una palabra clave de búsqueda. Las heredadas
+ * (industry_category, business_category, global_template, name) las
+ * recalcula el backend automáticamente al cambiar de categoría o nombre — no
+ * son editables desde el form. Solo 'manual' y 'ai' se pueden agregar/quitar.
+ */
+export type KeywordSource =
+  | 'industry_category'
+  | 'business_category'
+  | 'global_template'
+  | 'name'
+  | 'ai'
+  | 'manual';
+
+export interface KeywordEntry {
+  value: string;
+  source: KeywordSource;
+}
+
+/** Sources que el usuario puede editar directamente desde el admin. */
+export const EDITABLE_KEYWORD_SOURCES: readonly KeywordSource[] = ['manual', 'ai'];
+
 /**
  * Paginated response structure
  */
@@ -121,6 +147,7 @@ export interface BusinessCategory {
   businessId: string;
   isActive: boolean;
   order: number; // Renamed from sortOrder
+  searchKeywords: KeywordEntry[];
   createdAt: string;
   updatedAt: string;
 }
@@ -219,6 +246,8 @@ export interface CreateCategoryDto {
   description?: string;
   slug: string;
   industryCategoryId: string;
+  // Solo entradas 'manual'/'ai' — las heredadas las calcula el backend.
+  searchKeywords?: KeywordEntry[];
 }
 
 /**
@@ -232,6 +261,7 @@ export interface UpdateCategoryDto {
   industryCategoryId?: string;
   order?: number;
   isActive?: boolean;
+  searchKeywords?: KeywordEntry[];
 }
 
 // ============================================================================
@@ -341,6 +371,7 @@ export interface CatalogProduct {
   industryCategoryId?: string;
   isActive: boolean;
   isFeatured: boolean;
+  searchKeywords: KeywordEntry[];
   deletedAt?: string;
   variantCount: number;
   priceFrom?: number;
@@ -395,6 +426,8 @@ export interface CreateProductDto {
   // Inline pricing on creation
   price?: number;
   inlineVariants?: InlineVariant[];
+  // Solo entradas 'manual'/'ai' — las heredadas las calcula el backend.
+  searchKeywords?: KeywordEntry[];
 }
 
 export interface ActivateCatalogProductDto {
@@ -413,6 +446,7 @@ export interface UpdateCatalogProductDto {
   industryCategoryId?: string;
   isActive?: boolean;
   isFeatured?: boolean;
+  searchKeywords?: KeywordEntry[];
 }
 
 export interface CreateVariantDto {

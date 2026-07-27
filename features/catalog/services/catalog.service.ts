@@ -329,6 +329,16 @@ export async function toggleCategoryStatus(
   return updateCategory(businessId, categoryId, { isActive });
 }
 
+// Encola una nueva sugerencia de IA para searchKeywords — corre en background.
+export async function regenerateCategoryKeywords(
+  businessId: string,
+  categoryId: string
+): Promise<void> {
+  await apiClient.post(
+    `/businesses/${businessId}/business-categories/${categoryId}/keywords/regenerate`
+  );
+}
+
 // ============================================================================
 // INDUSTRY CATEGORIES API
 // ============================================================================
@@ -457,6 +467,15 @@ export async function deleteCatalogProduct(
   productId: string
 ): Promise<void> {
   await apiClient.delete(`/businesses/${businessId}/products/${productId}`);
+}
+
+// Encola una nueva sugerencia de IA para searchKeywords — corre en background,
+// no bloquea la respuesta. Las entradas heredadas y manuales no se tocan.
+export async function regenerateCatalogProductKeywords(
+  businessId: string,
+  productId: string
+): Promise<void> {
+  await apiClient.post(`/businesses/${businessId}/products/${productId}/keywords/regenerate`);
 }
 
 // ============================================================================

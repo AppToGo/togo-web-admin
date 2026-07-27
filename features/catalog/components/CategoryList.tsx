@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Folder, Tag, AlertCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CategoryActions } from "./CategoryActions";
 import { CategoryFilters } from "./CategoryFilters";
-import type { BusinessCategory, CategoryFilters as CategoryFiltersType } from "../types/catalog.types";
+import { KeywordsInput } from "@/components/ui/keywords-input";
+import { EDITABLE_KEYWORD_SOURCES } from "../types/catalog.types";
+import type { BusinessCategory, CategoryFilters as CategoryFiltersType, KeywordEntry } from "../types/catalog.types";
 
 // Industry category option type
 interface IndustryCategoryOption {
@@ -59,6 +61,7 @@ interface CategoryListProps {
     slug: string;
     industryCategoryId: string;
     description?: string;
+    searchKeywords?: KeywordEntry[];
   }) => void;
   onUpdate: (
     id: string,
@@ -67,10 +70,13 @@ interface CategoryListProps {
       slug: string;
       industryCategoryId: string;
       description?: string;
+      searchKeywords?: KeywordEntry[];
     }
   ) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
+  onRegenerateKeywords?: (id: string) => void;
+  isRegeneratingKeywords?: boolean;
   isLoading?: boolean;
 }
 
@@ -81,6 +87,8 @@ export function CategoryList({
   onUpdate,
   onDelete,
   onToggleStatus,
+  onRegenerateKeywords,
+  isRegeneratingKeywords,
   isLoading = false,
 }: CategoryListProps) {
   const t = useTranslations("catalog");
@@ -94,10 +102,17 @@ export function CategoryList({
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] =
-    useState<BusinessCategory | null>(null);
+  // Id only, not the object — the object is derived from `categories` below
+  // so "Regenerar con IA" (which invalidates that query) is reflected in an
+  // already-open modal instead of requiring a close/reopen.
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
+    null
+  );
   const [deletingCategory, setDeletingCategory] =
     useState<BusinessCategory | null>(null);
+  const editingCategory = editingCategoryId
+    ? (categories.find((c) => c.id === editingCategoryId) ?? null)
+    : null;
   const isEditing = !!editingCategory;
 
   // Form state
@@ -107,6 +122,18 @@ export function CategoryList({
     industryCategoryId: "",
     description: "",
   });
+  const [searchKeywords, setSearchKeywords] = useState<KeywordEntry[]>([]);
+
+  // handleOpenEdit sets the initial value synchronously (avoids a one-frame
+  // flash of empty chips); this effect re-syncs it afterward when
+  // editingCategory's keywords change externally (e.g. AI regeneration
+  // finishing) — same "sync local draft from external data" pattern as
+  // ProductForm's searchKeywords effect.
+  useEffect(() => {
+    if (editingCategory?.searchKeywords) {
+      setSearchKeywords(editingCategory.searchKeywords);
+    }
+  }, [editingCategory?.searchKeywords]);
 
   // Filter categories locally
   const filteredCategories = categories.filter((cat) => {
@@ -161,12 +188,13 @@ export function CategoryList({
       industryCategoryId: "",
       description: "",
     });
+    setSearchKeywords([]);
   };
 
   // Open create dialog
   const handleOpenCreate = () => {
     resetForm();
-    setEditingCategory(null);
+    setEditingCategoryId(null);
     setIsModalOpen(true);
   };
 
@@ -178,7 +206,8 @@ export function CategoryList({
       industryCategoryId: category.industryCategoryId,
       description: category.description || "",
     });
-    setEditingCategory(category);
+    setSearchKeywords(category.searchKeywords ?? []);
+    setEditingCategoryId(category.id);
     setIsModalOpen(true);
   };
 
@@ -204,12 +233,19 @@ export function CategoryList({
     )
       return;
 
+    // El backend recalcula las heredadas (categoría de industria, nombre) —
+    // solo se envían las entradas que el usuario controla directamente.
+    const editableKeywords = searchKeywords.filter((k) =>
+      EDITABLE_KEYWORD_SOURCES.includes(k.source)
+    );
+
     if (isEditing && editingCategory) {
       onUpdate(editingCategory.id, {
         name: formData.name.trim(),
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
         description: formData.description.trim() || undefined,
+        searchKeywords: editableKeywords,
       });
     } else {
       onCreate({
@@ -217,6 +253,7 @@ export function CategoryList({
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
         description: formData.description.trim() || undefined,
+        searchKeywords: editableKeywords,
       });
     }
     closeModal();
@@ -225,7 +262,7 @@ export function CategoryList({
   // Close modal and reset
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingCategory(null);
+    setEditingCategoryId(null);
     resetForm();
   };
 
@@ -501,6 +538,22 @@ export function CategoryList({
                 disabled={isLoading}
               />
             </div>
+
+            <KeywordsInput
+              value={searchKeywords}
+              onChange={setSearchKeywords}
+              label={t("categories.form.keywordsLabel")}
+              placeholder={t("categories.form.keywordsPlaceholder")}
+              helperText={t("categories.form.keywordsHelp")}
+              disabled={isLoading}
+              onRegenerateAi={
+                isEditing && editingCategory
+                  ? () => onRegenerateKeywords?.(editingCategory.id)
+                  : undefined
+              }
+              isRegenerating={isRegeneratingKeywords}
+              regenerateLabel={t("categories.form.keywordsRegenerate")}
+            />
 
             <div className="flex justify-end gap-3 pt-2">
               <Button

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Package } from "lucide-react";
 import { ProductCard } from "@/features/catalog/components/ProductCard";
+import { Badge } from "@/components/ui/badge";
 import { useUpdateImportItem, useDeleteImportItem } from "../hooks/useImportMutations";
 import { importItemToCatalogProduct } from "../utils/importItemMapper";
 import { EditImportItemFormDrawer } from "./EditImportItemFormDrawer";
@@ -80,24 +81,50 @@ export function DetectedProductsGrid({
             ? (categories.find((c) => c.id === item.businessCategoryId)?.name ?? item.rawCategory ?? undefined)
             : item.rawCategory ?? undefined;
 
+          const itemKeywords = item.searchKeywords ?? [];
+          const visibleKeywords = itemKeywords.slice(0, 5);
+          const hiddenKeywordsCount = itemKeywords.length - visibleKeywords.length;
+
           return (
-            <ProductCard
-              key={item.id}
-              product={product}
-              showCheckbox
-              selected={item.isSelected}
-              showImage={showImage}
-              categoryName={categoryName}
-              onSelect={() => {
-                if (isAnyMutationPending) return;
-                updateMutation.mutate({
-                  itemId: item.id,
-                  dto: { isSelected: !item.isSelected },
-                });
-              }}
-              onEdit={() => setEditingItem(item)}
-              onDelete={() => setDeletingItem(item)}
-            />
+            <div key={item.id} className="space-y-1.5">
+              <ProductCard
+                product={product}
+                showCheckbox
+                selected={item.isSelected}
+                showImage={showImage}
+                categoryName={categoryName}
+                onSelect={() => {
+                  if (isAnyMutationPending) return;
+                  updateMutation.mutate({
+                    itemId: item.id,
+                    dto: { isSelected: !item.isSelected },
+                  });
+                }}
+                onEdit={() => setEditingItem(item)}
+                onDelete={() => setDeletingItem(item)}
+              />
+              {visibleKeywords.length > 0 && (
+                <div className="flex flex-wrap gap-1 px-1">
+                  {visibleKeywords.map((k, i) => (
+                    <Badge
+                      key={`${k.value}-${i}`}
+                      variant="outline"
+                      className="px-1.5 py-0 text-[10px] font-normal text-slate-500"
+                    >
+                      {k.value}
+                    </Badge>
+                  ))}
+                  {hiddenKeywordsCount > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="px-1.5 py-0 text-[10px] font-normal text-slate-400"
+                    >
+                      +{hiddenKeywordsCount}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
