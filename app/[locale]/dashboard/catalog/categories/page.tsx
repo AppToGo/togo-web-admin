@@ -28,7 +28,25 @@ export default function CategoriesPage() {
   const isSuperAdmin = useIsSuperAdmin();
   const businessId = useEffectiveBusinessId();
 
-  // Guard consolidado al inicio
+  // HOOKS
+  const {
+    data: categoriesData,
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+  } = useCategories(businessId ?? "");
+  const { data: industryCategoriesData } = useIndustryCategories();
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+  const industryCategories = Array.isArray(industryCategoriesData)
+    ? industryCategoriesData
+    : [];
+
+  // MUTACIONES
+  const createCategory = useCreateCategory(businessId ?? "");
+  const updateCategory = useUpdateCategory(businessId ?? "");
+  const deleteCategory = useDeleteCategory(businessId ?? "");
+  const toggleCategory = useToggleCategoryStatus(businessId ?? "");
+
+  // Guard consolidado, después de todos los hooks
   if (!businessId || (!hasBusiness && !isSuperAdmin)) {
     return (
       <DashboardLayout>
@@ -46,24 +64,6 @@ export default function CategoriesPage() {
       </DashboardLayout>
     );
   }
-
-  // HOOKS
-  const {
-    data: categoriesData,
-    isLoading: isLoadingCategories,
-    error: categoriesError,
-  } = useCategories(businessId);
-  const { data: industryCategoriesData } = useIndustryCategories();
-  const categories = Array.isArray(categoriesData) ? categoriesData : [];
-  const industryCategories = Array.isArray(industryCategoriesData)
-    ? industryCategoriesData
-    : [];
-
-  // MUTACIONES
-  const createCategory = useCreateCategory(businessId);
-  const updateCategory = useUpdateCategory(businessId);
-  const deleteCategory = useDeleteCategory(businessId);
-  const toggleCategory = useToggleCategoryStatus(businessId);
 
   return (
     <DashboardLayout>
