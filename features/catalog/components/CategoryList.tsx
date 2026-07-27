@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Folder, Tag, AlertCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -102,10 +102,17 @@ export function CategoryList({
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] =
-    useState<BusinessCategory | null>(null);
+  // Id only, not the object — the object is derived from `categories` below
+  // so "Regenerar con IA" (which invalidates that query) is reflected in an
+  // already-open modal instead of requiring a close/reopen.
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
+    null
+  );
   const [deletingCategory, setDeletingCategory] =
     useState<BusinessCategory | null>(null);
+  const editingCategory = editingCategoryId
+    ? (categories.find((c) => c.id === editingCategoryId) ?? null)
+    : null;
   const isEditing = !!editingCategory;
 
   // Form state
@@ -116,6 +123,17 @@ export function CategoryList({
     description: "",
   });
   const [searchKeywords, setSearchKeywords] = useState<KeywordEntry[]>([]);
+
+  // handleOpenEdit sets the initial value synchronously (avoids a one-frame
+  // flash of empty chips); this effect re-syncs it afterward when
+  // editingCategory's keywords change externally (e.g. AI regeneration
+  // finishing) — same "sync local draft from external data" pattern as
+  // ProductForm's searchKeywords effect.
+  useEffect(() => {
+    if (editingCategory?.searchKeywords) {
+      setSearchKeywords(editingCategory.searchKeywords);
+    }
+  }, [editingCategory?.searchKeywords]);
 
   // Filter categories locally
   const filteredCategories = categories.filter((cat) => {
@@ -176,7 +194,7 @@ export function CategoryList({
   // Open create dialog
   const handleOpenCreate = () => {
     resetForm();
-    setEditingCategory(null);
+    setEditingCategoryId(null);
     setIsModalOpen(true);
   };
 
@@ -189,7 +207,7 @@ export function CategoryList({
       description: category.description || "",
     });
     setSearchKeywords(category.searchKeywords ?? []);
-    setEditingCategory(category);
+    setEditingCategoryId(category.id);
     setIsModalOpen(true);
   };
 
@@ -244,7 +262,7 @@ export function CategoryList({
   // Close modal and reset
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingCategory(null);
+    setEditingCategoryId(null);
     resetForm();
   };
 

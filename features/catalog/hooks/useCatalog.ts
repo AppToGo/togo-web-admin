@@ -875,14 +875,17 @@ export function useRegenerateCatalogProductKeywords(
   return useMutation({
     mutationFn: (productId: string) =>
       catalogService.regenerateCatalogProductKeywords(businessId, productId),
-    onSuccess: (_, productId) => {
+    onSuccess: () => {
       toast.success(
         messages?.keywordsRegenerateQueued ??
           "Regeneración de palabras clave encolada, puede tardar unos segundos"
       );
+      // catalogKeys.catalogProduct(businessId, productId) has no active
+      // subscribers anywhere in the app (useCatalogProduct is never called) —
+      // the edit drawer reads from the list query below via `editingProduct`.
       setTimeout(() => {
         queryClient.invalidateQueries({
-          queryKey: catalogKeys.catalogProduct(businessId, productId),
+          queryKey: catalogKeys.catalogProducts(businessId),
         });
       }, 5000);
     },

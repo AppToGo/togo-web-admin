@@ -81,8 +81,9 @@ export function DetectedProductsGrid({
             ? (categories.find((c) => c.id === item.businessCategoryId)?.name ?? item.rawCategory ?? undefined)
             : item.rawCategory ?? undefined;
 
-          const visibleKeywords = item.searchKeywords.slice(0, 5);
-          const hiddenKeywordsCount = item.searchKeywords.length - visibleKeywords.length;
+          const itemKeywords = item.searchKeywords ?? [];
+          const visibleKeywords = itemKeywords.slice(0, 5);
+          const hiddenKeywordsCount = itemKeywords.length - visibleKeywords.length;
 
           return (
             <div key={item.id} className="space-y-1.5">
