@@ -28,6 +28,7 @@ export {
   useUpdateCategory,
   useDeleteCategory,
   useToggleCategoryStatus,
+  useRegenerateCategoryKeywords,
   // Industry Categories
   useIndustryCategories,
   // Business
@@ -44,6 +45,7 @@ export {
   useCreateCatalogProduct,
   useActivateCatalogProduct,
   useUpdateCatalogProduct,
+  useRegenerateCatalogProductKeywords,
   useDeleteCatalogProduct,
   useVariants,
   useCreateVariant,

@@ -496,6 +496,39 @@ export function useUpdateCategory(
 }
 
 /**
+ * Encola una nueva sugerencia de IA para las searchKeywords de una categoría.
+ */
+export function useRegenerateCategoryKeywords(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (categoryId: string) =>
+      catalogService.regenerateCategoryKeywords(businessId, categoryId),
+    onSuccess: () => {
+      toast.success(
+        messages?.keywordsRegenerateQueued ??
+          "Regeneración de palabras clave encolada, puede tardar unos segundos"
+      );
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: catalogKeys.categories(businessId),
+        });
+      }, 5000);
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          messages?.errorRegeneratingKeywords ||
+          "Error al regenerar palabras clave"
+      );
+    },
+  });
+}
+
+/**
  * Hook to delete a category
  *
  * @param businessId - The business ID
@@ -823,6 +856,44 @@ export function useUpdateCatalogProduct(
         error.message ||
           messages?.errorUpdatingProduct ||
           "Error al actualizar el producto"
+      );
+    },
+  });
+}
+
+/**
+ * Encola una nueva sugerencia de IA para las searchKeywords de un producto.
+ * Corre en background — no refleja el resultado al instante, solo confirma
+ * que quedó encolado. Las entradas heredadas/manuales no se tocan.
+ */
+export function useRegenerateCatalogProductKeywords(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (productId: string) =>
+      catalogService.regenerateCatalogProductKeywords(businessId, productId),
+    onSuccess: () => {
+      toast.success(
+        messages?.keywordsRegenerateQueued ??
+          "Regeneración de palabras clave encolada, puede tardar unos segundos"
+      );
+      // catalogKeys.catalogProduct(businessId, productId) has no active
+      // subscribers anywhere in the app (useCatalogProduct is never called) —
+      // the edit drawer reads from the list query below via `editingProduct`.
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: catalogKeys.catalogProducts(businessId),
+        });
+      }, 5000);
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          messages?.errorRegeneratingKeywords ||
+          "Error al regenerar palabras clave"
       );
     },
   });

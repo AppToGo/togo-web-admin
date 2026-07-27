@@ -22,6 +22,7 @@ import {
   useCatalogProducts,
   useCreateCatalogProduct,
   useUpdateCatalogProduct,
+  useRegenerateCatalogProductKeywords,
   useDeleteCatalogProduct,
   useCategories,
 } from "@/features/catalog/hooks";
@@ -123,7 +124,10 @@ export default function ProductsPage() {
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(
+  // Id only, not the object itself — the object is derived from the products
+  // query below so an AI-keywords regeneration (which invalidates that query)
+  // is reflected in an already-open drawer without a manual resync effect.
+  const [editingProductId, setEditingProductId] = useState<string | null>(
     null
   );
 
@@ -179,6 +183,10 @@ export default function ProductsPage() {
   const totalPages = productsData?.meta?.totalPages ?? 0;
   const productCounts = productsData?.counts;
 
+  const editingProduct = editingProductId
+    ? (products.find((p) => p.id === editingProductId) ?? null)
+    : null;
+
   // Build a category lookup map for name resolution in cards
   const categoryMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -188,6 +196,7 @@ export default function ProductsPage() {
 
   const createProduct = useCreateCatalogProduct(businessId ?? "");
   const updateProduct = useUpdateCatalogProduct(businessId ?? "");
+  const regenerateKeywords = useRegenerateCatalogProductKeywords(businessId ?? "");
   const deleteProduct = useDeleteCatalogProduct(businessId ?? "");
 
   const handleCreateProduct = (
@@ -242,14 +251,14 @@ export default function ProductsPage() {
       if (!editingProduct) return;
       updateProduct.mutate(
         { productId: editingProduct.id, dto: data as UpdateCatalogProductDto },
-        { onSuccess: () => setEditingProduct(null) }
+        { onSuccess: () => setEditingProductId(null) }
       );
     },
     [editingProduct, updateProduct]
   );
 
   const openEdit = useCallback((product: CatalogProduct) => {
-    setEditingProduct(product);
+    setEditingProductId(product.id);
   }, []);
 
   if (!businessId) {
@@ -444,7 +453,7 @@ export default function ProductsPage() {
       <Drawer
         open={!!editingProduct}
         onOpenChange={(open) => {
-          if (!updateProduct.isPending && !open) setEditingProduct(null);
+          if (!updateProduct.isPending && !open) setEditingProductId(null);
         }}
         isLoading={updateProduct.isPending}
       >
@@ -466,9 +475,13 @@ export default function ProductsPage() {
                 businessId={businessId}
                 categories={categories}
                 onSubmit={handleUpdateProduct}
-                onCancel={() => setEditingProduct(null)}
+                onCancel={() => setEditingProductId(null)}
                 isLoading={updateProduct.isPending}
                 showProductImages={showProductImages}
+                onRegenerateKeywords={() =>
+                  editingProduct && regenerateKeywords.mutate(editingProduct.id)
+                }
+                isRegeneratingKeywords={regenerateKeywords.isPending}
               />
             )}
           </div>
@@ -476,7 +489,7 @@ export default function ProductsPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setEditingProduct(null)}
+              onClick={() => setEditingProductId(null)}
               disabled={updateProduct.isPending}
             >
               {tc("buttons.cancel")}

@@ -2,7 +2,11 @@
  * Catalog Types
  */
 
+export { EDITABLE_KEYWORD_SOURCES } from "./catalog.types";
+
 export type {
+  KeywordEntry,
+  KeywordSource,
   GlobalProduct,
   BusinessProduct,
   BusinessCategory,

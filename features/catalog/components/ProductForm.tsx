@@ -33,13 +33,16 @@ import {
   useDeactivateProduct,
 } from "@/features/branch-inventory/hooks/useBranchInventory";
 import { VariantBranchRow } from "@/features/branch-inventory/components/VariantBranchRow";
+import { KeywordsInput } from "@/components/ui/keywords-input";
 import type {
   CatalogProduct,
   BusinessCategory,
   CreateProductDto,
   UpdateCatalogProductDto,
   ProductVariant,
+  KeywordEntry,
 } from "../types/catalog.types";
+import { EDITABLE_KEYWORD_SOURCES } from "../types/catalog.types";
 import { generateSlug } from "../utils/slug";
 
 const SELECT_NONE = "__none__" as const;
@@ -90,6 +93,7 @@ export interface ProductFormInitialValues {
   businessCategoryName?: string | null;
   price?: number;
   inlineVariants?: Array<{ label: string; price: number }>;
+  searchKeywords?: KeywordEntry[];
 }
 
 export interface ProductFormProps {
@@ -108,6 +112,8 @@ export interface ProductFormProps {
   initialValues?: ProductFormInitialValues;
   industryCategoriesPool?: Array<{ id: string; name: string }>;
   proposedSubcategoryName?: string;
+  onRegenerateKeywords?: () => void;
+  isRegeneratingKeywords?: boolean;
 }
 
 // ─── Edit mode: collapsible branch section ────────────────────────────────────
@@ -334,10 +340,16 @@ export function ProductForm({
   initialValues,
   industryCategoriesPool = [],
   proposedSubcategoryName,
+  onRegenerateKeywords,
+  isRegeneratingKeywords,
 }: ProductFormProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
   const isEditing = !!product;
+
+  const [searchKeywords, setSearchKeywords] = useState<KeywordEntry[]>(
+    initialValues?.searchKeywords ?? []
+  );
 
   const [formData, setFormData] = useState({
     name: initialValues?.name ?? "",
@@ -525,6 +537,15 @@ export function ProductForm({
     }
   }, [product, categories, formData.industryCategoryId]);
 
+  // Kept separate from the block above: searchKeywords should re-sync whenever
+  // the product refetches (e.g. after "Regenerar con IA" invalidates the
+  // query), not only on first load / category resolution.
+  useEffect(() => {
+    if (product?.searchKeywords) {
+      setSearchKeywords(product.searchKeywords);
+    }
+  }, [product?.searchKeywords]);
+
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
   const handleChange = (
@@ -650,6 +671,12 @@ export function ProductForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // El backend recalcula las heredadas (categoría, nombre) — solo se
+    // envían las entradas que el usuario controla directamente.
+    const editableKeywords = searchKeywords.filter((k) =>
+      EDITABLE_KEYWORD_SOURCES.includes(k.source)
+    );
+
     if (isEditing) {
       onSubmit({
         name: formData.name,
@@ -657,6 +684,7 @@ export function ProductForm({
         image: formData.image || undefined,
         businessCategoryId: formData.businessCategoryId || undefined,
         industryCategoryId: formData.industryCategoryId || undefined,
+        searchKeywords: editableKeywords,
       } as UpdateCatalogProductDto);
       return;
     }
@@ -668,6 +696,7 @@ export function ProductForm({
       image: formData.image || undefined,
       businessCategoryId: formData.businessCategoryId || undefined,
       industryCategoryId: formData.industryCategoryId || undefined,
+      searchKeywords: editableKeywords,
       isActive: true,
       isFeatured: formData.isFeatured,
     };
@@ -893,6 +922,18 @@ export function ProductForm({
           />
         </div>
       )}
+
+      <KeywordsInput
+        value={searchKeywords}
+        onChange={setSearchKeywords}
+        label={t("products.form.keywordsLabel")}
+        placeholder={t("products.form.keywordsPlaceholder")}
+        helperText={t("products.form.keywordsHelp")}
+        disabled={isLoading}
+        onRegenerateAi={isEditing ? onRegenerateKeywords : undefined}
+        isRegenerating={isRegeneratingKeywords}
+        regenerateLabel={t("products.form.keywordsRegenerate")}
+      />
     </>
   );
 

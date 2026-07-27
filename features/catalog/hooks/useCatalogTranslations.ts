@@ -43,6 +43,9 @@ export interface CatalogToastMessages {
   errorCreatingVariant: string;
   errorUpdatingVariant: string;
   errorDeletingVariant: string;
+  // Search keywords
+  keywordsRegenerateQueued?: string;
+  errorRegeneratingKeywords?: string;
 }
 
 export function useCatalogTranslations(): CatalogToastMessages {
@@ -80,5 +83,9 @@ export function useCatalogTranslations(): CatalogToastMessages {
     errorCreatingVariant: t("notifications.errorCreatingVariant"),
     errorUpdatingVariant: t("notifications.errorUpdatingVariant"),
     errorDeletingVariant: t("notifications.errorDeletingVariant"),
+
+    // Search keywords
+    keywordsRegenerateQueued: t("notifications.keywordsRegenerateQueued"),
+    errorRegeneratingKeywords: t("notifications.errorRegeneratingKeywords"),
   };
 }

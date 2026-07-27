@@ -62,6 +62,7 @@ export function importItemToCatalogProduct(item: ImportItem): CatalogProduct {
     variants,
     businessCategoryId: item.businessCategoryId ?? undefined,
     industryCategoryId: item.industryCategoryId ?? undefined,
+    searchKeywords: item.searchKeywords ?? [],
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   };
