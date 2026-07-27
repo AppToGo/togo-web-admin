@@ -92,24 +92,6 @@ export default function GlobalCatalogPage() {
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
 
-  if (!businessId) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
-            <Store className="w-8 h-8 text-amber-500" />
-          </div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            {t("noBusiness.title")}
-          </h2>
-          <p className="text-slate-500 text-center max-w-md">
-            {t("noBusiness.description")}
-          </p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
@@ -118,7 +100,7 @@ export default function GlobalCatalogPage() {
   const [activatingProduct, setActivatingProduct] = useState<GlobalProduct | null>(null);
 
   const { data: globalProductsData, isLoading: isLoadingGlobal, error: globalProductsError } =
-    useGlobalCatalog(businessId, {
+    useGlobalCatalog(businessId ?? "", {
       search: globalSearchQuery || undefined,
       industryCategoryIds:
         selectedIndustryCategories.length > 0
@@ -130,14 +112,14 @@ export default function GlobalCatalogPage() {
     });
 
   const { data: industryCategoriesData } = useIndustryCategories();
-  const { data: categoriesData } = useCategories(businessId);
+  const { data: categoriesData } = useCategories(businessId ?? "");
 
   const globalProducts = (globalProductsData?.items ?? []) as GlobalProduct[];
   const globalMeta = globalProductsData?.meta;
   const industryCategories = Array.isArray(industryCategoriesData) ? industryCategoriesData : [];
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
-  const activateGlobal = useActivateCatalogProduct(businessId);
+  const activateGlobal = useActivateCatalogProduct(businessId ?? "");
 
   const handleActivateGlobal = (
     data: ActivateCatalogProductDto,
@@ -170,6 +152,24 @@ export default function GlobalCatalogPage() {
       },
     });
   };
+
+  if (!businessId) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+            <Store className="w-8 h-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("noBusiness.title")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("noBusiness.description")}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
