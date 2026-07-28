@@ -15,6 +15,7 @@
     "nequiName": "Account name",
     "nequiAmount": "Monthly amount",
     "nequiConcept": "Reference",
+    "nequiConceptValue": "ToGo plan payment - {businessName}",
     "supportTitle": "Already paid?",
     "supportText": "Send your payment receipt via WhatsApp and an agent will verify it within 24 hours.",
     "supportButton": "Send receipt",
@@ -24,6 +25,20 @@
     "copiedToClipboard": "Copied to clipboard",
     "copyButtonTooltip": "Copy",
     "catalogError": "We couldn't load the plans. Please try again.",
-    "catalogRetry": "Retry"
+    "catalogRetry": "Retry",
+    "features": {
+      "platformAccess": "Full platform access",
+      "branchesUnlimited": "Unlimited branches",
+      "branchesSingle": "1 branch",
+      "branchesMultiple": "Up to {max} branches",
+      "usersUnlimited": "Unlimited users",
+      "usersSingle": "1 user",
+      "usersMultiple": "Up to {max} users",
+      "support": {
+        "2": "WhatsApp support during business hours",
+        "3": "Priority support (WhatsApp + email, response within 4h)",
+        "4": "Dedicated support with assigned agent"
+      }
+    }
   }
 }

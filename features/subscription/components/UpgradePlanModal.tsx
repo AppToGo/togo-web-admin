@@ -22,11 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  QUALITATIVE_PLAN_FEATURES,
-  NEQUI_PAYMENT_INFO,
-  type PlanNumber,
-} from "@/lib/plan.utils";
+import { NEQUI_PAYMENT_INFO, type PlanNumber } from "@/lib/plan.utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useUpgradePlan } from "../hooks/useUpgradePlan";
 import { usePlanCatalog } from "../hooks/usePlanCatalog";
@@ -46,18 +42,6 @@ const PLAN_ICONS: Record<Exclude<PlanNumber, 1>, React.ElementType> = {
   3: Rocket,
   4: Building2,
 };
-
-function formatBranchesFeature(maxBranches: number): string {
-  if (maxBranches >= UNLIMITED_PLAN_LIMIT) return "Sedes ilimitadas";
-  if (maxBranches === 1) return "1 sede";
-  return `Hasta ${maxBranches} sedes`;
-}
-
-function formatUsersFeature(maxUsers: number): string {
-  if (maxUsers >= UNLIMITED_PLAN_LIMIT) return "Usuarios ilimitados";
-  if (maxUsers === 1) return "1 usuario";
-  return `Hasta ${maxUsers} usuarios`;
-}
 
 export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
   const t = useTranslations("subscription.upgradePlanModal");
@@ -107,12 +91,25 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
 
   // Los bullets de sedes/usuarios se generan desde el catálogo real (no un
   // texto hardcodeado) para que nunca queden desactualizados si el backend
-  // cambia un límite por env — antes esto vivía como texto fijo en
-  // lib/plan.utils.ts y había que editarlo a mano en cada cambio de límite.
+  // cambia un límite por env. El copy (incluido el nivel de soporte, que
+  // varía por plan) vive en i18n bajo features.* para quedar traducido.
+  const formatBranchesFeature = (maxBranches: number): string => {
+    if (maxBranches >= UNLIMITED_PLAN_LIMIT) return t("features.branchesUnlimited");
+    if (maxBranches === 1) return t("features.branchesSingle");
+    return t("features.branchesMultiple", { max: maxBranches });
+  };
+
+  const formatUsersFeature = (maxUsers: number): string => {
+    if (maxUsers >= UNLIMITED_PLAN_LIMIT) return t("features.usersUnlimited");
+    if (maxUsers === 1) return t("features.usersSingle");
+    return t("features.usersMultiple", { max: maxUsers });
+  };
+
   const getPlanFeatures = (planEntry: PlanCatalogEntry): string[] => [
     formatBranchesFeature(planEntry.maxBranches),
     formatUsersFeature(planEntry.maxUsers),
-    ...QUALITATIVE_PLAN_FEATURES[planEntry.plan as Exclude<PlanNumber, 1>],
+    t("features.platformAccess"),
+    t(`features.support.${planEntry.plan}`),
   ];
 
   const selectedPlanInfo = selectedPlan ? getPlanEntry(selectedPlan) : null;
@@ -298,10 +295,9 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                     },
                     {
                       label: t("nequiConcept"),
-                      value: NEQUI_PAYMENT_INFO.concept.replace(
-                        "{businessName}",
-                        user?.businessName ?? ""
-                      ),
+                      value: t("nequiConceptValue", {
+                        businessName: user?.businessName ?? "",
+                      }),
                     },
                   ].map(({ label, value }) => (
                     <div
