@@ -215,6 +215,10 @@
       "title": "Catálogo completo",
       "message": "Has activado todos los productos disponibles del catálogo global."
     },
+    "notAvailable": {
+      "title": "Catálogo global no disponible",
+      "message": "Todavía no hay productos en el catálogo global para tu categoría de negocio."
+    },
     "filters": {
       "brand": "Marca",
       "category": "Categoría"
