@@ -5,11 +5,13 @@ import { useTranslations } from "next-intl";
 import { Package, Store, Grid3X3 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
+import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useGlobalCatalog,
+  useHasGlobalCatalogProducts,
   useIndustryCategories,
   useActivateCatalogProduct,
   useCategories,
@@ -68,6 +70,23 @@ function EmptyGlobalCatalogState() {
   );
 }
 
+function NotAvailableState() {
+  const t = useTranslations("catalog");
+  return (
+    <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+      <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <Grid3X3 className="w-8 h-8 text-slate-400" />
+      </div>
+      <h2 className="text-xl font-semibold text-slate-900 mb-2">
+        {t("globalCatalog.notAvailable.title")}
+      </h2>
+      <p className="text-slate-500 text-center max-w-md">
+        {t("globalCatalog.notAvailable.message")}
+      </p>
+    </div>
+  );
+}
+
 function ErrorState({ error }: { error: Error | null }) {
   const t = useTranslations("catalog");
   return (
@@ -91,6 +110,9 @@ export default function GlobalCatalogPage() {
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
+  const isSuperAdmin = useIsSuperAdmin();
+  const { hasProducts: hasGlobalProducts, isLoading: isCheckingGlobalProducts } =
+    useHasGlobalCatalogProducts(isSuperAdmin ? null : businessId);
 
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [selectedIndustryCategories, setSelectedIndustryCategories] = useState<string[]>([]);
@@ -169,6 +191,23 @@ export default function GlobalCatalogPage() {
         </div>
       </DashboardLayout>
     );
+  }
+
+  if (!isSuperAdmin) {
+    if (isCheckingGlobalProducts) {
+      return (
+        <DashboardLayout>
+          <GlobalCatalogLoading />
+        </DashboardLayout>
+      );
+    }
+    if (!hasGlobalProducts) {
+      return (
+        <DashboardLayout>
+          <NotAvailableState />
+        </DashboardLayout>
+      );
+    }
   }
 
   return (

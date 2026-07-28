@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
 import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
+import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 
 
 interface SidebarProps {
@@ -46,10 +48,18 @@ export function Sidebar({
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
+  const effectiveBusinessId = useEffectiveBusinessId();
 
   // Fetch payment alerts for badge
   const { data: paymentAlerts } = usePaymentAlerts(isSuperAdmin);
   const alertCount = paymentAlerts?.length || 0;
+
+  // El catálogo global solo se muestra si el negocio tiene productos
+  // disponibles para su industria, o si el usuario es super admin
+  const { hasProducts: hasGlobalProducts } = useHasGlobalCatalogProducts(
+    isSuperAdmin ? null : effectiveBusinessId
+  );
+  const showGlobalCatalog = isSuperAdmin || hasGlobalProducts;
 
 
   // Navigation items with translation keys
@@ -85,11 +95,15 @@ export function Sidebar({
             href: "/dashboard/inventory",
             icon: InventoryIcon,
           },
-          {
-            name: t("sidebar.globalCatalog"),
-            href: "/dashboard/catalog/global",
-            icon: GlobeIcon,
-          },
+          ...(showGlobalCatalog
+            ? [
+                {
+                  name: t("sidebar.globalCatalog"),
+                  href: "/dashboard/catalog/global",
+                  icon: GlobeIcon,
+                },
+              ]
+            : []),
           {
             name: t("sidebar.categories"),
             href: "/dashboard/catalog/categories",
@@ -132,7 +146,7 @@ export function Sidebar({
     ];
 
     return items;
-  }, [t]);
+  }, [t, showGlobalCatalog]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [

@@ -20,6 +20,7 @@ export {
   useToggleProductStatus,
   // Global Catalog
   useGlobalCatalog,
+  useHasGlobalCatalogProducts,
   useActivateGlobalProduct,
   // Categories
   useCategories,
