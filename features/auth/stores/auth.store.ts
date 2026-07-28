@@ -90,37 +90,6 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       /**
-       * Refresh access token using httpOnly cookie
-       * 
-       * This uses a lock mechanism to prevent race conditions
-       * when multiple requests fail with 401 simultaneously.
-       */
-      refreshAccessToken: async (): Promise<boolean> => {
-        try {
-          // Call refresh endpoint - backend reads refresh token from cookie
-          const response = await fetch("/api/auth/refresh", {
-            method: "POST",
-            credentials: "include", // Important: sends cookies
-          });
-
-          if (!response.ok) {
-            throw new Error("Refresh failed");
-          }
-
-          const data: LoginResponse = await response.json();
-          
-          // Update in-memory state with new access token
-          get().setAuthData(data);
-          
-          return true;
-        } catch (error) {
-          console.error("Token refresh failed:", error);
-          get().clearAuth();
-          return false;
-        }
-      },
-
-      /**
        * Set auth data from login/refresh response
        * Only stores in memory - NEVER persists token
        */
