@@ -44,21 +44,27 @@ export async function POST() {
       body: JSON.stringify({ refreshToken }),
     });
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("[API /auth/refresh] Backend status:", response.status);
-    }
+    console.log("[API /auth/refresh] Backend status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      if (process.env.NODE_ENV === "development") {
-        console.log("[API /auth/refresh] Backend error:", errorText);
+      console.log(
+        `[API /auth/refresh] Backend error (status ${response.status}):`,
+        errorText
+      );
+
+      // Only clear the cookie when the backend says the session is
+      // genuinely dead (401 = refresh token invalid/expired/revoked past
+      // its grace window). A 5xx (e.g. a transient DB error) or any other
+      // non-401 failure does NOT mean the cookie is bad — deleting it here
+      // was turning a temporary backend hiccup into a forced logout.
+      if (response.status === 401) {
+        cookieStore.delete("togo_refresh_token");
       }
-      
-      // Clear invalid cookie
-      cookieStore.delete("togo_refresh_token");
+
       return NextResponse.json(
         { error: "Invalid refresh token", details: errorText },
-        { status: 401 }
+        { status: response.status === 401 ? 401 : 502 }
       );
     }
 
