@@ -15,7 +15,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/v1";
+// Ver la nota en app/api/auth/refresh/route.ts: preferir la red interna de
+// Docker/Swarm para llamadas servidor-a-servidor, que el Managed Challenge
+// de Cloudflare bloquea si se usa el dominio público.
+const API_BASE_URL =
+  process.env.API_INTERNAL_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:3000/v1";
 
 export async function POST() {
   const cookieStore = await cookies();
