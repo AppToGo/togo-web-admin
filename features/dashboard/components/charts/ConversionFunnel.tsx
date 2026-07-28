@@ -17,8 +17,9 @@ const COLORS = ['#6366f1', '#8b5cf6', '#a78bfa'];
 
 export function ConversionFunnel() {
   const t = useTranslations('dashboard.charts.conversionFunnel');
-  const { data } = useDetailedMetrics();
+  const { data, isLoading } = useDetailedMetrics();
 
+  if (isLoading) return <div className="h-80 bg-slate-100 animate-pulse rounded-lg" />;
   if (!data) return null;
 
   const { conversionFunnel } = data;
