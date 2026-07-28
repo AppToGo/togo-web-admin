@@ -14,7 +14,6 @@ import {
   LazyChartsSection,
   BranchSelector,
 } from "@/features/dashboard";
-import { usePlanMetrics } from "@/features/dashboard/hooks/usePlanMetrics";
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
@@ -24,7 +23,6 @@ export default function DashboardPage() {
 
   const user = useCurrentUser();
   const currentPreset = useDateFilterPreset();
-  const { config, planKey } = usePlanMetrics();
 
   return (
     <DashboardLayout>
@@ -45,9 +43,6 @@ export default function DashboardPage() {
               ) : (
                 t("welcome.withoutBusiness")
               )}
-            </p>
-            <p className="text-xs text-indigo-600 mt-1 font-medium">
-              Plan: {planKey.toUpperCase()}
             </p>
           </div>
 
@@ -73,21 +68,17 @@ export default function DashboardPage() {
           <KpiSection />
         </Suspense>
 
-        {/* Metrics Grid - Lazy load (Basic+) */}
-        {config.lazy.includes("payment-methods") && (
-          <section>
-            <h3 className="text-lg font-semibold mb-4">Métricas Detalladas</h3>
-            <LazyMetricsGrid />
-          </section>
-        )}
+        {/* Metrics Grid - Lazy load */}
+        <section>
+          <h3 className="text-lg font-semibold mb-4">Métricas Detalladas</h3>
+          <LazyMetricsGrid />
+        </section>
 
-        {/* Charts - Lazy load (Pro+) */}
-        {config.lazy.includes("revenue-chart") && (
-          <section>
-            <h3 className="text-lg font-semibold mb-4">Análisis</h3>
-            <LazyChartsSection />
-          </section>
-        )}
+        {/* Charts - Lazy load */}
+        <section>
+          <h3 className="text-lg font-semibold mb-4">Análisis</h3>
+          <LazyChartsSection />
+        </section>
       </div>
     </DashboardLayout>
   );

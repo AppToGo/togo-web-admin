@@ -19,11 +19,15 @@ export type PlanNumber = 1 | 2 | 3 | 4;
  * Features cualitativas por plan (sin números — los límites de sedes/usuarios
  * se generan dinámicamente desde el catálogo real en UpgradePlanModal, para
  * que nunca queden desactualizados si el backend cambia un límite por env).
+ *
+ * Todos los planes tienen acceso completo a la plataforma (mismo catálogo,
+ * pedidos, métricas y dashboard); lo único que distingue un plan de otro es
+ * la cantidad de sedes y usuarios permitidos, más el nivel de soporte.
  */
 export const QUALITATIVE_PLAN_FEATURES: Record<Exclude<PlanNumber, 1>, string[]> = {
-  2: ['Gestión de pedidos', 'Catálogo básico'],
-  3: ['Métricas avanzadas', 'Soporte prioritario'],
-  4: ['Todas las métricas', 'Soporte dedicado'],
+  2: ['Acceso completo a la plataforma', 'Soporte por WhatsApp'],
+  3: ['Acceso completo a la plataforma', 'Soporte prioritario'],
+  4: ['Acceso completo a la plataforma', 'Soporte dedicado'],
 };
 
 /**
