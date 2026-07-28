@@ -15,6 +15,13 @@ import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
 import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
 import { ARCHIVE_STATUS } from '../constants/order-statuses';
+import {
+  isRefreshInProgress,
+  waitForRefresh,
+  startGlobalRefresh,
+  clearGlobalRefreshState,
+} from '@/services/auth-sync.service';
+import { forceLogout } from '@/services/session.service';
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -75,8 +82,7 @@ export interface RealtimeState {
 export function useOrdersRealtime(): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
-  const isRefreshingRef = useRef(false);
-  
+
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
   const businessId = selectedBusinessId || user?.businessId || null;
@@ -94,23 +100,62 @@ export function useOrdersRealtime(): RealtimeState {
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
+  // Reusa el MISMO mutex global que el interceptor HTTP (api.service.ts) en
+  // vez de refrescar por su cuenta. El refresh token del backend es de un
+  // solo uso (rota y revoca el anterior en cada llamada — auth.service.ts),
+  // así que dos refrescos concurrentes y no coordinados (uno del socket, otro
+  // de una petición HTTP) competían por el mismo cookie: el que perdía la
+  // carrera recibía un refresh token ya revocado, y esa falla terminaba
+  // desloguenado al usuario aunque el otro refresh hubiera tenido éxito
+  // segundos antes. Ver auth-sync.service.ts para el porqué del mutex.
   const refreshAndReconnect = useCallback(
     async (socket: Socket) => {
-      // Lock para evitar múltiples refreshs paralelos
-      if (isRefreshingRef.current) return;
-
-      isRefreshingRef.current = true;
-      try {
-        const refreshed = await useAuthStore.getState().refreshAccessToken();
-        if (refreshed) {
-          const newToken = useAuthStore.getState().accessToken;
-          socket.auth = { token: newToken, businessId };
+      if (isRefreshInProgress()) {
+        const token = await waitForRefresh();
+        if (token) {
+          socket.auth = { token, businessId };
           socket.connect();
         } else {
           socket.disconnect();
         }
-      } finally {
-        isRefreshingRef.current = false;
+        return;
+      }
+
+      const token = await startGlobalRefresh(async () => {
+        try {
+          const response = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            credentials: 'include',
+          });
+
+          if (!response.ok) {
+            throw new Error('Token refresh failed');
+          }
+
+          const data = await response.json();
+          useAuthStore.getState().setAuthData(data);
+          return { success: true, token: data.access_token };
+        } catch (err) {
+          return {
+            success: false,
+            token: null,
+            error: err instanceof Error ? err : new Error('Refresh failed'),
+          };
+        }
+      });
+
+      if (token) {
+        socket.auth = { token, businessId };
+        socket.connect();
+      } else {
+        // Refresh genuinamente fallido (no solo perdió la carrera con otro
+        // refresh): mismo tratamiento que el interceptor HTTP — limpiar el
+        // estado de auth y navegar a login, en vez de dejar al usuario en un
+        // estado "logueado" pero con el socket permanentemente desconectado.
+        useAuthStore.getState().clearAuth();
+        clearGlobalRefreshState();
+        forceLogout('session_expired');
+        socket.disconnect();
       }
     },
     [businessId]
