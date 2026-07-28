@@ -47,7 +47,8 @@ export interface DeliveryInfo {
 // Item de la orden
 export interface OrderItem {
   id: string;
-  productId: string;
+  productId?: string;
+  productVariantId?: string;
   productName: string;
   quantity: number;
   unitPrice: number;
