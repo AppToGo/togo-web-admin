@@ -315,6 +315,23 @@ export function useGlobalCatalog(
 }
 
 /**
+ * Hook to check whether the global catalog has any products available for
+ * this business's industry — independent of any search/filter the user may
+ * have applied on the actual listing. Used to gate menu visibility and route
+ * access for non-super-admin users.
+ */
+export function useHasGlobalCatalogProducts(businessId: string | null) {
+  const { data, isLoading } = useGlobalCatalog(businessId ?? "", {
+    page: 1,
+    limit: 1,
+  });
+  return {
+    hasProducts: (data?.meta?.total ?? 0) > 0,
+    isLoading: !!businessId && isLoading,
+  };
+}
+
+/**
  * Hook to activate a global product
  *
  * @param businessId - The business ID

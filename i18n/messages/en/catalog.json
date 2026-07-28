@@ -215,6 +215,10 @@
       "title": "Catalog complete",
       "message": "You have activated all available products from the global catalog."
     },
+    "notAvailable": {
+      "title": "Global catalog not available",
+      "message": "There are no global catalog products for your business category yet."
+    },
     "activate": "Activate",
     "filters": {
       "brand": "Brand",
