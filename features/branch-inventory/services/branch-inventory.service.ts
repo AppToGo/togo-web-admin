@@ -35,9 +35,15 @@ export async function getBranchInventory(
 ): Promise<PaginatedInventory> {
   const params = new URLSearchParams();
   if (filters?.categoryId) params.append("categoryId", filters.categoryId);
+  if (filters?.industryCategoryId)
+    params.append("industryCategoryId", filters.industryCategoryId);
   if (filters?.search) params.append("search", filters.search);
   if (filters?.isAvailable !== undefined)
     params.append("isAvailable", String(filters.isAvailable));
+  if (filters?.isActivated !== undefined)
+    params.append("isActivated", String(filters.isActivated));
+  if (filters?.stockStatus && filters.stockStatus.length > 0)
+    params.append("stockStatus", filters.stockStatus.join(","));
   if (filters?.page) params.append("page", String(filters.page));
   if (filters?.limit) params.append("limit", String(filters.limit));
 

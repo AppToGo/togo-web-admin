@@ -82,10 +82,15 @@ export interface InitialInventory {
 /**
  * Filters for inventory list
  */
+export type StockStatusFilter = "out" | "in" | "low" | "untracked";
+
 export interface InventoryFilters {
   categoryId?: string;
+  industryCategoryId?: string;
   search?: string;
   isAvailable?: boolean;
+  isActivated?: boolean;
+  stockStatus?: StockStatusFilter[];
   page?: number;
   limit?: number;
 }

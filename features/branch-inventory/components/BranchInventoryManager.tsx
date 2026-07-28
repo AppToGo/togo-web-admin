@@ -42,7 +42,14 @@ import {
 } from "../hooks/useBranchInventory";
 import { BranchInventoryTable } from "./BranchInventoryTable";
 import { BulkInventoryActions } from "./BulkInventoryActions";
-import type { InventoryItem, BranchSummary } from "../types";
+import {
+  InventoryFilters,
+  stockFilterToStatuses,
+  type AvailabilityFilterState,
+  type StockFilterState,
+} from "./InventoryFilters";
+import type { InventoryItem, BranchSummary, InventoryFilters as InventoryFiltersType } from "../types";
+import { useCategories } from "@/features/catalog/hooks";
 import {
   Dialog,
   DialogContent,
@@ -261,12 +268,77 @@ export function BranchInventoryManager({
   const [activatingProduct, setActivatingProduct] =
     useState<InventoryItem | null>(null);
 
+  // Filter state
+  const [selectedCategory, setSelectedCategory] = useState("all"); // industryCategoryId
+  const [selectedSubcategory, setSelectedSubcategory] = useState("all"); // categoryId (BusinessCategory)
+  const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilterState>({
+    available: true,
+    unavailable: true,
+  });
+  const handleCategoryChange = useCallback((value: string) => {
+    setSelectedCategory(value);
+    // La subcategoría seleccionada podría no pertenecer a la nueva categoría padre
+    setSelectedSubcategory("all");
+  }, []);
+
+  const [stockFilter, setStockFilter] = useState<StockFilterState>({
+    out: true,
+    in: true,
+    low: true,
+    untracked: true,
+  });
+
+  const { data: categoriesData } = useCategories(businessId);
+  const categories = categoriesData ?? [];
+
+  const activeFiltersCount = useMemo(() => {
+    const hasCategoryFilter = selectedCategory !== "all";
+    const hasSubcategoryFilter = selectedSubcategory !== "all";
+    const hasAvailabilityFilter =
+      !availabilityFilter.available || !availabilityFilter.unavailable;
+    const hasStockFilter =
+      !stockFilter.out || !stockFilter.in || !stockFilter.low || !stockFilter.untracked;
+    return [
+      hasCategoryFilter,
+      hasSubcategoryFilter,
+      hasAvailabilityFilter,
+      hasStockFilter,
+    ].filter(Boolean).length;
+  }, [selectedCategory, selectedSubcategory, availabilityFilter, stockFilter]);
+
+  const clearAllFilters = useCallback(() => {
+    setSelectedCategory("all");
+    setSelectedSubcategory("all");
+    setAvailabilityFilter({ available: true, unavailable: true });
+    setStockFilter({ out: true, in: true, low: true, untracked: true });
+  }, []);
+
+  const inventoryFilters: InventoryFiltersType = useMemo(() => {
+    // Traduce el par de switches a un booleano tri-state, mismo patrón que
+    // sourceFilter -> isFromTemplate en catalog/products/page.tsx
+    const isAvailable =
+      availabilityFilter.available && !availabilityFilter.unavailable
+        ? true
+        : !availabilityFilter.available && availabilityFilter.unavailable
+          ? false
+          : undefined;
+
+    return {
+      search: globalFilter || undefined,
+      industryCategoryId: selectedCategory !== "all" ? selectedCategory : undefined,
+      categoryId: selectedSubcategory !== "all" ? selectedSubcategory : undefined,
+      isAvailable,
+      stockStatus: stockFilterToStatuses(stockFilter),
+      limit: 100,
+    };
+  }, [globalFilter, selectedCategory, selectedSubcategory, availabilityFilter, stockFilter]);
+
   // Queries
   const {
     data: inventoryData,
     isLoading,
     refetch,
-  } = useBranchInventory(businessId, selectedBranchId || null);
+  } = useBranchInventory(businessId, selectedBranchId || null, inventoryFilters);
 
   // Mutations
   const activateMutation = useActivateProduct(businessId, selectedBranchId);
@@ -447,6 +519,21 @@ export function BranchInventoryManager({
               </button>
             )}
           </div>
+
+          {/* Filter button */}
+          <InventoryFilters
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+            selectedSubcategory={selectedSubcategory}
+            onSubcategoryChange={setSelectedSubcategory}
+            availabilityFilter={availabilityFilter}
+            onAvailabilityFilterChange={setAvailabilityFilter}
+            stockFilter={stockFilter}
+            onStockFilterChange={setStockFilter}
+            activeFiltersCount={activeFiltersCount}
+            onClearFilters={clearAllFilters}
+          />
 
           {/* Branch Single Selector - siempre visible */}
           {setSelectedBranchId && (
