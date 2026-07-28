@@ -6,6 +6,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { BUSINESS_KEYS } from "./query-keys";
 import {
   getBusinessById,
@@ -36,10 +37,16 @@ export function useBusiness(id: string, options?: { enabled?: boolean }) {
  * Hook to get current user's business
  */
 export function useCurrentBusiness(options?: { enabled?: boolean }) {
+  // Gated on the in-memory access token: without it this fires before
+  // AuthProvider finishes restoring the session (or after a logout),
+  // hits the API with no Authorization header, and its 401 triggers an
+  // unnecessary extra refresh attempt on the shared mutex.
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   return useQuery<Business>({
     queryKey: BUSINESS_KEYS.current(),
     queryFn: () => getCurrentBusiness(),
-    enabled: options?.enabled !== false,
+    enabled: options?.enabled !== false && !!accessToken,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

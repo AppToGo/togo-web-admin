@@ -37,11 +37,21 @@ function generateCsrfToken(userId: string): string {
   return token;
 }
 
+type SessionValidation =
+  | { ok: true; userId: string }
+  // "invalid": the backend confirmed the refresh token is dead (401) —
+  // safe to delete the cookie.
+  // "error": the backend call failed for any other reason (5xx, network,
+  // timeout) — the session may still be valid, so the cookie must be left
+  // alone. Conflating these two was causing the cookie to be wiped on
+  // transient backend errors.
+  | { ok: false; reason: "invalid" | "error" };
+
 /**
  * Validate a refresh token and extract user info
  * This ensures CSRF token is bound to an active session
  */
-async function validateSession(refreshToken: string): Promise<{ userId: string } | null> {
+async function validateSession(refreshToken: string): Promise<SessionValidation> {
   try {
     // Call backend to validate refresh token and get user info
     const response = await fetch(`${API_BASE_URL}/auth/validate-session`, {
@@ -51,13 +61,13 @@ async function validateSession(refreshToken: string): Promise<{ userId: string }
     });
 
     if (!response.ok) {
-      return null;
+      return { ok: false, reason: response.status === 401 ? "invalid" : "error" };
     }
 
     const data = await response.json();
-    return { userId: data.userId };
+    return { ok: true, userId: data.userId };
   } catch {
-    return null;
+    return { ok: false, reason: "error" };
   }
 }
 
@@ -76,13 +86,20 @@ export async function GET() {
     // Validate session and get user ID
     // This binds CSRF token to the specific user session
     const session = await validateSession(refreshToken);
-    
-    if (!session) {
-      // Invalid or expired session
-      cookieStore.delete("togo_refresh_token");
+
+    if (!session.ok) {
+      if (session.reason === "invalid") {
+        cookieStore.delete("togo_refresh_token");
+        return NextResponse.json(
+          { error: "Invalid session" },
+          { status: 401 }
+        );
+      }
+      // Transient backend error — do not touch the cookie, the session
+      // may still be valid.
       return NextResponse.json(
-        { error: "Invalid session" },
-        { status: 401 }
+        { error: "Failed to validate session" },
+        { status: 502 }
       );
     }
 
