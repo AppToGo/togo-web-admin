@@ -8,7 +8,18 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/v1";
+// Server-side only — nunca corre en el browser. En producción preferimos
+// API_INTERNAL_URL (red interna de Docker/Swarm, ej.
+// http://togo-togoapi-qjfgoj:3000/v1) en vez de NEXT_PUBLIC_API_URL (dominio
+// público vía Cloudflare): las llamadas servidor-a-servidor entre
+// contenedores del mismo VPS son bloqueadas por el Managed Challenge/Bot
+// Fight Mode de Cloudflare (fetch() de Node no pasa el challenge JS), que
+// esta ruta interpretaba como refresh token inválido y desloguenaba al
+// usuario. Mismo fix ya aplicado en togo-web-catalog/lib/api.ts (v0.1.8).
+const API_BASE_URL =
+  process.env.API_INTERNAL_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:3000/v1";
 
 export async function POST() {
   try {
