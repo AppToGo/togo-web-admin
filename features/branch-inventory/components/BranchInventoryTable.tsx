@@ -299,16 +299,33 @@ export function BranchInventoryTable({
                 >
                   {item.productName}
                 </span>
-                {item.categoryName && (
-                  <span className="text-xs text-slate-400">
-                    {item.categoryName}
-                  </span>
-                )}
               </div>
             </div>
           );
         },
         size: 250,
+      },
+      // Category (IndustryCategory - top level)
+      {
+        accessorKey: "industryCategoryName",
+        header: t("table.category"),
+        cell: ({ row }) => (
+          <span className="text-sm text-slate-600">
+            {row.original.industryCategoryName || "—"}
+          </span>
+        ),
+        size: 140,
+      },
+      // Subcategory (BusinessCategory - business-level, optional)
+      {
+        accessorKey: "categoryName",
+        header: t("table.subcategory"),
+        cell: ({ row }) => (
+          <span className="text-sm text-slate-600">
+            {row.original.categoryName || "—"}
+          </span>
+        ),
+        size: 140,
       },
 
       // Availability toggle - controls if product is sold in this branch

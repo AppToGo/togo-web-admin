@@ -26,6 +26,8 @@ export interface InventoryItem {
   productImage?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;
+  industryCategoryId?: string | null;
+  industryCategoryName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -80,10 +82,15 @@ export interface InitialInventory {
 /**
  * Filters for inventory list
  */
+export type StockStatusFilter = "out" | "in" | "low" | "untracked";
+
 export interface InventoryFilters {
   categoryId?: string;
+  industryCategoryId?: string;
   search?: string;
   isAvailable?: boolean;
+  isActivated?: boolean;
+  stockStatus?: StockStatusFilter[];
   page?: number;
   limit?: number;
 }

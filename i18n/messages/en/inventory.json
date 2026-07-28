@@ -26,6 +26,7 @@
   "table": {
     "product": "Product",
     "category": "Category",
+    "subcategory": "Subcategory",
     "available": "Available",
     "activated": "Activated",
     "available": "Available",
@@ -42,6 +43,27 @@
     "empty": {
       "title": "No products",
       "message": "Create products in the Catalog section to manage their inventory"
+    }
+  },
+  "filters": {
+    "title": "Filters",
+    "category": "Category",
+    "categoryPlaceholder": "All categories",
+    "allCategories": "All categories",
+    "subcategory": "Subcategory",
+    "subcategoryPlaceholder": "All subcategories",
+    "allSubcategories": "All subcategories",
+    "availability": {
+      "title": "Status",
+      "available": "Available",
+      "unavailable": "Unavailable"
+    },
+    "stock": {
+      "title": "Stock",
+      "out": "Out of stock",
+      "in": "In stock",
+      "low": "Low stock",
+      "untracked": "Untracked"
     }
   },
   "selector": {

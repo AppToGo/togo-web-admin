@@ -26,6 +26,7 @@
   "table": {
     "product": "Producto",
     "category": "Categoría",
+    "subcategory": "Subcategoría",
     "activated": "Activado",
     "available": "Disponible",
     "stock": "Stock",
@@ -41,6 +42,27 @@
     "empty": {
       "title": "No hay productos",
       "message": "Crea productos en la sección de Catálogo para gestionar su inventario"
+    }
+  },
+  "filters": {
+    "title": "Filtros",
+    "category": "Categoría",
+    "categoryPlaceholder": "Todas las categorías",
+    "allCategories": "Todas las categorías",
+    "subcategory": "Subcategoría",
+    "subcategoryPlaceholder": "Todas las subcategorías",
+    "allSubcategories": "Todas las subcategorías",
+    "availability": {
+      "title": "Estado",
+      "available": "Disponible",
+      "unavailable": "No disponible"
+    },
+    "stock": {
+      "title": "Stock",
+      "out": "Agotado",
+      "in": "Con stock",
+      "low": "Stock bajo",
+      "untracked": "Sin control"
     }
   },
   "selector": {
