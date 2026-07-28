@@ -14,10 +14,11 @@ import { formatCurrency } from '@/lib/utils';
 const COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'];
 
 export function PaymentMethodsChart() {
-  const { data } = useDetailedMetrics();
+  const { data, isLoading } = useDetailedMetrics();
 
+  if (isLoading) return <div className="h-80 bg-slate-100 animate-pulse rounded-lg" />;
   if (!data) return null;
-  
+
   // Verificar si hay métodos de pago
   if (!data.paymentMethods || data.paymentMethods.length === 0) {
     return (

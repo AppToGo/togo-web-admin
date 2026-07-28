@@ -13,8 +13,9 @@ function formatCurrency(amount: number): string {
 }
 
 export function TrendComparisonCard() {
-  const { data } = useDetailedMetrics();
+  const { data, isLoading } = useDetailedMetrics();
 
+  if (isLoading) return <div className="h-32 bg-slate-100 animate-pulse rounded-lg" />;
   if (!data) return null;
 
   const { trendComparison } = data;

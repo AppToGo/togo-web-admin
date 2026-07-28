@@ -14,8 +14,9 @@ import {
 import { formatCurrency } from '@/lib/utils';
 
 export function RevenueChart() {
-  const { data } = useDetailedMetrics();
+  const { data, isLoading } = useDetailedMetrics();
 
+  if (isLoading) return <div className="h-80 bg-slate-100 animate-pulse rounded-lg" />;
   if (!data) return null;
 
   const chartData = data.revenueChart.map((point) => ({
