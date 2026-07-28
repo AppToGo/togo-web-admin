@@ -26,6 +26,8 @@ export interface InventoryItem {
   productImage?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;
+  industryCategoryId?: string | null;
+  industryCategoryName?: string | null;
   createdAt: string;
   updatedAt: string;
 }

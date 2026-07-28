@@ -26,6 +26,7 @@
   "table": {
     "product": "Product",
     "category": "Category",
+    "subcategory": "Subcategory",
     "available": "Available",
     "activated": "Activated",
     "available": "Available",
