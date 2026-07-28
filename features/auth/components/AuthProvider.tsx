@@ -23,8 +23,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import {
   startGlobalRefresh,
-  clearGlobalRefreshState,
-  isRefreshInProgress
+  isRefreshInProgress,
+  waitForRefresh,
 } from "@/services/auth-sync.service";
 import {
   SESSION_LOGOUT_EVENT,
@@ -60,7 +60,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const isRedirecting = useRef(false);
-  const { accessToken, isAuthenticated, setAuthData, clearAuth } = useAuthStore();
+  const hasAttemptedRestore = useRef(false);
+  const { accessToken, setAuthData, clearAuth } = useAuthStore();
 
   // Listen for force-logout events dispatched by the Axios interceptor.
   // This replaces window.location.href with a locale-aware React navigation,
@@ -119,19 +120,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    // If a global refresh is already in progress, wait for it
+    function handleRestoreOutcome(token: string | null) {
+      if (token) {
+        setRestoreState("authenticated");
+        return;
+      }
+
+      setRestoreState("unauthenticated");
+      // Redirect to login with return URL (preserve locale)
+      const extractedLocale = pathname?.split('/')[1];
+      const locale = routing.locales.includes(extractedLocale as typeof routing.locales[number])
+        ? extractedLocale
+        : routing.defaultLocale;
+
+      // Validate redirect path to prevent open redirect attacks
+      const isValidRedirect = (path: string): boolean => {
+        return path.startsWith('/') && !path.startsWith('//') && !path.includes(':');
+      };
+      const redirectPath = pathname && isValidRedirect(pathname) ? pathname : `/${locale}/dashboard/orders`;
+
+      const loginUrl = new URL(`/${locale}/login`, window.location.origin);
+      loginUrl.searchParams.set("redirect", redirectPath);
+      router.replace(loginUrl.toString());
+    }
+
+    // If a global refresh is already in progress (started by the Axios
+    // interceptor or a prior render), wait for its result instead of
+    // starting a second one — the refresh token is single-use server-side,
+    // so a duplicate call here would race with the one already in flight
+    // and log the user out even though the first refresh succeeds.
     if (isRefreshInProgress()) {
       if (process.env.NODE_ENV === "development") {
         console.log("[AuthProvider] Refresh already in progress, waiting...");
       }
+      waitForRefresh().then(handleRestoreOutcome);
       return;
     }
+
+    // Guards against calling restoreSession() twice for the same mount —
+    // e.g. React StrictMode's dev-only mount→cleanup→mount double-invoke.
+    // The mutex above already coordinates with the Axios interceptor; this
+    // only protects THIS effect from firing its own restore attempt twice.
+    if (hasAttemptedRestore.current) {
+      return;
+    }
+    hasAttemptedRestore.current = true;
 
     // Attempt to restore session
     if (process.env.NODE_ENV === "development") {
       console.log("[AuthProvider] Attempting session restore...");
     }
-    
+
     async function restoreSession() {
       const token = await startGlobalRefresh(async () => {
         try {
@@ -164,43 +203,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } catch (error) {
           console.error("[AuthProvider] Session restoration error:", error);
           clearAuth();
-          return { 
-            success: false, 
+          return {
+            success: false,
             token: null,
-            error: error instanceof Error ? error : new Error("Unknown error") 
+            error: error instanceof Error ? error : new Error("Unknown error")
           };
         }
       });
 
-      if (token) {
-        setRestoreState("authenticated");
-      } else {
-        setRestoreState("unauthenticated");
-        // Redirect to login with return URL (preserve locale)
-        const extractedLocale = pathname?.split('/')[1];
-        const locale = routing.locales.includes(extractedLocale as typeof routing.locales[number]) 
-          ? extractedLocale 
-          : routing.defaultLocale;
-        
-        // Validate redirect path to prevent open redirect attacks
-        const isValidRedirect = (path: string): boolean => {
-          return path.startsWith('/') && !path.startsWith('//') && !path.includes(':');
-        };
-        const redirectPath = pathname && isValidRedirect(pathname) ? pathname : `/${locale}/dashboard/orders`;
-        
-        const loginUrl = new URL(`/${locale}/login`, window.location.origin);
-        loginUrl.searchParams.set("redirect", redirectPath);
-        router.replace(loginUrl.toString());
-      }
+      handleRestoreOutcome(token);
     }
 
     restoreSession();
-
-    // Cleanup on unmount
-    return () => {
-      clearGlobalRefreshState();
-    };
-  }, [accessToken, isAuthenticated, pathname, router, setAuthData, clearAuth]);
+  }, [accessToken, pathname, router, setAuthData, clearAuth]);
 
   // Show loading spinner only while checking on protected routes
   if (restoreState === "checking" && !PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {

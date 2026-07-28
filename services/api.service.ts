@@ -25,6 +25,7 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
 import {
   isRefreshInProgress,
+  waitForRefresh,
   startGlobalRefresh,
   clearGlobalRefreshState
 } from "@/services/auth-sync.service";
@@ -168,26 +169,24 @@ apiClient.interceptors.response.use(
     // Check if AuthProvider or another request is already refreshing
     // ==========================================================================
     
-    // If a global refresh is in progress, wait for it
+    // If a global refresh is in progress (started by AuthProvider or a
+    // previous request), wait for ITS result instead of starting a new one.
+    // Calling startGlobalRefresh() here would race with the in-flight
+    // refresh: the token is single-use server-side, so a second call can
+    // return null even though the original refresh succeeds a moment later.
     if (isRefreshInProgress()) {
-      try {
-        // Use global sync to wait for the ongoing refresh
-        const token = await startGlobalRefresh(async () => {
-          // This won't actually start a new refresh if one is in progress
-          // It will return the promise of the ongoing refresh
-          return { success: false, token: null };
-        });
-        
-        if (token) {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiClient(originalRequest);
-        }
-      } catch {
-        // Refresh failed — signal AuthProvider to handle navigation
-        useAuthStore.getState().clearAuth();
-        forceLogout("session_expired");
-        return Promise.reject(error);
+      const token = await waitForRefresh();
+
+      if (token) {
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return apiClient(originalRequest);
       }
+
+      // The in-flight refresh genuinely failed — signal AuthProvider to
+      // handle navigation. Never fall through to start a second refresh.
+      useAuthStore.getState().clearAuth();
+      forceLogout("session_expired");
+      return Promise.reject(error);
     }
 
     // ==========================================================================
