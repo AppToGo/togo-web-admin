@@ -26,6 +26,7 @@
   "table": {
     "product": "Producto",
     "category": "Categoría",
+    "subcategory": "Subcategoría",
     "activated": "Activado",
     "available": "Disponible",
     "stock": "Stock",
