@@ -1,5 +1,3 @@
-export type PlanType = 'free' | 'basic' | 'pro' | 'enterprise';
-
 export interface KpiMetrics {
   ordersToday: number;
   ordersCompletedToday: number;
@@ -50,11 +48,4 @@ export interface RevenueChartPoint {
 export interface PeakHour {
   hour: number;
   count: number;
-}
-
-export interface PlanConfig {
-  immediate: string[];
-  lazy: string[];
-  preload: boolean;
-  prefetch?: string[];
 }
