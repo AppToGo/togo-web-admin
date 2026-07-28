@@ -38,7 +38,9 @@
         "2": "Soporte por WhatsApp en horario hábil",
         "3": "Soporte prioritario (WhatsApp + email, respuesta en menos de 4h)",
         "4": "Soporte dedicado con agente asignado"
-      }
+      },
+      "extraSlotsCta": "¿Necesitás más sedes o usuarios? Escribinos",
+      "extraSlotsMessage": "Hola, quiero agregar más sedes o usuarios a mi plan {planName} en ToGo (negocio: {businessName})."
     }
   }
 }

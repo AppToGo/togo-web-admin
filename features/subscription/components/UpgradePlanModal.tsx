@@ -112,6 +112,19 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     t(`features.support.${planEntry.plan}`),
   ];
 
+  // Enterprise ya es ilimitado en sedes y usuarios, no aplica ofrecer plazas
+  // adicionales. Para Basic/Pro se canaliza por WhatsApp (mismo número de
+  // soporte usado para verificar pagos) — el precio y el ajuste del límite
+  // (maxBranchesOverride) lo define un agente manualmente desde el admin.
+  const getExtraSlotsWhatsAppUrl = (planName: string): string => {
+    const phone = NEQUI_PAYMENT_INFO.supportWhatsApp.replace(/\D/g, "");
+    const message = t("features.extraSlotsMessage", {
+      planName,
+      businessName: user?.businessName ?? "",
+    });
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  };
+
   const selectedPlanInfo = selectedPlan ? getPlanEntry(selectedPlan) : null;
 
   return (
@@ -235,6 +248,18 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                         t("upgradeButton", { planName: planEntry.name })
                       )}
                     </Button>
+
+                    {planNum !== 4 && (
+                      <a
+                        href={getExtraSlotsWhatsAppUrl(planEntry.name)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 hover:text-slate-700 transition-colors"
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        {t("features.extraSlotsCta")}
+                      </a>
+                    )}
                   </div>
                 );
               })}

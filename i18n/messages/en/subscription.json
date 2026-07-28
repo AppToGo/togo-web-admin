@@ -38,7 +38,9 @@
         "2": "WhatsApp support during business hours",
         "3": "Priority support (WhatsApp + email, response within 4h)",
         "4": "Dedicated support with assigned agent"
-      }
+      },
+      "extraSlotsCta": "Need more branches or users? Message us",
+      "extraSlotsMessage": "Hi, I'd like to add more branches or users to my {planName} plan on ToGo (business: {businessName})."
     }
   }
 }
