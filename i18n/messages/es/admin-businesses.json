@@ -22,6 +22,7 @@
     "noBusinesses": "No se encontraron negocios",
     "business": "Negocio",
     "plan": "Plan",
+    "requestedPlan": "Solicitó {planName}",
     "paymentStatus": "Estado de Pago",
     "dueDate": "Fecha de Vencimiento",
     "branches": "Sedes",
@@ -91,6 +92,13 @@
       "paidAt": "Fecha de Pago",
       "notes": "Notas",
       "notesPlaceholder": "Notas adicionales sobre el pago...",
+      "activatePlan": {
+        "title": "Activar plan solicitado",
+        "description": "{businessName} solicitó pasar a {planName} ({price}/mes)",
+        "activate": "Activar {planName} con este pago",
+        "keepCurrent": "No activar ningún plan (solo registrar el pago)",
+        "choosePlan": "Elegir un plan distinto"
+      },
       "submit": "Registrar Pago"
     },
     "sendNotification": {

@@ -130,6 +130,18 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       /**
+       * Refleja que se envió una solicitud de cambio de plan (UpgradePlanModal
+       * → requestPlanChange). A diferencia de setSubscriptionPlan, esto NO
+       * cambia el plan activo del negocio — solo evita que el modal vuelva a
+       * ofrecer el mismo upgrade hasta que un SUPER_ADMIN lo verifique.
+       */
+      setRequestedPlan: (plan: number) => {
+        const { user } = get();
+        if (!user) return;
+        set({ user: { ...user, requestedPlan: plan } });
+      },
+
+      /**
        * Check if token needs refresh
        * Returns true if token expires within buffer time
        */

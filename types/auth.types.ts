@@ -18,6 +18,8 @@ export interface AuthenticatedUser {
   subscriptionPlan?: number;
   /** Fecha límite del trial Free (ISO string). Solo presente si el negocio está en plan Free. */
   trialEndsAt?: string | null;
+  /** Plan solicitado (UpgradePlanModal) pendiente de verificación por un SUPER_ADMIN. */
+  requestedPlan?: number | null;
 }
 
 // Login Request
@@ -55,6 +57,7 @@ export interface AuthActions {
   setAuthData: (data: LoginResponse) => void;
   clearAuth: () => void;
   setSubscriptionPlan: (plan: number) => void;
+  setRequestedPlan: (plan: number) => void;
 }
 
 // Registration status

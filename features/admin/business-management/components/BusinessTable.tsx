@@ -20,7 +20,7 @@ import { DueDateBadge } from "./DueDateBadge";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PlanBadge } from "./PlanBadge";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
-import { getPlanMaxBranches, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
+import { getPlanLabel, getPlanMaxBranches, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 import type { PlanCatalogEntry } from "@/features/subscription/services/subscription.service";
 
@@ -91,7 +91,21 @@ export function BusinessTable({
 
               {/* Plan */}
               <TableCell>
-                <PlanBadge plan={business.subscription?.plan} />
+                <div className="flex flex-col items-start gap-1">
+                  <PlanBadge plan={business.subscription?.plan} />
+                  {business.subscription?.requestedPlan != null && (
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-100 text-indigo-700 border border-indigo-200"
+                      title={t("table.requestedPlan", {
+                        planName: getPlanLabel(business.subscription.requestedPlan),
+                      })}
+                    >
+                      {t("table.requestedPlan", {
+                        planName: getPlanLabel(business.subscription.requestedPlan),
+                      })}
+                    </span>
+                  )}
+                </div>
               </TableCell>
 
               {/* Payment Status */}
