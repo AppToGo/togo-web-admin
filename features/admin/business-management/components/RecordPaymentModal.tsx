@@ -26,22 +26,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PAYMENT_METHODS } from "../constants/payment-status";
-import type { BusinessWithSubscription } from "../types/business-subscription.types";
+import { PAYMENT_METHODS, PLAN_OPTIONS, getPlanLabel } from "../constants/payment-status";
+import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
+import { formatCurrency } from "@/lib/utils";
+import type { BusinessWithSubscription, RecordPaymentDto } from "../types/business-subscription.types";
 
 interface RecordPaymentModalProps {
   business: BusinessWithSubscription | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    amount: number;
-    method: string;
-    reference?: string;
-    notes?: string;
-    paidAt?: string;
-  }) => void;
+  onSubmit: (data: RecordPaymentDto) => void;
   isSubmitting?: boolean;
 }
+
+// Sentinel para el <Select> — Radix no permite value="" en SelectItem
+const NO_PLAN_VALUE = "none";
 
 export function RecordPaymentModal({
   business,
@@ -51,31 +50,61 @@ export function RecordPaymentModal({
   isSubmitting,
 }: RecordPaymentModalProps) {
   const t = useTranslations("admin-businesses");
+  const { data: catalog } = usePlanCatalog(isOpen);
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
   const [paidAt, setPaidAt] = useState(new Date().toISOString().split("T")[0]);
+  const [activatePlan, setActivatePlan] = useState<string>(NO_PLAN_VALUE);
 
-  // Reset form when modal opens
+  const requestedPlan = business?.subscription?.requestedPlan ?? null;
+
+  const getPlanPrice = (plan: number): number | null =>
+    catalog?.plans.find((p) => p.plan === plan)?.priceMonthly ?? null;
+
+  // Reset form when modal opens — si el negocio tiene una solicitud
+  // pendiente, se preselecciona (activar es el flujo esperado: verificar el
+  // pago ES activar el plan).
   useEffect(() => {
     if (isOpen) {
-      setAmount("");
       setMethod("");
       setReference("");
       setNotes("");
       setPaidAt(new Date().toISOString().split("T")[0]);
+      setActivatePlan(requestedPlan != null ? String(requestedPlan) : NO_PLAN_VALUE);
+      setAmount("");
     }
-  }, [isOpen]);
+  }, [isOpen, requestedPlan]);
+
+  // Prellena el monto con el precio del plan solicitado. Efecto separado del
+  // de arriba (con `catalog` en deps) porque el catálogo puede resolver
+  // DESPUÉS de que el modal ya esté abierto (usePlanCatalog(isOpen) recién
+  // dispara el fetch al abrir) — si viviera en el mismo efecto que solo
+  // depende de [isOpen, requestedPlan], nunca se re-ejecutaría cuando el
+  // catálogo llegara tarde y el monto quedaría vacío sin que nadie lo note.
+  useEffect(() => {
+    if (isOpen && requestedPlan != null) {
+      const price = catalog?.plans.find((p) => p.plan === requestedPlan)?.priceMonthly ?? null;
+      if (price != null) setAmount(String(price));
+    }
+  }, [isOpen, requestedPlan, catalog]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const skipPlanActivation = activatePlan === NO_PLAN_VALUE;
     onSubmit({
       amount: parseFloat(amount),
       method,
       reference: reference || undefined,
       notes: notes || undefined,
       paidAt: paidAt ? new Date(paidAt).toISOString() : undefined,
+      activatePlan: skipPlanActivation ? undefined : Number(activatePlan),
+      // Necesario para distinguir "el admin eligió no activar nada" de "no
+      // se tocó el campo" — sin esto, elegir "no activar" caía igual al
+      // requestedPlan pendiente del lado del backend (activatePlan:undefined
+      // se trata como "no especificado", no como "explícitamente ninguno").
+      skipPlanActivation: skipPlanActivation ? true : undefined,
     });
   };
 
@@ -86,6 +115,7 @@ export function RecordPaymentModal({
     setReference("");
     setNotes("");
     setPaidAt(new Date().toISOString().split("T")[0]);
+    setActivatePlan(NO_PLAN_VALUE);
     onClose();
   };
 
@@ -103,6 +133,49 @@ export function RecordPaymentModal({
           </DialogHeader>
 
           <div className="grid gap-4 p-7">
+            {requestedPlan != null && (
+              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4 space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-indigo-900">
+                    {t("modals.recordPayment.activatePlan.title")}
+                  </p>
+                  <p className="text-xs text-indigo-700 mt-0.5">
+                    {t("modals.recordPayment.activatePlan.description", {
+                      businessName: business?.name ?? "",
+                      planName: getPlanLabel(requestedPlan),
+                      price: (() => {
+                        const price = getPlanPrice(requestedPlan);
+                        return price != null ? formatCurrency(price, catalog?.currency) : "-";
+                      })(),
+                    })}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Select value={activatePlan} onValueChange={setActivatePlan}>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={String(requestedPlan)}>
+                        {t("modals.recordPayment.activatePlan.activate", {
+                          planName: getPlanLabel(requestedPlan),
+                        })}
+                      </SelectItem>
+                      <SelectItem value={NO_PLAN_VALUE}>
+                        {t("modals.recordPayment.activatePlan.keepCurrent")}
+                      </SelectItem>
+                      {PLAN_OPTIONS.filter((p) => p.value !== requestedPlan).map((p) => (
+                        <SelectItem key={p.value} value={String(p.value)}>
+                          {t("modals.recordPayment.activatePlan.choosePlan")}: {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             {/* Amount */}
             <div className="grid gap-2">
               <Label htmlFor="amount">

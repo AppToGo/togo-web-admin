@@ -14,6 +14,10 @@ export interface BusinessSubscription {
   nextPaymentDue: string | null;
   maxBranchesOverride: number | null;
   gracePeriodDays: number;
+  /** Plan solicitado por el negocio (UpgradePlanModal), pendiente de verificación. null = sin solicitud. */
+  requestedPlan: number | null;
+  /** Cuándo se hizo la solicitud de cambio de plan. */
+  requestedPlanAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,6 +73,18 @@ export interface RecordPaymentDto {
   reference?: string;
   notes?: string;
   paidAt?: string;
+  /**
+   * Plan a activar junto con este pago. Si se omite y el negocio tiene una
+   * solicitud pendiente (subscription.requestedPlan), el backend activa esa.
+   */
+  activatePlan?: number;
+  /**
+   * Marca explícita de "no activar ningún plan con este pago" — necesaria
+   * porque `activatePlan` ausente es indistinguible de "no especificado"
+   * (que el backend interpreta como "activar la solicitud pendiente, si hay").
+   * Tiene prioridad sobre activatePlan y sobre cualquier solicitud pendiente.
+   */
+  skipPlanActivation?: boolean;
 }
 
 export interface SendNotificationDto {

@@ -6,8 +6,16 @@ import apiClient from "@/services/api.service";
  */
 export const UNLIMITED_PLAN_LIMIT = 999999;
 
-export interface UpgradePlanRequest {
+export interface PlanRequestRequest {
   plan: number;
+}
+
+export interface PlanRequestResponse {
+  /** Plan actualmente activo del negocio — NO cambia con esta solicitud. */
+  currentPlan: number;
+  /** Plan solicitado, pendiente de verificación por un SUPER_ADMIN. */
+  requestedPlan: number;
+  requestedPlanAt: string;
 }
 
 export interface PlanCatalogEntry {
@@ -35,16 +43,17 @@ export async function getPlanCatalog(): Promise<PlanCatalogResponse> {
 }
 
 /**
- * Upgrade the subscription plan for a business.
- * Payment status will be set to PENDING — user must complete a manual transfer.
- * PATCH /businesses/:businessId/upgrade-plan
+ * Solicita un cambio de plan para el negocio. NO migra el plan — el negocio
+ * sigue en su plan actual hasta que un SUPER_ADMIN verifica el pago y activa
+ * el plan solicitado desde el panel admin (RecordPaymentModal).
+ * POST /businesses/:businessId/plan-request
  */
-export async function upgradePlan(
+export async function requestPlanChange(
   businessId: string,
-  data: UpgradePlanRequest
-): Promise<{ subscriptionPlan: number }> {
-  const response = await apiClient.patch<{ subscriptionPlan: number }>(
-    `/businesses/${businessId}/upgrade-plan`,
+  data: PlanRequestRequest
+): Promise<PlanRequestResponse> {
+  const response = await apiClient.post<PlanRequestResponse>(
+    `/businesses/${businessId}/plan-request`,
     data
   );
   return response.data;
