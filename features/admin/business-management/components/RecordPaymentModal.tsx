@@ -28,6 +28,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PAYMENT_METHODS, PLAN_OPTIONS, getPlanLabel } from "../constants/payment-status";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
+import { formatCurrency } from "@/lib/utils";
 import type { BusinessWithSubscription, RecordPaymentDto } from "../types/business-subscription.types";
 
 interface RecordPaymentModalProps {
@@ -62,44 +63,48 @@ export function RecordPaymentModal({
   const getPlanPrice = (plan: number): number | null =>
     catalog?.plans.find((p) => p.plan === plan)?.priceMonthly ?? null;
 
-  const formatPrice = (amount: number) =>
-    new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: catalog?.currency ?? "COP",
-      maximumFractionDigits: 0,
-    }).format(amount);
-
   // Reset form when modal opens — si el negocio tiene una solicitud
   // pendiente, se preselecciona (activar es el flujo esperado: verificar el
-  // pago ES activar el plan) y se prellena el monto con el precio del plan.
+  // pago ES activar el plan).
   useEffect(() => {
     if (isOpen) {
       setMethod("");
       setReference("");
       setNotes("");
       setPaidAt(new Date().toISOString().split("T")[0]);
-
-      if (requestedPlan != null) {
-        setActivatePlan(String(requestedPlan));
-        const price = getPlanPrice(requestedPlan);
-        setAmount(price != null ? String(price) : "");
-      } else {
-        setActivatePlan(NO_PLAN_VALUE);
-        setAmount("");
-      }
+      setActivatePlan(requestedPlan != null ? String(requestedPlan) : NO_PLAN_VALUE);
+      setAmount("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, requestedPlan]);
+
+  // Prellena el monto con el precio del plan solicitado. Efecto separado del
+  // de arriba (con `catalog` en deps) porque el catálogo puede resolver
+  // DESPUÉS de que el modal ya esté abierto (usePlanCatalog(isOpen) recién
+  // dispara el fetch al abrir) — si viviera en el mismo efecto que solo
+  // depende de [isOpen, requestedPlan], nunca se re-ejecutaría cuando el
+  // catálogo llegara tarde y el monto quedaría vacío sin que nadie lo note.
+  useEffect(() => {
+    if (isOpen && requestedPlan != null) {
+      const price = catalog?.plans.find((p) => p.plan === requestedPlan)?.priceMonthly ?? null;
+      if (price != null) setAmount(String(price));
+    }
+  }, [isOpen, requestedPlan, catalog]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const skipPlanActivation = activatePlan === NO_PLAN_VALUE;
     onSubmit({
       amount: parseFloat(amount),
       method,
       reference: reference || undefined,
       notes: notes || undefined,
       paidAt: paidAt ? new Date(paidAt).toISOString() : undefined,
-      activatePlan: activatePlan === NO_PLAN_VALUE ? undefined : Number(activatePlan),
+      activatePlan: skipPlanActivation ? undefined : Number(activatePlan),
+      // Necesario para distinguir "el admin eligió no activar nada" de "no
+      // se tocó el campo" — sin esto, elegir "no activar" caía igual al
+      // requestedPlan pendiente del lado del backend (activatePlan:undefined
+      // se trata como "no especificado", no como "explícitamente ninguno").
+      skipPlanActivation: skipPlanActivation ? true : undefined,
     });
   };
 
@@ -140,7 +145,7 @@ export function RecordPaymentModal({
                       planName: getPlanLabel(requestedPlan),
                       price: (() => {
                         const price = getPlanPrice(requestedPlan);
-                        return price != null ? formatPrice(price) : "-";
+                        return price != null ? formatCurrency(price, catalog?.currency) : "-";
                       })(),
                     })}
                   </p>

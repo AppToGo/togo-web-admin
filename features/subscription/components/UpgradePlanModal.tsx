@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { NEQUI_PAYMENT_INFO, type PlanNumber } from "@/lib/plan.utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useUpgradePlan } from "../hooks/useUpgradePlan";
@@ -74,12 +74,13 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     });
   };
 
-  const formatPrice = (amount: number) =>
-    new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: catalog?.currency ?? "COP",
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const formatPrice = (amount: number) => formatCurrency(amount, catalog?.currency);
+
+  // El backend rechaza una solicitud que no supere tanto el plan activo como
+  // cualquier solicitud ya pendiente (para no pisar en silencio una solicitud
+  // más alta ya notificada a soporte) — este piso evita ofrecer un botón que
+  // el backend va a rechazar.
+  const requestFloor = Math.max(user?.subscriptionPlan ?? 1, user?.requestedPlan ?? 1);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -186,7 +187,8 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                 const Icon = PLAN_ICONS[planNum];
                 const isPopular = planNum === 3;
                 const isLoadingThis = isPending && selectedPlan === planNum;
-                const isDisabled = isPending && selectedPlan !== planNum;
+                const isBelowFloor = planNum <= requestFloor;
+                const isDisabled = (isPending && selectedPlan !== planNum) || isBelowFloor;
 
                 return (
                   <div
@@ -260,6 +262,8 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                           <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           {t("upgradingButton")}
                         </span>
+                      ) : isBelowFloor ? (
+                        t("planUnavailable")
                       ) : (
                         t("upgradeButton", { planName: planEntry.name })
                       )}

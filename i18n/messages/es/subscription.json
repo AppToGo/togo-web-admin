@@ -7,6 +7,7 @@
     "perMonth": "/mes",
     "upgradeButton": "Actualizar a {planName}",
     "upgradingButton": "Actualizando...",
+    "planUnavailable": "Ya tenés este plan o uno superior solicitado",
     "paymentPendingTitle": "Solicitud enviada",
     "paymentPendingSubtitle": "Tu plan actual sigue activo. Vas a pasar a {planName} en cuanto verifiquemos tu pago.",
     "alreadyRequestedTitle": "Ya tenés una solicitud en verificación",

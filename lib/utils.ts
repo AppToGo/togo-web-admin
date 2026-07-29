@@ -43,12 +43,13 @@ export function formatDate(
 }
 
 /**
- * Format currency to COP
+ * Format currency. Defaults to COP (the app's default) but accepts any
+ * ISO 4217 code — e.g. the plan catalog's configurable currency.
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, currency: string = "COP"): string {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
-    currency: "COP",
+    currency,
     minimumFractionDigits: 0,
   }).format(amount);
 }

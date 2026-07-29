@@ -78,6 +78,13 @@ export interface RecordPaymentDto {
    * solicitud pendiente (subscription.requestedPlan), el backend activa esa.
    */
   activatePlan?: number;
+  /**
+   * Marca explícita de "no activar ningún plan con este pago" — necesaria
+   * porque `activatePlan` ausente es indistinguible de "no especificado"
+   * (que el backend interpreta como "activar la solicitud pendiente, si hay").
+   * Tiene prioridad sobre activatePlan y sobre cualquier solicitud pendiente.
+   */
+  skipPlanActivation?: boolean;
 }
 
 export interface SendNotificationDto {
