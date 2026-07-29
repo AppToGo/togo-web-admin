@@ -145,6 +145,22 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
               <p className="text-sm text-slate-500 mt-1">{t("subtitle")}</p>
             </DialogHeader>
 
+            {user?.requestedPlan != null && !isCatalogLoading && !isCatalogError && (
+              <div className="mx-6 mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3 flex gap-2.5">
+                <CreditCard className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-indigo-900">
+                    {t("alreadyRequestedTitle")}
+                  </p>
+                  <p className="text-xs text-indigo-700 mt-0.5">
+                    {t("alreadyRequestedSubtitle", {
+                      planName: getPlanEntry(user.requestedPlan as Exclude<PlanNumber, 1>)?.name ?? "",
+                    })}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {isCatalogLoading && (
                 <div className="col-span-3 py-8 flex justify-center">

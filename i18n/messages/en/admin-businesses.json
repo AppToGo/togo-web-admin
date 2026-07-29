@@ -22,6 +22,7 @@
     "noBusinesses": "No businesses found",
     "business": "Business",
     "plan": "Plan",
+    "requestedPlan": "Requested {planName}",
     "paymentStatus": "Payment Status",
     "dueDate": "Due Date",
     "branches": "Branches",
@@ -91,6 +92,13 @@
       "paidAt": "Payment Date",
       "notes": "Notes",
       "notesPlaceholder": "Additional notes about the payment...",
+      "activatePlan": {
+        "title": "Activate requested plan",
+        "description": "{businessName} requested to switch to {planName} ({price}/mo)",
+        "activate": "Activate {planName} with this payment",
+        "keepCurrent": "Don't activate any plan (just record the payment)",
+        "choosePlan": "Choose a different plan"
+      },
       "submit": "Record Payment"
     },
     "sendNotification": {
