@@ -31,7 +31,15 @@ export function ConversationsSection({ customerId }: ConversationsSectionProps) 
     data: conversations,
     meta,
     isLoading,
+    isError,
   } = useConversations({ customerId, page: 1, limit: 10 }, shouldLoad);
+
+  // Con la query deshabilitada (todavía no intersectó), isLoading es false
+  // (una query en enabled:false nunca entra en estado de carga) — sin este
+  // OR, la card muestra "sin conversaciones" antes de haber intentado el
+  // fetch (mismo síntoma que orders-section.tsx, no corregido acá por estar
+  // fuera del alcance de este PR).
+  const showSkeleton = !shouldLoad || isLoading;
 
   const handleSelectConversation = useCallback((sessionId: string) => {
     setSelectedSessionId(sessionId);
@@ -51,12 +59,13 @@ export function ConversationsSection({ customerId }: ConversationsSectionProps) 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {showSkeleton ? (
             <ConversationsSectionSkeleton />
           ) : (
             <ConversationsTable
               data={conversations}
               isLoading={false}
+              isError={isError}
               onSelectConversation={handleSelectConversation}
               pagination={meta}
             />

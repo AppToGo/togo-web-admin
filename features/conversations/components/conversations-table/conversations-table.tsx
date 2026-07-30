@@ -17,6 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
+  AlertTriangle,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -29,6 +30,8 @@ import type { ConversationListItem, PaginationMeta } from "../../types";
 interface ConversationsTableProps {
   data: ConversationListItem[];
   isLoading: boolean;
+  /** Fetch fallido (500, timeout) — distinto de una lista vacía real. */
+  isError?: boolean;
   onSelectConversation: (sessionId: string) => void;
   /** Si se omite, no se muestra el pie de paginación (uso compacto, ej. sección de cliente). */
   pagination?: PaginationMeta;
@@ -38,6 +41,7 @@ interface ConversationsTableProps {
 export function ConversationsTable({
   data,
   isLoading,
+  isError = false,
   onSelectConversation,
   pagination,
   onPageChange,
@@ -66,6 +70,22 @@ export function ConversationsTable({
             </div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mb-3">
+          <AlertTriangle className="w-6 h-6 text-amber-500" />
+        </div>
+        <h3 className="text-lg font-medium text-slate-900">
+          {t("error.title")}
+        </h3>
+        <p className="text-slate-500 text-center max-w-sm">
+          {t("error.description")}
+        </p>
       </div>
     );
   }

@@ -188,7 +188,8 @@
     "history": "Historial"
   },
   "conversationTab": {
-    "noConversation": "Este pedido no tiene una conversación de WhatsApp vinculada"
+    "noConversation": "Este pedido no tiene una conversación de WhatsApp vinculada",
+    "error": "No se pudo cargar la conversación. Intenta de nuevo en unos minutos."
   },
   "notifications": {
     "newOrder": "Nueva orden {orderNumber}",

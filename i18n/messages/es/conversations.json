@@ -4,7 +4,11 @@
   },
   "page": {
     "title": "Conversaciones sin pedido",
-    "subtitle": "Conversaciones cerradas que no terminaron en un pedido"
+    "subtitle": "Conversaciones cerradas que no terminaron en un pedido",
+    "selectBusinessTitle": "Selecciona un negocio",
+    "selectBusinessDescription": "Elige un negocio específico en el selector superior para ver sus conversaciones.",
+    "accessDeniedTitle": "Sin acceso",
+    "accessDeniedDescription": "No tienes permiso para ver esta sección."
   },
   "filters": {
     "outcome": "Resultado",
@@ -23,6 +27,10 @@
   "empty": {
     "title": "Sin conversaciones",
     "description": "Todavía no hay conversaciones registradas para este filtro."
+  },
+  "error": {
+    "title": "No se pudieron cargar las conversaciones",
+    "description": "Ocurrió un error al consultar el servidor. Intenta de nuevo en unos minutos."
   },
   "outcome": {
     "ORDER_PLACED": "Con pedido",

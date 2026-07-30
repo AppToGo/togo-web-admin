@@ -1,15 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useBusinessStore } from "@/features/business/stores/business.store";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { isAxiosError } from "axios";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { getConversations } from "../services/conversation.service";
 import { CONVERSATIONS_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 import type { GetConversationsParams, PaginatedConversationsResponse } from "../types";
 
 /**
  * Lista paginada de conversaciones del negocio. Mismo patrón de
- * enabled/effectiveBusinessId que `useCustomers`.
+ * enabled/effectiveBusinessId que `useCustomers`, pero delegando en el hook
+ * canónico `useEffectiveBusinessId` (que ya valida coherencia ante un
+ * `selectedBusinessId` obsoleto) en vez de recalcular la lógica a mano.
  *
  * @param enabled - Compuerta adicional (ej. `shouldLoad` de
  * `useLazySection`); se combina con el enabled calculado por negocio/rol.
@@ -18,18 +20,19 @@ export function useConversations(
   params?: GetConversationsParams & { businessId?: string },
   enabled: boolean = true
 ) {
-  const { user } = useAuthStore.getState();
-  const { selectedBusinessId } = useBusinessStore();
-
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
-  const hasBusinessId = !!user?.businessId;
-  const hasSelectedBusiness =
-    params?.businessId !== undefined || !!selectedBusinessId;
-  const isEnabled =
-    (isSuperAdmin ? hasSelectedBusiness : hasBusinessId) && enabled;
+  const effectiveBusinessIdFromStore = useEffectiveBusinessId();
+  // "" es el sentinel explícito de "Todos los negocios" (SUPER_ADMIN) — a
+  // diferencia de null (nada seleccionado todavía), acá sí hay una elección
+  // consciente, pero el endpoint de conversaciones exige un negocio
+  // concreto. Sin esta distinción, `"" || undefined` colapsa a undefined y
+  // la query queda deshabilitada en silencio, indistinguible de "aún no
+  // hay negocio elegido".
+  const isAllBusinessesSelected = effectiveBusinessIdFromStore === "";
 
   const effectiveBusinessId =
-    params?.businessId || selectedBusinessId || undefined;
+    params?.businessId ?? (effectiveBusinessIdFromStore || undefined);
+
+  const isEnabled = !!effectiveBusinessId && enabled;
 
   const mergedParams = {
     page: 1,
@@ -45,11 +48,9 @@ export function useConversations(
     gcTime: GC_TIME,
     enabled: isEnabled,
     retry: (failureCount, error) => {
-      if (error instanceof Error) {
-        const message = error.message;
-        if (message.includes("401") || message.includes("403")) {
-          return false;
-        }
+      if (isAxiosError(error)) {
+        const status = error.response?.status;
+        if (status === 401 || status === 403) return false;
       }
       return failureCount < 3;
     },
@@ -69,5 +70,6 @@ export function useConversations(
     data: query.data?.data ?? [],
     meta: query.data?.meta,
     pagination,
+    isAllBusinessesSelected,
   };
 }

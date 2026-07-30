@@ -2,10 +2,11 @@
 
 import { Suspense, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
-import { MessageCircle, Store } from "lucide-react";
+import { Lock, MessageCircle, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
+  useCurrentUser,
   useHasBusiness,
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
@@ -73,9 +74,19 @@ export default function ConversationsWithoutOrderPage() {
   const t = useTranslations("conversations");
 
   useAuthGuard();
+  const user = useCurrentUser();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
+
+  // Mismo gate de rol que la entrada del Sidebar (components/layout/Sidebar.tsx)
+  // — sin esto, un OPERATOR excluido de la nav podía llegar acá igual por URL
+  // directa. La aplicación real del permiso la hace el backend (403); esto es
+  // sólo UX consistente con el resto de la navegación.
+  const canViewConversations =
+    user?.role === "OWNER" ||
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN";
 
   const [page, setPage] = useState(1);
   const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>("ALL");
@@ -88,11 +99,30 @@ export default function ConversationsWithoutOrderPage() {
     setSelectedSessionId(null);
   }, []);
 
+  // Ajuste de estado durante el render (no un useEffect): patrón
+  // recomendado por React para "resetear un estado cuando cambia un valor
+  // externo". Sin esto, un SUPER_ADMIN que cambia de negocio con el
+  // selector global mientras está en una página avanzada se queda en, ej.,
+  // page=3 contra un negocio nuevo que puede no tener tantas páginas —
+  // resultado vacío indistinguible de un negocio genuinamente sin
+  // conversaciones.
+  const [prevBusinessId, setPrevBusinessId] = useState(selectedBusinessId);
+  if (selectedBusinessId !== prevBusinessId) {
+    setPrevBusinessId(selectedBusinessId);
+    setPage(1);
+  }
+
   // withoutOrder y outcome son mutuamente excluyentes en el backend (400 si
   // se combinan) — acá nunca se envían juntos: "ALL" usa withoutOrder=true
   // (los 4 outcomes de abajo), un outcome específico usa `outcome=[...]`
   // solo, sin withoutOrder. El dropdown nunca ofrece ORDER_PLACED.
-  const { data: conversations, pagination, isLoading } = useConversations({
+  const {
+    data: conversations,
+    pagination,
+    isLoading,
+    isError,
+    isAllBusinessesSelected,
+  } = useConversations({
     page,
     limit,
     businessId: selectedBusinessId || undefined,
@@ -111,6 +141,42 @@ export default function ConversationsWithoutOrderPage() {
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
             {t("page.title")}
           </h2>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!canViewConversations) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+            <Lock className="w-8 h-8 text-slate-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("page.accessDeniedTitle")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("page.accessDeniedDescription")}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isAllBusinessesSelected) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
+            <Store className="w-8 h-8 text-indigo-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            {t("page.selectBusinessTitle")}
+          </h2>
+          <p className="text-slate-500 text-center max-w-md">
+            {t("page.selectBusinessDescription")}
+          </p>
         </div>
       </DashboardLayout>
     );
@@ -153,6 +219,7 @@ export default function ConversationsWithoutOrderPage() {
           <ConversationsTable
             data={conversations}
             isLoading={isLoading}
+            isError={isError}
             onSelectConversation={setSelectedSessionId}
             pagination={pagination}
             onPageChange={setPage}

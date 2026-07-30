@@ -4,7 +4,11 @@
   },
   "page": {
     "title": "Conversations without an order",
-    "subtitle": "Closed conversations that did not result in an order"
+    "subtitle": "Closed conversations that did not result in an order",
+    "selectBusinessTitle": "Select a business",
+    "selectBusinessDescription": "Choose a specific business in the selector above to view its conversations.",
+    "accessDeniedTitle": "No access",
+    "accessDeniedDescription": "You don't have permission to view this section."
   },
   "filters": {
     "outcome": "Outcome",
@@ -23,6 +27,10 @@
   "empty": {
     "title": "No conversations",
     "description": "There are no conversations recorded for this filter yet."
+  },
+  "error": {
+    "title": "Couldn't load conversations",
+    "description": "Something went wrong reaching the server. Please try again in a few minutes."
   },
   "outcome": {
     "ORDER_PLACED": "Order placed",

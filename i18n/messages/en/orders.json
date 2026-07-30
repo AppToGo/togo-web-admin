@@ -188,7 +188,8 @@
     "history": "History"
   },
   "conversationTab": {
-    "noConversation": "This order has no linked WhatsApp conversation"
+    "noConversation": "This order has no linked WhatsApp conversation",
+    "error": "Couldn't load the conversation. Please try again in a few minutes."
   },
   "notifications": {
     "newOrder": "New order {orderNumber}",

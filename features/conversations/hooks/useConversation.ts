@@ -2,20 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
-import { useBusinessStore } from "@/features/business/stores/business.store";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import {
   getConversationById,
   getConversationByOrderId,
 } from "../services/conversation.service";
 import { CONVERSATIONS_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 import type { ConversationDetail } from "../types";
-
-function useEffectiveBusinessId(): string | undefined {
-  const { selectedBusinessId } = useBusinessStore();
-  const { user } = useAuthStore.getState();
-  return selectedBusinessId || user?.businessId || undefined;
-}
 
 /**
  * Detalle de una conversación por sessionId — usado en el diálogo de hilo
@@ -25,7 +18,7 @@ export function useConversation(
   sessionId: string | null,
   enabled: boolean = true
 ) {
-  const effectiveBusinessId = useEffectiveBusinessId();
+  const effectiveBusinessId = useEffectiveBusinessId() ?? undefined;
 
   return useQuery<ConversationDetail, Error>({
     queryKey: [
@@ -53,7 +46,7 @@ export function useConversationByOrder(
   orderId: string | null,
   enabled: boolean = false
 ) {
-  const effectiveBusinessId = useEffectiveBusinessId();
+  const effectiveBusinessId = useEffectiveBusinessId() ?? undefined;
 
   const query = useQuery<ConversationDetail | null, Error>({
     queryKey: [...CONVERSATIONS_KEYS.byOrder(orderId || ""), effectiveBusinessId],

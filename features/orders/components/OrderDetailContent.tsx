@@ -204,7 +204,7 @@ export function OrderDetailContent({
   onClose,
 }: OrderDetailContentProps) {
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
-  const { data: history } = useOrderHistory(orderId);
+  const { data: history, isLoading: isLoadingHistory } = useOrderHistory(orderId);
   const updateStatus = useUpdateOrderStatus();
   const [showNoStockDialog, setShowNoStockDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
@@ -572,7 +572,11 @@ export function OrderDetailContent({
 
         {/* Conversación Tab */}
         <TabsContent value="conversation" className="space-y-4">
-          {!conversationQuery.isLoading && !conversationQuery.hasConversation ? (
+          {conversationQuery.isError ? (
+            <p className="text-sm text-amber-700 bg-amber-50 rounded-md text-center py-8 px-4">
+              {t("conversationTab.error")}
+            </p>
+          ) : !conversationQuery.isLoading && !conversationQuery.hasConversation ? (
             <p className="text-sm text-slate-500 text-center py-8">
               {t("conversationTab.noConversation")}
             </p>
@@ -587,7 +591,13 @@ export function OrderDetailContent({
         {/* Historial Tab */}
         {canViewHistory && (
           <TabsContent value="history" className="space-y-3">
-            {history && history.length > 0 ? (
+            {isLoadingHistory ? (
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : history && history.length > 0 ? (
               <div className="space-y-2">
                 {history.slice(0, 5).map((entry) => (
                   <div
