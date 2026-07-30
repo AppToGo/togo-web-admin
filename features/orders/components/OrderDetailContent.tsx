@@ -15,6 +15,8 @@ import {
   AlertTriangle,
   ChevronDown,
   Check,
+  ClipboardList,
+  MessageCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -32,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +44,10 @@ import {
 import { getColumnVariant } from "../config/kanban-columns.config";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import {
+  useConversationByOrder,
+  ConversationThreadView,
+} from "@/features/conversations";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -201,6 +208,7 @@ export function OrderDetailContent({
   const updateStatus = useUpdateOrderStatus();
   const [showNoStockDialog, setShowNoStockDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
+  const [activeTab, setActiveTab] = useState("general");
   const { user } = useAuthStore();
 
   // Translations
@@ -213,6 +221,24 @@ export function OrderDetailContent({
     user?.role === "OWNER" ||
     user?.role === "ADMIN" ||
     user?.role === "SUPER_ADMIN";
+
+  // Tab "Conversación" se muestra de forma optimista (§4 del plan Fase B):
+  // en vez de agregar conversationSessionId a Order, se resuelve perezosamente
+  // vía GET .../orders/:id/conversation sólo cuando el tab está activo. Un
+  // 404 (pedido de catálogo web sin conversación) se traduce a estado vacío,
+  // no se oculta el tab — evita reordenar la lista de tabs a media sesión.
+  const conversationQuery = useConversationByOrder(
+    orderId,
+    activeTab === "conversation"
+  );
+
+  const tabs = [
+    { value: "general", icon: ClipboardList, label: t("tabs.general") },
+    { value: "conversation", icon: MessageCircle, label: t("tabs.conversation") },
+    ...(canViewHistory
+      ? [{ value: "history", icon: Clock, label: t("tabs.history") }]
+      : []),
+  ] as const;
 
   const handleStatusChange = useCallback(
     (newStatus: OrderStatus) => {
@@ -363,194 +389,240 @@ export function OrderDetailContent({
 
       <Separator />
 
-      {/* Customer Information */}
-      <div className="space-y-3">
-        <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-          <User className="w-4 h-4" />
-          {t("detail.customerInfo")}
-        </h4>
-        <div className="bg-slate-50 rounded-card p-4 space-y-2">
-          {order.customer?.name ? (
-            <p className="font-medium text-slate-900">{order.customer.name}</p>
-          ) : null}
-          {order.customer?.phoneNumber && (
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <Phone className="w-4 h-4" />
-              {order.customer.phoneNumber}
-            </div>
-          )}
-          {!order.customer?.name && !order.customer?.phoneNumber && (
-            <p className="text-sm text-slate-500">
-              {tc("empty.infoNotAvailable")}
-            </p>
-          )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        {/* Tab navigation — mismo patrón que users/[id]/page.tsx: pills
+            custom con role="tablist"/"tab", no TabsList/TabsTrigger directo. */}
+        <div
+          className="inline-flex bg-white border border-slate-100 rounded-lg p-1 gap-1"
+          role="tablist"
+        >
+          {tabs.map(({ value, icon: Icon, label }) => (
+            <button
+              key={value}
+              role="tab"
+              aria-selected={activeTab === value}
+              onClick={() => setActiveTab(value)}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                activeTab === value
+                  ? "bg-indigo-100 text-indigo-600"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* Delivery Address */}
-      {order.address && (
-        <div className="space-y-3">
-          <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            {t("detail.deliveryAddress")}
-          </h4>
-          <div className="bg-slate-50 rounded-card p-4">
-            <p className="font-medium text-slate-900">{order.address.label}</p>
-            <p className="text-sm text-slate-600 mt-1">
-              {order.address.addressText}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Order Items */}
-      {order.items && order.items.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            {t("detail.itemsCount", { count: order.items.length })}
-          </h4>
-          <div className="bg-slate-50 rounded-card overflow-hidden">
-            {order.items.map((item: OrderItem, index: number) => (
-              <div
-                key={item.id}
-                className={`flex items-center justify-between p-3 ${
-                  index !== order.items!.length - 1
-                    ? "border-b border-slate-200"
-                    : ""
-                }`}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-900 text-sm">
-                    {item.quantity}x {item.productName}
-                  </p>
-                  {item.notes && (
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {item.notes}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-slate-900 text-sm">
-                    {formatCurrency(item.unitPrice * item.quantity)}
-                  </p>
-                  {/* Subtle icon to indicate out of stock */}
-                  {!isReadOnly && (
-                    <button
-                      onClick={() => handleNoStock(item)}
-                      className="text-slate-300 hover:text-amber-500 transition-colors"
-                      title={t("markNoStock")}
-                    >
-                      <AlertTriangle className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-            {/* Totals breakdown */}
-            <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">{t("detail.subtotal")}</span>
-                <span className="text-slate-700">
-                  {formatCurrency(subtotal)}
-                </span>
-              </div>
-              {deliveryFee > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">
-                    {t("detail.deliveryFee")}
-                  </span>
-                  <span className="text-slate-700">
-                    {formatCurrency(deliveryFee)}
-                  </span>
+        {/* General Tab */}
+        <TabsContent value="general" className="space-y-6">
+          {/* Customer Information */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+              <User className="w-4 h-4" />
+              {t("detail.customerInfo")}
+            </h4>
+            <div className="bg-slate-50 rounded-card p-4 space-y-2">
+              {order.customer?.name ? (
+                <p className="font-medium text-slate-900">{order.customer.name}</p>
+              ) : null}
+              {order.customer?.phoneNumber && (
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <Phone className="w-4 h-4" />
+                  {order.customer.phoneNumber}
                 </div>
               )}
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200">
-                <p className="font-semibold text-slate-900">
-                  {t("detail.total")}
+              {!order.customer?.name && !order.customer?.phoneNumber && (
+                <p className="text-sm text-slate-500">
+                  {tc("empty.infoNotAvailable")}
                 </p>
-                <p className="font-bold text-slate-900">
-                  {formatCurrency(total)}
+              )}
+            </div>
+          </div>
+
+          {/* Delivery Address */}
+          {order.address && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                {t("detail.deliveryAddress")}
+              </h4>
+              <div className="bg-slate-50 rounded-card p-4">
+                <p className="font-medium text-slate-900">{order.address.label}</p>
+                <p className="text-sm text-slate-600 mt-1">
+                  {order.address.addressText}
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Notes */}
-      {order.notes && (
-        <div className="space-y-3">
-          <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-            <StickyNote className="w-4 h-4" />
-            {t("detail.notes")}
-          </h4>
-          <div className="bg-amber-50 rounded-card p-4">
-            <p className="text-sm text-amber-800">{order.notes}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Payment Information */}
-      <div className="space-y-3">
-        <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-          <CreditCard className="w-4 h-4" />
-          {t("paymentInfo")}
-        </h4>
-        <div
-          className="flex items-center gap-4"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <PaymentStatusEditor
-            orderId={order.id ?? ""}
-            paymentMethod={order.paymentMethod}
-            currentStatus={order.paymentStatus}
-          />
-          {order.paymentMethod && (
-            <span className="text-sm text-slate-600">
-              {t("paymentMethod").replace("{method}", order.paymentMethod)}
-            </span>
           )}
-        </div>
-      </div>
 
-      {/* Change History - Only for users with permissions */}
-      {canViewHistory && history && history.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            {t("detail.history")}
-          </h4>
-          <div className="space-y-2">
-            {history.slice(0, 5).map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-center justify-between text-sm py-2 border-b border-slate-100 last:border-0"
-              >
-                <div>
-                  <span className="text-slate-600">
-                    {entry.fromStatus
-                      ? `${tStatus(entry.fromStatus)} → ${tStatus(entry.toStatus)}`
-                      : t("history.created").replace(
-                          "{status}",
-                          tStatus(entry.toStatus)
-                        )}
-                  </span>
-                  {entry.notes && (
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {entry.notes}
-                    </p>
+          {/* Order Items */}
+          {order.items && order.items.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                {t("detail.itemsCount", { count: order.items.length })}
+              </h4>
+              <div className="bg-slate-50 rounded-card overflow-hidden">
+                {order.items.map((item: OrderItem, index: number) => (
+                  <div
+                    key={item.id}
+                    className={`flex items-center justify-between p-3 ${
+                      index !== order.items!.length - 1
+                        ? "border-b border-slate-200"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-slate-900 text-sm">
+                        {item.quantity}x {item.productName}
+                      </p>
+                      {item.notes && (
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {item.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-slate-900 text-sm">
+                        {formatCurrency(item.unitPrice * item.quantity)}
+                      </p>
+                      {/* Subtle icon to indicate out of stock */}
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => handleNoStock(item)}
+                          className="text-slate-300 hover:text-amber-500 transition-colors"
+                          title={t("markNoStock")}
+                        >
+                          <AlertTriangle className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {/* Totals breakdown */}
+                <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">{t("detail.subtotal")}</span>
+                    <span className="text-slate-700">
+                      {formatCurrency(subtotal)}
+                    </span>
+                  </div>
+                  {deliveryFee > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600">
+                        {t("detail.deliveryFee")}
+                      </span>
+                      <span className="text-slate-700">
+                        {formatCurrency(deliveryFee)}
+                      </span>
+                    </div>
                   )}
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                    <p className="font-semibold text-slate-900">
+                      {t("detail.total")}
+                    </p>
+                    <p className="font-bold text-slate-900">
+                      {formatCurrency(total)}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs text-slate-400">
-                  {new Date(entry.createdAt).toLocaleString()}
-                </span>
               </div>
-            ))}
+            </div>
+          )}
+
+          {/* Notes */}
+          {order.notes && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                <StickyNote className="w-4 h-4" />
+                {t("detail.notes")}
+              </h4>
+              <div className="bg-amber-50 rounded-card p-4">
+                <p className="text-sm text-amber-800">{order.notes}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Information */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              {t("paymentInfo")}
+            </h4>
+            <div
+              className="flex items-center gap-4"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <PaymentStatusEditor
+                orderId={order.id ?? ""}
+                paymentMethod={order.paymentMethod}
+                currentStatus={order.paymentStatus}
+              />
+              {order.paymentMethod && (
+                <span className="text-sm text-slate-600">
+                  {t("paymentMethod").replace("{method}", order.paymentMethod)}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        </TabsContent>
+
+        {/* Conversación Tab */}
+        <TabsContent value="conversation" className="space-y-4">
+          {!conversationQuery.isLoading && !conversationQuery.hasConversation ? (
+            <p className="text-sm text-slate-500 text-center py-8">
+              {t("conversationTab.noConversation")}
+            </p>
+          ) : (
+            <ConversationThreadView
+              data={conversationQuery.data}
+              isLoading={conversationQuery.isLoading}
+            />
+          )}
+        </TabsContent>
+
+        {/* Historial Tab */}
+        {canViewHistory && (
+          <TabsContent value="history" className="space-y-3">
+            {history && history.length > 0 ? (
+              <div className="space-y-2">
+                {history.slice(0, 5).map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between text-sm py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <div>
+                      <span className="text-slate-600">
+                        {entry.fromStatus
+                          ? `${tStatus(entry.fromStatus)} → ${tStatus(entry.toStatus)}`
+                          : t("history.created").replace(
+                              "{status}",
+                              tStatus(entry.toStatus)
+                            )}
+                      </span>
+                      {entry.notes && (
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {entry.notes}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-400">
+                      {new Date(entry.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 text-center py-8">
+                {t("detail.noHistory")}
+              </p>
+            )}
+          </TabsContent>
+        )}
+      </Tabs>
 
       {/* Dialog to confirm out of stock */}
       <Dialog open={showNoStockDialog} onOpenChange={setShowNoStockDialog}>

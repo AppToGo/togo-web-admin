@@ -175,11 +175,20 @@
     "itemsCount": "Productos ({count})",
     "notes": "Notas",
     "history": "Historial",
+    "noHistory": "Este pedido no tiene cambios de estado registrados",
     "total": "Total",
     "subtotal": "Subtotal",
     "deliveryFee": "Domicilio",
     "discount": "Descuento",
     "tax": "Impuestos"
+  },
+  "tabs": {
+    "general": "General",
+    "conversation": "Conversación",
+    "history": "Historial"
+  },
+  "conversationTab": {
+    "noConversation": "Este pedido no tiene una conversación de WhatsApp vinculada"
   },
   "notifications": {
     "newOrder": "Nueva orden {orderNumber}",
