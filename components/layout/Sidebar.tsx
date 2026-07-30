@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
+import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { locales } from "@/i18n/config";
@@ -61,6 +62,14 @@ export function Sidebar({
   );
   const showGlobalCatalog = isSuperAdmin || hasGlobalProducts;
 
+  // Gating por rol en cliente, sólo UX — el permiso real (conversation.view)
+  // lo aplica el backend (403). Mismo patrón que `canViewHistory` en
+  // OrderDetailContent: no hay infraestructura de permission[] en el JWT hoy.
+  const canViewConversations =
+    user?.role === "OWNER" ||
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN";
+
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -80,6 +89,15 @@ export function Sidebar({
         href: "/dashboard/customers",
         icon: UsersIcon,
       },
+      ...(canViewConversations
+        ? [
+            {
+              name: t("sidebar.conversations"),
+              href: "/dashboard/conversations",
+              icon: MessageCircle,
+            },
+          ]
+        : []),
       {
         name: t("sidebar.catalog"),
         href: "/dashboard/catalog",
@@ -146,7 +164,7 @@ export function Sidebar({
     ];
 
     return items;
-  }, [t, showGlobalCatalog]);
+  }, [t, showGlobalCatalog, canViewConversations]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [

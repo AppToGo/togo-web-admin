@@ -18,6 +18,7 @@ import type { Customer, CustomerAddress } from "../../types";
 import { MetricsSection } from "./sections/metrics-section";
 import { OrdersSection } from "./sections/orders-section";
 import { FavoritesSection } from "./sections/favorites-section";
+import { ConversationsSection } from "./sections/conversations-section";
 import { AddressList } from "./address-list";
 import { useFormatDate } from "@/hooks/useFormatDate";
 
@@ -189,6 +190,11 @@ export function CustomerUnifiedLayout({
                   </div>
                 )}
               </div>
+            </section>
+
+            {/* Conversations - Full width */}
+            <section>
+              <ConversationsSection customerId={customerId} />
             </section>
 
             {/* Bottom spacing for mobile scroll */}
