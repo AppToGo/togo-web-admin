@@ -77,5 +77,12 @@
     "notFound": "No se encontró la conversación",
     "truncated": "Este hilo es muy largo — se muestran sólo los últimos mensajes",
     "empty": "Esta conversación no tiene mensajes"
+  },
+  "deliveryStatus": {
+    "QUEUED": "En cola",
+    "SENT": "Enviado",
+    "DELIVERED": "Entregado",
+    "READ": "Leído",
+    "FAILED": "Falló el envío"
   }
 }

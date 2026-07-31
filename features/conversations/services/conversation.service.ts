@@ -11,6 +11,7 @@ import apiClient from "@/services/api.service";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type {
   ConversationDetail,
+  ConversationSummary,
   GetConversationsParams,
   PaginatedConversationsResponse,
 } from "../types";
@@ -31,6 +32,9 @@ function getBaseUrl(businessId?: string): string {
   return `/businesses/${effectiveBusinessId}/conversations`;
 }
 
+/** Exportado para `conversation-inbox.service.ts` (Fase C, Etapa 3) — mismo criterio de resolución de businessId. */
+export { getBaseUrl as getConversationsBaseUrl };
+
 /**
  * Lista paginada de conversaciones. `withoutOrder` y `outcome` son
  * mutuamente excluyentes (400 si se envían juntos — responsabilidad de
@@ -50,10 +54,27 @@ export async function getConversations(
   if (params?.withoutOrder !== undefined) {
     queryParams.withoutOrder = String(params.withoutOrder);
   }
+  if (params?.control?.length) queryParams.control = params.control.join(",");
+  if (params?.status?.length) queryParams.status = params.status.join(",");
+  if (params?.assignedTo) queryParams.assignedTo = params.assignedTo;
+  if (params?.hasUnread !== undefined) {
+    queryParams.hasUnread = String(params.hasUnread);
+  }
+  if (params?.q) queryParams.q = params.q;
 
   const { data } = await apiClient.get<PaginatedConversationsResponse>(
     getBaseUrl(params?.businessId),
     { params: queryParams }
+  );
+  return data;
+}
+
+/** `GET /businesses/:businessId/conversations/summary` — badges de pestañas del inbox (Fase C). */
+export async function getConversationsSummary(
+  businessId?: string
+): Promise<ConversationSummary> {
+  const { data } = await apiClient.get<ConversationSummary>(
+    `${getBaseUrl(businessId)}/summary`
   );
   return data;
 }

@@ -21,10 +21,7 @@ export function useConversation(
   const effectiveBusinessId = useEffectiveBusinessId() ?? undefined;
 
   return useQuery<ConversationDetail, Error>({
-    queryKey: [
-      ...CONVERSATIONS_KEYS.detail(sessionId || ""),
-      effectiveBusinessId,
-    ],
+    queryKey: CONVERSATIONS_KEYS.detail(sessionId || "", effectiveBusinessId),
     queryFn: () => getConversationById(sessionId!, effectiveBusinessId),
     enabled: !!sessionId && enabled,
     staleTime: STALE_TIME,
@@ -49,7 +46,7 @@ export function useConversationByOrder(
   const effectiveBusinessId = useEffectiveBusinessId() ?? undefined;
 
   const query = useQuery<ConversationDetail | null, Error>({
-    queryKey: [...CONVERSATIONS_KEYS.byOrder(orderId || ""), effectiveBusinessId],
+    queryKey: CONVERSATIONS_KEYS.byOrder(orderId || "", effectiveBusinessId),
     queryFn: async () => {
       try {
         return await getConversationByOrderId(orderId!, effectiveBusinessId);

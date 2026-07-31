@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
-import { MessageCircle } from "lucide-react";
+import { Inbox, MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { locales } from "@/i18n/config";
@@ -19,6 +19,7 @@ import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
 import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
 import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 
 
 interface SidebarProps {
@@ -70,6 +71,12 @@ export function Sidebar({
     user?.role === "ADMIN" ||
     user?.role === "SUPER_ADMIN";
 
+  // Gating por permiso real (Fase C) — a diferencia de `canViewConversations`
+  // de arriba, el inbox es la primera pantalla pensada también para
+  // OPERATOR, a quien el gate por rol de arriba excluiría.
+  const { hasPermission } = useMyPermissions();
+  const canViewInbox = hasPermission("conversation.view");
+
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -89,6 +96,15 @@ export function Sidebar({
         href: "/dashboard/customers",
         icon: UsersIcon,
       },
+      ...(canViewInbox
+        ? [
+            {
+              name: t("sidebar.inbox"),
+              href: "/dashboard/inbox",
+              icon: Inbox,
+            },
+          ]
+        : []),
       ...(canViewConversations
         ? [
             {
@@ -164,7 +180,7 @@ export function Sidebar({
     ];
 
     return items;
-  }, [t, showGlobalCatalog, canViewConversations]);
+  }, [t, showGlobalCatalog, canViewConversations, canViewInbox]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [
