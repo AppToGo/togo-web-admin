@@ -1,0 +1,84 @@
+{
+  "title": "Inbox",
+  "subtitle": "Conversaciones de WhatsApp en vivo",
+  "accessDeniedTitle": "Sin acceso",
+  "accessDeniedDescription": "No tienes permiso para ver esta sección.",
+  "selectBusinessTitle": "Selecciona un negocio",
+  "selectBusinessDescription": "Elige un negocio específico en el selector superior para ver el inbox.",
+  "tabs": {
+    "waiting": "Esperando",
+    "mine": "Míos",
+    "unassigned": "Sin asignar",
+    "all": "Todos"
+  },
+  "list": {
+    "empty": "No hay conversaciones en esta pestaña",
+    "searchPlaceholder": "Buscar por nombre o teléfono",
+    "anonymous": "Anónimo",
+    "noSelection": "Seleccioná una conversación para ver el hilo"
+  },
+  "control": {
+    "BOT": "Bot",
+    "PENDING_HUMAN": "Esperando",
+    "HUMAN": "En atención"
+  },
+  "thread": {
+    "assignedTo": "Asignada a {name}",
+    "unassigned": "Sin asignar",
+    "callbackRequested": "Pidió que lo contacten"
+  },
+  "actions": {
+    "take": "Tomar conversación",
+    "release": "Liberar",
+    "assign": "Asignar",
+    "close": "Cerrar",
+    "closedSuccess": "Conversación cerrada",
+    "note": "Nota interna"
+  },
+  "composer": {
+    "placeholder": "Escribí un mensaje...",
+    "send": "Enviar",
+    "windowClosedTitle": "Ventana de 24h cerrada",
+    "windowClosedDescription": "Pasaron más de 24h desde el último mensaje del cliente — WhatsApp no permite enviar texto libre.",
+    "windowClosedError": "No se pudo enviar: la ventana de 24h ya cerró.",
+    "takeoverRequired": "Tomá el control de la conversación para poder responder.",
+    "notePlaceholder": "Escribí una nota interna (no se envía al cliente)...",
+    "addNote": "Agregar nota",
+    "noteToggleOn": "Escribiendo nota interna",
+    "noteToggleOff": "Nota interna"
+  },
+  "assignDialog": {
+    "title": "Asignar conversación",
+    "unassign": "Desasignar",
+    "searchPlaceholder": "Buscar operador..."
+  },
+  "closeDialog": {
+    "title": "Cerrar conversación",
+    "outcomeLabel": "Resultado (opcional)",
+    "confirm": "Cerrar"
+  },
+  "errors": {
+    "takeoverFailed": "No se pudo tomar la conversación",
+    "releaseFailed": "No se pudo liberar la conversación",
+    "assignFailed": "No se pudo asignar la conversación",
+    "closeFailed": "No se pudo cerrar la conversación",
+    "noteFailed": "No se pudo agregar la nota",
+    "sendFailed": "No se pudo enviar el mensaje"
+  },
+  "connection": {
+    "connected": "Conectado",
+    "connecting": "Conectando...",
+    "disconnected": "Sin conexión en vivo — actualizando cada 15s"
+  },
+  "events": {
+    "HANDOFF_REQUESTED": "El cliente pidió hablar con un humano",
+    "HANDOFF_TAKEN": "{actor} tomó la conversación",
+    "HANDOFF_RELEASED": "{actor} liberó la conversación",
+    "HANDOFF_TIMED_OUT": "Se cerró por inactividad del operador",
+    "HANDOFF_WAIT_EXPIRED": "Nadie tomó la conversación a tiempo",
+    "SESSION_CLOSED": "Conversación cerrada",
+    "NOTE_ADDED": "Nota de {actor}",
+    "ASSIGNED": "Asignada a {actor}",
+    "UNASSIGNED": "Desasignada"
+  }
+}

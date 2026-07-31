@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { ImageOff, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MessageStatusIcon } from "./message-status-icon";
 import type { ConversationMessage, MessageSenderType } from "../../types";
 
 interface MessageBubbleProps {
@@ -110,11 +111,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             {t(`contentType.${message.contentType}`)}
           </p>
         )}
-        <div className="text-[10px] opacity-60 text-right">
+        <div className="text-[10px] opacity-60 flex items-center justify-end gap-1">
           {new Date(message.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
+          {message.direction === "OUTBOUND" && (
+            <MessageStatusIcon status={message.status} errorCode={message.errorCode} />
+          )}
         </div>
       </div>
     </div>

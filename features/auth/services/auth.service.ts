@@ -26,6 +26,7 @@ const AUTH_ENDPOINTS = {
   SESSION: "/auth/session",
   FORGOT_PASSWORD: "/auth/forgot-password",
   RESET_PASSWORD: "/auth/reset-password",
+  MY_PERMISSIONS: "/auth/me/permissions",
 } as const;
 
 const API_BASE_URL =
@@ -103,6 +104,16 @@ export async function validateToken(): Promise<boolean> {
  */
 export async function getUserSession(): Promise<SessionResponse> {
   const response = await apiClient.get<SessionResponse>(AUTH_ENDPOINTS.SESSION);
+  return response.data;
+}
+
+/**
+ * Códigos de permiso efectivos del usuario autenticado (Fase C, Etapa 3) —
+ * SUPER_ADMIN/OWNER/ADMIN reciben el catálogo completo, OPERATOR sólo lo
+ * asignado en su OperatorProfile. Ver `AuthController.getMyPermissions`.
+ */
+export async function getMyPermissions(): Promise<string[]> {
+  const response = await apiClient.get<string[]>(AUTH_ENDPOINTS.MY_PERMISSIONS);
   return response.data;
 }
 
