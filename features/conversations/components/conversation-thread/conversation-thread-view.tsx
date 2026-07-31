@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageBubble } from "./message-bubble";
@@ -78,13 +79,19 @@ export const ConversationThreadView = forwardRef<
   }
 
   return (
-    <div className={className}>
+    // `heightClassName` (`max-h-[60vh]` en el diálogo, `h-full` en el
+    // inbox) va acá, en el wrapper — no en el `ScrollArea` — porque un
+    // `h-full` en el hijo no resuelve nada si el padre no tiene una altura
+    // definida (el wrapper de antes no la tenía: `h-full` en el
+    // `ScrollArea` crecía al tamaño del contenido y el `overflow-hidden`
+    // de un ancestro lo recortaba en silencio, sin scroll posible).
+    <div className={cn("flex min-h-0 flex-col", heightClassName, className)}>
       {data.messagesTruncated && (
-        <p className="mb-2 text-xs text-amber-700 bg-amber-50 rounded-md px-3 py-2">
+        <p className="mb-2 shrink-0 text-xs text-amber-700 bg-amber-50 rounded-md px-3 py-2">
           {t("thread.truncated")}
         </p>
       )}
-      <ScrollArea ref={ref} className={`${heightClassName} pr-2`}>
+      <ScrollArea ref={ref} className="min-h-0 flex-1 pr-2">
         <div className="space-y-3">
           {data.messages.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-6">

@@ -17,14 +17,15 @@ import type { GetConversationsParams } from "../types";
  */
 export function useInboxConversations(
   filters: GetConversationsParams,
-  isSocketConnected: boolean
+  isSocketConnected: boolean,
+  enabled: boolean = true
 ) {
   return useConversations(
     {
       limit: 50,
       ...filters,
     },
-    true,
+    enabled,
     { refetchInterval: isSocketConnected ? false : 15000 }
   );
 }

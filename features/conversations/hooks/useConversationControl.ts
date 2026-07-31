@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -9,23 +9,12 @@ import {
   takeoverConversation,
   releaseConversation,
 } from "../services/conversation-inbox.service";
-import { CONVERSATIONS_KEYS } from "./query-keys";
-
-function useInvalidateAfterControlChange(sessionId: string, businessId?: string) {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: CONVERSATIONS_KEYS.detail(sessionId, businessId),
-    });
-    queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEYS.lists() });
-    queryClient.invalidateQueries({ queryKey: [...CONVERSATIONS_KEYS.all, "summary"] });
-  };
-}
+import { useInvalidateConversationQueries } from "./useInvalidateConversationQueries";
 
 /** POST /:sessionId/takeover — tomar el control. */
 export function useTakeoverConversation(sessionId: string) {
   const businessId = useEffectiveBusinessId() ?? undefined;
-  const invalidate = useInvalidateAfterControlChange(sessionId, businessId);
+  const invalidate = useInvalidateConversationQueries(sessionId, businessId);
   const t = useTranslations("inbox");
 
   return useMutation({
@@ -40,7 +29,7 @@ export function useTakeoverConversation(sessionId: string) {
 /** POST /:sessionId/release — liberar el control (idempotente si ya está en BOT). */
 export function useReleaseConversation(sessionId: string) {
   const businessId = useEffectiveBusinessId() ?? undefined;
-  const invalidate = useInvalidateAfterControlChange(sessionId, businessId);
+  const invalidate = useInvalidateConversationQueries(sessionId, businessId);
   const t = useTranslations("inbox");
 
   return useMutation({

@@ -76,7 +76,10 @@
     "HANDOFF_RELEASED": "{actor} liberó la conversación",
     "HANDOFF_TIMED_OUT": "Se cerró por inactividad del operador",
     "HANDOFF_WAIT_EXPIRED": "Nadie tomó la conversación a tiempo",
+    "BOT_PAUSED": "Bot en pausa",
+    "BOT_RESUMED": "Bot reanudado",
     "SESSION_CLOSED": "Conversación cerrada",
+    "SESSION_REOPENED": "Conversación reabierta",
     "NOTE_ADDED": "Nota de {actor}",
     "ASSIGNED": "Asignada a {actor}",
     "UNASSIGNED": "Desasignada"

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import { useBusinessStore } from "@/features/business/stores/business.store";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { APP_CONFIG } from "@/config/app.config";
 import {
   isRefreshInProgress,
@@ -72,13 +72,19 @@ export interface ConversationsRealtimeState {
   error: string | null;
 }
 
-export function useConversationsRealtime(): ConversationsRealtimeState {
+export function useConversationsRealtime(
+  enabled: boolean = true
+): ConversationsRealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
 
   const user = useAuthStore((state) => state.user);
-  const { selectedBusinessId } = useBusinessStore();
-  const businessId = selectedBusinessId || user?.businessId || null;
+  // A diferencia de `useOrdersRealtime` (su clon de origen), acá se usa
+  // `useEffectiveBusinessId()` en vez de `selectedBusinessId || user?.businessId`:
+  // ese último no ignora un `selectedBusinessId` obsoleto en localStorage que
+  // no coincide con el negocio del usuario (ej. tras un cambio de cuenta),
+  // lo que dejaría al socket escuchando en la room equivocada en silencio.
+  const businessId = useEffectiveBusinessId();
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
@@ -135,6 +141,7 @@ export function useConversationsRealtime(): ConversationsRealtimeState {
 
   useEffect(() => {
     if (
+      !enabled ||
       !APP_CONFIG.features.enableWebSockets ||
       !businessId ||
       !getToken() ||
@@ -240,7 +247,7 @@ export function useConversationsRealtime(): ConversationsRealtimeState {
       socketRef.current = null;
       setState({ isConnected: false, isConnecting: false, error: null });
     };
-  }, [businessId, getToken, queryClient, refreshAndReconnect, user?.role]);
+  }, [enabled, businessId, getToken, queryClient, refreshAndReconnect, user?.role]);
 
   return state;
 }

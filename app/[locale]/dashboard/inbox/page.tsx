@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useHasBusiness, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { cn } from "@/lib/utils";
 import {
   useInboxConversations,
@@ -41,17 +42,30 @@ export default function InboxPage() {
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
+  const canViewInbox = !permissionsLoading && hasPermission("conversation.view");
 
   const [activeTab, setActiveTab] = useState<InboxTab>("waiting");
   const [search, setSearch] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
-  const { isConnected } = useConversationsRealtime();
-  const { data: summary } = useInboxSummary();
+  // Ajuste de estado durante el render (no un useEffect, mismo patrón que
+  // la página de "sin pedido" de Fase B): sin esto, un SUPER_ADMIN que
+  // cambia de negocio con el selector global mientras tiene un hilo
+  // abierto se queda con un sessionId de OTRO negocio pasado al panel.
+  const effectiveBusinessId = useEffectiveBusinessId();
+  const [prevBusinessId, setPrevBusinessId] = useState(effectiveBusinessId);
+  if (effectiveBusinessId !== prevBusinessId) {
+    setPrevBusinessId(effectiveBusinessId);
+    setSelectedSessionId(null);
+  }
+
+  const { isConnected } = useConversationsRealtime(canViewInbox);
+  const { data: summary } = useInboxSummary(canViewInbox);
   const { data: conversations, isLoading, isAllBusinessesSelected } =
     useInboxConversations(
       { ...tabFilters(activeTab), q: search || undefined },
-      isConnected
+      isConnected,
+      canViewInbox
     );
 
   if (!hasBusiness && !isSuperAdmin) {
@@ -145,7 +159,11 @@ export default function InboxPage() {
           }
           panel={
             selectedSessionId ? (
-              <InboxThreadPanel sessionId={selectedSessionId} />
+              // `key` fuerza un remount completo al cambiar de conversación:
+              // sin esto, el estado local de los diálogos de asignar/cerrar
+              // (InboxThreadHeader) sobrevive el cambio de sessionId y puede
+              // confirmarse contra la conversación equivocada.
+              <InboxThreadPanel key={selectedSessionId} sessionId={selectedSessionId} />
             ) : (
               <InboxEmptyState />
             )

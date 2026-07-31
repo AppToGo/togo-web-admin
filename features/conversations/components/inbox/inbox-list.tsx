@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 import { InboxTabs, type InboxTab } from "./inbox-tabs";
 import { InboxListItem } from "./inbox-list-item";
 import type { ConversationListItem, ConversationSummary } from "../../types";
@@ -32,6 +33,12 @@ export function InboxList({
 }: InboxListProps) {
   const t = useTranslations("inbox");
   const [searchValue, setSearchValue] = useState("");
+  const debouncedSearch = useDebounce(searchValue, 300);
+
+  useEffect(() => {
+    onSearch(debouncedSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
   return (
     <div className="flex h-full flex-col">
@@ -42,10 +49,7 @@ export function InboxList({
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             value={searchValue}
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-              onSearch(e.target.value);
-            }}
+            onChange={(e) => setSearchValue(e.target.value)}
             placeholder={t("list.searchPlaceholder")}
             className="pl-8 h-9"
           />
