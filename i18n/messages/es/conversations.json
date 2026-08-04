@@ -1,0 +1,88 @@
+{
+  "detail": {
+    "title": "Conversaciones"
+  },
+  "page": {
+    "title": "Conversaciones sin pedido",
+    "subtitle": "Conversaciones cerradas que no terminaron en un pedido",
+    "selectBusinessTitle": "Selecciona un negocio",
+    "selectBusinessDescription": "Elige un negocio específico en el selector superior para ver sus conversaciones.",
+    "accessDeniedTitle": "Sin acceso",
+    "accessDeniedDescription": "No tienes permiso para ver esta sección."
+  },
+  "filters": {
+    "outcome": "Resultado",
+    "allOutcomes": "Todos"
+  },
+  "table": {
+    "customer": "Cliente",
+    "anonymous": "Anónimo",
+    "outcome": "Resultado",
+    "lastMessageAt": "Último mensaje",
+    "messageCount": "Mensajes",
+    "actions": "Acciones",
+    "viewConversation": "Ver conversación",
+    "showingRange": "Mostrando {from}-{to} de {total}"
+  },
+  "empty": {
+    "title": "Sin conversaciones",
+    "description": "Todavía no hay conversaciones registradas para este filtro."
+  },
+  "error": {
+    "title": "No se pudieron cargar las conversaciones",
+    "description": "Ocurrió un error al consultar el servidor. Intenta de nuevo en unos minutos."
+  },
+  "outcome": {
+    "ORDER_PLACED": "Con pedido",
+    "ABANDONED": "Abandonada",
+    "SUPPORT": "Soporte",
+    "NO_INTENT": "Sin intención de compra",
+    "SPAM": "Spam"
+  },
+  "status": {
+    "OPEN": "En curso",
+    "CLOSED": "Cerrada",
+    "EXPIRED": "Expirada"
+  },
+  "sender": {
+    "CUSTOMER": "Cliente",
+    "BOT": "Bot",
+    "OPERATOR": "Operador",
+    "SYSTEM": "Sistema"
+  },
+  "contentType": {
+    "TEXT": "Texto",
+    "IMAGE": "Imagen",
+    "AUDIO": "Audio",
+    "VIDEO": "Video",
+    "DOCUMENT": "Documento",
+    "LOCATION": "Ubicación compartida (no soportada en este visor)",
+    "INTERACTIVE": "Mensaje interactivo (no soportado en este visor)",
+    "TEMPLATE": "Plantilla de WhatsApp (no soportada en este visor)",
+    "SYSTEM_NOTE": "Nota interna",
+    "STICKER": "Sticker",
+    "CONTACTS": "Contacto compartido (no soportado en este visor)",
+    "REACTION": "Reacción",
+    "CTA_URL": "Botón con enlace (no soportado en este visor)"
+  },
+  "media": {
+    "download": "Descargar adjunto",
+    "unavailable": {
+      "WHATSAPP_MEDIA_NOT_ARCHIVED": "Adjunto no archivado (media de WhatsApp, ya no disponible)",
+      "UNRECOGNIZED_REF": "Adjunto no disponible",
+      "PRESIGN_FAILED": "No se pudo cargar el adjunto"
+    }
+  },
+  "thread": {
+    "notFound": "No se encontró la conversación",
+    "truncated": "Este hilo es muy largo — se muestran sólo los últimos mensajes",
+    "empty": "Esta conversación no tiene mensajes"
+  },
+  "deliveryStatus": {
+    "QUEUED": "En cola",
+    "SENT": "Enviado",
+    "DELIVERED": "Entregado",
+    "READ": "Leído",
+    "FAILED": "Falló el envío"
+  }
+}

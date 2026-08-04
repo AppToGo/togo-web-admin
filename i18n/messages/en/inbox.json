@@ -1,0 +1,87 @@
+{
+  "title": "Inbox",
+  "subtitle": "Live WhatsApp conversations",
+  "accessDeniedTitle": "No access",
+  "accessDeniedDescription": "You don't have permission to view this section.",
+  "selectBusinessTitle": "Select a business",
+  "selectBusinessDescription": "Choose a specific business in the selector above to view the inbox.",
+  "tabs": {
+    "waiting": "Waiting",
+    "mine": "Mine",
+    "unassigned": "Unassigned",
+    "all": "All"
+  },
+  "list": {
+    "empty": "No conversations in this tab",
+    "searchPlaceholder": "Search by name or phone",
+    "anonymous": "Anonymous",
+    "noSelection": "Select a conversation to view the thread"
+  },
+  "control": {
+    "BOT": "Bot",
+    "PENDING_HUMAN": "Waiting",
+    "HUMAN": "Being handled"
+  },
+  "thread": {
+    "assignedTo": "Assigned to {name}",
+    "unassigned": "Unassigned",
+    "callbackRequested": "Asked to be contacted"
+  },
+  "actions": {
+    "take": "Take conversation",
+    "release": "Release",
+    "assign": "Assign",
+    "close": "Close",
+    "closedSuccess": "Conversation closed",
+    "note": "Internal note"
+  },
+  "composer": {
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "windowClosedTitle": "24h window closed",
+    "windowClosedDescription": "More than 24h passed since the customer's last message — WhatsApp doesn't allow free text.",
+    "windowClosedError": "Couldn't send: the 24h window already closed.",
+    "takeoverRequired": "Take control of the conversation to reply.",
+    "notePlaceholder": "Write an internal note (not sent to the customer)...",
+    "addNote": "Add note",
+    "noteToggleOn": "Writing internal note",
+    "noteToggleOff": "Internal note"
+  },
+  "assignDialog": {
+    "title": "Assign conversation",
+    "unassign": "Unassign",
+    "searchPlaceholder": "Search operator..."
+  },
+  "closeDialog": {
+    "title": "Close conversation",
+    "outcomeLabel": "Outcome (optional)",
+    "confirm": "Close"
+  },
+  "errors": {
+    "takeoverFailed": "Couldn't take the conversation",
+    "releaseFailed": "Couldn't release the conversation",
+    "assignFailed": "Couldn't assign the conversation",
+    "closeFailed": "Couldn't close the conversation",
+    "noteFailed": "Couldn't add the note",
+    "sendFailed": "Couldn't send the message"
+  },
+  "connection": {
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "disconnected": "No live connection — refreshing every 15s"
+  },
+  "events": {
+    "HANDOFF_REQUESTED": "The customer asked to talk to a human",
+    "HANDOFF_TAKEN": "{actor} took the conversation",
+    "HANDOFF_RELEASED": "{actor} released the conversation",
+    "HANDOFF_TIMED_OUT": "Closed due to operator inactivity",
+    "HANDOFF_WAIT_EXPIRED": "Nobody took the conversation in time",
+    "BOT_PAUSED": "Bot paused",
+    "BOT_RESUMED": "Bot resumed",
+    "SESSION_CLOSED": "Conversation closed",
+    "SESSION_REOPENED": "Conversation reopened",
+    "NOTE_ADDED": "Note by {actor}",
+    "ASSIGNED": "Assigned to {actor}",
+    "UNASSIGNED": "Unassigned"
+  }
+}

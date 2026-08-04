@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
+import { Inbox, MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { locales } from "@/i18n/config";
@@ -18,6 +19,7 @@ import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
 import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
 import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 
 
 interface SidebarProps {
@@ -61,6 +63,20 @@ export function Sidebar({
   );
   const showGlobalCatalog = isSuperAdmin || hasGlobalProducts;
 
+  // Gating por rol en cliente, sólo UX — el permiso real (conversation.view)
+  // lo aplica el backend (403). Mismo patrón que `canViewHistory` en
+  // OrderDetailContent: no hay infraestructura de permission[] en el JWT hoy.
+  const canViewConversations =
+    user?.role === "OWNER" ||
+    user?.role === "ADMIN" ||
+    user?.role === "SUPER_ADMIN";
+
+  // Gating por permiso real (Fase C) — a diferencia de `canViewConversations`
+  // de arriba, el inbox es la primera pantalla pensada también para
+  // OPERATOR, a quien el gate por rol de arriba excluiría.
+  const { hasPermission } = useMyPermissions();
+  const canViewInbox = hasPermission("conversation.view");
+
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -80,6 +96,24 @@ export function Sidebar({
         href: "/dashboard/customers",
         icon: UsersIcon,
       },
+      ...(canViewInbox
+        ? [
+            {
+              name: t("sidebar.inbox"),
+              href: "/dashboard/inbox",
+              icon: Inbox,
+            },
+          ]
+        : []),
+      ...(canViewConversations
+        ? [
+            {
+              name: t("sidebar.conversations"),
+              href: "/dashboard/conversations",
+              icon: MessageCircle,
+            },
+          ]
+        : []),
       {
         name: t("sidebar.catalog"),
         href: "/dashboard/catalog",
@@ -146,7 +180,7 @@ export function Sidebar({
     ];
 
     return items;
-  }, [t, showGlobalCatalog]);
+  }, [t, showGlobalCatalog, canViewConversations, canViewInbox]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [

@@ -1,0 +1,88 @@
+{
+  "detail": {
+    "title": "Conversations"
+  },
+  "page": {
+    "title": "Conversations without an order",
+    "subtitle": "Closed conversations that did not result in an order",
+    "selectBusinessTitle": "Select a business",
+    "selectBusinessDescription": "Choose a specific business in the selector above to view its conversations.",
+    "accessDeniedTitle": "No access",
+    "accessDeniedDescription": "You don't have permission to view this section."
+  },
+  "filters": {
+    "outcome": "Outcome",
+    "allOutcomes": "All"
+  },
+  "table": {
+    "customer": "Customer",
+    "anonymous": "Anonymous",
+    "outcome": "Outcome",
+    "lastMessageAt": "Last message",
+    "messageCount": "Messages",
+    "actions": "Actions",
+    "viewConversation": "View conversation",
+    "showingRange": "Showing {from}-{to} of {total}"
+  },
+  "empty": {
+    "title": "No conversations",
+    "description": "There are no conversations recorded for this filter yet."
+  },
+  "error": {
+    "title": "Couldn't load conversations",
+    "description": "Something went wrong reaching the server. Please try again in a few minutes."
+  },
+  "outcome": {
+    "ORDER_PLACED": "Order placed",
+    "ABANDONED": "Abandoned",
+    "SUPPORT": "Support",
+    "NO_INTENT": "No purchase intent",
+    "SPAM": "Spam"
+  },
+  "status": {
+    "OPEN": "Ongoing",
+    "CLOSED": "Closed",
+    "EXPIRED": "Expired"
+  },
+  "sender": {
+    "CUSTOMER": "Customer",
+    "BOT": "Bot",
+    "OPERATOR": "Operator",
+    "SYSTEM": "System"
+  },
+  "contentType": {
+    "TEXT": "Text",
+    "IMAGE": "Image",
+    "AUDIO": "Audio",
+    "VIDEO": "Video",
+    "DOCUMENT": "Document",
+    "LOCATION": "Shared location (not supported in this viewer)",
+    "INTERACTIVE": "Interactive message (not supported in this viewer)",
+    "TEMPLATE": "WhatsApp template (not supported in this viewer)",
+    "SYSTEM_NOTE": "Internal note",
+    "STICKER": "Sticker",
+    "CONTACTS": "Shared contact (not supported in this viewer)",
+    "REACTION": "Reaction",
+    "CTA_URL": "Link button (not supported in this viewer)"
+  },
+  "media": {
+    "download": "Download attachment",
+    "unavailable": {
+      "WHATSAPP_MEDIA_NOT_ARCHIVED": "Attachment not archived (WhatsApp media, no longer available)",
+      "UNRECOGNIZED_REF": "Attachment unavailable",
+      "PRESIGN_FAILED": "Could not load attachment"
+    }
+  },
+  "thread": {
+    "notFound": "Conversation not found",
+    "truncated": "This thread is very long — only the most recent messages are shown",
+    "empty": "This conversation has no messages"
+  },
+  "deliveryStatus": {
+    "QUEUED": "Queued",
+    "SENT": "Sent",
+    "DELIVERED": "Delivered",
+    "READ": "Read",
+    "FAILED": "Failed to send"
+  }
+}
