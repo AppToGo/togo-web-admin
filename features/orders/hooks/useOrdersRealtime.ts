@@ -2,11 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-// Type for the notifyNewOrder function
-interface NotifyNewOrderFn {
-  (orderId: string, orderNumber?: string | number | null): void;
-}
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
@@ -14,6 +9,11 @@ import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
 import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
+
+// Derivado de useOrderNotification (no repetido a mano) — así un cambio
+// futuro a la firma de notifyNewOrder no puede desincronizarse en
+// silencio de lo que este hook le pasa vía el ref.
+type NotifyNewOrderFn = ReturnType<typeof useOrderNotification>['notifyNewOrder'];
 import { ARCHIVE_STATUS } from '../constants/order-statuses';
 import {
   isRefreshInProgress,
