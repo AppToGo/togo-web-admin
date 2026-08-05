@@ -245,7 +245,7 @@ function OrderListItem({
   onDragEnd?: () => void;
 }) {
   const t = useTranslations("orders");
-  const orderNumber = formatOrderNumber(order.id);
+  const orderNumber = formatOrderNumber(order.id, order.orderNumber);
   const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
   const orderTime = formatOrderTime(order.createdAt);
   const fee = order.deliveryType === "DELIVERY" ? order.deliveryFee || 0 : 0;
@@ -463,7 +463,7 @@ export const OrderCard = memo(function OrderCard({
   const t = useTranslations("orders");
   const [isDragging, setIsDragging] = useState(false);
 
-  const orderNumber = formatOrderNumber(order.id);
+  const orderNumber = formatOrderNumber(order.id, order.orderNumber);
   const timeElapsed = getTimeElapsed(order.createdAt);
   const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
 

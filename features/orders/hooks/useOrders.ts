@@ -32,6 +32,7 @@ import type {
 } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import { useStatusLabels } from "../utils/order-status.utils";
+import { orderNumberValue } from "../utils/order-number.utils";
 import { LIVE_STATUSES } from "../constants/order-statuses";
 import {
   ORDERS_KEYS,
@@ -488,7 +489,9 @@ export function useRecentActivity() {
       type: "status_change" as const,
       orderId: order.id,
       customerName: order.customer?.name || t("unknownCustomer"),
-      description: t("orderNumber", { id: order.id.slice(-6) }),
+      description: t("orderNumber", {
+        id: orderNumberValue(order.id, order.orderNumber),
+      }),
       timestamp: new Date(order.updatedAt),
     }));
   }, [orders, t]);
