@@ -58,6 +58,14 @@ export interface OrderItem {
 // Orden completa
 export interface Order {
   id: string;
+  /**
+   * Número de pedido legible ("154"), sin el símbolo "#" — lo antepone
+   * cada lugar que lo muestra. Siempre presente en pedidos confirmados;
+   * la API cae al identificador legado (últimos 6 caracteres del id)
+   * para pedidos DRAFT/ABANDONED o histórico previo a esta columna. Ver
+   * formatOrderNumber() en utils/order-number.utils.ts.
+   */
+  orderNumber?: string;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod?: string;

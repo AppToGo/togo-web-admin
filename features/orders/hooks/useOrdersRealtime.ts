@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 
 // Type for the notifyNewOrder function
 interface NotifyNewOrderFn {
-  (orderId: string): void;
+  (orderId: string, orderNumber?: string | number | null): void;
 }
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
@@ -43,6 +43,7 @@ const WS_EVENTS = {
 // Interfaces para eventos
 interface OrderCreatedEvent {
   orderId: string;
+  orderNumber?: string | number | null;
   status: string;
   timestamp: string;
 }
@@ -216,7 +217,7 @@ export function useOrdersRealtime(): RealtimeState {
       });
       
       // Trigger notification (sound + toast) based on user preferences
-      notifyNewOrderRef.current(data.orderId);
+      notifyNewOrderRef.current(data.orderId, data.orderNumber);
     });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
