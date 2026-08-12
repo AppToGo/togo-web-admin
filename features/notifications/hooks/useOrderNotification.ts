@@ -64,14 +64,14 @@ export function useOrderNotification() {
    * Plays sound and shows toast based on user preferences
    */
   const notifyNewOrder = useCallback(
-    (orderId: string): void => {
-      const orderNumber = formatOrderNumber(orderId);
+    (orderId: string, orderNumber?: string | number | null): void => {
+      const formattedOrderNumber = formatOrderNumber(orderId, orderNumber);
 
       // Play sound first (non-blocking)
       playNewOrderSound();
 
       // Show toast
-      showNewOrderToast(orderNumber);
+      showNewOrderToast(formattedOrderNumber);
     },
     [playNewOrderSound, showNewOrderToast]
   );

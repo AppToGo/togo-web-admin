@@ -21,6 +21,7 @@ import type {
 } from "../types/order-metrics.types";
 import type { OrdersPage } from "../types/order-cache.types";
 import { LIVE_STATUSES } from "../constants/order-statuses";
+import { stripOrderNumbers } from "../utils/order-number.utils";
 
 /**
  * Obtener el businessId del usuario autenticado
@@ -85,7 +86,8 @@ export async function getOrders(
     const { data } = await apiClient.get<Order[]>("/admin/orders", {
       params: queryParams,
     });
-    return data;
+    // orderNumber es secuencial por negocio — ambiguo al mezclar negocios.
+    return stripOrderNumbers(data);
   }
 
   const { data } = await apiClient.get<Order[]>(
@@ -279,7 +281,8 @@ export async function getLiveOrders(
     const { data } = await apiClient.get<Order[]>("/admin/orders", {
       params: queryParams,
     });
-    return data;
+    // orderNumber es secuencial por negocio — ambiguo al mezclar negocios.
+    return stripOrderNumbers(data);
   }
 
   const effectiveBusinessId = params?.businessId || getBusinessId();
@@ -335,7 +338,8 @@ export async function getCompletedOrders(
     const { data } = await apiClient.get<OrdersPage>("/admin/orders", {
       params: queryParams,
     });
-    return data;
+    // orderNumber es secuencial por negocio — ambiguo al mezclar negocios.
+    return { ...data, orders: stripOrderNumbers(data.orders) };
   }
 
   const effectiveBusinessId = params?.businessId || getBusinessId();

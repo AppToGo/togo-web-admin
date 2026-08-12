@@ -27,6 +27,7 @@ import {
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
 import { formatCurrency, canCompleteOrder } from "../utils/order-status.utils";
+import { formatOrderNumber } from "../utils/order-number.utils";
 import { categoryBadgeVariants } from "../styles";
 import { toast } from "sonner";
 
@@ -93,13 +94,6 @@ function getOrderTypeInfo(
     icon: <Store className="w-3 h-3" />,
     variant: "amber",
   };
-}
-
-// Función para formatear el ID como número de orden
-function formatOrderNumber(id: string | undefined): string {
-  if (!id) return "#------";
-  console.log("Formatting order ID:", id);
-  return `#${id.slice(-6).toUpperCase()}`;
 }
 
 // Component to change order status (similar to PaymentStatusEditor)
@@ -274,7 +268,7 @@ export function OrderDetailContent({
 
     const message = t("noStockDialog.messageTemplate")
       .replace("{productName}", selectedItem.productName)
-      .replace("{orderNumber}", formatOrderNumber(order?.id));
+      .replace("{orderNumber}", formatOrderNumber(order?.id ?? "", order?.orderNumber));
 
     const phone = order.customer.phoneNumber.replace(/\D/g, "");
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -341,7 +335,7 @@ export function OrderDetailContent({
         <div className="flex flex-col gap-2">
           {/* Número de orden */}
           <span className="text-xl font-bold text-slate-900">
-            {order.id ? formatOrderNumber(order.id) : "#------"}
+            {order.id ? formatOrderNumber(order.id, order.orderNumber) : "#------"}
           </span>
 
           {/* Badges debajo del número */}
