@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
-import { Users, Plus, User } from "lucide-react";
+import { Users, Plus, User, Crown } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,18 +15,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link, useRouter } from "@/i18n/routing";
+import { Link } from "@/i18n/routing";
 import { useUsers } from "@/features/users/hooks/useUsers";
+import { CreateUserDialog } from "@/features/users/components/CreateUserDialog";
+import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
+import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
+import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { cn } from "@/lib/utils";
 
 export default function UsersPage() {
   const t = useTranslations("users");
   const tc = useTranslations("common");
-  const router = useRouter();
+  const ts = useTranslations("subscription.upgradePlanModal.features");
 
   useAuthGuard();
 
   const { data: users, isLoading } = useUsers();
+  const { data: catalog } = usePlanCatalog(true);
+  const { user } = useAuthStore();
+  const subscriptionPlan = user?.subscriptionPlan ?? 1;
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+
+  const planEntry = useMemo(() => {
+    if (!catalog?.plans) return null;
+    return catalog.plans.find((p) => p.plan === subscriptionPlan) ?? null;
+  }, [catalog, subscriptionPlan]);
+
+  const maxUsers = planEntry?.maxUsers ?? UNLIMITED_PLAN_LIMIT;
+  const activeCount = useMemo(() => users?.filter((u) => u.active).length ?? 0, [users]);
+  const isUnlimited = maxUsers >= UNLIMITED_PLAN_LIMIT;
+  const isLimitReached = !isUnlimited && activeCount >= maxUsers;
+
+  const limitLabel = isUnlimited
+    ? ts("usersUnlimited")
+    : maxUsers === 1
+      ? ts("usersSingle")
+      : ts("usersMultiple", { max: maxUsers });
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -51,12 +79,40 @@ export default function UsersPage() {
               {t("title")}
             </h1>
             <p className="text-slate-500 mt-1">{t("subtitle")}</p>
+            <p className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+              <span className={cn("font-medium", isLimitReached ? "text-amber-600" : "text-slate-700")}>
+                {isUnlimited ? `${activeCount} ${t("limits.activeUsers")}` : `${activeCount} / ${maxUsers} ${t("limits.activeUsers")}`}
+                {" · "}
+                {limitLabel}
+                {planEntry?.name ? ` · ${planEntry.name}` : ""}
+              </span>
+              {isLimitReached && (
+                <button onClick={() => setIsUpgradeOpen(true)} className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium">
+                  <Crown className="w-3 h-3" />
+                  {t("limits.upgradeCta")}
+                </button>
+              )}
+            </p>
           </div>
-          <Button>
+          <Button onClick={() => (isLimitReached ? setIsUpgradeOpen(true) : setIsCreateOpen(true))}>
             <Plus className="w-4 h-4 mr-2" />
             {t("buttons.addUser")}
           </Button>
         </div>
+
+        {isLimitReached && (
+          <Card className="border-amber-200 bg-amber-50">
+            <CardContent className="py-4 flex items-center justify-between">
+              <p className="text-sm text-amber-800">
+                {t("limits.reached", { max: maxUsers })}
+              </p>
+              <Button size="sm" variant="outline" onClick={() => setIsUpgradeOpen(true)} className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                <Crown className="w-4 h-4 mr-1" />
+                {t("limits.upgradeCta")}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Users List */}
         <Card variant="glass">
@@ -82,7 +138,7 @@ export default function UsersPage() {
                 <p className="text-slate-500 max-w-sm mx-auto mb-6">
                   {t("empty.description")}
                 </p>
-                <Button>
+                <Button onClick={() => (isLimitReached ? setIsUpgradeOpen(true) : setIsCreateOpen(true))}>
                   <Plus className="w-4 h-4 mr-2" />
                   {t("buttons.addUser")}
                 </Button>
@@ -133,6 +189,9 @@ export default function UsersPage() {
           </CardContent>
         </Card>
       </div>
+
+      <CreateUserDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+      <UpgradePlanModal open={isUpgradeOpen} onClose={() => setIsUpgradeOpen(false)} />
     </DashboardLayout>
   );
 }
