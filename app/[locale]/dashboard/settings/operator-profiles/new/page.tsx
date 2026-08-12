@@ -75,10 +75,12 @@ export default function CreateProfilePage() {
 
     const data: CreateProfileRequest = {
       name: name.trim(),
-      permissions: selectedPermissions.map((p) => ({
-        permissionCode: p.permissionCode,
-        params: p.params,
-      })),
+      // Backend espera `permissionCodes: string[]` (CreateOperatorProfileDto),
+      // no `permissions: {permissionCode, params}[]` — ese shape es rechazado
+      // por whitelist como `property permissions should not exist`.
+      ...(selectedPermissions.length > 0
+        ? { permissionCodes: selectedPermissions.map((p) => p.permissionCode) }
+        : {}),
     };
 
     createProfile.mutate(data, {
