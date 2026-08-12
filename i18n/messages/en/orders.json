@@ -88,8 +88,7 @@
     "deliveryType": {
       "title": "Delivery type",
       "delivery": "Delivery",
-      "pickup": "Pickup",
-      "dineIn": "Dine-in"
+      "pickup": "Pickup"
     },
     "activeFilters": {
       "paidOnly": "• Paid only",

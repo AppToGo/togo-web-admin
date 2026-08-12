@@ -258,16 +258,6 @@
         "holder": "Ej: Juan García",
         "additionalInfo": "Ej: AHORROS - Bancolombia"
       }
-    },
-    "dineIn": {
-      "title": "Servicio a mesa",
-      "description": "Permite recibir pedidos para consumir en el local",
-      "enable": "Activar servicio a mesa",
-      "enableDescription": "Habilita la modalidad \"Mesa\" para esta sede",
-      "allowCustomers": "Clientes por WhatsApp",
-      "allowCustomersDescription": "Los clientes pueden elegir \"Para la mesa\" al hacer su pedido",
-      "allowOperators": "Operadores",
-      "allowOperatorsDescription": "Los operadores pueden tomar pedidos de mesa (comando /nuevo)"
     }
   }
 }

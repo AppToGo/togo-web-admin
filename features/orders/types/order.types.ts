@@ -73,23 +73,10 @@ export interface Order {
   addressId?: string;
   assignedDeliveryId?: string;
   businessId: string;
-  /**
-   * Canal de origen del pedido. Alineado al enum real del backend
-   * `OrderSource` — el valor previo (`"OPERATOR" | "WEB_CATALOG"`) nunca
-   * lo produce la API; quién creó el pedido (cliente vs. operador) se
-   * expresa en `createdByType`, no acá.
-   */
-  source?: "WHATSAPP" | "WEB_PUBLIC" | "QR_CODE" | "SOCIAL_MEDIA" | "DIRECT";
+  source?: "WHATSAPP" | "OPERATOR" | "WEB_CATALOG";
   deliveryType?: "DELIVERY" | "PICKUP" | "DINE_IN";
   deliveryFee?: number;
   notes?: string;
-  /** Pedidos en mesa (docs/architecture/pedidos-en-mesa.md, Fase 1). */
-  tableId?: string;
-  /** Snapshot del nombre de la mesa al momento del pedido. */
-  tableLabel?: string;
-  /** Quién originó el pedido — independiente de qué Customer quedó asociado. */
-  createdByType?: "CUSTOMER" | "OPERATOR";
-  createdByUserId?: string;
   createdAt: Date;
   updatedAt: Date;
   customer?: CustomerInfo;

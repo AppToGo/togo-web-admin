@@ -23,7 +23,6 @@ import {
   Home,
   Store,
   HelpCircle,
-  Utensils,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -133,23 +132,20 @@ function OrdersPageInner() {
   const [deliveryTypeFilter, setDeliveryTypeFilter] = useState<{
     delivery: boolean;
     pickup: boolean;
-    dineIn: boolean;
-  }>({ delivery: true, pickup: true, dineIn: true });
+  }>({ delivery: true, pickup: true });
 
   // Verificar si hay filtros activos
   const isCustomDate = datePreset === "custom";
   const hasPaymentFilter =
     !paymentStatusFilter.paid || !paymentStatusFilter.pending;
   const hasDeliveryFilter =
-    !deliveryTypeFilter.delivery ||
-    !deliveryTypeFilter.pickup ||
-    !deliveryTypeFilter.dineIn;
+    !deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup;
   const hasAnyFilter = isCustomDate || hasPaymentFilter || hasDeliveryFilter;
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
     setPaymentStatusFilter({ paid: true, pending: true });
-    setDeliveryTypeFilter({ delivery: true, pickup: true, dineIn: true });
+    setDeliveryTypeFilter({ delivery: true, pickup: true });
     // Resetear a "today" si está en custom
     if (datePreset === "custom") {
       useDateFilterStore.getState().setPreset("today");
@@ -280,7 +276,6 @@ function OrdersPageInner() {
                           setDeliveryTypeFilter({
                             delivery: true,
                             pickup: true,
-                            dineIn: true,
                           });
                           if (datePreset === "custom") {
                             useDateFilterStore.getState().setPreset("today");
@@ -410,25 +405,6 @@ function OrdersPageInner() {
                             }
                           />
                         </label>
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                              <Utensils className="w-4 h-4 text-emerald-600" />
-                            </div>
-                            <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              {t("filters.deliveryType.dineIn")}
-                            </span>
-                          </div>
-                          <Switch
-                            checked={deliveryTypeFilter.dineIn}
-                            onCheckedChange={(checked) =>
-                              setDeliveryTypeFilter((prev) => ({
-                                ...prev,
-                                dineIn: checked,
-                              }))
-                            }
-                          />
-                        </label>
                       </div>
                     </div>
                   </div>
@@ -468,17 +444,12 @@ function OrdersPageInner() {
                 )}
                 {hasDeliveryFilter && (
                   <span className="ml-2">
-                    •{" "}
-                    {[
-                      deliveryTypeFilter.delivery &&
-                        t("filters.deliveryType.delivery"),
+                    {deliveryTypeFilter.delivery &&
+                      !deliveryTypeFilter.pickup &&
+                      t("filters.activeFilters.deliveryOnly")}
+                    {!deliveryTypeFilter.delivery &&
                       deliveryTypeFilter.pickup &&
-                        t("filters.deliveryType.pickup"),
-                      deliveryTypeFilter.dineIn &&
-                        t("filters.deliveryType.dineIn"),
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
+                      t("filters.activeFilters.pickupOnly")}
                   </span>
                 )}
               </span>

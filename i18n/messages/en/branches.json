@@ -258,16 +258,6 @@
         "holder": "E.g.: Juan García",
         "additionalInfo": "E.g.: SAVINGS - Bancolombia"
       }
-    },
-    "dineIn": {
-      "title": "Dine-in service",
-      "description": "Allow receiving orders to eat at the venue",
-      "enable": "Enable dine-in service",
-      "enableDescription": "Enables the \"Table\" fulfillment option for this branch",
-      "allowCustomers": "Customers via WhatsApp",
-      "allowCustomersDescription": "Customers can choose \"For the table\" when placing an order",
-      "allowOperators": "Operators",
-      "allowOperatorsDescription": "Operators can take dine-in orders (/nuevo command)"
     }
   }
 }
