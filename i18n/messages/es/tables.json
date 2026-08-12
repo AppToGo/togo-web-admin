@@ -5,6 +5,11 @@
   "editTable": "Editar mesa",
   "noTables": "Sin mesas configuradas",
   "noTablesDescription": "Agrega al menos una mesa para generar sus QR",
+  "loadError": {
+    "title": "No se pudieron cargar las mesas",
+    "description": "Ocurrió un error al consultar las mesas de esta sede.",
+    "retry": "Reintentar"
+  },
   "fields": {
     "name": "Nombre",
     "code": "Código",

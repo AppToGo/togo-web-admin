@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Pencil, Trash2, Armchair } from "lucide-react";
+import { Plus, Pencil, Trash2, Armchair, AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableHeader,
@@ -81,7 +82,10 @@ function parseCapacity(raw: string): { value?: number; error?: string } {
  */
 export function TablesManager({ businessId, branchId }: TablesManagerProps) {
   const t = useTranslations("tables");
-  const { data: tables, isLoading } = useTables(businessId, branchId);
+  const { data: tables, isLoading, isError, refetch, isRefetching } = useTables(
+    businessId,
+    branchId
+  );
   const createTable = useCreateTable(businessId, branchId);
   const updateTable = useUpdateTable(businessId, branchId);
   const removeTable = useRemoveTable(businessId, branchId);
@@ -153,6 +157,23 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
+        ) : isError ? (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>{t("loadError.title")}</AlertTitle>
+            <AlertDescription className="flex items-center justify-between gap-4">
+              <span>{t("loadError.description")}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                isLoading={isRefetching}
+              >
+                {t("loadError.retry")}
+              </Button>
+            </AlertDescription>
+          </Alert>
         ) : !tables || tables.length === 0 ? (
           <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg">
             <p className="text-sm font-medium">{t("noTables")}</p>

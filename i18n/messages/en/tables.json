@@ -5,6 +5,11 @@
   "editTable": "Edit table",
   "noTables": "No tables configured",
   "noTablesDescription": "Add at least one table to generate its QR",
+  "loadError": {
+    "title": "Could not load tables",
+    "description": "An error occurred while fetching this branch's tables.",
+    "retry": "Retry"
+  },
   "fields": {
     "name": "Name",
     "code": "Code",
