@@ -51,6 +51,10 @@
       "whatsapp": "WhatsApp"
     }
   },
+  "notifyBanner": {
+    "title": "Notificación de pedidos por WhatsApp",
+    "description": "Los operadores con el permiso \"Recibir notificación de nuevo pedido\" recibirán un WhatsApp con el detalle completo cada vez que entre un pedido, solo si tienen ventana de 24h activa con el número del negocio."
+  },
   "noBusiness": {
     "title": "No tienes un negocio asignado",
     "description": "Para gestionar perfiles de operador, necesitas tener un negocio asignado a tu cuenta."
