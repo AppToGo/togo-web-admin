@@ -41,6 +41,7 @@ interface OrdersKanbanBoardProps {
   deliveryTypeFilter?: {
     delivery: boolean;
     pickup: boolean;
+    dineIn: boolean;
   };
 }
 
@@ -101,7 +102,7 @@ export function OrdersKanbanBoard({
   businessId,
   branchIds,
   paymentStatusFilter = { paid: true, pending: true },
-  deliveryTypeFilter = { delivery: true, pickup: true },
+  deliveryTypeFilter = { delivery: true, pickup: true, dineIn: true },
 }: OrdersKanbanBoardProps) {
   // Hydrate notification preferences when the orders page mounts
   useHydrateNotificationPreferences();
@@ -201,16 +202,22 @@ export function OrdersKanbanBoard({
         });
       }
 
-      // Filtro por tipo de envío
-      if (!deliveryTypeFilter.delivery || !deliveryTypeFilter.pickup) {
+      // Filtro por tipo de envío (docs/architecture/pedidos-en-mesa.md,
+      // Fase 1: antes era binario delivery/pickup y clasificaba todo
+      // pedido DINE_IN como "pickup" — ahora las 3 modalidades son
+      // explícitas).
+      if (
+        !deliveryTypeFilter.delivery ||
+        !deliveryTypeFilter.pickup ||
+        !deliveryTypeFilter.dineIn
+      ) {
         result = result.filter((order) => {
+          if (order.deliveryType === "DINE_IN") return deliveryTypeFilter.dineIn;
           // Usar deliveryType si está disponible, sino usar addressId como fallback
           const isDelivery = order.deliveryType
             ? order.deliveryType === "DELIVERY"
             : !!order.addressId;
-          if (isDelivery && !deliveryTypeFilter.delivery) return false;
-          if (!isDelivery && !deliveryTypeFilter.pickup) return false;
-          return true;
+          return isDelivery ? deliveryTypeFilter.delivery : deliveryTypeFilter.pickup;
         });
       }
 

@@ -111,6 +111,26 @@ export const DEFAULT_TRANSFER_OPTIONS: TransferOptions = {
 };
 
 // ============================================================================
+// PEDIDOS EN MESA (docs/architecture/pedidos-en-mesa.md, Fase 1)
+// ============================================================================
+
+/** Configuración de servicio a mesa de una sede. */
+export interface DineInConfig {
+  /** Maestro: si es false, "mesa" no aparece en ningún canal. */
+  enabled: boolean;
+  /** Clientes pueden pedir para mesa por WhatsApp/catálogo web. */
+  allowCustomers: boolean;
+  /** Operadores pueden tomar pedidos de mesa (comando /nuevo). */
+  allowOperators: boolean;
+}
+
+export const DEFAULT_DINE_IN_CONFIG: DineInConfig = {
+  enabled: false,
+  allowCustomers: false,
+  allowOperators: false,
+};
+
+// ============================================================================
 // CONFIGURACIÓN COMPLETA
 // ============================================================================
 
@@ -124,6 +144,8 @@ export interface BranchSettings {
   businessHours?: BusinessHours;
   /** Opciones de pago por transferencia */
   transferOptions?: TransferOptions;
+  /** Servicio a mesa */
+  dineInConfig?: DineInConfig;
 }
 
 // ============================================================================
