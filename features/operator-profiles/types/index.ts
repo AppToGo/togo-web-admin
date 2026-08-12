@@ -39,10 +39,14 @@ export interface PermissionCatalog {
 
 /**
  * DTO para crear un nuevo perfil de operador
+ * Alineado a api-togo/src/operator-profile/dto/create-operator-profile.dto.ts
+ * - `permissionCodes` (string[]) es lo que valida el backend con whitelist;
+ *   `permissions` como objeto es rechazado con `property permissions should not exist`.
  */
 export interface CreateProfileRequest {
   name: string;
-  permissions?: Array<{ permissionCode: string; params?: object }>;
+  description?: string;
+  permissionCodes?: string[];
 }
 
 /**
