@@ -58,9 +58,52 @@
   "buttons": {
     "addUser": "Add User"
   },
+  "createDialog": {
+    "title": "Add Operator",
+    "description": "Create a new operator for your business. Limit depends on your current plan.",
+    "fields": {
+      "name": "Name",
+      "phoneNumber": "Phone",
+      "email": "Email",
+      "password": "Password",
+      "operatorProfile": "Operator profile"
+    },
+    "placeholders": {
+      "name": "E.g. John Doe",
+      "phoneNumber": "E.g. +573001234567",
+      "email": "E.g. john@example.com",
+      "password": "At least 8 characters (optional)",
+      "operatorProfile": "Select profile",
+      "noProfile": "No profile"
+    },
+    "help": {
+      "phoneNumber": "International format: +57 10 digits (CO) or +1 10 digits (US).",
+      "password": "If left empty, a temporary password will be generated.",
+      "operatorProfile": "You can change it later from the user detail."
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "nameTooShort": "Name must be at least 2 characters",
+      "nameTooLong": "Name cannot exceed 100 characters",
+      "phoneRequired": "Phone is required",
+      "phoneInvalid": "Enter a valid phone (+57XXXXXXXXXX or +1XXXXXXXXXX)",
+      "emailInvalid": "Enter a valid email",
+      "passwordTooShort": "Password must be at least 8 characters"
+    },
+    "cancel": "Cancel",
+    "create": "Create Operator",
+    "creating": "Creating...",
+    "success": "Operator created successfully"
+  },
+  "limits": {
+    "activeUsers": "active users",
+    "upgradeCta": "Upgrade plan",
+    "reached": "You reached your plan limit of {max} active users. Upgrade to add more operators."
+  },
   "errors": {
     "loadFailed": "Error loading user",
     "updateFailed": "Error updating user",
-    "deleteFailed": "Error deleting user"
+    "deleteFailed": "Error deleting user",
+    "createFailed": "Error creating user"
   }
 }

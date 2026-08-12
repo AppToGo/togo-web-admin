@@ -16,6 +16,9 @@ export {
 // Types
 export type { User, CreateUserRequest, UpdateUserRequest } from "./types";
 
+// Components
+export { CreateUserDialog } from "./components/CreateUserDialog";
+
 // Services
 export {
   getUsers,

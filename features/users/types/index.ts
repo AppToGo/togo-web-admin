@@ -16,11 +16,19 @@ export interface User {
   updatedAt: string;
 }
 
+/**
+ * Crear operador (usuario) — alineado a api-togo/src/user/dto/create-user.dto.ts
+ * phoneNumber es requerido y validado contra /^\+?(57\d{10}|1\d{10})$/
+ * role debe ser OPERATOR para operadores (BUSINESS_OWNER/ADMIN se gestionan aparte)
+ */
 export interface CreateUserRequest {
   name: string;
-  email: string;
+  phoneNumber: string;
   role: string;
+  email?: string;
   password?: string;
+  /** Perfil de operador a asignar post-creación (se asigna vía PATCH /users/:id) */
+  operatorProfileId?: string | null;
 }
 
 export interface UpdateUserRequest {

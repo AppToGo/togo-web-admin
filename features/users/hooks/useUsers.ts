@@ -57,13 +57,30 @@ export function useUser(id: string | null) {
 }
 
 /**
- * Hook para crear un nuevo usuario
+ * Hook para crear un nuevo usuario (operador).
+ * Invalida lista al éxito y muestra toasts. El límite de plan (USER_LIMIT_EXCEEDED)
+ * lo impone el backend atómicamente; acá solo se humaniza el mensaje y se deja
+ * que la página decida si abre el modal de upgrade.
  */
 export function useCreateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createUser,
+    mutationFn: async (data: CreateUserRequest) => {
+      // operatorProfileId no pertenece al DTO de creación — se asigna post-creación
+      const { operatorProfileId, ...createDto } = data as CreateUserRequest & { operatorProfileId?: string | null };
+      const created = await createUser(createDto);
+      if (operatorProfileId) {
+        // Asignación best-effort; si falla, el usuario ya quedó creado
+        try {
+          const { updateUser } = await import("../services/user.service");
+          await updateUser(created.id, { operatorProfileId });
+        } catch {
+          // no bloquea el éxito de la creación
+        }
+      }
+      return created;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_KEYS.lists() });
     },
