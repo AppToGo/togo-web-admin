@@ -57,6 +57,24 @@ interface TableFormState {
 const EMPTY_FORM: TableFormState = { name: "", capacity: "" };
 
 /**
+ * Valida `capacity` en el cliente antes de enviar — el backend ya lo
+ * exige entero positivo (`@IsInt() @Min(1)` en `CreateTableDto`), pero sin
+ * este chequeo un valor no numérico o decimal ("abc", "2.5") solo se
+ * detecta después del POST, como un 400 genérico sin contexto en la UI.
+ * Devuelve `undefined` (campo vacío, válido) o `{ error }` si el texto no
+ * es un entero positivo.
+ */
+function parseCapacity(raw: string): { value?: number; error?: string } {
+  const trimmed = raw.trim();
+  if (!trimmed) return {};
+  const value = Number(trimmed);
+  if (!Number.isInteger(value) || value < 1) {
+    return { error: "invalid" };
+  }
+  return { value };
+}
+
+/**
  * Pedidos en mesa (docs/architecture/pedidos-en-mesa.md, Fase 1) — ABM de
  * mesas de una sede. Se monta dentro de la página de edición de sede
  * (`app/[locale]/dashboard/branches/[id]/page.tsx`).
@@ -91,11 +109,13 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
     setForm(EMPTY_FORM);
   };
 
+  const capacityResult = parseCapacity(form.capacity);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const name = form.name.trim();
-    if (!name) return;
-    const capacity = form.capacity.trim() ? Number(form.capacity) : undefined;
+    if (!name || capacityResult.error) return;
+    const capacity = capacityResult.value;
 
     if (editing) {
       updateTable.mutate(
@@ -225,11 +245,13 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
                   id="table-capacity"
                   type="number"
                   min={1}
+                  step={1}
                   value={form.capacity}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, capacity: e.target.value }))
                   }
                   placeholder={t("placeholders.capacity")}
+                  error={capacityResult.error ? t("errors.invalidCapacity") : undefined}
                 />
               </div>
             </div>
@@ -237,7 +259,11 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
               <Button type="button" variant="outline" onClick={closeForm}>
                 {t("cancel")}
               </Button>
-              <Button type="submit" disabled={!form.name.trim() || isSaving} isLoading={isSaving}>
+              <Button
+                type="submit"
+                disabled={!form.name.trim() || !!capacityResult.error || isSaving}
+                isLoading={isSaving}
+              >
                 {t("save")}
               </Button>
             </DialogFooter>

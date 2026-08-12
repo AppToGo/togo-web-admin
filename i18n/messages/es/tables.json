@@ -29,7 +29,8 @@
   "errors": {
     "createFailed": "No se pudo crear la mesa",
     "updateFailed": "No se pudo actualizar la mesa",
-    "deleteFailed": "No se pudo eliminar la mesa"
+    "deleteFailed": "No se pudo eliminar la mesa",
+    "invalidCapacity": "Debe ser un número entero mayor a 0"
   },
   "deleteConfirm": {
     "title": "¿Eliminar esta mesa?",

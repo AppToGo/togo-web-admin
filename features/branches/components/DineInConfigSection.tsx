@@ -33,6 +33,13 @@ export function DineInConfigSection({
 
   const config = value ?? DEFAULT_DINE_IN_CONFIG;
 
+  // Al apagar `enabled` deliberadamente NO se resetean allowCustomers/
+  // allowOperators — quedan ocultos pero conservan su valor. `enabled` es
+  // el maestro (backend: DineInConfigSchema, Regla 2), así que mientras
+  // está en false esos dos flags ya no importan; conservarlos evita que el
+  // negocio pierda su configuración de "quién puede pedir mesa" cada vez
+  // que apaga el servicio temporalmente (ej. cierre por remodelación) y
+  // tenga que reconfigurarla al reactivar.
   const handleToggle = (field: keyof DineInConfig, checked: boolean) => {
     onChange({ ...config, [field]: checked });
   };

@@ -29,7 +29,8 @@
   "errors": {
     "createFailed": "Could not create the table",
     "updateFailed": "Could not update the table",
-    "deleteFailed": "Could not delete the table"
+    "deleteFailed": "Could not delete the table",
+    "invalidCapacity": "Must be a whole number greater than 0"
   },
   "deleteConfirm": {
     "title": "Delete this table?",
