@@ -58,9 +58,52 @@
   "buttons": {
     "addUser": "Agregar Usuario"
   },
+  "createDialog": {
+    "title": "Agregar Operador",
+    "description": "Crea un nuevo operador para tu negocio. El límite depende de tu plan actual.",
+    "fields": {
+      "name": "Nombre",
+      "phoneNumber": "Teléfono",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "operatorProfile": "Perfil de operador"
+    },
+    "placeholders": {
+      "name": "Ej: Juan Pérez",
+      "phoneNumber": "Ej: +573001234567",
+      "email": "Ej: juan@ejemplo.com",
+      "password": "Mínimo 8 caracteres (opcional)",
+      "operatorProfile": "Seleccionar perfil",
+      "noProfile": "Sin perfil"
+    },
+    "help": {
+      "phoneNumber": "Formato internacional: +57 10 dígitos (CO) o +1 10 dígitos (US).",
+      "password": "Si lo dejas vacío, el sistema generará una contraseña temporal.",
+      "operatorProfile": "Podrás cambiarlo luego desde el detalle del usuario."
+    },
+    "errors": {
+      "nameRequired": "El nombre es obligatorio",
+      "nameTooShort": "El nombre debe tener al menos 2 caracteres",
+      "nameTooLong": "El nombre no puede tener más de 100 caracteres",
+      "phoneRequired": "El teléfono es obligatorio",
+      "phoneInvalid": "Ingresa un teléfono válido (+57XXXXXXXXXX o +1XXXXXXXXXX)",
+      "emailInvalid": "Ingresa un correo válido",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres"
+    },
+    "cancel": "Cancelar",
+    "create": "Crear Operador",
+    "creating": "Creando...",
+    "success": "Operador creado exitosamente"
+  },
+  "limits": {
+    "activeUsers": "usuarios activos",
+    "upgradeCta": "Mejorar plan",
+    "reached": "Alcanzaste el límite de {max} usuarios activos de tu plan. Mejora tu plan para agregar más operadores."
+  },
   "errors": {
     "loadFailed": "Error al cargar el usuario",
     "updateFailed": "Error al actualizar el usuario",
-    "deleteFailed": "Error al eliminar el usuario"
+    "deleteFailed": "Error al eliminar el usuario",
+    "createFailed": "Error al crear el usuario"
   }
 }
