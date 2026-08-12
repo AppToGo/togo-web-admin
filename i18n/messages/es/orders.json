@@ -88,8 +88,7 @@
     "deliveryType": {
       "title": "Tipo de envío",
       "delivery": "A domicilio",
-      "pickup": "Recoger en tienda",
-      "dineIn": "En mesa"
+      "pickup": "Recoger en tienda"
     },
     "activeFilters": {
       "paidOnly": "• Solo pagadas",

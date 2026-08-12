@@ -1,1 +1,0 @@
-export { TablesManager } from "./TablesManager";
