@@ -115,9 +115,10 @@ export function OperatorProfileForm({
           name: formData.name,
         }
       : {
-          // Create: send all required fields
+          // Create: backend espera `permissionCodes`, no `permissions`
+          // (ver CreateOperatorProfileDto). Enviar sin ese campo crea el
+          // perfil vacío y los permisos se asignan después vía /permissions.
           name: formData.name,
-          permissions: [],
         };
 
     onSubmit(data);
