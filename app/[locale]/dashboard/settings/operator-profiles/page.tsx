@@ -9,7 +9,8 @@ import {
 } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Plus } from "lucide-react";
+import { Shield, Plus, Bell } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import {
   useOperatorProfiles,
@@ -120,6 +121,19 @@ export default function OperatorProfilesPage() {
             {t("createProfile")}
           </Button>
         </div>
+
+        {/* Notify banner — feat/operator-order-notify: permiso order.notify_new */}
+        <Card className="border-indigo-100 bg-indigo-50/50">
+          <CardContent className="py-4 flex gap-3">
+            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+              <Bell className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-indigo-900">{t("notifyBanner.title")}</p>
+              <p className="text-xs text-indigo-700 mt-1">{t("notifyBanner.description")}</p>
+            </div>
+          </CardContent>
+        </Card>
 
         {isLoading ? (
           <OperatorProfilesLoading />
