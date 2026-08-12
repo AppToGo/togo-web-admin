@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { UpdateBranchRequest } from "@/features/branches/types";
 import { BranchForm, useBranch, useUpdateBranch } from "@/features/branches";
+import { TablesManager } from "@/features/tables";
+import { Can } from "@/components/auth/Can";
 
 export default function EditBranchPage() {
   const t = useTranslations("branches");
@@ -157,6 +159,11 @@ export default function EditBranchPage() {
           onCancel={handleCancel}
           isLoading={updateBranch.isPending}
         />
+
+        {/* Mesas (docs/architecture/pedidos-en-mesa.md, Fase 1) */}
+        <Can permission="table.view">
+          <TablesManager businessId={branch.businessId} branchId={id} />
+        </Can>
 
         {/* Branch Info Card */}
         <Card className="bg-slate-50 border-slate-200">

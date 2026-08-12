@@ -188,8 +188,8 @@ function formatOrderTime(date: Date | string): string {
   });
 }
 
-// Tipo de orden basado en la fuente
-function getOrderTypeInfo(order: Order & { source?: string }, t?: ReturnType<typeof useTranslations>): {
+// Tipo de orden basado en deliveryType (docs/architecture/pedidos-en-mesa.md)
+function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>): {
   label: string;
   icon: React.ReactNode;
   variant: string;
@@ -209,10 +209,15 @@ function getOrderTypeInfo(order: Order & { source?: string }, t?: ReturnType<typ
     };
   }
 
-  // No address + source OPERATOR → Table (created by operator)
-  if (order.source === "OPERATOR") {
+  // Antes se inferían por `order.source === "OPERATOR"`, un valor que el
+  // enum real OrderSource nunca produce (código muerto). deliveryType
+  // ahora se setea de forma confiable a DINE_IN en los 3 caminos de
+  // creación de pedido.
+  if (order.deliveryType === "DINE_IN") {
     return {
-      label: t?.("deliveryTypes.table") || "Table",
+      label: order.tableLabel
+        ? `${t?.("deliveryTypes.table") || "Table"} · ${order.tableLabel}`
+        : t?.("deliveryTypes.table") || "Table",
       icon: <Utensils className="w-3 h-3" />,
       variant: "emerald",
       isDelivery: false,
