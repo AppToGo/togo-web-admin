@@ -41,5 +41,14 @@
     "title": "¿Eliminar esta mesa?",
     "description": "Si la mesa tiene pedidos históricos, se desactivará en vez de eliminarse para conservar el historial.",
     "confirm": "Eliminar"
+  },
+  "qr": {
+    "openButton": "Códigos QR",
+    "title": "Códigos QR de mesas",
+    "description": "Cada QR abre el catálogo con la mesa ya seleccionada. Imprime todos o descarga uno a la vez.",
+    "noActiveTables": "No hay mesas activas para generar QR",
+    "printAll": "Imprimir todos",
+    "downloadPng": "Descargar PNG",
+    "qrAlt": "Código QR de {name}"
   }
 }

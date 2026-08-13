@@ -21,7 +21,13 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { UpdateBranchRequest } from "@/features/branches/types";
-import { BranchForm, useBranch, useUpdateBranch } from "@/features/branches";
+import {
+  BranchForm,
+  useBranch,
+  useUpdateBranch,
+  useBranchesByBusiness,
+} from "@/features/branches";
+import { useBusiness } from "@/features/business";
 import { TablesManager } from "@/features/tables";
 import { Can } from "@/components/auth/Can";
 
@@ -40,6 +46,15 @@ export default function EditBranchPage() {
 
   const { data: branch, isLoading: isLoadingBranch } = useBranch(id);
   const updateBranch = useUpdateBranch();
+
+  // QR imprimible por mesa (Fase 2, docs/architecture/pedidos-en-mesa.md):
+  // necesita el slug del negocio y saber si hay más de una sede activa para
+  // armar la misma URL que arma el backend (CatalogLinkService.buildTableQrUrl).
+  const { data: business } = useBusiness(branch?.businessId ?? "", {
+    enabled: !!branch?.businessId,
+  });
+  const { data: businessBranches } = useBranchesByBusiness(branch?.businessId ?? null);
+  const isMultiBranch = (businessBranches?.filter((b) => b.isActive).length ?? 0) > 1;
 
   const handleSubmit = (data: UpdateBranchRequest) => {
     updateBranch.mutate(
@@ -162,7 +177,13 @@ export default function EditBranchPage() {
 
         {/* Mesas (docs/architecture/pedidos-en-mesa.md, Fase 1) */}
         <Can permission="table.view">
-          <TablesManager businessId={branch.businessId} branchId={id} />
+          <TablesManager
+            businessId={branch.businessId}
+            branchId={id}
+            businessSlug={business?.slug}
+            branchSlug={branch.slug}
+            isMultiBranch={isMultiBranch}
+          />
         </Can>
 
         {/* Branch Info Card */}
