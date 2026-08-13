@@ -21,25 +21,37 @@ export interface CountryOption {
 }
 
 export const PHONE_COUNTRIES: CountryOption[] = [
+  { code: "+54", iso: "AR", name: "Argentina", flag: "🇦🇷", placeholder: "11 1234 5678" },
+  { code: "+591", iso: "BO", name: "Bolivia", flag: "🇧🇴", placeholder: "7 123 4567" },
+  { code: "+55", iso: "BR", name: "Brasil", flag: "🇧🇷", placeholder: "11 91234 5678" },
+  { code: "+56", iso: "CL", name: "Chile", flag: "🇨🇱", placeholder: "9 1234 5678" },
   { code: "+57", iso: "CO", name: "Colombia", flag: "🇨🇴", placeholder: "300 123 4567" },
+  { code: "+593", iso: "EC", name: "Ecuador", flag: "🇪🇨", placeholder: "9 123 4567" },
+  { code: "+594", iso: "GF", name: "Guayana Francesa", flag: "🇬🇫", placeholder: "6 94 12 34 56" },
+  { code: "+592", iso: "GY", name: "Guyana", flag: "🇬🇾", placeholder: "6 00 1234" },
+  { code: "+595", iso: "PY", name: "Paraguay", flag: "🇵🇾", placeholder: "9 81 123 456" },
+  { code: "+51", iso: "PE", name: "Perú", flag: "🇵🇪", placeholder: "9 123 45678" },
+  { code: "+597", iso: "SR", name: "Surinam", flag: "🇸🇷", placeholder: "7 12 34 56" },
+  { code: "+598", iso: "UY", name: "Uruguay", flag: "🇺🇾", placeholder: "9 123 4567" },
+  { code: "+58", iso: "VE", name: "Venezuela", flag: "🇻🇪", placeholder: "412 123 4567" },
   { code: "+1", iso: "US", name: "Estados Unidos", flag: "🇺🇸", placeholder: "300 123 4567" },
 ];
 
 export function parsePhoneValue(value: string): { countryCode: string; nationalNumber: string } {
   const raw = (value || "").trim().replace(/\s|-/g, "");
   if (!raw) return { countryCode: "+57", nationalNumber: "" };
-  // Si ya viene con +, extraer indicativo
-  for (const c of PHONE_COUNTRIES) {
+  // Ordenar por largo de código descendente para que +591 matchee antes que +58
+  const sorted = [...PHONE_COUNTRIES].sort((a, b) => b.code.length - a.code.length);
+  for (const c of sorted) {
     if (raw.startsWith(c.code)) {
       return { countryCode: c.code, nationalNumber: raw.slice(c.code.length).replace(/\D/g, "") };
     }
-    // Sin + pero con indicativo sin + (573...)
     const withoutPlus = c.code.replace("+", "");
     if (raw.startsWith(withoutPlus)) {
       return { countryCode: c.code, nationalNumber: raw.slice(withoutPlus.length).replace(/\D/g, "") };
     }
   }
-  // Fallback: si empieza con +1/+57 genérico
+  // Fallback genérico ya cubierto por loop, pero mantener por compat
   if (raw.startsWith("+1")) return { countryCode: "+1", nationalNumber: raw.slice(2).replace(/\D/g, "") };
   if (raw.startsWith("+57")) return { countryCode: "+57", nationalNumber: raw.slice(3).replace(/\D/g, "") };
   // Sin indicativo, asumir +57
@@ -92,7 +104,7 @@ export function PhoneInput({
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
     setLocalNumber(digits);
     const next = formatE164(localCode, digits);
     onChange(next);

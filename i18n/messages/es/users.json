@@ -77,7 +77,7 @@
       "noProfile": "Sin perfil"
     },
     "help": {
-      "phoneNumber": "Formato internacional: +57 10 dígitos (CO) o +1 10 dígitos (US).",
+      "phoneNumber": "Selecciona el indicativo y escribe el número. Se enviará en formato internacional (E.164).",
       "password": "Si lo dejas vacío, el sistema generará una contraseña temporal.",
       "operatorProfile": "Podrás cambiarlo luego desde el detalle del usuario."
     },
@@ -86,7 +86,7 @@
       "nameTooShort": "El nombre debe tener al menos 2 caracteres",
       "nameTooLong": "El nombre no puede tener más de 100 caracteres",
       "phoneRequired": "El teléfono es obligatorio",
-      "phoneInvalid": "Ingresa un teléfono válido (+57XXXXXXXXXX o +1XXXXXXXXXX)",
+      "phoneInvalid": "Ingresa un teléfono válido con indicativo de país",
       "emailInvalid": "Ingresa un correo válido",
       "passwordTooShort": "La contraseña debe tener al menos 8 caracteres"
     },

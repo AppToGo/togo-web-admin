@@ -34,7 +34,7 @@ interface CreateUserDialogProps {
   onCreated?: () => void;
 }
 
-const PHONE_REGEX = /^\+?(57\d{10}|1\d{10})$/;
+const PHONE_REGEX = /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
 
 export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDialogProps) {
   const t = useTranslations("users.createDialog");
