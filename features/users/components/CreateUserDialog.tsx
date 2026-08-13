@@ -136,7 +136,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
         onCreated?.();
       },
       onError: (err) => {
-        const msg = getHumanizedErrorMessage(err, tErrors("createFailed"));
+        const msg = getHumanizedErrorMessage(err) || tErrors("createFailed");
         toast.error(msg);
       },
     });

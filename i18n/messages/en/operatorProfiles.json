@@ -51,6 +51,10 @@
       "whatsapp": "WhatsApp"
     }
   },
+  "notifyBanner": {
+    "title": "WhatsApp order notification",
+    "description": "Operators with the \"Receive new order notification\" permission will get a WhatsApp with full order details for each new order, only if they have an active 24h window with the business number."
+  },
   "noBusiness": {
     "title": "You don't have an assigned business",
     "description": "To manage operator profiles, you need to have a business assigned to your account."

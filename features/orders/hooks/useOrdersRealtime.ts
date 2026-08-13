@@ -2,11 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-// Type for the notifyNewOrder function
-interface NotifyNewOrderFn {
-  (orderId: string): void;
-}
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useBusinessStore } from '@/features/business/stores/business.store';
@@ -14,6 +9,11 @@ import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
 import { useOrderNotification } from '@/features/notifications/hooks/useOrderNotification';
+
+// Derivado de useOrderNotification (no repetido a mano) — así un cambio
+// futuro a la firma de notifyNewOrder no puede desincronizarse en
+// silencio de lo que este hook le pasa vía el ref.
+type NotifyNewOrderFn = ReturnType<typeof useOrderNotification>['notifyNewOrder'];
 import { ARCHIVE_STATUS } from '../constants/order-statuses';
 import {
   isRefreshInProgress,
@@ -43,6 +43,7 @@ const WS_EVENTS = {
 // Interfaces para eventos
 interface OrderCreatedEvent {
   orderId: string;
+  orderNumber?: string | number | null;
   status: string;
   timestamp: string;
 }
@@ -216,7 +217,7 @@ export function useOrdersRealtime(): RealtimeState {
       });
       
       // Trigger notification (sound + toast) based on user preferences
-      notifyNewOrderRef.current(data.orderId);
+      notifyNewOrderRef.current(data.orderId, data.orderNumber);
     });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
