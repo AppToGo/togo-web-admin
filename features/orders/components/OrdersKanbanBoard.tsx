@@ -25,6 +25,7 @@ import {
   getPaymentStatusLabel,
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
+import { formatOrderNumber } from "../utils/order-number.utils";
 import type { CardViewMode } from "./OrderCard";
 
 interface OrdersKanbanBoardProps {
@@ -44,10 +45,6 @@ interface OrdersKanbanBoardProps {
   };
 }
 
-function formatOrderNumber(id: string): string {
-  return `#${id.slice(0, 6).toUpperCase()}`;
-}
-
 function filterOrdersBySearch(
   orders: Order[] | undefined,
   query: string
@@ -56,7 +53,7 @@ function filterOrdersBySearch(
 
   const lowerQuery = query.toLowerCase();
   return orders.filter((order) => {
-    const orderNumber = formatOrderNumber(order.id).toLowerCase();
+    const orderNumber = formatOrderNumber(order.id, order.orderNumber).toLowerCase();
     const customerName = order.customer?.name?.toLowerCase() || "";
     const productNames =
       order.items?.map((i) => i.productName.toLowerCase()).join(" ") || "";
