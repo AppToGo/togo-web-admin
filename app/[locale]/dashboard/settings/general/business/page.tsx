@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -317,20 +318,13 @@ export default function BusinessSettingsPage() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex justify-between">
-                    {tb("information.phone")}
-                    <span className="text-xs text-slate-500 mr-2">
-                      {tb("information.phoneDescription")}
-                    </span>
-                  </Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder={tb("placeholders.phone")}
-                  />
-                </div>
+                <PhoneInput
+                  label={tb("information.phone")}
+                  value={formData.phone}
+                  onChange={(v) => handleChange("phone", v)}
+                  helperText={tb("information.phoneDescription")}
+                  id="phone"
+                />
               </div>
 
               <div className="space-y-2">

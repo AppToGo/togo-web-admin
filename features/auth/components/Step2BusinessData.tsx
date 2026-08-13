@@ -52,10 +52,13 @@ export function Step2BusinessData({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const phoneNumber =
+      (step1Data as any).phoneNumber ||
+      (step1Data.localPhone ? `${PHONE_PREFIX}${step1Data.localPhone}` : "");
     register.mutate({
       name: step1Data.name,
       email: step1Data.email,
-      phoneNumber: `${PHONE_PREFIX}${step1Data.localPhone}`,
+      phoneNumber,
       password: step1Data.password,
       businessName,
       industryId: industryId || undefined,

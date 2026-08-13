@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { useRegister } from "@/features/auth/hooks/useAuth";
 
 export function RegisterForm() {
@@ -62,14 +63,10 @@ export function RegisterForm() {
         required
       />
 
-      <Input
+      <PhoneInput
         label={t("phone.label")}
-        type="tel"
-        placeholder={t("phone.placeholder")}
         value={formData.phoneNumber}
-        onChange={(e) =>
-          setFormData({ ...formData, phoneNumber: e.target.value })
-        }
+        onChange={(v) => setFormData({ ...formData, phoneNumber: v })}
         required
         helperText={t("phone.helper")}
       />
