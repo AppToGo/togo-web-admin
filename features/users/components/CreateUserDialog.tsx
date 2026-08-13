@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,7 @@ interface CreateUserDialogProps {
   onCreated?: () => void;
 }
 
-const PHONE_REGEX = /^\+?(57\d{10}|1\d{10})$/;
+const PHONE_REGEX = /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
 
 export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDialogProps) {
   const t = useTranslations("users.createDialog");
@@ -179,22 +180,25 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-phone`}>
-              {t("fields.phoneNumber")} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id={`${formId}-phone`}
-              name="phoneNumber"
-              value={form.phoneNumber}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder={t("placeholders.phoneNumber")}
-              error={errors.phoneNumber}
-              disabled={createUser.isPending}
-            />
-            <p className="text-xs text-slate-500">{t("help.phoneNumber")}</p>
-          </div>
+          <PhoneInput
+            value={form.phoneNumber}
+            onChange={(v) => {
+              setForm((prev) => ({ ...prev, phoneNumber: v }));
+              if (touched.phoneNumber) {
+                setErrors((prev) => ({ ...prev, phoneNumber: validateField("phoneNumber", v) }));
+              }
+            }}
+            onBlur={() => {
+              setTouched((prev) => ({ ...prev, phoneNumber: true }));
+              setErrors((prev) => ({ ...prev, phoneNumber: validateField("phoneNumber", form.phoneNumber) }));
+            }}
+            label={t("fields.phoneNumber")}
+            required
+            error={errors.phoneNumber}
+            helperText={t("help.phoneNumber")}
+            disabled={createUser.isPending}
+            id={`${formId}-phone`}
+          />
 
           <div className="space-y-2">
             <Label htmlFor={`${formId}-email`}>{t("fields.email")}</Label>

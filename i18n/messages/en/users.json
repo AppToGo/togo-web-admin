@@ -77,7 +77,7 @@
       "noProfile": "No profile"
     },
     "help": {
-      "phoneNumber": "International format: +57 10 digits (CO) or +1 10 digits (US).",
+      "phoneNumber": "Select the country code and enter the number. It will be sent in international format (E.164).",
       "password": "If left empty, a temporary password will be generated.",
       "operatorProfile": "You can change it later from the user detail."
     },
@@ -86,7 +86,7 @@
       "nameTooShort": "Name must be at least 2 characters",
       "nameTooLong": "Name cannot exceed 100 characters",
       "phoneRequired": "Phone is required",
-      "phoneInvalid": "Enter a valid phone (+57XXXXXXXXXX or +1XXXXXXXXXX)",
+      "phoneInvalid": "Enter a valid phone with country code",
       "emailInvalid": "Enter a valid email",
       "passwordTooShort": "Password must be at least 8 characters"
     },
