@@ -2,7 +2,7 @@
 
 import { useState, useId, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { User, Loader2 } from "lucide-react";
+import { User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,14 +34,20 @@ interface CreateUserDialogProps {
   onCreated?: () => void;
 }
 
-const PHONE_REGEX = /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
+const PHONE_REGEX =
+  /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
 
-export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDialogProps) {
+export function CreateUserDialog({
+  open,
+  onOpenChange,
+  onCreated,
+}: CreateUserDialogProps) {
   const t = useTranslations("users.createDialog");
   const tErrors = useTranslations("users.errors");
   const formId = useId();
   const createUser = useCreateUser();
-  const { data: profiles, isLoading: isLoadingProfiles } = useOperatorProfiles();
+  const { data: profiles, isLoading: isLoadingProfiles } =
+    useOperatorProfiles();
 
   const [form, setForm] = useState({
     name: "",
@@ -64,7 +70,8 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
         case "phoneNumber": {
           const v = value.trim();
           if (!v) return t("errors.phoneRequired");
-          if (!PHONE_REGEX.test(v.replace(/[\s-]/g, ""))) return t("errors.phoneInvalid");
+          if (!PHONE_REGEX.test(v.replace(/[\s-]/g, "")))
+            return t("errors.phoneInvalid");
           return "";
         }
         case "email": {
@@ -124,13 +131,21 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
       role: "OPERATOR",
       ...(form.email.trim() ? { email: form.email.trim() } : {}),
       ...(form.password.trim() ? { password: form.password.trim() } : {}),
-      ...(form.operatorProfileId ? { operatorProfileId: form.operatorProfileId } : {}),
+      ...(form.operatorProfileId
+        ? { operatorProfileId: form.operatorProfileId }
+        : {}),
     };
 
     createUser.mutate(payload, {
       onSuccess: () => {
         toast.success(t("success"));
-        setForm({ name: "", phoneNumber: "", email: "", password: "", operatorProfileId: "" });
+        setForm({
+          name: "",
+          phoneNumber: "",
+          email: "",
+          password: "",
+          operatorProfileId: "",
+        });
         setErrors({});
         setTouched({});
         onOpenChange(false);
@@ -162,7 +177,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
           <div className="space-y-2">
             <Label htmlFor={`${formId}-name`}>
               {t("fields.name")} <span className="text-red-500">*</span>
@@ -185,12 +200,18 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
             onChange={(v) => {
               setForm((prev) => ({ ...prev, phoneNumber: v }));
               if (touched.phoneNumber) {
-                setErrors((prev) => ({ ...prev, phoneNumber: validateField("phoneNumber", v) }));
+                setErrors((prev) => ({
+                  ...prev,
+                  phoneNumber: validateField("phoneNumber", v),
+                }));
               }
             }}
             onBlur={() => {
               setTouched((prev) => ({ ...prev, phoneNumber: true }));
-              setErrors((prev) => ({ ...prev, phoneNumber: validateField("phoneNumber", form.phoneNumber) }));
+              setErrors((prev) => ({
+                ...prev,
+                phoneNumber: validateField("phoneNumber", form.phoneNumber),
+              }));
             }}
             label={t("fields.phoneNumber")}
             required
@@ -235,14 +256,21 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
             <Label>{t("fields.operatorProfile")}</Label>
             <Select
               value={form.operatorProfileId || "none"}
-              onValueChange={(v) => setForm((prev) => ({ ...prev, operatorProfileId: v === "none" ? "" : v }))}
+              onValueChange={(v) =>
+                setForm((prev) => ({
+                  ...prev,
+                  operatorProfileId: v === "none" ? "" : v,
+                }))
+              }
               disabled={createUser.isPending || isLoadingProfiles}
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("placeholders.operatorProfile")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">{t("placeholders.noProfile")}</SelectItem>
+                <SelectItem value="none">
+                  {t("placeholders.noProfile")}
+                </SelectItem>
                 {profiles?.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
@@ -250,14 +278,25 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-slate-500">{t("help.operatorProfile")}</p>
+            <p className="text-xs text-slate-500">
+              {t("help.operatorProfile")}
+            </p>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={createUser.isPending}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={createUser.isPending}
+            >
               {t("cancel")}
             </Button>
-            <Button type="submit" disabled={!isValid || createUser.isPending} isLoading={createUser.isPending}>
+            <Button
+              type="submit"
+              disabled={!isValid || createUser.isPending}
+              isLoading={createUser.isPending}
+            >
               {createUser.isPending ? t("creating") : t("create")}
             </Button>
           </DialogFooter>
