@@ -136,10 +136,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
         onCreated?.();
       },
       onError: (err) => {
-        // getHumanizedErrorMessage toma un solo argumento — ya devuelve su
-        // propio mensaje genérico por defecto si no puede humanizar el
-        // error, así que no acepta (ni necesita) un fallback custom acá.
-        const msg = getHumanizedErrorMessage(err);
+        const msg = getHumanizedErrorMessage(err) || tErrors("createFailed");
         toast.error(msg);
       },
     });
