@@ -40,11 +40,13 @@ import type {
   DeliveryConfig,
   BusinessHours,
   TransferOptions,
+  DineInConfig,
 } from "../types";
-import { DEFAULT_TRANSFER_OPTIONS } from "../types";
+import { DEFAULT_TRANSFER_OPTIONS, DEFAULT_DINE_IN_CONFIG } from "../types";
 import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
 import { TransferOptionsSection } from "./TransferOptionsSection";
+import { DineInConfigSection } from "./DineInConfigSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
@@ -152,10 +154,12 @@ export function BranchForm({
         deliveryConfig: { type: "FREE" as DeliveryFeeType },
         businessHours: DEFAULT_BUSINESS_HOURS,
         transferOptions: DEFAULT_TRANSFER_OPTIONS,
+        dineInConfig: DEFAULT_DINE_IN_CONFIG,
       };
     }
     const bh = branch.businessHours as BusinessHours | null;
     const to = branch.transferOptions as TransferOptions | null;
+    const di = branch.dineInConfig as DineInConfig | null;
     return {
       name: branch.name,
       slug: branch.slug,
@@ -174,6 +178,7 @@ export function BranchForm({
         : { type: "FREE" as DeliveryFeeType },
       businessHours: bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
       transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
+      dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
     };
   });
 
@@ -192,6 +197,7 @@ export function BranchForm({
     if (branch) {
       const bh = branch.businessHours as BusinessHours | null;
       const to = branch.transferOptions as TransferOptions | null;
+      const di = branch.dineInConfig as DineInConfig | null;
       setFormData({
         name: branch.name,
         slug: branch.slug,
@@ -211,6 +217,7 @@ export function BranchForm({
         businessHours:
           bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
         transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
+        dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
       });
       setErrors({});
       setTouched({});
@@ -321,6 +328,11 @@ export function BranchForm({
     return typed?.options !== undefined ? typed : DEFAULT_TRANSFER_OPTIONS;
   };
 
+  const normalizeDineInConfig = (di: unknown): DineInConfig => {
+    const typed = di as DineInConfig | null;
+    return typed?.enabled !== undefined ? typed : DEFAULT_DINE_IN_CONFIG;
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -344,6 +356,7 @@ export function BranchForm({
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
           businessHours: normalizeBusinessHours(formData.businessHours),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
+          dineInConfig: normalizeDineInConfig(formData.dineInConfig),
         }
       : {
           name: formData.name,
@@ -360,6 +373,7 @@ export function BranchForm({
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
           businessHours: normalizeBusinessHours(formData.businessHours),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
+          dineInConfig: normalizeDineInConfig(formData.dineInConfig),
         };
 
     onSubmit(data);
@@ -701,6 +715,14 @@ export function BranchForm({
         value={formData.transferOptions}
         onChange={(opts) =>
           setFormData((prev) => ({ ...prev, transferOptions: opts }))
+        }
+      />
+
+      {/* Dine-in service (docs/architecture/pedidos-en-mesa.md) */}
+      <DineInConfigSection
+        value={formData.dineInConfig}
+        onChange={(config) =>
+          setFormData((prev) => ({ ...prev, dineInConfig: config }))
         }
       />
 

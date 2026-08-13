@@ -1,0 +1,45 @@
+{
+  "title": "Mesas",
+  "description": "Administra las mesas de esta sede para pedidos en el local",
+  "addTable": "Agregar mesa",
+  "editTable": "Editar mesa",
+  "noTables": "Sin mesas configuradas",
+  "noTablesDescription": "Agrega al menos una mesa para generar sus QR",
+  "loadError": {
+    "title": "No se pudieron cargar las mesas",
+    "description": "Ocurrió un error al consultar las mesas de esta sede.",
+    "retry": "Reintentar"
+  },
+  "fields": {
+    "name": "Nombre",
+    "code": "Código",
+    "capacity": "Capacidad",
+    "status": "Estado",
+    "actions": "Acciones"
+  },
+  "status": {
+    "active": "Activa",
+    "inactive": "Inactiva"
+  },
+  "placeholders": {
+    "name": "Ej: Mesa 1, Terraza A",
+    "capacity": "Ej: 4"
+  },
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "createSuccess": "Mesa \"{name}\" creada",
+  "updateSuccess": "Mesa actualizada",
+  "deactivateSuccess": "Mesa desactivada (tiene pedidos asociados)",
+  "deleteSuccess": "Mesa eliminada",
+  "errors": {
+    "createFailed": "No se pudo crear la mesa",
+    "updateFailed": "No se pudo actualizar la mesa",
+    "deleteFailed": "No se pudo eliminar la mesa",
+    "invalidCapacity": "Debe ser un número entero mayor a 0"
+  },
+  "deleteConfirm": {
+    "title": "¿Eliminar esta mesa?",
+    "description": "Si la mesa tiene pedidos históricos, se desactivará en vez de eliminarse para conservar el historial.",
+    "confirm": "Eliminar"
+  }
+}
