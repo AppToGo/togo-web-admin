@@ -440,6 +440,19 @@ export function OrderDetailContent({
                   {tc("empty.infoNotAvailable")}
                 </p>
               )}
+              {/* Pedidos en mesa (docs/architecture/pedidos-en-mesa.md, Fase
+                  3): un pedido tomado por /nuevo (comando del operador)
+                  queda atribuido a quien lo tomó, independiente del
+                  Customer asociado (o del cliente técnico si no dio
+                  teléfono). */}
+              {order.createdByType === "OPERATOR" && (
+                <div className="flex items-center gap-2 text-sm text-slate-600 pt-1 border-t border-slate-200">
+                  <User className="w-4 h-4" />
+                  {order.createdByUser?.name
+                    ? t("detail.createdByOperator", { name: order.createdByUser.name })
+                    : t("detail.createdByOperatorUnknown")}
+                </div>
+              )}
             </div>
           </div>
 

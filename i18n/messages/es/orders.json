@@ -170,6 +170,8 @@
     "title": "Detalle del Pedido",
     "orderNumber": "Pedido #{number}",
     "customerInfo": "Cliente",
+    "createdByOperator": "Creado por: {name} — Operador",
+    "createdByOperatorUnknown": "Creado por un operador",
     "deliveryAddress": "Dirección de entrega",
     "orderInfo": "Información del pedido",
     "items": "Artículos",

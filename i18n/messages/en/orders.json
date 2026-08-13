@@ -170,6 +170,8 @@
     "title": "Order Details",
     "orderNumber": "Order #{number}",
     "customerInfo": "Customer",
+    "createdByOperator": "Created by: {name} — Operator",
+    "createdByOperatorUnknown": "Created by an operator",
     "deliveryAddress": "Delivery address",
     "orderInfo": "Order information",
     "items": "Items",

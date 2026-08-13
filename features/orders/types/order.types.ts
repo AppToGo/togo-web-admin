@@ -98,6 +98,8 @@ export interface Order {
   /** Quién originó el pedido — independiente de qué Customer quedó asociado. */
   createdByType?: "CUSTOMER" | "OPERATOR";
   createdByUserId?: string;
+  /** Nombre del operador (si createdByType === "OPERATOR"). Solo viene en el detalle, no en listados. */
+  createdByUser?: { id: string; name: string };
   createdAt: Date;
   updatedAt: Date;
   customer?: CustomerInfo;
