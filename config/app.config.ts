@@ -27,6 +27,13 @@ export const APP_CONFIG = {
     configId: process.env.NEXT_PUBLIC_META_CONFIG_ID || "",
     graphVersion: process.env.NEXT_PUBLIC_META_GRAPH_VERSION || "v25.0",
   },
+  webCatalog: {
+    // Mismo default que WEB_CATALOG_BASE_URL en api-togo (greeting-strategy.service.ts,
+    // search-product.handler.ts, etc.) — usado para el QR imprimible de mesas
+    // (docs/architecture/pedidos-en-mesa.md, Fase 2), que se arma client-side
+    // sin pasar por el backend.
+    baseUrl: process.env.NEXT_PUBLIC_WEB_CATALOG_BASE_URL || "https://catalogo.apptogo.co",
+  },
 } as const;
 
 export type AppConfig = typeof APP_CONFIG;

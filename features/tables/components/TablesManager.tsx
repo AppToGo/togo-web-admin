@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Pencil, Trash2, Armchair, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Armchair, AlertTriangle, QrCode } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -43,11 +43,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Can } from "@/components/auth/Can";
 import { useTables, useCreateTable, useUpdateTable, useRemoveTable } from "../hooks";
+import { TableQrPrintDialog } from "./TableQrPrintDialog";
 import type { RestaurantTable } from "../types";
 
 interface TablesManagerProps {
   businessId: string;
   branchId: string;
+  /** Slug del negocio — requerido para armar la URL del QR (Fase 2) */
+  businessSlug?: string;
+  /** Slug de la sede — requerido para armar la URL del QR (Fase 2) */
+  branchSlug?: string;
+  /** true si el negocio tiene más de una sede activa (incluye el segmento de sede en la URL del QR) */
+  isMultiBranch?: boolean;
 }
 
 interface TableFormState {
@@ -80,7 +87,13 @@ function parseCapacity(raw: string): { value?: number; error?: string } {
  * mesas de una sede. Se monta dentro de la página de edición de sede
  * (`app/[locale]/dashboard/branches/[id]/page.tsx`).
  */
-export function TablesManager({ businessId, branchId }: TablesManagerProps) {
+export function TablesManager({
+  businessId,
+  branchId,
+  businessSlug,
+  branchSlug,
+  isMultiBranch = false,
+}: TablesManagerProps) {
   const t = useTranslations("tables");
   const { data: tables, isLoading, isError, refetch, isRefetching } = useTables(
     businessId,
@@ -94,6 +107,12 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState<TableFormState>(EMPTY_FORM);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+
+  // El QR (Fase 2) necesita slugs para armar la URL determinística del
+  // catálogo — sin ellos (todavía cargando business/branch en el padre) el
+  // botón se oculta en vez de abrir un diálogo que no puede generar nada.
+  const canGenerateQr = !!businessSlug && !!branchSlug;
 
   const openCreate = () => {
     setEditing(null);
@@ -143,12 +162,25 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
           </CardTitle>
           <CardDescription className="mt-1">{t("description")}</CardDescription>
         </div>
-        <Can permission="table.manage">
-          <Button type="button" size="sm" onClick={openCreate}>
-            <Plus className="w-4 h-4 mr-1" />
-            {t("addTable")}
-          </Button>
-        </Can>
+        <div className="flex items-center gap-2">
+          {canGenerateQr && tables && tables.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsQrDialogOpen(true)}
+            >
+              <QrCode className="w-4 h-4 mr-1" />
+              {t("qr.openButton")}
+            </Button>
+          )}
+          <Can permission="table.manage">
+            <Button type="button" size="sm" onClick={openCreate}>
+              <Plus className="w-4 h-4 mr-1" />
+              {t("addTable")}
+            </Button>
+          </Can>
+        </div>
       </CardHeader>
 
       <CardContent>
@@ -318,6 +350,18 @@ export function TablesManager({ businessId, branchId }: TablesManagerProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* QR imprimible por mesa (Fase 2) */}
+      {canGenerateQr && (
+        <TableQrPrintDialog
+          open={isQrDialogOpen}
+          onOpenChange={setIsQrDialogOpen}
+          tables={tables ?? []}
+          businessSlug={businessSlug!}
+          branchSlug={branchSlug!}
+          isMultiBranch={isMultiBranch}
+        />
+      )}
     </Card>
   );
 }

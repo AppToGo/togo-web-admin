@@ -41,5 +41,14 @@
     "title": "Delete this table?",
     "description": "If the table has historical orders, it will be deactivated instead of deleted to preserve the history.",
     "confirm": "Delete"
+  },
+  "qr": {
+    "openButton": "QR codes",
+    "title": "Table QR codes",
+    "description": "Each QR opens the catalog with the table already selected. Print them all or download one at a time.",
+    "noActiveTables": "No active tables to generate a QR for",
+    "printAll": "Print all",
+    "downloadPng": "Download PNG",
+    "qrAlt": "QR code for {name}"
   }
 }
