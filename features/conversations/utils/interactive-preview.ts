@@ -155,7 +155,9 @@ function buildOutboundCarousel(raw: Record<string, unknown>): InteractivePreview
 
 function buildOutboundProductCarousel(raw: Record<string, unknown>): InteractivePreview | null {
   const products = asArray(raw.products);
-  if (!products) return null;
+  // Un `products: []` (p. ej. catálogo sin resultados) no aporta nada útil
+  // como tarjeta "0 productos" — se deja caer al aviso genérico.
+  if (!products || products.length === 0) return null;
   return {
     kind: "productCarousel",
     header: asString(raw.header),
@@ -218,13 +220,21 @@ function buildOutboundReaction(raw: Record<string, unknown>): InteractivePreview
   return { kind: "reaction", emoji: typeof emoji === "string" ? emoji : null };
 }
 
+/** Único shape de `LocationRequestPayload` — ver message-payload.interface.ts:241. */
+const LOCATION_REQUEST_KEYS = new Set(["name", "address", "buttonText"]);
+
 function buildOutboundLocationRequest(raw: Record<string, unknown>): InteractivePreview | null {
-  // `InteractiveProductPayload` (producto único, no carrusel) también cae en
-  // contentType INTERACTIVE y no trae ninguna de las claves de las ramas
-  // anteriores — sólo `catalogId`/`productRetailerId`. Hoy es código muerto
-  // en el backend (nadie lo envía), pero si se activa no debe malinterpretarse
-  // como una solicitud de ubicación vacía.
-  if (asString(raw.catalogId) && asString(raw.productRetailerId)) return null;
+  // Discriminación negativa: si el objeto trae alguna clave que no es de
+  // `LocationRequestPayload`, no es un location request — es un payload
+  // corrupto, una forma histórica no contemplada, o un `MessageType` futuro
+  // (p. ej. `InteractiveProductPayload`, único payload OUTBOUND con
+  // contentType INTERACTIVE distinto que también llega hasta acá — hoy
+  // código muerto en el backend, nadie lo envía). Preferimos caer al aviso
+  // genérico de "no soportado" antes que renderizar una tarjeta de ubicación
+  // vacía y engañosa. Un `{}` legítimo (todos los campos son opcionales)
+  // sigue matcheando: no tiene ninguna clave ajena.
+  const hasUnknownKeys = Object.keys(raw).some((key) => !LOCATION_REQUEST_KEYS.has(key));
+  if (hasUnknownKeys) return null;
   return {
     kind: "locationRequest",
     name: asString(raw.name),
