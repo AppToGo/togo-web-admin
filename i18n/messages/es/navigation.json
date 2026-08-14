@@ -24,7 +24,8 @@
     "general": "Configuración",
     "business": "Datos del Negocio",
     "businesses": "Negocios",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "billing": "Facturación"
   },
   "breadcrumbs": {
     "home": "Inicio",

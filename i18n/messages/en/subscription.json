@@ -45,5 +45,68 @@
       "extraSlotsCta": "Need more branches or users? Message us",
       "extraSlotsMessage": "Hi, I'd like to add more branches or users to my {planName} plan on ToGo (business: {businessName})."
     }
+  },
+  "billing": {
+    "title": "Billing statement",
+    "description": "Your plan, your payments to TOGO, and the billing notices we've sent you.",
+    "accessDeniedTitle": "No access",
+    "accessDeniedDescription": "You don't have permission to view this business's billing statement.",
+    "plan": {
+      "title": "{planName} plan",
+      "priceMonthly": "{price}/month",
+      "free": "Free trial plan"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "PAID": "Up to date",
+      "OVERDUE": "Overdue",
+      "GRACE_PERIOD": "Grace period"
+    },
+    "trial": {
+      "active": "Your free trial ends on {date}.",
+      "endingSoon": "Your free trial ends on {date} — very soon.",
+      "expired": "Your free trial has ended. Choose a plan to keep using ToGo."
+    },
+    "overdue": {
+      "blocked": "Your payment is overdue and some actions are blocked until it's regularized.",
+      "contactSupport": "Already paid? Send us the receipt via WhatsApp using the button above."
+    },
+    "nextPaymentDue": "Your next payment is due on {date}.",
+    "gracePeriod": "Your payment is overdue, but you're still in the grace period until {date}.",
+    "pendingRequest": {
+      "title": "Your request to switch to {planName} is being verified.",
+      "graceEndsAt": "While it's being verified, you have access until {date}."
+    },
+    "noRecord": "There's no subscription information for this business yet.",
+    "fields": {
+      "lastPaymentAt": "Last payment",
+      "totalPaid": "Total paid to TOGO"
+    },
+    "cta": {
+      "choosePlan": "Choose a plan",
+      "changePlan": "Change plan"
+    },
+    "paymentHistory": {
+      "title": "Payment history",
+      "description": "Payments recorded by TOGO for your business.",
+      "empty": "You don't have any payments recorded yet.",
+      "columns": {
+        "paidAt": "Date",
+        "amount": "Amount",
+        "method": "Method",
+        "reference": "Reference"
+      }
+    },
+    "notifications": {
+      "title": "Billing notifications",
+      "description": "Reminders and due-date notices TOGO has sent you.",
+      "empty": "No billing notifications right now."
+    },
+    "notificationType": {
+      "REMINDER": "Reminder",
+      "OVERDUE": "Overdue",
+      "WARNING": "Warning",
+      "PAYMENT_REMINDER": "Payment reminder"
+    }
   }
 }
