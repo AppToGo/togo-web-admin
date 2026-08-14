@@ -50,7 +50,7 @@ export default function BillingPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 max-w-3xl">
+      <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Receipt className="h-6 w-6 text-indigo-600" />
