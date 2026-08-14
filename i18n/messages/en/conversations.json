@@ -56,14 +56,31 @@
     "AUDIO": "Audio",
     "VIDEO": "Video",
     "DOCUMENT": "Document",
-    "LOCATION": "Shared location (not supported in this viewer)",
-    "INTERACTIVE": "Interactive message (not supported in this viewer)",
-    "TEMPLATE": "WhatsApp template (not supported in this viewer)",
+    "LOCATION": "Location",
+    "INTERACTIVE": "Interactive message",
+    "TEMPLATE": "WhatsApp template",
     "SYSTEM_NOTE": "Internal note",
     "STICKER": "Sticker",
-    "CONTACTS": "Shared contact (not supported in this viewer)",
+    "CONTACTS": "Shared contact",
     "REACTION": "Reaction",
-    "CTA_URL": "Link button (not supported in this viewer)"
+    "CTA_URL": "Link button"
+  },
+  "interactive": {
+    "template": {
+      "label": "WhatsApp template"
+    },
+    "location": {
+      "open": "Open in Google Maps"
+    },
+    "locationRequest": {
+      "default": "Send location"
+    },
+    "productCarousel": {
+      "count": "{count, plural, one {# product} other {# products}}"
+    },
+    "reaction": {
+      "removed": "Reaction removed"
+    }
   },
   "media": {
     "download": "Download attachment",
