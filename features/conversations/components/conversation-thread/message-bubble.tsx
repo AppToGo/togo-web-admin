@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import { ImageOff, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MessageStatusIcon } from "./message-status-icon";
+import { InteractiveMessagePreview } from "./interactive-preview";
+import { buildInteractivePreview } from "../../utils/interactive-preview";
 import type { ConversationMessage, MessageSenderType } from "../../types";
 
 interface MessageBubbleProps {
@@ -86,14 +88,22 @@ function MediaContent({ message }: { message: ConversationMessage }) {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const t = useTranslations("conversations");
   const isMediaHandled = MEDIA_CONTENT_TYPES.has(message.contentType);
+  const preview = buildInteractivePreview(message);
+  // Sólo las burbujas CUSTOMER tienen fondo claro (`bubbleStyles`); BOT/OPERATOR/SYSTEM
+  // son sólidas y oscuras, así que la superficie secundaria del preview necesita más contraste ahí.
+  const tone = message.senderType === "CUSTOMER" ? "onLight" : "onDark";
+  // El aviso genérico queda sólo para lo que el normalizador no supo interpretar.
   const showUnsupportedNotice =
-    !isMediaHandled && message.contentType !== "TEXT" && !message.text;
+    !preview && !isMediaHandled && message.contentType !== "TEXT" && !message.text;
+  // `list`/`carousel` necesitan más ancho para no romper filas/cards.
+  const isWidePreview = preview?.kind === "list" || preview?.kind === "carousel";
 
   return (
     <div className={cn("flex", bubbleAlignment(message.senderType))}>
       <div
         className={cn(
-          "max-w-[80%] rounded-2xl px-4 py-2 space-y-1",
+          "rounded-2xl px-4 py-2 space-y-1",
+          isWidePreview ? "max-w-[85%]" : "max-w-[80%]",
           bubbleStyles(message.senderType)
         )}
       >
@@ -101,10 +111,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           {t(`sender.${message.senderType}`)}
         </div>
         {message.media && <MediaContent message={message} />}
-        {message.text && (
-          <p className="text-sm whitespace-pre-wrap break-words">
-            {message.text}
-          </p>
+        {preview ? (
+          <InteractiveMessagePreview preview={preview} tone={tone} />
+        ) : (
+          message.text && (
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {message.text}
+            </p>
+          )
         )}
         {showUnsupportedNotice && (
           <p className="text-xs italic opacity-70">

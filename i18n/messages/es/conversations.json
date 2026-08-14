@@ -56,14 +56,31 @@
     "AUDIO": "Audio",
     "VIDEO": "Video",
     "DOCUMENT": "Documento",
-    "LOCATION": "Ubicación compartida (no soportada en este visor)",
-    "INTERACTIVE": "Mensaje interactivo (no soportado en este visor)",
-    "TEMPLATE": "Plantilla de WhatsApp (no soportada en este visor)",
+    "LOCATION": "Ubicación",
+    "INTERACTIVE": "Mensaje interactivo",
+    "TEMPLATE": "Plantilla de WhatsApp",
     "SYSTEM_NOTE": "Nota interna",
     "STICKER": "Sticker",
-    "CONTACTS": "Contacto compartido (no soportado en este visor)",
+    "CONTACTS": "Contacto compartido",
     "REACTION": "Reacción",
-    "CTA_URL": "Botón con enlace (no soportado en este visor)"
+    "CTA_URL": "Botón con enlace"
+  },
+  "interactive": {
+    "template": {
+      "label": "Plantilla de WhatsApp"
+    },
+    "location": {
+      "open": "Ver en Google Maps"
+    },
+    "locationRequest": {
+      "default": "Enviar ubicación"
+    },
+    "productCarousel": {
+      "count": "{count, plural, one {# producto} other {# productos}}"
+    },
+    "reaction": {
+      "removed": "Reacción eliminada"
+    }
   },
   "media": {
     "download": "Descargar adjunto",

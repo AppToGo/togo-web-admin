@@ -24,7 +24,8 @@
     "general": "Settings",
     "business": "Business Details",
     "businesses": "Businesses",
-    "users": "Users"
+    "users": "Users",
+    "billing": "Billing"
   },
   "breadcrumbs": {
     "home": "Home",

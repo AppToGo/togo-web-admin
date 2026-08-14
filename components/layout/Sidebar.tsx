@@ -77,6 +77,11 @@ export function Sidebar({
   const { hasPermission } = useMyPermissions();
   const canViewInbox = hasPermission("conversation.view");
 
+  // Estado de cuenta / facturación — mismo criterio que canViewInbox: por
+  // permiso real, no por rol a mano. OWNER/ADMIN lo tienen siempre
+  // (bypass del backend); un OPERATOR sólo si su perfil se lo asigna
+  // explícitamente (ver billing.view en permission-catalog.seed.ts).
+  const canViewBilling = hasPermission("billing.view");
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -175,12 +180,21 @@ export function Sidebar({
             href: "/dashboard/settings/notifications",
             icon: BellIcon,
           },
+          ...(canViewBilling
+            ? [
+                {
+                  name: t("sidebar.billing"),
+                  href: "/dashboard/settings/billing",
+                  icon: CreditCardIcon,
+                },
+              ]
+            : []),
         ],
       },
     ];
 
     return items;
-  }, [t, showGlobalCatalog, canViewConversations, canViewInbox]);
+  }, [t, showGlobalCatalog, canViewConversations, canViewInbox, canViewBilling]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [
@@ -216,6 +230,7 @@ export function Sidebar({
         data-tour-step="sidebar"
         className={cn(
           "fixed top-0 left-0 z-50 h-full",
+          "flex flex-col",
           "glass-strong border-r border-white/50",
           "transition-all duration-300 ease-in-out",
           "lg:translate-x-0",
@@ -224,7 +239,7 @@ export function Sidebar({
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
+        <div className="h-16 shrink-0 flex items-center justify-center border-b border-slate-100/50">
           <Link href="/dashboard/orders" className="flex items-center gap-3">
             <Image
               src="/logo.png"
@@ -243,50 +258,61 @@ export function Sidebar({
         {/* Business Selector (solo SUPER_ADMIN) */}
         {!isCollapsed && <BusinessSelector />}
 
-        {/* Navigation */}
-        <nav className="p-3 space-y-1">
-          {navigation.map((item) => (
-            <CollapsibleNavItem
-              key={item.name}
-              item={item}
-              pathname={pathname}
-              isCollapsed={isCollapsed}
-              onMenuClick={onMenuClick}
-            />
-          ))}
-        </nav>
+        {/*
+          Zona con scroll propio: con varios ítems del menú desplegados
+          (children de "Configuración", etc.) la lista puede superar el
+          alto de la pantalla — antes no había overflow acá, así que las
+          últimas opciones quedaban ocultas detrás de la sección de
+          usuario sin ninguna forma de llegar a ellas. `min-h-0` es
+          necesario para que un hijo flex con `flex-1` respete
+          `overflow-y-auto` en vez de crecer al tamaño de su contenido.
+        */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="p-3 space-y-1">
+            {navigation.map((item) => (
+              <CollapsibleNavItem
+                key={item.name}
+                item={item}
+                pathname={pathname}
+                isCollapsed={isCollapsed}
+                onMenuClick={onMenuClick}
+              />
+            ))}
+          </nav>
 
-        {/* Admin Navigation (Super Admin only) */}
-        {isSuperAdmin && (
-          <>
-            {!isCollapsed && (
-              <div className="px-4 pt-4 pb-2">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  {t("sidebar.administration")}
-                </p>
-              </div>
-            )}
-            <nav className="px-3 pb-3 space-y-1">
-              {adminNavigation.map((item) => (
-                <div key={item.name} className="relative">
-                  <CollapsibleNavItem
-                    item={item}
-                    pathname={pathname}
-                    isCollapsed={isCollapsed}
-                    isAdmin
-                    onMenuClick={onMenuClick}
-                  />
-                  {/* Alert badge for Businesses link */}
-                  {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
-                      {alertCount > 9 ? "9+" : alertCount}
-                    </span>
-                  )}
+          {/* Admin Navigation (Super Admin only) */}
+          {isSuperAdmin && (
+            <>
+              {!isCollapsed && (
+                <div className="px-4 pt-4 pb-2">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    {t("sidebar.administration")}
+                  </p>
                 </div>
-              ))}
-            </nav>
-          </>
-        )}
+              )}
+              <nav className="px-3 pb-3 space-y-1">
+                {adminNavigation.map((item) => (
+                  <div key={item.name} className="relative">
+                    <CollapsibleNavItem
+                      item={item}
+                      pathname={pathname}
+                      isCollapsed={isCollapsed}
+                      isAdmin
+                      onMenuClick={onMenuClick}
+                    />
+                    {/* Alert badge for Businesses link */}
+                    {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
+                        {alertCount > 9 ? "9+" : alertCount}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </nav>
+            </>
+          )}
+        </div>
 
         {/* Toggle collapse button (desktop only) */}
         <div className="absolute top-20 -right-3 hidden lg:block">
@@ -311,7 +337,7 @@ export function Sidebar({
         {/* Bottom section - User with notifications */}
         <div
           className={cn(
-            "absolute bottom-0 left-0 right-0 border-t border-slate-100/50",
+            "shrink-0 border-t border-slate-100/50",
             isCollapsed ? "p-2" : "p-4"
           )}
         >
@@ -735,6 +761,24 @@ function BellIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
+    </svg>
+  );
+}
+
+function CreditCardIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-9-11.25h16.5a1.5 1.5 0 011.5 1.5v9.75a1.5 1.5 0 01-1.5 1.5H3.75a1.5 1.5 0 01-1.5-1.5V6a1.5 1.5 0 011.5-1.5z"
       />
     </svg>
   );
