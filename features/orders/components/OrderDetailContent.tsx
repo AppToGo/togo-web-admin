@@ -61,7 +61,7 @@ function getOrderTypeInfo(
   order: {
     deliveryType?: string;
     addressId?: string | null;
-    source?: string;
+    tableLabel?: string | null;
   },
   t: ReturnType<typeof useTranslations>
 ): {
@@ -81,9 +81,16 @@ function getOrderTypeInfo(
     };
   }
 
-  if (order.source === "OPERATOR") {
+  // Pedidos en mesa (docs/architecture/pedidos-en-mesa.md): antes se
+  // inferían por `order.source === "OPERATOR"`, un valor que el enum real
+  // OrderSource nunca produce (siempre era código muerto). deliveryType
+  // ahora se setea de forma confiable a DINE_IN en los 3 caminos de
+  // creación de pedido.
+  if (order.deliveryType === "DINE_IN") {
     return {
-      label: t("deliveryTypes.table"),
+      label: order.tableLabel
+        ? `${t("deliveryTypes.table")} · ${order.tableLabel}`
+        : t("deliveryTypes.table"),
       icon: <Utensils className="w-3 h-3" />,
       variant: "emerald",
     };
@@ -266,9 +273,10 @@ export function OrderDetailContent({
   const confirmNoStock = useCallback(() => {
     if (!selectedItem || !order?.customer?.phoneNumber) return;
 
-    const message = t("noStockDialog.messageTemplate")
-      .replace("{productName}", selectedItem.productName)
-      .replace("{orderNumber}", formatOrderNumber(order?.id ?? "", order?.orderNumber));
+    const message = t("noStockDialog.messageTemplate", {
+      productName: selectedItem.productName,
+      orderNumber: formatOrderNumber(order?.id, order?.orderNumber),
+    });
 
     const phone = order.customer.phoneNumber.replace(/\D/g, "");
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -432,6 +440,19 @@ export function OrderDetailContent({
                   {tc("empty.infoNotAvailable")}
                 </p>
               )}
+              {/* Pedidos en mesa (docs/architecture/pedidos-en-mesa.md, Fase
+                  3): un pedido tomado por /nuevo (comando del operador)
+                  queda atribuido a quien lo tomó, independiente del
+                  Customer asociado (o del cliente técnico si no dio
+                  teléfono). */}
+              {order.createdByType === "OPERATOR" && (
+                <div className="flex items-center gap-2 text-sm text-slate-600 pt-1 border-t border-slate-200">
+                  <User className="w-4 h-4" />
+                  {order.createdByUser?.name
+                    ? t("detail.createdByOperator", { name: order.createdByUser.name })
+                    : t("detail.createdByOperatorUnknown")}
+                </div>
+              )}
             </div>
           </div>
 
@@ -557,7 +578,7 @@ export function OrderDetailContent({
               />
               {order.paymentMethod && (
                 <span className="text-sm text-slate-600">
-                  {t("paymentMethod").replace("{method}", order.paymentMethod)}
+                  {t("paymentMethod", { method: order.paymentMethod })}
                 </span>
               )}
             </div>

@@ -4,13 +4,16 @@ import * as React from "react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Button } from "@/components/ui/button";
 
 export interface Step1Data {
   name: string;
   email: string;
-  localPhone: string;
+  phoneNumber: string;
   password: string;
+  // @deprecated localPhone kept for backward compat, use phoneNumber
+  localPhone?: string;
 }
 
 interface Step1BasicDataProps {
@@ -20,24 +23,19 @@ interface Step1BasicDataProps {
 export function Step1BasicData({ onContinue }: Step1BasicDataProps) {
   const t = useTranslations("auth.register");
 
-  const PHONE_PREFIX = "+57";
-
   const [formData, setFormData] = useState<Step1Data>({
     name: "",
     email: "",
-    localPhone: "",
+    phoneNumber: "",
     password: "",
   });
 
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleChange =
-    (field: keyof Step1Data) =>
+    (field: keyof Omit<Step1Data, "phoneNumber">) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      let value = e.target.value;
-      if (field === "localPhone") {
-        value = value.replace(/\D/g, "");
-      }
+      const value = e.target.value;
       setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -69,17 +67,12 @@ export function Step1BasicData({ onContinue }: Step1BasicDataProps) {
         required
       />
 
-      <Input
+      <PhoneInput
         label={t("phone.label")}
-        type="tel"
-        prefix={PHONE_PREFIX}
-        placeholder="3001234567"
-        value={formData.localPhone}
-        onChange={handleChange("localPhone")}
+        value={formData.phoneNumber}
+        onChange={(v) => setFormData((prev) => ({ ...prev, phoneNumber: v }))}
         required
         helperText={t("phone.helper")}
-        maxLength={10}
-        inputMode="numeric"
       />
 
       <Input

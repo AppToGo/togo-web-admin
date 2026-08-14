@@ -88,7 +88,8 @@
     "deliveryType": {
       "title": "Tipo de envío",
       "delivery": "A domicilio",
-      "pickup": "Recoger en tienda"
+      "pickup": "Recoger en tienda",
+      "dineIn": "En mesa"
     },
     "activeFilters": {
       "paidOnly": "• Solo pagadas",
@@ -169,6 +170,8 @@
     "title": "Detalle del Pedido",
     "orderNumber": "Pedido #{number}",
     "customerInfo": "Cliente",
+    "createdByOperator": "Creado por: {name} — Operador",
+    "createdByOperatorUnknown": "Creado por un operador",
     "deliveryAddress": "Dirección de entrega",
     "orderInfo": "Información del pedido",
     "items": "Artículos",
