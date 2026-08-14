@@ -21,9 +21,10 @@ export default function BillingPage() {
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
   const canViewBilling = !permissionsLoading && hasPermission("billing.view");
 
-  const { data: status, isLoading: statusLoading } = useSubscriptionStatus();
-  const { data: payments, isLoading: paymentsLoading } = usePaymentHistory();
-  const { data: notifications, isLoading: notificationsLoading } = usePaymentNotifications();
+  const { data: status, isLoading: statusLoading } = useSubscriptionStatus(canViewBilling);
+  const { data: payments, isLoading: paymentsLoading } = usePaymentHistory(canViewBilling);
+  const { data: notifications, isLoading: notificationsLoading } =
+    usePaymentNotifications(canViewBilling);
 
   if (permissionsLoading) {
     return <DashboardLayout>{null}</DashboardLayout>;

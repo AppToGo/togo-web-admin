@@ -83,7 +83,6 @@ export function Sidebar({
   // explícitamente (ver billing.view en permission-catalog.seed.ts).
   const canViewBilling = hasPermission("billing.view");
 
-
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
     const items: NavigationItem[] = [

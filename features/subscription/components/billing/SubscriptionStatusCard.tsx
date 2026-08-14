@@ -25,6 +25,24 @@ interface SubscriptionStatusCardProps {
 const URGENT_DUE_THRESHOLD_DAYS = 3;
 
 /**
+ * Días restantes de trial, calculados sobre `trialEndsAt` — NO sobre
+ * `daysUntilDue`. El backend siempre devuelve `daysUntilDue: null` para un
+ * negocio en trial Free (vence por `trialEndsAt`, no por `nextPaymentDue`,
+ * ver `subscription-status.util.ts`), así que ramificar sobre esa
+ * propiedad nunca activaría el aviso urgente. Mismo cálculo que
+ * `TrialBanner.tsx` (misma feature) para no divergir en el criterio de
+ * "cuántos días quedan".
+ */
+function daysUntilTrialEnds(trialEndsAt: string): number | null {
+  const trialEndsAtMs = new Date(trialEndsAt).getTime();
+  if (Number.isNaN(trialEndsAtMs)) return null;
+
+  const msRemaining = trialEndsAtMs - Date.now();
+  if (msRemaining <= 0) return 0;
+  return Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+}
+
+/**
  * Tarjeta principal del estado de cuenta — cubre 5 ramas de UI distintas
  * en vez de un mensaje genérico, porque cada una necesita datos y tono
  * diferentes:
@@ -62,6 +80,7 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
 
   const isFreeTrial = status.plan === 1 && status.trialEndsAt !== null;
   const hasPendingRequest = status.requestedPlan !== null;
+  const trialDaysRemaining = status.trialEndsAt ? daysUntilTrialEnds(status.trialEndsAt) : null;
 
   return (
     <Card variant="glass">
@@ -111,7 +130,7 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
               >
                 {status.isBlocked
                   ? t("trial.expired")
-                  : status.daysUntilDue !== null && status.daysUntilDue <= URGENT_DUE_THRESHOLD_DAYS
+                  : trialDaysRemaining !== null && trialDaysRemaining <= URGENT_DUE_THRESHOLD_DAYS
                     ? t("trial.endingSoon", { date: trialEndsAt })
                     : t("trial.active", { date: trialEndsAt })}
               </p>
