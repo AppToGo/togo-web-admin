@@ -4,18 +4,26 @@ import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { Inbox, MessageCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/routing";
-import { locales } from "@/i18n/config";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
+import { locales, localeLabels, localeFlags } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 import {
   useCurrentUser,
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
-import { Button } from "@/components/ui/button";
+import { useLocaleStore } from "@/stores/localeStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
-import { LanguageSwitcherButtons } from "@/components/LanguageSwitcher";
 import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
 import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -51,6 +59,17 @@ export function Sidebar({
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
   const effectiveBusinessId = useEffectiveBusinessId();
+
+  // Menú de usuario colapsable (idioma + cerrar sesión) — mismo patrón que
+  // LanguageSwitcher, inline acá para compartir un solo DropdownMenu con
+  // el logout en vez de anidar dos menús desplegables.
+  const router = useRouter();
+  const currentLocale = useLocale();
+  const { setUserPreference } = useLocaleStore();
+  const handleLocaleChange = (locale: Locale) => {
+    setUserPreference(locale);
+    router.replace(pathname, { locale });
+  };
 
   // Fetch payment alerts for badge
   const { data: paymentAlerts } = usePaymentAlerts(isSuperAdmin);
@@ -334,70 +353,80 @@ export function Sidebar({
           </button>
         </div>
 
-        {/* Bottom section - User with notifications */}
+        {/* Bottom section - Menú de usuario (idioma + cerrar sesión) */}
         <div
           className={cn(
             "shrink-0 border-t border-slate-100/50",
-            isCollapsed ? "p-2" : "p-4"
+            isCollapsed ? "p-2" : "p-3"
           )}
         >
-          {/* Language Switcher */}
-          {!isCollapsed && (
-            <div className="mb-3 flex justify-center">
-              <LanguageSwitcherButtons />
-            </div>
-          )}
-
-          {/* User section with notifications */}
-          <div
-            className={cn(
-              "flex items-center rounded-card bg-slate-50/80",
-              isCollapsed ? "justify-center p-2" : "gap-3 px-4 py-3"
-            )}
-          >
-            {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-indigo-purple flex items-center justify-center shrink-0">
-              <span className="text-white font-medium text-sm">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
-              </span>
-            </div>
-
-            {/* User info */}
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex w-full items-center rounded-card bg-slate-50/80 hover:bg-slate-100 transition-colors outline-none",
+                  isCollapsed ? "justify-center p-2" : "gap-2 px-4 py-3"
+                )}
+                title={user?.name || t("sidebar.user")}
+              >
+                {isCollapsed ? (
+                  <UserIcon className="w-5 h-5 text-slate-500 shrink-0" />
+                ) : (
+                  <>
+                    <span className="flex-1 min-w-0 text-left text-sm font-medium text-slate-900 truncate">
+                      {user?.name || t("sidebar.user")}
+                    </span>
+                    <ChevronDownIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  </>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="w-56">
+              <DropdownMenuLabel className="font-normal">
                 <p className="text-sm font-medium text-slate-900 truncate">
                   {user?.name || t("sidebar.user")}
                 </p>
-                <p className="text-xs text-slate-500 truncate">
-                  {user?.email || ""}
-                </p>
-              </div>
-            )}
+                {user?.email && (
+                  <p className="text-xs text-slate-500 truncate font-normal">
+                    {user.email}
+                  </p>
+                )}
+              </DropdownMenuLabel>
 
-            {/* Notifications - right side */}
-            <button
-              className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white rounded-full transition-colors shrink-0"
-              title={t("sidebar.notifications")}
-            >
-              <BellIcon className={cn("w-5 h-5", isCollapsed && "w-4 h-4")} />
-              {/* Notification badge with count */}
-              <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 flex items-center justify-center bg-red-500 text-white text-xxs font-bold px-1 rounded-full ring-2 ring-slate-50/80">
-                3
-              </span>
-            </button>
-          </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-normal text-slate-400">
+                {t("language.title")}
+              </DropdownMenuLabel>
+              {locales.map((locale) => (
+                <DropdownMenuItem
+                  key={locale}
+                  onClick={() => handleLocaleChange(locale)}
+                  className={cn(
+                    "gap-2 cursor-pointer",
+                    currentLocale === locale && "bg-accent"
+                  )}
+                >
+                  <span>{localeFlags[locale]}</span>
+                  <span>{localeLabels[locale]}</span>
+                  {currentLocale === locale && (
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      ✓
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              ))}
 
-          {!isCollapsed && (
-            <Button
-              variant="ghost"
-              className="w-full mt-2 text-slate-500 hover:text-red-600"
-              onClick={() => logout.mutate()}
-              isLoading={logout.isPending}
-            >
-              <LogoutIcon className="w-4 h-4 mr-2" />
-              {t("sidebar.logout")}
-            </Button>
-          )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => logout.mutate()}
+                disabled={logout.isPending}
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <LogoutIcon className="w-4 h-4 mr-2" />
+                {t("sidebar.logout")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </aside>
     </>
