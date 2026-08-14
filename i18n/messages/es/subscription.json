@@ -45,5 +45,68 @@
       "extraSlotsCta": "¿Necesitás más sedes o usuarios? Escribinos",
       "extraSlotsMessage": "Hola, quiero agregar más sedes o usuarios a mi plan {planName} en ToGo (negocio: {businessName})."
     }
+  },
+  "billing": {
+    "title": "Estado de cuenta",
+    "description": "Tu plan, tus pagos a TOGO y los avisos de cobranza que te hemos enviado.",
+    "accessDeniedTitle": "Sin acceso",
+    "accessDeniedDescription": "No tenés permiso para ver el estado de cuenta de este negocio.",
+    "plan": {
+      "title": "Plan {planName}",
+      "priceMonthly": "{price}/mes",
+      "free": "Plan gratuito de prueba"
+    },
+    "status": {
+      "PENDING": "Pendiente",
+      "PAID": "Al día",
+      "OVERDUE": "Vencido",
+      "GRACE_PERIOD": "Período de gracia"
+    },
+    "trial": {
+      "active": "Tu prueba gratuita termina el {date}.",
+      "endingSoon": "Tu prueba gratuita termina el {date} — muy pronto.",
+      "expired": "Tu prueba gratuita ya terminó. Elegí un plan para seguir usando ToGo."
+    },
+    "overdue": {
+      "blocked": "Tu pago está vencido y algunas acciones están bloqueadas hasta que se regularice.",
+      "contactSupport": "¿Ya pagaste? Envianos el comprobante por WhatsApp desde el botón de arriba."
+    },
+    "nextPaymentDue": "Tu próximo pago vence el {date}.",
+    "gracePeriod": "Tu pago venció, pero seguís en período de gracia hasta el {date}.",
+    "pendingRequest": {
+      "title": "Tu solicitud para pasar a {planName} está en verificación.",
+      "graceEndsAt": "Mientras se verifica, tenés acceso hasta el {date}."
+    },
+    "noRecord": "Todavía no hay información de suscripción para este negocio.",
+    "fields": {
+      "lastPaymentAt": "Último pago",
+      "totalPaid": "Total pagado a TOGO"
+    },
+    "cta": {
+      "choosePlan": "Elegir un plan",
+      "changePlan": "Cambiar de plan"
+    },
+    "paymentHistory": {
+      "title": "Historial de pagos",
+      "description": "Pagos registrados por TOGO para tu negocio.",
+      "empty": "Todavía no tenés pagos registrados.",
+      "columns": {
+        "paidAt": "Fecha",
+        "amount": "Monto",
+        "method": "Método",
+        "reference": "Referencia"
+      }
+    },
+    "notifications": {
+      "title": "Notificaciones de cobranza",
+      "description": "Recordatorios y avisos de vencimiento que TOGO te ha enviado.",
+      "empty": "No tenés notificaciones de cobranza por ahora."
+    },
+    "notificationType": {
+      "REMINDER": "Recordatorio",
+      "OVERDUE": "Vencido",
+      "WARNING": "Advertencia",
+      "PAYMENT_REMINDER": "Recordatorio de pago"
+    }
   }
 }

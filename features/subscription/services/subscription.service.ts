@@ -1,4 +1,9 @@
 import apiClient from "@/services/api.service";
+import type {
+  SubscriptionStatus,
+  OwnerPaymentRecord,
+  OwnerPaymentNotification,
+} from "../types/billing.types";
 
 /**
  * Sentinel numérico que el backend usa para "sin límite" (Enterprise).
@@ -55,6 +60,39 @@ export async function requestPlanChange(
   const response = await apiClient.post<PlanRequestResponse>(
     `/businesses/${businessId}/plan-request`,
     data
+  );
+  return response.data;
+}
+
+// ─── Estado de cuenta self-service (GET /businesses/:businessId/billing[...]) ─
+
+function getBillingBaseUrl(businessId: string): string {
+  return `/businesses/${businessId}/billing`;
+}
+
+/**
+ * Estado de cuenta de la suscripción: plan, precio, estado de pago,
+ * próximo vencimiento, totales pagados. Requiere el permiso `billing.view`.
+ */
+export async function getSubscriptionStatus(businessId: string): Promise<SubscriptionStatus> {
+  const response = await apiClient.get<SubscriptionStatus>(getBillingBaseUrl(businessId));
+  return response.data;
+}
+
+/** Historial de pagos registrados por TOGO para este negocio. */
+export async function getPaymentHistory(businessId: string): Promise<OwnerPaymentRecord[]> {
+  const response = await apiClient.get<OwnerPaymentRecord[]>(
+    `${getBillingBaseUrl(businessId)}/payments`
+  );
+  return response.data;
+}
+
+/** Historial de notificaciones de cobranza que TOGO le ha enviado al negocio. */
+export async function getPaymentNotifications(
+  businessId: string
+): Promise<OwnerPaymentNotification[]> {
+  const response = await apiClient.get<OwnerPaymentNotification[]>(
+    `${getBillingBaseUrl(businessId)}/notifications`
   );
   return response.data;
 }
