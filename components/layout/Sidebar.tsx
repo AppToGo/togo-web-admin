@@ -216,6 +216,7 @@ export function Sidebar({
         data-tour-step="sidebar"
         className={cn(
           "fixed top-0 left-0 z-50 h-full",
+          "flex flex-col",
           "glass-strong border-r border-white/50",
           "transition-all duration-300 ease-in-out",
           "lg:translate-x-0",
@@ -224,7 +225,7 @@ export function Sidebar({
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-center border-b border-slate-100/50">
+        <div className="h-16 shrink-0 flex items-center justify-center border-b border-slate-100/50">
           <Link href="/dashboard/orders" className="flex items-center gap-3">
             <Image
               src="/logo.png"
@@ -243,50 +244,61 @@ export function Sidebar({
         {/* Business Selector (solo SUPER_ADMIN) */}
         {!isCollapsed && <BusinessSelector />}
 
-        {/* Navigation */}
-        <nav className="p-3 space-y-1">
-          {navigation.map((item) => (
-            <CollapsibleNavItem
-              key={item.name}
-              item={item}
-              pathname={pathname}
-              isCollapsed={isCollapsed}
-              onMenuClick={onMenuClick}
-            />
-          ))}
-        </nav>
+        {/*
+          Zona con scroll propio: con varios ítems del menú desplegados
+          (children de "Configuración", etc.) la lista puede superar el
+          alto de la pantalla — antes no había overflow acá, así que las
+          últimas opciones quedaban ocultas detrás de la sección de
+          usuario sin ninguna forma de llegar a ellas. `min-h-0` es
+          necesario para que un hijo flex con `flex-1` respete
+          `overflow-y-auto` en vez de crecer al tamaño de su contenido.
+        */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="p-3 space-y-1">
+            {navigation.map((item) => (
+              <CollapsibleNavItem
+                key={item.name}
+                item={item}
+                pathname={pathname}
+                isCollapsed={isCollapsed}
+                onMenuClick={onMenuClick}
+              />
+            ))}
+          </nav>
 
-        {/* Admin Navigation (Super Admin only) */}
-        {isSuperAdmin && (
-          <>
-            {!isCollapsed && (
-              <div className="px-4 pt-4 pb-2">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  {t("sidebar.administration")}
-                </p>
-              </div>
-            )}
-            <nav className="px-3 pb-3 space-y-1">
-              {adminNavigation.map((item) => (
-                <div key={item.name} className="relative">
-                  <CollapsibleNavItem
-                    item={item}
-                    pathname={pathname}
-                    isCollapsed={isCollapsed}
-                    isAdmin
-                    onMenuClick={onMenuClick}
-                  />
-                  {/* Alert badge for Businesses link */}
-                  {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
-                      {alertCount > 9 ? "9+" : alertCount}
-                    </span>
-                  )}
+          {/* Admin Navigation (Super Admin only) */}
+          {isSuperAdmin && (
+            <>
+              {!isCollapsed && (
+                <div className="px-4 pt-4 pb-2">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    {t("sidebar.administration")}
+                  </p>
                 </div>
-              ))}
-            </nav>
-          </>
-        )}
+              )}
+              <nav className="px-3 pb-3 space-y-1">
+                {adminNavigation.map((item) => (
+                  <div key={item.name} className="relative">
+                    <CollapsibleNavItem
+                      item={item}
+                      pathname={pathname}
+                      isCollapsed={isCollapsed}
+                      isAdmin
+                      onMenuClick={onMenuClick}
+                    />
+                    {/* Alert badge for Businesses link */}
+                    {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
+                        {alertCount > 9 ? "9+" : alertCount}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </nav>
+            </>
+          )}
+        </div>
 
         {/* Toggle collapse button (desktop only) */}
         <div className="absolute top-20 -right-3 hidden lg:block">
@@ -311,7 +323,7 @@ export function Sidebar({
         {/* Bottom section - User with notifications */}
         <div
           className={cn(
-            "absolute bottom-0 left-0 right-0 border-t border-slate-100/50",
+            "shrink-0 border-t border-slate-100/50",
             isCollapsed ? "p-2" : "p-4"
           )}
         >
