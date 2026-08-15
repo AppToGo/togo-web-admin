@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   Package,
   Plus,
@@ -9,6 +10,7 @@ import {
   AlertCircle,
   MapPin,
   ChevronDown,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { VariantList } from "./VariantList";
 import { useIndustryCategoryVariantTemplates } from "../hooks";
-import { useVariants } from "../hooks/useCatalog";
+import { useVariants, useUploadCatalogProductImage } from "../hooks/useCatalog";
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import {
   useBranchInventory,
@@ -414,6 +416,8 @@ export function ProductForm({
 
   const [imagePreview, setImagePreview] = useState<string | null>(initialValues?.image ?? null);
   const initializedProductIdRef = useRef<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const uploadImage = useUploadCatalogProductImage(businessId);
 
   const { data: branches = [] } = useBranches();
 
@@ -559,6 +563,33 @@ export function ProductForm({
     const url = e.target.value;
     setFormData((prev) => ({ ...prev, image: url }));
     setImagePreview(url || null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast.error(t("products.form.invalidImageType"));
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("products.form.imageTooLarge"));
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    try {
+      const { imageUrl } = await uploadImage.mutateAsync(file);
+      setFormData((prev) => ({ ...prev, image: imageUrl }));
+      setImagePreview(imageUrl);
+    } catch {
+      // El toast de error ya lo maneja el hook useUploadCatalogProductImage
+    } finally {
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
   };
 
   const updateBranch = (
@@ -911,15 +942,38 @@ export function ProductForm({
       {showProductImages && (
         <div className="space-y-1.5">
           <Label htmlFor="image">{t("products.imageUrl")}</Label>
-          <Input
-            id="image"
-            name="image"
-            type="url"
-            value={formData.image}
-            onChange={handleImageChange}
-            placeholder={t("products.imagePlaceholder")}
-            disabled={isLoading}
-          />
+          <div className="flex gap-2">
+            <Input
+              id="image"
+              name="image"
+              type="url"
+              value={formData.image}
+              onChange={handleImageChange}
+              placeholder={t("products.imagePlaceholder")}
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading || uploadImage.isPending}
+              isLoading={uploadImage.isPending}
+              onClick={() => imageInputRef.current?.click()}
+              className="shrink-0"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {formData.image
+                ? t("products.form.changeImage")
+                : t("products.form.uploadImage")}
+            </Button>
+          </div>
         </div>
       )}
 

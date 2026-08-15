@@ -44,6 +44,7 @@ export {
   useCatalogProducts,
   useCatalogProduct,
   useCreateCatalogProduct,
+  useUploadCatalogProductImage,
   useActivateCatalogProduct,
   useUpdateCatalogProduct,
   useRegenerateCatalogProductKeywords,
