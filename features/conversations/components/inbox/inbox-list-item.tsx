@@ -30,7 +30,11 @@ function controlDotColor(control: ConversationListItem["control"]): string {
   }
 }
 
-export function InboxListItem({ conversation, isSelected, onClick }: InboxListItemProps) {
+export function InboxListItem({
+  conversation,
+  isSelected,
+  onClick,
+}: InboxListItemProps) {
   const t = useTranslations("inbox");
   const name = conversation.customer?.name ?? null;
   const preview = conversation.outcome

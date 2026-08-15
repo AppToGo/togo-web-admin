@@ -439,6 +439,32 @@ export async function createCatalogProduct(
   return response.data;
 }
 
+/**
+ * Upload a product image
+ * POST /v1/businesses/:businessId/products/upload-image
+ * Not scoped to a product id: used both when creating a product (the
+ * returned URL is sent in the create DTO) and when editing one (sent in
+ * the update DTO).
+ */
+export async function uploadCatalogProductImage(
+  businessId: string,
+  file: File
+): Promise<{ imageUrl: string }> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const { data } = await apiClient.post<{ imageUrl: string }>(
+    `/businesses/${businessId}/products/upload-image`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return data;
+}
+
 export async function activateCatalogProduct(
   businessId: string,
   dto: ActivateCatalogProductDto

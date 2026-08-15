@@ -803,6 +803,29 @@ export function useCatalogProduct(
   });
 }
 
+/**
+ * Sube una imagen de producto y devuelve su URL — no está atada a un
+ * producto en particular, así que sirve tanto al crear (la URL se guarda en
+ * el formulario y se envía en el create) como al editar (se envía en el
+ * update).
+ */
+export function useUploadCatalogProductImage(
+  businessId: string,
+  messages?: Partial<CatalogToastMessages>
+) {
+  return useMutation({
+    mutationFn: (file: File) =>
+      catalogService.uploadCatalogProductImage(businessId, file),
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          messages?.errorUploadingImage ||
+          "Error al subir la imagen"
+      );
+    },
+  });
+}
+
 export function useCreateCatalogProduct(
   businessId: string,
   messages?: Partial<CatalogToastMessages>

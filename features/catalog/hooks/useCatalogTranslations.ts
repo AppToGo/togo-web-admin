@@ -46,6 +46,8 @@ export interface CatalogToastMessages {
   // Search keywords
   keywordsRegenerateQueued?: string;
   errorRegeneratingKeywords?: string;
+  // Product image upload
+  errorUploadingImage?: string;
 }
 
 export function useCatalogTranslations(): CatalogToastMessages {
@@ -87,5 +89,8 @@ export function useCatalogTranslations(): CatalogToastMessages {
     // Search keywords
     keywordsRegenerateQueued: t("notifications.keywordsRegenerateQueued"),
     errorRegeneratingKeywords: t("notifications.errorRegeneratingKeywords"),
+
+    // Product image upload
+    errorUploadingImage: t("products.form.uploadError"),
   };
 }
