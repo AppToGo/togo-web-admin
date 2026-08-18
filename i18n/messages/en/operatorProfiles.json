@@ -20,36 +20,7 @@
     "selectAll": "Select all",
     "deselectAll": "Deselect all",
     "noResults": "No permissions found",
-    "tryDifferentSearch": "Try a different search",
-    "domain": {
-      "orders": "Orders",
-      "products": "Products",
-      "categories": "Categories",
-      "branches": "Branches",
-      "customers": "Customers",
-      "reports": "Reports",
-      "settings": "Settings",
-      "users": "Users",
-      "business": "Business",
-      "business_ops": "Business Operations",
-      "category": "Category",
-      "conversation": "Conversations",
-      "customer": "Customer",
-      "delivery": "Delivery",
-      "favorite": "Favorite",
-      "inventory": "Inventory",
-      "metrics": "Metrics",
-      "order": "Order",
-      "payment": "Payment",
-      "product": "Product",
-      "profile": "Profile",
-      "recommendation": "Recommendation",
-      "store": "Store",
-      "suggestion": "Suggestion",
-      "table": "Tables",
-      "user": "User",
-      "whatsapp": "WhatsApp"
-    }
+    "tryDifferentSearch": "Try a different search"
   },
   "notifyBanner": {
     "title": "WhatsApp order notification",
@@ -153,7 +124,8 @@
     "suggestion": "Suggestion",
     "table": "Tables",
     "user": "User",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "billing": "Billing"
   },
   "tabs": {
     "general": "General",

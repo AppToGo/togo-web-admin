@@ -1,0 +1,322 @@
+{
+  "nonOperational": {
+    "badge": "Not operational",
+    "description": "This permission isn't wired to any function yet. Turning it on or off has no effect today."
+  },
+  "order_view": {
+    "label": "View orders",
+    "description": "Grants access to the order list, each order's detail, its items, and order metrics. Also lets you look up orders over WhatsApp with /orders."
+  },
+  "order_view_history": {
+    "label": "View order history",
+    "description": "Shows the order's status log: which states it went through, who changed them, and when."
+  },
+  "order_create": {
+    "label": "Create orders",
+    "description": "Lets you place new orders, reorder a customer's favorite order, and generate the catalog link to take an order."
+  },
+  "order_edit_items": {
+    "label": "Edit order items",
+    "description": "Meant to edit an order's items directly. That's currently covered by \"Add\", \"Update\", and \"Remove order items\"."
+  },
+  "order_change_status": {
+    "label": "Change order status",
+    "description": "Moves the order through its fulfillment flow: confirm, preparing, ready, on the way, delivered. Works one at a time or in bulk. Can be restricted to specific statuses."
+  },
+  "order_cancel": {
+    "label": "Cancel orders",
+    "description": "Lets you cancel an order. This action can't be undone. Currently only available over the WhatsApp channel."
+  },
+  "order_assign_operator": {
+    "label": "Assign delivery driver",
+    "description": "Lets you assign or reassign the delivery driver for one or several orders. Currently only over the WhatsApp channel."
+  },
+  "order_change_payment_status": {
+    "label": "Change payment status",
+    "description": "Lets you mark an order as paid or correct its payment status, one at a time or in bulk."
+  },
+  "order_override_store_closed": {
+    "label": "Confirm while the store is closed",
+    "description": "Lets you confirm an order even if the branch is outside business hours or marked as closed. Without this permission, the order stays blocked until the branch opens."
+  },
+  "order_item_add": {
+    "label": "Add order items",
+    "description": "Lets you add products to an order that's already been created."
+  },
+  "order_item_update": {
+    "label": "Update order items",
+    "description": "Lets you change the quantity, notes, or variants of a product inside an order."
+  },
+  "order_item_delete": {
+    "label": "Remove order items",
+    "description": "Lets you remove a product from an existing order."
+  },
+  "order_notify_new": {
+    "label": "Receive new-order alerts",
+    "description": "Makes this person receive a WhatsApp notification whenever a new order comes in at their branch. It doesn't grant access to anything, it only turns on the alert."
+  },
+  "payment_view": {
+    "label": "View payment info",
+    "description": "Meant to view an order's payment detail. That's currently covered by \"View orders\"."
+  },
+  "payment_confirm": {
+    "label": "Confirm payment",
+    "description": "Meant to confirm an order's payment. That's currently covered by \"Change payment status\"."
+  },
+  "delivery_assign_self": {
+    "label": "Self-assign an order",
+    "description": "Meant to let a driver claim an available order without being assigned. Not implemented yet."
+  },
+  "delivery_view_route": {
+    "label": "View delivery route",
+    "description": "Meant to show a driver's delivery route. Not implemented yet."
+  },
+  "product_view": {
+    "label": "View products",
+    "description": "Meant to control who can see the product catalog. Today, any signed-in team member can see it, regardless of this permission."
+  },
+  "product_create": {
+    "label": "Create products",
+    "description": "Meant to control who can add products to the catalog. Today, any signed-in team member can create them, regardless of this permission."
+  },
+  "product_update": {
+    "label": "Update products",
+    "description": "Meant to control who can edit products in the catalog. Today, any signed-in team member can edit them, regardless of this permission."
+  },
+  "product_delete": {
+    "label": "Delete products",
+    "description": "Meant to control who can delete products from the catalog. Today, any signed-in team member can delete them, regardless of this permission."
+  },
+  "category_view": {
+    "label": "View menu categories",
+    "description": "Lets you view the categories used to organize the menu."
+  },
+  "category_create": {
+    "label": "Create categories",
+    "description": "Lets you add a new category to the menu."
+  },
+  "category_update": {
+    "label": "Update categories",
+    "description": "Lets you change a category's name, order, and image, reactivate it, and regenerate its search keywords."
+  },
+  "category_delete": {
+    "label": "Delete categories",
+    "description": "Lets you deactivate or delete a menu category."
+  },
+  "customer_view": {
+    "label": "View customers",
+    "description": "Grants access to the customer base: search by phone, view their order history, their metrics, and their addresses."
+  },
+  "customer_create": {
+    "label": "Create customers",
+    "description": "Lets you register new customers and add delivery addresses for them."
+  },
+  "customer_update": {
+    "label": "Update customers",
+    "description": "Lets you correct a customer's data, edit their addresses, and set which one is the default."
+  },
+  "customer_delete": {
+    "label": "Delete customer addresses",
+    "description": "Lets you delete a saved delivery address. Does not let you delete the customer."
+  },
+  "customer_address_view": {
+    "label": "View customer addresses",
+    "description": "Meant as a standalone permission to view addresses. That's currently covered by \"View customers\"."
+  },
+  "customer_address_create": {
+    "label": "Create customer addresses",
+    "description": "Meant as a standalone permission to create addresses. That's currently covered by \"Create customers\"."
+  },
+  "customer_address_update": {
+    "label": "Update customer addresses",
+    "description": "Meant as a standalone permission to edit addresses. That's currently covered by \"Update customers\"."
+  },
+  "customer_address_delete": {
+    "label": "Delete customer addresses",
+    "description": "Meant as a standalone permission to delete addresses. That's currently covered by \"Delete customer addresses\" under the Customers domain."
+  },
+  "user_view": {
+    "label": "View team",
+    "description": "Grants access to the list of active team members and each member's detail."
+  },
+  "user_view_all": {
+    "label": "View deactivated members",
+    "description": "Lets you also see suspended accounts, in addition to active ones."
+  },
+  "user_create": {
+    "label": "Add team members",
+    "description": "Lets you create new accounts for the team."
+  },
+  "user_update": {
+    "label": "Edit team members",
+    "description": "Lets you change a team member's data, role, and operator profile."
+  },
+  "user_deactivate": {
+    "label": "Suspend team members",
+    "description": "Blocks a member's access without deleting their account or history."
+  },
+  "user_activate": {
+    "label": "Reactivate team members",
+    "description": "Restores access for a suspended member."
+  },
+  "user_delete": {
+    "label": "Delete team members",
+    "description": "Permanently deletes a team member's account."
+  },
+  "profile_view": {
+    "label": "View operator profiles",
+    "description": "Lets you view the defined roles (waiter, cashier, driver…) and the permissions each one grants."
+  },
+  "profile_create": {
+    "label": "Create operator profiles",
+    "description": "Lets you define a new role."
+  },
+  "profile_update": {
+    "label": "Edit profiles and their permissions",
+    "description": "Lets you rename a role and change the permissions it grants. This is the permission that controls this very screen."
+  },
+  "profile_delete": {
+    "label": "Delete operator profiles",
+    "description": "Lets you delete a role."
+  },
+  "profile_assign_permissions": {
+    "label": "Assign permissions to profiles",
+    "description": "Meant as a standalone permission to assign permissions. That's currently controlled by \"Edit profiles and their permissions\"."
+  },
+  "business_update": {
+    "label": "Edit business",
+    "description": "Lets you change the business's data, upload its logo, and request a plan change."
+  },
+  "business_deactivate": {
+    "label": "Deactivate business",
+    "description": "Takes the business offline: it stops receiving orders and stops serving customers over WhatsApp."
+  },
+  "business_activate": {
+    "label": "Reactivate business",
+    "description": "Brings the business back online."
+  },
+  "business_delete": {
+    "label": "Delete business",
+    "description": "Permanently deletes the business."
+  },
+  "business_ops_manage_operator_profiles": {
+    "label": "Manage operator profiles",
+    "description": "Meant as a general permission for administering operator profiles. That's currently controlled by the \"Operator profiles\" domain permissions."
+  },
+  "business_ops_manage_users": {
+    "label": "Manage users",
+    "description": "Meant as a general permission for administering the team. That's currently controlled by the \"Team\" domain permissions."
+  },
+  "whatsapp_connect": {
+    "label": "Connect WhatsApp",
+    "description": "Meant to control who connects the business's WhatsApp number. Today that action is controlled by role, not by this permission."
+  },
+  "whatsapp_disconnect": {
+    "label": "Disconnect WhatsApp",
+    "description": "Meant to control who disconnects the business's WhatsApp number. Today that action is controlled by role, not by this permission."
+  },
+  "whatsapp_view_status": {
+    "label": "View WhatsApp status",
+    "description": "Meant to show whether the business's WhatsApp number is connected. Not implemented yet."
+  },
+  "whatsapp_send_message": {
+    "label": "Send WhatsApp messages",
+    "description": "Meant as a general permission to send messages. To reply to a customer from the inbox, use \"Reply to customer\"."
+  },
+  "favorite_view": {
+    "label": "View favorite orders",
+    "description": "Lets you view the orders a customer saved as regulars."
+  },
+  "favorite_create": {
+    "label": "Save favorite orders",
+    "description": "Lets you save an order as a customer favorite and rename it."
+  },
+  "favorite_delete": {
+    "label": "Delete favorite orders",
+    "description": "Lets you delete a favorite order."
+  },
+  "suggestion_view": {
+    "label": "View suggested products",
+    "description": "Shows products customers asked for that aren't on the menu, the ones pending review, and the ranking of most-requested items."
+  },
+  "suggestion_approve": {
+    "label": "Approve suggestions",
+    "description": "Turns the suggestion into an actual menu product."
+  },
+  "suggestion_reject": {
+    "label": "Reject suggestions",
+    "description": "Discards the suggestion without adding it to the menu."
+  },
+  "suggestion_update": {
+    "label": "Edit suggestions",
+    "description": "Lets you correct a suggestion before approving or rejecting it."
+  },
+  "suggestion_delete": {
+    "label": "Delete suggestions",
+    "description": "Removes the suggestion from the list."
+  },
+  "recommendation_view": {
+    "label": "View recommendations",
+    "description": "Shows the cross-sell rules between products (what gets suggested alongside what)."
+  },
+  "recommendation_create": {
+    "label": "Create recommendations",
+    "description": "Lets you define which product gets suggested alongside another, e.g. a drink with a pizza."
+  },
+  "recommendation_delete": {
+    "label": "Delete recommendations",
+    "description": "Lets you remove recommendations, one at a time or all of a product's at once."
+  },
+  "conversation_view": {
+    "label": "Open the inbox",
+    "description": "Grants access to the WhatsApp inbox: read chat history with customers, mark them as read, view the conversation that led to an order, and see who on the team is available. Also enables real-time updates."
+  },
+  "conversation_takeover": {
+    "label": "Take over a chat",
+    "description": "Lets you pull a conversation away from the automated assistant to handle it in person, and hand it back when done."
+  },
+  "conversation_send": {
+    "label": "Reply to customer",
+    "description": "Lets you message the customer over WhatsApp from the inbox and mark yourself as available to assist."
+  },
+  "conversation_note": {
+    "label": "Leave internal notes",
+    "description": "Lets you add notes on a conversation that only the team can see. The customer never receives them."
+  },
+  "conversation_assign": {
+    "label": "Assign conversations",
+    "description": "Lets you route a chat to another team member and see who it can be assigned to."
+  },
+  "conversation_close": {
+    "label": "Close conversations",
+    "description": "Marks the conversation as handled and removes it from the active inbox."
+  },
+  "store_toggle_accepting_orders": {
+    "label": "Open and close the branch",
+    "description": "Lets you manually pause or resume order intake for a branch, and revert to the scheduled hours. Works from the panel and over WhatsApp."
+  },
+  "metrics_view": {
+    "label": "View business metrics",
+    "description": "Grants access to sales, revenue, average ticket, branch comparisons, best-selling products, and new customers. Also answers these queries over WhatsApp."
+  },
+  "inventory_view": {
+    "label": "View branch availability",
+    "description": "Lets you check which products are out of stock at a branch. Currently available over the WhatsApp channel."
+  },
+  "inventory_set_availability": {
+    "label": "Mark items out of stock",
+    "description": "Lets you mark a product as out of stock or restore it at a branch, from the panel or over WhatsApp."
+  },
+  "table_view": {
+    "label": "View tables",
+    "description": "Lets you view a branch's tables and their QR codes."
+  },
+  "table_manage": {
+    "label": "Manage tables",
+    "description": "Lets you create, edit, and deactivate tables, and regenerate their QR codes."
+  },
+  "billing_view": {
+    "label": "View billing",
+    "description": "Grants access to the subscription's account status, payment history, and billing notices."
+  }
+}

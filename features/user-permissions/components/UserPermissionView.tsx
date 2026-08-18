@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useMessages } from "next-intl";
 import {
   Shield,
   UserCircle,
@@ -10,11 +10,13 @@ import {
   Users,
   Building2,
   Lock,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePermissionMeta } from "@/hooks/usePermissionMeta";
 import type { UserPermissions } from "../types";
 
 interface UserPermissionViewProps {
@@ -35,11 +37,24 @@ export const UserPermissionView = memo(function UserPermissionView({
   isLoading = false,
 }: UserPermissionViewProps) {
   const t = useTranslations("userPermissions");
-  const tCommon = useTranslations("common");
+  const messages = useMessages();
+  const { isSuperAdmin, getMeta, isVisible, nonOperationalBadge } =
+    usePermissionMeta();
+
+  const domainMessages = (messages?.operatorProfiles as
+    | { domains?: Record<string, string> }
+    | undefined
+  )?.domains;
+  const getDomainLabel = (domain: string) => domainMessages?.[domain] ?? domain;
+
+  // Permission codes use dots ("order.view"), not colons. Non-operational
+  // permissions (not wired to any backend enforcement) are hidden from
+  // everyone except SUPER_ADMIN.
+  const visibleCodes = permissions?.permissions.filter(isVisible);
 
   // Agrupar permisos por dominio
-  const permissionsByDomain = permissions?.permissions.reduce((acc, permission) => {
-    const domain = permission.split(":")[0] || "general";
+  const permissionsByDomain = visibleCodes?.reduce((acc, permission) => {
+    const domain = permission.split(".")[0] || "general";
     if (!acc[domain]) acc[domain] = [];
     acc[domain].push(permission);
     return acc;
@@ -149,7 +164,7 @@ export const UserPermissionView = memo(function UserPermissionView({
             <div>
               <CardTitle className="text-lg">{t("permissions.title")}</CardTitle>
               <CardDescription>
-                {t("permissionsCount", { count: permissions.permissions.length })}
+                {t("permissionsCount", { count: visibleCodes?.length ?? 0 })}
               </CardDescription>
             </div>
           </div>
@@ -166,18 +181,44 @@ export const UserPermissionView = memo(function UserPermissionView({
                 <div key={domain} className="space-y-2">
                   <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-slate-400" />
-                    {domain}
+                    {getDomainLabel(domain)}
                   </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {permissionsByDomain?.[domain]?.map((permission) => (
-                      <Badge
-                        key={permission}
-                        variant="outline"
-                        className="bg-slate-50 text-slate-700 border-slate-200 font-mono text-xs"
-                      >
-                        {permission}
-                      </Badge>
-                    ))}
+                  <div className="space-y-2">
+                    {permissionsByDomain?.[domain]?.map((permission) => {
+                      const meta = getMeta(permission);
+                      return (
+                        <div
+                          key={permission}
+                          className="px-3 py-2 bg-slate-50/50 rounded-lg border border-slate-100"
+                        >
+                          <div className="text-sm font-medium text-slate-900 flex items-center gap-2 flex-wrap">
+                            {meta.label}
+                            {isSuperAdmin && (
+                              <Badge
+                                variant="outline"
+                                className="font-mono text-[10px] font-normal text-slate-400 border-slate-200"
+                              >
+                                {permission}
+                              </Badge>
+                            )}
+                            {meta.isNonOperational && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] font-normal text-amber-700 bg-amber-50 border-amber-200 gap-1"
+                              >
+                                <AlertTriangle className="w-3 h-3" />
+                                {nonOperationalBadge}
+                              </Badge>
+                            )}
+                          </div>
+                          {meta.description && (
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              {meta.description}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
