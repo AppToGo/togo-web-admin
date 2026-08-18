@@ -1,0 +1,322 @@
+{
+  "nonOperational": {
+    "badge": "No operativo",
+    "description": "Este permiso aún no está conectado a ninguna función. Activarlo o desactivarlo no cambia nada hoy."
+  },
+  "order_view": {
+    "label": "Ver pedidos",
+    "description": "Da acceso a la lista de pedidos, al detalle de cada uno, a sus productos y a las métricas de pedidos. También permite consultarlos por WhatsApp con /pedidos."
+  },
+  "order_view_history": {
+    "label": "Ver historial del pedido",
+    "description": "Muestra la bitácora de un pedido: qué estados tuvo, quién los cambió y a qué hora."
+  },
+  "order_create": {
+    "label": "Crear pedidos",
+    "description": "Permite registrar pedidos nuevos, repetir un pedido favorito de un cliente y generar el link del catálogo para tomar un pedido."
+  },
+  "order_edit_items": {
+    "label": "Editar items del pedido",
+    "description": "Pensado para editar los productos de un pedido directamente. Hoy esa función la cubren los permisos de \"Agregar\", \"Editar\" y \"Quitar productos del pedido\"."
+  },
+  "order_change_status": {
+    "label": "Cambiar estado del pedido",
+    "description": "Mueve el pedido por el flujo de atención: confirmar, en preparación, listo, en camino y entregado. Aplica individual y en lote. Puede limitarse a estados específicos."
+  },
+  "order_cancel": {
+    "label": "Cancelar pedidos",
+    "description": "Permite cancelar un pedido. La acción es irreversible. Hoy solo está disponible desde el canal de WhatsApp."
+  },
+  "order_assign_operator": {
+    "label": "Asignar repartidor",
+    "description": "Permite asignar o reasignar el repartidor de uno o varios pedidos. Hoy solo desde el canal de WhatsApp."
+  },
+  "order_change_payment_status": {
+    "label": "Cambiar estado de pago",
+    "description": "Permite marcar un pedido como pagado o corregir su estado de pago, uno por uno o en lote."
+  },
+  "order_override_store_closed": {
+    "label": "Confirmar con la sede cerrada",
+    "description": "Permite confirmar un pedido aunque la sede esté fuera de horario o marcada como cerrada. Sin este permiso el pedido queda bloqueado hasta que la sede abra."
+  },
+  "order_item_add": {
+    "label": "Agregar productos al pedido",
+    "description": "Permite sumar productos a un pedido ya creado."
+  },
+  "order_item_update": {
+    "label": "Editar productos del pedido",
+    "description": "Permite cambiar cantidad, notas o variantes de un producto dentro del pedido."
+  },
+  "order_item_delete": {
+    "label": "Quitar productos del pedido",
+    "description": "Permite eliminar un producto de un pedido ya creado."
+  },
+  "order_notify_new": {
+    "label": "Recibir aviso de pedido nuevo",
+    "description": "Hace que esta persona reciba por WhatsApp la notificación cuando entra un pedido nuevo en su sede. No da acceso a nada, solo activa el aviso."
+  },
+  "payment_view": {
+    "label": "Ver información de pago",
+    "description": "Pensado para consultar el detalle de pagos de un pedido. Hoy esa consulta va incluida en \"Ver pedidos\"."
+  },
+  "payment_confirm": {
+    "label": "Confirmar pago",
+    "description": "Pensado para confirmar el pago de un pedido. La función real hoy está en \"Cambiar estado de pago\"."
+  },
+  "delivery_assign_self": {
+    "label": "Autoasignarse un pedido",
+    "description": "Pensado para que un repartidor tome un pedido disponible sin que se lo asignen. Aún no está implementado."
+  },
+  "delivery_view_route": {
+    "label": "Ver ruta de entrega",
+    "description": "Pensado para ver la ruta de entrega de un repartidor. Aún no está implementado."
+  },
+  "product_view": {
+    "label": "Ver productos",
+    "description": "Pensado para controlar quién ve el catálogo de productos. Hoy cualquier miembro del equipo con sesión puede verlo, tenga o no este permiso."
+  },
+  "product_create": {
+    "label": "Crear productos",
+    "description": "Pensado para controlar quién agrega productos al catálogo. Hoy cualquier miembro del equipo con sesión puede crearlos, tenga o no este permiso."
+  },
+  "product_update": {
+    "label": "Editar productos",
+    "description": "Pensado para controlar quién edita productos del catálogo. Hoy cualquier miembro del equipo con sesión puede editarlos, tenga o no este permiso."
+  },
+  "product_delete": {
+    "label": "Eliminar productos",
+    "description": "Pensado para controlar quién elimina productos del catálogo. Hoy cualquier miembro del equipo con sesión puede eliminarlos, tenga o no este permiso."
+  },
+  "category_view": {
+    "label": "Ver categorías del menú",
+    "description": "Permite consultar las categorías con las que se organiza el menú."
+  },
+  "category_create": {
+    "label": "Crear categorías",
+    "description": "Permite agregar una categoría nueva al menú."
+  },
+  "category_update": {
+    "label": "Editar categorías",
+    "description": "Permite cambiar nombre, orden e imagen de una categoría, reactivarla y regenerar sus palabras clave de búsqueda."
+  },
+  "category_delete": {
+    "label": "Eliminar categorías",
+    "description": "Permite desactivar o borrar una categoría del menú."
+  },
+  "customer_view": {
+    "label": "Ver clientes",
+    "description": "Da acceso a la base de clientes: buscar por teléfono, ver su historial de pedidos, sus métricas y sus direcciones."
+  },
+  "customer_create": {
+    "label": "Crear clientes",
+    "description": "Permite registrar clientes nuevos y agregarles direcciones de entrega."
+  },
+  "customer_update": {
+    "label": "Editar clientes",
+    "description": "Permite corregir los datos del cliente, editar sus direcciones y definir cuál es la principal."
+  },
+  "customer_delete": {
+    "label": "Eliminar direcciones de cliente",
+    "description": "Permite borrar una dirección de entrega guardada. No permite eliminar al cliente."
+  },
+  "customer_address_view": {
+    "label": "Ver direcciones de cliente",
+    "description": "Pensado como permiso independiente para ver direcciones. Hoy esa función la cubre \"Ver clientes\"."
+  },
+  "customer_address_create": {
+    "label": "Crear direcciones de cliente",
+    "description": "Pensado como permiso independiente para crear direcciones. Hoy esa función la cubre \"Crear clientes\"."
+  },
+  "customer_address_update": {
+    "label": "Editar direcciones de cliente",
+    "description": "Pensado como permiso independiente para editar direcciones. Hoy esa función la cubre \"Editar clientes\"."
+  },
+  "customer_address_delete": {
+    "label": "Eliminar direcciones de cliente",
+    "description": "Pensado como permiso independiente para eliminar direcciones. Hoy esa función la cubre \"Eliminar direcciones de cliente\" del dominio Clientes."
+  },
+  "user_view": {
+    "label": "Ver el equipo",
+    "description": "Da acceso al listado de miembros activos del negocio y al detalle de cada uno."
+  },
+  "user_view_all": {
+    "label": "Ver miembros desactivados",
+    "description": "Permite ver también las cuentas suspendidas, además de las activas."
+  },
+  "user_create": {
+    "label": "Dar de alta miembros",
+    "description": "Permite crear cuentas nuevas para el equipo."
+  },
+  "user_update": {
+    "label": "Editar miembros",
+    "description": "Permite cambiar datos, rol y perfil operativo de un miembro del equipo."
+  },
+  "user_deactivate": {
+    "label": "Suspender miembros",
+    "description": "Bloquea el acceso de un miembro sin borrar su cuenta ni su historial."
+  },
+  "user_activate": {
+    "label": "Reactivar miembros",
+    "description": "Devuelve el acceso a un miembro suspendido."
+  },
+  "user_delete": {
+    "label": "Eliminar miembros",
+    "description": "Borra la cuenta de un miembro del equipo de forma definitiva."
+  },
+  "profile_view": {
+    "label": "Ver perfiles operativos",
+    "description": "Permite consultar los cargos definidos (Mesero, Cajero, Repartidor…) y qué permisos tiene cada uno."
+  },
+  "profile_create": {
+    "label": "Crear perfiles operativos",
+    "description": "Permite definir un cargo nuevo."
+  },
+  "profile_update": {
+    "label": "Editar perfiles y sus permisos",
+    "description": "Permite renombrar un cargo y cambiar los permisos que otorga. Es el permiso que controla esta misma pantalla."
+  },
+  "profile_delete": {
+    "label": "Eliminar perfiles operativos",
+    "description": "Permite borrar un cargo."
+  },
+  "profile_assign_permissions": {
+    "label": "Asignar permisos a perfiles",
+    "description": "Pensado como permiso independiente para asignar permisos. Hoy esa función la controla \"Editar perfiles y sus permisos\"."
+  },
+  "business_update": {
+    "label": "Editar el negocio",
+    "description": "Permite cambiar los datos del negocio, subir el logo y solicitar un cambio de plan."
+  },
+  "business_deactivate": {
+    "label": "Desactivar el negocio",
+    "description": "Pone el negocio fuera de servicio: deja de recibir pedidos y de atender por WhatsApp."
+  },
+  "business_activate": {
+    "label": "Reactivar el negocio",
+    "description": "Vuelve a poner el negocio en servicio."
+  },
+  "business_delete": {
+    "label": "Eliminar el negocio",
+    "description": "Borra el negocio de forma definitiva."
+  },
+  "business_ops_manage_operator_profiles": {
+    "label": "Gestionar perfiles operativos",
+    "description": "Pensado como permiso general para administrar perfiles operativos. Hoy esa función la controlan los permisos del dominio \"Perfiles operativos\"."
+  },
+  "business_ops_manage_users": {
+    "label": "Gestionar usuarios",
+    "description": "Pensado como permiso general para administrar el equipo. Hoy esa función la controlan los permisos del dominio \"Equipo\"."
+  },
+  "whatsapp_connect": {
+    "label": "Conectar WhatsApp",
+    "description": "Pensado para controlar quién conecta el número de WhatsApp del negocio. Hoy esa acción se controla por rol, no por este permiso."
+  },
+  "whatsapp_disconnect": {
+    "label": "Desconectar WhatsApp",
+    "description": "Pensado para controlar quién desconecta el número de WhatsApp del negocio. Hoy esa acción se controla por rol, no por este permiso."
+  },
+  "whatsapp_view_status": {
+    "label": "Ver estado de WhatsApp",
+    "description": "Pensado para ver si el número de WhatsApp del negocio está conectado. Aún no está implementado."
+  },
+  "whatsapp_send_message": {
+    "label": "Enviar mensajes por WhatsApp",
+    "description": "Pensado como permiso general para enviar mensajes. Para responder al cliente desde el inbox, usa \"Responder al cliente\"."
+  },
+  "favorite_view": {
+    "label": "Ver pedidos favoritos",
+    "description": "Permite consultar los pedidos que un cliente guardó como habituales."
+  },
+  "favorite_create": {
+    "label": "Guardar pedidos favoritos",
+    "description": "Permite guardar un pedido como favorito del cliente y renombrarlo."
+  },
+  "favorite_delete": {
+    "label": "Eliminar pedidos favoritos",
+    "description": "Permite borrar un pedido favorito."
+  },
+  "suggestion_view": {
+    "label": "Ver productos sugeridos",
+    "description": "Muestra los productos que los clientes pidieron y no están en el menú, los pendientes de revisar y el ranking de más solicitados."
+  },
+  "suggestion_approve": {
+    "label": "Aprobar sugerencias",
+    "description": "Convierte la sugerencia en un producto real del menú."
+  },
+  "suggestion_reject": {
+    "label": "Rechazar sugerencias",
+    "description": "Descarta la sugerencia sin agregarla al menú."
+  },
+  "suggestion_update": {
+    "label": "Editar sugerencias",
+    "description": "Permite corregir una sugerencia antes de aprobarla o rechazarla."
+  },
+  "suggestion_delete": {
+    "label": "Eliminar sugerencias",
+    "description": "Borra la sugerencia del listado."
+  },
+  "recommendation_view": {
+    "label": "Ver recomendaciones",
+    "description": "Muestra las reglas de venta cruzada entre productos (qué se sugiere junto a qué)."
+  },
+  "recommendation_create": {
+    "label": "Crear recomendaciones",
+    "description": "Permite definir qué producto se sugiere junto a otro, por ejemplo una bebida con la pizza."
+  },
+  "recommendation_delete": {
+    "label": "Eliminar recomendaciones",
+    "description": "Permite quitar recomendaciones, una a una o todas las de un producto."
+  },
+  "conversation_view": {
+    "label": "Abrir el inbox",
+    "description": "Da acceso al inbox de WhatsApp: leer el historial de chats con clientes, marcarlos como leídos, ver la conversación que originó un pedido y quién del equipo está disponible. También habilita la actualización en tiempo real."
+  },
+  "conversation_takeover": {
+    "label": "Tomar el control del chat",
+    "description": "Permite quitarle la conversación al asistente automático para atenderla en persona, y devolvérsela al terminar."
+  },
+  "conversation_send": {
+    "label": "Responder al cliente",
+    "description": "Permite escribirle al cliente por WhatsApp desde el inbox y marcarse como disponible para atender."
+  },
+  "conversation_note": {
+    "label": "Dejar notas internas",
+    "description": "Permite agregar notas en la conversación que solo ve el equipo. El cliente nunca las recibe."
+  },
+  "conversation_assign": {
+    "label": "Asignar conversaciones",
+    "description": "Permite derivar un chat a otra persona del equipo y ver a quién se le puede asignar."
+  },
+  "conversation_close": {
+    "label": "Cerrar conversaciones",
+    "description": "Marca la conversación como atendida y la saca de la bandeja activa."
+  },
+  "store_toggle_accepting_orders": {
+    "label": "Abrir y cerrar la sede",
+    "description": "Permite cortar o reanudar manualmente la recepción de pedidos de una sede, y volver al horario programado. Funciona desde el panel y por WhatsApp."
+  },
+  "metrics_view": {
+    "label": "Ver métricas del negocio",
+    "description": "Da acceso a ventas, recaudo, ticket promedio, comparativa entre sedes, productos más vendidos y clientes nuevos. También responde estas consultas por WhatsApp."
+  },
+  "inventory_view": {
+    "label": "Ver disponibilidad por sede",
+    "description": "Permite consultar qué productos están agotados en una sede. Hoy disponible desde el canal de WhatsApp."
+  },
+  "inventory_set_availability": {
+    "label": "Marcar agotados",
+    "description": "Permite marcar un producto como agotado o volver a habilitarlo en una sede, desde el panel o por WhatsApp."
+  },
+  "table_view": {
+    "label": "Ver mesas",
+    "description": "Permite consultar las mesas de una sede y sus códigos QR."
+  },
+  "table_manage": {
+    "label": "Administrar mesas",
+    "description": "Permite crear, editar y desactivar mesas, y regenerar sus códigos QR."
+  },
+  "billing_view": {
+    "label": "Ver facturación",
+    "description": "Da acceso al estado de cuenta de la suscripción, al historial de pagos y a los avisos de cobranza."
+  }
+}

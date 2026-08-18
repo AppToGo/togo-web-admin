@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useMessages } from "next-intl";
 import {
   Search,
   Check,
@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Shield,
   Lock,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePermissionMeta } from "@/hooks/usePermissionMeta";
 import type { PermissionCatalog, ProfilePermission } from "../types";
 
 interface PermissionSelectorProps {
@@ -36,6 +38,9 @@ export function PermissionSelector({
   searchQuery: externalSearchQuery,
 }: PermissionSelectorProps) {
   const t = useTranslations("operatorProfiles");
+  const messages = useMessages();
+  const { isSuperAdmin, getMeta, isVisible, nonOperationalBadge } =
+    usePermissionMeta();
   const [internalSearchQuery, setInternalSearchQuery] = useState("");
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(() => {
     // Expand all domains by default
@@ -46,17 +51,25 @@ export function PermissionSelector({
 
   const searchQuery = externalSearchQuery ?? internalSearchQuery;
 
+  // Permissions visible to the current user: non-operational permissions
+  // (not wired to any backend enforcement yet) are hidden from everyone
+  // except SUPER_ADMIN, who needs to see them to track pending work.
+  const visiblePermissions = useMemo(
+    () => permissions.filter((p) => isVisible(p.code)),
+    [permissions, isVisible]
+  );
+
   // Group permissions by domain
   const groupedPermissions = useMemo(() => {
     const grouped: GroupedPermissions = {};
-    permissions.forEach((permission) => {
+    visiblePermissions.forEach((permission) => {
       if (!grouped[permission.domain]) {
         grouped[permission.domain] = [];
       }
       grouped[permission.domain].push(permission);
     });
     return grouped;
-  }, [permissions]);
+  }, [visiblePermissions]);
 
   // Filter permissions based on search query
   const filteredGroupedPermissions = useMemo(() => {
@@ -67,12 +80,15 @@ export function PermissionSelector({
 
     Object.entries(groupedPermissions).forEach(
       ([domain, domainPermissions]) => {
-        const matching = domainPermissions.filter(
-          (p) =>
-            p.code.toLowerCase().includes(query) ||
-            p.description.toLowerCase().includes(query) ||
-            p.domain.toLowerCase().includes(query)
-        );
+        const matching = domainPermissions.filter((p) => {
+          const meta = getMeta(p.code, p.description);
+          return (
+            meta.label.toLowerCase().includes(query) ||
+            meta.description.toLowerCase().includes(query) ||
+            p.domain.toLowerCase().includes(query) ||
+            (isSuperAdmin && p.code.toLowerCase().includes(query))
+          );
+        });
         if (matching.length > 0) {
           filtered[domain] = matching;
         }
@@ -80,7 +96,7 @@ export function PermissionSelector({
     );
 
     return filtered;
-  }, [groupedPermissions, searchQuery]);
+  }, [groupedPermissions, searchQuery, getMeta, isSuperAdmin]);
 
   // Check if a permission is selected
   const isPermissionSelected = useCallback(
@@ -191,9 +207,14 @@ export function PermissionSelector({
     });
   }, []);
 
-  // Get domain icon/label
+  // Get domain icon/label. Uses a raw messages lookup (not t()) because
+  // t() throws on a missing key instead of falling back to the domain code.
+  const domainMessages = (messages?.operatorProfiles as
+    | { domains?: Record<string, string> }
+    | undefined
+  )?.domains;
   const getDomainLabel = (domain: string) => {
-    return t(`domains.${domain}`, { defaultValue: domain });
+    return domainMessages?.[domain] ?? domain;
   };
 
   return (
@@ -219,7 +240,7 @@ export function PermissionSelector({
           })}
         </span>
         <span className="text-slate-400">
-          {t("permissions.totalCount", { count: permissions.length })}
+          {t("permissions.totalCount", { count: visiblePermissions.length })}
         </span>
       </div>
 
@@ -291,39 +312,64 @@ export function PermissionSelector({
                 {/* Domain Permissions */}
                 {expandedDomains.has(domain) && (
                   <div className="divide-y divide-slate-100">
-                    {domainPermissions.map((permission) => (
-                      <div
-                        key={permission.code}
-                        className={cn(
-                          "flex items-start gap-3 px-3 py-3 hover:bg-slate-50/50 transition-colors",
-                          isPermissionSelected(permission.code) &&
-                            "bg-indigo-50/30"
-                        )}
-                      >
-                        <Checkbox
-                          id={`permission-${permission.code}`}
-                          checked={isPermissionSelected(permission.code)}
-                          onCheckedChange={() => togglePermission(permission)}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <Label
-                            htmlFor={`permission-${permission.code}`}
-                            className="text-sm font-medium text-slate-900 cursor-pointer flex items-center gap-2"
-                          >
-                            {permission.code}
-                            {permission.requiresParams && (
-                              <Lock className="w-3 h-3 text-amber-500" />
-                            )}
-                          </Label>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {permission.description}
-                          </p>
+                    {domainPermissions.map((permission) => {
+                      const meta = getMeta(
+                        permission.code,
+                        permission.description
+                      );
+                      return (
+                        <div
+                          key={permission.code}
+                          className={cn(
+                            "flex items-start gap-3 px-3 py-3 hover:bg-slate-50/50 transition-colors",
+                            isPermissionSelected(permission.code) &&
+                              "bg-indigo-50/30"
+                          )}
+                        >
+                          <Checkbox
+                            id={`permission-${permission.code}`}
+                            checked={isPermissionSelected(permission.code)}
+                            onCheckedChange={() =>
+                              togglePermission(permission)
+                            }
+                          />
+                          <div className="flex-1 min-w-0">
+                            <Label
+                              htmlFor={`permission-${permission.code}`}
+                              className="text-sm font-medium text-slate-900 cursor-pointer flex items-center gap-2 flex-wrap"
+                            >
+                              {meta.label}
+                              {isSuperAdmin && (
+                                <Badge
+                                  variant="outline"
+                                  className="font-mono text-[10px] font-normal text-slate-400 border-slate-200"
+                                >
+                                  {permission.code}
+                                </Badge>
+                              )}
+                              {permission.requiresParams && (
+                                <Lock className="w-3 h-3 text-amber-500" />
+                              )}
+                              {meta.isNonOperational && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] font-normal text-amber-700 bg-amber-50 border-amber-200 gap-1"
+                                >
+                                  <AlertTriangle className="w-3 h-3" />
+                                  {nonOperationalBadge}
+                                </Badge>
+                              )}
+                            </Label>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              {meta.description}
+                            </p>
+                          </div>
+                          {isPermissionSelected(permission.code) && (
+                            <Check className="w-4 h-4 text-indigo-500 shrink-0" />
+                          )}
                         </div>
-                        {isPermissionSelected(permission.code) && (
-                          <Check className="w-4 h-4 text-indigo-500 shrink-0" />
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
