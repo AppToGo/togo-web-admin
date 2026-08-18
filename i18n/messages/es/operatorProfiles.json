@@ -20,36 +20,7 @@
     "selectAll": "Seleccionar todos",
     "deselectAll": "Deseleccionar todos",
     "noResults": "No se encontraron permisos",
-    "tryDifferentSearch": "Intenta con otra búsqueda",
-    "domain": {
-      "orders": "Pedidos",
-      "products": "Productos",
-      "categories": "Categorías",
-      "branches": "Sedes",
-      "customers": "Clientes",
-      "reports": "Reportes",
-      "settings": "Configuración",
-      "users": "Usuarios",
-      "business": "Negocio",
-      "business_ops": "Operaciones de Negocio",
-      "category": "Categoría",
-      "conversation": "Conversaciones",
-      "customer": "Cliente",
-      "delivery": "Entrega",
-      "favorite": "Favorito",
-      "inventory": "Inventario",
-      "metrics": "Métricas",
-      "order": "Pedido",
-      "payment": "Pago",
-      "product": "Producto",
-      "profile": "Perfil",
-      "recommendation": "Recomendación",
-      "store": "Tienda",
-      "suggestion": "Sugerencia",
-      "table": "Mesas",
-      "user": "Usuario",
-      "whatsapp": "WhatsApp"
-    }
+    "tryDifferentSearch": "Intenta con otra búsqueda"
   },
   "notifyBanner": {
     "title": "Notificación de pedidos por WhatsApp",
@@ -153,7 +124,8 @@
     "suggestion": "Sugerencia",
     "table": "Mesas",
     "user": "Usuario",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "billing": "Facturación"
   },
   "tabs": {
     "general": "General",
