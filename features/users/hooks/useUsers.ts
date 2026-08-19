@@ -12,6 +12,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  activateUser,
 } from "../services/user.service";
 import type { User, CreateUserRequest, UpdateUserRequest } from "../types";
 
@@ -19,10 +20,12 @@ import type { User, CreateUserRequest, UpdateUserRequest } from "../types";
 // de negocio seleccionado (BusinessSelector) seguía viendo el listado de
 // usuarios del negocio anterior hasta que expirara el staleTime, porque la
 // query key era la misma sin importar qué negocio estuviera activo.
+// También se cachea por includeInactive: son dos respuestas de endpoints
+// distintos (ver getUsers), compartir key mezclaría ambas.
 const USERS_KEYS = {
   all: ["users"] as const,
-  lists: (businessId?: string | null) =>
-    [...USERS_KEYS.all, "list", businessId ?? null] as const,
+  lists: (businessId?: string | null, includeInactive = false) =>
+    [...USERS_KEYS.all, "list", businessId ?? null, includeInactive] as const,
   detail: (id: string) => [...USERS_KEYS.all, "detail", id] as const,
 };
 
@@ -30,17 +33,21 @@ const STALE_TIME = 5 * 60 * 1000; // 5 minutes
 const GC_TIME = 10 * 60 * 1000; // 10 minutes
 
 /**
- * Hook para obtener todos los usuarios del negocio actual
+ * Hook para obtener los usuarios del negocio actual.
+ *
+ * `includeInactive` trae también los usuarios desactivados (necesario
+ * para poder reactivarlos desde el listado) — sin esto quedan
+ * invisibles y sin forma de volver a activarlos desde el admin.
  */
-export function useUsers() {
+export function useUsers(includeInactive = false) {
   // "" es el sentinel de "Todos los negocios" (SUPER_ADMIN sin selección
   // específica) — no hay un único listado de usuarios que mostrar ahí, así
   // que la query se deshabilita igual que con null.
   const businessId = useEffectiveBusinessId();
 
   return useQuery<User[], Error>({
-    queryKey: USERS_KEYS.lists(businessId),
-    queryFn: getUsers,
+    queryKey: USERS_KEYS.lists(businessId, includeInactive),
+    queryFn: () => getUsers(includeInactive),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: !!businessId,
@@ -117,6 +124,20 @@ export function useDeleteUser() {
 
   return useMutation({
     mutationFn: deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USERS_KEYS.all });
+    },
+  });
+}
+
+/**
+ * Hook para reactivar un usuario previamente eliminado/desactivado
+ */
+export function useActivateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: activateUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_KEYS.all });
     },

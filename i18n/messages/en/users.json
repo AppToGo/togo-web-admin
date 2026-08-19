@@ -59,7 +59,7 @@
       "edit": "Edit user",
       "delete": "Delete user",
       "deleteSelfDisabled": "You can't delete your own user",
-      "deleteInactiveDisabled": "The user is already inactive"
+      "activate": "Reactivate user"
     }
   },
   "deleteDialog": {
@@ -121,6 +121,8 @@
     "loadFailed": "Error loading user",
     "updateFailed": "Error updating user",
     "deleteFailed": "Error deleting user",
-    "createFailed": "Error creating user"
-  }
+    "createFailed": "Error creating user",
+    "activateFailed": "Error activating user"
+  },
+  "activateSuccess": "User activated successfully"
 }

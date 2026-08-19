@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
-import { Users, Plus, User, Crown, Pencil, Trash2 } from "lucide-react";
+import { Users, Plus, User, Crown, Pencil, Trash2, RotateCcw } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Link } from "@/i18n/routing";
-import { useUsers, useDeleteUser } from "@/features/users/hooks/useUsers";
+import { useUsers, useDeleteUser, useActivateUser } from "@/features/users/hooks/useUsers";
 import { CreateUserDialog } from "@/features/users/components/CreateUserDialog";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
@@ -44,7 +44,9 @@ export default function UsersPage() {
 
   useAuthGuard();
 
-  const { data: users, isLoading } = useUsers();
+  // includeInactive: true — sin esto los usuarios desactivados no aparecían
+  // en el listado y no había forma de reactivarlos desde el admin.
+  const { data: users, isLoading } = useUsers(true);
   const { data: catalog } = usePlanCatalog(true);
   const { user } = useAuthStore();
   const subscriptionPlan = user?.subscriptionPlan ?? 1;
@@ -53,6 +55,7 @@ export default function UsersPage() {
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserType | null>(null);
   const deleteUser = useDeleteUser();
+  const activateUser = useActivateUser();
 
   const planEntry = useMemo(() => {
     if (!catalog?.plans) return null;
@@ -69,6 +72,16 @@ export default function UsersPage() {
     : maxUsers === 1
       ? ts("usersSingle")
       : ts("usersMultiple", { max: maxUsers });
+
+  const handleActivate = (target: UserType) => {
+    activateUser.mutate(target.id, {
+      onSuccess: () => toast.success(t("activateSuccess")),
+      onError: (err) => {
+        const message = getHumanizedErrorMessage(err) || t("errors.activateFailed");
+        toast.error(message);
+      },
+    });
+  };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
@@ -177,12 +190,9 @@ export default function UsersPage() {
               <div className="divide-y divide-slate-100">
                 {users?.map((row) => {
                   const isSelf = row.id === user?.userId;
-                  const deleteDisabled = isSelf || !row.active;
                   const deleteDisabledReason = isSelf
                     ? t("list.actions.deleteSelfDisabled")
-                    : !row.active
-                      ? t("list.actions.deleteInactiveDisabled")
-                      : undefined;
+                    : undefined;
 
                   return (
                     <div
@@ -234,17 +244,31 @@ export default function UsersPage() {
                               <span className="sr-only">{t("list.actions.edit")}</span>
                             </Link>
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="cursor-pointer"
-                            disabled={deleteDisabled}
-                            title={deleteDisabledReason ?? t("list.actions.delete")}
-                            onClick={() => setDeleteTarget(row)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                            <span className="sr-only">{t("list.actions.delete")}</span>
-                          </Button>
+                          {row.active ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="cursor-pointer"
+                              disabled={isSelf}
+                              title={deleteDisabledReason ?? t("list.actions.delete")}
+                              onClick={() => setDeleteTarget(row)}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                              <span className="sr-only">{t("list.actions.delete")}</span>
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="cursor-pointer"
+                              disabled={activateUser.isPending}
+                              title={t("list.actions.activate")}
+                              onClick={() => handleActivate(row)}
+                            >
+                              <RotateCcw className="w-4 h-4 text-emerald-600" />
+                              <span className="sr-only">{t("list.actions.activate")}</span>
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>

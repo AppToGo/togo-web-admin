@@ -59,7 +59,7 @@
       "edit": "Editar usuario",
       "delete": "Eliminar usuario",
       "deleteSelfDisabled": "No puedes eliminar tu propio usuario",
-      "deleteInactiveDisabled": "El usuario ya está inactivo"
+      "activate": "Reactivar usuario"
     }
   },
   "deleteDialog": {
@@ -121,6 +121,8 @@
     "loadFailed": "Error al cargar el usuario",
     "updateFailed": "Error al actualizar el usuario",
     "deleteFailed": "Error al eliminar el usuario",
-    "createFailed": "Error al crear el usuario"
-  }
+    "createFailed": "Error al crear el usuario",
+    "activateFailed": "Error al reactivar el usuario"
+  },
+  "activateSuccess": "Usuario reactivado exitosamente"
 }

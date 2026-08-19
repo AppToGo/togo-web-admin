@@ -11,6 +11,7 @@ export {
   useCreateUser,
   useUpdateUser,
   useDeleteUser,
+  useActivateUser,
 } from "./hooks/useUsers";
 
 // Types
@@ -26,4 +27,5 @@ export {
   createUser,
   updateUser,
   deleteUser,
+  activateUser,
 } from "./services/user.service";
