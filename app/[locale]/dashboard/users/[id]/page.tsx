@@ -201,7 +201,7 @@ export default function UserDetailPage() {
   };
 
   const handleBack = () => {
-    router.push("/dashboard/settings");
+    router.push("/dashboard/settings/users");
   };
 
   const handleAssignProfile = () => {
