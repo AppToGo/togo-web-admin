@@ -7,6 +7,7 @@ export { BusinessSelector } from "./components/BusinessSelector";
 export {
   useBusinessStore,
   useEffectiveBusinessId,
+  getEffectiveBusinessId,
   useIsAllBusinessesSelected,
 } from "./stores/business.store";
 

@@ -18,10 +18,12 @@
     "description": "User details",
     "fields": {
       "name": "Name",
+      "phoneNumber": "Phone",
       "email": "Email",
       "role": "Role",
       "status": "Status"
-    }
+    },
+    "updateSuccess": "User updated successfully"
   },
   "permissions": {
     "title": "Permissions",

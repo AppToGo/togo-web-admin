@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import {
   getUsers,
   getUserById,
@@ -15,9 +15,14 @@ import {
 } from "../services/user.service";
 import type { User, CreateUserRequest, UpdateUserRequest } from "../types";
 
+// El listado se cachea por businessId: sin esto, un SUPER_ADMIN que cambia
+// de negocio seleccionado (BusinessSelector) seguía viendo el listado de
+// usuarios del negocio anterior hasta que expirara el staleTime, porque la
+// query key era la misma sin importar qué negocio estuviera activo.
 const USERS_KEYS = {
   all: ["users"] as const,
-  lists: () => [...USERS_KEYS.all, "list"] as const,
+  lists: (businessId?: string | null) =>
+    [...USERS_KEYS.all, "list", businessId ?? null] as const,
   detail: (id: string) => [...USERS_KEYS.all, "detail", id] as const,
 };
 
@@ -28,11 +33,13 @@ const GC_TIME = 10 * 60 * 1000; // 10 minutes
  * Hook para obtener todos los usuarios del negocio actual
  */
 export function useUsers() {
-  const { user } = useAuthStore();
-  const businessId = user?.businessId;
+  // "" es el sentinel de "Todos los negocios" (SUPER_ADMIN sin selección
+  // específica) — no hay un único listado de usuarios que mostrar ahí, así
+  // que la query se deshabilita igual que con null.
+  const businessId = useEffectiveBusinessId();
 
   return useQuery<User[], Error>({
-    queryKey: USERS_KEYS.lists(),
+    queryKey: USERS_KEYS.lists(businessId),
     queryFn: getUsers,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -44,8 +51,7 @@ export function useUsers() {
  * Hook para obtener un usuario específico por ID
  */
 export function useUser(id: string | null) {
-  const { user } = useAuthStore();
-  const businessId = user?.businessId;
+  const businessId = useEffectiveBusinessId();
 
   return useQuery<User, Error>({
     queryKey: USERS_KEYS.detail(id || ""),
@@ -82,7 +88,7 @@ export function useCreateUser() {
       return created;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: USERS_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: USERS_KEYS.all });
     },
   });
 }
@@ -97,7 +103,7 @@ export function useUpdateUser() {
     mutationFn: ({ id, data }: { id: string; data: UpdateUserRequest }) =>
       updateUser(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: USERS_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: USERS_KEYS.all });
       queryClient.invalidateQueries({ queryKey: USERS_KEYS.detail(variables.id) });
     },
   });
@@ -112,7 +118,7 @@ export function useDeleteUser() {
   return useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: USERS_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: USERS_KEYS.all });
     },
   });
 }

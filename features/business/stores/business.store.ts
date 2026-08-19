@@ -76,10 +76,10 @@ export const useBusinessStore = create<BusinessStore>()(
  * - Para usuarios normales, verifica que selectedBusinessId coincida con user.businessId
  * - Si no coincide (ej: cambio de cuenta, reset de BD), ignora la selección y usa el del usuario
  */
-export function useEffectiveBusinessId(): string | null {
-  const { selectedBusinessId } = useBusinessStore();
-  const { user } = useAuthStore();
-
+function resolveEffectiveBusinessId(
+  selectedBusinessId: string | null,
+  user: { role: string; businessId: string | null } | null
+): string | null {
   // Si no hay usuario, no hay businessId
   if (!user) return null;
 
@@ -98,6 +98,30 @@ export function useEffectiveBusinessId(): string | null {
   }
 
   return selectedBusinessId ?? user.businessId ?? null;
+}
+
+export function useEffectiveBusinessId(): string | null {
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  return resolveEffectiveBusinessId(selectedBusinessId, user);
+}
+
+/**
+ * Versión sin hook de `useEffectiveBusinessId`, para usar dentro de
+ * `queryFn`/funciones de servicio de TanStack Query, que corren fuera del
+ * render de React y no pueden llamar hooks. Misma lógica de resolución,
+ * leyendo el estado actual de los stores con `.getState()`.
+ *
+ * Antes de este helper, los servicios de `users`, `operator-profiles` y
+ * `user-permissions` leían `useAuthStore.getState().user?.businessId` a
+ * secas, ignorando el negocio seleccionado por un SUPER_ADMIN — la query
+ * fallaba en silencio con "Se requiere businessId" en cuanto no había
+ * businessId propio (todo SUPER_ADMIN), sin mostrar error en la UI.
+ */
+export function getEffectiveBusinessId(): string | null {
+  const { selectedBusinessId } = useBusinessStore.getState();
+  const { user } = useAuthStore.getState();
+  return resolveEffectiveBusinessId(selectedBusinessId, user);
 }
 
 /**

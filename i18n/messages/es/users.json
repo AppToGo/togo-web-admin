@@ -18,10 +18,12 @@
     "description": "Detalles del usuario",
     "fields": {
       "name": "Nombre",
+      "phoneNumber": "Teléfono",
       "email": "Correo electrónico",
       "role": "Rol",
       "status": "Estado"
-    }
+    },
+    "updateSuccess": "Usuario actualizado exitosamente"
   },
   "permissions": {
     "title": "Permisos",
