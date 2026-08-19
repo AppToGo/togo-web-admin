@@ -237,6 +237,7 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="cursor-pointer"
                             disabled={deleteDisabled}
                             title={deleteDisabledReason ?? t("list.actions.delete")}
                             onClick={() => setDeleteTarget(row)}
