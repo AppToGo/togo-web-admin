@@ -51,7 +51,19 @@
   },
   "list": {
     "title": "Lista de Usuarios",
-    "description": "Gestiona los usuarios que tienen acceso a tu negocio"
+    "description": "Gestiona los usuarios que tienen acceso a tu negocio",
+    "actions": {
+      "edit": "Editar usuario",
+      "delete": "Eliminar usuario",
+      "deleteSelfDisabled": "No puedes eliminar tu propio usuario",
+      "deleteInactiveDisabled": "El usuario ya está inactivo"
+    }
+  },
+  "deleteDialog": {
+    "title": "Eliminar usuario",
+    "description": "¿Seguro que quieres eliminar a \"{name}\"? Su cuenta quedará desactivada y no podrá iniciar sesión.",
+    "confirm": "Eliminar",
+    "success": "Usuario eliminado exitosamente"
   },
   "empty": {
     "title": "No hay usuarios",

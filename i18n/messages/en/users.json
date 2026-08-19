@@ -51,7 +51,19 @@
   },
   "list": {
     "title": "User List",
-    "description": "Manage users who have access to your business"
+    "description": "Manage users who have access to your business",
+    "actions": {
+      "edit": "Edit user",
+      "delete": "Delete user",
+      "deleteSelfDisabled": "You can't delete your own user",
+      "deleteInactiveDisabled": "The user is already inactive"
+    }
+  },
+  "deleteDialog": {
+    "title": "Delete user",
+    "description": "Are you sure you want to delete \"{name}\"? Their account will be deactivated and they won't be able to sign in.",
+    "confirm": "Delete",
+    "success": "User deleted successfully"
   },
   "empty": {
     "title": "No users",
