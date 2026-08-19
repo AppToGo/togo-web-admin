@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useTranslations, useMessages } from "next-intl";
+import { useTranslations } from "next-intl";
 import {
   Search,
   Check,
@@ -38,8 +38,7 @@ export function PermissionSelector({
   searchQuery: externalSearchQuery,
 }: PermissionSelectorProps) {
   const t = useTranslations("operatorProfiles");
-  const messages = useMessages();
-  const { isSuperAdmin, getMeta, isVisible, nonOperationalBadge } =
+  const { isSuperAdmin, getMeta, isVisible, nonOperationalBadge, getDomainLabel } =
     usePermissionMeta();
   const [internalSearchQuery, setInternalSearchQuery] = useState("");
   const [expandedDomains, setExpandedDomains] = useState<Set<string>>(() => {
@@ -206,16 +205,6 @@ export function PermissionSelector({
       return newSet;
     });
   }, []);
-
-  // Get domain icon/label. Uses a raw messages lookup (not t()) because
-  // t() throws on a missing key instead of falling back to the domain code.
-  const domainMessages = (messages?.operatorProfiles as
-    | { domains?: Record<string, string> }
-    | undefined
-  )?.domains;
-  const getDomainLabel = (domain: string) => {
-    return domainMessages?.[domain] ?? domain;
-  };
 
   return (
     <div className="space-y-4">

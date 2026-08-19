@@ -7,7 +7,8 @@
 export interface User {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  phoneNumber: string;
   role: string;
   active: boolean;
   businessId: string | null;
@@ -33,6 +34,7 @@ export interface CreateUserRequest {
 
 export interface UpdateUserRequest {
   name?: string;
+  phoneNumber?: string;
   email?: string;
   role?: string;
   active?: boolean;

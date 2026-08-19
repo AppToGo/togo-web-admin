@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
-import { Users, Plus, User, Crown } from "lucide-react";
+import { Users, Plus, User, Crown, Pencil, Trash2, RotateCcw } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -15,14 +15,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Link } from "@/i18n/routing";
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useUsers, useDeleteUser, useActivateUser } from "@/features/users/hooks/useUsers";
 import { CreateUserDialog } from "@/features/users/components/CreateUserDialog";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { getHumanizedErrorMessage } from "@/lib/error.utils";
+import type { User as UserType } from "@/features/users/types";
 
 export default function UsersPage() {
   const t = useTranslations("users");
@@ -31,13 +44,18 @@ export default function UsersPage() {
 
   useAuthGuard();
 
-  const { data: users, isLoading } = useUsers();
+  // includeInactive: true — sin esto los usuarios desactivados no aparecían
+  // en el listado y no había forma de reactivarlos desde el admin.
+  const { data: users, isLoading } = useUsers(true);
   const { data: catalog } = usePlanCatalog(true);
   const { user } = useAuthStore();
   const subscriptionPlan = user?.subscriptionPlan ?? 1;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<UserType | null>(null);
+  const deleteUser = useDeleteUser();
+  const activateUser = useActivateUser();
 
   const planEntry = useMemo(() => {
     if (!catalog?.plans) return null;
@@ -54,6 +72,31 @@ export default function UsersPage() {
     : maxUsers === 1
       ? ts("usersSingle")
       : ts("usersMultiple", { max: maxUsers });
+
+  const handleActivate = (target: UserType) => {
+    activateUser.mutate(target.id, {
+      onSuccess: () => toast.success(t("activateSuccess")),
+      onError: (err) => {
+        const message = getHumanizedErrorMessage(err) || t("errors.activateFailed");
+        toast.error(message);
+      },
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteUser.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        toast.success(t("deleteDialog.success"));
+        setDeleteTarget(null);
+      },
+      onError: (err) => {
+        const message = getHumanizedErrorMessage(err) || t("errors.deleteFailed");
+        toast.error(message);
+        setDeleteTarget(null);
+      },
+    });
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -145,45 +188,92 @@ export default function UsersPage() {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {users?.map((user) => (
-                  <Link
-                    key={user.id}
-                    href={`/dashboard/users/${user.id}`}
-                    className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors rounded-lg group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                          {user.name}
-                        </h3>
-                        <p className="text-sm text-slate-500">{user.email}</p>
+                {users?.map((row) => {
+                  const isSelf = row.id === user?.userId;
+                  const deleteDisabledReason = isSelf
+                    ? t("list.actions.deleteSelfDisabled")
+                    : undefined;
+
+                  return (
+                    <div
+                      key={row.id}
+                      className="flex items-center justify-between gap-3 p-4 hover:bg-slate-50 transition-colors rounded-lg group"
+                    >
+                      <Link
+                        href={`/dashboard/users/${row.id}`}
+                        className="flex items-center gap-4 flex-1 min-w-0"
+                      >
+                        <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
+                          {row.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                            {row.name}
+                          </h3>
+                          <p className="text-sm text-slate-500 truncate">{row.email}</p>
+                        </div>
+                      </Link>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge
+                          variant="outline"
+                          className={cn(getRoleBadgeColor(row.role))}
+                        >
+                          {t(`roles.${row.role}`)}
+                        </Badge>
+                        <Badge
+                          variant={row.active ? "default" : "secondary"}
+                          className={cn(
+                            row.active
+                              ? "bg-green-100 text-green-700 hover:bg-green-100"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-100"
+                          )}
+                        >
+                          {row.active
+                            ? tc("status.active")
+                            : tc("status.inactive")}
+                        </Badge>
+                        <div className="flex items-center gap-1 pl-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            title={t("list.actions.edit")}
+                          >
+                            <Link href={`/dashboard/users/${row.id}`}>
+                              <Pencil className="w-4 h-4 text-slate-500" />
+                              <span className="sr-only">{t("list.actions.edit")}</span>
+                            </Link>
+                          </Button>
+                          {row.active ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="cursor-pointer"
+                              disabled={isSelf}
+                              title={deleteDisabledReason ?? t("list.actions.delete")}
+                              onClick={() => setDeleteTarget(row)}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                              <span className="sr-only">{t("list.actions.delete")}</span>
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="cursor-pointer"
+                              disabled={activateUser.isPending}
+                              title={t("list.actions.activate")}
+                              onClick={() => handleActivate(row)}
+                            >
+                              <RotateCcw className="w-4 h-4 text-emerald-600" />
+                              <span className="sr-only">{t("list.actions.activate")}</span>
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant="outline"
-                        className={cn(getRoleBadgeColor(user.role))}
-                      >
-                        {t(`roles.${user.role}`)}
-                      </Badge>
-                      <Badge
-                        variant={user.active ? "default" : "secondary"}
-                        className={cn(
-                          user.active
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-100"
-                        )}
-                      >
-                        {user.active
-                          ? tc("status.active")
-                          : tc("status.inactive")}
-                      </Badge>
-                    </div>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -192,6 +282,35 @@ export default function UsersPage() {
 
       <CreateUserDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
       <UpgradePlanModal open={isUpgradeOpen} onClose={() => setIsUpgradeOpen(false)} />
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteDialog.description", { name: deleteTarget?.name ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUser.isPending}>
+              {tc("buttons.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              disabled={deleteUser.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+            >
+              {deleteUser.isPending ? tc("buttons.deleting") : t("deleteDialog.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

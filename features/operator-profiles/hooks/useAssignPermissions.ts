@@ -10,6 +10,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { assignPermissions } from "../services/operator-profile.service";
 import { OPERATOR_PROFILES_KEYS } from "./query-keys";
 import { USER_PERMISSIONS_KEYS } from "@/features/user-permissions/hooks/query-keys";
@@ -24,6 +25,10 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 export function useAssignPermissions() {
   const queryClient = useQueryClient();
   const t = useTranslations("operatorProfiles");
+  // OPERATOR_PROFILES_KEYS.lists() está escalado por businessId — hay que
+  // pasar el mismo que resuelve useOperatorProfiles() o el optimistic
+  // update lee/escribe una key que no coincide con la cacheada.
+  const businessId = useEffectiveBusinessId();
 
   return useMutation({
     mutationFn: ({
@@ -41,7 +46,7 @@ export function useAssignPermissions() {
 
       // Guardar estado anterior para rollback
       const previousProfiles = queryClient.getQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists()
+        OPERATOR_PROFILES_KEYS.lists(businessId)
       );
       const previousProfile = queryClient.getQueryData<OperatorProfile>(
         OPERATOR_PROFILES_KEYS.detail(profileId)
@@ -57,8 +62,8 @@ export function useAssignPermissions() {
       );
 
       // Actualizar lista de perfiles
-      queryClient.setQueriesData<OperatorProfile[]>(
-        { queryKey: OPERATOR_PROFILES_KEYS.lists() },
+      queryClient.setQueryData<OperatorProfile[]>(
+        OPERATOR_PROFILES_KEYS.lists(businessId),
         (old: OperatorProfile[] | undefined) => {
           if (!old) return old;
           return old.map((profile) =>
@@ -85,7 +90,7 @@ export function useAssignPermissions() {
     onError: (err, { profileId }, context) => {
       if (context?.previousProfiles) {
         queryClient.setQueryData(
-          OPERATOR_PROFILES_KEYS.lists(),
+          OPERATOR_PROFILES_KEYS.lists(businessId),
           context.previousProfiles
         );
       }

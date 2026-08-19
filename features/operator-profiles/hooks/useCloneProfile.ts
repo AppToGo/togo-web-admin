@@ -10,6 +10,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { cloneOperatorProfile } from "../services/operator-profile.service";
 import { OPERATOR_PROFILES_KEYS } from "./query-keys";
 import type { CloneProfileRequest, OperatorProfile } from "../types";
@@ -23,6 +24,10 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 export function useCloneProfile() {
   const queryClient = useQueryClient();
   const t = useTranslations("operatorProfiles");
+  // OPERATOR_PROFILES_KEYS.lists() está escalado por businessId — hay que
+  // pasar el mismo que resuelve useOperatorProfiles() o el optimistic
+  // update lee/escribe una key que no coincide con la cacheada.
+  const businessId = useEffectiveBusinessId();
 
   return useMutation({
     mutationFn: ({
@@ -40,7 +45,7 @@ export function useCloneProfile() {
 
       // Guardar estado anterior para rollback
       const previousProfiles = queryClient.getQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists()
+        OPERATOR_PROFILES_KEYS.lists(businessId)
       );
 
       // Obtener el perfil original para copiar sus datos
@@ -61,7 +66,7 @@ export function useCloneProfile() {
 
       // Actualizar lista de perfiles
       queryClient.setQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists(),
+        OPERATOR_PROFILES_KEYS.lists(businessId),
         (old: OperatorProfile[] | undefined) => {
           if (!old) return [optimisticClonedProfile];
           return [...old, optimisticClonedProfile];
@@ -75,7 +80,7 @@ export function useCloneProfile() {
     onError: (err, _variables, context) => {
       if (context?.previousProfiles) {
         queryClient.setQueryData(
-          OPERATOR_PROFILES_KEYS.lists(),
+          OPERATOR_PROFILES_KEYS.lists(businessId),
           context.previousProfiles
         );
       }
@@ -90,9 +95,10 @@ export function useCloneProfile() {
       toast.success(t("cloneSuccess", { name: clonedProfile.name }));
     },
 
-    // Revalidar después de la mutación
+    // Revalidar después de la mutación — prefijo completo, ver comentario
+    // en useCreateProfile.
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.all });
     },
   });
 }

@@ -10,6 +10,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { deleteOperatorProfile } from "../services/operator-profile.service";
 import { OPERATOR_PROFILES_KEYS } from "./query-keys";
 import type { OperatorProfile } from "../types";
@@ -23,6 +24,10 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 export function useDeleteProfile() {
   const queryClient = useQueryClient();
   const t = useTranslations("operatorProfiles");
+  // OPERATOR_PROFILES_KEYS.lists() está escalado por businessId — hay que
+  // pasar el mismo que resuelve useOperatorProfiles() o el optimistic
+  // update lee/escribe una key que no coincide con la cacheada.
+  const businessId = useEffectiveBusinessId();
 
   return useMutation({
     mutationFn: (profileId: string) => deleteOperatorProfile(profileId),
@@ -34,7 +39,7 @@ export function useDeleteProfile() {
 
       // Guardar estado anterior para rollback
       const previousProfiles = queryClient.getQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists()
+        OPERATOR_PROFILES_KEYS.lists(businessId)
       );
       const deletedProfile = queryClient.getQueryData<OperatorProfile>(
         OPERATOR_PROFILES_KEYS.detail(profileId)
@@ -42,7 +47,7 @@ export function useDeleteProfile() {
 
       // Eliminar perfil de la lista
       queryClient.setQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists(),
+        OPERATOR_PROFILES_KEYS.lists(businessId),
         (old: OperatorProfile[] | undefined) => {
           if (!old) return old;
           return old.filter((profile) => profile.id !== profileId);
@@ -59,7 +64,7 @@ export function useDeleteProfile() {
     onError: (err, profileId, context) => {
       if (context?.previousProfiles) {
         queryClient.setQueryData(
-          OPERATOR_PROFILES_KEYS.lists(),
+          OPERATOR_PROFILES_KEYS.lists(businessId),
           context.previousProfiles
         );
       }
@@ -80,9 +85,10 @@ export function useDeleteProfile() {
       toast.success(t("deleteSuccess"));
     },
 
-    // Revalidar después de la mutación
+    // Revalidar después de la mutación — prefijo completo, ver comentario
+    // en useCreateProfile.
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.all });
     },
   });
 }

@@ -37,6 +37,17 @@ export const PHONE_COUNTRIES: CountryOption[] = [
   { code: "+1", iso: "US", name: "Estados Unidos", flag: "🇺🇸", placeholder: "300 123 4567" },
 ];
 
+/**
+ * Valida un número en formato E.164 con indicativo sudamericano —
+ * alineado a api-togo/src/user/dto/create-user.dto.ts. Única fuente de
+ * verdad: antes estaba copiado igual en CreateUserDialog y en la página
+ * de detalle de usuario, con riesgo de que un cambio futuro (agregar un
+ * indicativo, endurecer el formato) se aplicara en un solo lugar y
+ * dejara creación y edición validando distinto.
+ */
+export const PHONE_REGEX =
+  /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
+
 export function parsePhoneValue(value: string): { countryCode: string; nationalNumber: string } {
   const raw = (value || "").trim().replace(/\s|-/g, "");
   if (!raw) return { countryCode: "+57", nationalNumber: "" };

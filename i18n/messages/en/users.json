@@ -18,9 +18,14 @@
     "description": "User details",
     "fields": {
       "name": "Name",
+      "phoneNumber": "Phone",
       "email": "Email",
       "role": "Role",
       "status": "Status"
+    },
+    "updateSuccess": "User updated successfully",
+    "errors": {
+      "emailCannotBeCleared": "You can't leave the email empty once it's set"
     }
   },
   "permissions": {
@@ -49,7 +54,19 @@
   },
   "list": {
     "title": "User List",
-    "description": "Manage users who have access to your business"
+    "description": "Manage users who have access to your business",
+    "actions": {
+      "edit": "Edit user",
+      "delete": "Delete user",
+      "deleteSelfDisabled": "You can't delete your own user",
+      "activate": "Reactivate user"
+    }
+  },
+  "deleteDialog": {
+    "title": "Delete user",
+    "description": "Are you sure you want to delete \"{name}\"? Their account will be deactivated and they won't be able to sign in.",
+    "confirm": "Delete",
+    "success": "User deleted successfully"
   },
   "empty": {
     "title": "No users",
@@ -104,6 +121,8 @@
     "loadFailed": "Error loading user",
     "updateFailed": "Error updating user",
     "deleteFailed": "Error deleting user",
-    "createFailed": "Error creating user"
-  }
+    "createFailed": "Error creating user",
+    "activateFailed": "Error activating user"
+  },
+  "activateSuccess": "User activated successfully"
 }
