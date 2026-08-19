@@ -116,7 +116,7 @@ export default function CreateProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
@@ -134,7 +134,7 @@ export default function CreateProfilePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -145,7 +145,7 @@ export default function CreateProfilePage() {
               <CardDescription>{t("form.descriptions.basic")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-md">
                 <Label htmlFor="profile-name">
                   {t("form.fields.name")} <span className="text-red-500">*</span>
                 </Label>
