@@ -6,7 +6,7 @@
  */
 
 import apiClient from "@/services/api.service";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { getEffectiveBusinessId } from "@/features/business/stores/business.store";
 import type {
   OperatorProfile,
   PermissionCatalog,
@@ -17,18 +17,10 @@ import type {
 } from "../types";
 
 /**
- * Obtener el businessId del usuario autenticado
- */
-function getBusinessId(): string | null {
-  const { user } = useAuthStore.getState();
-  return user?.businessId ?? null;
-}
-
-/**
  * Obtener todos los perfiles de operadores del negocio actual
  */
 export async function getOperatorProfiles(): Promise<OperatorProfile[]> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.get<OperatorProfile[]>(
     `/businesses/${businessId}/operator-profiles`
@@ -40,7 +32,7 @@ export async function getOperatorProfiles(): Promise<OperatorProfile[]> {
  * Obtener un perfil de operador específico por ID
  */
 export async function getOperatorProfileById(id: string): Promise<OperatorProfile> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.get<OperatorProfile>(
     `/businesses/${businessId}/operator-profiles/${id}`
@@ -54,7 +46,7 @@ export async function getOperatorProfileById(id: string): Promise<OperatorProfil
 export async function createOperatorProfile(
   request: CreateProfileRequest
 ): Promise<OperatorProfile> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.post<OperatorProfile>(
     `/businesses/${businessId}/operator-profiles`,
@@ -70,7 +62,7 @@ export async function updateOperatorProfile(
   id: string,
   request: UpdateProfileRequest
 ): Promise<OperatorProfile> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.put<OperatorProfile>(
     `/businesses/${businessId}/operator-profiles/${id}`,
@@ -83,7 +75,7 @@ export async function updateOperatorProfile(
  * Eliminar un perfil de operador
  */
 export async function deleteOperatorProfile(id: string): Promise<void> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   await apiClient.delete(`/businesses/${businessId}/operator-profiles/${id}`);
 }
@@ -95,7 +87,7 @@ export async function cloneOperatorProfile(
   id: string,
   request: CloneProfileRequest
 ): Promise<OperatorProfile> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.post<OperatorProfile>(
     `/businesses/${businessId}/operator-profiles/${id}/clone`,
@@ -111,7 +103,7 @@ export async function assignPermissions(
   id: string,
   request: AssignPermissionsRequest
 ): Promise<OperatorProfile> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.put<OperatorProfile>(
     `/businesses/${businessId}/operator-profiles/${id}/permissions`,
@@ -124,7 +116,7 @@ export async function assignPermissions(
  * Obtener el catálogo de permisos disponibles
  */
 export async function getPermissionCatalog(): Promise<PermissionCatalog[]> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.get<PermissionCatalog[]>(
     `/businesses/${businessId}/operator-profiles/catalog/permissions`

@@ -10,6 +10,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { updateOperatorProfile } from "../services/operator-profile.service";
 import { OPERATOR_PROFILES_KEYS } from "./query-keys";
 import type { UpdateProfileRequest, OperatorProfile } from "../types";
@@ -23,6 +24,10 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   const t = useTranslations("operatorProfiles");
+  // OPERATOR_PROFILES_KEYS.lists() está escalado por businessId — hay que
+  // pasar el mismo que resuelve useOperatorProfiles() o el optimistic
+  // update lee/escribe una key que no coincide con la cacheada.
+  const businessId = useEffectiveBusinessId();
 
   return useMutation({
     mutationFn: ({
@@ -40,15 +45,15 @@ export function useUpdateProfile() {
 
       // Guardar estado anterior para rollback
       const previousProfiles = queryClient.getQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists()
+        OPERATOR_PROFILES_KEYS.lists(businessId)
       );
       const previousProfile = queryClient.getQueryData<OperatorProfile>(
         OPERATOR_PROFILES_KEYS.detail(profileId)
       );
 
       // Actualizar lista de perfiles
-      queryClient.setQueriesData<OperatorProfile[]>(
-        { queryKey: OPERATOR_PROFILES_KEYS.lists() },
+      queryClient.setQueryData<OperatorProfile[]>(
+        OPERATOR_PROFILES_KEYS.lists(businessId),
         (old: OperatorProfile[] | undefined) => {
           if (!old) return old;
           return old.map((profile) =>
@@ -73,7 +78,7 @@ export function useUpdateProfile() {
     onError: (err, { profileId }, context) => {
       if (context?.previousProfiles) {
         queryClient.setQueryData(
-          OPERATOR_PROFILES_KEYS.lists(),
+          OPERATOR_PROFILES_KEYS.lists(businessId),
           context.previousProfiles
         );
       }
@@ -94,9 +99,10 @@ export function useUpdateProfile() {
       toast.success(t("updateSuccess", { name: updatedProfile.name }));
     },
 
-    // Revalidar después de la mutación
+    // Revalidar después de la mutación — prefijo completo, ver comentario
+    // en useCreateProfile.
     onSettled: (_data, _error, { profileId }) => {
-      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.all });
       queryClient.invalidateQueries({
         queryKey: OPERATOR_PROFILES_KEYS.detail(profileId),
       });

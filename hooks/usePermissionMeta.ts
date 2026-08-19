@@ -18,6 +18,10 @@ interface PermissionCatalogMessages {
   [key: string]: { label?: string; description?: string } | undefined;
 }
 
+interface OperatorProfilesMessages {
+  domains?: Record<string, string>;
+}
+
 /**
  * Shared permission-catalog metadata for the operator-profile permission
  * selector and the read-only user permissions view.
@@ -43,14 +47,19 @@ export function usePermissionMeta() {
       ?.description ?? "";
 
   const getMeta = useCallback(
-    (code: string, fallbackLabel?: string): PermissionMeta => {
+    // `fallback` is used for BOTH label and description when the code has
+    // no curated i18n entry yet (e.g. the API's permission catalog added a
+    // code before permissionCatalog.json was updated) — without this, a
+    // missing entry silently rendered an empty description paragraph
+    // instead of degrading to whatever text the caller has on hand.
+    (code: string, fallback?: string): PermissionMeta => {
       const entry = catalog[permissionI18nKey(code)];
       const nonOperational = isNonOperational(code);
       return {
-        label: entry?.label ?? fallbackLabel ?? code,
+        label: entry?.label ?? fallback ?? code,
         description: nonOperational
           ? nonOperationalDescription
-          : (entry?.description ?? ""),
+          : (entry?.description ?? fallback ?? ""),
         isNonOperational: nonOperational,
       };
     },
@@ -63,8 +72,26 @@ export function usePermissionMeta() {
     [isSuperAdmin]
   );
 
+  // Raw lookup (not t()) for the same reason as `catalog` above: an
+  // untranslated domain must fall back to its raw code instead of
+  // throwing. Was duplicated verbatim in PermissionSelector and
+  // UserPermissionView before being centralized here.
+  const domainMessages = (
+    messages?.operatorProfiles as OperatorProfilesMessages | undefined
+  )?.domains;
+  const getDomainLabel = useCallback(
+    (domain: string) => domainMessages?.[domain] ?? domain,
+    [domainMessages]
+  );
+
   return useMemo(
-    () => ({ isSuperAdmin, getMeta, isVisible, nonOperationalBadge }),
-    [isSuperAdmin, getMeta, isVisible, nonOperationalBadge]
+    () => ({
+      isSuperAdmin,
+      getMeta,
+      isVisible,
+      nonOperationalBadge,
+      getDomainLabel,
+    }),
+    [isSuperAdmin, getMeta, isVisible, nonOperationalBadge, getDomainLabel]
   );
 }

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
-import {
-  useHasBusiness,
-  useIsSuperAdmin,
-  useAuthStore,
-} from "@/features/auth/stores/auth.store";
+import { useHasBusiness, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -29,11 +29,12 @@ import {
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, User, Shield, Building2 } from "lucide-react";
+import { ArrowLeft, User, Shield, Building2, Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import apiClient from "@/services/api.service";
+import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
 // Features
 import {
@@ -43,47 +44,14 @@ import {
   USER_PERMISSIONS_KEYS,
 } from "@/features/user-permissions";
 import { useOperatorProfiles } from "@/features/operator-profiles";
-
-/**
- * User type for user details
- */
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-/**
- * Hook to fetch user details from the backend
- */
-function useUser(userId: string | null) {
-  const { user: currentUser } = useAuthStore();
-  const businessId = currentUser?.businessId;
-
-  return useQuery({
-    queryKey: ["users", businessId, userId],
-    queryFn: async () => {
-      if (!businessId || !userId) return null;
-      const { data } = await apiClient.get<User>(
-        `/businesses/${businessId}/users/${userId}`
-      );
-      return data;
-    },
-    enabled: !!businessId && !!userId,
-  });
-}
+import { useUser, useUpdateUser } from "@/features/users";
 
 /**
  * Hook to assign operator profile to user
  */
 function useAssignOperatorProfile() {
   const queryClient = useQueryClient();
-  const { user: currentUser } = useAuthStore();
-  const businessId = currentUser?.businessId;
+  const businessId = useEffectiveBusinessId();
   const t = useTranslations("userPermissions");
 
   return useMutation({
@@ -105,7 +73,7 @@ function useAssignOperatorProfile() {
     },
     onSuccess: (_, variables) => {
       // Invalidate user data and permissions
-      queryClient.invalidateQueries({ queryKey: ["users", businessId] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({
         queryKey: USER_PERMISSIONS_KEYS.permissions(variables.userId),
       });
@@ -141,18 +109,102 @@ export default function UserDetailPage() {
   const { data: profiles, isLoading: isLoadingProfiles } =
     useOperatorProfiles();
   const assignProfile = useAssignOperatorProfile();
+  const updateUser = useUpdateUser();
 
-  // Set initial selected profile when permissions load
-  useEffect(() => {
-    if (permissions?.operatorProfile?.id) {
-      setSelectedProfileId(permissions.operatorProfile.id);
-    } else {
-      setSelectedProfileId("none");
+  // Seed the selected profile from the loaded permissions. Adjusted during
+  // render (React's recommended pattern for "derive state from a prop that
+  // just changed") instead of a useEffect + setState, which would cause an
+  // extra cascading render on every permissions refetch.
+  const loadedProfileId = permissions?.operatorProfile?.id ?? "none";
+  const [trackedProfileId, setTrackedProfileId] = useState(loadedProfileId);
+  if (loadedProfileId !== trackedProfileId) {
+    setTrackedProfileId(loadedProfileId);
+    setSelectedProfileId(loadedProfileId);
+  }
+
+  // Edit mode for the General tab
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    phoneNumber: "",
+    email: "",
+    active: true,
+  });
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+
+  const startEditing = () => {
+    if (!user) return;
+    setEditForm({
+      name: user.name,
+      phoneNumber: user.phoneNumber ?? "",
+      email: user.email ?? "",
+      active: user.active,
+    });
+    setEditErrors({});
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditErrors({});
+  };
+
+  const validateEditForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    const name = editForm.name.trim();
+    const phone = editForm.phoneNumber.trim().replace(/[\s-]/g, "");
+    const email = editForm.email.trim();
+
+    if (!name) errors.name = t("createDialog.errors.nameRequired");
+    else if (name.length < 2) errors.name = t("createDialog.errors.nameTooShort");
+    else if (name.length > 100) errors.name = t("createDialog.errors.nameTooLong");
+
+    if (!phone) errors.phoneNumber = t("createDialog.errors.phoneRequired");
+    else if (!PHONE_REGEX.test(phone))
+      errors.phoneNumber = t("createDialog.errors.phoneInvalid");
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = t("createDialog.errors.emailInvalid");
+    } else if (!email && user?.email) {
+      // El backend valida `email` con @IsEmail() y no distingue "no lo toques"
+      // de "bórralo" — un PATCH con email: "" es rechazado, y omitir el campo
+      // deja el correo actual intacto sin avisar. Mejor bloquear acá con un
+      // mensaje claro que dejar que el usuario crea que lo vació.
+      errors.email = t("general.errors.emailCannotBeCleared");
     }
-  }, [permissions]);
+
+    setEditErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSaveEdit = () => {
+    if (!validateEditForm()) return;
+    updateUser.mutate(
+      {
+        id,
+        data: {
+          name: editForm.name.trim(),
+          phoneNumber: editForm.phoneNumber.trim().replace(/[\s-]/g, ""),
+          email: editForm.email.trim() || undefined,
+          active: editForm.active,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success(t("general.updateSuccess"));
+          setIsEditing(false);
+        },
+        onError: (err) => {
+          const message =
+            getHumanizedErrorMessage(err) || t("errors.updateFailed");
+          toast.error(message);
+        },
+      }
+    );
+  };
 
   const handleBack = () => {
-    router.push("/dashboard/settings");
+    router.push("/dashboard/settings/users");
   };
 
   const handleAssignProfile = () => {
@@ -242,20 +294,23 @@ export default function UserDetailPage() {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-slate-900">{user.name}</h1>
               <Badge
-                variant={user.isActive ? "default" : "secondary"}
+                variant={user.active ? "default" : "secondary"}
                 className={cn(
-                  user.isActive
+                  user.active
                     ? "bg-green-100 text-green-700 hover:bg-green-100"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-100"
                 )}
               >
-                {user.isActive ? tc("status.active") : tc("status.inactive")}
+                {user.active ? tc("status.active") : tc("status.inactive")}
               </Badge>
               <Badge variant="outline" className={getRoleBadgeColor(user.role)}>
                 {t(`roles.${user.role}`)}
               </Badge>
             </div>
-            <p className="text-slate-500 text-sm">{user.email}</p>
+            <p className="text-slate-500 text-sm">
+              {user.phoneNumber}
+              {user.email ? ` · ${user.email}` : ""}
+            </p>
           </div>
         </div>
 
@@ -295,40 +350,135 @@ export default function UserDetailPage() {
           <TabsContent value="general" className="space-y-6">
             <Card variant="glass">
               <CardHeader>
-                <CardTitle>{t("general.title")}</CardTitle>
-                <CardDescription>{t("general.description")}</CardDescription>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <CardTitle>{t("general.title")}</CardTitle>
+                    <CardDescription>{t("general.description")}</CardDescription>
+                  </div>
+                  {!isEditing && (
+                    <Button variant="outline" size="sm" onClick={startEditing}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      {tc("buttons.edit")}
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Input
-                    label={t("general.fields.name")}
-                    value={user.name}
-                    readOnly
-                    className="bg-white/60"
-                  />
-                  <Input
-                    label={t("general.fields.email")}
-                    value={user.email}
-                    readOnly
-                    className="bg-white/60"
-                  />
-                  <Input
-                    label={t("general.fields.role")}
-                    value={t(`roles.${user.role}`)}
-                    readOnly
-                    className="bg-white/60"
-                  />
-                  <Input
-                    label={tc("fields.created")}
-                    value={new Date(user.createdAt).toLocaleDateString(locale, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                    readOnly
-                    className="bg-white/60"
-                  />
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        label={t("general.fields.name")}
+                        value={editForm.name}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                        }
+                        error={editErrors.name}
+                        maxLength={100}
+                        disabled={updateUser.isPending}
+                      />
+                      <PhoneInput
+                        label={t("general.fields.phoneNumber")}
+                        value={editForm.phoneNumber}
+                        onChange={(v) =>
+                          setEditForm((prev) => ({ ...prev, phoneNumber: v }))
+                        }
+                        error={editErrors.phoneNumber}
+                        disabled={updateUser.isPending}
+                      />
+                      <Input
+                        label={t("general.fields.email")}
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({ ...prev, email: e.target.value }))
+                        }
+                        error={editErrors.email}
+                        disabled={updateUser.isPending}
+                      />
+                      <Input
+                        label={t("general.fields.role")}
+                        value={t(`roles.${user.role}`)}
+                        readOnly
+                        className="bg-white/60"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 pt-2">
+                      <Switch
+                        id="user-active"
+                        checked={editForm.active}
+                        onCheckedChange={(checked) =>
+                          setEditForm((prev) => ({ ...prev, active: checked }))
+                        }
+                        disabled={updateUser.isPending}
+                      />
+                      <Label htmlFor="user-active" className="cursor-pointer">
+                        {editForm.active ? tc("status.active") : tc("status.inactive")}
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-3 pt-2">
+                      <Button
+                        onClick={handleSaveEdit}
+                        disabled={updateUser.isPending}
+                        isLoading={updateUser.isPending}
+                      >
+                        {updateUser.isPending
+                          ? tc("buttons.saving")
+                          : tc("buttons.saveChanges")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={cancelEditing}
+                        disabled={updateUser.isPending}
+                      >
+                        {tc("buttons.cancel")}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Input
+                      label={t("general.fields.name")}
+                      value={user.name}
+                      readOnly
+                      className="bg-white/60"
+                    />
+                    <Input
+                      label={t("general.fields.phoneNumber")}
+                      value={user.phoneNumber}
+                      readOnly
+                      className="bg-white/60"
+                    />
+                    <Input
+                      label={t("general.fields.email")}
+                      value={user.email ?? "—"}
+                      readOnly
+                      className="bg-white/60"
+                    />
+                    <Input
+                      label={t("general.fields.role")}
+                      value={t(`roles.${user.role}`)}
+                      readOnly
+                      className="bg-white/60"
+                    />
+                    <Input
+                      label={t("general.fields.status")}
+                      value={user.active ? tc("status.active") : tc("status.inactive")}
+                      readOnly
+                      className="bg-white/60"
+                    />
+                    <Input
+                      label={tc("fields.created")}
+                      value={new Date(user.createdAt).toLocaleDateString(locale, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                      readOnly
+                      className="bg-white/60"
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

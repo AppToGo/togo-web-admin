@@ -6,20 +6,12 @@
  */
 
 import apiClient from "@/services/api.service";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { getEffectiveBusinessId } from "@/features/business/stores/business.store";
 import type {
   UserPermissions,
   UserBranchAssignment,
   AssignToBranchRequest,
 } from "../types";
-
-/**
- * Obtener el businessId del usuario autenticado
- */
-function getBusinessId(): string | null {
-  const { user } = useAuthStore.getState();
-  return user?.businessId ?? null;
-}
 
 /**
  * Obtener los permisos computados de un usuario específico
@@ -28,7 +20,7 @@ function getBusinessId(): string | null {
  * @returns Permisos del usuario incluyendo rol y perfil de operador
  */
 export async function getUserPermissions(userId: string): Promise<UserPermissions> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.get<UserPermissions>(
     `/businesses/${businessId}/users/${userId}/permissions`
@@ -43,7 +35,7 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
  * @returns Lista de asignaciones a sucursales
  */
 export async function getUserBranchAssignments(userId: string): Promise<UserBranchAssignment[]> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.get<UserBranchAssignment[]>(
     `/businesses/${businessId}/users/${userId}/branch-assignments`
@@ -62,7 +54,7 @@ export async function assignToBranch(
   userId: string,
   request: AssignToBranchRequest
 ): Promise<UserBranchAssignment> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   const { data } = await apiClient.post<UserBranchAssignment>(
     `/businesses/${businessId}/users/${userId}/branch-assignments`,
@@ -78,7 +70,7 @@ export async function assignToBranch(
  * @param branchId - ID de la sucursal
  */
 export async function removeFromBranch(userId: string, branchId: string): Promise<void> {
-  const businessId = getBusinessId();
+  const businessId = getEffectiveBusinessId();
   if (!businessId) throw new Error("Se requiere businessId");
   await apiClient.delete(
     `/businesses/${businessId}/users/${userId}/branch-assignments/${branchId}`

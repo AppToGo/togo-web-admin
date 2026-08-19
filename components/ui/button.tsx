@@ -60,6 +60,16 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, isLoading, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    // Radix's Slot requires its rendered child to be exactly one React
+    // element (it calls React.Children.only internally to merge props
+    // like className/ref onto it). Passing `{isLoading && <Loader2 />}`
+    // and `{children}` as two separate JSX expressions — even when the
+    // first evaluates to `false`/`undefined` — still produces a
+    // two-item children array, which crashes any `asChild` usage with
+    // "React.Children.only expected to receive a single React element
+    // child". When asChild is set we hand Slot the caller's single
+    // child untouched; the loading spinner only makes sense for our
+    // own <button> element, where an extra Fragment child is fine.
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
@@ -67,8 +77,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || isLoading}
         {...props}
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {children}
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {children}
+          </>
+        )}
       </Comp>
     )
   }
