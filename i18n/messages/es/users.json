@@ -23,7 +23,10 @@
       "role": "Rol",
       "status": "Estado"
     },
-    "updateSuccess": "Usuario actualizado exitosamente"
+    "updateSuccess": "Usuario actualizado exitosamente",
+    "errors": {
+      "emailCannotBeCleared": "No puedes dejar el correo vacío una vez asignado"
+    }
   },
   "permissions": {
     "title": "Permisos",

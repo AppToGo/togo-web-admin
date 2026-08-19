@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
 import {
   Dialog,
   DialogContent,
@@ -33,9 +33,6 @@ interface CreateUserDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
 }
-
-const PHONE_REGEX =
-  /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
 
 export function CreateUserDialog({
   open,

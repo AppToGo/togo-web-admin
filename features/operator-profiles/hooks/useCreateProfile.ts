@@ -10,6 +10,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { createOperatorProfile } from "../services/operator-profile.service";
 import { OPERATOR_PROFILES_KEYS } from "./query-keys";
 import type { CreateProfileRequest, OperatorProfile } from "../types";
@@ -23,6 +24,10 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 export function useCreateProfile() {
   const queryClient = useQueryClient();
   const t = useTranslations("operatorProfiles");
+  // OPERATOR_PROFILES_KEYS.lists() está escalado por businessId — hay que
+  // pasar el mismo que resuelve useOperatorProfiles() o el optimistic
+  // update lee/escribe una key que no coincide con la cacheada.
+  const businessId = useEffectiveBusinessId();
 
   return useMutation({
     mutationFn: (data: CreateProfileRequest) => createOperatorProfile(data),
@@ -34,7 +39,7 @@ export function useCreateProfile() {
 
       // Guardar estado anterior para rollback
       const previousProfiles = queryClient.getQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists()
+        OPERATOR_PROFILES_KEYS.lists(businessId)
       );
 
       // Crear perfil temporal optimista
@@ -50,7 +55,7 @@ export function useCreateProfile() {
 
       // Actualizar lista de perfiles
       queryClient.setQueryData<OperatorProfile[]>(
-        OPERATOR_PROFILES_KEYS.lists(),
+        OPERATOR_PROFILES_KEYS.lists(businessId),
         (old: OperatorProfile[] | undefined) => {
           if (!old) return [optimisticProfile];
           return [...old, optimisticProfile];
@@ -64,7 +69,7 @@ export function useCreateProfile() {
     onError: (err, _variables, context) => {
       if (context?.previousProfiles) {
         queryClient.setQueryData(
-          OPERATOR_PROFILES_KEYS.lists(),
+          OPERATOR_PROFILES_KEYS.lists(businessId),
           context.previousProfiles
         );
       }
@@ -79,10 +84,11 @@ export function useCreateProfile() {
       toast.success(t("createSuccess", { name: newProfile.name }));
     },
 
-    // Revalidar después de la mutación
+    // Revalidar después de la mutación — se invalida el prefijo completo
+    // (todas las variantes de lists/catalog/detail, sin importar el
+    // businessId) en vez de la key exacta, para no dejar cache obsoleta
+    // si el usuario cambió de negocio entre el optimistic update y acá.
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.lists() });
-      // Also invalidate any detail queries that might exist
       queryClient.invalidateQueries({ queryKey: OPERATOR_PROFILES_KEYS.all });
     },
   });

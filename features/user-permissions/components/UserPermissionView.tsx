@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { useTranslations, useMessages } from "next-intl";
+import { useTranslations } from "next-intl";
 import {
   Shield,
   UserCircle,
@@ -37,15 +37,8 @@ export const UserPermissionView = memo(function UserPermissionView({
   isLoading = false,
 }: UserPermissionViewProps) {
   const t = useTranslations("userPermissions");
-  const messages = useMessages();
-  const { isSuperAdmin, getMeta, isVisible, nonOperationalBadge } =
+  const { isSuperAdmin, getMeta, isVisible, nonOperationalBadge, getDomainLabel } =
     usePermissionMeta();
-
-  const domainMessages = (messages?.operatorProfiles as
-    | { domains?: Record<string, string> }
-    | undefined
-  )?.domains;
-  const getDomainLabel = (domain: string) => domainMessages?.[domain] ?? domain;
 
   // Permission codes use dots ("order.view"), not colons. Non-operational
   // permissions (not wired to any backend enforcement) are hidden from

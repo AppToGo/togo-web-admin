@@ -9,7 +9,7 @@ import { useHasBusiness, useIsSuperAdmin } from "@/features/auth/stores/auth.sto
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -45,9 +45,6 @@ import {
 } from "@/features/user-permissions";
 import { useOperatorProfiles } from "@/features/operator-profiles";
 import { useUser, useUpdateUser } from "@/features/users";
-
-const PHONE_REGEX =
-  /^\+?(54|591|55|56|57|593|594|592|595|51|597|598|58|1)\d{7,11}$/;
 
 /**
  * Hook to assign operator profile to user
@@ -168,6 +165,12 @@ export default function UserDetailPage() {
 
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errors.email = t("createDialog.errors.emailInvalid");
+    } else if (!email && user?.email) {
+      // El backend valida `email` con @IsEmail() y no distingue "no lo toques"
+      // de "bórralo" — un PATCH con email: "" es rechazado, y omitir el campo
+      // deja el correo actual intacto sin avisar. Mejor bloquear acá con un
+      // mensaje claro que dejar que el usuario crea que lo vació.
+      errors.email = t("general.errors.emailCannotBeCleared");
     }
 
     setEditErrors(errors);
