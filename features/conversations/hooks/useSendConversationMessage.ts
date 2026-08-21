@@ -26,10 +26,15 @@ import type { ConversationDetail, ConversationMessage } from "../types";
  *   se marca `FAILED` con el error, igual que hace WhatsApp Web con un
  *   mensaje que no salió (el usuario decide si reintenta, no desaparece).
  *
- * Dedup con el evento de realtime: éste reemplaza el mensaje temporal por
- * el DTO real en `onSuccess`; si el evento de WebSocket llega primero,
- * `useConversationsRealtime` ya lo dedupea por `waMessageId` (que el
- * temporal nunca tiene, así que no colisiona).
+ * Dedup con el evento de realtime: el mensaje temporal (`waMessageId:
+ * null`) nunca matchea el dedup por `waMessageId` que hace
+ * `useConversationsRealtime` — a propósito, para no pisar el placeholder
+ * con datos parciales del evento — pero eso significa que si el WS gana
+ * la carrera contra la respuesta HTTP, el mensaje real llega primero como
+ * una fila NUEVA (appendeada al final), y el temporal sigue vivo hasta
+ * que este `onSuccess` corre. `onSuccess` filtra cualquier fila con el
+ * mismo `id` que el DTO real antes de reemplazar el temporal por él, para
+ * no dejar la respuesta duplicada en pantalla cuando el WS llegó primero.
  */
 export function useSendConversationMessage(sessionId: string) {
   const queryClient = useQueryClient();
@@ -114,7 +119,12 @@ export function useSendConversationMessage(sessionId: string) {
         if (!old) return old;
         return {
           ...old,
-          messages: old.messages.map((m) => (m.id === context.tempId ? result : m)),
+          // Si el evento de WebSocket ya appendeó este mensaje real (ver
+          // comentario del hook), sacarlo antes de reemplazar el temporal
+          // evita que quede duplicado en pantalla.
+          messages: old.messages
+            .filter((m) => m.id !== result.id)
+            .map((m) => (m.id === context.tempId ? result : m)),
         };
       });
     },
