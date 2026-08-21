@@ -82,6 +82,11 @@
     "SESSION_REOPENED": "Conversación reabierta",
     "NOTE_ADDED": "Nota de {actor}",
     "ASSIGNED": "Asignada a {actor}",
-    "UNASSIGNED": "Desasignada"
+    "UNASSIGNED": "Desasignada",
+    "RELAY_STARTED": "{actor} empezó a atender por WhatsApp directo",
+    "RELAY_ENDED": "Terminó la atención por WhatsApp directo",
+    "RELAY_AMBIGUOUS": "El operador tiene más de una conversación activa por WhatsApp directo",
+    "RELAY_WINDOW_EXPIRED": "Se venció la ventana de WhatsApp para responder",
+    "OUTBOUND_BLOCKED_WINDOW": "No se pudo enviar: la ventana de WhatsApp ya venció"
   }
 }

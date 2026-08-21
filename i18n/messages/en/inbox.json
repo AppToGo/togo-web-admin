@@ -82,6 +82,11 @@
     "SESSION_REOPENED": "Conversation reopened",
     "NOTE_ADDED": "Note by {actor}",
     "ASSIGNED": "Assigned to {actor}",
-    "UNASSIGNED": "Unassigned"
+    "UNASSIGNED": "Unassigned",
+    "RELAY_STARTED": "{actor} started replying via direct WhatsApp",
+    "RELAY_ENDED": "Direct WhatsApp reply ended",
+    "RELAY_AMBIGUOUS": "The operator has more than one active direct WhatsApp conversation",
+    "RELAY_WINDOW_EXPIRED": "The WhatsApp reply window expired",
+    "OUTBOUND_BLOCKED_WINDOW": "Couldn't send: the WhatsApp window already expired"
   }
 }
