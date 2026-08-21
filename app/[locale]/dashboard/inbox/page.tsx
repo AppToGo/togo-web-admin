@@ -134,6 +134,14 @@ export default function InboxPage() {
               "flex items-center gap-1.5 text-xs font-medium",
               isConnected ? "text-emerald-600" : "text-amber-600"
             )}
+            // Este indicador es sobre el socket del navegador con el
+            // backend de TOGO (para que los mensajes/estados nuevos
+            // aparezcan sin refrescar) — NO sobre si el negocio tiene un
+            // número de WhatsApp Business conectado. El texto y el title
+            // lo dejan explícito para no confundir a un negocio sin
+            // WhatsApp conectado, que vería "Conectado" y asumiría que se
+            // refiere a su WhatsApp.
+            title={t("connection.tooltip")}
           >
             {isConnected ? (
               <Wifi className="h-3.5 w-3.5" />
