@@ -12,6 +12,11 @@ const EVENTS_WITH_ACTOR = new Set([
   "HANDOFF_RELEASED",
   "NOTE_ADDED",
   "ASSIGNED",
+  // RELAY_STARTED siempre trae operatorUserId (ver
+  // RelayLifecycleService.start en api-togo) — a diferencia de
+  // RELAY_ENDED, cuyo actor puede venir null según el camino que lo
+  // dispare, así que ese no entra acá.
+  "RELAY_STARTED",
 ]);
 
 export function ConversationEventRow({ event }: ConversationEventRowProps) {
