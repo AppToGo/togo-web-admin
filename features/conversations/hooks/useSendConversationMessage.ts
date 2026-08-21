@@ -26,15 +26,25 @@ import type { ConversationDetail, ConversationMessage } from "../types";
  *   se marca `FAILED` con el error, igual que hace WhatsApp Web con un
  *   mensaje que no salió (el usuario decide si reintenta, no desaparece).
  *
- * Dedup con el evento de realtime: el mensaje temporal (`waMessageId:
- * null`) nunca matchea el dedup por `waMessageId` que hace
- * `useConversationsRealtime` — a propósito, para no pisar el placeholder
- * con datos parciales del evento — pero eso significa que si el WS gana
- * la carrera contra la respuesta HTTP, el mensaje real llega primero como
- * una fila NUEVA (appendeada al final), y el temporal sigue vivo hasta
- * que este `onSuccess` corre. `onSuccess` filtra cualquier fila con el
- * mismo `id` que el DTO real antes de reemplazar el temporal por él, para
- * no dejar la respuesta duplicada en pantalla cuando el WS llegó primero.
+ * Dedup con el evento de realtime, por `waMessageId` — NUNCA por `id`.
+ * El backend devuelve este 201 sin esperar la fila persistida
+ * (`PersistingMessageAdapter.capture` es fire-and-forget, ver
+ * `ConversationInboxService.sendMessage`), así que `result.id` es un
+ * `randomUUID()` sintetizado en el momento que jamás coincide con el id
+ * real que el job asíncrono le asigna a la fila en la base — el único
+ * campo que sí es el mismo de un lado y del otro es `waMessageId` (el ID
+ * que WhatsApp asigna al enviar, disponible en la respuesta síncrona del
+ * provider).
+ *
+ * Por eso, si el WS gana la carrera contra la respuesta HTTP, el mensaje
+ * real llega primero como una fila NUEVA (appendeada al final, ya que el
+ * placeholder todavía tiene `waMessageId: null` y no matchea nada), y el
+ * placeholder sigue vivo hasta que este `onSuccess` corre. `onSuccess`
+ * filtra cualquier fila que ya comparta el `waMessageId` real (la que el
+ * WS ya insertó) antes de reemplazar el placeholder por el DTO
+ * sintetizado — sin este filtro por `waMessageId` (filtrar por `id` no
+ * sirve, ver arriba) quedaban dos filas con el mismo `waMessageId` y
+ * distinto `id` en pantalla.
  */
 export function useSendConversationMessage(sessionId: string) {
   const queryClient = useQueryClient();
@@ -117,15 +127,18 @@ export function useSendConversationMessage(sessionId: string) {
       if (!context) return;
       queryClient.setQueryData<ConversationDetail>(context.key, (old) => {
         if (!old) return old;
-        return {
-          ...old,
-          // Si el evento de WebSocket ya appendeó este mensaje real (ver
-          // comentario del hook), sacarlo antes de reemplazar el temporal
-          // evita que quede duplicado en pantalla.
-          messages: old.messages
-            .filter((m) => m.id !== result.id)
-            .map((m) => (m.id === context.tempId ? result : m)),
-        };
+        const messages = old.messages
+          // Si el WS ya insertó el mensaje real (mismo waMessageId, id
+          // distinto porque el suyo es el de la fila persistida), sacarlo
+          // — se reemplaza el placeholder por `result` dos líneas abajo.
+          .filter(
+            (m) =>
+              m.id === context.tempId ||
+              !result.waMessageId ||
+              m.waMessageId !== result.waMessageId
+          )
+          .map((m) => (m.id === context.tempId ? result : m));
+        return { ...old, messages };
       });
     },
 
