@@ -66,9 +66,10 @@
     "sendFailed": "No se pudo enviar el mensaje"
   },
   "connection": {
-    "connected": "Conectado",
-    "connecting": "Conectando...",
-    "disconnected": "Sin conexión en vivo — actualizando cada 15s"
+    "connected": "Actualización en vivo",
+    "connecting": "Conectando actualización en vivo...",
+    "disconnected": "Sin actualización en vivo — actualizando cada 15s",
+    "tooltip": "Indica si esta pantalla recibe mensajes nuevos en vivo o los actualiza cada 15 segundos. No indica si tu WhatsApp está conectado — eso se configura en Configuración → Datos del Negocio."
   },
   "events": {
     "HANDOFF_REQUESTED": "El cliente pidió hablar con un humano",

@@ -66,9 +66,10 @@
     "sendFailed": "Couldn't send the message"
   },
   "connection": {
-    "connected": "Connected",
-    "connecting": "Connecting...",
-    "disconnected": "No live connection — refreshing every 15s"
+    "connected": "Live updates on",
+    "connecting": "Connecting live updates...",
+    "disconnected": "Live updates off — refreshing every 15s",
+    "tooltip": "Shows whether this screen gets new messages live or refreshes every 15 seconds. It does not show whether your WhatsApp is connected — that's set up in Settings → Business Details."
   },
   "events": {
     "HANDOFF_REQUESTED": "The customer asked to talk to a human",
