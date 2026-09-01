@@ -207,12 +207,14 @@ export function WhatsAppConnectDialog({
         code,
         wabaId,
         phoneNumberId: signupPhoneNumberId,
+        metaUserId,
       } = await launchEmbeddedSignup();
 
       await embeddedSignupMutation.mutateAsync({
         code,
         wabaId,
         phoneNumberId: signupPhoneNumberId,
+        metaUserId,
         branchId,
       });
 
