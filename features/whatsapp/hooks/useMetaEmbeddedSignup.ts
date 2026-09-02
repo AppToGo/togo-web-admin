@@ -36,6 +36,12 @@ declare global {
 interface FacebookLoginResponse {
   authResponse?: {
     code?: string;
+    // Best-effort: Meta documenta `userID` como parte de `authResponse` en
+    // Facebook Login for Business, pero no está garantizado junto a `code`
+    // con response_type=code. Si llega, el backend lo usa para poder mapear
+    // el callback de Deauthorize/Data Deletion; si no, ese callback solo
+    // audita sin poder actuar sobre la cuenta.
+    userID?: string;
   };
   status?: string;
 }
@@ -44,6 +50,7 @@ export interface EmbeddedSignupResult {
   code: string;
   wabaId: string;
   phoneNumberId: string;
+  metaUserId?: string;
 }
 
 const SDK_SRC = "https://connect.facebook.net/en_US/sdk.js";
@@ -137,7 +144,11 @@ export function useMetaEmbeddedSignup() {
   }, []);
 
   const waitForSessionInfo = useCallback(
-    (code: string, generation: number): Promise<EmbeddedSignupResult> => {
+    (
+      code: string,
+      metaUserId: string | undefined,
+      generation: number
+    ): Promise<EmbeddedSignupResult> => {
       return new Promise((resolve, reject) => {
         const start = Date.now();
         const poll = () => {
@@ -147,7 +158,7 @@ export function useMetaEmbeddedSignup() {
             generation: msgGeneration,
           } = sessionInfoRef.current;
           if (wabaId && phoneNumberId && msgGeneration === generation) {
-            resolve({ code, wabaId, phoneNumberId });
+            resolve({ code, wabaId, phoneNumberId, metaUserId });
             return;
           }
           if (Date.now() - start > SESSION_INFO_TIMEOUT_MS) {
@@ -181,7 +192,10 @@ export function useMetaEmbeddedSignup() {
         throw new Error(t("accounts.embedded.errors.sdkUnavailable"));
       }
 
-      const code = await new Promise<string>((resolve, reject) => {
+      const { code, metaUserId } = await new Promise<{
+        code: string;
+        metaUserId: string | undefined;
+      }>((resolve, reject) => {
         window.FB!.login(
           (response) => {
             const authCode = response.authResponse?.code;
@@ -189,7 +203,7 @@ export function useMetaEmbeddedSignup() {
               reject(new Error(t("accounts.embedded.errors.loginCancelled")));
               return;
             }
-            resolve(authCode);
+            resolve({ code: authCode, metaUserId: response.authResponse?.userID });
           },
           {
             config_id: configId,
@@ -204,7 +218,7 @@ export function useMetaEmbeddedSignup() {
         );
       });
 
-      return waitForSessionInfo(code, myGeneration);
+      return waitForSessionInfo(code, metaUserId, myGeneration);
     };
 
     return run()
