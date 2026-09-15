@@ -9,14 +9,10 @@ import {
   Rocket,
   CreditCard,
   MessageCircle,
-  Copy,
   AlertCircle,
   RefreshCw,
-  ChevronDown,
-  ChevronUp,
   ShieldCheck,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +51,6 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     PlanNumber,
     1
   > | null>(null);
-  const [showManualPayment, setShowManualPayment] = React.useState(false);
 
   const { mutate: upgradePlan, isPending } = useUpgradePlan();
   const { mutate: startWompiCheckout, isPending: isWompiPending } = useWompiCheckout();
@@ -68,7 +63,6 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     if (open) {
       setView("plans");
       setSelectedPlan(null);
-      setShowManualPayment(false);
     }
   }, [open]);
 
@@ -88,11 +82,6 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
   // más alta ya notificada a soporte) — este piso evita ofrecer un botón que
   // el backend va a rechazar.
   const requestFloor = Math.max(user?.subscriptionPlan ?? 1, user?.requestedPlan ?? 1);
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(t("copiedToClipboard"));
-  };
 
   const getPlanEntry = (planNum: Exclude<PlanNumber, 1>) =>
     catalog?.plans.find((p) => p.plan === planNum);
@@ -352,83 +341,6 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                   )}
                 </Button>
               </div>
-
-              <button
-                type="button"
-                onClick={() => setShowManualPayment((prev) => !prev)}
-                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors mx-auto"
-              >
-                {showManualPayment ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
-                {t("manualPaymentToggle")}
-              </button>
-
-              {showManualPayment && (
-                <>
-                  <div className="rounded-xl border border-slate-200 overflow-hidden">
-                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {t("paymentInstructionsTitle")}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {t("paymentInstructionsSubtitle")}
-                      </p>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {[
-                        { label: t("nequiPhone"), value: NEQUI_PAYMENT_INFO.phone },
-                        { label: t("nequiName"), value: NEQUI_PAYMENT_INFO.name },
-                        {
-                          label: t("nequiAmount"),
-                          value: selectedPlanInfo
-                            ? formatPrice(selectedPlanInfo.priceMonthly)
-                            : "",
-                        },
-                        {
-                          label: t("nequiConcept"),
-                          value: t("nequiConceptValue", {
-                            businessName: user?.businessName ?? "",
-                          }),
-                        },
-                      ].map(({ label, value }) => (
-                        <div
-                          key={label}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <span className="text-xs text-slate-500">{label}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-slate-900">
-                              {value}
-                            </span>
-                            <button
-                              onClick={() => copyToClipboard(value)}
-                              className="text-slate-400 hover:text-slate-600 transition-colors"
-                              title={t("copyButtonTooltip")}
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 flex gap-3">
-                    <MessageCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-blue-900">
-                        {t("supportTitle")}
-                      </p>
-                      <p className="text-xs text-blue-600 mt-0.5">
-                        {t("supportText")}
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )}
 
               <Button variant="outline" className="w-full" onClick={onClose}>
                 {t("closeButton")}
