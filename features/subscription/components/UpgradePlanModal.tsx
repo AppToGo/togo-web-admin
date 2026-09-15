@@ -12,6 +12,9 @@ import {
   Copy,
   AlertCircle,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +29,7 @@ import { NEQUI_PAYMENT_INFO, type PlanNumber } from "@/lib/plan.utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useUpgradePlan } from "../hooks/useUpgradePlan";
 import { usePlanCatalog } from "../hooks/usePlanCatalog";
+import { useWompiCheckout } from "../hooks/useWompiCheckout";
 import { UNLIMITED_PLAN_LIMIT, type PlanCatalogEntry } from "../services/subscription.service";
 
 interface UpgradePlanModalProps {
@@ -51,8 +55,10 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     PlanNumber,
     1
   > | null>(null);
+  const [showManualPayment, setShowManualPayment] = React.useState(false);
 
   const { mutate: upgradePlan, isPending } = useUpgradePlan();
+  const { mutate: startWompiCheckout, isPending: isWompiPending } = useWompiCheckout();
   // Solo pide el catálogo cuando el modal realmente está abierto — evita un
   // fetch innecesario en cada carga del dashboard para negocios que nunca lo abren.
   const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError, refetch: refetchCatalog } = usePlanCatalog(open);
@@ -62,6 +68,7 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     if (open) {
       setView("plans");
       setSelectedPlan(null);
+      setShowManualPayment(false);
     }
   }, [open]);
 
@@ -319,67 +326,111 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
             </DialogHeader>
 
             <div className="px-6 pb-6 space-y-4">
-              <div className="rounded-xl border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+              <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50/50 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
                   <p className="text-sm font-semibold text-slate-900">
-                    {t("paymentInstructionsTitle")}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {t("paymentInstructionsSubtitle")}
+                    {t("wompiTitle")}
                   </p>
                 </div>
-                <div className="p-4 space-y-3">
-                  {[
-                    { label: t("nequiPhone"), value: NEQUI_PAYMENT_INFO.phone },
-                    { label: t("nequiName"), value: NEQUI_PAYMENT_INFO.name },
-                    {
-                      label: t("nequiAmount"),
-                      value: selectedPlanInfo
-                        ? formatPrice(selectedPlanInfo.priceMonthly)
-                        : "",
-                    },
-                    {
-                      label: t("nequiConcept"),
-                      value: t("nequiConceptValue", {
-                        businessName: user?.businessName ?? "",
-                      }),
-                    },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="flex items-center justify-between gap-2"
-                    >
-                      <span className="text-xs text-slate-500">{label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-slate-900">
-                          {value}
-                        </span>
-                        <button
-                          onClick={() => copyToClipboard(value)}
-                          className="text-slate-400 hover:text-slate-600 transition-colors"
-                          title={t("copyButtonTooltip")}
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                <p className="text-xs text-slate-600">{t("wompiSubtitle")}</p>
+                <Button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={isWompiPending}
+                  onClick={() => startWompiCheckout()}
+                >
+                  {isWompiPending ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {t("wompiRedirecting")}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <CreditCard className="w-3.5 h-3.5" />
+                      {t("wompiButton")}
+                    </span>
+                  )}
+                </Button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowManualPayment((prev) => !prev)}
+                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors mx-auto"
+              >
+                {showManualPayment ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
+                {t("manualPaymentToggle")}
+              </button>
+
+              {showManualPayment && (
+                <>
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t("paymentInstructionsTitle")}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {t("paymentInstructionsSubtitle")}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="p-4 space-y-3">
+                      {[
+                        { label: t("nequiPhone"), value: NEQUI_PAYMENT_INFO.phone },
+                        { label: t("nequiName"), value: NEQUI_PAYMENT_INFO.name },
+                        {
+                          label: t("nequiAmount"),
+                          value: selectedPlanInfo
+                            ? formatPrice(selectedPlanInfo.priceMonthly)
+                            : "",
+                        },
+                        {
+                          label: t("nequiConcept"),
+                          value: t("nequiConceptValue", {
+                            businessName: user?.businessName ?? "",
+                          }),
+                        },
+                      ].map(({ label, value }) => (
+                        <div
+                          key={label}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <span className="text-xs text-slate-500">{label}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-slate-900">
+                              {value}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(value)}
+                              className="text-slate-400 hover:text-slate-600 transition-colors"
+                              title={t("copyButtonTooltip")}
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 flex gap-3">
-                <MessageCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900">
-                    {t("supportTitle")}
-                  </p>
-                  <p className="text-xs text-blue-600 mt-0.5">
-                    {t("supportText")}
-                  </p>
-                </div>
-              </div>
+                  <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 flex gap-3">
+                    <MessageCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        {t("supportTitle")}
+                      </p>
+                      <p className="text-xs text-blue-600 mt-0.5">
+                        {t("supportText")}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
 
-              <Button className="w-full" onClick={onClose}>
+              <Button variant="outline" className="w-full" onClick={onClose}>
                 {t("closeButton")}
               </Button>
             </div>
