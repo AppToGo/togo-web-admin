@@ -1,0 +1,17 @@
+name: Enforce main source branch
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  check-source-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PR comes from develop
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "::error::Los PRs a main solo pueden venir de 'develop'. Este PR viene de '${{ github.head_ref }}'."
+            exit 1
+          fi
