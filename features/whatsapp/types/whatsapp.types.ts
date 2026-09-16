@@ -65,6 +65,8 @@ export interface EmbeddedSignupRequest {
   code: string;
   wabaId: string;
   phoneNumberId: string;
+  // Best-effort: ver metaUserId en EmbeddedSignupResult (useMetaEmbeddedSignup).
+  metaUserId?: string;
   branchId?: string | null;
   displayName?: string;
 }
