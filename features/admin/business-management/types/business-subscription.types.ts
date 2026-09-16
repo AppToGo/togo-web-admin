@@ -30,8 +30,11 @@ export interface PaymentRecord {
   reference: string | null;
   notes: string | null;
   paidAt: string;
-  createdByUserId: string;
+  /** null cuando el pago lo concilió automáticamente el webhook de Wompi (sin SUPER_ADMIN detrás). */
+  createdByUserId: string | null;
   createdAt: string;
+  /** ID de la transacción de Wompi, si el pago se hizo por esa vía. */
+  wompiTransactionId?: string | null;
 }
 
 export interface BusinessWithSubscription extends Business {
