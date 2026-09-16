@@ -13,6 +13,13 @@ name: Auto-tag release on merge to main
 # tag todavía no existe, lo crea y lo empuja — lo cual dispara el webhook de
 # Dokploy automáticamente. Si el push a main no es una release (no hay
 # patrón de versión en el mensaje), el workflow no hace nada.
+#
+# IMPORTANTE: el mensaje del commit que llega a main tiene que contener el
+# patrón vX.Y.Z. Con un merge commit normal de develop -> main el mensaje
+# default es "Merge pull request #N from AppToGo/develop" (sin versión) —
+# hay que titular el PR de release como "Release vX.Y.Z: ..." y mergear con
+# squash (usa el título como mensaje del commit), o editar el mensaje del
+# merge commit para incluir la versión antes de confirmarlo.
 
 on:
   push:
@@ -61,7 +68,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "${{ steps.version.outputs.version }}"
+          git tag -a "${{ steps.version.outputs.version }}" -m "Release ${{ steps.version.outputs.version }}"
           git push origin "${{ steps.version.outputs.version }}"
           echo "### 🏷️ Tag \`${{ steps.version.outputs.version }}\` creado y empujado" >> "$GITHUB_STEP_SUMMARY"
           echo "Esto dispara el deploy automático en Dokploy." >> "$GITHUB_STEP_SUMMARY"
