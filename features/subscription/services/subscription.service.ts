@@ -96,3 +96,41 @@ export async function getPaymentNotifications(
   );
   return response.data;
 }
+
+// ─── Checkout de Wompi (pago del plan solicitado o renovación del actual) ───
+
+export interface WompiCheckout {
+  publicKey: string;
+  /** Único por intento de cobro — el backend lo usa para resolver el pago cuando llega el webhook. */
+  reference: string;
+  amountInCents: number;
+  currency: string;
+  /** SHA256(reference + amountInCents + currency + integritySecret) — la exige el Checkout de Wompi. */
+  signature: string;
+  redirectUrl: string;
+}
+
+/**
+ * Inicia un checkout de Wompi. El monto lo decide el backend (plan
+ * solicitado pendiente, o el plan actual si es una renovación) — acá no se
+ * manda ningún importe. POST /businesses/:businessId/billing/checkout
+ */
+export async function createCheckout(businessId: string): Promise<WompiCheckout> {
+  const response = await apiClient.post<WompiCheckout>(`${getBillingBaseUrl(businessId)}/checkout`);
+  return response.data;
+}
+
+/**
+ * Respaldo para cuando el negocio vuelve del Checkout antes de que llegue el
+ * webhook de Wompi — no consulta a Wompi, consulta si ya existe el
+ * PaymentRecord correspondiente en nuestro backend.
+ */
+export async function getCheckoutStatus(
+  businessId: string,
+  reference: string
+): Promise<{ status: "PAID" | "PENDING" }> {
+  const response = await apiClient.get<{ status: "PAID" | "PENDING" }>(
+    `${getBillingBaseUrl(businessId)}/checkout/${reference}`
+  );
+  return response.data;
+}
