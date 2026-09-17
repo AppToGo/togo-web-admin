@@ -13,11 +13,11 @@ import {
   Info,
 } from "lucide-react";
 import { COLOMBIA_DEPARTMENTS } from "@/lib/colombia-cities";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { AutocompleteSelect } from "@/components/ui/autocomplete-select";
 import {
   Select,
   SelectContent,
@@ -534,65 +534,38 @@ export function BranchForm({
           {/* Department & City */}
           <div className="grid grid-cols-2 gap-3">
             {/* Department */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-department`}>
-                {t("form.fields.department")}
-              </Label>
-              <Select
-                value={formData.department}
-                onValueChange={handleDepartmentChange}
-                disabled={isLoading}
-              >
-                <SelectTrigger id={`${formId}-department`} className="h-11">
-                  <span
-                    className={cn(
-                      "flex-1 text-left truncate text-sm",
-                      !formData.department && "text-slate-400"
-                    )}
-                  >
-                    {formData.department || t("form.placeholders.department")}
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {COLOMBIA_DEPARTMENTS.map((dept) => (
-                    <SelectItem key={dept.name} value={dept.name}>
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <AutocompleteSelect
+              label={t("form.fields.department")}
+              options={COLOMBIA_DEPARTMENTS.map((dept) => ({
+                value: dept.name,
+                label: dept.name,
+              }))}
+              value={formData.department}
+              onChange={handleDepartmentChange}
+              placeholder={t("form.placeholders.department")}
+              searchPlaceholder="Buscar departamento..."
+              emptyMessage="No se encontraron departamentos"
+              disabled={isLoading}
+            />
 
             {/* City */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-city`}>{t("form.fields.city")}</Label>
-              <Select
-                value={formData.city}
-                onValueChange={(v) => handleSelectChange("city", v)}
-                disabled={!formData.department || isLoading}
-              >
-                <SelectTrigger id={`${formId}-city`} className="h-11">
-                  <span
-                    className={cn(
-                      "flex-1 text-left truncate text-sm",
-                      !formData.city && "text-slate-400"
-                    )}
-                  >
-                    {formData.city ||
-                      (!formData.department
-                        ? t("form.placeholders.citySelectDepartmentFirst")
-                        : t("form.placeholders.city"))}
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {availableCities.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <AutocompleteSelect
+              label={t("form.fields.city")}
+              options={availableCities.map((city) => ({
+                value: city,
+                label: city,
+              }))}
+              value={formData.city}
+              onChange={(v) => handleSelectChange("city", v)}
+              placeholder={
+                formData.department
+                  ? t("form.placeholders.city")
+                  : t("form.placeholders.citySelectDepartmentFirst")
+              }
+              searchPlaceholder="Buscar ciudad..."
+              emptyMessage="No se encontraron ciudades"
+              disabled={!formData.department || isLoading}
+            />
           </div>
 
           {/* Address */}
