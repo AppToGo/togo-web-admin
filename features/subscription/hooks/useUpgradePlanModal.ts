@@ -11,6 +11,7 @@ import {
   PAYMENT_OVERDUE_EVENT,
   type PaymentOverdueEventDetail,
 } from "@/services/session.service";
+import { useWompiReturnHandler } from "./useWompiReturnHandler";
 
 const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
 
@@ -44,6 +45,12 @@ const useUpgradePlanModalStore = create<UpgradePlanModalStore>((set) => ({
 export function useUpgradePlanModal() {
   const user = useCurrentUser();
   const { open, openModal, closeModal } = useUpgradePlanModalStore();
+
+  // Detecta la vuelta del Checkout de Wompi y refresca el estado de cuenta —
+  // ver useWompiReturnHandler.ts. Montado acá porque este hook ya es el único
+  // punto de entrada global (DashboardLayout), no porque tenga relación con
+  // el modal en sí.
+  useWompiReturnHandler();
 
   // Subscribe to completedTours so the effect re-runs when a tour is marked done.
   const completedTours = useTourStore((state) => state.completedTours);
