@@ -255,10 +255,14 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                       disabled={isDisabled}
                       onClick={() => handleUpgrade(planNum)}
                     >
-                      {isBelowFloor
-                        ? t("planUnavailable")
-                        : t("upgradeButton", { planName: planEntry.name })}
+                      {t("upgradeButton", { planName: planEntry.name })}
                     </Button>
+
+                    {isBelowFloor && (
+                      <p className="text-[11px] text-slate-400 text-center -mt-1.5">
+                        {t("planUnavailable")}
+                      </p>
+                    )}
 
                     {planNum !== 4 && (
                       <a
