@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AutocompleteSelect } from "@/components/ui/autocomplete-select";
 import { useRegister } from "@/features/auth/hooks/useAuth";
 import {
   fetchIndustries,
@@ -42,8 +43,8 @@ export function Step2BusinessData({
   }, []);
 
   // Reset city whenever department changes
-  const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDepartment(e.target.value);
+  const handleDepartmentChange = (value: string) => {
+    setDepartment(value);
     setCity("");
   };
 
@@ -110,47 +111,34 @@ export function Step2BusinessData({
       />
 
       {/* Department — filters city list, NOT saved to DB */}
-      <div className="w-full">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-          {t("department.label")}
-        </label>
-        <select
-          value={department}
-          onChange={handleDepartmentChange}
-          disabled={register.isPending}
-          className={SELECT_CLASS}
-        >
-          <option value="">{t("department.placeholder")}</option>
-          {COLOMBIA_DEPARTMENTS.map((dep) => (
-            <option key={dep.name} value={dep.name}>
-              {dep.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <AutocompleteSelect
+        label={t("department.label")}
+        options={COLOMBIA_DEPARTMENTS.map((dep) => ({
+          value: dep.name,
+          label: dep.name,
+        }))}
+        value={department}
+        onChange={handleDepartmentChange}
+        placeholder={t("department.placeholder")}
+        searchPlaceholder="Buscar departamento..."
+        emptyMessage="No se encontraron departamentos"
+        disabled={register.isPending}
+      />
 
       {/* City — saved to DB */}
-      <div className="w-full">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-          {t("city.label")} <span className="text-red-500">*</span>
-        </label>
-        <select
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          disabled={register.isPending || !department}
-          required
-          className={SELECT_CLASS}
-        >
-          <option value="">
-            {department ? t("city.placeholder") : t("city.selectDepartmentFirst")}
-          </option>
-          {availableCities.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
+      <AutocompleteSelect
+        label={t("city.label")}
+        options={availableCities.map((c) => ({ value: c, label: c }))}
+        value={city}
+        onChange={setCity}
+        placeholder={
+          department ? t("city.placeholder") : t("city.selectDepartmentFirst")
+        }
+        searchPlaceholder="Buscar ciudad..."
+        emptyMessage="No se encontraron ciudades"
+        disabled={register.isPending || !department}
+        required
+      />
 
       <Button
         type="submit"
