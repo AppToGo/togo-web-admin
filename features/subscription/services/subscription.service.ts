@@ -111,12 +111,20 @@ export interface WompiCheckout {
 }
 
 /**
- * Inicia un checkout de Wompi. El monto lo decide el backend (plan
- * solicitado pendiente, o el plan actual si es una renovación) — acá no se
- * manda ningún importe. POST /businesses/:businessId/billing/checkout
+ * Inicia un checkout de Wompi. El monto lo decide el backend a partir del
+ * `plan` enviado acá (upgrade elegido en el modal) — sin `plan`, cotiza una
+ * renovación del plan actual. Elegir un plan no crea ninguna solicitud
+ * pendiente: esta llamada es efímera hasta que el pago se confirme por
+ * webhook. POST /businesses/:businessId/billing/checkout
  */
-export async function createCheckout(businessId: string): Promise<WompiCheckout> {
-  const response = await apiClient.post<WompiCheckout>(`${getBillingBaseUrl(businessId)}/checkout`);
+export async function createCheckout(
+  businessId: string,
+  plan?: number
+): Promise<WompiCheckout> {
+  const response = await apiClient.post<WompiCheckout>(
+    `${getBillingBaseUrl(businessId)}/checkout`,
+    plan != null ? { plan } : {}
+  );
   return response.data;
 }
 

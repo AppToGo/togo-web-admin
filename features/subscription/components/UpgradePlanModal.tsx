@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { cn, formatCurrency } from "@/lib/utils";
 import { NEQUI_PAYMENT_INFO, type PlanNumber } from "@/lib/plan.utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
-import { useUpgradePlan } from "../hooks/useUpgradePlan";
 import { usePlanCatalog } from "../hooks/usePlanCatalog";
 import { useWompiCheckout } from "../hooks/useWompiCheckout";
 import { UNLIMITED_PLAN_LIMIT, type PlanCatalogEntry } from "../services/subscription.service";
@@ -52,7 +51,6 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     1
   > | null>(null);
 
-  const { mutate: upgradePlan, isPending } = useUpgradePlan();
   const { mutate: startWompiCheckout, isPending: isWompiPending } = useWompiCheckout();
   // Solo pide el catálogo cuando el modal realmente está abierto — evita un
   // fetch innecesario en cada carga del dashboard para negocios que nunca lo abren.
@@ -66,13 +64,18 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     }
   }, [open]);
 
+  // Elegir un plan NO crea ninguna solicitud — solo pasa a la vista de pago.
+  // La solicitud/activación real la dispara únicamente confirmar el pago con
+  // Wompi (ver handlePayWithWompi); si el negocio cierra el modal acá, no
+  // queda ningún estado pendiente registrado.
   const handleUpgrade = (plan: Exclude<PlanNumber, 1>) => {
     setSelectedPlan(plan);
-    upgradePlan(plan, {
-      onSuccess: () => {
-        setView("payment");
-      },
-    });
+    setView("payment");
+  };
+
+  const handlePayWithWompi = () => {
+    if (selectedPlan == null) return;
+    startWompiCheckout(selectedPlan);
   };
 
   const formatPrice = (amount: number) => formatCurrency(amount, catalog?.currency);
@@ -182,9 +185,8 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                 const features = getPlanFeatures(planEntry);
                 const Icon = PLAN_ICONS[planNum];
                 const isPopular = planNum === 3;
-                const isLoadingThis = isPending && selectedPlan === planNum;
                 const isBelowFloor = planNum <= requestFloor;
-                const isDisabled = (isPending && selectedPlan !== planNum) || isBelowFloor;
+                const isDisabled = isBelowFloor;
 
                 return (
                   <div
@@ -253,16 +255,9 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                       disabled={isDisabled}
                       onClick={() => handleUpgrade(planNum)}
                     >
-                      {isLoadingThis ? (
-                        <span className="flex items-center gap-2">
-                          <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          {t("upgradingButton")}
-                        </span>
-                      ) : isBelowFloor ? (
-                        t("planUnavailable")
-                      ) : (
-                        t("upgradeButton", { planName: planEntry.name })
-                      )}
+                      {isBelowFloor
+                        ? t("planUnavailable")
+                        : t("upgradeButton", { planName: planEntry.name })}
                     </Button>
 
                     {planNum !== 4 && (
@@ -326,7 +321,7 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                 <Button
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
                   disabled={isWompiPending}
-                  onClick={() => startWompiCheckout()}
+                  onClick={handlePayWithWompi}
                 >
                   {isWompiPending ? (
                     <span className="flex items-center gap-2">
