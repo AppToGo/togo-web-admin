@@ -6,7 +6,8 @@
   "inactiveProductsDescription": "Los productos inactivos no aparecen en el menú",
   "customizeNameHint": "Puedes personalizar el nombre para tu negocio",
   "activateProductNote": "Este producto se vinculará al catálogo global de TOGO. La imagen y descripción se heredarán automáticamente.",
-  "subtitle": "Gestiona tus productos y categorías",
+  "subtitle": "Gestiona tus productos y categorías.",
+  "viewMenu": "Ver menú",
   "tabs": {
     "products": "Mis Productos",
     "categories": "Categorías"
