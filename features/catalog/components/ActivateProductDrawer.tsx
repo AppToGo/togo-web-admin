@@ -80,7 +80,7 @@ export function ActivateProductDrawer({
   onClose,
   onActivate,
   isLoading = false,
-  showProductImages = true,
+  showProductImages = false,
 }: ActivateProductDrawerProps) {
   const t = useTranslations("catalog");
   const tCommon = useTranslations("common");

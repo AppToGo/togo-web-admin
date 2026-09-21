@@ -169,7 +169,7 @@ export function BranchInventoryTable({
   debouncedUpdate,
   onToggleAvailability,
   readOnly = false,
-  showProductImages = true,
+  showProductImages = false,
   globalFilter,
   setGlobalFilter,
 }: BranchInventoryTableProps) {

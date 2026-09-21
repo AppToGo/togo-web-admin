@@ -111,3 +111,17 @@ export function useCheckSlugAvailability(slug: string, excludeId?: string) {
     staleTime: 30 * 1000, // 30 seconds
   });
 }
+
+/**
+ * Whether product images should be shown in the admin. Off unless the business
+ * explicitly enabled `settings.useProductImages` — same default as the settings
+ * page and the public catalog, so a freshly created business (settings `{}`)
+ * doesn't see image fields or placeholders.
+ */
+export function useShowProductImages(): boolean {
+  const { data: currentBusiness } = useCurrentBusiness();
+  return (
+    (currentBusiness?.settings as Record<string, unknown> | undefined)
+      ?.useProductImages === true
+  );
+}
