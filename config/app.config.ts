@@ -32,7 +32,7 @@ export const APP_CONFIG = {
     // search-product.handler.ts, etc.) — usado para el QR imprimible de mesas
     // (docs/architecture/pedidos-en-mesa.md, Fase 2), que se arma client-side
     // sin pasar por el backend.
-    baseUrl: process.env.NEXT_PUBLIC_WEB_CATALOG_BASE_URL || "https://catalogo.apptogo.co",
+    baseUrl: process.env.NEXT_PUBLIC_WEB_CATALOG_BASE_URL || "https://catalogo.togoapp.co",
   },
 } as const;
 
