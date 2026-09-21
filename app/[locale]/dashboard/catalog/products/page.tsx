@@ -35,7 +35,7 @@ import type { SourceFilter } from "@/features/catalog/components/ProductFilters"
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
 import { getVariants } from "@/features/catalog/services/catalog.service";
-import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
+import { useShowProductImages } from "@/features/business/hooks/useBusiness";
 import type {
   CatalogProduct,
   BusinessCategory,
@@ -113,7 +113,6 @@ export default function ProductsPage() {
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
-  const { data: currentBusiness } = useCurrentBusiness();
 
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,9 +133,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  const showProductImages =
-    (currentBusiness?.settings as Record<string, unknown> | undefined)
-      ?.useProductImages !== false;
+  const showProductImages = useShowProductImages();
 
   const activeFiltersCount = [
     selectedCategory !== "all",

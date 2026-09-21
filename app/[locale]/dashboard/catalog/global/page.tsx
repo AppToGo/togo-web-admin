@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useShowProductImages } from "@/features/business/hooks/useBusiness";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -110,6 +111,7 @@ export default function GlobalCatalogPage() {
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
+  const showProductImages = useShowProductImages();
   const isSuperAdmin = useIsSuperAdmin();
   const { hasProducts: hasGlobalProducts, isLoading: isCheckingGlobalProducts } =
     useHasGlobalCatalogProducts(isSuperAdmin ? null : businessId);
@@ -329,6 +331,7 @@ export default function GlobalCatalogPage() {
         onClose={() => setActivatingProduct(null)}
         onActivate={handleActivateGlobal}
         isLoading={activateGlobal.isPending}
+        showProductImages={showProductImages}
       />
     </DashboardLayout>
   );

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/features/catalog/components/ProductForm";
+import { useShowProductImages } from "@/features/business/hooks/useBusiness";
 import { useUpdateImportItem } from "../hooks/useImportMutations";
 import type {
   BusinessCategory,
@@ -53,6 +54,7 @@ export function EditImportItemFormDrawer({
   const activeBranches = branches.filter((b) => b.isActive);
   const showBranchSelector = activeBranches.length > 1;
   const updateMutation = useUpdateImportItem(businessId, jobId);
+  const showProductImages = useShowProductImages();
 
   const handleSubmit = (data: CreateProductDto | UpdateCatalogProductDto, _branchActivations?: BranchActivation[]) => {
     if (!item) return;
@@ -114,7 +116,7 @@ export function EditImportItemFormDrawer({
               onSubmit={handleSubmit}
               onCancel={onClose}
               isLoading={updateMutation.isPending}
-              showProductImages={!!item.imageUrl}
+              showProductImages={showProductImages}
               proposedSubcategoryName={
                 !item.businessCategoryId && item.rawCategory && item.industryCategoryId ? item.rawCategory : undefined
               }

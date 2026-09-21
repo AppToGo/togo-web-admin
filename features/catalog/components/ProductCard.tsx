@@ -33,7 +33,7 @@ export function ProductCard({
   selected = false,
   onSelect,
   showCheckbox = false,
-  showImage = true,
+  showImage = false,
   categoryName,
 }: ProductCardProps) {
   const t = useTranslations("catalog");
