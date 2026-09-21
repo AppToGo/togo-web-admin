@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Plus, Package, Store, Upload } from "lucide-react";
+import { ExternalLink, Plus, Package, Store, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -35,7 +35,10 @@ import type { SourceFilter } from "@/features/catalog/components/ProductFilters"
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
 import { getVariants } from "@/features/catalog/services/catalog.service";
-import { useShowProductImages } from "@/features/business/hooks/useBusiness";
+import {
+  usePublicCatalogUrl,
+  useShowProductImages,
+} from "@/features/business/hooks/useBusiness";
 import type {
   CatalogProduct,
   BusinessCategory,
@@ -134,6 +137,7 @@ export default function ProductsPage() {
   const pageSize = 20;
 
   const showProductImages = useShowProductImages();
+  const publicCatalogUrl = usePublicCatalogUrl();
 
   const activeFiltersCount = [
     selectedCategory !== "all",
@@ -285,7 +289,23 @@ export default function ProductsPage() {
             <h1 className="text-2xl font-bold text-slate-900">
               {t("tabs.products")}
             </h1>
-            <p className="text-slate-500 mt-1">{t("subtitle")}</p>
+            <p className="text-slate-500 mt-1">
+              {t("subtitle")}
+              {publicCatalogUrl && (
+                <>
+                  {" "}
+                  <a
+                    href={publicCatalogUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                  >
+                    {t("viewMenu")}
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </>
+              )}
+            </p>
           </div>
 
           <ProductFilters

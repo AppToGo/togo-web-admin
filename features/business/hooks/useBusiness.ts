@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { APP_CONFIG } from "@/config/app.config";
 import { BUSINESS_KEYS } from "./query-keys";
 import {
   getBusinessById,
@@ -124,4 +125,15 @@ export function useShowProductImages(): boolean {
     (currentBusiness?.settings as Record<string, unknown> | undefined)
       ?.useProductImages === true
   );
+}
+
+/**
+ * Public catalog URL (no token) for the current business, e.g.
+ * `https://catalogo.apptogo.co/{slug}` — what a customer opens from the
+ * WhatsApp link, minus the signed token. `null` while the business loads.
+ */
+export function usePublicCatalogUrl(): string | null {
+  const { data: currentBusiness } = useCurrentBusiness();
+  if (!currentBusiness?.slug) return null;
+  return `${APP_CONFIG.webCatalog.baseUrl.replace(/\/$/, "")}/${currentBusiness.slug}`;
 }
