@@ -253,7 +253,7 @@ export function BranchInventoryManager({
   businessId,
   branches,
   readOnly = false,
-  showProductImages = true,
+  showProductImages = false,
 }: BranchInventoryManagerProps) {
   const t = useTranslations("inventory");
   const tc = useTranslations("common");

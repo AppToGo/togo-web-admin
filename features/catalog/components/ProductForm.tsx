@@ -336,7 +336,7 @@ export function ProductForm({
   onSubmit,
   onCancel,
   isLoading = false,
-  showProductImages = true,
+  showProductImages = false,
   formId,
   hideActions = false,
   initialValues,

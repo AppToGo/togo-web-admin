@@ -12,7 +12,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useBranches } from "@/features/branches/hooks/useBranches";
-import { useCurrentBusiness } from "@/features/business/hooks/useBusiness";
+import { useShowProductImages } from "@/features/business/hooks/useBusiness";
 import { BranchInventoryManager } from "@/features/branch-inventory/components/BranchInventoryManager";
 import { Store, Package, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -96,10 +96,7 @@ export default function InventoryPage() {
 
   const businessId = useEffectiveBusinessId();
   const { data: branches, isLoading: isLoadingBranches } = useBranches();
-  const { data: currentBusiness } = useCurrentBusiness();
-  const showProductImages =
-    (currentBusiness?.settings as Record<string, unknown> | undefined)
-      ?.useProductImages !== false;
+  const showProductImages = useShowProductImages();
 
   if (!businessId) {
     return (
