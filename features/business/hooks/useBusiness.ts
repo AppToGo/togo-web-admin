@@ -129,7 +129,7 @@ export function useShowProductImages(): boolean {
 
 /**
  * Public catalog URL (no token) for the current business, e.g.
- * `https://catalogo.apptogo.co/{slug}` — what a customer opens from the
+ * `https://catalogo.togoapp.co/{slug}` — what a customer opens from the
  * WhatsApp link, minus the signed token. `null` while the business loads.
  */
 export function usePublicCatalogUrl(): string | null {
