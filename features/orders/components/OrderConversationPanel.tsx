@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Can } from "@/components/auth/Can";
@@ -37,8 +37,13 @@ interface OrderConversationPanelProps {
  *
  * Sin scroll propio (`ConversationThreadView scrollable={false}`): el hilo
  * crece con el contenido y lo scrollea el modal, no un scroll anidado. El pie
- * (botón "Tomar conversación" o el composer) queda `sticky` al fondo del
- * scroll del modal.
+ * (botón "Tomar conversación", aviso o composer) queda `fixed` al fondo del
+ * modal (ancho completo, ver el `transform` en `OrderDetailDialog` que lo
+ * convierte en containing block) en vez de `sticky` — así no queda angosto
+ * por el padding horizontal del tab. Como `fixed` lo saca del flujo, se mide
+ * su alto real (varía según la variante: composer, aviso, botón) y se lo
+ * suma como `padding-bottom` al hilo para que el footer no tape los últimos
+ * mensajes.
  *
  * `useConversationByOrder` solo resuelve QUÉ sesión es. El hilo se lee con
  * `useConversation(sessionId)` porque el envío optimista, el realtime y las
@@ -63,6 +68,28 @@ export function OrderConversationPanel({
     if (messageCount > 0) bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messageCount]);
 
+  // Alto real del footer `fixed` (varía según la variante — ver el
+  // docstring del archivo), para compensarlo con padding-bottom en el hilo.
+  // Depende de `!!conversation` (no de `conversation`): el nodo del footer
+  // es el mismo durante toda la vida de la conversación (mismo `<div>` raíz
+  // en las 4 variantes de `ConversationFooter`), así que el observer no
+  // necesita recrearse en cada mensaje nuevo — solo al aparecer/desaparecer.
+  const footerRef = useRef<HTMLDivElement>(null);
+  const [footerHeight, setFooterHeight] = useState(0);
+  useEffect(() => {
+    const node = footerRef.current;
+    if (!node) {
+      setFooterHeight(0);
+      return;
+    }
+    const observer = new ResizeObserver(([entry]) => {
+      setFooterHeight(entry.contentRect.height);
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!conversation]);
+
   if (conversationQuery.isError) {
     return (
       <p className="text-sm text-amber-700 bg-amber-50 rounded-md text-center py-8 px-4">
@@ -81,24 +108,25 @@ export function OrderConversationPanel({
 
   return (
     <div className="flex flex-col">
-      <ConversationThreadView
-        data={conversation}
-        isLoading={conversationQuery.isLoading || (isLoadingLive && !conversation)}
-        scrollable={false}
-      />
-      <div ref={bottomRef} />
-      {conversation && <ConversationFooter conversation={conversation} draft={draft} />}
+      <div style={conversation ? { paddingBottom: footerHeight } : undefined}>
+        <ConversationThreadView
+          data={conversation}
+          isLoading={conversationQuery.isLoading || (isLoadingLive && !conversation)}
+          scrollable={false}
+        />
+        <div ref={bottomRef} />
+      </div>
+      {conversation && (
+        <ConversationFooter ref={footerRef} conversation={conversation} draft={draft} />
+      )}
     </div>
   );
 }
 
-function ConversationFooter({
-  conversation,
-  draft,
-}: {
-  conversation: ConversationDetail;
-  draft?: string;
-}) {
+const ConversationFooter = forwardRef<
+  HTMLDivElement,
+  { conversation: ConversationDetail; draft?: string }
+>(function ConversationFooter({ conversation, draft }, ref) {
   const t = useTranslations("inbox");
   const user = useCurrentUser();
   const { hasPermission } = useMyPermissions();
@@ -140,7 +168,7 @@ function ConversationFooter({
 
   if (isClosed) {
     return (
-      <div className="sticky bottom-0 bg-white">
+      <div ref={ref} className="fixed inset-x-0 bottom-0 bg-white">
         <ReopenConversationNotice
           sessionId={conversation.id}
           windowExpiresAt={conversation.windowExpiresAt}
@@ -151,7 +179,7 @@ function ConversationFooter({
 
   if (!windowOpen) {
     return (
-      <div className="sticky bottom-0">
+      <div ref={ref} className="fixed inset-x-0 bottom-0">
         <InboxWindowNotice />
       </div>
     );
@@ -159,7 +187,10 @@ function ConversationFooter({
 
   if (heldByOther) {
     return (
-      <div className="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-3">
+      <div
+        ref={ref}
+        className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white px-4 py-3"
+      >
         <p className="text-sm text-slate-500">
           {t("thread.assignedTo", { name: conversation.assignedTo?.name ?? "" })}
         </p>
@@ -170,7 +201,10 @@ function ConversationFooter({
   if (!heldByMe) {
     const autoTakingOver = !!draft && takeover.isPending;
     return (
-      <div className="sticky bottom-0 flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3">
+      <div
+        ref={ref}
+        className="fixed inset-x-0 bottom-0 flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3"
+      >
         {autoTakingOver ? (
           <p className="text-sm text-slate-400">{t("actions.takingOver")}</p>
         ) : (
@@ -185,7 +219,7 @@ function ConversationFooter({
   }
 
   return (
-    <div className="sticky bottom-0 border-t border-slate-200 bg-white">
+    <div ref={ref} className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white">
       <div className="flex justify-end px-4 py-1.5">
         <button
           type="button"
@@ -199,4 +233,4 @@ function ConversationFooter({
       <InboxNoteComposer conversation={conversation} initialText={draft} />
     </div>
   );
-}
+});

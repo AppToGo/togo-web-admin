@@ -69,7 +69,12 @@ export const OrderDetailDialog = memo(function OrderDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden">
+      {/* `transform` (sin efecto visual: es la identidad) convierte a este
+          div en containing block CSS para hijos `fixed` — sin esto, el
+          footer `fixed` del tab Conversación (OrderConversationPanel) se
+          posicionaría contra el viewport del browser en vez de contra este
+          modal. */}
+      <DialogContent className="bg-white/95 backdrop-blur-lg sm:max-w-lg p-0 overflow-hidden transform">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
           <DialogTitle className="text-lg font-semibold text-slate-900">
             {t("detail.title")}
