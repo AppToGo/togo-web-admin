@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Lock, Store, Wifi, WifiOff } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -47,6 +47,14 @@ export default function InboxPage() {
   const [activeTab, setActiveTab] = useState<InboxTab>("waiting");
   const [search, setSearch] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  // Deep-link `?session=<id>` (ej. "Abrir conversación" desde el detalle del
+  // cliente). Se lee tras montar, no en el initializer de useState: en SSR no
+  // hay `window` y un valor distinto en el primer render rompería la hidratación.
+  useEffect(() => {
+    const session = new URLSearchParams(window.location.search).get("session");
+    if (session) setSelectedSessionId(session);
+  }, []);
 
   // Ajuste de estado durante el render (no un useEffect, mismo patrón que
   // la página de "sin pedido" de Fase B): sin esto, un SUPER_ADMIN que
