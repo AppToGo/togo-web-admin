@@ -37,6 +37,13 @@ interface ConversationThreadViewProps {
   className?: string;
   /** Default "max-h-[60vh]" (uso en diálogo). El inbox pasa "h-full" para ocupar el panel completo. */
   heightClassName?: string;
+  /**
+   * false → sin scroll propio (`ScrollArea`/`heightClassName`): el hilo crece
+   * con su contenido y lo scrollea el contenedor ancestro. Lo usa el modal de
+   * detalle de pedido, que ya tiene su propio scroll — un scroll anidado ahí
+   * queda mal. Default true (comportamiento existente).
+   */
+  scrollable?: boolean;
 }
 
 /**
@@ -52,7 +59,7 @@ export const ConversationThreadView = forwardRef<
   HTMLDivElement,
   ConversationThreadViewProps
 >(function ConversationThreadView(
-  { data, isLoading, className, heightClassName = "max-h-[60vh]" },
+  { data, isLoading, className, heightClassName = "max-h-[60vh]", scrollable = true },
   ref
 ) {
   const t = useTranslations("conversations");
@@ -78,6 +85,32 @@ export const ConversationThreadView = forwardRef<
     );
   }
 
+  const messagesList =
+    data.messages.length === 0 ? (
+      <p className="text-sm text-slate-500 text-center py-6">{t("thread.empty")}</p>
+    ) : (
+      buildThreadItems(data).map((item) =>
+        item.kind === "message" ? (
+          <MessageBubble key={item.message.id} message={item.message} />
+        ) : (
+          <ConversationEventRow key={item.event.id} event={item.event} />
+        )
+      )
+    );
+
+  if (!scrollable) {
+    return (
+      <div ref={ref} className={cn("flex flex-col", className)}>
+        {data.messagesTruncated && (
+          <p className="mb-2 shrink-0 text-xs text-amber-700 bg-amber-50 rounded-md px-3 py-2">
+            {t("thread.truncated")}
+          </p>
+        )}
+        <div className="space-y-3">{messagesList}</div>
+      </div>
+    );
+  }
+
   return (
     // `heightClassName` (`max-h-[60vh]` en el diálogo, `h-full` en el
     // inbox) va acá, en el wrapper — no en el `ScrollArea` — porque un
@@ -92,21 +125,7 @@ export const ConversationThreadView = forwardRef<
         </p>
       )}
       <ScrollArea ref={ref} className="min-h-0 flex-1 pr-2">
-        <div className="space-y-3">
-          {data.messages.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-6">
-              {t("thread.empty")}
-            </p>
-          ) : (
-            buildThreadItems(data).map((item) =>
-              item.kind === "message" ? (
-                <MessageBubble key={item.message.id} message={item.message} />
-              ) : (
-                <ConversationEventRow key={item.event.id} event={item.event} />
-              )
-            )
-          )}
-        </div>
+        <div className="space-y-3">{messagesList}</div>
       </ScrollArea>
     </div>
   );
