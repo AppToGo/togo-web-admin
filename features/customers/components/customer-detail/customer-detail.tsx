@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/shared/useDebounce";
+import { useConversations, isWindowOpen } from "@/features/conversations";
 import { useCustomer, useUpdateCustomer } from "../../hooks";
 import { CustomerUnifiedLayout } from "./customer-unified-layout";
 import { MAX_NOTES_LENGTH } from "../../constants";
@@ -25,6 +26,22 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Query
   const { data: customer, isLoading: isLoadingCustomer } =
     useCustomer(customerId);
+
+  // Conversación más reciente del cliente: el acceso "Abrir conversación" solo
+  // se ofrece con la ventana de 24 h abierta (fuera de ella WhatsApp no deja
+  // escribir texto libre), y lleva al inbox — el número del negocio (API de
+  // Meta) no se puede usar desde WhatsApp Web.
+  const { data: latestConversations } = useConversations(
+    { customerId, limit: 1 },
+    !!customer
+  );
+  const latestConversation = latestConversations[0];
+  const conversationHref =
+    latestConversation &&
+    latestConversation.status === "OPEN" &&
+    isWindowOpen(latestConversation.windowExpiresAt)
+      ? `/dashboard/inbox?session=${latestConversation.id}`
+      : null;
 
   // Mutación
   const updateCustomer = useUpdateCustomer();
@@ -107,8 +124,6 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
     );
   }
 
-  const whatsappLink = `https://wa.me/${customer.phoneNumber.replace(/\D/g, "")}`;
-
   return (
     <CustomerUnifiedLayout
       customer={customer}
@@ -117,7 +132,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
       onNotesChange={setNotes}
       onNotesSave={handleSaveNotes}
       isSavingNotes={updateCustomer.isPending}
-      whatsappLink={whatsappLink}
+      conversationHref={conversationHref}
     />
   );
 }

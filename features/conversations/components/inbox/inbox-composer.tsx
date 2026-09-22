@@ -7,22 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useSendConversationMessage } from "../../hooks/useSendConversationMessage";
+import { isWindowOpen } from "../../utils/conversation-window";
 import { InboxWindowNotice } from "./inbox-window-notice";
 import type { ConversationDetail } from "../../types";
 
 interface InboxComposerProps {
   conversation: ConversationDetail;
+  /** Borrador precargado (ej. aviso de producto agotado desde el detalle del pedido). */
+  initialText?: string;
 }
 
-function isWindowOpen(windowExpiresAt: string | null): boolean {
-  if (!windowExpiresAt) return false;
-  return new Date(windowExpiresAt).getTime() > Date.now();
-}
-
-export function InboxComposer({ conversation }: InboxComposerProps) {
+export function InboxComposer({ conversation, initialText }: InboxComposerProps) {
   const t = useTranslations("inbox");
   const user = useCurrentUser();
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText ?? "");
   const sendMessage = useSendConversationMessage(conversation.id);
 
   const heldByMe =

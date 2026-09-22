@@ -28,14 +28,16 @@
   "orderNotFound": "No se encontró la orden",
   "includesDelivery": "Incluye domicilio: {fee}",
   "itemsCount": "Productos ({count})",
-  "markNoStock": "Indicar falta de disponibilidad",
+  "itemIssue": {
+    "tooltip": "Escribir al cliente: hay un problema con este producto",
+    "draft": "Hola, el producto \"{productName}\" está agotado. ¿Por cuál deseas cambiarlo?"
+  },
   "paymentInfo": "Información de pago",
   "paymentMethod": "Método: {method}",
   "unknownCustomer": "Cliente desconocido",
   "orderNumber": "Orden #{id}",
   "orderCount": "{count, plural, one {# orden} other {# órdenes}}",
   "recentActivity": "Actividad reciente",
-  "whatsappOpened": "WhatsApp abierto con el mensaje para el cliente",
   "statusUpdated": "Estado actualizado a \"{status}\"",
   "paymentStatusUpdated": "Estado de pago actualizado",
   "errors": {
@@ -52,11 +54,6 @@
   },
   "history": {
     "created": "Creado: {status}"
-  },
-  "noStockDialog": {
-    "title": "Producto sin disponibilidad",
-    "description": "¿Confirmas que {productName} no está disponible? Esto enviará una notificación al cliente por WhatsApp.",
-    "messageTemplate": "Hola, lamentamos informarte que el producto \"{productName}\" no está disponible en este momento para tu orden {orderNumber}. Te ofrecemos disculpas y alternativas."
   },
   "title": "Gestión de Órdenes",
   "subtitle": "Administra y supervisa todas las órdenes de tu negocio",
