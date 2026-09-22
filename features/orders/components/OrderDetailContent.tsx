@@ -31,10 +31,8 @@ import { formatOrderNumber } from "../utils/order-number.utils";
 import { categoryBadgeVariants } from "../styles";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -45,10 +43,8 @@ import {
 import { getColumnVariant } from "../config/kanban-columns.config";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import {
-  useConversationByOrder,
-  ConversationThreadView,
-} from "@/features/conversations";
+import { useConversationByOrder } from "@/features/conversations";
+import { OrderConversationPanel } from "./OrderConversationPanel";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -207,9 +203,9 @@ export function OrderDetailContent({
   const { data: order, isLoading: isLoadingOrder } = useOrder(orderId);
   const { data: history, isLoading: isLoadingHistory } = useOrderHistory(orderId);
   const updateStatus = useUpdateOrderStatus();
-  const [showNoStockDialog, setShowNoStockDialog] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
-  const [activeTab, setActiveTab] = useState("general");
+  // Borrador que el ⚠ de un producto precarga en el composer de la pestaña Conversación.
+  const [conversationDraft, setConversationDraft] = useState<string | undefined>();
+  const [activeTab, setActiveTabState] = useState("general");
   const { user } = useAuthStore();
 
   // Translations
@@ -265,28 +261,23 @@ export function OrderDetailContent({
     [order, orderId, updateStatus, onClose, t]
   );
 
-  const handleNoStock = useCallback((item: OrderItem) => {
-    setSelectedItem(item);
-    setShowNoStockDialog(true);
+  // El borrador solo vale para la visita a la pestaña que dispara el ⚠: al
+  // cambiar de pestaña a mano se descarta, para que no reaparezca después.
+  const setActiveTab = useCallback((tab: string) => {
+    setActiveTabState(tab);
+    setConversationDraft(undefined);
   }, []);
 
-  const confirmNoStock = useCallback(() => {
-    if (!selectedItem || !order?.customer?.phoneNumber) return;
-
-    const message = t("noStockDialog.messageTemplate", {
-      productName: selectedItem.productName,
-      orderNumber: formatOrderNumber(order?.id, order?.orderNumber),
-    });
-
-    const phone = order.customer.phoneNumber.replace(/\D/g, "");
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
-
-    toast.success(t("whatsappOpened"));
-
-    setShowNoStockDialog(false);
-    setSelectedItem(null);
-  }, [selectedItem, order, t]);
+  // El ⚠ de un producto no envía nada: lleva a la pestaña Conversación con un
+  // borrador para que el operador le escriba al cliente por el canal oficial
+  // (tomando la conversación si la ventana de 24 h está abierta).
+  const handleItemIssue = useCallback(
+    (item: OrderItem) => {
+      setActiveTabState("conversation");
+      setConversationDraft(t("itemIssue.draft", { productName: item.productName }));
+    },
+    [t]
+  );
 
   // Calcular totales incluyendo domicilio
   const { subtotal, deliveryFee, total } = useMemo(() => {
@@ -506,9 +497,10 @@ export function OrderDetailContent({
                       {/* Subtle icon to indicate out of stock */}
                       {!isReadOnly && (
                         <button
-                          onClick={() => handleNoStock(item)}
+                          onClick={() => handleItemIssue(item)}
                           className="text-slate-300 hover:text-amber-500 transition-colors"
-                          title={t("markNoStock")}
+                          title={t("itemIssue.tooltip")}
+                          aria-label={t("itemIssue.tooltip")}
                         >
                           <AlertTriangle className="w-4 h-4" />
                         </button>
@@ -587,20 +579,10 @@ export function OrderDetailContent({
 
         {/* Conversación Tab */}
         <TabsContent value="conversation" className="space-y-4">
-          {conversationQuery.isError ? (
-            <p className="text-sm text-amber-700 bg-amber-50 rounded-md text-center py-8 px-4">
-              {t("conversationTab.error")}
-            </p>
-          ) : !conversationQuery.isLoading && !conversationQuery.hasConversation ? (
-            <p className="text-sm text-slate-500 text-center py-8">
-              {t("conversationTab.noConversation")}
-            </p>
-          ) : (
-            <ConversationThreadView
-              data={conversationQuery.data}
-              isLoading={conversationQuery.isLoading}
-            />
-          )}
+          <OrderConversationPanel
+            conversationQuery={conversationQuery}
+            draft={conversationDraft}
+          />
         </TabsContent>
 
         {/* Historial Tab */}
@@ -648,41 +630,6 @@ export function OrderDetailContent({
           </TabsContent>
         )}
       </Tabs>
-
-      {/* Dialog to confirm out of stock */}
-      <Dialog open={showNoStockDialog} onOpenChange={setShowNoStockDialog}>
-        <DialogContent className="sm:max-w-100 bg-white">
-          <div className="flex flex-col items-center text-center p-5">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-              <AlertTriangle className="w-6 h-6 text-amber-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              {t("noStockDialog.title")}
-            </h3>
-            <p className="text-sm text-slate-500 mb-6">
-              {t("noStockDialog.description", {
-                productName: selectedItem?.productName || "",
-              })}
-            </p>
-            <div className="flex gap-3 w-full">
-              <Button
-                variant="slate-outline"
-                onClick={() => setShowNoStockDialog(false)}
-                className="flex-1"
-              >
-                {tc("buttons.cancel")}
-              </Button>
-              <Button
-                variant="amber"
-                onClick={confirmNoStock}
-                className="flex-1"
-              >
-                {tc("buttons.confirm")}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

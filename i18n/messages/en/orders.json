@@ -28,14 +28,16 @@
   "orderNotFound": "Order not found",
   "includesDelivery": "Includes delivery: {fee}",
   "itemsCount": "Products ({count})",
-  "markNoStock": "Mark as out of stock",
+  "itemIssue": {
+    "tooltip": "Message the customer: there is an issue with this product",
+    "draft": "Hi, the product \"{productName}\" is out of stock. What would you like instead?"
+  },
   "paymentInfo": "Payment information",
   "paymentMethod": "Method: {method}",
   "unknownCustomer": "Unknown customer",
   "orderNumber": "Order #{id}",
   "orderCount": "{count, plural, one {# order} other {# orders}}",
   "recentActivity": "Recent activity",
-  "whatsappOpened": "WhatsApp opened with message for customer",
   "statusUpdated": "Status updated to \"{status}\"",
   "paymentStatusUpdated": "Payment status updated",
   "errors": {
@@ -52,11 +54,6 @@
   },
   "history": {
     "created": "Created: {status}"
-  },
-  "noStockDialog": {
-    "title": "Product out of stock",
-    "description": "Confirm that {productName} is not available? This will send a notification to the customer via WhatsApp.",
-    "messageTemplate": "Hello, we regret to inform you that the product \"{productName}\" is not available at this time for your order {orderNumber}. We apologize and offer alternatives."
   },
   "title": "Order Management",
   "subtitle": "Manage and supervise all your business orders",

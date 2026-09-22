@@ -12,6 +12,8 @@ import type { ConversationDetail } from "../../types";
 
 interface InboxNoteComposerProps {
   conversation: ConversationDetail;
+  /** Se pasa tal cual al composer de mensajes. */
+  initialText?: string;
 }
 
 function NoteInput({ sessionId, onDone }: { sessionId: string; onDone: () => void }) {
@@ -60,7 +62,7 @@ function NoteInput({ sessionId, onDone }: { sessionId: string; onDone: () => voi
   );
 }
 
-export function InboxNoteComposer({ conversation }: InboxNoteComposerProps) {
+export function InboxNoteComposer({ conversation, initialText }: InboxNoteComposerProps) {
   const t = useTranslations("inbox");
   const [isNoteMode, setIsNoteMode] = useState(false);
 
@@ -70,7 +72,7 @@ export function InboxNoteComposer({ conversation }: InboxNoteComposerProps) {
         <NoteInput sessionId={conversation.id} onDone={() => setIsNoteMode(false)} />
       ) : (
         <>
-          <InboxComposer conversation={conversation} />
+          <InboxComposer conversation={conversation} initialText={initialText} />
           <Can permission="conversation.note">
             <div className="border-t border-slate-100 px-4 py-1.5">
               <button

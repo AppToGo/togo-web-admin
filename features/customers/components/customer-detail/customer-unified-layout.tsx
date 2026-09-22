@@ -29,7 +29,8 @@ interface CustomerUnifiedLayoutProps {
   onNotesChange: (notes: string) => void;
   onNotesSave: () => void;
   isSavingNotes: boolean;
-  whatsappLink: string;
+  /** Inbox con la conversación abierta del cliente; null si no hay ventana de 24 h abierta. */
+  conversationHref: string | null;
 }
 
 export function CustomerUnifiedLayout({
@@ -39,7 +40,7 @@ export function CustomerUnifiedLayout({
   onNotesChange,
   onNotesSave,
   isSavingNotes,
-  whatsappLink,
+  conversationHref,
 }: CustomerUnifiedLayoutProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
@@ -73,14 +74,7 @@ export function CustomerUnifiedLayout({
     );
   }
 
-  const hasPhoneNumber = Boolean(customer.phoneNumber?.trim());
   const addresses: CustomerAddress[] = customer.addresses || [];
-
-  const handleWhatsAppClick = () => {
-    if (hasPhoneNumber) {
-      window.open(whatsappLink, "_blank", "noopener,noreferrer");
-    }
-  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col">
@@ -124,21 +118,18 @@ export function CustomerUnifiedLayout({
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleWhatsAppClick}
-            disabled={!hasPhoneNumber}
-            className="shrink-0"
-            title={
-              hasPhoneNumber ? t("detail.whatsapp") : t("detail.noPhoneNumber")
-            }
-          >
-            <MessageCircle
-              className={`h-4 w-4 mr-2 ${hasPhoneNumber ? "text-green-600" : "text-slate-400"}`}
-            />
-            <span className="hidden sm:inline">{t("detail.whatsapp")}</span>
-          </Button>
+          {conversationHref && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(conversationHref)}
+              className="shrink-0"
+              title={t("detail.openConversation")}
+            >
+              <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
+              <span className="hidden sm:inline">{t("detail.openConversation")}</span>
+            </Button>
+          )}
         </div>
       </header>
 
