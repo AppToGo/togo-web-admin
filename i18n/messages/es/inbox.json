@@ -29,6 +29,7 @@
   },
   "actions": {
     "take": "Tomar conversación",
+    "takingOver": "Tomando la conversación…",
     "release": "Liberar",
     "assign": "Asignar",
     "close": "Cerrar",

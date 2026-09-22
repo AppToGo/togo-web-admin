@@ -29,6 +29,7 @@
   },
   "actions": {
     "take": "Take conversation",
+    "takingOver": "Taking over the conversation…",
     "release": "Release",
     "assign": "Assign",
     "close": "Close",
