@@ -16,6 +16,7 @@ import {
 } from "@/features/conversations";
 import { InboxNoteComposer } from "@/features/conversations/components/inbox/inbox-note-composer";
 import { InboxWindowNotice } from "@/features/conversations/components/inbox/inbox-window-notice";
+import { ReopenConversationNotice } from "@/features/conversations/components/inbox/reopen-conversation-notice";
 import type { ConversationDetail } from "@/features/conversations";
 
 interface OrderConversationPanelProps {
@@ -139,8 +140,11 @@ function ConversationFooter({
 
   if (isClosed) {
     return (
-      <div className="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-3">
-        <p className="text-sm text-slate-500">{t("conversationClosed")}</p>
+      <div className="sticky bottom-0 bg-white">
+        <ReopenConversationNotice
+          sessionId={conversation.id}
+          windowExpiresAt={conversation.windowExpiresAt}
+        />
       </div>
     );
   }

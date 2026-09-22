@@ -9,6 +9,7 @@ import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useSendConversationMessage } from "../../hooks/useSendConversationMessage";
 import { isWindowOpen } from "../../utils/conversation-window";
 import { InboxWindowNotice } from "./inbox-window-notice";
+import { ReopenConversationNotice } from "./reopen-conversation-notice";
 import type { ConversationDetail } from "../../types";
 
 interface InboxComposerProps {
@@ -33,9 +34,10 @@ export function InboxComposer({ conversation, initialText }: InboxComposerProps)
   // seguir teniendo la ventana abierta.
   if (conversation.status !== "OPEN") {
     return (
-      <div className="border-t border-slate-200 px-4 py-3">
-        <p className="text-sm text-slate-500">{t("conversationClosed")}</p>
-      </div>
+      <ReopenConversationNotice
+        sessionId={conversation.id}
+        windowExpiresAt={conversation.windowExpiresAt}
+      />
     );
   }
 
