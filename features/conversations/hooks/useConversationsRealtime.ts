@@ -192,9 +192,24 @@ export function useConversationsRealtime(
       } else {
         queryClient.setQueryData<ConversationDetail>(key, (old) => {
           if (!old) return old;
-          const existingIndex = old.messages.findIndex(
-            (m) => m.waMessageId && m.waMessageId === event.message.waMessageId
-          );
+          const existingIndex = old.messages.findIndex((m) => {
+            if (m.waMessageId && m.waMessageId === event.message.waMessageId) {
+              return true;
+            }
+            // Un envío que Meta rechazó persiste igual (fila FAILED, para
+            // auditoría) con waMessageId null — el mismo valor que trae el
+            // placeholder optimista del composer, así que el match de
+            // arriba nunca alcanza para este caso. Sin este fallback, la
+            // fila real se appendea al lado de la burbuja optimista en vez
+            // de reemplazarla: mismo mensaje mostrado dos veces.
+            return (
+              !event.message.waMessageId &&
+              !m.waMessageId &&
+              m.id.startsWith("tmp-") &&
+              m.senderUserId === event.message.senderUserId &&
+              m.text === event.message.text
+            );
+          });
           const messages =
             existingIndex >= 0
               ? old.messages.map((m, i) => (i === existingIndex ? event.message : m))
