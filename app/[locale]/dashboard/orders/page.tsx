@@ -42,6 +42,7 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { useOrdersRealtime } from "@/features/orders/hooks";
+import { useConversationsRealtime } from "@/features/conversations/hooks";
 import { TourProvider, useTourContext } from "@/components/tour";
 import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
 
@@ -115,6 +116,15 @@ function OrdersPageInner() {
 
   // Initialize WebSocket connection for realtime order updates
   useOrdersRealtime();
+  // Conexión al namespace `/conversations` (no solo `/orders`): el tab
+  // "Conversación" del detalle de pedido (OrderConversationPanel) lee del
+  // mismo cache (`CONVERSATIONS_KEYS.detail`) que actualiza este socket. Sin
+  // esto, un mensaje del cliente respondiendo desde acá no llegaba hasta que
+  // algo más refrescara esa query — el operador no veía la respuesta sin
+  // recargar. Mismo hook que usa la página de Inbox (`useConversationsRealtime`),
+  // sin gate de permiso: el tab de conversación del pedido se muestra a
+  // cualquiera que vea el pedido, no sólo a quien tiene `conversation.view`.
+  useConversationsRealtime();
 
   // Filtros globales de fecha
   const dateParams = useDateFilterParams();
