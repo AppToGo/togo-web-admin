@@ -27,7 +27,11 @@
     "unassigned": "Sin asignar",
     "callbackRequested": "Pidió que lo contacten"
   },
-  "conversationClosed": "Esta conversación está cerrada — no se puede tomar ni responder desde acá.",
+  "reopenNotice": {
+    "title": "Esta conversación está cerrada",
+    "description": "Podés reabrirla mientras la ventana de 24h siga abierta.",
+    "windowExpiredDescription": "Ya pasaron más de 24h desde el último mensaje del cliente — no se puede reabrir ni escribirle directamente."
+  },
   "actions": {
     "take": "Tomar conversación",
     "takingOver": "Tomando la conversación…",
@@ -35,6 +39,8 @@
     "assign": "Asignar",
     "close": "Cerrar",
     "closedSuccess": "Conversación cerrada",
+    "reopen": "Reabrir conversación",
+    "reopenedSuccess": "Conversación reabierta",
     "note": "Nota interna"
   },
   "composer": {
@@ -64,6 +70,7 @@
     "releaseFailed": "No se pudo liberar la conversación",
     "assignFailed": "No se pudo asignar la conversación",
     "closeFailed": "No se pudo cerrar la conversación",
+    "reopenFailed": "No se pudo reabrir la conversación",
     "noteFailed": "No se pudo agregar la nota",
     "sendFailed": "No se pudo enviar el mensaje"
   },

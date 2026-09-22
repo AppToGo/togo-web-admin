@@ -3,12 +3,45 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, MessageSquareText, Phone, User } from "lucide-react";
+import { ExternalLink, MessageSquareText, Phone, RotateCcw, User } from "lucide-react";
 import { ConversationOutcomeBadge } from "../conversation-outcome-badge";
+import { useReopenConversation } from "../../hooks/useConversationControl";
+import { isWindowOpen } from "../../utils/conversation-window";
 import type { ConversationListItem } from "../../types";
 
 interface ColumnsProps {
   onSelectConversation: (sessionId: string) => void;
+}
+
+/**
+ * Autocontenido: cada fila trae su propio `useReopenConversation`, así que
+ * `useConversationColumns` no necesita recibir un callback extra ni pasar
+ * estado de mutation por prop.
+ */
+function ReopenRowButton({ conversation }: { conversation: ConversationListItem }) {
+  const t = useTranslations("inbox");
+  const reopen = useReopenConversation(conversation.id);
+
+  if (conversation.status === "OPEN" || !isWindowOpen(conversation.windowExpiresAt)) {
+    return null;
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 w-8 p-0 cursor-pointer"
+      disabled={reopen.isPending}
+      onClick={(e) => {
+        e.stopPropagation();
+        reopen.mutate();
+      }}
+      title={t("actions.reopen")}
+    >
+      <RotateCcw className="h-4 w-4" />
+      <span className="sr-only">{t("actions.reopen")}</span>
+    </Button>
+  );
 }
 
 export function useConversationColumns({
@@ -77,6 +110,7 @@ export function useConversationColumns({
       header: () => <span className="sr-only">{t("table.actions")}</span>,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
+          <ReopenRowButton conversation={row.original} />
           <Button
             variant="ghost"
             size="sm"
@@ -90,7 +124,7 @@ export function useConversationColumns({
       ),
       enableSorting: false,
       enableHiding: false,
-      size: 60,
+      size: 90,
     },
   ];
 }

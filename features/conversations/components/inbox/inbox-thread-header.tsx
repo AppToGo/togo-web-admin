@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Can } from "@/components/auth/Can";
 import {
   useTakeoverConversation,
   useReleaseConversation,
+  useReopenConversation,
 } from "../../hooks/useConversationControl";
 import { useAssignConversation } from "../../hooks/useAssignConversation";
 import { useCloseConversation } from "../../hooks/useCloseConversation";
+import { isWindowOpen } from "../../utils/conversation-window";
 import { InboxAssignDialog } from "./inbox-assign-dialog";
 import { InboxCloseDialog } from "./inbox-close-dialog";
 import type { ConversationDetail, ConversationOutcome } from "../../types";
@@ -37,11 +40,13 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
 
   const takeover = useTakeoverConversation(conversation.id);
   const release = useReleaseConversation(conversation.id);
+  const reopen = useReopenConversation(conversation.id);
   const assign = useAssignConversation(conversation.id);
   const close = useCloseConversation(conversation.id);
 
   const name = conversation.customer?.name ?? t("list.anonymous");
   const isBotOrWaiting = conversation.control !== "HUMAN";
+  const isClosed = conversation.status !== "OPEN";
 
   const handleAssign = (userId: string | null) => {
     assign.mutate(userId, { onSuccess: () => setAssignOpen(false) });
@@ -73,39 +78,65 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <Can permission="conversation.takeover">
-          {isBotOrWaiting ? (
-            <Button
-              size="sm"
-              variant="default"
-              disabled={takeover.isPending}
-              onClick={() => takeover.mutate()}
-            >
-              {t("actions.take")}
-            </Button>
+        {isClosed ? (
+          // Tomar/Asignar/Cerrar no tienen sentido sobre algo ya cerrado
+          // (el backend los rechaza con SESSION_CLOSED igual) — el único
+          // control posible acá es reabrirla, y solo con la ventana de
+          // 24h todavía abierta.
+          isWindowOpen(conversation.windowExpiresAt) ? (
+            <Can permission="conversation.reopen">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={reopen.isPending}
+                onClick={() => reopen.mutate()}
+              >
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                {t("actions.reopen")}
+              </Button>
+            </Can>
           ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={release.isPending}
-              onClick={() => release.mutate(undefined)}
-            >
-              {t("actions.release")}
-            </Button>
-          )}
-        </Can>
+            <span className="text-xs text-slate-400">
+              {t("reopenNotice.windowExpiredDescription")}
+            </span>
+          )
+        ) : (
+          <>
+            <Can permission="conversation.takeover">
+              {isBotOrWaiting ? (
+                <Button
+                  size="sm"
+                  variant="default"
+                  disabled={takeover.isPending}
+                  onClick={() => takeover.mutate()}
+                >
+                  {t("actions.take")}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={release.isPending}
+                  onClick={() => release.mutate(undefined)}
+                >
+                  {t("actions.release")}
+                </Button>
+              )}
+            </Can>
 
-        <Can permission="conversation.assign">
-          <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
-            {t("actions.assign")}
-          </Button>
-        </Can>
+            <Can permission="conversation.assign">
+              <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
+                {t("actions.assign")}
+              </Button>
+            </Can>
 
-        <Can permission="conversation.close">
-          <Button size="sm" variant="outline" onClick={() => setCloseOpen(true)}>
-            {t("actions.close")}
-          </Button>
-        </Can>
+            <Can permission="conversation.close">
+              <Button size="sm" variant="outline" onClick={() => setCloseOpen(true)}>
+                {t("actions.close")}
+              </Button>
+            </Can>
+          </>
+        )}
       </div>
 
       <InboxAssignDialog
