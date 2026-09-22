@@ -77,6 +77,16 @@ function buildInboundPreview(raw: Record<string, unknown>): InteractivePreview |
     };
   }
 
+  // Reacción del cliente a un mensaje: { messageId, emoji } — ver
+  // `buildInboundInteractive` en api-togo (messages-webhook.handler.ts).
+  // `emoji` vacío ("") es una reacción QUITADA, no ausente — por eso se
+  // discrimina por `messageId` (siempre presente en una reacción real) y
+  // no por `emoji` como hace `buildOutboundReaction`.
+  if (typeof raw.messageId === "string") {
+    const emoji = raw.emoji;
+    return { kind: "reaction", emoji: typeof emoji === "string" && emoji.length > 0 ? emoji : null };
+  }
+
   return null;
 }
 
