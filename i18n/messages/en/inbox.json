@@ -27,7 +27,11 @@
     "unassigned": "Unassigned",
     "callbackRequested": "Asked to be contacted"
   },
-  "conversationClosed": "This conversation is closed — it can't be taken over or replied to from here.",
+  "reopenNotice": {
+    "title": "This conversation is closed",
+    "description": "You can reopen it while the 24h window is still open.",
+    "windowExpiredDescription": "More than 24h passed since the customer's last message — it can't be reopened or replied to directly."
+  },
   "actions": {
     "take": "Take conversation",
     "takingOver": "Taking over the conversation…",
@@ -35,6 +39,8 @@
     "assign": "Assign",
     "close": "Close",
     "closedSuccess": "Conversation closed",
+    "reopen": "Reopen conversation",
+    "reopenedSuccess": "Conversation reopened",
     "note": "Internal note"
   },
   "composer": {
@@ -64,6 +70,7 @@
     "releaseFailed": "Couldn't release the conversation",
     "assignFailed": "Couldn't assign the conversation",
     "closeFailed": "Couldn't close the conversation",
+    "reopenFailed": "Couldn't reopen the conversation",
     "noteFailed": "Couldn't add the note",
     "sendFailed": "Couldn't send the message"
   },

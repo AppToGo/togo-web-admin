@@ -93,6 +93,18 @@ export function closeConversation(
   return post(sessionId, "close", params, businessId);
 }
 
+/**
+ * Solo permitido mientras la ventana de 24h siga abierta — el backend
+ * rechaza con `OUTSIDE_24H_WINDOW` (422) o `SESSION_REOPEN_CONFLICT` (409,
+ * ya hay una conversación más nueva con este cliente) si no aplica.
+ */
+export function reopenConversation(
+  sessionId: string,
+  businessId?: string
+): Promise<ConversationSessionSummary> {
+  return post(sessionId, "reopen", {}, businessId);
+}
+
 export async function markConversationRead(
   sessionId: string,
   businessId?: string

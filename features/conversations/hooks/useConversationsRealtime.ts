@@ -37,6 +37,7 @@ const WS_EVENTS = {
   ASSIGNED: "conversation:assigned",
   NOTE: "conversation:note",
   CLOSED: "conversation:closed",
+  REOPENED: "conversation:reopened",
   READ: "conversation:read",
   AUTH_ERROR: "auth_error",
 } as const;
@@ -239,6 +240,7 @@ export function useConversationsRealtime(
     socket.on(WS_EVENTS.ASSIGNED, invalidateSession);
     socket.on(WS_EVENTS.NOTE, invalidateSession);
     socket.on(WS_EVENTS.CLOSED, invalidateSession);
+    socket.on(WS_EVENTS.REOPENED, invalidateSession);
     socket.on(WS_EVENTS.READ, invalidateSession);
 
     return () => {
