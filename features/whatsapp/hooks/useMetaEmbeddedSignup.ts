@@ -114,6 +114,14 @@ export function useMetaEmbeddedSignup() {
     wabaId?: string;
     phoneNumberId?: string;
     generation?: number;
+    // CANCEL/ERROR del propio flujo de Embedded Signup (el negocio cerró el
+    // diálogo, o Meta reportó un fallo en algún paso) — distinto de que
+    // FB.login nunca devuelva un `code` (eso ya se maneja aparte, ver
+    // `run()`). Sin capturarlos, waitForSessionInfo() solo se entera 8s
+    // después vía el timeout genérico, y se pierde el `current_step` que
+    // Meta sugiere loguear para depurar en qué paso abandonan los negocios.
+    outcomeEvent?: "CANCEL" | "ERROR";
+    currentStep?: string;
   }>({});
 
   useEffect(() => {
@@ -127,10 +135,19 @@ export function useMetaEmbeddedSignup() {
       try {
         const data =
           typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        if (data?.type === "WA_EMBEDDED_SIGNUP" && data?.event === "FINISH") {
+        if (data?.type !== "WA_EMBEDDED_SIGNUP") return;
+
+        if (data?.event === "FINISH") {
           sessionInfoRef.current = {
             wabaId: data.data?.waba_id,
             phoneNumberId: data.data?.phone_number_id,
+            generation: generationRef.current,
+          };
+        } else if (data?.event === "CANCEL" || data?.event === "ERROR") {
+          sessionInfoRef.current = {
+            ...sessionInfoRef.current,
+            outcomeEvent: data.event,
+            currentStep: data.data?.current_step,
             generation: generationRef.current,
           };
         }
@@ -156,9 +173,33 @@ export function useMetaEmbeddedSignup() {
             wabaId,
             phoneNumberId,
             generation: msgGeneration,
+            outcomeEvent,
+            currentStep,
           } = sessionInfoRef.current;
-          if (wabaId && phoneNumberId && msgGeneration === generation) {
+          if (msgGeneration !== generation) {
+            if (Date.now() - start > SESSION_INFO_TIMEOUT_MS) {
+              reject(new Error(t("accounts.embedded.errors.noSessionInfo")));
+              return;
+            }
+            setTimeout(poll, SESSION_INFO_POLL_MS);
+            return;
+          }
+          if (wabaId && phoneNumberId) {
             resolve({ code, wabaId, phoneNumberId, metaUserId });
+            return;
+          }
+          if (outcomeEvent === "CANCEL") {
+            reject(new Error(t("accounts.embedded.errors.loginCancelled")));
+            return;
+          }
+          if (outcomeEvent === "ERROR") {
+            reject(
+              new Error(
+                currentStep
+                  ? t("accounts.embedded.errors.sessionError", { currentStep })
+                  : t("accounts.embedded.errors.sessionErrorGeneric")
+              )
+            );
             return;
           }
           if (Date.now() - start > SESSION_INFO_TIMEOUT_MS) {
