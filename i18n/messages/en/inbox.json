@@ -27,8 +27,10 @@
     "unassigned": "Unassigned",
     "callbackRequested": "Asked to be contacted"
   },
+  "conversationClosed": "This conversation is closed — it can't be taken over or replied to from here.",
   "actions": {
     "take": "Take conversation",
+    "takingOver": "Taking over the conversation…",
     "release": "Release",
     "assign": "Assign",
     "close": "Close",
