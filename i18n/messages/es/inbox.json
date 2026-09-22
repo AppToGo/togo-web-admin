@@ -27,6 +27,7 @@
     "unassigned": "Sin asignar",
     "callbackRequested": "Pidió que lo contacten"
   },
+  "conversationClosed": "Esta conversación está cerrada — no se puede tomar ni responder desde acá.",
   "actions": {
     "take": "Tomar conversación",
     "takingOver": "Tomando la conversación…",

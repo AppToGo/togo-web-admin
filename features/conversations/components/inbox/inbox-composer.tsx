@@ -27,6 +27,18 @@ export function InboxComposer({ conversation, initialText }: InboxComposerProps)
     conversation.control === "HUMAN" && conversation.assignedUserId === user?.userId;
   const windowOpen = isWindowOpen(conversation.windowExpiresAt);
 
+  // El backend rechaza takeover/mensajes con SESSION_CLOSED para cualquier
+  // `status` que no sea OPEN, independiente de la ventana de 24h (que solo
+  // mide el último mensaje del cliente) — una conversación cerrada puede
+  // seguir teniendo la ventana abierta.
+  if (conversation.status !== "OPEN") {
+    return (
+      <div className="border-t border-slate-200 px-4 py-3">
+        <p className="text-sm text-slate-500">{t("conversationClosed")}</p>
+      </div>
+    );
+  }
+
   if (!windowOpen) {
     return <InboxWindowNotice />;
   }

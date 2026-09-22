@@ -109,6 +109,12 @@ function ConversationFooter({
   const heldByOther = conversation.control === "HUMAN" && !heldByMe;
   const windowOpen = isWindowOpen(conversation.windowExpiresAt);
   const canTakeover = hasPermission("conversation.takeover");
+  // El backend rechaza takeover/release/mensajes con SESSION_CLOSED para
+  // cualquier `status` que no sea OPEN (CLOSED o EXPIRED) — independiente de
+  // la ventana de 24h, que solo mide el último mensaje del cliente. Una
+  // conversación cerrada (ej. al completarse el pedido) puede seguir teniendo
+  // la ventana abierta, así que hace falta este chequeo aparte.
+  const isClosed = conversation.status !== "OPEN";
 
   // Llegar acá desde el ⚠ (hay `draft`) toma la conversación sola, sin que el
   // operador tenga que tocar el botón — solo escribir y enviar el mensaje ya
@@ -120,7 +126,7 @@ function ConversationFooter({
   // que quede el botón manual.
   const attemptedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!draft || !windowOpen || heldByMe || heldByOther || !canTakeover) return;
+    if (!draft || !windowOpen || heldByMe || heldByOther || !canTakeover || isClosed) return;
     if (attemptedRef.current === conversation.id) return;
     attemptedRef.current = conversation.id;
     takeover.mutate(undefined, {
@@ -129,7 +135,15 @@ function ConversationFooter({
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, windowOpen, heldByMe, heldByOther, canTakeover, conversation.id]);
+  }, [draft, windowOpen, heldByMe, heldByOther, canTakeover, isClosed, conversation.id]);
+
+  if (isClosed) {
+    return (
+      <div className="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-3">
+        <p className="text-sm text-slate-500">{t("conversationClosed")}</p>
+      </div>
+    );
+  }
 
   if (!windowOpen) {
     return (
