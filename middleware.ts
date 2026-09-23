@@ -117,6 +117,22 @@ export function middleware(request: NextRequest) {
     );
   }
 
+  // 1b. Root of the app ("/", "/es", "/es/") with a cookie -> dashboard, here
+  // and not in app/[locale]/page.tsx. That page's server `redirect()` raced
+  // with AuthProvider's client `router.replace()` to login when the cookie was
+  // stale (refresh -> 401): two concurrent navigations broke Next's internal
+  // Router with React error #310 ("Rendered more hooks than during the
+  // previous render") and the app showed "Application error". Redirecting
+  // before render leaves a single navigation; a stale cookie is then handled
+  // on /dashboard/orders like any other protected route.
+  const isAppRoot =
+    pathname === "/" || (isKnownLocale && (!localeMatch?.[2] || localeMatch[2] === "/"));
+  if (hasCookie && isAppRoot) {
+    return NextResponse.redirect(
+      new URL(`/${locale ?? routing.defaultLocale}/dashboard/orders`, request.url)
+    );
+  }
+
   // 2. Non-authenticated user trying to access protected route -> redirect to login
   if (!hasCookie && !isPublicRoute && (locale || !isKnownLocale)) {
     if (isDev) {
