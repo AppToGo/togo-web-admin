@@ -37,6 +37,7 @@
   "unknownCustomer": "Unknown customer",
   "orderNumber": "Order #{id}",
   "orderCount": "{count, plural, one {# order} other {# orders}}",
+  "elapsedMinutes": "{count} min",
   "recentActivity": "Recent activity",
   "statusUpdated": "Status updated to \"{status}\"",
   "paymentStatusUpdated": "Payment status updated",
@@ -68,10 +69,6 @@
   },
   "search": {
     "placeholder": "Search by order, customer, address, payment, type..."
-  },
-  "view": {
-    "card": "Card view",
-    "list": "List view"
   },
   "filters": {
     "title": "Filters",
@@ -125,7 +122,26 @@
     "reopen": "Reopen order",
     "confirmPayment": "Confirm payment",
     "showLess": "Show less",
-    "showMore": "Show {count} more"
+    "showMore": "Show {count} more",
+    "moveOrder": "Move to another status",
+    "moveTo": "Move to",
+    "undo": "Undo",
+    "loadMore": "Load more",
+    "collapseColumn": "Collapse column",
+    "expandColumn": "Expand column",
+    "collapseStats": "Collapse summary",
+    "expandStats": "Expand summary"
+  },
+  "boardView": {
+    "label": "Board view",
+    "board": "Board",
+    "focus": "By status",
+    "list": "Grouped list"
+  },
+  "density": {
+    "label": "Card density",
+    "compact": "Compact",
+    "regular": "Full"
   },
   "kanban": {
     "newOrders": "New orders",
@@ -218,7 +234,10 @@
     "averageTime": "Average time",
     "totalRevenue": "Total revenue",
     "paid": "Paid",
-    "pendingPayment": "Pending payment"
+    "pendingPayment": "Pending payment",
+    "active": "Active",
+    "oldest": "Oldest",
+    "live": "LIVE"
   },
   "branchSelector": {
     "placeholder": "Select branches",
@@ -247,8 +266,8 @@
         "description": "Filter by date range, payment status (paid/pending) and delivery type (delivery/pickup)."
       },
       "viewToggle": {
-        "title": "Card or list view",
-        "description": "Switch between card (kanban) view or compact list view according to your preference."
+        "title": "Board view and density",
+        "description": "Switch between Board, By status or Grouped list, and adjust how detailed the cards look."
       },
       "columnVisibility": {
         "title": "Show or hide columns",

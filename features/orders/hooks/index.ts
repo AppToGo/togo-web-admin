@@ -29,6 +29,9 @@ export {
   AUTH_SESSION_KEY,
 } from './useUserBranches';
 
+// Drop target for dragged order cards
+export { useOrderDropZone } from './useOrderDropZone';
+
 // WebSocket realtime orders hook
 export { useOrdersRealtime } from './useOrdersRealtime';
 export type { RealtimeState } from './useOrdersRealtime';

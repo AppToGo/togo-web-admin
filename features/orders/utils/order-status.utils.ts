@@ -263,3 +263,24 @@ export function useStatusLabels(): Record<OrderStatus, string> {
     ABANDONED: t("ABANDONED"),
   };
 }
+
+/**
+ * Whether an order is delivered to an address. Falls back to `addressId`
+ * for legacy orders without `deliveryType` — same rule as the order type chip.
+ */
+export function isDeliveryOrder(order: {
+  deliveryType?: string | null;
+  addressId?: string | null;
+}): boolean {
+  return order.deliveryType ? order.deliveryType === "DELIVERY" : !!order.addressId;
+}
+
+/** Order total including the delivery fee when the order is a delivery. */
+export function getOrderGrandTotal(order: {
+  totalAmount: number;
+  deliveryFee?: number;
+  deliveryType?: string | null;
+  addressId?: string | null;
+}): number {
+  return order.totalAmount + (isDeliveryOrder(order) ? order.deliveryFee || 0 : 0);
+}

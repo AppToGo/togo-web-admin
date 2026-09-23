@@ -25,7 +25,7 @@ function generateStatusVariants<T>(
  * Incluye fondo, ring de drag-over y transiciones
  */
 export const columnVariants = cva(
-  "flex flex-col rounded-3xl shrink-0 p-4 h-[calc(100vh-200px)] transition-all duration-200",
+  "flex flex-col rounded-3xl shrink-0 h-[calc(100vh-200px)] transition-all duration-200",
   {
     variants: {
       status: generateStatusVariants((_, tokens) => 

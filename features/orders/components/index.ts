@@ -2,7 +2,9 @@
 export { OrdersKanbanBoard } from "./OrdersKanbanBoard";
 export { OrderStatusBadge } from "./order-status-badge";
 export { KanbanColumn } from "./KanbanColumn";
-export { OrderCard, PaymentStatusEditor, type CardViewMode } from "./OrderCard";
+export { OrderCard, PaymentStatusEditor, type CardDensity } from "./OrderCard";
+export { OrderBoardToolbar, type BoardViewMode } from "./OrderBoardToolbar";
+export { HoverTooltip } from "./HoverTooltip";
 export { OrderDetail } from "./OrderDetail";
 export { OrderDetailContent } from "./OrderDetailContent";
 export { OrderDetailDialog } from "./OrderDetailDialog";
