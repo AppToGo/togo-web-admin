@@ -8,7 +8,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import type { UseMutationResult } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useBusinessStore } from "@/features/business/stores/business.store";
@@ -31,7 +32,7 @@ import type {
   GetOrdersParams,
 } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
-import { useStatusLabels } from "../utils/order-status.utils";
+import { useStatusLabels, FINAL_STATUSES } from "../utils/order-status.utils";
 import { orderNumberValue } from "../utils/order-number.utils";
 import { LIVE_STATUSES } from "../constants/order-statuses";
 import {
@@ -236,6 +237,20 @@ export function useOrderHistory(orderId: string | null) {
   });
 }
 
+type UpdateStatusVariables = {
+  orderId: string;
+  data: UpdateOrderStatusRequest;
+  /** Set when the mutation is the toast's "Undo", so it doesn't offer another one. */
+  isUndo?: boolean;
+};
+
+type UpdateStatusContext = {
+  previousLive: [readonly unknown[], Order[] | undefined][];
+  previousOrders: Order[] | undefined;
+  previousOrder: Order | undefined;
+  previousStatus: OrderStatus | undefined;
+};
+
 /**
  * Hook to update order status
  *
@@ -252,14 +267,19 @@ export function useUpdateOrderStatus() {
   const effectiveBusinessId =
     selectedBusinessId || user?.businessId || undefined;
 
-  return useMutation({
-    mutationFn: ({
-      orderId,
-      data,
-    }: {
-      orderId: string;
-      data: UpdateOrderStatusRequest;
-    }) => updateOrderStatus(orderId, data, effectiveBusinessId),
+  // Ref to this same mutation so the success toast's "Undo" can re-trigger it
+  // from onSuccess (the mutation doesn't exist yet while the options object
+  // is being built, so it's referenced after creation).
+  const mutationRef = useRef<UseMutationResult<
+    Order,
+    Error,
+    UpdateStatusVariables,
+    UpdateStatusContext
+  > | null>(null);
+
+  const mutation = useMutation<Order, Error, UpdateStatusVariables, UpdateStatusContext>({
+    mutationFn: ({ orderId, data }: UpdateStatusVariables) =>
+      updateOrderStatus(orderId, data, effectiveBusinessId),
 
     onMutate: async ({ orderId, data }) => {
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
@@ -304,7 +324,16 @@ export function useUpdateOrderStatus() {
         return { ...old, status: data.status };
       });
 
-      return { previousLive, previousOrders, previousOrder };
+      // Status before this change, for the toast's "Undo". Read from the live
+      // lists snapshot (what the board renders), not from the detail cache:
+      // the detail query key also includes businessId, so an exact
+      // getQueryData(detail(orderId)) lookup never matches it.
+      const previousStatus =
+        previousLive
+          .flatMap(([, orders]) => orders ?? [])
+          .find((order) => order.id === orderId)?.status ?? previousOrder?.status;
+
+      return { previousLive, previousOrders, previousOrder, previousStatus };
     },
 
     onError: (err, { orderId }, context) => {
@@ -326,9 +355,33 @@ export function useUpdateOrderStatus() {
       toast.error(errorMessage || t("errors.updateStatusFailed"));
     },
 
-    onSuccess: (_data, { data }) => {
+    onSuccess: (_data, { orderId, data, isUndo }, context) => {
       const statusLabel = statusLabels[data.status];
-      toast.success(t("statusUpdated", { status: statusLabel }));
+      const previousStatus = context?.previousStatus;
+      // No undo for an undo (avoids an endless undo/redo chain), and none
+      // when either side is a final status: the API rejects transitions
+      // out of COMPLETED/CANCELLED/ABANDONED.
+      const canUndo =
+        !isUndo &&
+        !!previousStatus &&
+        previousStatus !== data.status &&
+        !FINAL_STATUSES.includes(previousStatus) &&
+        !FINAL_STATUSES.includes(data.status);
+
+      toast.success(t("statusUpdated", { status: statusLabel }), {
+        action: canUndo
+          ? {
+              label: t("actions.undo"),
+              onClick: () => {
+                mutationRef.current?.mutate({
+                  orderId,
+                  data: { status: previousStatus },
+                  isUndo: true,
+                });
+              },
+            }
+          : undefined,
+      });
     },
 
     onSettled: (_data, _error, { orderId }) => {
@@ -341,6 +394,14 @@ export function useUpdateOrderStatus() {
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.history(orderId) });
     },
   });
+
+  // Keep the ref updated outside render — the toast's "Undo" calls
+  // mutationRef.current.mutate(...) on click, long after this effect ran.
+  useEffect(() => {
+    mutationRef.current = mutation;
+  });
+
+  return mutation;
 }
 
 /**

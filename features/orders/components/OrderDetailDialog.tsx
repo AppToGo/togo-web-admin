@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 
@@ -33,6 +34,8 @@ interface OrderDetailDialogProps {
   isOpen: boolean;
   isReadOnly?: boolean;
   onClose: () => void;
+  /** "dialog" (default, centered modal) or "drawer" (right side panel) */
+  variant?: "dialog" | "drawer";
 }
 
 /**
@@ -58,6 +61,7 @@ export const OrderDetailDialog = memo(function OrderDetailDialog({
   isOpen,
   isReadOnly = false,
   onClose,
+  variant = "dialog",
 }: OrderDetailDialogProps) {
   const t = useTranslations("orders");
   const handleOpenChange = useCallback(
@@ -66,6 +70,33 @@ export const OrderDetailDialog = memo(function OrderDetailDialog({
     },
     [onClose]
   );
+
+  const body = (
+    <Suspense fallback={<OrderDetailSkeleton />}>
+      <OrderDetailContent
+        orderId={orderId}
+        onClose={onClose}
+        isReadOnly={isReadOnly}
+      />
+    </Suspense>
+  );
+
+  if (variant === "drawer") {
+    return (
+      <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+        {/* `transform` (an identity, no visual effect) creates a containing
+            block for `fixed` children — same reason as the Dialog variant:
+            the Conversation tab's fixed footer must anchor to this panel,
+            not to the viewport. */}
+        <DrawerContent size="md" className="transform">
+          <DrawerHeader>
+            <DrawerTitle>{t("detail.title")}</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">{body}</div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -80,15 +111,7 @@ export const OrderDetailDialog = memo(function OrderDetailDialog({
             {t("detail.title")}
           </DialogTitle>
         </DialogHeader>
-        <div className="px-6 py-4">
-          <Suspense fallback={<OrderDetailSkeleton />}>
-            <OrderDetailContent
-              orderId={orderId}
-              onClose={onClose}
-              isReadOnly={isReadOnly}
-            />
-          </Suspense>
-        </div>
+        <div className="px-6 py-4">{body}</div>
       </DialogContent>
     </Dialog>
   );

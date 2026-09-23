@@ -88,7 +88,10 @@ function getOrderTypeInfo(
         ? `${t("deliveryTypes.table")} · ${order.tableLabel}`
         : t("deliveryTypes.table"),
       icon: <Utensils className="w-3 h-3" />,
-      variant: "emerald",
+      // "emerald" is not a categoryBadgeVariants key (only "green", already
+      // used by the "Paid" chip), so the chip rendered with no color. "cyan"
+      // doesn't clash with delivery (blue), pickup (amber) or paid (green).
+      variant: "cyan",
     };
   }
 

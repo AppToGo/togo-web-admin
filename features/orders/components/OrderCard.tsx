@@ -13,16 +13,23 @@ import {
   Banknote,
   ArrowLeftRight,
   Wallet,
+  MoreHorizontal,
 } from "lucide-react";
-import type { Order, OrderItem, PaymentStatus } from "../types";
+import type { Order, OrderItem, OrderStatus, PaymentStatus } from "../types";
+import type { CardDensity } from "../types/order-ui.types";
 import {
   formatCurrency,
   getTimeElapsed,
   canCompleteOrder,
   getPaymentStatusLabel,
+  FINAL_STATUSES,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
-import { kanbanCardVariants, categoryBadgeVariants } from "../styles";
+import {
+  kanbanCardVariants,
+  categoryBadgeVariants,
+  type CategoryBadgeVariantProps,
+} from "../styles";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -33,8 +40,16 @@ import {
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 import { toast } from "sonner";
 import { extractErrorMessage } from "@/lib/error.utils";
+import { DEFAULT_KANBAN_STATUSES } from "../config/kanban-columns.config";
+import { dotVariants } from "../theme";
+import {
+  getElapsedMinutes,
+  getLatenessLevel,
+  type LatenessLevel,
+} from "../utils/order-lateness.utils";
+import { HoverTooltip } from "./HoverTooltip";
 
-export type CardViewMode = "card" | "list";
+export type { CardDensity };
 
 interface OrderCardProps {
   order: Order;
@@ -43,7 +58,7 @@ interface OrderCardProps {
   badgeVariant?: string;
   currentStatus?: string;
   dragColor?: string;
-  viewMode?: CardViewMode;
+  density?: CardDensity;
 }
 
 // Icono de método de pago con tooltip
@@ -179,15 +194,6 @@ function formatPaymentStatus(status?: string, t?: ReturnType<typeof useTranslati
   return t?.(`paymentStatus.${key}`) || key;
 }
 
-// Función para formatear la hora
-function formatOrderTime(date: Date | string): string {
-  const d = new Date(date);
-  return d.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 // Tipo de orden basado en deliveryType (docs/architecture/pedidos-en-mesa.md)
 function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>): {
   label: string;
@@ -219,7 +225,11 @@ function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>):
         ? `${t?.("deliveryTypes.table") || "Table"} · ${order.tableLabel}`
         : t?.("deliveryTypes.table") || "Table",
       icon: <Utensils className="w-3 h-3" />,
-      variant: "emerald",
+      // "emerald" is not a categoryBadgeVariants key (only "green", already
+      // used by the "Paid" chip), so the dine-in chip rendered with no color.
+      // "cyan" is unused and doesn't clash with delivery (blue), pickup
+      // (amber) or paid (green).
+      variant: "cyan",
       isDelivery: false,
     };
   }
@@ -233,122 +243,121 @@ function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>):
   };
 }
 
-// Componente para vista compacta de lista
-function OrderListItem({
+// Terminal statuses: lateness no longer matters, so the timer stays muted.
+const LATENESS_EXEMPT_STATUSES = new Set<string>(["COMPLETED", "CANCELLED", "ABANDONED"]);
+
+const LATENESS_CLASS: Record<LatenessLevel, string> = {
+  ok: "text-slate-500",
+  warning: "text-amber-600 bg-amber-50",
+  critical: "text-red-600 bg-red-50",
+};
+
+// Visual accent only — the timer text still comes from getTimeElapsed.
+function getLatenessClass(order: Order, currentStatus?: string): string {
+  if (currentStatus && LATENESS_EXEMPT_STATUSES.has(currentStatus)) {
+    return "text-slate-400";
+  }
+  return LATENESS_CLASS[getLatenessLevel(getElapsedMinutes(order.createdAt))];
+}
+
+// Order type chip (delivery / pickup / dine-in) — same chip as the card
+// header, reused by the grouped list view.
+export function OrderTypeBadge({ order }: { order: Order }) {
+  const t = useTranslations("orders");
+  const orderType = getOrderTypeInfo(order, t);
+  return (
+    <span
+      className={categoryBadgeVariants({
+        variant: orderType.variant as CategoryBadgeVariantProps["variant"],
+      })}
+    >
+      {orderType.icon}
+      {orderType.label}
+    </span>
+  );
+}
+
+// Elapsed-time badge, colored by lateness.
+export function TimeBadge({ order, currentStatus }: { order: Order; currentStatus?: string }) {
+  const timeElapsed = getTimeElapsed(order.createdAt);
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-medium tabular-nums shrink-0",
+        getLatenessClass(order, currentStatus)
+      )}
+    >
+      <Clock className="w-3 h-3" />
+      {timeElapsed}
+    </span>
+  );
+}
+
+// "Move to" menu — an alternative to drag & drop. Offers the same target
+// statuses the board columns already accept on drop; it adds no new
+// transition rules.
+function OrderMoveMenu({
   order,
-  onClick,
-  dragColor = "indigo",
-  isDragging = false,
-  onDragStart,
-  onDragEnd,
+  currentStatus,
+  onStatusChange,
 }: {
   order: Order;
-  onClick: () => void;
-  dragColor?: string;
-  isDragging?: boolean;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragEnd?: () => void;
+  currentStatus?: string;
+  onStatusChange?: (orderId: string, newStatus: string) => void;
 }) {
   const t = useTranslations("orders");
-  const orderNumber = formatOrderNumber(order.id, order.orderNumber);
-  const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
-  const orderTime = formatOrderTime(order.createdAt);
-  const fee = order.deliveryType === "DELIVERY" ? order.deliveryFee || 0 : 0;
+  const tStatus = useTranslations("orders.status");
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Mapa de colores para el ring de drag
-  const dragRingColors: Record<string, string> = {
-    gray: "ring-gray-400",
-    blue: "ring-blue-400",
-    purple: "ring-purple-400",
-    green: "ring-emerald-400",
-    orange: "ring-orange-400",
-    pink: "ring-pink-400",
-    amber: "ring-amber-400",
-    cyan: "ring-cyan-400",
-    indigo: "ring-indigo-400",
-  };
+  // Final orders (Delivered/Cancelled) can't leave that status, so the menu
+  // would only offer transitions the API rejects.
+  if (!onStatusChange || FINAL_STATUSES.includes(currentStatus as OrderStatus)) return null;
+
+  const targets = DEFAULT_KANBAN_STATUSES.filter((s) => s !== currentStatus);
+  if (targets.length === 0) return null;
 
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onClick}
-      className={cn(
-        "p-3 bg-white rounded-card",
-        "border border-slate-100 hover:border-slate-200",
-        "hover:shadow-card transition-all duration-200 cursor-grab active:cursor-grabbing",
-        isDragging &&
-          `opacity-60 rotate-1 scale-[1.02] shadow-lg ring-2 ${dragRingColors[dragColor] || dragRingColors.indigo}`
-      )}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
-      {/* Delivery address */}
-      {orderType.isDelivery && order.address && (
-        <div className="flex items-start gap-1 text-xs text-slate-500">
-          <svg
-            className="w-3 h-3 mt-0.5 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          <span className="line-clamp-2">{order.address.addressText}</span>
-        </div>
-      )}
-
-      {/* Header: Order number and Total */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-bold text-slate-900 text-base">
-          {orderNumber}
-        </span>
-        <span className="font-bold text-slate-900 text-lg">
-          {formatCurrency(order.totalAmount + fee)}
-        </span>
-      </div>
-
-      {/* Footer: Type, Delivery, Time and Payment status */}
-      <div className="flex items-center gap-2 text-xs">
-        {/* Time */}
-        <div className="flex items-center gap-1 text-slate-400">
-          <Clock className="w-3 h-3" />
-          {orderTime}
-        </div>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Order type */}
-        <span
-          className={categoryBadgeVariants({
-            variant: orderType.variant as any,
-          })}
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+        <HoverTooltip content={t("actions.moveOrder")}>
+          <DropdownMenuTrigger asChild>
+            <button
+              onClick={(e) => e.stopPropagation()}
+              aria-label={t("actions.moveOrder")}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+        </HoverTooltip>
+        <DropdownMenuContent
+          align="end"
+          className="min-w-[160px] z-[9999]"
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          {orderType.icon}
-          <span>{orderType.label}</span>
-        </span>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Payment status - Editable */}
-        <PaymentStatusEditor
-          orderId={order.id}
-          paymentMethod={order.paymentMethod}
-          currentStatus={order.paymentStatus}
-        />
-      </div>
+          <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            {t("actions.moveTo")}
+          </div>
+          {targets.map((status: OrderStatus) => (
+            <DropdownMenuItem
+              key={status}
+              onSelect={() => {
+                onStatusChange(order.id, status);
+                setIsOpen(false);
+              }}
+              className="flex items-center gap-2 text-xs cursor-pointer"
+            >
+              <span
+                className={cn("w-2 h-2 rounded-full shrink-0", dotVariants({ status }))}
+              />
+              <span className="text-slate-700">{tStatus(status)}</span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
@@ -359,11 +368,13 @@ function OrderItemsList({
   totalAmount,
   deliveryFee,
   isDelivery,
+  compact = false,
 }: {
   items?: OrderItem[];
   totalAmount: number;
   deliveryFee?: number;
   isDelivery?: boolean;
+  compact?: boolean;
 }) {
   const t = useTranslations("orders");
   const [showAll, setShowAll] = useState(false);
@@ -373,6 +384,24 @@ function OrderItemsList({
   const subtotal =
     items?.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) || 0;
   const fee = isDelivery ? deliveryFee || 0 : 0;
+
+  // Compact density: a single line with the item summary and total, no
+  // breakdown or "show more" — the full detail stays in the order drawer.
+  if (compact) {
+    const summary = items?.length
+      ? items.map((item) => `${item.quantity}x ${item.productName}`).join(", ")
+      : t("empty.noProducts");
+    return (
+      <div className="flex items-center justify-between gap-2 pt-2 mt-2 border-t border-slate-100">
+        <span className="text-xs text-slate-500 truncate" title={summary}>
+          {summary}
+        </span>
+        <span className="font-bold text-slate-900 text-sm shrink-0">
+          {formatCurrency(fee + totalAmount)}
+        </span>
+      </div>
+    );
+  }
 
   if (!items || items.length === 0) {
     return (
@@ -463,13 +492,12 @@ export const OrderCard = memo(function OrderCard({
   badgeVariant = "slate",
   currentStatus,
   dragColor = "indigo",
-  viewMode = "card",
+  density = "regular",
 }: OrderCardProps) {
   const t = useTranslations("orders");
   const [isDragging, setIsDragging] = useState(false);
 
   const orderNumber = formatOrderNumber(order.id, order.orderNumber);
-  const timeElapsed = getTimeElapsed(order.createdAt);
   const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
 
   const handleCompleteClick = useCallback(
@@ -517,21 +545,6 @@ export const OrderCard = memo(function OrderCard({
     setIsDragging(false);
   };
 
-  // Si es vista de lista, renderizar el componente compacto
-  if (viewMode === "list") {
-    return (
-      <OrderListItem
-        order={order}
-        onClick={handleCardClick}
-        dragColor={dragColor}
-        isDragging={isDragging}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      />
-    );
-  }
-
-  // Vista de card (default)
   return (
     <>
       <div
@@ -548,10 +561,10 @@ export const OrderCard = memo(function OrderCard({
         )}
         onClick={handleCardClick}
       >
-        {/* Header: Order number, address (if delivery) and type */}
+        {/* Header: order number, type and elapsed time */}
         <div className="mb-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-bold text-slate-900 text-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-bold text-slate-900 text-sm shrink-0">
               {orderNumber}
             </span>
             <span
@@ -562,33 +575,9 @@ export const OrderCard = memo(function OrderCard({
               {orderType.icon}
               {orderType.label}
             </span>
+            <span className="flex-1" />
+            <TimeBadge order={order} currentStatus={currentStatus} />
           </div>
-
-          {/* Delivery address */}
-          {orderType.isDelivery && order.address && (
-            <div className="flex items-start gap-1 text-xs text-slate-500 mt-1">
-              <svg
-                className="w-3 h-3 mt-0.5 shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span className="line-clamp-2">{order.address.addressText}</span>
-            </div>
-          )}
         </div>
 
         {/* Items de la orden con total incluido */}
@@ -600,20 +589,23 @@ export const OrderCard = memo(function OrderCard({
             isDelivery={
               order.deliveryType === "DELIVERY" || orderType.isDelivery
             }
+            compact={density === "compact"}
           />
         </div>
 
-        {/* Footer: Metadata (time and payment combined) */}
+        {/* Footer: payment status (original styles) + quick "move to" menu */}
         <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            <span>{timeElapsed}</span>
-          </div>
           {/* Payment method (icon) + Editable payment status */}
           <PaymentStatusEditor
             orderId={order.id}
             paymentMethod={order.paymentMethod}
             currentStatus={order.paymentStatus}
+          />
+          <span className="flex-1" />
+          <OrderMoveMenu
+            order={order}
+            currentStatus={currentStatus}
+            onStatusChange={onStatusChange}
           />
         </div>
       </div>
