@@ -19,6 +19,8 @@ export {
   getPaymentMethodLabel,
   getDeliveryTypeLabel,
   useStatusLabels,
+  isDeliveryOrder,
+  getOrderGrandTotal,
 } from './order-status.utils';
 
 // Order number formatting utility

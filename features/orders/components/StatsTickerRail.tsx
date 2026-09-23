@@ -7,7 +7,10 @@ import { HoverTooltip } from "./HoverTooltip";
 import type { Order, OrderStatus } from "../types";
 import type { OrderMetricsResponse } from "../types/order-metrics.types";
 import { formatCurrency } from "../utils/order-status.utils";
-import { getLatenessLevel, getOldestElapsedMinutes } from "../utils/order-lateness.utils";
+import {
+  getLatenessLevel,
+  getOldestElapsedMinutes,
+} from "../utils/order-lateness.utils";
 
 // Ticker CSS lives next to the component (React 19 hoists <style> to <head>
 // and dedupes it by `href`). It is kept out of globals.css on purpose:
@@ -39,11 +42,19 @@ function TickerCopy({ items }: { items: TickerItem[] }) {
   return (
     <div className="inline-flex items-center gap-[22px] pe-[22px]">
       {items.map((item, i) => (
-        <span key={i} className="inline-flex items-center gap-1.5 whitespace-nowrap">
+        <span
+          key={i}
+          className="inline-flex items-center gap-1.5 whitespace-nowrap"
+        >
           <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
             {item.label}
           </span>
-          <span className={cn("text-[13px] font-bold tabular-nums", item.colorClass)}>
+          <span
+            className={cn(
+              "text-[13px] font-bold tabular-nums",
+              item.colorClass
+            )}
+          >
             {item.value}
           </span>
           {item.trend && (
@@ -74,48 +85,69 @@ interface StatsTickerRailProps {
  * the design (vertical text, same colors, pauses on hover). The whole rail
  * is a single expand button, like a collapsed board column.
  */
-export function StatsTickerRail({ metrics, activeOrders, onExpand }: StatsTickerRailProps) {
+export function StatsTickerRail({
+  metrics,
+  activeOrders,
+  onExpand,
+}: StatsTickerRailProps) {
   const t = useTranslations("orders");
-  if (!metrics) return null;
+  // While metrics (re)load the rail keeps rendering — it holds the only
+  // button to expand the panel back — just without the ticker content.
+  const items: TickerItem[] = metrics ? buildItems(metrics) : [];
 
-  const countByStatus = (status: OrderStatus) => metrics.porEstadoOrden[status] || 0;
-  const oldestMinutes = getOldestElapsedMinutes(activeOrders) ?? 0;
-  const hasPending = metrics.conteos.pendientesPago > 0;
+  function buildItems(metrics: OrderMetricsResponse): TickerItem[] {
+    const countByStatus = (status: OrderStatus) =>
+      metrics.porEstadoOrden[status] || 0;
+    const oldestMinutes = getOldestElapsedMinutes(activeOrders) ?? 0;
+    const hasPending = metrics.conteos.pendientesPago > 0;
 
-  const items: TickerItem[] = [
-    { label: t("metrics.active"), value: activeOrders.length, colorClass: "text-indigo-300" },
-    {
-      label: t("status.CONFIRMED"),
-      value: countByStatus("CONFIRMED"),
-      colorClass: "text-blue-500",
-      trend: "up",
-    },
-    { label: t("status.IN_PROGRESS"), value: countByStatus("IN_PROGRESS"), colorClass: "text-purple-500" },
-    { label: t("status.READY"), value: countByStatus("READY"), colorClass: "text-amber-500" },
-    {
-      label: t("status.COMPLETED"),
-      value: `${metrics.conteos.completadasHoy}/${metrics.conteos.hoy}`,
-      colorClass: "text-emerald-500",
-      trend: "up",
-    },
-    {
-      label: t("metrics.paid"),
-      value: formatCurrency(metrics.recaudos.pagadas.total),
-      colorClass: "text-emerald-400",
-      trend: "up",
-    },
-    {
-      label: t("metrics.pendingPayment"),
-      value: formatCurrency(metrics.recaudos.pendientesPago.total),
-      colorClass: hasPending ? "text-amber-400" : "text-slate-400",
-      trend: hasPending ? "down" : undefined,
-    },
-    {
-      label: t("metrics.oldest"),
-      value: t("elapsedMinutes", { count: oldestMinutes }),
-      colorClass: LATENESS_TEXT_CLASS[getLatenessLevel(oldestMinutes)],
-    },
-  ];
+    return [
+      {
+        label: t("metrics.active"),
+        value: activeOrders.length,
+        colorClass: "text-indigo-300",
+      },
+      {
+        label: t("status.CONFIRMED"),
+        value: countByStatus("CONFIRMED"),
+        colorClass: "text-blue-500",
+        trend: "up",
+      },
+      {
+        label: t("status.IN_PROGRESS"),
+        value: countByStatus("IN_PROGRESS"),
+        colorClass: "text-purple-500",
+      },
+      {
+        label: t("status.READY"),
+        value: countByStatus("READY"),
+        colorClass: "text-amber-500",
+      },
+      {
+        label: t("status.COMPLETED"),
+        value: `${metrics.conteos.completadasHoy}/${metrics.conteos.hoy}`,
+        colorClass: "text-emerald-500",
+        trend: "up",
+      },
+      {
+        label: t("metrics.paid"),
+        value: formatCurrency(metrics.recaudos.pagadas.total),
+        colorClass: "text-emerald-400",
+        trend: "up",
+      },
+      {
+        label: t("metrics.pendingPayment"),
+        value: formatCurrency(metrics.recaudos.pendientesPago.total),
+        colorClass: hasPending ? "text-amber-400" : "text-slate-400",
+        trend: hasPending ? "down" : undefined,
+      },
+      {
+        label: t("metrics.oldest"),
+        value: t("elapsedMinutes", { count: oldestMinutes }),
+        colorClass: LATENESS_TEXT_CLASS[getLatenessLevel(oldestMinutes)],
+      },
+    ];
+  }
 
   return (
     <>
@@ -144,10 +176,12 @@ export function StatsTickerRail({ metrics, activeOrders, onExpand }: StatsTicker
               {/* `self-start` keeps the track at its real height; stretched to the
                   rail height, -50% would only travel half the visible area and
                   jump on restart. The animation itself lives in TICKER_CSS. */}
-              <div className="orders-ticker-track inline-flex self-start [writing-mode:vertical-rl]">
-                <TickerCopy items={items} />
-                <TickerCopy items={items} />
-              </div>
+              {items.length > 0 && (
+                <div className="orders-ticker-track inline-flex self-start [writing-mode:vertical-rl]">
+                  <TickerCopy items={items} />
+                  <TickerCopy items={items} />
+                </div>
+              )}
             </div>
           </div>
         </button>

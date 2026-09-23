@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { OrderCard } from "./OrderCard";
 import type { CardDensity } from "./OrderCard";
-import type { Order, OrderStatus } from "../types";
+import type { ArchivePagination, Order, OrderStatus } from "../types";
 import { getColumnConfig } from "../config/kanban-columns.config";
 import { dotVariants } from "../theme";
 import { getLatenessLevel, getOldestElapsedMinutes } from "../utils/order-lateness.utils";
+import { useOrderDropZone } from "../hooks/useOrderDropZone";
+import { KanbanCardSkeleton } from "./KanbanColumn";
+
+const LOADING_CARDS = 3;
 
 interface FocusTabProps {
   status: OrderStatus;
@@ -30,24 +33,13 @@ function FocusTab({
   onDropOrder,
 }: FocusTabProps) {
   const t = useTranslations("orders");
-  const [isDragOver, setIsDragOver] = useState(false);
+  const { isDragOver, dropHandlers } = useOrderDropZone(status, onDropOrder);
 
   return (
     <button
       type="button"
       onClick={onPick}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragOver(true);
-      }}
-      onDragLeave={() => setIsDragOver(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        const orderId = e.dataTransfer.getData("orderId");
-        const fromStatus = e.dataTransfer.getData("fromStatus");
-        if (orderId && fromStatus !== status) onDropOrder(orderId, status);
-      }}
+      {...dropHandlers}
       className={cn(
         "relative text-left rounded-2xl px-3 py-2 border-2 transition-all duration-200",
         active || isDragOver
@@ -93,6 +85,10 @@ interface FocusViewProps {
   /** Per-status totals from metrics (not affected by search/filters) — same
    * source the Board column headers use. */
   totalCounts?: Partial<Record<OrderStatus, number>>;
+  isStatusLoading?: (status: OrderStatus) => boolean;
+  archive?: ArchivePagination;
+  /** Tour: data-tour-step for the first card of the active status. */
+  firstCardTourStep?: string;
 }
 
 /**
@@ -109,10 +105,15 @@ export function FocusView({
   onStatusChange,
   density,
   totalCounts,
+  isStatusLoading,
+  archive,
+  firstCardTourStep,
 }: FocusViewProps) {
   const t = useTranslations("orders");
 
   const activeOrders = ordersByStatus[activeStatus] || [];
+  const isLoading = isStatusLoading?.(activeStatus) ?? false;
+  const canLoadMore = archive?.status === activeStatus && archive.hasMore && activeOrders.length > 0;
 
   return (
     <div className="h-full min-h-0 flex flex-col gap-3">
@@ -140,7 +141,13 @@ export function FocusView({
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin pb-2">
-        {activeOrders.length === 0 ? (
+        {isLoading && activeOrders.length === 0 ? (
+          <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(270px,1fr))]">
+            {Array.from({ length: LOADING_CARDS }).map((_, i) => (
+              <KanbanCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : activeOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-16 text-center rounded-2xl border-2 border-dashed border-slate-200/70">
             <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-100">
               <span className={cn("w-2 h-2 rounded-full", dotVariants({ status: activeStatus }))} />
@@ -149,16 +156,29 @@ export function FocusView({
           </div>
         ) : (
           <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(270px,1fr))]">
-            {activeOrders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onStatusChange={onStatusChange}
-                onClick={() => onOrderClick?.(order.id)}
-                currentStatus={activeStatus}
-                density={density}
-              />
+            {activeOrders.map((order, index) => (
+              <div key={order.id} data-tour-step={index === 0 ? firstCardTourStep : undefined}>
+                <OrderCard
+                  order={order}
+                  onStatusChange={onStatusChange}
+                  onClick={() => onOrderClick?.(order.id)}
+                  currentStatus={activeStatus}
+                  density={density}
+                />
+              </div>
             ))}
+          </div>
+        )}
+        {canLoadMore && (
+          <div className="flex justify-center pt-3">
+            <button
+              type="button"
+              onClick={archive.onLoadMore}
+              disabled={archive.isFetchingNextPage}
+              className="h-8 px-3 rounded-lg text-xs font-semibold bg-white/70 text-slate-600 hover:bg-white disabled:opacity-60 transition-colors"
+            >
+              {t("actions.loadMore")}
+            </button>
           </div>
         )}
       </div>

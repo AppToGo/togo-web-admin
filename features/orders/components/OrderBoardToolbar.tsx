@@ -3,10 +3,10 @@
 import { useTranslations } from "next-intl";
 import { Columns3, Focus, LayoutList, Rows3, ListTree } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { CardDensity } from "./OrderCard";
+import type { BoardViewMode, CardDensity } from "../types/order-ui.types";
 import { HoverTooltip } from "./HoverTooltip";
 
-export type BoardViewMode = "board" | "focus" | "list";
+export type { BoardViewMode } from "../types/order-ui.types";
 
 interface OrderBoardToolbarProps {
   view: BoardViewMode;

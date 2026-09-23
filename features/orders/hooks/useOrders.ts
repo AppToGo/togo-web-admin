@@ -237,6 +237,20 @@ export function useOrderHistory(orderId: string | null) {
   });
 }
 
+type UpdateStatusVariables = {
+  orderId: string;
+  data: UpdateOrderStatusRequest;
+  /** Set when the mutation is the toast's "Undo", so it doesn't offer another one. */
+  isUndo?: boolean;
+};
+
+type UpdateStatusContext = {
+  previousLive: [readonly unknown[], Order[] | undefined][];
+  previousOrders: Order[] | undefined;
+  previousOrder: Order | undefined;
+  previousStatus: OrderStatus | undefined;
+};
+
 /**
  * Hook to update order status
  *
@@ -259,17 +273,13 @@ export function useUpdateOrderStatus() {
   const mutationRef = useRef<UseMutationResult<
     Order,
     Error,
-    { orderId: string; data: UpdateOrderStatusRequest }
+    UpdateStatusVariables,
+    UpdateStatusContext
   > | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: ({
-      orderId,
-      data,
-    }: {
-      orderId: string;
-      data: UpdateOrderStatusRequest;
-    }) => updateOrderStatus(orderId, data, effectiveBusinessId),
+  const mutation = useMutation<Order, Error, UpdateStatusVariables, UpdateStatusContext>({
+    mutationFn: ({ orderId, data }: UpdateStatusVariables) =>
+      updateOrderStatus(orderId, data, effectiveBusinessId),
 
     onMutate: async ({ orderId, data }) => {
       await queryClient.cancelQueries({ queryKey: ORDERS_KEYS.all });
@@ -314,7 +324,16 @@ export function useUpdateOrderStatus() {
         return { ...old, status: data.status };
       });
 
-      return { previousLive, previousOrders, previousOrder };
+      // Status before this change, for the toast's "Undo". Read from the live
+      // lists snapshot (what the board renders), not from the detail cache:
+      // the detail query key also includes businessId, so an exact
+      // getQueryData(detail(orderId)) lookup never matches it.
+      const previousStatus =
+        previousLive
+          .flatMap(([, orders]) => orders ?? [])
+          .find((order) => order.id === orderId)?.status ?? previousOrder?.status;
+
+      return { previousLive, previousOrders, previousOrder, previousStatus };
     },
 
     onError: (err, { orderId }, context) => {
@@ -336,13 +355,18 @@ export function useUpdateOrderStatus() {
       toast.error(errorMessage || t("errors.updateStatusFailed"));
     },
 
-    onSuccess: (_data, { orderId, data }, context) => {
+    onSuccess: (_data, { orderId, data, isUndo }, context) => {
       const statusLabel = statusLabels[data.status];
-      const previousStatus = context?.previousOrder?.status;
+      const previousStatus = context?.previousStatus;
+      // No undo for an undo (avoids an endless undo/redo chain), and none
+      // when either side is a final status: the API rejects transitions
+      // out of COMPLETED/CANCELLED/ABANDONED.
       const canUndo =
-        previousStatus && previousStatus !== data.status
-          ? !FINAL_STATUSES.includes(previousStatus)
-          : false;
+        !isUndo &&
+        !!previousStatus &&
+        previousStatus !== data.status &&
+        !FINAL_STATUSES.includes(previousStatus) &&
+        !FINAL_STATUSES.includes(data.status);
 
       toast.success(t("statusUpdated", { status: statusLabel }), {
         action: canUndo
@@ -351,7 +375,8 @@ export function useUpdateOrderStatus() {
               onClick: () => {
                 mutationRef.current?.mutate({
                   orderId,
-                  data: { status: previousStatus as OrderStatus },
+                  data: { status: previousStatus },
+                  isUndo: true,
                 });
               },
             }

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Minimize2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { KanbanColumn, RAIL_WIDTH } from "./KanbanColumn";
 import { OrderDetailDialog } from "./OrderDetailDialog";
@@ -31,6 +32,7 @@ import {
   getPaymentMethodLabel,
   getPaymentStatusLabel,
   getDeliveryTypeLabel,
+  canCompleteOrder,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import type { CardDensity } from "./OrderCard";
@@ -291,14 +293,50 @@ export function OrdersKanbanBoard({
     [filteredOrdersByStatus]
   );
 
+  // Single entry point for every status change on this screen (drag & drop,
+  // "Move to" menu, next-step button, "By status" tab drops). Moving to
+  // Delivered runs the same canCompleteOrder check as the detail status
+  // editor, so no view can complete an unpaid or not-ready order.
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
+      if (newStatus === "COMPLETED") {
+        const order = Object.values(filteredOrdersByStatus)
+          .flat()
+          .find((o) => o.id === orderId);
+        const validation = order ? canCompleteOrder(order) : { valid: true };
+        if (!validation.valid) {
+          toast.error(
+            validation.message
+              ? t(validation.message.replace(/^orders\./, ""))
+              : t("errors.cannotComplete")
+          );
+          return;
+        }
+      }
       updateStatus.mutate({
         orderId,
         data: { status: newStatus as OrderStatus },
       });
     },
-    [updateStatus]
+    [updateStatus, filteredOrdersByStatus, t]
+  );
+
+  // Delivered orders come from a separate paginated query; every view uses
+  // the same loading flag and "load more" for that status as the board.
+  const isStatusLoading = useCallback(
+    (status: OrderStatus) => (status === "COMPLETED" ? isLoadingCompleted : isLoadingLive),
+    [isLoadingCompleted, isLoadingLive]
+  );
+  const archivePagination = useMemo(
+    () => ({
+      status: "COMPLETED" as OrderStatus,
+      hasMore: !!hasNextPage,
+      isFetchingNextPage,
+      onLoadMore: () => {
+        fetchNextPage();
+      },
+    }),
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
   );
 
   const handleOrderClick = useCallback((orderId: string) => {
@@ -420,6 +458,9 @@ export function OrdersKanbanBoard({
                 onStatusChange={handleStatusChange}
                 density={density}
                 totalCounts={metrics?.porEstadoOrden}
+                isStatusLoading={isStatusLoading}
+                archive={archivePagination}
+                firstCardTourStep="order-card"
               />
             </div>
           )}
@@ -431,6 +472,9 @@ export function OrdersKanbanBoard({
                 ordersByStatus={filteredOrdersByStatus}
                 onOrderClick={handleOrderClick}
                 onStatusChange={handleStatusChange}
+                isStatusLoading={isStatusLoading}
+                archive={archivePagination}
+                firstRowTourStep="order-card"
               />
             </div>
           )}

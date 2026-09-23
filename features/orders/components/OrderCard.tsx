@@ -21,6 +21,7 @@ import {
   getTimeElapsed,
   canCompleteOrder,
   getPaymentStatusLabel,
+  FINAL_STATUSES,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import {
@@ -47,7 +48,8 @@ import {
 } from "../utils/order-lateness.utils";
 import { HoverTooltip } from "./HoverTooltip";
 
-export type CardDensity = "compact" | "regular";
+export type { CardDensity } from "../types/order-ui.types";
+import type { CardDensity } from "../types/order-ui.types";
 
 interface OrderCardProps {
   order: Order;
@@ -307,7 +309,9 @@ function OrderMoveMenu({
   const tStatus = useTranslations("orders.status");
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!onStatusChange) return null;
+  // Final orders (Delivered/Cancelled) can't leave that status, so the menu
+  // would only offer transitions the API rejects.
+  if (!onStatusChange || FINAL_STATUSES.includes(currentStatus as OrderStatus)) return null;
 
   const targets = DEFAULT_KANBAN_STATUSES.filter((s) => s !== currentStatus);
   if (targets.length === 0) return null;

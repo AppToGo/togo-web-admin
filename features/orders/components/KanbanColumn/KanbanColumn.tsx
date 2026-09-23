@@ -306,7 +306,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   );
 });
 
-function KanbanCardSkeleton() {
+export function KanbanCardSkeleton() {
   return (
     <div className="bg-white rounded-card border border-slate-100 p-4 space-y-3 shadow-card animate-pulse">
       <div className="flex items-center justify-between">

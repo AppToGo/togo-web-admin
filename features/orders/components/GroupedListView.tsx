@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { OrderTypeBadge, PaymentStatusEditor, TimeBadge } from "./OrderCard";
-import type { Order, OrderStatus } from "../types";
+import type { ArchivePagination, Order, OrderStatus } from "../types";
 import { getColumnConfig } from "../config/kanban-columns.config";
 import { dotVariants } from "../theme";
-import { canCompleteOrder, formatCurrency } from "../utils/order-status.utils";
+import { formatCurrency, getOrderGrandTotal } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
+import { useOrderDropZone } from "../hooks/useOrderDropZone";
 
 // "Next step" action per status — reuses the existing orders.actions labels
 // (Accept / Mark ready / Deliver).
@@ -21,9 +21,7 @@ const NEXT_STEP: Partial<Record<OrderStatus, { to: OrderStatus; labelKey: string
 };
 
 // Literal class names (not built dynamically) so Tailwind picks them up.
-const STATUS_STYLE: Partial<
-  Record<OrderStatus, { pill: string; borderOver: string }>
-> = {
+const STATUS_STYLE: Partial<Record<OrderStatus, { pill: string; borderOver: string }>> = {
   CONFIRMED: { pill: "bg-blue-100 text-blue-700", borderOver: "border-blue-400" },
   IN_PROGRESS: { pill: "bg-purple-100 text-purple-700", borderOver: "border-purple-400" },
   READY: { pill: "bg-amber-100 text-amber-700", borderOver: "border-amber-400" },
@@ -36,19 +34,17 @@ const STATUS_STYLE: Partial<
 const ROW_GRID_CLASS =
   "grid-cols-[64px_minmax(0,1.3fr)_minmax(0,1.2fr)_96px_120px_76px_132px]";
 
-function orderTotal(order: Order): number {
-  const fee = order.deliveryType === "DELIVERY" ? order.deliveryFee || 0 : 0;
-  return order.totalAmount + fee;
-}
+const LOADING_ROWS = 2;
 
 interface ListRowProps {
   order: Order;
   status: OrderStatus;
+  tourStep?: string;
   onOrderClick?: (orderId: string) => void;
-  onMove: (order: Order, to: OrderStatus) => void;
+  onStatusChange?: (orderId: string, newStatus: string) => void;
 }
 
-function ListRow({ order, status, onOrderClick, onMove }: ListRowProps) {
+function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: ListRowProps) {
   const t = useTranslations("orders");
   const next = NEXT_STEP[status];
   const itemsSummary = order.items?.length
@@ -58,6 +54,7 @@ function ListRow({ order, status, onOrderClick, onMove }: ListRowProps) {
   return (
     <div
       draggable
+      data-tour-step={tourStep}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("orderId", order.id);
@@ -87,7 +84,7 @@ function ListRow({ order, status, onOrderClick, onMove }: ListRowProps) {
       </span>
 
       <span className="font-bold text-[13px] text-slate-900 tabular-nums">
-        {formatCurrency(orderTotal(order))}
+        {formatCurrency(getOrderGrandTotal(order))}
       </span>
 
       <span className="text-xs text-slate-400">
@@ -105,7 +102,7 @@ function ListRow({ order, status, onOrderClick, onMove }: ListRowProps) {
         {next && (
           <button
             type="button"
-            onClick={() => onMove(order, next.to)}
+            onClick={() => onStatusChange?.(order.id, next.to)}
             className="h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 inline-flex items-center gap-1 whitespace-nowrap transition-colors"
           >
             {t(next.labelKey)}
@@ -117,26 +114,43 @@ function ListRow({ order, status, onOrderClick, onMove }: ListRowProps) {
   );
 }
 
+function ListRowSkeleton() {
+  return (
+    <div className="flex items-center gap-4 px-4 py-3 border-t border-slate-100 animate-pulse">
+      <div className="h-4 w-12 bg-slate-100 rounded" />
+      <div className="h-4 flex-1 bg-slate-100 rounded" />
+      <div className="h-4 w-20 bg-slate-100 rounded" />
+      <div className="h-6 w-24 bg-slate-100 rounded-lg" />
+    </div>
+  );
+}
+
 interface ListGroupProps {
   status: OrderStatus;
   orders: Order[];
   defaultOpen: boolean;
+  isLoading: boolean;
+  archive?: ArchivePagination;
+  firstRowTourStep?: string;
   onOrderClick?: (orderId: string) => void;
-  onMove: (order: Order, to: OrderStatus) => void;
-  onDropOrder: (orderId: string, to: OrderStatus) => void;
+  onStatusChange?: (orderId: string, newStatus: string) => void;
 }
 
 function ListGroup({
   status,
   orders,
   defaultOpen,
+  isLoading,
+  archive,
+  firstRowTourStep,
   onOrderClick,
-  onMove,
-  onDropOrder,
+  onStatusChange,
 }: ListGroupProps) {
   const t = useTranslations("orders");
   const [open, setOpen] = useState(defaultOpen);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const { isDragOver, dropHandlers } = useOrderDropZone(status, (orderId, to) =>
+    onStatusChange?.(orderId, to)
+  );
   const style = STATUS_STYLE[status];
 
   return (
@@ -145,20 +159,7 @@ function ListGroup({
         "rounded-2xl bg-white/80 border transition-colors duration-200",
         isDragOver ? style?.borderOver ?? "border-indigo-300" : "border-slate-100"
       )}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragOver(true);
-      }}
-      onDragLeave={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false);
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        const orderId = e.dataTransfer.getData("orderId");
-        const fromStatus = e.dataTransfer.getData("fromStatus");
-        if (orderId && fromStatus !== status) onDropOrder(orderId, status);
-      }}
+      {...dropHandlers}
     >
       <button
         type="button"
@@ -185,22 +186,41 @@ function ListGroup({
         </span>
       </button>
 
-      {open &&
-        (orders.length === 0 ? (
-          <div className="px-4 py-3 border-t border-slate-100 text-xs text-slate-400">
-            {t("empty.noOrders")}
-          </div>
-        ) : (
-          orders.map((order) => (
-            <ListRow
-              key={order.id}
-              order={order}
-              status={status}
-              onOrderClick={onOrderClick}
-              onMove={onMove}
-            />
-          ))
-        ))}
+      {open && (
+        <>
+          {isLoading && orders.length === 0 ? (
+            Array.from({ length: LOADING_ROWS }).map((_, i) => <ListRowSkeleton key={i} />)
+          ) : orders.length === 0 ? (
+            <div className="px-4 py-3 border-t border-slate-100 text-xs text-slate-400">
+              {t("empty.noOrders")}
+            </div>
+          ) : (
+            orders.map((order, index) => (
+              <ListRow
+                key={order.id}
+                order={order}
+                status={status}
+                tourStep={index === 0 ? firstRowTourStep : undefined}
+                onOrderClick={onOrderClick}
+                onStatusChange={onStatusChange}
+              />
+            ))
+          )}
+
+          {archive?.status === status && archive.hasMore && orders.length > 0 && (
+            <div className="px-4 py-2 border-t border-slate-100 flex justify-center">
+              <button
+                type="button"
+                onClick={archive.onLoadMore}
+                disabled={archive.isFetchingNextPage}
+                className="h-7 px-3 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-60 transition-colors"
+              >
+                {t("actions.loadMore")}
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -209,7 +229,12 @@ interface GroupedListViewProps {
   statuses: OrderStatus[];
   ordersByStatus: Partial<Record<OrderStatus, Order[]>>;
   onOrderClick?: (orderId: string) => void;
+  /** Receives every move from this view; the board validates it (e.g. Delivered needs payment). */
   onStatusChange?: (orderId: string, newStatus: string) => void;
+  isStatusLoading?: (status: OrderStatus) => boolean;
+  archive?: ArchivePagination;
+  /** Tour: data-tour-step for the first row of the first group. */
+  firstRowTourStep?: string;
 }
 
 /**
@@ -223,27 +248,10 @@ export function GroupedListView({
   ordersByStatus,
   onOrderClick,
   onStatusChange,
+  isStatusLoading,
+  archive,
+  firstRowTourStep,
 }: GroupedListViewProps) {
-  const t = useTranslations("orders");
-
-  // Same validation as the detail status editor: moving to Delivered needs
-  // a confirmed payment and a ready order.
-  const moveOrder = (order: Order, to: OrderStatus) => {
-    if (!onStatusChange) return;
-    if (to === "COMPLETED") {
-      const validation = canCompleteOrder(order);
-      if (!validation.valid) {
-        toast.error(
-          validation.message
-            ? t(validation.message.replace(/^orders\./, ""))
-            : t("errors.cannotComplete")
-        );
-        return;
-      }
-    }
-    onStatusChange(order.id, to);
-  };
-
   return (
     <div className="h-full min-h-0 overflow-auto scrollbar-thin pb-2">
       <div className="min-w-[860px] flex flex-col gap-2.5">
@@ -253,9 +261,11 @@ export function GroupedListView({
             status={status}
             orders={ordersByStatus[status] || []}
             defaultOpen={index < 3}
+            isLoading={isStatusLoading?.(status) ?? false}
+            archive={archive}
+            firstRowTourStep={index === 0 ? firstRowTourStep : undefined}
             onOrderClick={onOrderClick}
-            onMove={moveOrder}
-            onDropOrder={(orderId, to) => onStatusChange?.(orderId, to)}
+            onStatusChange={onStatusChange}
           />
         ))}
       </div>

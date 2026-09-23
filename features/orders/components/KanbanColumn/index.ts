@@ -1,2 +1,2 @@
-export { KanbanColumn, RAIL_WIDTH } from "./KanbanColumn";
+export { KanbanColumn, KanbanCardSkeleton, RAIL_WIDTH } from "./KanbanColumn";
 export type { KanbanColumnProps } from "./KanbanColumn";
