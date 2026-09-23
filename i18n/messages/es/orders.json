@@ -37,6 +37,7 @@
   "unknownCustomer": "Cliente desconocido",
   "orderNumber": "Orden #{id}",
   "orderCount": "{count, plural, one {# orden} other {# órdenes}}",
+  "elapsedMinutes": "{count} min",
   "recentActivity": "Actividad reciente",
   "statusUpdated": "Estado actualizado a \"{status}\"",
   "paymentStatusUpdated": "Estado de pago actualizado",
@@ -68,10 +69,6 @@
   },
   "search": {
     "placeholder": "Buscar por orden, cliente, dirección, pago, tipo..."
-  },
-  "view": {
-    "card": "Vista de tarjetas",
-    "list": "Vista de lista"
   },
   "filters": {
     "title": "Filtros",
@@ -125,7 +122,25 @@
     "reopen": "Reabrir orden",
     "confirmPayment": "Confirmar pago",
     "showLess": "Ver menos",
-    "showMore": "Ver {count} más"
+    "showMore": "Ver {count} más",
+    "moveOrder": "Mover a otro estado",
+    "moveTo": "Mover a",
+    "undo": "Deshacer",
+    "collapseColumn": "Contraer columna",
+    "expandColumn": "Expandir columna",
+    "collapseStats": "Contraer resumen",
+    "expandStats": "Expandir resumen"
+  },
+  "boardView": {
+    "label": "Vista del tablero",
+    "board": "Tablero",
+    "focus": "Por estado",
+    "list": "Lista agrupada"
+  },
+  "density": {
+    "label": "Densidad de tarjetas",
+    "compact": "Compacta",
+    "regular": "Completa"
   },
   "kanban": {
     "newOrders": "Nuevos pedidos",
@@ -218,7 +233,10 @@
     "averageTime": "Tiempo promedio",
     "totalRevenue": "Ingresos totales",
     "paid": "Pagado",
-    "pendingPayment": "Pendiente de pago"
+    "pendingPayment": "Pendiente de pago",
+    "active": "En curso",
+    "oldest": "Más antigua",
+    "live": "VIVO"
   },
   "branchSelector": {
     "placeholder": "Seleccionar sucursales",
@@ -247,8 +265,8 @@
         "description": "Filtrá por rango de fechas, estado de pago (pagado/pendiente) y tipo de envío (domicilio/retiro)."
       },
       "viewToggle": {
-        "title": "Vista de tarjetas o lista",
-        "description": "Cambiá entre vista de tarjetas (kanban) o lista compacta según tu preferencia."
+        "title": "Vista del tablero y densidad",
+        "description": "Cambiá entre Tablero, Por estado o Lista agrupada, y ajustá qué tan detalladas se ven las tarjetas."
       },
       "columnVisibility": {
         "title": "Mostrar u ocultar columnas",

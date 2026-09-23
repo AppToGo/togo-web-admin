@@ -1,8 +1,15 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { OrdersKanbanBoard, BranchMultiSelector } from "@/features/orders/components";
+import {
+  OrdersKanbanBoard,
+  BranchMultiSelector,
+  OrderBoardToolbar,
+  HoverTooltip,
+  type BoardViewMode,
+  type CardDensity,
+} from "@/features/orders/components";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
 import {
@@ -14,8 +21,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   SearchIcon,
-  LayoutGrid,
-  List,
   X,
   Filter,
   Check,
@@ -27,7 +32,6 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { ViewToggle } from "@/components/ui/view-toggle";
 import { Switch } from "@/components/ui/switch";
 import {
   Popover,
@@ -46,19 +50,22 @@ import { useConversationsRealtime } from "@/features/conversations/hooks";
 import { TourProvider, useTourContext } from "@/components/tour";
 import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
 
-type CardViewMode = "card" | "list";
+const BOARD_VIEW_STORAGE_KEY = "togo-orders-board-view";
+const DENSITY_STORAGE_KEY = "togo-orders-card-density";
 
 function TourHelpButton() {
   const { startTour } = useTourContext();
   const t = useTranslations("orders.tour");
   return (
-    <button
-      onClick={startTour}
-      className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
-      title={t("startButton")}
-    >
-      <HelpCircle className="w-4 h-4" />
-    </button>
+    <HoverTooltip content={t("startButton")} side="bottom">
+      <button
+        onClick={startTour}
+        aria-label={t("startButton")}
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+      >
+        <HelpCircle className="w-4 h-4" />
+      </button>
+    </HoverTooltip>
   );
 }
 
@@ -131,8 +138,35 @@ function OrdersPageInner() {
   const datePreset = useDateFilterPreset();
   const { range: dateRange } = useDateFilterStore();
 
-  const [cardViewMode, setCardViewMode] = useState<CardViewMode>("card");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Board view (Board / By status / Grouped list) and card density. They
+  // start with the defaults and are hydrated from localStorage in an effect
+  // to avoid an SSR/client hydration mismatch (same pattern as
+  // ColumnVisibilityBar with cookies).
+  const [boardView, setBoardView] = useState<BoardViewMode>("board");
+  const [density, setDensity] = useState<CardDensity>("regular");
+
+  useEffect(() => {
+    const savedView = localStorage.getItem(BOARD_VIEW_STORAGE_KEY);
+    if (savedView === "board" || savedView === "focus" || savedView === "list") {
+      setBoardView(savedView);
+    }
+    const savedDensity = localStorage.getItem(DENSITY_STORAGE_KEY);
+    if (savedDensity === "compact" || savedDensity === "regular") {
+      setDensity(savedDensity);
+    }
+  }, []);
+
+  const handleBoardViewChange = (view: BoardViewMode) => {
+    setBoardView(view);
+    localStorage.setItem(BOARD_VIEW_STORAGE_KEY, view);
+  };
+
+  const handleDensityChange = (next: CardDensity) => {
+    setDensity(next);
+    localStorage.setItem(DENSITY_STORAGE_KEY, next);
+  };
 
   // Filtros adicionales (locales)
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<{
@@ -253,25 +287,27 @@ function OrdersPageInner() {
 
               {/* Botón de filtros adicionales */}
               <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    data-tour-step="filters"
-                    className={cn(
-                      "relative flex items-center justify-center w-10 h-10 rounded-card transition-all duration-200",
-                      hasAnyFilter
-                        ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
-                        : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    )}
-                    title={tc("buttons.filter")}
-                  >
-                    <Filter className="w-4 h-4" />
-                    {activeFiltersCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                        {activeFiltersCount}
-                      </span>
-                    )}
-                  </button>
-                </PopoverTrigger>
+                <HoverTooltip content={tc("buttons.filter")} side="bottom">
+                  <PopoverTrigger asChild>
+                    <button
+                      data-tour-step="filters"
+                      aria-label={tc("buttons.filter")}
+                      className={cn(
+                        "relative flex items-center justify-center w-10 h-10 rounded-card transition-all duration-200",
+                        hasAnyFilter
+                          ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+                          : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                    >
+                      <Filter className="w-4 h-4" />
+                      {activeFiltersCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {activeFiltersCount}
+                        </span>
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                </HoverTooltip>
                 <PopoverContent
                   align="end"
                   className="w-auto p-0 overflow-hidden"
@@ -445,15 +481,13 @@ function OrdersPageInner() {
                 </PopoverContent>
               </Popover>
 
-              {/* Toggle de vista de cards */}
+              {/* Board view (Board / By status / List) + card density */}
               <div data-tour-step="view-toggle">
-                <ViewToggle
-                  value={cardViewMode}
-                  onChange={(value) => setCardViewMode(value as CardViewMode)}
-                  options={[
-                    { value: "card", icon: LayoutGrid, title: t("view.card") },
-                    { value: "list", icon: List, title: t("view.list") },
-                  ]}
+                <OrderBoardToolbar
+                  view={boardView}
+                  onViewChange={handleBoardViewChange}
+                  density={density}
+                  onDensityChange={handleDensityChange}
                 />
               </div>
             </div>
@@ -503,7 +537,8 @@ function OrdersPageInner() {
           <Suspense fallback={<OrdersLoading />}>
             <OrdersKanbanBoard
               searchQuery={searchQuery}
-              cardViewMode={cardViewMode}
+              boardView={boardView}
+              density={density}
               dateFrom={dateParams.dateFrom}
               dateTo={dateParams.dateTo}
               businessId={selectedBusinessId ?? undefined}

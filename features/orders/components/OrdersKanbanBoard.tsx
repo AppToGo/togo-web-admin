@@ -1,10 +1,17 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { KanbanColumn } from "./KanbanColumn";
+import { KanbanColumn, RAIL_WIDTH } from "./KanbanColumn";
 import { OrderDetailDialog } from "./OrderDetailDialog";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
+import { FocusView } from "./FocusView";
+import { GroupedListView } from "./GroupedListView";
+import { HoverTooltip } from "./HoverTooltip";
+import { StatsTickerRail } from "./StatsTickerRail";
+import type { BoardViewMode } from "./OrderBoardToolbar";
 
 import {
   ColumnVisibilityBar,
@@ -26,11 +33,21 @@ import {
   getDeliveryTypeLabel,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
-import type { CardViewMode } from "./OrderCard";
+import type { CardDensity } from "./OrderCard";
+
+// Gap between board columns — must match the container's `gap-3` (12px)
+// class, since it's also part of each column's flexBasis calculation.
+const COLUMN_GAP_PX = 12;
+// Collapsed rail width — same value as RAIL_WIDTH in KanbanColumn, so every
+// rail on the screen (columns + stats) has the same width.
+const STATS_RAIL_WIDTH = "w-14";
 
 interface OrdersKanbanBoardProps {
   searchQuery?: string;
-  cardViewMode?: CardViewMode;
+  // Board view and card density — controlled from the page header (next to
+  // the filters), not internal state.
+  boardView?: BoardViewMode;
+  density?: CardDensity;
   dateFrom?: string;
   dateTo?: string;
   businessId?: string; // Para SUPER_ADMIN
@@ -93,7 +110,8 @@ function filterOrdersBySearch(
 
 export function OrdersKanbanBoard({
   searchQuery = "",
-  cardViewMode = "card",
+  boardView = "board",
+  density = "regular",
   dateFrom,
   dateTo,
   businessId,
@@ -101,6 +119,8 @@ export function OrdersKanbanBoard({
   paymentStatusFilter = { paid: true, pending: true },
   deliveryTypeFilter = { delivery: true, pickup: true, dineIn: true },
 }: OrdersKanbanBoardProps) {
+  const t = useTranslations("orders");
+
   // Hydrate notification preferences when the orders page mounts
   useHydrateNotificationPreferences();
 
@@ -109,6 +129,24 @@ export function OrdersKanbanBoard({
 
   // Estado local del sidebar de estadísticas
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Stats panel collapsed to a narrow rail (inside the already open sidebar)
+  // — independent from the isSidebarOpen/ColumnVisibilityBar cookie.
+  const [statsRailCollapsed, setStatsRailCollapsed] = useState(false);
+
+  // Columns collapsed to a rail in the Board view — Delivered and Cancelled
+  // start collapsed (the least checked during day-to-day operation).
+  const [collapsedColumns, setCollapsedColumns] = useState<
+    Partial<Record<OrderStatus, boolean>>
+  >({ COMPLETED: true, CANCELLED: true });
+  const handleColumnCollapsedChange = useCallback(
+    (status: OrderStatus, collapsed: boolean) => {
+      setCollapsedColumns((prev) => ({ ...prev, [status]: collapsed }));
+    },
+    []
+  );
+
+  // Active status in the "By status" (Focus) view
+  const [focusStatusOverride, setFocusStatusOverride] = useState<OrderStatus | null>(null);
 
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibilityConfig>({
@@ -166,6 +204,20 @@ export function OrdersKanbanBoard({
   }, [allColumns, columnVisibility]);
 
   const visibleColumnCount = columns.length;
+
+  // How many visible columns are collapsed to a rail. Collapsed ones already
+  // have a fixed width (RAIL_WIDTH) inside KanbanColumn, so the percentage
+  // split among the EXPANDED ones must subtract them — otherwise those
+  // columns (and their cards) render narrower than they should.
+  const collapsedVisibleCount = columns.filter((c) => collapsedColumns[c.id]).length;
+  const expandedColumnCount = Math.max(visibleColumnCount - collapsedVisibleCount, 1);
+
+  // Active status for the "By status" view: the user's pick while it's still
+  // a visible column, otherwise the first available one.
+  const activeFocusStatus: OrderStatus | undefined =
+    focusStatusOverride && columns.some((c) => c.id === focusStatusOverride)
+      ? focusStatusOverride
+      : columns[0]?.id;
 
   // Filtrar órdenes por búsqueda y filtros adicionales
   const filteredOrdersByStatus = useMemo(() => {
@@ -229,6 +281,16 @@ export function OrdersKanbanBoard({
     deliveryTypeFilter,
   ]);
 
+  // Active orders (for the collapsed stats rail: count and "oldest"), the
+  // same statuses the card timer highlights.
+  const activeOrdersFlat = useMemo(
+    () =>
+      (["CONFIRMED", "IN_PROGRESS", "READY"] as OrderStatus[]).flatMap(
+        (status) => filteredOrdersByStatus[status] || []
+      ),
+    [filteredOrdersByStatus]
+  );
+
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
       updateStatus.mutate({
@@ -290,82 +352,140 @@ export function OrdersKanbanBoard({
             "flex-1"
           )}
         >
-          {/* Scroll horizontal solo aquí */}
-          <div className="flex-1 min-w-0 py-3 px-3 overflow-x-auto overflow-y-hidden scrollbar-thin">
-            <div
-              className="flex gap-5 h-full"
-              style={{
-                // Si hay pocas columnas, usar ancho completo; si no, scroll horizontal
-                minWidth:
-                  visibleColumnCount <= 4
-                    ? "100%"
-                    : `${visibleColumnCount * 320}px`,
-              }}
-            >
-              {columns.map((column, colIndex) => {
-                const isCompletedColumn = column.id === "COMPLETED";
-                // Loading específico por tipo de columna
-                const columnIsLoading = isCompletedColumn
-                  ? isLoadingCompleted
-                  : isLoadingLive;
+          {boardView === "board" && (
+            /* Horizontal scroll only here */
+            <div className="flex-1 min-w-0 py-3 px-3 overflow-x-auto overflow-y-hidden scrollbar-thin">
+              <div
+                className="flex gap-3 h-full"
+                style={{
+                  // With few EXPANDED columns use the full width; otherwise
+                  // scroll horizontally. Rails barely take space
+                  // (RAIL_WIDTH), so they don't count as a full 320px column.
+                  minWidth:
+                    expandedColumnCount <= 4
+                      ? "100%"
+                      : `${expandedColumnCount * 320 + collapsedVisibleCount * RAIL_WIDTH}px`,
+                }}
+              >
+                {columns.map((column, colIndex) => {
+                  const isCompletedColumn = column.id === "COMPLETED";
+                  // Per-column loading state
+                  const columnIsLoading = isCompletedColumn
+                    ? isLoadingCompleted
+                    : isLoadingLive;
 
-                return (
-                  <KanbanColumn
-                    key={column.id}
-                    status={column.id}
-                    orders={filteredOrdersByStatus?.[column.id] || []}
-                    onStatusChange={handleStatusChange}
-                    onOrderClick={handleOrderClick}
-                    isLoading={columnIsLoading}
-                    viewMode={cardViewMode}
-                    // Distribuir ancho igualitariamente entre columnas visibles
-                    flexBasis={`calc((100% - ${(visibleColumnCount - 1) * 20}px) / ${visibleColumnCount})`}
-                    minWidth={320}
-                    // Infinite scroll props for COMPLETED column
-                    isArchive={isCompletedColumn}
-                    hasMore={isCompletedColumn ? hasNextPage : false}
-                    isFetchingNextPage={
-                      isCompletedColumn ? isFetchingNextPage : false
-                    }
-                    onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
-                    totalCount={metrics?.porEstadoOrden[column.id]}
-                    // Tour step: mark the first card of the first column
-                    firstCardTourStep={colIndex === 0 ? "order-card" : undefined}
-                  />
-                );
-              })}
+                  return (
+                    <KanbanColumn
+                      key={column.id}
+                      status={column.id}
+                      orders={filteredOrdersByStatus?.[column.id] || []}
+                      onStatusChange={handleStatusChange}
+                      onOrderClick={handleOrderClick}
+                      isLoading={columnIsLoading}
+                      density={density}
+                      collapsed={!!collapsedColumns[column.id]}
+                      onCollapsedChange={(collapsed) =>
+                        handleColumnCollapsedChange(column.id, collapsed)
+                      }
+                      // Split the width evenly among EXPANDED columns,
+                      // subtracting the rails' fixed space (rails ignore
+                      // flexBasis and use their own fixed width).
+                      flexBasis={`calc((100% - ${(visibleColumnCount - 1) * COLUMN_GAP_PX}px - ${collapsedVisibleCount * RAIL_WIDTH}px) / ${expandedColumnCount})`}
+                      minWidth={320}
+                      // Infinite scroll props for COMPLETED column
+                      isArchive={isCompletedColumn}
+                      hasMore={isCompletedColumn ? hasNextPage : false}
+                      isFetchingNextPage={
+                        isCompletedColumn ? isFetchingNextPage : false
+                      }
+                      onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
+                      totalCount={metrics?.porEstadoOrden[column.id]}
+                      // Tour step: mark the first card of the first column
+                      firstCardTourStep={colIndex === 0 ? "order-card" : undefined}
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
+          {boardView === "focus" && activeFocusStatus && (
+            <div className="flex-1 min-h-0 p-3">
+              <FocusView
+                statuses={columns.map((c) => c.id)}
+                ordersByStatus={filteredOrdersByStatus}
+                activeStatus={activeFocusStatus}
+                onActiveStatusChange={setFocusStatusOverride}
+                onOrderClick={handleOrderClick}
+                onStatusChange={handleStatusChange}
+                density={density}
+                totalCounts={metrics?.porEstadoOrden}
+              />
+            </div>
+          )}
+
+          {boardView === "list" && (
+            <div className="flex-1 min-h-0 p-3">
+              <GroupedListView
+                statuses={columns.map((c) => c.id)}
+                ordersByStatus={filteredOrdersByStatus}
+                onOrderClick={handleOrderClick}
+                onStatusChange={handleStatusChange}
+              />
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar - Statistics - fuera del kanban */}
         <aside
           className={cn(
             "shrink-0 ml-0 transition-all duration-300 ease-in-out",
-            "rounded-card-xl bg-white/30 backdrop-blur-xl border border-white/40",
-            "flex flex-col overflow-hidden",
-            isSidebarOpen
-              ? "w-72 opacity-100 ml-3"
-              : "w-0 opacity-0 border-0 ml-0"
+            "rounded-card-xl overflow-hidden flex flex-col",
+            !isSidebarOpen && "w-0 opacity-0 border-0 ml-0",
+            isSidebarOpen &&
+              !statsRailCollapsed &&
+              "w-72 opacity-100 ml-3 bg-white/30 backdrop-blur-xl border border-white/40",
+            isSidebarOpen && statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
           )}
         >
-          {/* Scroll vertical solo en el sidebar */}
-          <div className="w-72 p-4 overflow-y-auto flex-1 min-h-0">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-pink-400" />
-                <h3 className="font-semibold text-sm text-slate-700">
-                  Operación en curso
-                </h3>
+          {statsRailCollapsed ? (
+            // Collapsed rail: a single button (animated ticker), like a
+            // collapsed column rail — no separate expand icon.
+            <StatsTickerRail
+              metrics={metrics}
+              activeOrders={activeOrdersFlat}
+              onExpand={() => setStatsRailCollapsed(false)}
+            />
+          ) : (
+            <div className="w-72 p-4 overflow-y-auto flex-1 min-h-0 flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-pink-400 shrink-0" />
+                  <h3 className="font-semibold text-sm text-slate-700">
+                    Operación en curso
+                  </h3>
+                </div>
+                <HoverTooltip content={t("actions.collapseStats")} side="left">
+                  <button
+                    type="button"
+                    aria-label={t("actions.collapseStats")}
+                    onClick={() => setStatsRailCollapsed(true)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:bg-white/70 transition-colors shrink-0"
+                  >
+                    <Minimize2 className="w-3.5 h-3.5" />
+                  </button>
+                </HoverTooltip>
+              </div>
+
+              {/* Stats content - order metrics */}
+              <div data-tour-step="metrics" className="flex-1 min-h-0">
+                <div className="space-y-6">
+                  {isLoadingLive ? <OrderMetricsSkeleton /> : <OrderMetrics />}
+                </div>
               </div>
             </div>
-
-            {/* Stats Content - Métricas de órdenes */}
-            <div data-tour-step="metrics" className="space-y-6">
-              {isLoadingLive ? <OrderMetricsSkeleton /> : <OrderMetrics />}
-            </div>
-          </div>
+          )}
         </aside>
       </div>
 
@@ -378,12 +498,13 @@ export function OrdersKanbanBoard({
         />
       </div>
 
-      {/* Dialog de detalle de orden - Solo renderizar cuando hay orderId seleccionado */}
+      {/* Order detail as a side panel - only rendered when an order is selected */}
       {selectedOrderId && (
         <OrderDetailDialog
           orderId={selectedOrderId}
           isOpen={isDetailOpen}
           onClose={handleCloseDetail}
+          variant="drawer"
         />
       )}
     </>
