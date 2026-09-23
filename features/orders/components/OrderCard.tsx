@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import type { Order, OrderItem, OrderStatus, PaymentStatus } from "../types";
+import type { CardDensity } from "../types/order-ui.types";
 import {
   formatCurrency,
   getTimeElapsed,
@@ -48,8 +49,7 @@ import {
 } from "../utils/order-lateness.utils";
 import { HoverTooltip } from "./HoverTooltip";
 
-export type { CardDensity } from "../types/order-ui.types";
-import type { CardDensity } from "../types/order-ui.types";
+export type { CardDensity };
 
 interface OrderCardProps {
   order: Order;

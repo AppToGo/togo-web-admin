@@ -303,7 +303,11 @@ export function OrdersKanbanBoard({
         const order = Object.values(filteredOrdersByStatus)
           .flat()
           .find((o) => o.id === orderId);
-        const validation = order ? canCompleteOrder(order) : { valid: true };
+        // Fail closed: a card can only be dragged while it's rendered, so a
+        // missing order means stale state — don't complete it unchecked.
+        const validation: { valid: boolean; message?: string } = order
+          ? canCompleteOrder(order)
+          : { valid: false };
         if (!validation.valid) {
           toast.error(
             validation.message
