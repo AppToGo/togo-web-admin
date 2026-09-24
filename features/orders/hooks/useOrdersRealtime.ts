@@ -80,9 +80,17 @@ export interface RealtimeState {
   error: string | null;
 }
 
+// Tope de reintentos consecutivos de auth_error antes de dejar de
+// reconectar — ver el mismo comentario en useConversationsRealtime.ts (su
+// gemelo). Sin esto, un refresh que sigue devolviendo un token que el
+// gateway rechaza reintentaba para siempre, manteniendo el ícono de carga
+// de la pestaña del browser activo indefinidamente.
+const MAX_CONSECUTIVE_AUTH_FAILURES = 3;
+
 export function useOrdersRealtime(): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
+  const authFailureCountRef = useRef(0);
 
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
@@ -176,26 +184,35 @@ export function useOrdersRealtime(): RealtimeState {
 
     setState((prev) => ({ ...prev, isConnecting: true }));
 
-    // Socket con businessId en el handshake
+    // reconnection: false a propósito — competía con refreshAndReconnect()
+    // de abajo: el servidor emite 'auth_error' y LUEGO llama disconnect(true)
+    // (mismo evento que dispara "io server disconnect" acá), así que un
+    // `socket.connect()` inmediato en el handler de "disconnect" ganaba la
+    // carrera contra el fetch de refresh (async, más lento) y reconectaba
+    // con el token todavía viejo — reintentando para siempre con el mismo
+    // resultado. Ahora la única reconexión es la manual, coordinada con el
+    // refresh. Ver useConversationsRealtime.ts (su gemelo) para el mismo fix.
     const socket = io(`${WS_URL}/orders`, {
       auth: { token: getToken(), businessId },
       transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 10000,
+      reconnection: false,
       timeout: 20000,
     });
 
     socketRef.current = socket;
+    let handlingAuthError = false;
 
     socket.on('connect', () => {
+      authFailureCountRef.current = 0;
       setState({ isConnected: true, isConnecting: false, error: null });
     });
 
     socket.on('disconnect', (reason) => {
       setState({ isConnected: false, isConnecting: true, error: null });
-      if (reason === 'io server disconnect') {
+      // El caso de auth ya lo maneja el handler de AUTH_ERROR — reconectar
+      // acá también con el mismo token viejo es la carrera que causaba el
+      // loop.
+      if (reason === 'io server disconnect' && !handlingAuthError) {
         socket.connect();
       }
     });
@@ -205,9 +222,19 @@ export function useOrdersRealtime(): RealtimeState {
     });
 
     socket.on(WS_EVENTS.AUTH_ERROR, async ({ message }: { message: string }) => {
-      if (message === 'token_expired') {
-        await refreshAndReconnect(socket);
+      if (message !== 'token_expired') return;
+
+      handlingAuthError = true;
+      authFailureCountRef.current += 1;
+
+      if (authFailureCountRef.current > MAX_CONSECUTIVE_AUTH_FAILURES) {
+        setState({ isConnected: false, isConnecting: false, error: 'reconnect_failed' });
+        socket.disconnect();
+        return;
       }
+
+      await refreshAndReconnect(socket);
+      handlingAuthError = false;
     });
 
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {

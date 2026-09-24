@@ -73,11 +73,21 @@ export interface ConversationsRealtimeState {
   error: string | null;
 }
 
+// Tope de reintentos consecutivos de auth_error antes de dejar de
+// reconectar. Sin esto, un refresh que sigue devolviendo un token que el
+// gateway rechaza (ej. condición de carrera con otro refresh que rota el
+// refresh token de un solo uso) reintentaba para siempre — cada ciclo
+// dispara un handshake nuevo, lo que en el browser mantiene el ícono de
+// carga de la pestaña activo indefinidamente aunque la página ya haya
+// terminado de renderizar.
+const MAX_CONSECUTIVE_AUTH_FAILURES = 3;
+
 export function useConversationsRealtime(
   enabled: boolean = true
 ): ConversationsRealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
+  const authFailureCountRef = useRef(0);
 
   const user = useAuthStore((state) => state.user);
   // A diferencia de `useOrdersRealtime` (su clon de origen), acá se usa
@@ -154,29 +164,53 @@ export function useConversationsRealtime(
 
     setState((prev) => ({ ...prev, isConnecting: true }));
 
+    // reconnection: false a propósito — la reconexión automática de
+    // socket.io competía con refreshAndReconnect() de abajo: el servidor
+    // emite 'auth_error' y LUEGO llama disconnect(true) (mismo evento que
+    // dispara "io server disconnect" acá), así que un `socket.connect()`
+    // inmediato en el handler de "disconnect" ganaba la carrera contra el
+    // fetch de refresh (async, más lento) y reconectaba con el token
+    // todavía viejo — reintentando para siempre con el mismo resultado.
+    // Ahora la única reconexión es la manual, coordinada con el refresh.
     const socket = io(`${WS_URL}/conversations`, {
       auth: { token: getToken(), businessId },
       transports: ["websocket", "polling"],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 10000,
+      reconnection: false,
       timeout: 20000,
     });
     socketRef.current = socket;
+    let handlingAuthError = false;
 
-    socket.on("connect", () =>
-      setState({ isConnected: true, isConnecting: false, error: null })
-    );
+    socket.on("connect", () => {
+      authFailureCountRef.current = 0;
+      setState({ isConnected: true, isConnecting: false, error: null });
+    });
     socket.on("disconnect", (reason) => {
       setState({ isConnected: false, isConnecting: true, error: null });
-      if (reason === "io server disconnect") socket.connect();
+      // El caso de auth ya lo maneja el handler de AUTH_ERROR — reconectar
+      // acá también con el mismo token viejo es la carrera que causaba el
+      // loop.
+      if (reason === "io server disconnect" && !handlingAuthError) {
+        socket.connect();
+      }
     });
     socket.on("connect_error", (error) => {
       setState({ isConnected: false, isConnecting: false, error: error.message });
     });
     socket.on(WS_EVENTS.AUTH_ERROR, async ({ message }: { message: string }) => {
-      if (message === "token_expired") await refreshAndReconnect(socket);
+      if (message !== "token_expired") return;
+
+      handlingAuthError = true;
+      authFailureCountRef.current += 1;
+
+      if (authFailureCountRef.current > MAX_CONSECUTIVE_AUTH_FAILURES) {
+        setState({ isConnected: false, isConnecting: false, error: "reconnect_failed" });
+        socket.disconnect();
+        return;
+      }
+
+      await refreshAndReconnect(socket);
+      handlingAuthError = false;
     });
 
     // El mensaje se appendea directo cuando no tiene adjunto (evita un
