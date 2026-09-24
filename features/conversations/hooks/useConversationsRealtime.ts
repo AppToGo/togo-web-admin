@@ -13,6 +13,7 @@ import {
   clearGlobalRefreshState,
 } from "@/services/auth-sync.service";
 import { forceLogout } from "@/services/session.service";
+import { createReconnectScheduler } from "@/lib/socket-reconnect";
 import { CONVERSATIONS_KEYS } from "./query-keys";
 import type { ConversationDetail, ConversationMessage } from "../types";
 
@@ -180,22 +181,30 @@ export function useConversationsRealtime(
     });
     socketRef.current = socket;
     let handlingAuthError = false;
+    let hasConnectedBefore = false;
+    const reconnector = createReconnectScheduler(socket);
 
     socket.on("connect", () => {
       authFailureCountRef.current = 0;
+      reconnector.reset();
       setState({ isConnected: true, isConnecting: false, error: null });
+      // Los mensajes emitidos mientras el socket estuvo caído se perdieron.
+      if (hasConnectedBefore) {
+        queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEYS.all });
+      }
+      hasConnectedBefore = true;
     });
     socket.on("disconnect", (reason) => {
       setState({ isConnected: false, isConnecting: true, error: null });
       // El caso de auth ya lo maneja el handler de AUTH_ERROR — reconectar
       // acá también con el mismo token viejo es la carrera que causaba el
-      // loop.
-      if (reason === "io server disconnect" && !handlingAuthError) {
-        socket.connect();
-      }
+      // loop. "io client disconnect" es un corte nuestro (cleanup/logout).
+      if (reason === "io client disconnect" || handlingAuthError) return;
+      reconnector.schedule();
     });
     socket.on("connect_error", (error) => {
-      setState({ isConnected: false, isConnecting: false, error: error.message });
+      setState({ isConnected: false, isConnecting: true, error: error.message });
+      reconnector.schedule();
     });
     socket.on(WS_EVENTS.AUTH_ERROR, async ({ message }: { message: string }) => {
       if (message !== "token_expired") return;
@@ -293,6 +302,7 @@ export function useConversationsRealtime(
     socket.on(WS_EVENTS.READ, invalidateSession);
 
     return () => {
+      reconnector.stop();
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
