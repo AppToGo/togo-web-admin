@@ -22,6 +22,7 @@ import {
   clearGlobalRefreshState,
 } from '@/services/auth-sync.service';
 import { forceLogout } from '@/services/session.service';
+import { createReconnectScheduler } from '@/lib/socket-reconnect';
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -201,24 +202,34 @@ export function useOrdersRealtime(): RealtimeState {
 
     socketRef.current = socket;
     let handlingAuthError = false;
+    let hasConnectedBefore = false;
+    const reconnector = createReconnectScheduler(socket);
 
     socket.on('connect', () => {
       authFailureCountRef.current = 0;
+      reconnector.reset();
       setState({ isConnected: true, isConnecting: false, error: null });
+      // Los eventos emitidos mientras el socket estuvo caído se perdieron:
+      // refrescar para no mostrar pedidos desactualizados.
+      if (hasConnectedBefore) {
+        queryClient.invalidateQueries({ queryKey: [...ORDERS_KEYS.all, businessId] });
+        queryClient.invalidateQueries({ queryKey: METRICS_KEYS.business(businessId ?? undefined) });
+      }
+      hasConnectedBefore = true;
     });
 
     socket.on('disconnect', (reason) => {
       setState({ isConnected: false, isConnecting: true, error: null });
       // El caso de auth ya lo maneja el handler de AUTH_ERROR — reconectar
       // acá también con el mismo token viejo es la carrera que causaba el
-      // loop.
-      if (reason === 'io server disconnect' && !handlingAuthError) {
-        socket.connect();
-      }
+      // loop. 'io client disconnect' es un corte nuestro (cleanup/logout).
+      if (reason === 'io client disconnect' || handlingAuthError) return;
+      reconnector.schedule();
     });
 
-    socket.on('connect_error', async (error) => {
-      setState({ isConnected: false, isConnecting: false, error: error.message });
+    socket.on('connect_error', (error) => {
+      setState({ isConnected: false, isConnecting: true, error: error.message });
+      reconnector.schedule();
     });
 
     socket.on(WS_EVENTS.AUTH_ERROR, async ({ message }: { message: string }) => {
@@ -302,6 +313,7 @@ export function useOrdersRealtime(): RealtimeState {
     });
 
     return () => {
+      reconnector.stop();
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
