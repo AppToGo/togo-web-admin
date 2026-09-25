@@ -7,6 +7,7 @@ export {
   useUpdateOrderStatus,
   useRecentActivity,
   useLiveOrders,
+  useCreateOrder,
 } from './useOrders';
 
 // Infinite scroll hooks for archive orders

@@ -9,5 +9,6 @@ export {
   getOrderMetrics,
   getLiveOrders,
   getCompletedOrders,
+  createOrder,
 } from './order.service';
 export type { UpdatePaymentStatusRequest } from './order.service';

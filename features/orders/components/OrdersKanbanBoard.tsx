@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Minimize2 } from "lucide-react";
+import { Minimize2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { KanbanColumn, RAIL_WIDTH } from "./KanbanColumn";
@@ -12,6 +12,8 @@ import { FocusView } from "./FocusView";
 import { GroupedListView } from "./GroupedListView";
 import { HoverTooltip } from "./HoverTooltip";
 import { StatsTickerRail } from "./StatsTickerRail";
+import { NewOrderDrawer } from "./NewOrderDrawer";
+import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
 
 import {
@@ -161,6 +163,8 @@ export function OrdersKanbanBoard({
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
+  // "Nuevo pedido" drawer (button in the CONFIRMED column header)
+  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
 
   // Hook for LIVE orders (all except COMPLETED)
   const {
@@ -442,6 +446,20 @@ export function OrdersKanbanBoard({
                       }
                       onLoadMore={isCompletedColumn ? fetchNextPage : undefined}
                       totalCount={metrics?.porEstadoOrden[column.id]}
+                      headerAction={
+                        column.id === "CONFIRMED" ? (
+                          <Can permission="order.create">
+                            <button
+                              type="button"
+                              onClick={() => setIsNewOrderOpen(true)}
+                              className="ml-1 flex items-center gap-1 h-7 px-2.5 rounded-lg bg-white text-xs font-semibold text-indigo-600 shadow-card-sm hover:bg-indigo-50 transition-colors"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              {t("createOrder.button")}
+                            </button>
+                          </Can>
+                        ) : undefined
+                      }
                       // Tour step: mark the first card of the first column
                       firstCardTourStep={colIndex === 0 ? "order-card" : undefined}
                     />
@@ -545,6 +563,11 @@ export function OrdersKanbanBoard({
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       </div>
+
+      <NewOrderDrawer
+        isOpen={isNewOrderOpen}
+        onClose={() => setIsNewOrderOpen(false)}
+      />
 
       {/* Order detail as a side panel - only rendered when an order is selected */}
       {selectedOrderId && (
