@@ -65,11 +65,12 @@ interface OrderPaymentUpdatedEvent {
 
 /**
  * El cliente abrió su pedido para agregarle productos (LOCKED), lo
- * reconfirmó (CONFIRMED), lo descartó (DISCARDED) o se le venció (EXPIRED).
+ * reconfirmó (CONFIRMED), lo descartó (DISCARDED), se le venció (EXPIRED) o
+ * el negocio lo movió de estado mientras lo editaba (INTERRUPTED).
  */
 interface OrderCustomerEditEvent {
   orderId: string;
-  phase: 'LOCKED' | 'CONFIRMED' | 'DISCARDED' | 'EXPIRED';
+  phase: 'LOCKED' | 'CONFIRMED' | 'DISCARDED' | 'EXPIRED' | 'INTERRUPTED';
   changed: boolean;
   timestamp: string;
 }
