@@ -95,6 +95,12 @@ export interface Order {
   tableId?: string;
   /** Snapshot del nombre de la mesa al momento del pedido. */
   tableLabel?: string;
+  /**
+   * Hasta cuándo el cliente tiene el pedido abierto para editarlo desde
+   * WhatsApp (ISO). Solo viene si sigue vigente: mientras tanto el backend
+   * rechaza mandarlo a producción (409 CUSTOMER_EDITING_ORDER).
+   */
+  customerEditLockExpiresAt?: string;
   /** Quién originó el pedido — independiente de qué Customer quedó asociado. */
   createdByType?: "CUSTOMER" | "OPERATOR";
   createdByUserId?: string;

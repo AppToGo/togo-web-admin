@@ -176,7 +176,9 @@
     "payment": {
       "paid": "Paid",
       "pending": "Pending"
-    }
+    },
+    "customerEditing": "Customer editing",
+    "customerEditingHint": "The customer is adding products from WhatsApp. You can move it forward once they confirm it again."
   },
   "detail": {
     "title": "Order Details",

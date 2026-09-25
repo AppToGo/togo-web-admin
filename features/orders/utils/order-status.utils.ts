@@ -72,6 +72,31 @@ export const PAYMENT_REQUIRED_FOR_COMPLETION: OrderStatus[] = [
 ];
 
 /**
+ * Estados a los que no se puede mover un pedido mientras el cliente lo
+ * edita (espejo de BLOCKED_WHILE_CUSTOMER_EDITING del backend). Cancelar sí.
+ */
+export const BLOCKED_WHILE_CUSTOMER_EDITING: OrderStatus[] = [
+  "IN_PROGRESS",
+  "READY",
+  "ON_THE_WAY",
+  "COMPLETED",
+];
+
+/**
+ * El cliente tiene el pedido abierto para agregarle productos desde WhatsApp
+ * y todavía no lo reconfirmó: no se puede mandar a producción.
+ */
+export function isCustomerEditing(
+  order: { customerEditLockExpiresAt?: string },
+  now: Date = new Date()
+): boolean {
+  return (
+    !!order.customerEditLockExpiresAt &&
+    new Date(order.customerEditLockExpiresAt).getTime() > now.getTime()
+  );
+}
+
+/**
  * Verificar si una transición de estado es válida
  */
 export function isValidTransition(
