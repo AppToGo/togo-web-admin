@@ -1,7 +1,7 @@
 import { test, expect } from "playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 import { mockLoginSuccess } from "../helpers/mock-api";
-import { mockOrdersDashboard } from "../helpers/mock-orders-api";
+import { mockOrdersDashboard, MOCK_ORDER_NUMBERS } from "../helpers/mock-orders-api";
 
 /**
  * Regression test for docs/architecture/pedidos-en-mesa.md, Fase 1.
@@ -37,8 +37,8 @@ test.describe("Orders — filtro de tipo de entrega (dine-in)", () => {
     await loginPage.submit();
     await loginPage.waitForDashboardRedirect();
 
-    const dineInOrder = page.getByText("#DINEIN", { exact: true });
-    const pickupOrder = page.getByText("#PICKUP", { exact: true });
+    const dineInOrder = page.getByText(`#${MOCK_ORDER_NUMBERS.dineIn}`, { exact: true });
+    const pickupOrder = page.getByText(`#${MOCK_ORDER_NUMBERS.pickup}`, { exact: true });
 
     // Estado inicial: los 3 pedidos (delivery/pickup/dine-in) visibles.
     // Sirve además de punto de sincronización: recién acá el Kanban terminó

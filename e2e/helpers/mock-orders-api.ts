@@ -69,8 +69,21 @@ function baseOrder(overrides: Record<string, unknown>) {
 }
 
 /** Pedido a domicilio — sin relación con las modalidades bajo prueba, sirve de control. */
+/**
+ * Números de pedido fijos para que los specs ubiquen cada tarjeta por lo
+ * que la UI realmente muestra (`formatOrderNumber` → "#101"). Sin
+ * `orderNumber` la tarjeta cae al fallback legado (últimos 6 caracteres
+ * del id), que depende del formato del id y ya rompió los specs una vez.
+ */
+export const MOCK_ORDER_NUMBERS = {
+  delivery: 101,
+  pickup: 102,
+  dineIn: 103,
+} as const;
+
 const DELIVERY_ORDER = baseOrder({
   id: "delivery1",
+  orderNumber: MOCK_ORDER_NUMBERS.delivery,
   deliveryType: "DELIVERY",
   addressId: "addr-e2e",
   address: { id: "addr-e2e", label: "Casa", addressText: "Cra 1 # 2-3" },
@@ -79,6 +92,7 @@ const DELIVERY_ORDER = baseOrder({
 /** Pedido para recoger en tienda — sin mesa, sin dirección. */
 const PICKUP_ORDER = baseOrder({
   id: "pickup01",
+  orderNumber: MOCK_ORDER_NUMBERS.pickup,
   deliveryType: "PICKUP",
 });
 
@@ -91,6 +105,7 @@ const PICKUP_ORDER = baseOrder({
  */
 const DINE_IN_ORDER = baseOrder({
   id: "dinein01",
+  orderNumber: MOCK_ORDER_NUMBERS.dineIn,
   deliveryType: "DINE_IN",
   tableId: "table-e2e",
   tableLabel: "Mesa 3",
