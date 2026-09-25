@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Minimize2 } from "lucide-react";
@@ -51,6 +51,9 @@ export interface KanbanColumnProps {
   // Column collapsed to a narrow rail (drag & drop still works)
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
+  // Extra action rendered next to the counter (e.g. "New order" on the
+  // CONFIRMED column). Hidden while the column is collapsed to a rail.
+  headerAction?: ReactNode;
 }
 
 export const KanbanColumn = memo(function KanbanColumn({
@@ -70,6 +73,7 @@ export const KanbanColumn = memo(function KanbanColumn({
   firstCardTourStep,
   collapsed = false,
   onCollapsedChange,
+  headerAction,
 }: KanbanColumnProps) {
   const t = useTranslations("orders");
   const [isDragOver, setIsDragOver] = useState(false);
@@ -204,6 +208,7 @@ export const KanbanColumn = memo(function KanbanColumn({
             >
               {totalCount ?? orders.length}
             </span>
+            {headerAction}
             {onCollapsedChange && (
               <HoverTooltip content={t("actions.collapseColumn")}>
                 <button
