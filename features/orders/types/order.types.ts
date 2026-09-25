@@ -198,3 +198,44 @@ export interface OrderFilters {
   minAmount?: number;
   maxAmount?: number;
 }
+
+// ============================================================================
+// Nuevo pedido desde el admin (POST /businesses/:businessId/orders)
+// ============================================================================
+
+/** Tipo de pedido que puede crear un operador desde el admin. */
+export type ManualOrderDeliveryType = "DELIVERY" | "PICKUP" | "DINE_IN";
+
+/**
+ * Métodos de pago del bot de WhatsApp: efectivo y datáfono siempre,
+ * transferencia solo si la sede tiene opciones configuradas.
+ */
+export type ManualOrderPaymentMethod = "CASH" | "TRANSFER" | "DATAPHONE";
+
+export interface CreateOrderItemRequest {
+  productVariantId: string;
+  quantity: number;
+  notes?: string;
+}
+
+export interface CreateOrderRequest {
+  branchId: string;
+  deliveryType: ManualOrderDeliveryType;
+  paymentMethod: ManualOrderPaymentMethod;
+  items: CreateOrderItemRequest[];
+  /** Requerido para domicilio y recoger */
+  customerName?: string;
+  /** E.164, requerido para domicilio y recoger */
+  customerPhone?: string;
+  /** Requerido para domicilio */
+  addressText?: string;
+  /** Requerido para mesa */
+  tableId?: string;
+  notes?: string;
+}
+
+export interface CreateOrderResponse {
+  orderId: string;
+  orderNumber: string;
+  total: number;
+}
