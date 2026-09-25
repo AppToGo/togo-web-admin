@@ -22,6 +22,7 @@ import {
   updateOrderPaymentStatus,
   getBusinesses,
   getLiveOrders,
+  createOrder,
   type UpdatePaymentStatusRequest,
 } from "../services/order.service";
 import type {
@@ -29,11 +30,13 @@ import type {
   OrderStatus,
   UpdateOrderStatusRequest,
   GetOrdersParams,
+  CreateOrderRequest,
 } from "../types";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import { useStatusLabels } from "../utils/order-status.utils";
 import { orderNumberValue } from "../utils/order-number.utils";
 import { LIVE_STATUSES } from "../constants/order-statuses";
+import { METRICS_KEYS } from "./useOrderMetrics";
 import {
   ORDERS_KEYS,
   type LiveOrdersFilters,
@@ -521,5 +524,35 @@ export function useBusinesses(options?: { enabled?: boolean }) {
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     enabled,
+  });
+}
+
+/**
+ * Hook para crear un pedido desde el admin ("Nuevo pedido").
+ *
+ * El backend lo deja confirmado y emite `order:created` por WebSocket, pero
+ * igual se invalidan las órdenes vivas y las métricas para que el pedido
+ * aparezca en "Nueva" al instante aunque el socket esté reconectando.
+ */
+export function useCreateOrder(businessId?: string) {
+  const queryClient = useQueryClient();
+  const t = useTranslations("orders.createOrder");
+
+  return useMutation({
+    mutationFn: (data: CreateOrderRequest) => createOrder(data, businessId),
+    onSuccess: (created) => {
+      toast.success(t("success", { number: created.orderNumber }));
+    },
+    onError: (err) => {
+      toast.error(getHumanizedErrorMessage(err) || t("error"));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          q.queryKey[0] === "orders" && q.queryKey[2] === "live",
+      });
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: METRICS_KEYS.all });
+    },
   });
 }

@@ -14,6 +14,8 @@ import type {
   OrderStatusHistory,
   GetOrdersParams,
   UpdateOrderStatusRequest,
+  CreateOrderRequest,
+  CreateOrderResponse,
 } from "../types";
 import type {
   OrderMetricsResponse,
@@ -354,4 +356,20 @@ export async function getCompletedOrders(
     }
   );
   return data;
+}
+
+/**
+ * Crear un pedido desde el admin ("Nuevo pedido" en la pantalla de pedidos).
+ * Queda confirmado (columna "Nueva") y atribuido al usuario autenticado.
+ * POST /businesses/:businessId/orders
+ */
+export async function createOrder(
+  data: CreateOrderRequest,
+  businessId?: string
+): Promise<CreateOrderResponse> {
+  const { data: created } = await apiClient.post<CreateOrderResponse>(
+    getBaseUrl(businessId),
+    data
+  );
+  return created;
 }
