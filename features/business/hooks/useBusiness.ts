@@ -5,7 +5,12 @@
  * TanStack Query hooks for business management
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { APP_CONFIG } from "@/config/app.config";
 import { BUSINESS_KEYS } from "./query-keys";
@@ -15,8 +20,10 @@ import {
   updateBusiness,
   uploadBusinessLogo,
   checkSlugAvailability,
+  getBotVoicePreview,
 } from "../services/business.service";
 import type {
+  BotVoice,
   Business,
   UpdateBusinessRequest,
 } from "../types/business.types";
@@ -98,6 +105,20 @@ export function useUploadBusinessLogo() {
       queryClient.invalidateQueries({ queryKey: BUSINESS_KEYS.detail(variables.businessId) });
       queryClient.invalidateQueries({ queryKey: BUSINESS_KEYS.current() });
     },
+  });
+}
+
+/**
+ * Hook to preview the WhatsApp assistant voice. Keeps the previous preview
+ * while a new one loads, so the messages don't flicker while typing.
+ */
+export function useBotVoicePreview(businessId: string, voice: BotVoice) {
+  return useQuery({
+    queryKey: BUSINESS_KEYS.botVoicePreview(businessId, voice),
+    queryFn: () => getBotVoicePreview(businessId, voice),
+    enabled: !!businessId,
+    placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

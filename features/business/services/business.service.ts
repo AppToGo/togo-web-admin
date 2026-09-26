@@ -4,7 +4,12 @@
  */
 
 import apiClient from "@/services/api.service";
-import type { Business, UpdateBusinessRequest } from "../types/business.types";
+import type {
+  BotVoice,
+  BotVoicePreview,
+  Business,
+  UpdateBusinessRequest,
+} from "../types/business.types";
 
 /**
  * Get business by ID
@@ -33,6 +38,27 @@ export async function updateBusiness(
   request: UpdateBusinessRequest
 ): Promise<Business> {
   const { data } = await apiClient.patch<Business>(`/businesses/${id}`, request);
+  return data;
+}
+
+/**
+ * Preview of the WhatsApp assistant voice (not saved)
+ * GET /v1/businesses/:businessId/bot-voice/preview
+ */
+export async function getBotVoicePreview(
+  businessId: string,
+  voice: BotVoice
+): Promise<BotVoicePreview> {
+  const { data } = await apiClient.get<BotVoicePreview>(
+    `/businesses/${businessId}/bot-voice/preview`,
+    {
+      params: {
+        address: voice.address,
+        emojis: String(voice.emojis),
+        assistantName: voice.assistantName ?? "",
+      },
+    }
+  );
   return data;
 }
 
