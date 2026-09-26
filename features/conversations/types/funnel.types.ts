@@ -50,6 +50,19 @@ export interface ConversationFunnel {
     median: number | null;
     p90: number | null;
   };
+  /**
+   * T21: avisos mandados a reescribir con IA y qué pasó con cada uno. Puede
+   * faltar si la API es anterior a T21.
+   */
+  paraphrase?: {
+    requested: number;
+    applied: number;
+    rejected: number;
+    failed: number;
+    rates: { applied: number | null };
+    rejectedByReason: Array<{ reason: string; count: number }>;
+    failedByCause: Array<{ cause: string; count: number }>;
+  };
 }
 
 /** Días completos en la zona horaria del negocio (`YYYY-MM-DD`). */

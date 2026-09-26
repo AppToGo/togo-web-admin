@@ -5,6 +5,10 @@
  * nombre del asistente de WhatsApp, con una vista previa de tres mensajes
  * armada por la API con las plantillas reales del negocio. Se guarda aparte
  * del resto del formulario del negocio.
+ *
+ * T21: interruptor para que la IA reescriba algunos avisos con ese tono.
+ * Solo tiene efecto si la paráfrasis está habilitada en el servidor, que la
+ * vista previa informa (`paraphraseAvailable`).
  */
 
 import { useMemo, useState } from "react";
@@ -29,6 +33,7 @@ function voiceOf(business: Business): BotVoice {
     address: business.botVoice?.address === "usted" ? "usted" : "tu",
     emojis: business.botVoice?.emojis !== false,
     assistantName: business.botVoice?.assistantName ?? "",
+    paraphrase: business.botVoice?.paraphrase === true,
   };
 }
 
@@ -86,7 +91,12 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
   const isDirty =
     voice.address !== saved.address ||
     voice.emojis !== saved.emojis ||
+    voice.paraphrase !== saved.paraphrase ||
     name.trim() !== (saved.assistantName ?? "");
+
+  // Se puede apagar siempre; prender, solo si el servidor la tiene
+  // habilitada (mientras carga la vista previa se asume que sí).
+  const paraphraseUnavailable = preview.data?.paraphraseAvailable === false;
 
   const handleSave = async () => {
     if (nameError) return;
@@ -98,6 +108,7 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
             address: voice.address,
             emojis: voice.emojis,
             assistantName: name.trim(),
+            paraphrase: voice.paraphrase === true,
           },
         },
       });
@@ -172,6 +183,32 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
                   setVoice((prev) => ({ ...prev, emojis: checked }))
                 }
               />
+            </div>
+
+            <div className="rounded-lg border border-slate-200 p-4 space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="botVoice-paraphrase" className="text-base">
+                    {tb("botVoice.paraphrase.label")}
+                  </Label>
+                  <p className="text-sm text-slate-500">
+                    {tb("botVoice.paraphrase.description")}
+                  </p>
+                </div>
+                <Switch
+                  id="botVoice-paraphrase"
+                  checked={voice.paraphrase === true}
+                  disabled={paraphraseUnavailable && !voice.paraphrase}
+                  onCheckedChange={(checked) =>
+                    setVoice((prev) => ({ ...prev, paraphrase: checked }))
+                  }
+                />
+              </div>
+              {paraphraseUnavailable && (
+                <p className="text-sm text-amber-600">
+                  {tb("botVoice.paraphrase.unavailable")}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

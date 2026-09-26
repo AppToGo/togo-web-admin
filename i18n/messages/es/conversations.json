@@ -177,6 +177,31 @@
         "turns": "Mensajes"
       }
     },
+    "paraphrase": {
+      "title": "Reescrituras con IA",
+      "applied": "Enviados reescritos",
+      "rejected": "Descartados por el validador",
+      "failed": "Sin respuesta de la IA",
+      "rate": "{rate} de {requested, plural, one {# aviso} other {# avisos}} salió reescrito",
+      "rejectedReasons": "Por qué se descartaron",
+      "failedCauses": "Por qué no hubo respuesta",
+      "reasons": {
+        "numbers": "Cambió un número",
+        "bold": "Cambió un nombre u opción",
+        "too_long": "Quedó muy largo",
+        "too_short": "Quedó muy corto",
+        "url": "Agregó un enlace",
+        "emojis": "Usó emojis",
+        "address": "No respetó el trato de usted",
+        "empty": "Respuesta vacía",
+        "invalid_json": "Respuesta con formato inválido"
+      },
+      "causes": {
+        "timeout": "Tardó demasiado",
+        "error": "Error de la IA",
+        "paused": "Pausada tras varios fallos"
+      }
+    },
     "noTurnHistory": "Los datos de qué tan bien entiende el bot se registran desde la actualización del embudo. Para períodos anteriores solo hay datos de las conversaciones.",
     "timeZoneNote": "Días según la zona horaria del negocio ({timeZone}).",
     "error": {

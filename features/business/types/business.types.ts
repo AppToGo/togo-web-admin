@@ -25,12 +25,14 @@ export interface Business {
 
 /**
  * Voz del asistente de WhatsApp (plan bot natural, T18): trato al cliente,
- * emojis y nombre opcional del asistente.
+ * emojis y nombre opcional del asistente. `paraphrase` (T21): la IA
+ * reescribe algunos avisos con ese tono, con validador.
  */
 export interface BotVoice {
   address: 'tu' | 'usted';
   emojis: boolean;
   assistantName?: string;
+  paraphrase?: boolean;
 }
 
 /** Tres mensajes de ejemplo con una voz, armados por la API. */
@@ -38,6 +40,8 @@ export interface BotVoicePreview {
   greeting: string;
   productFound: string;
   addedToCart: string;
+  /** T21: la paráfrasis está habilitada en el servidor. */
+  paraphraseAvailable?: boolean;
 }
 
 export interface UpdateBusinessRequest {
