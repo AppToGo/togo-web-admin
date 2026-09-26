@@ -194,7 +194,8 @@
         "emojis": "Used emojis",
         "address": "Didn't keep formal address",
         "empty": "Empty answer",
-        "invalid_json": "Malformed answer"
+        "invalid_json": "Malformed answer",
+        "not_sent": "Not sent"
       },
       "causes": {
         "timeout": "Took too long",

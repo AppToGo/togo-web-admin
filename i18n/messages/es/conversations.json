@@ -194,7 +194,8 @@
         "emojis": "Usó emojis",
         "address": "No respetó el trato de usted",
         "empty": "Respuesta vacía",
-        "invalid_json": "Respuesta con formato inválido"
+        "invalid_json": "Respuesta con formato inválido",
+        "not_sent": "No se envió"
       },
       "causes": {
         "timeout": "Tardó demasiado",
