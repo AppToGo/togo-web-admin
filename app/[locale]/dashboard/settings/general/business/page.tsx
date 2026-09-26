@@ -25,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
 import {
+  BotVoiceCard,
+  botVoiceKey,
   useCurrentBusiness,
   useUpdateBusiness,
   useUploadBusinessLogo,
@@ -528,6 +530,11 @@ export default function BusinessSettingsPage() {
             </Button>
           </div>
         </form>
+
+        {/* Voz del asistente de WhatsApp (plan bot natural, T18) */}
+        {business && (
+          <BotVoiceCard key={botVoiceKey(business)} business={business} />
+        )}
 
         {/* WhatsApp Compartido (AUTO_ASSIGN) */}
         <Card variant="glass">

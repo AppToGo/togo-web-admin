@@ -11,6 +11,8 @@ export const BUSINESS_KEYS = {
   details: () => [...BUSINESS_KEYS.all, "detail"] as const,
   detail: (id: string) => [...BUSINESS_KEYS.details(), id] as const,
   current: () => [...BUSINESS_KEYS.all, "current"] as const,
+  botVoicePreview: (businessId: string, voice: unknown) =>
+    [...BUSINESS_KEYS.all, "bot-voice-preview", businessId, voice] as const,
   slugCheck: (slug: string) =>
     [...BUSINESS_KEYS.all, "slug-check", slug] as const,
 };

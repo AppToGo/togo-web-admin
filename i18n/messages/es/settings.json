@@ -112,7 +112,35 @@
       "cancel": "Cancelar"
     },
     "saveSuccess": "Datos del negocio guardados correctamente",
-    "saveError": "Error al guardar los datos del negocio"
+    "saveError": "Error al guardar los datos del negocio",
+    "botVoice": {
+      "title": "Voz del asistente",
+      "description": "Cómo le habla el asistente de WhatsApp a tus clientes. Aplica desde el siguiente mensaje.",
+      "address": {
+        "label": "Trato al cliente",
+        "tu": "Tú (\"¿Qué se te antoja?\")",
+        "usted": "Usted (\"¿Qué se le antoja?\")"
+      },
+      "emojis": {
+        "label": "Usar emojis",
+        "description": "Si lo apagas, los mensajes salen sin emojis (los botones los conservan)."
+      },
+      "assistantName": {
+        "label": "Nombre del asistente (opcional)",
+        "placeholder": "Ej: Sofía",
+        "description": "Algunos mensajes lo usan para presentarse. Déjalo vacío para no usar nombre.",
+        "tooLong": "Máximo {max} caracteres",
+        "invalid": "Solo letras, números, espacios y . ' -"
+      },
+      "preview": {
+        "title": "Vista previa",
+        "loading": "Cargando vista previa…",
+        "error": "No pudimos cargar la vista previa.",
+        "note": "Mensajes de ejemplo con datos ficticios. Los textos varían entre conversaciones."
+      },
+      "saveSuccess": "Voz del asistente guardada",
+      "saveError": "No se pudo guardar la voz del asistente"
+    }
   },
   "notifications": {
     "title": "Preferencias de notificaciones",

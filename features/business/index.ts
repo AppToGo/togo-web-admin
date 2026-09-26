@@ -2,6 +2,7 @@
 
 // Components
 export { BusinessSelector } from "./components/BusinessSelector";
+export { BotVoiceCard, botVoiceKey } from "./components/BotVoiceCard";
 
 // Store hooks
 export {
@@ -18,6 +19,7 @@ export {
   useUpdateBusiness,
   useUploadBusinessLogo,
   useCheckSlugAvailability,
+  useBotVoicePreview,
 } from "./hooks/useBusiness";
 
 // Query keys
@@ -37,4 +39,6 @@ export type {
   Business,
   UpdateBusinessRequest,
   BusinessFormData,
+  BotVoice,
+  BotVoicePreview,
 } from "./types/business.types";

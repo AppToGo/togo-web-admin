@@ -112,7 +112,35 @@
       "cancel": "Cancel"
     },
     "saveSuccess": "Business details saved successfully",
-    "saveError": "Error saving business details"
+    "saveError": "Error saving business details",
+    "botVoice": {
+      "title": "Assistant voice",
+      "description": "How the WhatsApp assistant talks to your customers. Applies from the next message.",
+      "address": {
+        "label": "Form of address",
+        "tu": "Informal \"tú\" (\"¿Qué se te antoja?\")",
+        "usted": "Formal \"usted\" (\"¿Qué se le antoja?\")"
+      },
+      "emojis": {
+        "label": "Use emojis",
+        "description": "When off, messages are sent without emojis (buttons keep them)."
+      },
+      "assistantName": {
+        "label": "Assistant name (optional)",
+        "placeholder": "E.g. Sofía",
+        "description": "Some messages use it to introduce the assistant. Leave empty for no name.",
+        "tooLong": "Up to {max} characters",
+        "invalid": "Only letters, numbers, spaces and . ' -"
+      },
+      "preview": {
+        "title": "Preview",
+        "loading": "Loading preview…",
+        "error": "We couldn't load the preview.",
+        "note": "Sample messages with made-up data. Texts vary between conversations."
+      },
+      "saveSuccess": "Assistant voice saved",
+      "saveError": "Couldn't save the assistant voice"
+    }
   },
   "notifications": {
     "title": "Notification preferences",
