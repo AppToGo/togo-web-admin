@@ -13,14 +13,15 @@ test.describe("Embudo del bot", () => {
   async function login(
     page: Page,
     permissions: string[],
-    onFunnelRequest?: (r: Request) => void
+    onFunnelRequest?: (r: Request) => void,
+    userOverrides: Record<string, unknown> = {}
   ) {
     await page.context().clearCookies();
     await page.addInitScript(() => {
       localStorage.clear();
       sessionStorage.clear();
     });
-    await mockLoginSuccess(page);
+    await mockLoginSuccess(page, userOverrides);
     await mockOrdersDashboard(page);
     await mockConversationFunnel(page, { permissions, onFunnelRequest });
 
@@ -93,5 +94,26 @@ test.describe("Embudo del bot", () => {
     await expect(
       page.getByRole("link", { name: "Embudo del bot" })
     ).toHaveCount(0);
+  });
+
+  test("un SUPER_ADMIN sin negocio elegido ve el aviso para elegir uno", async ({
+    page,
+  }) => {
+    const funnelRequests: Request[] = [];
+    await login(
+      page,
+      ["metrics.view"],
+      (request) => funnelRequests.push(request),
+      { role: "SUPER_ADMIN", businessId: null, businessName: null }
+    );
+
+    await page.getByRole("link", { name: "Embudo del bot" }).click();
+    await page.waitForURL(/\/es\/dashboard\/conversation-funnel/);
+
+    await expect(
+      page.getByRole("heading", { name: "Selecciona un negocio" })
+    ).toBeVisible();
+    await expect(page.getByText("No se pudo cargar el embudo")).toHaveCount(0);
+    expect(funnelRequests).toHaveLength(0);
   });
 });

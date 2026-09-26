@@ -71,7 +71,9 @@ export default function ConversationFunnelPage() {
     );
   }
 
-  if (selectedBusinessId === "") {
+  // Sin negocio concreto: "Todos los negocios" ("") o un SUPER_ADMIN que
+  // todavía no eligió ninguno (null). El endpoint es por negocio.
+  if (!selectedBusinessId) {
     return (
       <DashboardLayout>
         <EmptyState icon={<Store className="w-8 h-8 text-indigo-500" />}>

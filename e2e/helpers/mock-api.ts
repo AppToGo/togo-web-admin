@@ -56,14 +56,23 @@ const FAKE_REFRESH_TOKEN_COOKIE = {
  *
  * After onSuccess fires, the Zustand store holds the access token in memory,
  * and the cookie is set, so navigation to /dashboard succeeds.
+ *
+ * @param userOverrides - Fields of the fake user to change (e.g. a
+ * SUPER_ADMIN without a business).
  */
-export async function mockLoginSuccess(page: Page): Promise<void> {
+export async function mockLoginSuccess(
+  page: Page,
+  userOverrides: Record<string, unknown> = {}
+): Promise<void> {
   // Intercept external backend call (Axios)
   await page.route("**/v1/auth/login", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(FAKE_LOGIN_RESPONSE),
+      body: JSON.stringify({
+        ...FAKE_LOGIN_RESPONSE,
+        user: { ...FAKE_LOGIN_RESPONSE.user, ...userOverrides },
+      }),
     })
   );
 
@@ -234,4 +243,3 @@ export async function mockRegisterWithDelay(
     });
   });
 }
-
