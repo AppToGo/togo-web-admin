@@ -11,3 +11,4 @@ export * from "./useAssignableUsers";
 export * from "./useCloseConversation";
 export * from "./useAddConversationNote";
 export * from "./useMarkConversationRead";
+export * from "./useConversationFunnel";

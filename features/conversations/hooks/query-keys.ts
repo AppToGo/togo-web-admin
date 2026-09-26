@@ -1,4 +1,7 @@
-import type { GetConversationsParams } from "../types";
+import type {
+  GetConversationFunnelParams,
+  GetConversationsParams,
+} from "../types";
 
 /** Mismo patrón jerárquico que CUSTOMERS_KEYS (features/customers/hooks/useCustomers.ts). */
 export const CONVERSATIONS_KEYS = {
@@ -16,6 +19,15 @@ export const CONVERSATIONS_KEYS = {
     [...CONVERSATIONS_KEYS.details(), sessionId, businessId] as const,
   byOrder: (orderId: string, businessId?: string) =>
     [...CONVERSATIONS_KEYS.all, "by-order", orderId, businessId] as const,
+  /** Embudo del bot (T20): por negocio y período. */
+  funnel: (params: GetConversationFunnelParams, businessId?: string) =>
+    [
+      ...CONVERSATIONS_KEYS.all,
+      "funnel",
+      businessId,
+      params.dateFrom,
+      params.dateTo,
+    ] as const,
 };
 
 export const STALE_TIME = 30 * 1000;
