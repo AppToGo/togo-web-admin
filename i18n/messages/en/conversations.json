@@ -101,5 +101,138 @@
     "DELIVERED": "Delivered",
     "READ": "Read",
     "FAILED": "Failed to send"
+  },
+  "funnel": {
+    "page": {
+      "title": "Bot funnel",
+      "subtitle": "How many bot conversations end in an order, where they drop off and how well the bot understands",
+      "selectBusinessTitle": "Select a business",
+      "selectBusinessDescription": "Choose a specific business in the top selector to see its funnel.",
+      "accessDeniedTitle": "No access",
+      "accessDeniedDescription": "You don't have permission to view business metrics."
+    },
+    "kpis": {
+      "order": {
+        "title": "End in an order",
+        "description": "{count} of {closed} closed"
+      },
+      "abandoned": {
+        "title": "Abandoned",
+        "description": "{count} of {closed} closed"
+      },
+      "handoff": {
+        "title": "Ask for an agent",
+        "description": "{count} of {total} conversations"
+      },
+      "messages": {
+        "title": "Messages until the order",
+        "description": "Median · average {average}",
+        "empty": "No orders in this period"
+      }
+    },
+    "abandonment": {
+      "title": "Where they drop off",
+      "subtitle": "Step each abandoned conversation was left at",
+      "empty": "No abandoned conversations in this period.",
+      "count": "{count, plural, one {# conversation} other {# conversations}}"
+    },
+    "outcomes": {
+      "title": "How they end",
+      "subtitle": "{total, plural, one {# conversation} other {# conversations}} in this period",
+      "empty": "No conversations in this period.",
+      "labels": {
+        "ORDER_PLACED": "With order",
+        "ABANDONED": "Abandoned",
+        "SUPPORT": "Support",
+        "NO_INTENT": "No purchase intent",
+        "SPAM": "Spam",
+        "UNSET": "Closed without outcome",
+        "OPEN": "Ongoing"
+      }
+    },
+    "understanding": {
+      "title": "How well the bot understands",
+      "subtitle": "Out of {turns, plural, one {# customer message} other {# customer messages}} in this period",
+      "empty": "No messages recorded in this period yet.",
+      "tiles": {
+        "unknown": {
+          "title": "Not understood",
+          "description": "{count, plural, one {# message} other {# messages}}"
+        },
+        "invalidSelection": {
+          "title": "Invalid option",
+          "description": "{count, plural, one {# message} other {# messages}} that didn't pick an option"
+        },
+        "outOfStep": {
+          "title": "Out of step",
+          "description": "{count, plural, one {# message} other {# messages}} about another order step"
+        },
+        "promptTextMatched": {
+          "title": "Typed options",
+          "description": "{count, plural, one {# time} other {# times}} the customer typed an option instead of tapping it and the bot recognized it"
+        }
+      },
+      "table": {
+        "state": "Step",
+        "turns": "Messages"
+      }
+    },
+    "paraphrase": {
+      "title": "AI rewrites",
+      "applied": "Sent rewritten",
+      "rejected": "Discarded by the validator",
+      "failed": "No answer from the AI",
+      "rate": "{rate} of {requested, plural, one {# notice} other {# notices}} went out rewritten",
+      "rejectedReasons": "Why they were discarded",
+      "failedCauses": "Why there was no answer",
+      "reasons": {
+        "numbers": "A number changed",
+        "bold": "A name or option changed",
+        "too_long": "Too long",
+        "too_short": "Too short",
+        "url": "Added a link",
+        "emojis": "Used emojis",
+        "address": "Didn't keep formal address",
+        "empty": "Empty answer",
+        "invalid_json": "Malformed answer",
+        "not_sent": "Not sent"
+      },
+      "causes": {
+        "timeout": "Took too long",
+        "error": "AI error",
+        "paused": "Paused after several failures"
+      }
+    },
+    "noTurnHistory": "Data on how well the bot understands is recorded since the funnel update. Earlier periods only have conversation data.",
+    "timeZoneNote": "Days in the business time zone ({timeZone}).",
+    "error": {
+      "title": "Couldn't load the funnel",
+      "description": "There was an error contacting the server. Try again in a few minutes."
+    },
+    "states": {
+      "IDLE": "No conversation",
+      "GREETING": "Greeting",
+      "VIEWING_MENU_LINK": "Viewing the catalog",
+      "SEARCHING_PRODUCT": "Searching products",
+      "PRODUCT_FOUND": "Product found",
+      "PRODUCT_NOT_FOUND": "Product not found",
+      "CLARIFICATION_NEEDED": "Clarifying the request",
+      "SELECTING_VARIANT": "Choosing a variant",
+      "ADDING_TO_CART": "Adding to the order",
+      "MODIFYING_CART": "Changing the order",
+      "CART_REVIEW": "Reviewing the order",
+      "CONFIRMING_ORDER": "Confirming the order",
+      "SELECTING_DELIVERY_TYPE": "Choosing delivery type",
+      "COLLECTING_ADDRESS": "Giving the address",
+      "COLLECTING_PAYMENT_METHOD": "Choosing how to pay",
+      "AWAITING_TRANSFER_PROOF": "Sending payment proof",
+      "ORDER_PLACED": "Order placed",
+      "SELECTING_BRANCH": "Choosing a branch",
+      "WAITING_FOR_HUMAN": "Waiting for an agent",
+      "POST_ORDER_SUPPORT": "Post-order support",
+      "AWAITING_COMPLAINT_TRIAGE": "Describing a complaint",
+      "CANCELLING": "Cancelling",
+      "ERROR_RECOVERY": "Recovering from an error"
+    }
   }
 }

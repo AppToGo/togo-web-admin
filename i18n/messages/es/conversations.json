@@ -101,5 +101,138 @@
     "DELIVERED": "Entregado",
     "READ": "Leído",
     "FAILED": "Falló el envío"
+  },
+  "funnel": {
+    "page": {
+      "title": "Embudo del bot",
+      "subtitle": "Cuántas conversaciones con el bot terminan en pedido, dónde se abandonan y qué tan bien entiende",
+      "selectBusinessTitle": "Selecciona un negocio",
+      "selectBusinessDescription": "Elige un negocio específico en el selector superior para ver su embudo.",
+      "accessDeniedTitle": "Sin acceso",
+      "accessDeniedDescription": "No tienes permiso para ver las métricas del negocio."
+    },
+    "kpis": {
+      "order": {
+        "title": "Terminan en pedido",
+        "description": "{count} de {closed} cerradas"
+      },
+      "abandoned": {
+        "title": "Se abandonan",
+        "description": "{count} de {closed} cerradas"
+      },
+      "handoff": {
+        "title": "Piden un asesor",
+        "description": "{count} de {total} conversaciones"
+      },
+      "messages": {
+        "title": "Mensajes hasta el pedido",
+        "description": "Mediana · promedio {average}",
+        "empty": "Sin pedidos en el período"
+      }
+    },
+    "abandonment": {
+      "title": "Dónde se abandonan",
+      "subtitle": "Paso en el que quedó cada conversación abandonada",
+      "empty": "Ninguna conversación abandonada en el período.",
+      "count": "{count, plural, one {# conversación} other {# conversaciones}}"
+    },
+    "outcomes": {
+      "title": "Cómo terminan",
+      "subtitle": "{total, plural, one {# conversación} other {# conversaciones}} en el período",
+      "empty": "Sin conversaciones en el período.",
+      "labels": {
+        "ORDER_PLACED": "Con pedido",
+        "ABANDONED": "Abandonada",
+        "SUPPORT": "Soporte",
+        "NO_INTENT": "Sin intención de compra",
+        "SPAM": "Spam",
+        "UNSET": "Cerrada sin resultado",
+        "OPEN": "En curso"
+      }
+    },
+    "understanding": {
+      "title": "Qué tan bien entiende el bot",
+      "subtitle": "Sobre {turns, plural, one {# mensaje} other {# mensajes}} de clientes en el período",
+      "empty": "Todavía no hay mensajes registrados en este período.",
+      "tiles": {
+        "unknown": {
+          "title": "No entendidos",
+          "description": "{count, plural, one {# mensaje} other {# mensajes}}"
+        },
+        "invalidSelection": {
+          "title": "Opción inválida",
+          "description": "{count, plural, one {# mensaje} other {# mensajes}} que no eligieron una opción"
+        },
+        "outOfStep": {
+          "title": "Fuera de paso",
+          "description": "{count, plural, one {# mensaje} other {# mensajes}} de otro paso del pedido"
+        },
+        "promptTextMatched": {
+          "title": "Opciones escritas",
+          "description": "{count, plural, one {# vez} other {# veces}} el cliente escribió una opción en vez de tocarla y el bot la reconoció"
+        }
+      },
+      "table": {
+        "state": "Paso",
+        "turns": "Mensajes"
+      }
+    },
+    "paraphrase": {
+      "title": "Reescrituras con IA",
+      "applied": "Enviados reescritos",
+      "rejected": "Descartados por el validador",
+      "failed": "Sin respuesta de la IA",
+      "rate": "{rate} de {requested, plural, one {# aviso} other {# avisos}} salió reescrito",
+      "rejectedReasons": "Por qué se descartaron",
+      "failedCauses": "Por qué no hubo respuesta",
+      "reasons": {
+        "numbers": "Cambió un número",
+        "bold": "Cambió un nombre u opción",
+        "too_long": "Quedó muy largo",
+        "too_short": "Quedó muy corto",
+        "url": "Agregó un enlace",
+        "emojis": "Usó emojis",
+        "address": "No respetó el trato de usted",
+        "empty": "Respuesta vacía",
+        "invalid_json": "Respuesta con formato inválido",
+        "not_sent": "No se envió"
+      },
+      "causes": {
+        "timeout": "Tardó demasiado",
+        "error": "Error de la IA",
+        "paused": "Pausada tras varios fallos"
+      }
+    },
+    "noTurnHistory": "Los datos de qué tan bien entiende el bot se registran desde la actualización del embudo. Para períodos anteriores solo hay datos de las conversaciones.",
+    "timeZoneNote": "Días según la zona horaria del negocio ({timeZone}).",
+    "error": {
+      "title": "No se pudo cargar el embudo",
+      "description": "Ocurrió un error al consultar el servidor. Intenta de nuevo en unos minutos."
+    },
+    "states": {
+      "IDLE": "Sin conversación",
+      "GREETING": "Saludo",
+      "VIEWING_MENU_LINK": "Viendo el catálogo",
+      "SEARCHING_PRODUCT": "Buscando productos",
+      "PRODUCT_FOUND": "Producto encontrado",
+      "PRODUCT_NOT_FOUND": "Producto no encontrado",
+      "CLARIFICATION_NEEDED": "Aclarando qué quiere",
+      "SELECTING_VARIANT": "Eligiendo presentación",
+      "ADDING_TO_CART": "Agregando al pedido",
+      "MODIFYING_CART": "Cambiando el pedido",
+      "CART_REVIEW": "Revisando el pedido",
+      "CONFIRMING_ORDER": "Confirmando el pedido",
+      "SELECTING_DELIVERY_TYPE": "Eligiendo tipo de entrega",
+      "COLLECTING_ADDRESS": "Dando la dirección",
+      "COLLECTING_PAYMENT_METHOD": "Eligiendo cómo pagar",
+      "AWAITING_TRANSFER_PROOF": "Enviando comprobante",
+      "ORDER_PLACED": "Pedido hecho",
+      "SELECTING_BRANCH": "Eligiendo sede",
+      "WAITING_FOR_HUMAN": "Esperando un asesor",
+      "POST_ORDER_SUPPORT": "Soporte después del pedido",
+      "AWAITING_COMPLAINT_TRIAGE": "Contando un reclamo",
+      "CANCELLING": "Cancelando",
+      "ERROR_RECOVERY": "Recuperándose de un error"
+    }
   }
 }

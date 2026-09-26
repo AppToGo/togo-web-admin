@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
-import { Inbox, MessageCircle } from "lucide-react";
+import { Filter, Inbox, MessageCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -102,6 +102,9 @@ export function Sidebar({
   // explícitamente (ver billing.view en permission-catalog.seed.ts).
   const canViewBilling = hasPermission("billing.view");
 
+  // Embudo del bot (plan bot natural, T20): mismo permiso que su endpoint.
+  const canViewConversationFunnel = hasPermission("metrics.view");
+
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
     const items: NavigationItem[] = [
@@ -135,6 +138,15 @@ export function Sidebar({
               name: t("sidebar.conversations"),
               href: "/dashboard/conversations",
               icon: MessageCircle,
+            },
+          ]
+        : []),
+      ...(canViewConversationFunnel
+        ? [
+            {
+              name: t("sidebar.conversationFunnel"),
+              href: "/dashboard/conversation-funnel",
+              icon: Filter,
             },
           ]
         : []),
@@ -213,7 +225,14 @@ export function Sidebar({
     ];
 
     return items;
-  }, [t, showGlobalCatalog, canViewConversations, canViewInbox, canViewBilling]);
+  }, [
+    t,
+    showGlobalCatalog,
+    canViewConversations,
+    canViewConversationFunnel,
+    canViewInbox,
+    canViewBilling,
+  ]);
 
   // Admin navigation (Super Admin only)
   const adminNavigation: NavigationItem[] = [

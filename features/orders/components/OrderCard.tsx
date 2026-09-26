@@ -14,6 +14,7 @@ import {
   ArrowLeftRight,
   Wallet,
   MoreHorizontal,
+  PencilLine,
 } from "lucide-react";
 import type { Order, OrderItem, OrderStatus, PaymentStatus } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
@@ -23,6 +24,8 @@ import {
   canCompleteOrder,
   getPaymentStatusLabel,
   FINAL_STATUSES,
+  BLOCKED_WHILE_CUSTOMER_EDITING,
+  isCustomerEditing,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import {
@@ -315,6 +318,7 @@ function OrderMoveMenu({
 
   const targets = DEFAULT_KANBAN_STATUSES.filter((s) => s !== currentStatus);
   if (targets.length === 0) return null;
+  const editing = isCustomerEditing(order);
 
   return (
     <div
@@ -344,6 +348,9 @@ function OrderMoveMenu({
           {targets.map((status: OrderStatus) => (
             <DropdownMenuItem
               key={status}
+              disabled={
+                editing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status)
+              }
               onSelect={() => {
                 onStatusChange(order.id, status);
                 setIsOpen(false);
@@ -499,6 +506,9 @@ export const OrderCard = memo(function OrderCard({
 
   const orderNumber = formatOrderNumber(order.id, order.orderNumber);
   const orderType = getOrderTypeInfo(order as Order & { source?: string }, t);
+  // Mientras el cliente edita el pedido no se puede arrastrar a otra
+  // columna: el backend rechaza mandarlo a producción.
+  const customerEditing = isCustomerEditing(order);
 
   const handleCompleteClick = useCallback(
     (e: React.MouseEvent) => {
@@ -548,12 +558,15 @@ export const OrderCard = memo(function OrderCard({
   return (
     <>
       <div
-        draggable
+        draggable={!customerEditing}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         className={cn(
           kanbanCardVariants({ elevation: "default" }),
-          "animate-cardEnter hover:animate-cardHover cursor-grab active:cursor-grabbing transition-all duration-200",
+          "animate-cardEnter hover:animate-cardHover transition-all duration-200",
+          customerEditing
+            ? "cursor-pointer"
+            : "cursor-grab active:cursor-grabbing",
           isDragging &&
             `opacity-50 rotate-2 scale-105 shadow-xl ring-2 ${
               dragRingColors[dragColor] || dragRingColors.indigo
@@ -578,6 +591,19 @@ export const OrderCard = memo(function OrderCard({
             <span className="flex-1" />
             <TimeBadge order={order} currentStatus={currentStatus} />
           </div>
+          {customerEditing && (
+            <HoverTooltip content={t("card.customerEditingHint")}>
+              <span
+                className={cn(
+                  categoryBadgeVariants({ variant: "amber" }),
+                  "mt-1"
+                )}
+              >
+                <PencilLine className="w-3 h-3" />
+                {t("card.customerEditing")}
+              </span>
+            </HoverTooltip>
+          )}
         </div>
 
         {/* Items de la orden con total incluido */}

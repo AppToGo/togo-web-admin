@@ -17,6 +17,7 @@ import {
   Check,
   ClipboardList,
   MessageCircle,
+  PencilLine,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -26,7 +27,12 @@ import {
   useUpdateOrderPaymentStatus,
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
-import { formatCurrency, canCompleteOrder } from "../utils/order-status.utils";
+import {
+  formatCurrency,
+  canCompleteOrder,
+  BLOCKED_WHILE_CUSTOMER_EDITING,
+  isCustomerEditing,
+} from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import { categoryBadgeVariants } from "../styles";
 import { toast } from "sonner";
@@ -45,6 +51,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
+import { HoverTooltip } from "./HoverTooltip";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -107,10 +114,13 @@ function OrderStatusEditor({
   orderId,
   currentStatus,
   onStatusChange,
+  customerEditing = false,
 }: {
   orderId: string;
   currentStatus: OrderStatus;
   onStatusChange: (status: OrderStatus) => void;
+  /** El cliente lo está editando: no se puede mandar a producción. */
+  customerEditing?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const variant = getColumnVariant(currentStatus);
@@ -158,11 +168,13 @@ function OrderStatusEditor({
       >
         {availableStatuses.map((status) => {
           const isCurrent = status === currentStatus;
+          const isBlocked =
+            customerEditing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status);
           return (
             <DropdownMenuItem
               key={status}
               onSelect={() => handleSelect(status)}
-              disabled={isCurrent}
+              disabled={isCurrent || isBlocked}
               className={cn(
                 "flex items-center gap-2 text-xs",
                 isCurrent
@@ -328,6 +340,7 @@ export function OrderDetailContent({
   }
 
   const orderType = getOrderTypeInfo(order, t);
+  const customerEditing = isCustomerEditing(order);
 
   return (
     <div className="space-y-6">
@@ -351,7 +364,22 @@ export function OrderDetailContent({
               orderId={order.id ?? ""}
               currentStatus={order.status}
               onStatusChange={handleStatusChange}
+              customerEditing={customerEditing}
             />
+
+            {customerEditing && (
+              <HoverTooltip content={t("card.customerEditingHint")}>
+                <span
+                  className={cn(
+                    categoryBadgeVariants({ variant: "amber" }),
+                    "text-xs"
+                  )}
+                >
+                  <PencilLine className="w-3 h-3" />
+                  <span>{t("card.customerEditing")}</span>
+                </span>
+              </HoverTooltip>
+            )}
 
             {/* Badge de tipo (domicilio/recoger/en mesa) */}
             <span

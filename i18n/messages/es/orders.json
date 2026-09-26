@@ -177,7 +177,9 @@
     "payment": {
       "paid": "Pagado",
       "pending": "Pendiente"
-    }
+    },
+    "customerEditing": "Cliente editando",
+    "customerEditingHint": "El cliente está agregando productos desde WhatsApp. Podrás avanzarlo cuando lo vuelva a confirmar."
   },
   "detail": {
     "title": "Detalle del Pedido",

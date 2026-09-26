@@ -21,6 +21,8 @@ export {
   useStatusLabels,
   isDeliveryOrder,
   getOrderGrandTotal,
+  BLOCKED_WHILE_CUSTOMER_EDITING,
+  isCustomerEditing,
 } from './order-status.utils';
 
 // Order number formatting utility

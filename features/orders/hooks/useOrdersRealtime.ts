@@ -35,6 +35,7 @@ const WS_EVENTS = {
   ORDER_CREATED: 'order:created',
   ORDER_UPDATED: 'order:updated',
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
+  ORDER_CUSTOMER_EDIT: 'order:customerEdit',
   METRICS_UPDATED: 'order:metricsUpdated',
   OPERATOR_JOINED: 'operator:joined',
   OPERATOR_LEFT: 'operator:left',
@@ -59,6 +60,18 @@ interface OrderUpdatedEvent {
 interface OrderPaymentUpdatedEvent {
   orderId: string;
   newStatus: string;
+  timestamp: string;
+}
+
+/**
+ * El cliente abrió su pedido para agregarle productos (LOCKED), lo
+ * reconfirmó (CONFIRMED), lo descartó (DISCARDED), se le venció (EXPIRED) o
+ * el negocio lo movió de estado mientras lo editaba (INTERRUPTED).
+ */
+interface OrderCustomerEditEvent {
+  orderId: string;
+  phase: 'LOCKED' | 'CONFIRMED' | 'DISCARDED' | 'EXPIRED' | 'INTERRUPTED';
+  changed: boolean;
   timestamp: string;
 }
 
@@ -276,6 +289,15 @@ export function useOrdersRealtime(): RealtimeState {
           queryKey: [...ORDERS_KEYS.all, businessId, 'completed'],
         });
       }
+    });
+
+    socket.on(WS_EVENTS.ORDER_CUSTOMER_EDIT, (data: OrderCustomerEditEvent) => {
+      // Cambian el bloqueo y, al reconfirmar o restaurar, los productos y el
+      // total: se refetchea el pedido y el tablero en vez de parchear el cache.
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(data.orderId) });
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
+      });
     });
 
     socket.on(WS_EVENTS.ORDER_PAYMENT_UPDATED, (data: OrderPaymentUpdatedEvent) => {

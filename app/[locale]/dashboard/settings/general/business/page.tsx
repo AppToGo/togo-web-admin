@@ -25,10 +25,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
 import {
+  BotVoiceCard,
+  botVoiceKey,
   useCurrentBusiness,
   useUpdateBusiness,
   useUploadBusinessLogo,
 } from "@/features/business";
+import type { Business } from "@/features/business";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -59,6 +62,20 @@ const defaultFormData: FormData = {
   description: "",
   useProductImages: false,
 };
+
+function formDataFrom(business: Business): FormData {
+  const s = (business.settings as Record<string, unknown>) ?? {};
+  return {
+    name: business.name || "",
+    slug: business.slug || "",
+    phone: business.phone || "",
+    industryId: business.industryId || "",
+    primaryColor: (s.primaryColor as string) || "#4F46E5",
+    accentColor: (s.accentColor as string) || "#10B981",
+    description: (s.description as string) || "",
+    useProductImages: Boolean(s.useProductImages),
+  };
+}
 
 export default function BusinessSettingsPage() {
   const t = useTranslations("settings");
@@ -93,22 +110,16 @@ export default function BusinessSettingsPage() {
       ) ?? null)
     : null;
 
-  // Initialize form data when business loads
+  // Initialize form data when business loads. Keyed on the form's own
+  // fields, not the whole business object: saving another section (e.g. the
+  // assistant voice card) refetches the business and must not wipe unsaved
+  // edits here.
+  const formSource = business ? JSON.stringify(formDataFrom(business)) : null;
   useEffect(() => {
-    if (business) {
-      const s = (business.settings as Record<string, unknown>) ?? {};
-      setFormData({
-        name: business.name || "",
-        slug: business.slug || "",
-        phone: business.phone || "",
-        industryId: business.industryId || "",
-        primaryColor: (s.primaryColor as string) || "#4F46E5",
-        accentColor: (s.accentColor as string) || "#10B981",
-        description: (s.description as string) || "",
-        useProductImages: Boolean(s.useProductImages),
-      });
+    if (formSource) {
+      setFormData(JSON.parse(formSource) as FormData);
     }
-  }, [business]);
+  }, [formSource]);
 
   const handleChange = useCallback((field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -203,21 +214,8 @@ export default function BusinessSettingsPage() {
     ]
   );
 
-  const isDirty = business
-    ? (() => {
-        const s = (business.settings as Record<string, unknown>) ?? {};
-        return (
-          formData.name !== (business.name || "") ||
-          formData.slug !== (business.slug || "") ||
-          formData.phone !== (business.phone || "") ||
-          formData.industryId !== (business.industryId || "") ||
-          formData.primaryColor !== ((s.primaryColor as string) || "#4F46E5") ||
-          formData.accentColor !== ((s.accentColor as string) || "#10B981") ||
-          formData.description !== ((s.description as string) || "") ||
-          formData.useProductImages !== Boolean(s.useProductImages)
-        );
-      })()
-    : false;
+  const isDirty =
+    formSource !== null && JSON.stringify(formData) !== formSource;
 
   const handleLogoUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -528,6 +526,11 @@ export default function BusinessSettingsPage() {
             </Button>
           </div>
         </form>
+
+        {/* Voz del asistente de WhatsApp (plan bot natural, T18) */}
+        {business && (
+          <BotVoiceCard key={botVoiceKey(business)} business={business} />
+        )}
 
         {/* WhatsApp Compartido (AUTO_ASSIGN) */}
         <Card variant="glass">
