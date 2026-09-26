@@ -78,6 +78,11 @@ test.describe("Embudo del bot", () => {
       page.getByText("Días según la zona horaria del negocio (America/Bogota).")
     ).toBeVisible();
 
+    // T21: reescrituras con IA.
+    await expect(page.getByText("Reescrituras con IA")).toBeVisible();
+    await expect(page.getByText("Cambió un nombre u opción")).toBeVisible();
+    await expect(page.getByText("Tardó demasiado")).toBeVisible();
+
     // El período del filtro viaja como días (YYYY-MM-DD).
     expect(funnelRequests.length).toBeGreaterThan(0);
     const last = funnelRequests[funnelRequests.length - 1];

@@ -132,6 +132,11 @@
         "tooLong": "Up to {max} characters",
         "invalid": "Only letters, numbers, spaces and . ' -"
       },
+      "paraphrase": {
+        "label": "Rewrite notices with AI (beta)",
+        "description": "AI rewrites some notices, like \"I didn't understand\" or \"pick an option\", in your tone. A validator checks every text; if a price, number or name changes, the original message is sent. It never touches orders, amounts or payment details.",
+        "unavailable": "Not enabled in ToGo yet. If you already had it on, it won't have any effect until we enable it."
+      },
       "preview": {
         "title": "Preview",
         "loading": "Loading preview…",

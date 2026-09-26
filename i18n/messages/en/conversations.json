@@ -177,6 +177,32 @@
         "turns": "Messages"
       }
     },
+    "paraphrase": {
+      "title": "AI rewrites",
+      "applied": "Sent rewritten",
+      "rejected": "Discarded by the validator",
+      "failed": "No answer from the AI",
+      "rate": "{rate} of {requested, plural, one {# notice} other {# notices}} went out rewritten",
+      "rejectedReasons": "Why they were discarded",
+      "failedCauses": "Why there was no answer",
+      "reasons": {
+        "numbers": "A number changed",
+        "bold": "A name or option changed",
+        "too_long": "Too long",
+        "too_short": "Too short",
+        "url": "Added a link",
+        "emojis": "Used emojis",
+        "address": "Didn't keep formal address",
+        "empty": "Empty answer",
+        "invalid_json": "Malformed answer",
+        "not_sent": "Not sent"
+      },
+      "causes": {
+        "timeout": "Took too long",
+        "error": "AI error",
+        "paused": "Paused after several failures"
+      }
+    },
     "noTurnHistory": "Data on how well the bot understands is recorded since the funnel update. Earlier periods only have conversation data.",
     "timeZoneNote": "Days in the business time zone ({timeZone}).",
     "error": {

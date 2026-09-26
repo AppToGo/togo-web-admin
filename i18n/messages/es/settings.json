@@ -132,6 +132,11 @@
         "tooLong": "Máximo {max} caracteres",
         "invalid": "Solo letras, números, espacios y . ' -"
       },
+      "paraphrase": {
+        "label": "Reescribir avisos con IA (beta)",
+        "description": "La IA reescribe con tu tono algunos avisos, como \"no te entendí\" o \"elige una opción\". Un validador revisa cada texto; si cambia un precio, un número o un nombre, se envía el mensaje original. Nunca toca pedidos, montos ni datos de pago.",
+        "unavailable": "Todavía no está habilitado en ToGo. Si ya lo tenías prendido, no tendrá efecto hasta que lo habilitemos."
+      },
       "preview": {
         "title": "Vista previa",
         "loading": "Cargando vista previa…",

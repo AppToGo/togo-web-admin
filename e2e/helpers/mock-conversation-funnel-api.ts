@@ -76,6 +76,18 @@ export const FAKE_CONVERSATION_FUNNEL = {
     rates: { order: 0.3333, abandoned: 0.3333, handoff: 0.1429 },
   },
   messagesToOrder: { orders: 2, average: 4, median: 4, p90: 4.8 },
+  paraphrase: {
+    requested: 8,
+    applied: 3,
+    rejected: 3,
+    failed: 2,
+    rates: { applied: 0.375 },
+    rejectedByReason: [
+      { reason: "bold", count: 2 },
+      { reason: "numbers", count: 1 },
+    ],
+    failedByCause: [{ cause: "timeout", count: 2 }],
+  },
 };
 
 /**

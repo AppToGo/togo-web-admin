@@ -9,6 +9,7 @@ import { FunnelKpis } from "./funnel-kpis";
 import { FunnelAbandonmentCard } from "./funnel-abandonment-card";
 import { FunnelOutcomesCard } from "./funnel-outcomes-card";
 import { FunnelUnderstandingCard } from "./funnel-understanding-card";
+import { FunnelParaphraseCard } from "./funnel-paraphrase-card";
 
 interface ConversationFunnelViewProps {
   params: GetConversationFunnelParams;
@@ -55,6 +56,11 @@ export function ConversationFunnelView({
       )}
 
       <FunnelUnderstandingCard turns={data.turns} />
+
+      {/* T21: solo si algún aviso se mandó a reescribir en el período. */}
+      {data.paraphrase && data.paraphrase.requested > 0 && (
+        <FunnelParaphraseCard paraphrase={data.paraphrase} />
+      )}
 
       <p className="text-xs text-slate-400">
         {t("timeZoneNote", { timeZone: data.period.timeZone })}
