@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OrderTypeBadge, PaymentStatusEditor, TimeBadge } from "./OrderCard";
 import type { ArchivePagination, Order, OrderStatus } from "../types";
@@ -11,14 +11,7 @@ import { dotVariants } from "../theme";
 import { formatCurrency, getOrderGrandTotal } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import { useOrderDropZone } from "../hooks/useOrderDropZone";
-
-// "Next step" action per status — reuses the existing orders.actions labels
-// (Accept / Mark ready / Deliver).
-const NEXT_STEP: Partial<Record<OrderStatus, { to: OrderStatus; labelKey: string }>> = {
-  CONFIRMED: { to: "IN_PROGRESS", labelKey: "actions.accept" },
-  IN_PROGRESS: { to: "READY", labelKey: "actions.ready" },
-  READY: { to: "COMPLETED", labelKey: "actions.deliver" },
-};
+import { NextStatusButton } from "./NextStatusButton";
 
 // Literal class names (not built dynamically) so Tailwind picks them up.
 const STATUS_STYLE: Partial<Record<OrderStatus, { pill: string; borderOver: string }>> = {
@@ -46,7 +39,6 @@ interface ListRowProps {
 
 function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: ListRowProps) {
   const t = useTranslations("orders");
-  const next = NEXT_STEP[status];
   const itemsSummary = order.items?.length
     ? order.items.map((item) => `${item.quantity}x ${item.productName}`).join(", ")
     : t("empty.noProducts");
@@ -98,17 +90,7 @@ function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: List
       <TimeBadge order={order} currentStatus={status} />
 
       <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-        {/* Only the next step; styled like the former status button group. */}
-        {next && (
-          <button
-            type="button"
-            onClick={() => onStatusChange?.(order.id, next.to)}
-            className="h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 inline-flex items-center gap-1 whitespace-nowrap transition-colors"
-          >
-            {t(next.labelKey)}
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        )}
+        <NextStatusButton order={order} status={status} onStatusChange={onStatusChange} />
       </div>
     </div>
   );
