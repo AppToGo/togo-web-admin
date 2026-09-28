@@ -13,18 +13,15 @@ import {
   Banknote,
   ArrowLeftRight,
   Wallet,
-  MoreHorizontal,
   PencilLine,
 } from "lucide-react";
-import type { Order, OrderItem, OrderStatus, PaymentStatus } from "../types";
+import type { Order, OrderItem, PaymentStatus } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
 import {
   formatCurrency,
   getTimeElapsed,
   canCompleteOrder,
   getPaymentStatusLabel,
-  FINAL_STATUSES,
-  BLOCKED_WHILE_CUSTOMER_EDITING,
   isCustomerEditing,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
@@ -43,14 +40,13 @@ import {
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 import { toast } from "sonner";
 import { extractErrorMessage } from "@/lib/error.utils";
-import { DEFAULT_KANBAN_STATUSES } from "../config/kanban-columns.config";
-import { dotVariants } from "../theme";
 import {
   getElapsedMinutes,
   getLatenessLevel,
   type LatenessLevel,
 } from "../utils/order-lateness.utils";
 import { HoverTooltip } from "./HoverTooltip";
+import { NextStatusButton } from "./NextStatusButton";
 
 export type { CardDensity };
 
@@ -293,79 +289,6 @@ export function TimeBadge({ order, currentStatus }: { order: Order; currentStatu
       <Clock className="w-3 h-3" />
       {timeElapsed}
     </span>
-  );
-}
-
-// "Move to" menu — an alternative to drag & drop. Offers the same target
-// statuses the board columns already accept on drop; it adds no new
-// transition rules.
-function OrderMoveMenu({
-  order,
-  currentStatus,
-  onStatusChange,
-}: {
-  order: Order;
-  currentStatus?: string;
-  onStatusChange?: (orderId: string, newStatus: string) => void;
-}) {
-  const t = useTranslations("orders");
-  const tStatus = useTranslations("orders.status");
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Final orders (Delivered/Cancelled) can't leave that status, so the menu
-  // would only offer transitions the API rejects.
-  if (!onStatusChange || FINAL_STATUSES.includes(currentStatus as OrderStatus)) return null;
-
-  const targets = DEFAULT_KANBAN_STATUSES.filter((s) => s !== currentStatus);
-  if (targets.length === 0) return null;
-  const editing = isCustomerEditing(order);
-
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-        <HoverTooltip content={t("actions.moveOrder")}>
-          <DropdownMenuTrigger asChild>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              aria-label={t("actions.moveOrder")}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </DropdownMenuTrigger>
-        </HoverTooltip>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[160px] z-[9999]"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-            {t("actions.moveTo")}
-          </div>
-          {targets.map((status: OrderStatus) => (
-            <DropdownMenuItem
-              key={status}
-              disabled={
-                editing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status)
-              }
-              onSelect={() => {
-                onStatusChange(order.id, status);
-                setIsOpen(false);
-              }}
-              className="flex items-center gap-2 text-xs cursor-pointer"
-            >
-              <span
-                className={cn("w-2 h-2 rounded-full shrink-0", dotVariants({ status }))}
-              />
-              <span className="text-slate-700">{tStatus(status)}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
   );
 }
 
@@ -619,7 +542,7 @@ export const OrderCard = memo(function OrderCard({
           />
         </div>
 
-        {/* Footer: payment status (original styles) + quick "move to" menu */}
+        {/* Footer: payment status (original styles) + next-step button */}
         <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
           {/* Payment method (icon) + Editable payment status */}
           <PaymentStatusEditor
@@ -628,9 +551,9 @@ export const OrderCard = memo(function OrderCard({
             currentStatus={order.paymentStatus}
           />
           <span className="flex-1" />
-          <OrderMoveMenu
+          <NextStatusButton
             order={order}
-            currentStatus={currentStatus}
+            status={currentStatus}
             onStatusChange={onStatusChange}
           />
         </div>

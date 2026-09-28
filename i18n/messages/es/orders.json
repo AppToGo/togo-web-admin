@@ -113,6 +113,7 @@
   },
   "actions": {
     "accept": "Aceptar",
+    "toInProgress": "Pasar a proceso",
     "reject": "Rechazar",
     "prepare": "Preparar",
     "ready": "Marcar listo",
