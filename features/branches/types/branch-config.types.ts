@@ -163,30 +163,85 @@ export interface BranchSettings {
 // VALORES POR DEFECTO
 // ============================================================================
 
-/**
- * Horario por defecto para un día (cerrado)
- */
-export const DEFAULT_DAY_SCHEDULE: DaySchedule = {
-  isOpen: false,
-  open: "09:00",
-  close: "18:00",
-};
+export const BUSINESS_HOURS_DAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
+
+export type DayKey = (typeof BUSINESS_HOURS_DAYS)[number];
 
 /**
- * Horarios por defecto (todos los días cerrados)
+ * Horario vacío para cuando el negocio activa el horario de atención:
+ * todos los días cerrados y sin horas, para que elija uno a uno los que
+ * atiende. No es un valor por defecto de la sede — una sede sin horario
+ * (`businessHours = {}`) acepta pedidos siempre.
  */
-export const DEFAULT_BUSINESS_HOURS: BusinessHours = {
-  timezone: "America/Bogota",
+export const createEmptyBusinessHours = (timezone: string): BusinessHours => ({
+  timezone,
   schedule: {
-    monday: { ...DEFAULT_DAY_SCHEDULE },
-    tuesday: { ...DEFAULT_DAY_SCHEDULE },
-    wednesday: { ...DEFAULT_DAY_SCHEDULE },
-    thursday: { ...DEFAULT_DAY_SCHEDULE },
-    friday: { ...DEFAULT_DAY_SCHEDULE },
-    saturday: { ...DEFAULT_DAY_SCHEDULE, isOpen: false },
-    sunday: { ...DEFAULT_DAY_SCHEDULE, isOpen: false },
+    monday: { isOpen: false, open: "", close: "" },
+    tuesday: { isOpen: false, open: "", close: "" },
+    wednesday: { isOpen: false, open: "", close: "" },
+    thursday: { isOpen: false, open: "", close: "" },
+    friday: { isOpen: false, open: "", close: "" },
+    saturday: { isOpen: false, open: "", close: "" },
+    sunday: { isOpen: false, open: "", close: "" },
   },
   holidays: [],
+});
+
+/**
+ * Lee `branch.businessHours` tal como llega del API. El backend guarda `{}`
+ * cuando la sede no tiene horario (StoreStatusService la trata como
+ * SIN_CONFIGURAR y acepta pedidos siempre), así que solo hay horario si
+ * viene `schedule`.
+ */
+export const parseBusinessHours = (
+  raw: unknown,
+  fallbackTimezone = "America/Bogota"
+): BusinessHours | null => {
+  const typed = raw as Partial<BusinessHours> | null | undefined;
+  if (!typed?.schedule) return null;
+  return {
+    timezone: typed.timezone || fallbackTimezone,
+    schedule: typed.schedule,
+    holidays: typed.holidays ?? [],
+  };
+};
+
+export type BusinessHoursDayError = "missingTimes" | "sameTimes";
+
+export interface BusinessHoursErrors {
+  /** Horario activo sin ningún día abierto */
+  noOpenDays?: boolean;
+  /** Error por día abierto */
+  days?: Partial<Record<DayKey, BusinessHoursDayError>>;
+}
+
+/**
+ * Valida un horario activo. Un cierre anterior a la apertura es válido
+ * (horario nocturno, ej. 18:00–02:00).
+ */
+export const validateBusinessHours = (
+  hours: BusinessHours
+): BusinessHoursErrors | null => {
+  const openDays = BUSINESS_HOURS_DAYS.filter(
+    (day) => hours.schedule[day]?.isOpen
+  );
+  if (openDays.length === 0) return { noOpenDays: true };
+
+  const days: Partial<Record<DayKey, BusinessHoursDayError>> = {};
+  for (const day of openDays) {
+    const { open, close } = hours.schedule[day];
+    if (!open || !close) days[day] = "missingTimes";
+    else if (open === close) days[day] = "sameTimes";
+  }
+  return Object.keys(days).length > 0 ? { days } : null;
 };
 
 /**
@@ -201,5 +256,4 @@ export const DEFAULT_DELIVERY_CONFIG: DeliveryConfig = {
  */
 export const DEFAULT_BRANCH_SETTINGS: BranchSettings = {
   delivery: DEFAULT_DELIVERY_CONFIG,
-  businessHours: DEFAULT_BUSINESS_HOURS,
 };
