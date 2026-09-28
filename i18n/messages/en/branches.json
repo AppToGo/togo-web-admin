@@ -230,6 +230,18 @@
         "friday": "Friday",
         "saturday": "Saturday",
         "sunday": "Sunday"
+      },
+      "enable": "Set business hours",
+      "enableDescription": "When on, the bot only takes orders on the days and hours you set.",
+      "notConfigured": "No business hours set",
+      "notConfiguredDescription": "This branch takes orders at any time. Turn on business hours if you want the bot to take orders only on certain days and hours.",
+      "daysHelp": "Turn on the days you're open and enter the hours for each one.",
+      "openTime": "{day} opening time",
+      "closeTime": "{day} closing time",
+      "errors": {
+        "noOpenDays": "Turn on at least one day or turn off business hours.",
+        "missingTimes": "Enter the opening and closing time.",
+        "sameTimes": "Opening and closing time can't be the same."
       }
     },
     "transfer": {

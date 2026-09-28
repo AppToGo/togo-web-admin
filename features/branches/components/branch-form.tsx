@@ -39,10 +39,16 @@ import type {
   DeliveryFeeType,
   DeliveryConfig,
   BusinessHours,
+  BusinessHoursErrors,
   TransferOptions,
   DineInConfig,
 } from "../types";
-import { DEFAULT_TRANSFER_OPTIONS, DEFAULT_DINE_IN_CONFIG } from "../types";
+import {
+  DEFAULT_TRANSFER_OPTIONS,
+  DEFAULT_DINE_IN_CONFIG,
+  parseBusinessHours,
+  validateBusinessHours,
+} from "../types";
 import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
 import { TransferOptionsSection } from "./TransferOptionsSection";
@@ -120,21 +126,6 @@ export function BranchForm({
   const isEditing = !!branch;
   const isMainBranch = branch?.isMainBranch ?? false;
 
-  // Default business hours — defined before useState so it can be used in lazy initializer
-  const DEFAULT_BUSINESS_HOURS: BusinessHours = {
-    timezone: "America/Bogota",
-    schedule: {
-      monday: { isOpen: true, open: "09:00", close: "18:00" },
-      tuesday: { isOpen: true, open: "09:00", close: "18:00" },
-      wednesday: { isOpen: true, open: "09:00", close: "18:00" },
-      thursday: { isOpen: true, open: "09:00", close: "18:00" },
-      friday: { isOpen: true, open: "09:00", close: "18:00" },
-      saturday: { isOpen: false, open: "09:00", close: "18:00" },
-      sunday: { isOpen: false, open: "09:00", close: "18:00" },
-    },
-    holidays: [],
-  };
-
   // Form state — lazy initializer reads from branch prop on first render
   const [formData, setFormData] = useState(() => {
     if (!branch) {
@@ -152,12 +143,11 @@ export function BranchForm({
         latitude: null as number | null,
         longitude: null as number | null,
         deliveryConfig: { type: "FREE" as DeliveryFeeType },
-        businessHours: DEFAULT_BUSINESS_HOURS,
+        businessHours: null as BusinessHours | null,
         transferOptions: DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: DEFAULT_DINE_IN_CONFIG,
       };
     }
-    const bh = branch.businessHours as BusinessHours | null;
     const to = branch.transferOptions as TransferOptions | null;
     const di = branch.dineInConfig as DineInConfig | null;
     return {
@@ -176,7 +166,7 @@ export function BranchForm({
       deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
         ? (branch.deliveryConfig as DeliveryConfig)
         : { type: "FREE" as DeliveryFeeType },
-      businessHours: bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+      businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
       transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
       dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
     };
@@ -191,11 +181,15 @@ export function BranchForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!branch);
+  // Al editar, el horario solo se envía si el usuario tocó la sección — así
+  // guardar la sede por otro motivo nunca cambia su horario.
+  const [businessHoursTouched, setBusinessHoursTouched] = useState(false);
+  const [businessHoursErrors, setBusinessHoursErrors] =
+    useState<BusinessHoursErrors | null>(null);
 
   // Sync form when branch prop changes (e.g. after React Query background refetch)
   useEffect(() => {
     if (branch) {
-      const bh = branch.businessHours as BusinessHours | null;
       const to = branch.transferOptions as TransferOptions | null;
       const di = branch.dineInConfig as DineInConfig | null;
       setFormData({
@@ -214,14 +208,15 @@ export function BranchForm({
         deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
           ? (branch.deliveryConfig as DeliveryConfig)
           : { type: "FREE" as DeliveryFeeType },
-        businessHours:
-          bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+        businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
         transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
       });
       setErrors({});
       setTouched({});
       setSlugManuallyEdited(true);
+      setBusinessHoursTouched(false);
+      setBusinessHoursErrors(null);
     }
   }, [branch]);
 
@@ -309,7 +304,12 @@ export function BranchForm({
       fieldsToValidate.reduce((acc, field) => ({ ...acc, [field]: true }), {})
     );
 
-    return Object.keys(newErrors).length === 0;
+    const hoursErrors = formData.businessHours
+      ? validateBusinessHours(formData.businessHours)
+      : null;
+    setBusinessHoursErrors(hoursErrors);
+
+    return Object.keys(newErrors).length === 0 && !hoursErrors;
   };
 
   // Normalize JSON config fields before submit — guards against empty {} from Prisma defaults
@@ -317,11 +317,6 @@ export function BranchForm({
     (cfg as DeliveryConfig)?.type
       ? (cfg as DeliveryConfig)
       : { type: "FREE" as DeliveryFeeType };
-
-  const normalizeBusinessHours = (bh: unknown): BusinessHours => {
-    const typed = bh as BusinessHours | null;
-    return typed?.timezone && typed?.schedule ? typed : DEFAULT_BUSINESS_HOURS;
-  };
 
   const normalizeTransferOptions = (to: unknown): TransferOptions => {
     const typed = to as TransferOptions | null;
@@ -354,7 +349,10 @@ export function BranchForm({
           latitude: formData.latitude ?? undefined,
           longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
-          businessHours: normalizeBusinessHours(formData.businessHours),
+          // `null` = quitar el horario (el API guarda `{}`, sin horario)
+          ...(businessHoursTouched && {
+            businessHours: formData.businessHours,
+          }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
         }
@@ -371,7 +369,9 @@ export function BranchForm({
           latitude: formData.latitude ?? undefined,
           longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
-          businessHours: normalizeBusinessHours(formData.businessHours),
+          ...(formData.businessHours && {
+            businessHours: formData.businessHours,
+          }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
         };
@@ -678,9 +678,15 @@ export function BranchForm({
       {/* Business Hours */}
       <BusinessHoursSection
         value={formData.businessHours}
-        onChange={(hours) =>
-          setFormData((prev) => ({ ...prev, businessHours: hours }))
-        }
+        onChange={(hours) => {
+          setFormData((prev) => ({ ...prev, businessHours: hours }));
+          setBusinessHoursTouched(true);
+          if (businessHoursErrors) {
+            setBusinessHoursErrors(hours ? validateBusinessHours(hours) : null);
+          }
+        }}
+        timezone={formData.timezone}
+        errors={businessHoursErrors}
       />
 
       {/* Transfer Payment */}

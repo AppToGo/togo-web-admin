@@ -34,8 +34,11 @@ export interface Branch {
   longitude?: number | null;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
-  /** Horarios de atención */
-  businessHours?: BusinessHours;
+  /**
+   * Horarios de atención tal como los guarda el API: `{}` = sin horario
+   * (acepta pedidos siempre). Leer siempre con `parseBusinessHours`.
+   */
+  businessHours?: BusinessHours | Record<string, never> | null;
   /** Opciones de pago por transferencia */
   transferOptions?: TransferOptions;
   /** Servicio a mesa */
@@ -104,8 +107,8 @@ export interface UpdateBranchRequest {
   longitude?: number;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
-  /** Horarios de atención */
-  businessHours?: BusinessHours;
+  /** Horarios de atención (`null` = sin horario, acepta pedidos siempre) */
+  businessHours?: BusinessHours | null;
   /** Opciones de pago por transferencia */
   transferOptions?: TransferOptions;
   /** Servicio a mesa */

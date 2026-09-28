@@ -230,6 +230,18 @@
         "friday": "Viernes",
         "saturday": "Sábado",
         "sunday": "Domingo"
+      },
+      "enable": "Definir horario de atención",
+      "enableDescription": "Si lo activas, el bot solo recibe pedidos en los días y horas que definas.",
+      "notConfigured": "Sin horario configurado",
+      "notConfiguredDescription": "La sede acepta pedidos a cualquier hora. Activa el horario si quieres que el bot solo reciba pedidos en ciertos días y horas.",
+      "daysHelp": "Activa los días que atiendes y escribe el horario de cada uno.",
+      "openTime": "Hora de apertura ({day})",
+      "closeTime": "Hora de cierre ({day})",
+      "errors": {
+        "noOpenDays": "Activa al menos un día o apaga el horario.",
+        "missingTimes": "Escribe la hora de apertura y de cierre.",
+        "sameTimes": "La apertura y el cierre no pueden ser iguales."
       }
     },
     "transfer": {
