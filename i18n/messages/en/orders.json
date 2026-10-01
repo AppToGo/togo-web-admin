@@ -34,7 +34,6 @@
     "receivedAt": "Received {date}",
     "loading": "Loading receipt…",
     "openExternal": "Open in new tab",
-    "download": "Download",
     "confirm": "Payment received",
     "confirming": "Confirming…",
     "alreadyPaid": "Payment confirmed",
