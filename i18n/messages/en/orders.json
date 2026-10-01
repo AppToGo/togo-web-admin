@@ -26,6 +26,27 @@
     "PENDING": "Pending",
     "UNKNOWN": "Unknown"
   },
+  "paymentProof": {
+    "badge": "Receipt",
+    "tooltip": "View payment receipt",
+    "title": "Payment receipt",
+    "orderLabel": "Order {order}",
+    "receivedAt": "Received {date}",
+    "loading": "Loading receipt…",
+    "openExternal": "Open in new tab",
+    "download": "Download",
+    "confirm": "Payment received",
+    "confirming": "Confirming…",
+    "alreadyPaid": "Payment confirmed",
+    "documentHint": "This receipt came in as a document. Open it to see the whole thing.",
+    "unavailable": {
+      "WHATSAPP_MEDIA_NOT_ARCHIVED": "The file is gone. It was sent before we started storing receipts, and WhatsApp deletes them after 48 hours.",
+      "UNRECOGNIZED_REF": "Could not identify this receipt's file.",
+      "PRESIGN_FAILED": "Could not open the receipt. Try again in a moment.",
+      "NOT_FOUND": "This order has no receipt yet.",
+      "FAILED": "Could not load the receipt."
+    }
+  },
   "orderNotFound": "Order not found",
   "includesDelivery": "Includes delivery: {fee}",
   "itemsCount": "Products ({count})",

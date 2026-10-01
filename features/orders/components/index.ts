@@ -17,3 +17,7 @@ export { BranchMultiSelector, BranchFilterBadge, type BranchMultiSelectorProps }
 
 // Export styles
 export * from "../styles";
+export {
+  PaymentProofDialog,
+  PaymentProofIndicator,
+} from "./PaymentProofDialog";
