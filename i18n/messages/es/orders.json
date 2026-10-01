@@ -26,6 +26,26 @@
     "PENDING": "Pendiente",
     "UNKNOWN": "Desconocido"
   },
+  "paymentProof": {
+    "badge": "Comprobante",
+    "tooltip": "Ver el comprobante de pago",
+    "title": "Comprobante de pago",
+    "orderLabel": "Pedido {order}",
+    "receivedAt": "Recibido {date}",
+    "loading": "Cargando el comprobante…",
+    "openExternal": "Abrir en otra pestaña",
+    "confirm": "Pago recibido",
+    "confirming": "Confirmando…",
+    "alreadyPaid": "Pago confirmado",
+    "documentHint": "Este comprobante llegó como documento. Ábrilo para verlo completo.",
+    "unavailable": {
+      "WHATSAPP_MEDIA_NOT_ARCHIVED": "El archivo ya no está. Se envió antes de que empezáramos a guardar los comprobantes, y WhatsApp lo borra a las 48 horas.",
+      "UNRECOGNIZED_REF": "No se pudo identificar el archivo de este comprobante.",
+      "PRESIGN_FAILED": "No se pudo abrir el comprobante. Probá de nuevo en un momento.",
+      "NOT_FOUND": "Este pedido no tiene comprobante todavía.",
+      "FAILED": "No se pudo cargar el comprobante."
+    }
+  },
   "orderNotFound": "No se encontró la orden",
   "includesDelivery": "Incluye domicilio: {fee}",
   "itemsCount": "Productos ({count})",

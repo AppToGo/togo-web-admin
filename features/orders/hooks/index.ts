@@ -36,3 +36,6 @@ export { useOrderDropZone } from './useOrderDropZone';
 // WebSocket realtime orders hook
 export { useOrdersRealtime } from './useOrdersRealtime';
 export type { RealtimeState } from './useOrdersRealtime';
+
+// Comprobante de pago (transferencias)
+export { useOrderPaymentProof, paymentProofKey } from './useOrderPaymentProof';

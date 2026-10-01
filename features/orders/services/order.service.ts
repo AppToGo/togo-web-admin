@@ -223,6 +223,50 @@ export async function updateOrderPaymentStatus(
 }
 
 /**
+ * Comprobante de pago de un pedido, ya resuelto a una URL abrible.
+ *
+ * El backend guarda una key de almacenamiento, no una URL, y la firma en cada
+ * lectura (TTL 15 min). Los comprobantes viejos guardaron el media id de
+ * WhatsApp, que expira: esos llegan con `url: null` y un `unavailableReason`
+ * para poder explicar por qué no hay nada que mostrar.
+ */
+export type PaymentProofUnavailableReason =
+  | "WHATSAPP_MEDIA_NOT_ARCHIVED"
+  | "UNRECOGNIZED_REF"
+  | "PRESIGN_FAILED";
+
+export interface PaymentProof {
+  orderId: string;
+  receivedAt: string | null;
+  /** "image" | "document": con qué tipo llegó por WhatsApp. */
+  proofType: string | null;
+  media: {
+    kind: "STORAGE_KEY" | "EXTERNAL_URL" | "WHATSAPP_MEDIA_ID" | "UNKNOWN";
+    url: string | null;
+    mimeType: string | null;
+    filename: string | null;
+    unavailableReason?: PaymentProofUnavailableReason;
+  };
+}
+
+/**
+ * Obtener el comprobante de pago de un pedido
+ * Endpoint: GET /businesses/:businessId/orders/:id/payment-proof
+ *
+ * 404 cuando el pedido no tiene comprobante — el llamador lo usa para no
+ * mostrar el visor.
+ */
+export async function getOrderPaymentProof(
+  orderId: string,
+  businessId?: string
+): Promise<PaymentProof> {
+  const { data } = await apiClient.get<PaymentProof>(
+    `${getBaseUrl(businessId)}/${orderId}/payment-proof`
+  );
+  return data;
+}
+
+/**
  * Obtener métricas de órdenes del negocio
  * Endpoint: GET /businesses/:businessId/orders/metrics
  */

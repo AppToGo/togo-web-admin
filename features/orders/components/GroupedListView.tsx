@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OrderTypeBadge, PaymentStatusEditor, TimeBadge } from "./OrderCard";
+import { PaymentProofIndicator } from "./PaymentProofDialog";
 import type { ArchivePagination, Order, OrderStatus } from "../types";
 import { getColumnConfig } from "../config/kanban-columns.config";
 import { dotVariants } from "../theme";
@@ -79,12 +80,13 @@ function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: List
         {formatCurrency(getOrderGrandTotal(order))}
       </span>
 
-      <span className="text-xs text-slate-400">
+      <span className="flex items-center gap-1 text-xs text-slate-400">
         <PaymentStatusEditor
           orderId={order.id}
           paymentMethod={order.paymentMethod}
           currentStatus={order.paymentStatus}
         />
+        <PaymentProofIndicator order={order} />
       </span>
 
       <TimeBadge order={order} currentStatus={status} />

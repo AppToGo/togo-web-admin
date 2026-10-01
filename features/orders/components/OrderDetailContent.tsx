@@ -52,6 +52,7 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
+import { PaymentProofIndicator } from "./PaymentProofDialog";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -599,6 +600,7 @@ export function OrderDetailContent({
                 paymentMethod={order.paymentMethod}
                 currentStatus={order.paymentStatus}
               />
+              <PaymentProofIndicator order={order} variant="labeled" />
               {order.paymentMethod && (
                 <span className="text-sm text-slate-600">
                   {t("paymentMethod", { method: order.paymentMethod })}

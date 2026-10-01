@@ -31,6 +31,7 @@ import {
   type CategoryBadgeVariantProps,
 } from "../styles";
 import { cn } from "@/lib/utils";
+import { PaymentProofIndicator } from "./PaymentProofDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -550,6 +551,7 @@ export const OrderCard = memo(function OrderCard({
             paymentMethod={order.paymentMethod}
             currentStatus={order.paymentStatus}
           />
+          <PaymentProofIndicator order={order} />
           <span className="flex-1" />
           <NextStatusButton
             order={order}
