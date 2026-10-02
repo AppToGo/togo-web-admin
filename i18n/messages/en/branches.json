@@ -115,7 +115,14 @@
   "card": {
     "mainBranch": "Main",
     "makeMain": "Is main",
-    "cannotDeleteMain": "The main branch cannot be deleted"
+    "cannotDeleteMain": "The main branch cannot be deleted",
+    "acceptingStatus": {
+      "open": "Open",
+      "closed": "Closed",
+      "noSchedule": "No schedule",
+      "closedManually": "Closed manually",
+      "noScheduleTitle": "No schedule set: accepts orders at any time"
+    }
   },
   "metrics": {
     "ordersToday": "Orders today",
@@ -236,6 +243,8 @@
       "notConfigured": "No business hours set",
       "notConfiguredDescription": "This branch takes orders at any time. Turn on business hours if you want the bot to take orders only on certain days and hours.",
       "daysHelp": "Turn on the days you're open and enter the hours for each one.",
+      "overnightHelp": "For an overnight shift, set the closing time earlier than the opening time: 17:00 to 02:00 means it closes at 2 AM the next day.",
+      "overnightHint": "closes {day}",
       "openTime": "{day} opening time",
       "closeTime": "{day} closing time",
       "errors": {
