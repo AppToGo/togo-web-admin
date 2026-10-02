@@ -34,6 +34,22 @@ interface BusinessHoursSectionProps {
  * activarlo, todos los días arrancan cerrados y sin horas para que el
  * negocio elija uno a uno los que atiende — nunca se asume un horario.
  */
+/**
+ * `close < open` quiere decir que el turno sigue hasta el día siguiente
+ * (17:00 → 02:00 cierra a las 2 de la madrugada del día que viene). Es válido
+ * y el backend lo evalúa así, pero sin decirlo en pantalla parece un error de
+ * carga.
+ */
+function closesNextDay(open: string, close: string): boolean {
+  return !!open && !!close && close < open;
+}
+
+/** El día que sigue a `day`, para nombrar cuándo cierra el turno nocturno. */
+function nextDayKey(day: DayKey): DayKey {
+  const i = BUSINESS_HOURS_DAYS.indexOf(day);
+  return BUSINESS_HOURS_DAYS[(i + 1) % BUSINESS_HOURS_DAYS.length];
+}
+
 export function BusinessHoursSection({
   value,
   onChange,
@@ -119,6 +135,7 @@ export function BusinessHoursSection({
             </div>
 
             <p className="text-sm text-slate-500">{t("daysHelp")}</p>
+            <p className="text-xs text-slate-500">{t("overnightHelp")}</p>
 
             {errors?.noOpenDays && (
               <p className="text-sm text-red-600" role="alert">
@@ -172,6 +189,14 @@ export function BusinessHoursSection({
                         <span className="text-slate-500 flex-1">{t("closed")}</span>
                       )}
                     </div>
+                    {daySchedule.isOpen &&
+                      closesNextDay(daySchedule.open, daySchedule.close) && (
+                        <p className="text-xs text-sky-700">
+                          {t("overnightHint", {
+                            day: t(`days.${nextDayKey(day)}`),
+                          })}
+                        </p>
+                      )}
                     {daySchedule.isOpen && dayError && (
                       <p className="text-xs text-red-600" role="alert">
                         {t(`errors.${dayError}`)}

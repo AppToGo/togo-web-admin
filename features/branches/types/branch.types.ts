@@ -39,6 +39,15 @@ export interface Branch {
    * (acepta pedidos siempre). Leer siempre con `parseBusinessHours`.
    */
   businessHours?: BusinessHours | Record<string, never> | null;
+  /**
+   * Estado calculado por el backend (`findAll`/`findOne`): compone el cierre
+   * manual con el horario. Ausente en create/update.
+   */
+  acceptingOrdersStatus?: {
+    aceptando: boolean;
+    motivo: "OVERRIDE" | "HORARIO" | "SIN_CONFIGURAR";
+    hasta?: string | null;
+  };
   /** Opciones de pago por transferencia */
   transferOptions?: TransferOptions;
   /** Servicio a mesa */

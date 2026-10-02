@@ -44,6 +44,50 @@ interface BranchCardProps {
   isLoading?: boolean;
 }
 
+/**
+ * Si la sede está recibiendo pedidos ahora mismo.
+ *
+ * Importa desde que el horario bloquea de verdad: una sede mal configurada
+ * deja de vender, y antes el operador no tenía forma de verlo —configuraba el
+ * horario a ciegas—. El estado lo calcula el backend (compone el cierre
+ * manual con el horario), acá sólo se pinta.
+ */
+function AcceptingStatusBadge({
+  status,
+}: {
+  status?: Branch["acceptingOrdersStatus"];
+}) {
+  const t = useTranslations("branches");
+  if (!status) return null;
+
+  if (status.motivo === "SIN_CONFIGURAR") {
+    return (
+      <Badge
+        className="bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-100"
+        title={t("card.acceptingStatus.noScheduleTitle")}
+      >
+        {t("card.acceptingStatus.noSchedule")}
+      </Badge>
+    );
+  }
+
+  if (status.aceptando) {
+    return (
+      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+        {t("card.acceptingStatus.open")}
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">
+      {status.motivo === "OVERRIDE"
+        ? t("card.acceptingStatus.closedManually")
+        : t("card.acceptingStatus.closed")}
+    </Badge>
+  );
+}
+
 export const BranchCard = memo(function BranchCard({
   branch,
   onEdit,
@@ -93,6 +137,7 @@ export const BranchCard = memo(function BranchCard({
                   {whatsappAccount?.displayName ?? whatsappAccount?.phoneNumber}
                 </Badge>
               )}
+              <AcceptingStatusBadge status={branch.acceptingOrdersStatus} />
             </div>
             <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500">
               <Hash className="w-3.5 h-3.5" />

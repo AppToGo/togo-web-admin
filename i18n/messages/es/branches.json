@@ -115,7 +115,14 @@
   "card": {
     "mainBranch": "Principal",
     "makeMain": "Principal",
-    "cannotDeleteMain": "La sucursal principal no se puede eliminar"
+    "cannotDeleteMain": "La sucursal principal no se puede eliminar",
+    "acceptingStatus": {
+      "open": "Abierto",
+      "closed": "Cerrado",
+      "noSchedule": "Sin horario",
+      "closedManually": "Cerrado a mano",
+      "noScheduleTitle": "Sin horario cargado: acepta pedidos a toda hora"
+    }
   },
   "metrics": {
     "ordersToday": "Pedidos hoy",
@@ -236,6 +243,8 @@
       "notConfigured": "Sin horario configurado",
       "notConfiguredDescription": "La sede acepta pedidos a cualquier hora. Activa el horario si quieres que el bot solo reciba pedidos en ciertos días y horas.",
       "daysHelp": "Activa los días que atiendes y escribe el horario de cada uno.",
+      "overnightHelp": "Para un turno nocturno, pon la hora de cierre menor que la de apertura: 17:00 a 02:00 significa que cierra a las 2 de la madrugada del día siguiente.",
+      "overnightHint": "cierra el {day}",
       "openTime": "Hora de apertura ({day})",
       "closeTime": "Hora de cierre ({day})",
       "errors": {
