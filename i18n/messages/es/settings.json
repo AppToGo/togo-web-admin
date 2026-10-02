@@ -143,6 +143,12 @@
         "error": "No pudimos cargar la vista previa.",
         "note": "Mensajes de ejemplo con datos ficticios. Los textos varían entre conversaciones."
       },
+      "locked": {
+        "badge": "Pro / Enterprise",
+        "description": "Personalizar la voz del asistente está disponible en los planes Pro y Enterprise.",
+        "cta": "Mejorar plan",
+        "defaultName": "ToGo"
+      },
       "saveSuccess": "Voz del asistente guardada",
       "saveError": "No se pudo guardar la voz del asistente"
     }
