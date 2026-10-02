@@ -23,6 +23,7 @@
     "catalogRetry": "Reintentar",
     "features": {
       "platformAccess": "Acceso completo a la plataforma",
+      "voice": "Voz del asistente personalizable",
       "branchesUnlimited": "Sedes ilimitadas",
       "branchesSingle": "1 sede",
       "branchesMultiple": "Hasta {max} sedes",

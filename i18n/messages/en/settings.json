@@ -143,6 +143,12 @@
         "error": "We couldn't load the preview.",
         "note": "Sample messages with made-up data. Texts vary between conversations."
       },
+      "locked": {
+        "badge": "Pro / Enterprise",
+        "description": "Customizing the assistant voice is available on Pro and Enterprise plans.",
+        "cta": "Upgrade plan",
+        "defaultName": "ToGo"
+      },
       "saveSuccess": "Assistant voice saved",
       "saveError": "Couldn't save the assistant voice"
     }

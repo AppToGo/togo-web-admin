@@ -13,7 +13,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Bot } from "lucide-react";
+import { Bot, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,28 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
 import { useBotVoicePreview, useUpdateBusiness } from "../hooks/useBusiness";
 import type { BotVoice, Business } from "../types/business.types";
 
 const ASSISTANT_NAME_MAX = 30;
 const ASSISTANT_NAME_FORMAT = /^[\p{L}\p{N} .'-]*$/u;
+
+/** Voz por defecto que ven los planes sin acceso (no se persiste). */
+function lockedVoice(defaultName: string): BotVoice {
+  return {
+    address: "tu",
+    emojis: true,
+    assistantName: defaultName,
+    paraphrase: false,
+  };
+}
+
+/** Planes con acceso a configurar la voz del asistente. */
+function canEditVoice(plan: number | undefined): boolean {
+  return plan === 3 || plan === 4;
+}
 
 function voiceOf(business: Business): BotVoice {
   return {
@@ -63,11 +80,29 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
   const tb = useTranslations("settings.business");
   const tc = useTranslations("common");
   const updateBusiness = useUpdateBusiness();
+  const subscriptionPlan = useAuthStore((state) => state.user?.subscriptionPlan);
+  // El negocio trae el plan fresco de la BD (`/businesses/me` lo incluye
+  // en la respuesta); el JWT es el fallback (ej. SUPER_ADMIN sin negocio).
+  const editable = canEditVoice(
+    business.subscriptionPlan ?? subscriptionPlan,
+  );
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
+  // Sin acceso (Basic/Free) se muestra la voz por defecto con el nombre
+  // del asistente ToGo; cualquier intento de cambio abre el modal de
+  // mejorar el plan. Solo presentación: no se persiste nada y la
+  // conversación sigue resolviendo la voz guardada (resolveBotVoice).
   // El estado arranca de la voz guardada; el padre monta la tarjeta con
   // `key={botVoiceKey(business)}`, así que al guardar se reinicia sola.
-  const saved = voiceOf(business);
+  const saved = editable
+    ? voiceOf(business)
+    : lockedVoice(tb("botVoice.locked.defaultName"));
   const [voice, setVoice] = useState<BotVoice>(saved);
+
+  const requirePlan = () => {
+    if (!editable) setIsUpgradeOpen(true);
+    return editable;
+  };
 
   const name = voice.assistantName ?? "";
   const nameError =
@@ -99,6 +134,7 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
   const paraphraseUnavailable = preview.data?.paraphraseAvailable === false;
 
   const handleSave = async () => {
+    if (!requirePlan()) return;
     if (nameError) return;
     try {
       await updateBusiness.mutateAsync({
@@ -132,25 +168,49 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
         <CardTitle className="text-lg flex items-center gap-2">
           <Bot className="h-5 w-5 text-indigo-600" />
           {tb("botVoice.title")}
+          {!editable && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+              <Crown className="h-3 w-3" />
+              {tb("botVoice.locked.badge")}
+            </span>
+          )}
         </CardTitle>
         <p className="text-sm text-slate-500 mt-1">
           {tb("botVoice.description")}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
+        {!editable && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+            <p className="text-sm text-indigo-900">
+              {tb("botVoice.locked.description")}
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white"
+              onClick={() => setIsUpgradeOpen(true)}
+            >
+              <Crown className="h-3.5 w-3.5 mr-1.5" />
+              {tb("botVoice.locked.cta")}
+            </Button>
+          </div>
+        )}
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-6">
             <div className="space-y-3">
               <Label>{tb("botVoice.address.label")}</Label>
               <RadioGroup
                 value={voice.address}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
+                  if (!requirePlan()) return;
                   setVoice((prev) => ({
                     ...prev,
                     address: value === "usted" ? "usted" : "tu",
-                  }))
-                }
+                  }));
+                }}
                 className="space-y-2"
+                aria-disabled={!editable}
               >
                 <div className="flex items-center gap-2">
                   <RadioGroupItem value="tu" id="botVoice-tu" />
@@ -179,9 +239,11 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
               <Switch
                 id="botVoice-emojis"
                 checked={voice.emojis}
-                onCheckedChange={(checked) =>
-                  setVoice((prev) => ({ ...prev, emojis: checked }))
-                }
+                onCheckedChange={(checked) => {
+                  if (!requirePlan()) return;
+                  setVoice((prev) => ({ ...prev, emojis: checked }));
+                }}
+                aria-disabled={!editable}
               />
             </div>
 
@@ -199,9 +261,11 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
                   id="botVoice-paraphrase"
                   checked={voice.paraphrase === true}
                   disabled={paraphraseUnavailable && !voice.paraphrase}
-                  onCheckedChange={(checked) =>
-                    setVoice((prev) => ({ ...prev, paraphrase: checked }))
-                  }
+                  onCheckedChange={(checked) => {
+                    if (!requirePlan()) return;
+                    setVoice((prev) => ({ ...prev, paraphrase: checked }));
+                  }}
+                  aria-disabled={!editable}
                 />
               </div>
               {paraphraseUnavailable && (
@@ -220,12 +284,17 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
                 value={name}
                 maxLength={ASSISTANT_NAME_MAX}
                 placeholder={tb("botVoice.assistantName.placeholder")}
-                onChange={(e) =>
+                onChange={(e) => {
+                  if (!requirePlan()) return;
                   setVoice((prev) => ({
                     ...prev,
                     assistantName: e.target.value,
-                  }))
-                }
+                  }));
+                }}
+                onFocus={() => {
+                  requirePlan();
+                }}
+                aria-disabled={!editable}
               />
               {nameError ? (
                 <p className="text-sm text-red-500">{nameError}</p>
@@ -272,13 +341,19 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
           <Button
             type="button"
             onClick={handleSave}
-            disabled={!isDirty || !!nameError || updateBusiness.isPending}
+            disabled={
+              !editable || !isDirty || !!nameError || updateBusiness.isPending
+            }
             isLoading={updateBusiness.isPending}
           >
             {tc("buttons.save")}
           </Button>
         </div>
       </CardContent>
+      <UpgradePlanModal
+        open={isUpgradeOpen}
+        onClose={() => setIsUpgradeOpen(false)}
+      />
     </Card>
   );
 }

@@ -109,6 +109,10 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     formatBranchesFeature(planEntry.maxBranches),
     formatUsersFeature(planEntry.maxUsers),
     t("features.platformAccess"),
+    // La voz del asistente solo es configurable en Pro y Enterprise.
+    ...(planEntry.plan === 3 || planEntry.plan === 4
+      ? [t("features.voice")]
+      : []),
     t(`features.support.${planEntry.plan}`),
   ];
 
