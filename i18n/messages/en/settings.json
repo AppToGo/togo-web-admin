@@ -128,7 +128,7 @@
       "assistantName": {
         "label": "Assistant name (optional)",
         "placeholder": "E.g. Sofía",
-        "description": "Some messages use it to introduce the assistant. Leave empty for no name.",
+        "description": "The assistant introduces itself with this name when greeting and signing off. Leave it empty to use “ToGo”.",
         "tooLong": "Up to {max} characters",
         "invalid": "Only letters, numbers, spaces and . ' -"
       },
