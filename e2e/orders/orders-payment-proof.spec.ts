@@ -39,15 +39,54 @@ const PROOF_ORDER = {
   items: [{ id: "item-1", productName: "Producto E2E", quantity: 1, unitPrice: 20000 }],
 };
 
+const LATEST_MEDIA = {
+  kind: "EXTERNAL_URL",
+  url: "https://example.com/comprobante.png",
+  mimeType: "image/png",
+  filename: "comprobante.png",
+};
+
+const OLDER_MEDIA = {
+  kind: "EXTERNAL_URL",
+  url: "https://example.com/comprobante-anterior.png",
+  mimeType: "image/png",
+  filename: "comprobante-anterior.png",
+};
+
+/**
+ * Los comprobantes viejos guardaron el media id de WhatsApp, que expira: el
+ * endpoint los devuelve con `url: null` y un motivo.
+ */
+const EXPIRED_MEDIA = {
+  kind: "WHATSAPP_MEDIA_ID",
+  url: null,
+  mimeType: null,
+  filename: null,
+  unavailableReason: "WHATSAPP_MEDIA_NOT_ARCHIVED",
+};
+
+/**
+ * Dos comprobantes del mismo pedido: el cliente puede mandar una captura más
+ * clara, y el operador los mira todos antes de marcar el pago. `media` es el
+ * más reciente y `proofs[0]` el mismo, para no romper a quien ya consumía
+ * esta respuesta.
+ */
 const PROOF_PAYLOAD = {
   receivedAt: new Date().toISOString(),
   proofType: "image",
-  media: {
-    kind: "EXTERNAL_URL",
-    url: "https://example.com/comprobante.png",
-    mimeType: "image/png",
-    filename: "comprobante.png",
-  },
+  media: LATEST_MEDIA,
+  proofs: [
+    {
+      receivedAt: new Date().toISOString(),
+      proofType: "image",
+      media: LATEST_MEDIA,
+    },
+    {
+      receivedAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+      proofType: "image",
+      media: OLDER_MEDIA,
+    },
+  ],
 };
 
 /** Endpoints del escenario. Registrar DESPUÉS de mockOrdersDashboard. */
@@ -141,5 +180,81 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
     expect(paymentUpdates).toEqual([
       { paymentStatus: "PAID", changeNotes: "Pago confirmado desde panel admin" },
     ]);
+  });
+
+  test("el operador puede pasar entre los comprobantes recibidos", async ({
+    page,
+  }) => {
+    // Con más de uno aparece el selector; el visor arranca en el más reciente
+    // porque es el que el cliente quiere que miren.
+    await openBoard(page);
+
+    await page.getByText("#104").click();
+    const drawer = page.getByRole("dialog");
+    await drawer
+      .getByRole("button", { name: "Ver el comprobante de pago" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Comprobante de pago" }),
+    ).toBeVisible();
+
+    // Arranca en el más reciente.
+    await expect(
+      page.getByRole("img", { name: "Comprobante de pago" }),
+    ).toHaveAttribute("src", LATEST_MEDIA.url);
+
+    // El selector aparece sólo con más de uno.
+    await expect(page.getByText("2 comprobantes recibidos")).toBeVisible();
+
+    // Pasar al anterior: el botón lleva su hora.
+    await page
+      .getByRole("button", { name: /^\d{1,2}:\d{2}/ })
+      .first()
+      .click();
+
+    await expect(
+      page.getByRole("img", { name: "Comprobante de pago" }),
+    ).toHaveAttribute("src", OLDER_MEDIA.url);
+  });
+
+  test("elegir un comprobante que ya no está no deja al operador encerrado", async ({
+    page,
+  }) => {
+    // El aviso de "no disponible" no puede reemplazar al selector: si lo
+    // hiciera, elegir uno expirado dejaba sin forma de volver al que sí se ve.
+    await page.route("**/orders/proof01/payment-proof", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...PROOF_PAYLOAD,
+          proofs: [
+            PROOF_PAYLOAD.proofs[0],
+            { ...PROOF_PAYLOAD.proofs[1], media: EXPIRED_MEDIA },
+          ],
+        }),
+      })
+    );
+
+    await openBoard(page);
+    await page.getByText("#104").click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Ver el comprobante de pago" })
+      .click();
+
+    await page
+      .getByRole("button", { name: /^\d{1,2}:\d{2}/ })
+      .first()
+      .click();
+
+    // Se ve el aviso, y el selector sigue ahí para poder volver.
+    await expect(page.getByText(/ya no está/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "El último" })).toBeVisible();
+
+    await page.getByRole("button", { name: "El último" }).click();
+    await expect(
+      page.getByRole("img", { name: "Comprobante de pago" })
+    ).toHaveAttribute("src", LATEST_MEDIA.url);
   });
 });

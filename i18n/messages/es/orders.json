@@ -32,6 +32,8 @@
     "title": "Comprobante de pago",
     "orderLabel": "Pedido {order}",
     "receivedAt": "Recibido {date}",
+    "count": "{count} comprobantes recibidos",
+    "latest": "El último",
     "loading": "Cargando el comprobante…",
     "openExternal": "Abrir en otra pestaña",
     "confirm": "Pago recibido",

@@ -32,6 +32,8 @@
     "title": "Payment receipt",
     "orderLabel": "Order {order}",
     "receivedAt": "Received {date}",
+    "count": "{count} receipts received",
+    "latest": "Latest",
     "loading": "Loading receipt…",
     "openExternal": "Open in new tab",
     "confirm": "Payment received",
