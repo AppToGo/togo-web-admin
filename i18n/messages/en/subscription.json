@@ -36,7 +36,14 @@
         "4": "Dedicated support with assigned agent"
       },
       "extraSlotsCta": "Need more branches or users? Message us",
-      "extraSlotsMessage": "Hi, I'd like to add more branches or users to my {planName} plan on ToGo (business: {businessName})."
+      "extraSlotsMessage": "Hi, I'd like to add more branches or users to my {planName} plan on ToGo (business: {businessName}).",
+      "proofsUnlimited": "Unlimited receipt analyses",
+      "proofsNone": "Manual receipt review",
+      "proofsSingle": "1 receipt analysis/month",
+      "proofsMultiple": "Up to {max} receipt analyses/month",
+      "quotaFooter": "Need a higher receipt-analysis quota?",
+      "extraQuotaCta": "Message us to buy more",
+      "extraQuotaMessage": "Hi, I'd like to buy more receipt-analysis quota for ToGo (business: {businessName})."
     }
   },
   "billing": {

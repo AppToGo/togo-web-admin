@@ -36,6 +36,7 @@
   "actions": {
     "recordPayment": "Record Payment",
     "editBranches": "Edit Branch Limit",
+    "editProofQuota": "Edit receipt quota",
     "sendNotification": "Send Notification",
     "deactivate": "Deactivate",
     "activate": "Activate"
@@ -81,6 +82,19 @@
       "overrideHint": "Must be greater than or equal to current branches",
       "submit": "Save Changes"
     },
+    "editProofQuota": {
+      "title": "Edit receipt quota",
+      "description": "Modifying: {businessName}",
+      "currentPlan": "Current plan",
+      "planQuota": "Plan quota",
+      "perMonth": "{count} analyses/month",
+      "unlimited": "Unlimited",
+      "useOverride": "Use custom quota",
+      "overrideDescription": "Enable to set a different monthly quota than the plan allows",
+      "overrideValue": "Custom quota",
+      "overrideHint": "0 blocks automatic analysis (manual review)",
+      "submit": "Save Changes"
+    },
     "recordPayment": {
       "title": "Record Payment",
       "description": "Recording payment for: {businessName}",
@@ -122,6 +136,7 @@
     "notificationSent": "Notification sent successfully",
     "limitUpdated": "Branch limit updated",
     "branchesLimitUpdated": "Branch limit updated successfully",
+    "proofQuotaUpdated": "Receipt quota updated successfully",
     "statusUpdated": "Status updated successfully",
     "businessDeactivated": "Business deactivated successfully",
     "businessActivated": "Business activated successfully"

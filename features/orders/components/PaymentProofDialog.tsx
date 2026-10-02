@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useOrderPaymentProof } from "../hooks/useOrderPaymentProof";
+import { PaymentVerificationCard } from "./PaymentVerificationCard";
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 import type { Order } from "../types/order.types";
 
@@ -194,6 +195,8 @@ export function PaymentProofDialog({
         </DialogHeader>
 
         <ProofBody orderId={order.id} open={open} />
+
+        {open && <PaymentVerificationCard orderId={order.id} />}
 
         <DialogFooter>
           {isPaid ? (

@@ -21,3 +21,4 @@ export {
   PaymentProofDialog,
   PaymentProofIndicator,
 } from "./PaymentProofDialog";
+export { PaymentVerificationCard } from "./PaymentVerificationCard";

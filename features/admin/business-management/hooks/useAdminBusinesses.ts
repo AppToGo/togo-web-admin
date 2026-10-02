@@ -18,6 +18,7 @@ import type {
   BusinessFilters,
   PaginatedBusinesses,
   UpdateBranchesLimitDto,
+  UpdateProofQuotaDto,
   RecordPaymentDto,
   SendNotificationDto,
 } from "../types/business-subscription.types";
@@ -86,6 +87,38 @@ export function useUpdateBranchesLimit() {
     },
     onError: (error: Error) => {
       toast.error(error.message || t("errors.updateBranchesLimit"));
+    },
+  });
+}
+
+/**
+ * Hook to update receipt-analysis quota for a business
+ */
+export function useUpdateProofQuota() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-businesses");
+
+  return useMutation({
+    mutationFn: async ({
+      businessId,
+      data,
+    }: {
+      businessId: string;
+      data: UpdateProofQuotaDto;
+    }) => {
+      return adminBusinessService.updateProofQuota(businessId, data);
+    },
+    onSuccess: (data) => {
+      toast.success(t("notifications.proofQuotaUpdated"));
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_BUSINESS_KEYS.businesses(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_BUSINESS_KEYS.business(data.id),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t("errors.updateProofQuota"));
     },
   });
 }

@@ -105,9 +105,18 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     return t("features.usersMultiple", { max: maxUsers });
   };
 
+  const formatProofsFeature = (maxProofs: number): string => {
+    if (maxProofs >= UNLIMITED_PLAN_LIMIT)
+      return t("features.proofsUnlimited");
+    if (maxProofs === 0) return t("features.proofsNone");
+    if (maxProofs === 1) return t("features.proofsSingle");
+    return t("features.proofsMultiple", { max: maxProofs });
+  };
+
   const getPlanFeatures = (planEntry: PlanCatalogEntry): string[] => [
     formatBranchesFeature(planEntry.maxBranches),
     formatUsersFeature(planEntry.maxUsers),
+    formatProofsFeature(planEntry.maxProofsPerMonth),
     t("features.platformAccess"),
     // La voz del asistente solo es configurable en Pro y Enterprise.
     ...(planEntry.plan === 3 || planEntry.plan === 4
@@ -124,6 +133,15 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     const phone = NEQUI_PAYMENT_INFO.supportWhatsApp.replace(/\D/g, "");
     const message = t("features.extraSlotsMessage", {
       planName,
+      businessName: user?.businessName ?? "",
+    });
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  };
+
+  // Pie del modal: comprar más cupo de comprobantes por WhatsApp.
+  const getExtraQuotaWhatsAppUrl = (): string => {
+    const phone = NEQUI_PAYMENT_INFO.supportWhatsApp.replace(/\D/g, "");
+    const message = t("features.extraQuotaMessage", {
       businessName: user?.businessName ?? "",
     });
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -282,6 +300,21 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="px-6 pb-2 flex justify-center text-center">
+              <p className="text-[11px] text-slate-500">
+                {t("features.quotaFooter")}{" "}
+                <a
+                  href={getExtraQuotaWhatsAppUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-slate-700 underline-offset-2 hover:underline"
+                >
+                  <MessageCircle className="w-3 h-3" />
+                  {t("features.extraQuotaCta")}
+                </a>
+              </p>
             </div>
 
             <div className="px-6 pb-4 flex justify-center">

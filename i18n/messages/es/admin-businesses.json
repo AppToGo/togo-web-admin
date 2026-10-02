@@ -36,6 +36,7 @@
   "actions": {
     "recordPayment": "Registrar Pago",
     "editBranches": "Editar Límite de Sedes",
+    "editProofQuota": "Editar cupo de comprobantes",
     "sendNotification": "Enviar Notificación",
     "deactivate": "Desactivar",
     "activate": "Activar"
@@ -81,6 +82,19 @@
       "overrideHint": "Debe ser mayor o igual a las sedes actuales",
       "submit": "Guardar Cambios"
     },
+    "editProofQuota": {
+      "title": "Editar cupo de comprobantes",
+      "description": "Modificando: {businessName}",
+      "currentPlan": "Plan actual",
+      "planQuota": "Cupo del plan",
+      "perMonth": "{count} análisis/mes",
+      "unlimited": "Ilimitado",
+      "useOverride": "Usar cupo personalizado",
+      "overrideDescription": "Activar para establecer un cupo mensual diferente al del plan",
+      "overrideValue": "Cupo personalizado",
+      "overrideHint": "0 bloquea el análisis automático (revisión manual)",
+      "submit": "Guardar Cambios"
+    },
     "recordPayment": {
       "title": "Registrar Pago",
       "description": "Registrando pago para: {businessName}",
@@ -122,6 +136,7 @@
     "notificationSent": "Notificación enviada exitosamente",
     "limitUpdated": "Límite de sedes actualizado",
     "branchesLimitUpdated": "Límite de sedes actualizado exitosamente",
+    "proofQuotaUpdated": "Cupo de comprobantes actualizado exitosamente",
     "statusUpdated": "Estado actualizado exitosamente",
     "businessDeactivated": "Negocio desactivado exitosamente",
     "businessActivated": "Negocio activado exitosamente"
