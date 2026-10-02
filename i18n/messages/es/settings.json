@@ -128,7 +128,7 @@
       "assistantName": {
         "label": "Nombre del asistente (opcional)",
         "placeholder": "Ej: Sofía",
-        "description": "Algunos mensajes lo usan para presentarse. Déjalo vacío para no usar nombre.",
+        "description": "El asistente se presenta con este nombre al saludar y al despedirse. Si lo dejas vacío, usa «ToGo».",
         "tooLong": "Máximo {max} caracteres",
         "invalid": "Solo letras, números, espacios y . ' -"
       },
