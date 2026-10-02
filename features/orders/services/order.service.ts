@@ -235,18 +235,36 @@ export type PaymentProofUnavailableReason =
   | "UNRECOGNIZED_REF"
   | "PRESIGN_FAILED";
 
-export interface PaymentProof {
-  orderId: string;
+export interface ResolvedProofMedia {
+  kind: "STORAGE_KEY" | "EXTERNAL_URL" | "WHATSAPP_MEDIA_ID" | "UNKNOWN";
+  url: string | null;
+  mimeType: string | null;
+  filename: string | null;
+  unavailableReason?: PaymentProofUnavailableReason;
+}
+
+export interface PaymentProofItem {
   receivedAt: string | null;
   /** "image" | "document": con qué tipo llegó por WhatsApp. */
   proofType: string | null;
-  media: {
-    kind: "STORAGE_KEY" | "EXTERNAL_URL" | "WHATSAPP_MEDIA_ID" | "UNKNOWN";
-    url: string | null;
-    mimeType: string | null;
-    filename: string | null;
-    unavailableReason?: PaymentProofUnavailableReason;
-  };
+  media: ResolvedProofMedia;
+}
+
+export interface PaymentProof {
+  orderId: string;
+  receivedAt: string | null;
+  proofType: string | null;
+  /** El más reciente; es también `proofs[0]`. */
+  media: ResolvedProofMedia;
+  /**
+   * Todos los recibidos, del más nuevo al más viejo. El cliente puede mandar
+   * varios (una captura más clara, otra cuenta) y el operador los mira todos
+   * antes de marcar el pago.
+   *
+   * Opcional porque el endpoint lo agregó después: una API vieja no lo manda y
+   * el visor cae al único de `media`.
+   */
+  proofs?: PaymentProofItem[];
 }
 
 /**
