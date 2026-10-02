@@ -23,6 +23,7 @@
     "catalogRetry": "Retry",
     "features": {
       "platformAccess": "Full platform access",
+      "voice": "Customizable assistant voice",
       "branchesUnlimited": "Unlimited branches",
       "branchesSingle": "1 branch",
       "branchesMultiple": "Up to {max} branches",
