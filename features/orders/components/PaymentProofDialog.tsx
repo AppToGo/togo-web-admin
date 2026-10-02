@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useOrderPaymentProof } from "../hooks/useOrderPaymentProof";
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 import type { Order } from "../types/order.types";
+import type { PaymentProofItem } from "../services/order.service";
 
 type UnavailableKey =
   | "WHATSAPP_MEDIA_NOT_ARCHIVED"
@@ -51,6 +52,15 @@ function isInlineImage(
 
 function ProofBody({ orderId, open }: { orderId: string; open: boolean }) {
   const t = useTranslations("orders");
+  // Cuál se está mirando, identificado por su fecha y no por su posición: la
+  // query es hija de `ORDERS_KEYS.detail`, así que se revalida con cualquier
+  // cambio del pedido. Si llega un comprobante nuevo mientras el visor está
+  // abierto, la lista se corre y un índice dejaría al operador mirando otro
+  // archivo del que eligió, sin que nada se lo diga.
+  // `undefined` es "todavía no eligió" y no se confunde con un
+  // comprobante sin fecha: comparar contra null haría que el primero sin
+  // fecha se robara la selección.
+  const [selectedAt, setSelectedAt] = useState<string | undefined>(undefined);
   const { data, isLoading, isError, error } = useOrderPaymentProof(
     orderId,
     open
@@ -72,20 +82,94 @@ function ProofBody({ orderId, open }: { orderId: string; open: boolean }) {
     return <ProofUnavailable reason={key} />;
   }
 
-  const { media, proofType } = data;
+  // El cliente puede haber mandado varios; el operador los mira todos antes
+  // de marcar el pago. `proofs` es opcional: una API sin ese campo cae al
+  // único de `media`, que es el más reciente.
+  const proofs: PaymentProofItem[] =
+    data.proofs && data.proofs.length > 0
+      ? data.proofs
+      : [
+          {
+            receivedAt: data.receivedAt,
+            proofType: data.proofType,
+            media: data.media,
+          },
+        ];
 
+  // Del más nuevo al más viejo. El endpoint ya los manda así, pero el orden
+  // decide cuál se abre primero y cuál lleva la etiqueta "El último": si
+  // alguna vez llegaran ascendentes, el operador confirmaría el pago mirando
+  // una captura vieja. Defenderlo acá cuesta una línea.
+  const ordered = [...proofs].sort(
+    (a, b) =>
+      new Date(b.receivedAt ?? 0).getTime() -
+      new Date(a.receivedAt ?? 0).getTime()
+  );
+
+  const currentIndex = Math.max(
+    0,
+    selectedAt === undefined
+      ? 0
+      : ordered.findIndex((p) => p.receivedAt === selectedAt)
+  );
+  const current = ordered[currentIndex];
+  const { media, proofType } = current;
+  const inline =
+    !!media.url && isInlineImage(proofType, media.mimeType, media.url);
+
+  const picker =
+    ordered.length > 1 ? (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-slate-500">
+          {t("paymentProof.count", { count: ordered.length })}
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {ordered.map((p, i) => (
+            <button
+              key={`${p.receivedAt ?? "sin-fecha"}-${i}`}
+              type="button"
+              onClick={() => setSelectedAt(p.receivedAt ?? undefined)}
+              className={cn(
+                "rounded-md border px-2 py-1 text-xs transition-colors",
+                i === currentIndex
+                  ? "border-sky-300 bg-sky-50 text-sky-800"
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              )}
+            >
+              {i === 0
+                ? t("paymentProof.latest")
+                : p.receivedAt
+                  ? new Date(p.receivedAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : `#${ordered.length - i}`}
+            </button>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
+  // El selector va SIEMPRE, también cuando el elegido no se puede mostrar.
+  // Los comprobantes viejos guardaron el media id de WhatsApp y vuelven con
+  // `url: null`: si el aviso reemplazara todo el cuerpo, elegir uno de esos
+  // dejaba al operador sin forma de volver al que sí se ve, salvo cerrar y
+  // reabrir el visor.
   if (!media.url) {
     return (
-      <ProofUnavailable
-        reason={(media.unavailableReason ?? "FAILED") as UnavailableKey}
-      />
+      <div className="space-y-3">
+        {picker}
+        <ProofUnavailable
+          reason={(media.unavailableReason ?? "FAILED") as UnavailableKey}
+        />
+      </div>
     );
   }
 
-  const inline = isInlineImage(proofType, media.mimeType, media.url);
-
   return (
     <div className="space-y-3">
+      {picker}
+
       {inline ? (
         <a
           href={media.url}
@@ -116,10 +200,10 @@ function ProofBody({ orderId, open }: { orderId: string; open: boolean }) {
       )}
 
       <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
-        {data.receivedAt ? (
+        {current.receivedAt ? (
           <span>
             {t("paymentProof.receivedAt", {
-              date: new Date(data.receivedAt).toLocaleString(),
+              date: new Date(current.receivedAt).toLocaleString(),
             })}
           </span>
         ) : (
