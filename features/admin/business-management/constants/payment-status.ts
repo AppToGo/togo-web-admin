@@ -132,8 +132,10 @@ export function getPlanMaxBranches(plan: number, catalog?: PlanCatalogEntry[]): 
  * fallback estático solo mientras carga.
  */
 export function getPlanMaxProofs(plan: number, catalog?: PlanCatalogEntry[]): number {
-  const liveEntry = catalog?.find((p) => p.plan === plan);
-  if (liveEntry) return liveEntry.maxProofsPerMonth;
+  // El catálogo puede venir de un backend anterior sin este campo: en ese
+  // caso se cae al fallback estático en vez de devolver undefined.
+  const liveValue = catalog?.find((p) => p.plan === plan)?.maxProofsPerMonth;
+  if (typeof liveValue === 'number') return liveValue;
 
   const planOption = PLAN_OPTIONS.find(p => p.value === plan);
   return planOption?.maxProofs ?? 0;

@@ -6,7 +6,8 @@
   },
   "errors": {
     "unauthorized": "Acceso no autorizado",
-    "superAdminRequired": "Se requiere ser Super Admin para acceder a esta página"
+    "superAdminRequired": "Se requiere ser Super Admin para acceder a esta página",
+    "updateProofQuota": "No se pudo actualizar el cupo de comprobantes"
   },
   "alerts": {
     "title": "{count, plural, =1 {Alerta de Pago} other {Alertas de Pago}}",

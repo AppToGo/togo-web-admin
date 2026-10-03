@@ -116,7 +116,9 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
   const getPlanFeatures = (planEntry: PlanCatalogEntry): string[] => [
     formatBranchesFeature(planEntry.maxBranches),
     formatUsersFeature(planEntry.maxUsers),
-    formatProofsFeature(planEntry.maxProofsPerMonth),
+    // El catálogo puede venir de un backend anterior sin este campo:
+    // el default seguro es 0 (revisión manual), nunca "undefined".
+    formatProofsFeature(planEntry.maxProofsPerMonth ?? 0),
     t("features.platformAccess"),
     // La voz del asistente solo es configurable en Pro y Enterprise.
     ...(planEntry.plan === 3 || planEntry.plan === 4

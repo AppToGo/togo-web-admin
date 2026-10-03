@@ -6,7 +6,8 @@
   },
   "errors": {
     "unauthorized": "Unauthorized Access",
-    "superAdminRequired": "Super Admin role is required to access this page"
+    "superAdminRequired": "Super Admin role is required to access this page",
+    "updateProofQuota": "Could not update the receipt quota"
   },
   "alerts": {
     "title": "{count, plural, =1 {Payment Alert} other {Payment Alerts}}",
