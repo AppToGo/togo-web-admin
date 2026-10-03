@@ -36,7 +36,14 @@
         "4": "Soporte dedicado con agente asignado"
       },
       "extraSlotsCta": "¿Necesitás más sedes o usuarios? Escribinos",
-      "extraSlotsMessage": "Hola, quiero agregar más sedes o usuarios a mi plan {planName} en ToGo (negocio: {businessName})."
+      "extraSlotsMessage": "Hola, quiero agregar más sedes o usuarios a mi plan {planName} en ToGo (negocio: {businessName}).",
+      "proofsUnlimited": "Análisis de comprobantes ilimitados",
+      "proofsNone": "Revisión manual de comprobantes",
+      "proofsSingle": "1 análisis de comprobante/mes",
+      "proofsMultiple": "Hasta {max} análisis de comprobantes/mes",
+      "quotaFooter": "¿Necesitás más cupo de análisis de comprobantes?",
+      "extraQuotaCta": "Escribinos para comprar más",
+      "extraQuotaMessage": "Hola, quiero comprar más cupo de análisis de comprobantes en ToGo (negocio: {businessName})."
     }
   },
   "billing": {

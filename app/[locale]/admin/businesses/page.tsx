@@ -20,6 +20,7 @@ import {
   useBusinesses,
   usePaymentAlerts,
   useUpdateBranchesLimit,
+  useUpdateProofQuota,
   useRecordPayment,
   useSendNotification,
   useToggleBusinessStatus,
@@ -29,6 +30,7 @@ import {
   FilterPopover,
   RecordPaymentModal,
   EditBranchesLimitModal,
+  EditProofQuotaModal,
   SendNotificationModal,
 } from "@/features/admin/business-management/components";
 import type {
@@ -36,6 +38,7 @@ import type {
   BusinessWithSubscription,
   RecordPaymentDto,
   UpdateBranchesLimitDto,
+  UpdateProofQuotaDto,
   SendNotificationDto,
 } from "@/features/admin/business-management/types/business-subscription.types";
 
@@ -59,6 +62,7 @@ export default function BusinessManagementPage() {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithSubscription | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isBranchesModalOpen, setIsBranchesModalOpen] = useState(false);
+  const [isProofQuotaModalOpen, setIsProofQuotaModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   // Update filters when debounced search changes
@@ -76,6 +80,7 @@ export default function BusinessManagementPage() {
 
   // Mutations
   const updateBranchesLimit = useUpdateBranchesLimit();
+  const updateProofQuota = useUpdateProofQuota();
   const recordPayment = useRecordPayment();
   const sendNotification = useSendNotification();
   const toggleStatus = useToggleBusinessStatus();
@@ -93,6 +98,11 @@ export default function BusinessManagementPage() {
   const handleEditBranches = useCallback((business: BusinessWithSubscription) => {
     setSelectedBusiness(business);
     setIsBranchesModalOpen(true);
+  }, []);
+
+  const handleEditProofQuota = useCallback((business: BusinessWithSubscription) => {
+    setSelectedBusiness(business);
+    setIsProofQuotaModalOpen(true);
   }, []);
 
   const handleSendNotification = useCallback((business: BusinessWithSubscription) => {
@@ -137,6 +147,22 @@ export default function BusinessManagementPage() {
       );
     },
     [updateBranchesLimit, selectedBusiness]
+  );
+
+  const handleSubmitProofQuota = useCallback(
+    (data: UpdateProofQuotaDto) => {
+      if (!selectedBusiness) return;
+      updateProofQuota.mutate(
+        { businessId: selectedBusiness.id, data },
+        {
+          onSuccess: () => {
+            setIsProofQuotaModalOpen(false);
+            setSelectedBusiness(null);
+          },
+        }
+      );
+    },
+    [updateProofQuota, selectedBusiness]
   );
 
   const handleSubmitNotification = useCallback(
@@ -327,6 +353,7 @@ export default function BusinessManagementPage() {
             businesses={businessesData?.data || []}
             onRecordPayment={handleRecordPayment}
             onEditBranches={handleEditBranches}
+            onEditProofQuota={handleEditProofQuota}
             onSendNotification={handleSendNotification}
             onToggleStatus={handleToggleStatus}
             isLoading={isBusinessesLoading}
@@ -394,6 +421,17 @@ export default function BusinessManagementPage() {
           }}
           onSubmit={handleSubmitBranchesLimit}
           isSubmitting={updateBranchesLimit.isPending}
+        />
+
+        <EditProofQuotaModal
+          business={selectedBusiness}
+          isOpen={isProofQuotaModalOpen}
+          onClose={() => {
+            setIsProofQuotaModalOpen(false);
+            setSelectedBusiness(null);
+          }}
+          onSubmit={handleSubmitProofQuota}
+          isSubmitting={updateProofQuota.isPending}
         />
 
         <SendNotificationModal

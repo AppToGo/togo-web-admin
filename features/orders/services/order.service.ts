@@ -284,6 +284,42 @@ export async function getOrderPaymentProof(
   return data;
 }
 
+export interface VerificationSignal {
+  code: string;
+  status: "PASS" | "WARNING" | "FAIL" | "SKIPPED";
+  description: string;
+}
+
+export interface PaymentVerification {
+  id: string;
+  orderId: string;
+  analysisStatus: "PENDING" | "ANALYZED" | "INCONCLUSIVE" | "QUOTA_EXCEEDED" | "FAILED";
+  confidenceScore: number | null;
+  documentAuthenticityScore: number | null;
+  paymentMatchScore: number | null;
+  riskLevel: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+  signals: VerificationSignal[];
+  modelVersion: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Último análisis del comprobante de un pedido.
+ * Endpoint: GET /businesses/:businessId/orders/:orderId/payment-verification
+ *
+ * 404 cuando todavía no hay análisis — el llamador no muestra la tarjeta.
+ */
+export async function getOrderPaymentVerification(
+  orderId: string,
+  businessId?: string
+): Promise<PaymentVerification> {
+  const { data } = await apiClient.get<PaymentVerification>(
+    `${getBaseUrl(businessId)}/${orderId}/payment-verification`
+  );
+  return data;
+}
+
 /**
  * Obtener métricas de órdenes del negocio
  * Endpoint: GET /businesses/:businessId/orders/metrics

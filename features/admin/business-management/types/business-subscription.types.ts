@@ -13,6 +13,8 @@ export interface BusinessSubscription {
   lastPaymentAt: string | null;
   nextPaymentDue: string | null;
   maxBranchesOverride: number | null;
+  /** Cupo mensual personalizado de análisis de comprobantes. null = límite del plan. */
+  proofQuotaOverride: number | null;
   gracePeriodDays: number;
   /** Plan solicitado por el negocio (UpgradePlanModal), pendiente de verificación. null = sin solicitud. */
   requestedPlan: number | null;
@@ -68,6 +70,10 @@ export interface PaginatedBusinesses {
 
 export interface UpdateBranchesLimitDto {
   maxBranchesOverride: number | null;
+}
+
+export interface UpdateProofQuotaDto {
+  proofQuotaOverride: number | null;
 }
 
 export interface RecordPaymentDto {
