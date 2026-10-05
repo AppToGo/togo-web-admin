@@ -12,7 +12,8 @@
  * visor pide el comprobante sólo cuando se abre — no al pintar cada tarjeta.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import {
   AlertTriangle,
@@ -42,7 +43,7 @@ import {
   useUpdateOrderPaymentStatus,
 } from "../hooks/useOrders";
 import type { Order } from "../types/order.types";
-import type { PaymentProofItem } from "../services/order.service";
+import type { PaymentProof, PaymentProofItem } from "../services/order.service";
 
 type UnavailableKey =
   | "WHATSAPP_MEDIA_NOT_ARCHIVED"
@@ -119,17 +120,110 @@ function ProofPicker({
   );
 }
 
-function ProofViewer({ orderId, open }: { orderId: string; open: boolean }) {
+/**
+ * Comprobante ampliado sobre toda la pantalla.
+ *
+ * Va en un portal al body: dentro del diálogo, `fixed inset-0` quedaba
+ * recortado a la caja del diálogo (su `backdrop-filter` y el
+ * `overflow-y-auto` lo vuelven el contenedor del `fixed`), así que la
+ * imagen casi no crecía y con el contenido scrolleado aparecía corrida.
+ *
+ * Escape cierra solo la imagen: se atiende en captura sobre `window` y no
+ * sigue hasta el listener del Dialog, que cerraba el visor entero.
+ */
+function ZoomOverlay({
+  url,
+  alt,
+  onClose,
+}: {
+  url: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      onClose();
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="pointer-events-auto fixed inset-0 z-[200] flex cursor-zoom-out items-center justify-center p-6"
+      style={{ background: "rgba(15,23,42,.85)" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- misma URL firmada del visor */}
+      <img src={url} alt={alt} className="max-h-full max-w-full rounded-2xl" />
+    </div>,
+    document.body
+  );
+}
+
+/**
+ * Comprobantes del pedido, del más nuevo al más viejo. `proofs` es
+ * opcional: una API sin ese campo cae al único de `media`, que es el más
+ * reciente. El endpoint ya los manda descendentes, pero el orden decide
+ * cuál se abre primero, cuál lleva "El último" y sobre cuál se puede
+ * rechazar: si alguna vez llegaran ascendentes, el operador confirmaría el
+ * pago mirando una captura vieja.
+ */
+function orderedProofs(data: PaymentProof): PaymentProofItem[] {
+  const proofs: PaymentProofItem[] =
+    data.proofs && data.proofs.length > 0
+      ? data.proofs
+      : [
+          {
+            receivedAt: data.receivedAt,
+            proofType: data.proofType,
+            media: data.media,
+          },
+        ];
+  return [...proofs].sort(
+    (a, b) =>
+      new Date(b.receivedAt ?? 0).getTime() -
+      new Date(a.receivedAt ?? 0).getTime()
+  );
+}
+
+/**
+ * Índice del comprobante elegido. Se identifica por su fecha y no por su
+ * posición: la query es hija de `ORDERS_KEYS.detail`, así que se revalida
+ * con cualquier cambio del pedido, y si llega uno nuevo con el visor
+ * abierto un índice dejaría al operador mirando otro archivo sin saberlo.
+ * `undefined` es "todavía no eligió" (= el último) y no se confunde con un
+ * comprobante sin fecha.
+ */
+function selectedIndex(
+  ordered: PaymentProofItem[],
+  selectedAt: string | undefined
+): number {
+  return Math.max(
+    0,
+    selectedAt === undefined
+      ? 0
+      : ordered.findIndex((p) => p.receivedAt === selectedAt)
+  );
+}
+
+function ProofViewer({
+  orderId,
+  open,
+  selectedAt,
+  onSelect,
+}: {
+  orderId: string;
+  open: boolean;
+  selectedAt: string | undefined;
+  onSelect: (receivedAt: string | undefined) => void;
+}) {
   const t = useTranslations("orders");
-  // Cuál se está mirando, identificado por su fecha y no por su posición: la
-  // query es hija de `ORDERS_KEYS.detail`, así que se revalida con cualquier
-  // cambio del pedido. Si llega un comprobante nuevo mientras el visor está
-  // abierto, la lista se corre y un índice dejaría al operador mirando otro
-  // archivo del que eligió, sin que nada se lo diga.
-  // `undefined` es "todavía no eligió" y no se confunde con un
-  // comprobante sin fecha: comparar contra null haría que el primero sin
-  // fecha se robara la selección.
-  const [selectedAt, setSelectedAt] = useState<string | undefined>(undefined);
   const [zoom, setZoom] = useState(false);
   const { data, isLoading, isError, error } = useOrderPaymentProof(
     orderId,
@@ -153,35 +247,9 @@ function ProofViewer({ orderId, open }: { orderId: string; open: boolean }) {
   }
 
   // El cliente puede haber mandado varios; el operador los mira todos antes
-  // de marcar el pago. `proofs` es opcional: una API sin ese campo cae al
-  // único de `media`, que es el más reciente.
-  const proofs: PaymentProofItem[] =
-    data.proofs && data.proofs.length > 0
-      ? data.proofs
-      : [
-          {
-            receivedAt: data.receivedAt,
-            proofType: data.proofType,
-            media: data.media,
-          },
-        ];
-
-  // Del más nuevo al más viejo. El endpoint ya los manda así, pero el orden
-  // decide cuál se abre primero y cuál lleva la etiqueta "El último": si
-  // alguna vez llegaran ascendentes, el operador confirmaría el pago mirando
-  // una captura vieja. Defenderlo acá cuesta una línea.
-  const ordered = [...proofs].sort(
-    (a, b) =>
-      new Date(b.receivedAt ?? 0).getTime() -
-      new Date(a.receivedAt ?? 0).getTime()
-  );
-
-  const currentIndex = Math.max(
-    0,
-    selectedAt === undefined
-      ? 0
-      : ordered.findIndex((p) => p.receivedAt === selectedAt)
-  );
+  // de marcar el pago.
+  const ordered = orderedProofs(data);
+  const currentIndex = selectedIndex(ordered, selectedAt);
   const current = ordered[currentIndex];
   const { media, proofType } = current;
   const inline =
@@ -197,7 +265,7 @@ function ProofViewer({ orderId, open }: { orderId: string; open: boolean }) {
       <ProofPicker
         proofs={ordered}
         currentIndex={currentIndex}
-        onSelect={setSelectedAt}
+        onSelect={onSelect}
       />
 
       {!media.url ? (
@@ -264,18 +332,11 @@ function ProofViewer({ orderId, open }: { orderId: string; open: boolean }) {
       </div>
 
       {zoom && inline && media.url && (
-        <div
-          className="fixed inset-0 z-[120] flex cursor-zoom-out items-center justify-center p-6"
-          style={{ background: "rgba(15,23,42,.85)" }}
-          onClick={() => setZoom(false)}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- misma URL firmada del visor */}
-          <img
-            src={media.url}
-            alt={t("paymentProof.title")}
-            className="max-h-full rounded-2xl"
-          />
-        </div>
+        <ZoomOverlay
+          url={media.url}
+          alt={t("paymentProof.title")}
+          onClose={() => setZoom(false)}
+        />
       )}
     </div>
   );
@@ -312,6 +373,15 @@ export function PaymentProofDialog({
   const updatePaymentStatus = useUpdateOrderPaymentStatus();
   const rejectPaymentProof = useRejectPaymentProof();
   const [done, setDone] = useState<DoneState>(null);
+  const [selectedAt, setSelectedAt] = useState<string | undefined>(undefined);
+  // Misma query que el visor (comparten caché): para saber si el operador
+  // está mirando el último comprobante.
+  const { data: proofData } = useOrderPaymentProof(order.id, open);
+  // El rechazo es del pedido: le pide al cliente uno nuevo. Solo tiene
+  // sentido sobre el último que mandó; rechazar mirando uno viejo pediría
+  // otro aunque el último estuviera bien.
+  const viewingLatest =
+    !proofData || selectedIndex(orderedProofs(proofData), selectedAt) === 0;
   const isPaid = order.paymentStatus === "PAID";
   const busy = updatePaymentStatus.isPending || rejectPaymentProof.isPending;
 
@@ -345,8 +415,10 @@ export function PaymentProofDialog({
   }, [order.id, rejectPaymentProof]);
 
   const handleClose = useCallback(() => {
-    // Al cerrar se limpia el estado final: reabrir siempre empieza en idle.
+    // Al cerrar se limpia el estado final y la selección: reabrir siempre
+    // empieza en idle y en el último comprobante.
     setDone(null);
+    setSelectedAt(undefined);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -375,7 +447,12 @@ export function PaymentProofDialog({
         </DialogHeader>
 
         <div className="grid gap-6 px-6 py-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <ProofViewer orderId={order.id} open={open} />
+          <ProofViewer
+            orderId={order.id}
+            open={open}
+            selectedAt={selectedAt}
+            onSelect={setSelectedAt}
+          />
           <div className="min-w-0">
             {open && <PaymentVerificationCard orderId={order.id} />}
           </div>
@@ -432,16 +509,29 @@ export function PaymentProofDialog({
                 {t("paymentProof.verificationDisclaimer")}
               </span>
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleReject}
-                  disabled={busy}
-                  className="h-11 rounded-xl bg-slate-100 px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {rejectPaymentProof.isPending
-                    ? t("paymentProof.rejecting")
-                    : t("paymentProof.reject")}
-                </button>
+                {viewingLatest ? (
+                  <button
+                    type="button"
+                    onClick={handleReject}
+                    disabled={busy}
+                    className="h-11 rounded-xl bg-slate-100 px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {rejectPaymentProof.isPending
+                      ? t("paymentProof.rejecting")
+                      : t("paymentProof.reject")}
+                  </button>
+                ) : (
+                  // Mirando uno viejo: se rechaza el último, así que primero
+                  // se lo muestra.
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAt(undefined)}
+                    disabled={busy}
+                    className="h-11 rounded-xl px-4 text-[13px] font-semibold text-slate-600 underline-offset-2 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {t("paymentProof.rejectGoToLatest")}
+                  </button>
+                )}
                 <Button
                   variant="green"
                   onClick={handleConfirm}

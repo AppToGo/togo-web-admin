@@ -210,18 +210,24 @@ function formatCellValue(
   const value = row[side];
   if (value === null || value === undefined || value === "") return noData;
   if (row.key === "amount" && typeof value === "number") {
+    // Sin decimales solo si el valor no los tiene: redondear siempre hacía
+    // que 25,99 y 25,50 se vieran iguales ("$26") con el chip "No coincide".
+    const fractionDigits = Number.isInteger(value) ? 0 : 2;
     try {
       return new Intl.NumberFormat(locale, {
         style: "currency",
         currency,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits,
       }).format(value);
     } catch {
       return String(value);
     }
   }
-  // El día del pedido llega como `yyyy-MM-dd`: se pinta local, sin hora.
-  if (row.key === "date" && side === "expected" && typeof value === "string") {
+  // Las dos fechas (la del pedido y la extraída del comprobante) llegan como
+  // `yyyy-MM-dd`: se pintan igual, local y sin hora. Formatear solo una hacía
+  // que una fila "Coincide" mostrara "5/10/2026" junto a "2026-10-05".
+  if (row.key === "date" && typeof value === "string") {
     const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
     if (match) {
       const day = new Date(

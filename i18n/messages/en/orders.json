@@ -69,6 +69,7 @@
     "zoom": "Enlarge",
     "reject": "Reject",
     "rejecting": "Rejecting…",
+    "rejectGoToLatest": "See the latest to reject",
     "rejectedBanner": "Receipt rejected · customer notified",
     "rejectedNotNotified": "Receipt rejected, but we couldn't notify the customer: more than 24 hours have passed since their last message and WhatsApp won't let us write to them. Contact them another way to ask for a new receipt.",
     "rejectedNoPhone": "Receipt rejected, but the customer has no phone number on file and we couldn't notify them. Contact them another way.",
