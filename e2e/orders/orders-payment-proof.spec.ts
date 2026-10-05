@@ -93,7 +93,8 @@ const PROOF_PAYLOAD = {
 async function mockProofScenario(
   page: Page,
   onPaymentUpdate: (body: unknown) => void,
-  onProofReject: () => void
+  onProofReject: () => void,
+  rejectResult: () => unknown
 ) {
   await page.route("**/v1/**", async (route) => {
     const request = route.request();
@@ -116,7 +117,7 @@ async function mockProofScenario(
     }
     if (path.endsWith("/orders/proof01/payment-proof/reject") && request.method() === "POST") {
       onProofReject();
-      return json({});
+      return json(rejectResult());
     }
     if (path.endsWith("/orders/proof01")) return json(PROOF_ORDER);
     if (path.endsWith("/orders") && !url.searchParams.get("status")) {
@@ -178,10 +179,12 @@ async function openBoard(page: Page) {
 test.describe("Orders — comprobante de pago desde el detalle", () => {
   let paymentUpdates: unknown[];
   let proofRejects: number;
+  let rejectResult: unknown;
 
   test.beforeEach(async ({ page }) => {
     paymentUpdates = [];
     proofRejects = 0;
+    rejectResult = { customerNotified: true, reason: "SENT" };
     await page.context().clearCookies();
     await page.addInitScript(() => {
       localStorage.clear();
@@ -192,7 +195,8 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
     await mockProofScenario(
       page,
       (body) => paymentUpdates.push(body),
-      () => proofRejects++
+      () => proofRejects++,
+      () => rejectResult
     );
   });
 
@@ -212,13 +216,12 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
   }
 
   /**
-   * El diálogo del visor (el drawer de detalle sigue abierto detrás y puede
-   * tener botones con el mismo nombre, como "Rechazar").
+   * El visor (el drawer de detalle sigue abierto detrás y puede tener
+   * botones con el mismo nombre, como "Rechazar"). Por test id: el Dialog
+   * del admin no expone role="dialog".
    */
   function viewerDialog(page: Page) {
-    return page.getByRole("dialog").filter({
-      has: page.getByRole("heading", { name: "Comprobante de pago" }),
-    });
+    return page.getByTestId("payment-proof-viewer");
   }
 
   test("el visor recibe clicks: enlace externo y Pago recibido", async ({ page }) => {
@@ -260,6 +263,21 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
     await expect(
       viewer.getByText("Comprobante rechazado · se avisó al cliente")
     ).toBeVisible();
+    expect(proofRejects).toBe(1);
+  });
+
+  test("con la ventana de 24 h cerrada avisa al negocio que contacte al cliente", async ({
+    page,
+  }) => {
+    rejectResult = { customerNotified: false, reason: "WINDOW_CLOSED" };
+    await openProofViewer(page);
+    const viewer = viewerDialog(page);
+
+    await viewer.getByRole("button", { name: "Rechazar" }).click();
+    await expect(
+      viewer.getByText(/no pudimos avisarle al cliente/)
+    ).toBeVisible();
+    await expect(viewer.getByText(/se avisó al cliente/)).toHaveCount(0);
     expect(proofRejects).toBe(1);
   });
 

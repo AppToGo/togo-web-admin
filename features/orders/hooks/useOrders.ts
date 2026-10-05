@@ -476,7 +476,8 @@ export function useUpdateOrderPaymentStatus() {
  *
  * No hay cambio de estado que anticipar (el pago sigue PENDING): solo avisa
  * el error con toast y revalida el detalle (el historial suma la fila del
- * rechazo).
+ * rechazo). El resultado dice si el cliente recibe el aviso
+ * (`customerNotified`); el visor se lo muestra al negocio.
  */
 export function useRejectPaymentProof() {
   const queryClient = useQueryClient();

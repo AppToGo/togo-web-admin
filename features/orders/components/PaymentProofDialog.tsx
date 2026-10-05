@@ -15,6 +15,7 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  AlertTriangle,
   ArrowRight,
   Check,
   ExternalLink,
@@ -280,7 +281,21 @@ function ProofViewer({ orderId, open }: { orderId: string; open: boolean }) {
   );
 }
 
-type DoneState = "confirmed" | "rejected" | null;
+/**
+ * Estado final del visor. `rejectedNotNotified` y `rejectedNoPhone`: el
+ * comprobante se rechazó pero el cliente no recibe el aviso (ventana de
+ * 24 h de WhatsApp cerrada o sin teléfono) y el negocio tiene que
+ * contactarlo por otro medio.
+ */
+type DoneState =
+  "confirmed" | "rejected" | "rejectedNotNotified" | "rejectedNoPhone" | null;
+
+const DONE_MESSAGE_KEYS = {
+  confirmed: "paymentProof.confirmedBanner",
+  rejected: "paymentProof.rejectedBanner",
+  rejectedNotNotified: "paymentProof.rejectedNotNotified",
+  rejectedNoPhone: "paymentProof.rejectedNoPhone",
+} as const;
 
 interface PaymentProofDialogProps {
   order: Order;
@@ -316,7 +331,16 @@ export function PaymentProofDialog({
   const handleReject = useCallback(() => {
     rejectPaymentProof.mutate(
       { orderId: order.id },
-      { onSuccess: () => setDone("rejected") }
+      {
+        onSuccess: (result) =>
+          setDone(
+            result.customerNotified
+              ? "rejected"
+              : result.reason === "NO_PHONE"
+                ? "rejectedNoPhone"
+                : "rejectedNotNotified"
+          ),
+      }
     );
   }, [order.id, rejectPaymentProof]);
 
@@ -335,9 +359,14 @@ export function PaymentProofDialog({
     .filter(Boolean)
     .join(" · ");
 
+  // El ancho va en <Dialog>: su contenedor trae max-w-lg y en
+  // DialogContent no tiene efecto.
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[1040px]">
+    <Dialog open={open} onOpenChange={handleClose} className="max-w-[1040px]">
+      <DialogContent
+        className="overflow-y-auto"
+        data-testid="payment-proof-viewer"
+      >
         <DialogHeader>
           <DialogTitle className="text-[20px] font-bold">
             {t("paymentProof.title")}
@@ -356,26 +385,38 @@ export function PaymentProofDialog({
           {done ? (
             <div
               className={cn(
-                "flex h-12 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold",
-                done === "confirmed"
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-rose-50 text-rose-700"
+                "flex items-center gap-2 rounded-xl text-[14px] font-semibold",
+                done === "confirmed" || done === "rejected"
+                  ? "h-12 justify-center"
+                  : "px-4 py-3 text-left",
+                done === "confirmed" && "bg-emerald-50 text-emerald-700",
+                done === "rejected" && "bg-rose-50 text-rose-700",
+                (done === "rejectedNotNotified" ||
+                  done === "rejectedNoPhone") &&
+                  "bg-amber-50 text-amber-800"
               )}
+              role="status"
             >
               {done === "confirmed" ? (
-                <Check className="h-4 w-4" strokeWidth={2.6} />
+                <Check className="h-4 w-4 shrink-0" strokeWidth={2.6} />
+              ) : done === "rejected" ? (
+                <X className="h-4 w-4 shrink-0" strokeWidth={2.6} />
               ) : (
-                <X className="h-4 w-4" strokeWidth={2.6} />
+                <AlertTriangle className="h-4 w-4 shrink-0" strokeWidth={2.4} />
               )}
-              {t(
-                done === "confirmed"
-                  ? "paymentProof.confirmedBanner"
-                  : "paymentProof.rejectedBanner"
-              )}
+              <span
+                className={cn(
+                  done !== "confirmed" &&
+                    done !== "rejected" &&
+                    "flex-1 font-medium leading-snug"
+                )}
+              >
+                {t(DONE_MESSAGE_KEYS[done])}
+              </span>
               <button
                 type="button"
                 onClick={handleClose}
-                className="ml-2 text-[12px] font-normal text-slate-500 underline"
+                className="ml-2 shrink-0 text-[12px] font-normal text-slate-500 underline"
               >
                 {t("paymentProof.close")}
               </button>
@@ -467,16 +508,14 @@ export function PaymentProofIndicator({
           className
         )}
       >
-        <Receipt className={variant === "labeled" ? "h-3.5 w-3.5" : "h-3 w-3"} />
+        <Receipt
+          className={variant === "labeled" ? "h-3.5 w-3.5" : "h-3 w-3"}
+        />
         {variant === "labeled" && <span>{t("paymentProof.badge")}</span>}
       </button>
 
       {open && (
-        <PaymentProofDialog
-          order={order}
-          open={open}
-          onOpenChange={setOpen}
-        />
+        <PaymentProofDialog order={order} open={open} onOpenChange={setOpen} />
       )}
     </span>
   );

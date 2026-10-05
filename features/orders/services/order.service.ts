@@ -331,20 +331,33 @@ export async function getOrderPaymentVerification(
   return data;
 }
 
+/** Resultado del rechazo: si el cliente recibe el aviso por WhatsApp. */
+export interface RejectPaymentProofResult {
+  customerNotified: boolean;
+  /**
+   * WINDOW_CLOSED: pasaron más de 24 h desde el último mensaje del cliente
+   * y WhatsApp no deja escribirle. NO_PHONE: no hay teléfono.
+   */
+  reason: "SENT" | "WINDOW_CLOSED" | "NO_PHONE";
+}
+
 /**
  * Rechazar el comprobante de pago de un pedido.
  * Endpoint: POST /businesses/:businessId/orders/:id/payment-proof/reject
  *
- * No cambia el estado del pago (sigue PENDING): le avisa al cliente por
- * WhatsApp para que mande un comprobante nuevo, con botón a un asesor.
+ * No cambia el estado del pago (sigue PENDING): la conversación vuelve a
+ * esperar un comprobante y, si la ventana de 24 h está abierta, el cliente
+ * recibe el aviso por WhatsApp con botón a un asesor. Si no, la respuesta
+ * lo dice para que el negocio lo contacte por otro medio.
  */
 export async function rejectOrderPaymentProof(
   orderId: string,
   businessId?: string
-): Promise<void> {
-  await apiClient.post(
+): Promise<RejectPaymentProofResult> {
+  const { data } = await apiClient.post<RejectPaymentProofResult>(
     `${getBaseUrl(businessId)}/${orderId}/payment-proof/reject`
   );
+  return data;
 }
 
 /**
