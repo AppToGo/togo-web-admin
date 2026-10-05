@@ -125,7 +125,8 @@
     "table": "Tables",
     "user": "User",
     "whatsapp": "WhatsApp",
-    "billing": "Billing"
+    "billing": "Billing",
+    "bot_messages": "Assistant messages"
   },
   "tabs": {
     "general": "General",

@@ -125,7 +125,8 @@
     "table": "Mesas",
     "user": "Usuario",
     "whatsapp": "WhatsApp",
-    "billing": "Facturación"
+    "billing": "Facturación",
+    "bot_messages": "Mensajes del asistente"
   },
   "tabs": {
     "general": "General",
