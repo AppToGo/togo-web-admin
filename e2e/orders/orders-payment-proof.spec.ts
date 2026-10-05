@@ -90,7 +90,11 @@ const PROOF_PAYLOAD = {
 };
 
 /** Endpoints del escenario. Registrar DESPUÉS de mockOrdersDashboard. */
-async function mockProofScenario(page: Page, onPaymentUpdate: (body: unknown) => void) {
+async function mockProofScenario(
+  page: Page,
+  onPaymentUpdate: (body: unknown) => void,
+  onProofReject: () => void
+) {
   await page.route("**/v1/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -102,10 +106,17 @@ async function mockProofScenario(page: Page, onPaymentUpdate: (body: unknown) =>
       return json(["order.view", "order.create", "conversation.takeover"]);
     }
     if (path.endsWith("/orders/proof01/payment-proof")) return json(PROOF_PAYLOAD);
+    if (path.endsWith("/orders/proof01/payment-verification")) {
+      return json(VERIFICATION_PAYLOAD);
+    }
     if (path.endsWith("/orders/proof01/history")) return json([]);
     if (path.endsWith("/orders/proof01/payment-status") && request.method() === "PATCH") {
       onPaymentUpdate(request.postDataJSON());
       return json({ ...PROOF_ORDER, paymentStatus: "PAID" });
+    }
+    if (path.endsWith("/orders/proof01/payment-proof/reject") && request.method() === "POST") {
+      onProofReject();
+      return json({});
     }
     if (path.endsWith("/orders/proof01")) return json(PROOF_ORDER);
     if (path.endsWith("/orders") && !url.searchParams.get("status")) {
@@ -114,6 +125,31 @@ async function mockProofScenario(page: Page, onPaymentUpdate: (body: unknown) =>
     await route.fallback();
   });
 }
+
+/**
+ * Análisis con todo coincidiendo: la tabla pedido vs comprobante se pinta
+ * con las 5 filas en verde.
+ */
+const VERIFICATION_PAYLOAD = {
+  id: "verif-1",
+  orderId: "proof01",
+  analysisStatus: "ANALYZED",
+  confidenceScore: 94,
+  documentAuthenticityScore: 100,
+  paymentMatchScore: 100,
+  riskLevel: "LOW",
+  signals: [],
+  comparison: [
+    { key: "amount", expected: 20000, received: 20000, status: "PASS", note: null },
+    { key: "date", expected: "2026-10-05", received: "2026-10-05", status: "PASS", note: null },
+    { key: "sender", expected: "Cliente E2E", received: "Cliente E2E", status: "PASS", note: null },
+    { key: "beneficiary", expected: "Nequi 300 555 1020", received: "Nequi 300 555 1020", status: "PASS", note: null },
+    { key: "currency", expected: "COP", received: "COP", status: "PASS", note: null },
+  ],
+  modelVersion: "test",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
 
 async function openBoard(page: Page) {
   const loginPage = new LoginPage(page);
@@ -141,9 +177,11 @@ async function openBoard(page: Page) {
 
 test.describe("Orders — comprobante de pago desde el detalle", () => {
   let paymentUpdates: unknown[];
+  let proofRejects: number;
 
   test.beforeEach(async ({ page }) => {
     paymentUpdates = [];
+    proofRejects = 0;
     await page.context().clearCookies();
     await page.addInitScript(() => {
       localStorage.clear();
@@ -151,10 +189,14 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
     });
     await mockLoginSuccess(page);
     await mockOrdersDashboard(page);
-    await mockProofScenario(page, (body) => paymentUpdates.push(body));
+    await mockProofScenario(
+      page,
+      (body) => paymentUpdates.push(body),
+      () => proofRejects++
+    );
   });
 
-  test("el visor recibe clicks: enlace externo y Pago recibido", async ({ page }) => {
+  async function openProofViewer(page: Page) {
     await openBoard(page);
 
     // Abrir el detalle (drawer lateral de vaul).
@@ -167,19 +209,58 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
     await expect(
       page.getByRole("heading", { name: "Comprobante de pago" })
     ).toBeVisible();
+  }
+
+  /**
+   * El diálogo del visor (el drawer de detalle sigue abierto detrás y puede
+   * tener botones con el mismo nombre, como "Rechazar").
+   */
+  function viewerDialog(page: Page) {
+    return page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Comprobante de pago" }),
+    });
+  }
+
+  test("el visor recibe clicks: enlace externo y Pago recibido", async ({ page }) => {
+    await openProofViewer(page);
+    const viewer = viewerDialog(page);
 
     // El enlace a otra pestaña apunta a la URL firmada y es accionable.
-    const externalLink = page.getByRole("link", { name: "Abrir en otra pestaña" });
+    const externalLink = viewer.getByRole("link", { name: "Abrir en otra pestaña" });
     await expect(externalLink).toHaveAttribute("href", PROOF_PAYLOAD.media.url);
 
-    // El botón confirma el pago: dispara el PATCH y cierra el visor.
-    await page.getByRole("button", { name: "Pago recibido" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Comprobante de pago" })
-    ).toHaveCount(0);
+    // La tabla pedido vs comprobante pinta las 5 filas en verde.
+    await expect(viewer.getByText("Valor")).toBeVisible();
+    await expect(viewer.getByText("Confianza alta")).toBeVisible();
+
+    // El botón confirma el pago: dispara el PATCH y muestra el estado final.
+    await viewer.getByRole("button", { name: "Pago recibido" }).click();
+    await expect(viewer.getByText("Pago confirmado")).toBeVisible();
     expect(paymentUpdates).toEqual([
       { paymentStatus: "PAID", changeNotes: "Pago confirmado desde panel admin" },
     ]);
+
+    // Cerrar deja el visor limpio (la X del diálogo también se llama Cerrar,
+    // así que se busca el botón dentro del aviso de estado final).
+    await viewer
+      .getByText("Pago confirmado")
+      .locator("..")
+      .getByRole("button", { name: "Cerrar" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Comprobante de pago" })
+    ).toHaveCount(0);
+  });
+
+  test("rechazar avisa al cliente y muestra el estado final", async ({ page }) => {
+    await openProofViewer(page);
+    const viewer = viewerDialog(page);
+
+    await viewer.getByRole("button", { name: "Rechazar" }).click();
+    await expect(
+      viewer.getByText("Comprobante rechazado · se avisó al cliente")
+    ).toBeVisible();
+    expect(proofRejects).toBe(1);
   });
 
   test("el operador puede pasar entre los comprobantes recibidos", async ({

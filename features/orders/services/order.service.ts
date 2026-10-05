@@ -290,6 +290,15 @@ export interface VerificationSignal {
   description: string;
 }
 
+/** Una fila de la tabla "pedido vs comprobante" del visor. */
+export interface ProofComparisonRow {
+  key: "amount" | "date" | "sender" | "beneficiary" | "currency";
+  expected: string | number | null;
+  received: string | number | null;
+  status: "PASS" | "WARNING" | "FAIL" | "SKIPPED";
+  note: string | null;
+}
+
 export interface PaymentVerification {
   id: string;
   orderId: string;
@@ -299,6 +308,8 @@ export interface PaymentVerification {
   paymentMatchScore: number | null;
   riskLevel: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
   signals: VerificationSignal[];
+  /** Vacío cuando el análisis no guardó extraídos: el visor esconde la tabla. */
+  comparison: ProofComparisonRow[];
   modelVersion: string | null;
   createdAt: string;
   updatedAt: string;
@@ -318,6 +329,22 @@ export async function getOrderPaymentVerification(
     `${getBaseUrl(businessId)}/${orderId}/payment-verification`
   );
   return data;
+}
+
+/**
+ * Rechazar el comprobante de pago de un pedido.
+ * Endpoint: POST /businesses/:businessId/orders/:id/payment-proof/reject
+ *
+ * No cambia el estado del pago (sigue PENDING): le avisa al cliente por
+ * WhatsApp para que mande un comprobante nuevo, con botón a un asesor.
+ */
+export async function rejectOrderPaymentProof(
+  orderId: string,
+  businessId?: string
+): Promise<void> {
+  await apiClient.post(
+    `${getBaseUrl(businessId)}/${orderId}/payment-proof/reject`
+  );
 }
 
 /**
