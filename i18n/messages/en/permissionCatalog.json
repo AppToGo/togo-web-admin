@@ -318,5 +318,9 @@
   "billing_view": {
     "label": "View billing",
     "description": "Grants access to the subscription's account status, payment history, and billing notices."
+  },
+  "bot_messages_manage": {
+    "label": "Edit assistant messages",
+    "description": "Lets the user change how the WhatsApp assistant replies at each point of the conversation, generate the messages with AI, and publish them."
   }
 }

@@ -26,7 +26,8 @@
     "business": "Business Details",
     "businesses": "Businesses",
     "users": "Users",
-    "billing": "Billing"
+    "billing": "Billing",
+    "botMessages": "Assistant messages"
   },
   "breadcrumbs": {
     "home": "Home",

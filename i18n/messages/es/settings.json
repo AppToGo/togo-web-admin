@@ -134,8 +134,7 @@
       },
       "paraphrase": {
         "label": "Reescribir avisos con IA (beta)",
-        "description": "La IA reescribe con tu tono algunos avisos, como \"no te entendí\" o \"elige una opción\". Un validador revisa cada texto; si cambia un precio, un número o un nombre, se envía el mensaje original. Nunca toca pedidos, montos ni datos de pago.",
-        "unavailable": "Todavía no está habilitado en ToGo. Si ya lo tenías prendido, no tendrá efecto hasta que lo habilitemos."
+        "description": "La IA reescribe con tu tono algunos avisos, como \"no te entendí\" o \"elige una opción\". Un validador revisa cada texto; si cambia un precio, un número o un nombre, se envía el mensaje original. Nunca toca pedidos, montos ni datos de pago."
       },
       "preview": {
         "title": "Vista previa",
@@ -216,7 +215,9 @@
     "success": "Cambios guardados exitosamente",
     "error": "Error al guardar los cambios"
   },
-  "error": { "carga": "Error al cargar el negocio" },
+  "error": {
+    "carga": "Error al cargar el negocio"
+  },
   "adminBusinesses": {
     "page": {
       "title": "Gestión de Negocios",
@@ -249,6 +250,128 @@
     },
     "buttons": {
       "clearAll": "Limpiar todo"
+    }
+  },
+  "botMessages": {
+    "title": "Mensajes del asistente",
+    "subtitle": "Así responde tu asistente de WhatsApp en cada momento de la conversación. Escríbelos con tus palabras.",
+    "back": "Volver a la configuración del negocio",
+    "whyVersions": {
+      "title": "¿Por qué cada mensaje tiene 3 o más versiones?",
+      "body": "Tus clientes frecuentes ven estos mensajes muchas veces. Si siempre leen exactamente lo mismo, la conversación se siente automática. Con 3 o más versiones el asistente va rotando entre ellas, sin repetir la misma dos veces seguidas en una conversación, y suena como una persona de tu equipo. Todas dicen lo mismo; solo cambia la forma.",
+      "short": "El asistente rota entre las versiones para no repetir siempre el mismo texto. Recomendamos 3 o más."
+    },
+    "ai": {
+      "cardTitle": "Editar con IA (opcional)",
+      "cardDescription": "Escribe cómo dirías 3 mensajes y la IA redacta todos los demás con tu estilo. Después puedes retocar lo que no te convenza.",
+      "unavailable": "La generación con IA no está disponible en este momento. Puedes editar los mensajes a mano.",
+      "open": "Editar con IA",
+      "title": "Editar con IA",
+      "description": "Cuéntale a la IA cómo le hablas a tus clientes con 3 ejemplos.",
+      "howItWorks": "La IA va a escribir todos los mensajes de esta página con tu estilo, con 3 o más versiones cada uno. Todo queda como borrador: nada llega a tus clientes hasta que lo revises y publiques.",
+      "exampleLabel": "Ejemplo {n}",
+      "todaySays": "Hoy el asistente dice:",
+      "examplePlaceholder": "Escribe cómo lo dirías tú…",
+      "styleNotes": {
+        "label": "¿Cómo le hablas a tus clientes? (opcional)",
+        "placeholder": "Ej: cercanos y alegres, usamos «parce» y «con gusto», nada de palabras técnicas"
+      },
+      "keepManual": "Conservar {count, plural, one {el mensaje que ya escribiste} other {los # mensajes que ya escribiste}} a mano",
+      "limit": "{count, plural, =0 {Ya usaste todas las generaciones de hoy. Vuelve a intentarlo mañana.} one {Te queda 1 generación hoy.} other {Te quedan # generaciones hoy.}}",
+      "submit": "Generar mensajes",
+      "progress": {
+        "writing": "Escribiendo tus mensajes…",
+        "count": "{done} de {total} mensajes",
+        "done": "{count, plural, one {Listo: 1 mensaje escrito con tu estilo} other {Listo: # mensajes escritos con tu estilo}}",
+        "failed": "No pudimos terminar la generación. Intenta de nuevo en unos minutos.",
+        "someFailed": "{count, plural, one {1 mensaje no se pudo completar; está marcado para que lo escribas tú.} other {# mensajes no se pudieron completar; están marcados para que los escribas tú.}}",
+        "review": "Revisa el borrador y publica cuando estés conforme.",
+        "close": "Ver mensajes"
+      },
+      "errors": {
+        "start": "No se pudo iniciar la generación"
+      }
+    },
+    "stages": {
+      "saludo": "Saludo",
+      "busqueda": "Búsqueda de productos",
+      "carrito": "Pedido en curso",
+      "entrega": "Entrega",
+      "pago": "Pago",
+      "confirmacion": "Confirmación",
+      "estado": "Estado del pedido",
+      "ayuda": "Ayuda y otros avisos"
+    },
+    "messageCount": "{count, plural, one {1 mensaje} other {# mensajes}}",
+    "versionCount": "{count, plural, one {1 versión} other {# versiones}}",
+    "origin": {
+      "TEMPLATE": "Texto de ToGo",
+      "MANUAL": "Tuyo",
+      "AI": "IA",
+      "AI_EDITED": "IA editado"
+    },
+    "unpublished": "Sin publicar",
+    "aiFailed": "La IA no logró completar este mensaje. Escríbelo tú con «Editar».",
+    "hasErrors": "Este mensaje tiene errores; edítalo antes de publicar.",
+    "actions": {
+      "edit": "Editar",
+      "regenerate": "Regenerar con IA",
+      "reset": "Volver al texto de ToGo"
+    },
+    "editor": {
+      "variables": "Datos que puedes usar (clic para insertar):",
+      "requiredVariable": "Obligatorio: el cliente necesita este dato",
+      "optionalVariable": "Opcional",
+      "requiredHint": "Cada versión debe incluir {variables}.",
+      "placeholder": "Escribe el mensaje como se lo dirías a tu cliente",
+      "removeVersion": "Quitar versión",
+      "addVersion": "Agregar versión",
+      "fewVersions": "Recomendamos al menos {min} versiones para que el asistente no repita siempre lo mismo.",
+      "save": "Guardar en borrador"
+    },
+    "issues": {
+      "empty": "La versión está vacía.",
+      "too_long": "Supera el máximo de {max} caracteres.",
+      "missing_variable": "Falta {variable}: el cliente necesita ese dato.",
+      "unknown_variable": "{variable} no es un dato disponible para este mensaje.",
+      "url": "No incluyas links ni direcciones web.",
+      "duplicate": "Repite otra versión de este mensaje.",
+      "address": "Tutea al cliente, pero tu asistente lo trata de usted.",
+      "emojis": "Tiene emojis, pero los apagaste: se quitarán al enviar."
+    },
+    "publish": {
+      "button": "Publicar cambios",
+      "pending": "{count, plural, one {1 mensaje con cambios sin publicar} other {# mensajes con cambios sin publicar}}",
+      "blocked": "Corrige los mensajes con errores para poder publicar.",
+      "success": "{count, plural, one {Publicado: el asistente ya usa el mensaje nuevo} other {Publicado: el asistente ya usa los # mensajes nuevos}}",
+      "error": "No se pudieron publicar los cambios"
+    },
+    "discard": {
+      "button": "Descartar borrador",
+      "confirmTitle": "¿Descartar el borrador?",
+      "confirmDescription": "Se pierden todos los cambios sin publicar, incluidos los que escribió la IA. Lo publicado no cambia.",
+      "success": "Borrador descartado",
+      "error": "No se pudo descartar el borrador"
+    },
+    "errors": {
+      "loadTitle": "No pudimos cargar los mensajes",
+      "load": "Intenta de nuevo en unos minutos.",
+      "save": "No se pudo guardar el mensaje",
+      "reset": "No se pudo volver al texto de ToGo",
+      "regenerate": "No se pudo regenerar el mensaje"
+    },
+    "noPermission": {
+      "title": "No tienes acceso a esta sección",
+      "description": "Pídele a un administrador del negocio el permiso «Editar mensajes del asistente»."
+    },
+    "locked": {
+      "description": "Personalizar los mensajes del asistente está disponible en los planes Pro y Enterprise.",
+      "cta": "Mejorar plan"
+    },
+    "link": {
+      "title": "Mensajes del asistente",
+      "description": "Escribe con tus palabras cómo responde el asistente en cada momento, a mano o con IA.",
+      "button": "Personalizar mensajes"
     }
   }
 }

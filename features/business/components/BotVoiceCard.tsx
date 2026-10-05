@@ -7,13 +7,17 @@
  * del resto del formulario del negocio.
  *
  * T21: interruptor para que la IA reescriba algunos avisos con ese tono.
- * Solo tiene efecto si la paráfrasis está habilitada en el servidor, que la
- * vista previa informa (`paraphraseAvailable`).
+ * Solo se muestra si la paráfrasis está habilitada en el servidor
+ * (`BOT_PARAPHRASE_ENABLED`), que la vista previa informa
+ * (`paraphraseAvailable`): no ofrecemos algo que el negocio no puede usar.
+ *
+ * T22: enlaza a "Mensajes del asistente", donde el negocio redacta los
+ * mensajes con sus palabras (a mano o con IA).
  */
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Bot, Crown } from "lucide-react";
+import { Bot, Crown, MessagesSquare } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,9 +25,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Link } from "@/i18n/routing";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { canCustomizeAssistant } from "@/features/subscription/utils/plan.util";
 import { useBotVoicePreview, useUpdateBusiness } from "../hooks/useBusiness";
 import type { BotVoice, Business } from "../types/business.types";
 
@@ -38,11 +45,6 @@ function lockedVoice(defaultName: string): BotVoice {
     assistantName: defaultName,
     paraphrase: false,
   };
-}
-
-/** Planes con acceso a configurar la voz del asistente. */
-function canEditVoice(plan: number | undefined): boolean {
-  return plan === 3 || plan === 4;
 }
 
 function voiceOf(business: Business): BotVoice {
@@ -79,13 +81,22 @@ interface BotVoiceCardProps {
 export function BotVoiceCard({ business }: BotVoiceCardProps) {
   const tb = useTranslations("settings.business");
   const tc = useTranslations("common");
+  const tm = useTranslations("settings.botMessages.link");
   const updateBusiness = useUpdateBusiness();
-  const subscriptionPlan = useAuthStore((state) => state.user?.subscriptionPlan);
+  const subscriptionPlan = useAuthStore(
+    (state) => state.user?.subscriptionPlan
+  );
   // El negocio trae el plan fresco de la BD (`/businesses/me` lo incluye
   // en la respuesta); el JWT es el fallback (ej. SUPER_ADMIN sin negocio).
-  const editable = canEditVoice(
-    business.subscriptionPlan ?? subscriptionPlan,
+  const editable = canCustomizeAssistant(
+    business.subscriptionPlan ?? subscriptionPlan
   );
+  const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
+  // Sin `bot_messages.manage` el enlace sería un callejón (la página muestra
+  // "sin acceso"). El plan no se filtra: la página destino invita a mejorar
+  // el plan. Mientras cargan los permisos se muestra para no parpadear.
+  const showMessagesLink =
+    permissionsLoading || hasPermission("bot_messages.manage");
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
   // Sin acceso (Basic/Free) se muestra la voz por defecto con el nombre
@@ -129,9 +140,10 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
     voice.paraphrase !== saved.paraphrase ||
     name.trim() !== (saved.assistantName ?? "");
 
-  // Se puede apagar siempre; prender, solo si el servidor la tiene
-  // habilitada (mientras carga la vista previa se asume que sí).
-  const paraphraseUnavailable = preview.data?.paraphraseAvailable === false;
+  // Oculto hasta que la vista previa confirme que el servidor la tiene
+  // habilitada. Si estaba prendida y el servidor la apagó, el valor
+  // guardado se conserva tal cual al guardar (no tiene efecto igual).
+  const paraphraseAvailable = preview.data?.paraphraseAvailable === true;
 
   const handleSave = async () => {
     if (!requirePlan()) return;
@@ -247,33 +259,29 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
               />
             </div>
 
-            <div className="rounded-lg border border-slate-200 p-4 space-y-2">
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label htmlFor="botVoice-paraphrase" className="text-base">
-                    {tb("botVoice.paraphrase.label")}
-                  </Label>
-                  <p className="text-sm text-slate-500">
-                    {tb("botVoice.paraphrase.description")}
-                  </p>
+            {paraphraseAvailable && (
+              <div className="rounded-lg border border-slate-200 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="botVoice-paraphrase" className="text-base">
+                      {tb("botVoice.paraphrase.label")}
+                    </Label>
+                    <p className="text-sm text-slate-500">
+                      {tb("botVoice.paraphrase.description")}
+                    </p>
+                  </div>
+                  <Switch
+                    id="botVoice-paraphrase"
+                    checked={voice.paraphrase === true}
+                    onCheckedChange={(checked) => {
+                      if (!requirePlan()) return;
+                      setVoice((prev) => ({ ...prev, paraphrase: checked }));
+                    }}
+                    aria-disabled={!editable}
+                  />
                 </div>
-                <Switch
-                  id="botVoice-paraphrase"
-                  checked={voice.paraphrase === true}
-                  disabled={paraphraseUnavailable && !voice.paraphrase}
-                  onCheckedChange={(checked) => {
-                    if (!requirePlan()) return;
-                    setVoice((prev) => ({ ...prev, paraphrase: checked }));
-                  }}
-                  aria-disabled={!editable}
-                />
               </div>
-              {paraphraseUnavailable && (
-                <p className="text-sm text-amber-600">
-                  {tb("botVoice.paraphrase.unavailable")}
-                </p>
-              )}
-            </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="botVoice-name">
@@ -336,6 +344,23 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
             </p>
           </div>
         </div>
+
+        {showMessagesLink && (
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
+            <div className="space-y-0.5">
+              <p className="flex items-center gap-2 text-base font-medium text-slate-900">
+                <MessagesSquare className="h-4 w-4 text-indigo-600" />
+                {tm("title")}
+              </p>
+              <p className="text-sm text-slate-500">{tm("description")}</p>
+            </div>
+            <Link href="/dashboard/settings/general/bot-messages">
+              <Button type="button" variant="slate-outline" size="sm">
+                {tm("button")}
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <div className="flex justify-end">
           <Button
