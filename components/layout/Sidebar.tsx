@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
-import { Filter, Inbox, MessageCircle, MessagesSquare } from "lucide-react";
+import { Filter, Inbox, MessageCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -105,9 +105,6 @@ export function Sidebar({
   // Embudo del bot (plan bot natural, T20): mismo permiso que su endpoint.
   const canViewConversationFunnel = hasPermission("metrics.view");
 
-  // Mensajes del asistente (plan bot natural, T22): mismo permiso que su endpoint.
-  const canManageBotMessages = hasPermission("bot_messages.manage");
-
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
     const items: NavigationItem[] = [
@@ -194,15 +191,6 @@ export function Sidebar({
             href: "/dashboard/settings/general/business",
             icon: StoreIcon,
           },
-          ...(canManageBotMessages
-            ? [
-                {
-                  name: t("sidebar.botMessages"),
-                  href: "/dashboard/settings/general/bot-messages",
-                  icon: MessagesSquare,
-                },
-              ]
-            : []),
           {
             name: t("sidebar.branches"),
             href: "/dashboard/branches",
@@ -244,7 +232,6 @@ export function Sidebar({
     canViewConversationFunnel,
     canViewInbox,
     canViewBilling,
-    canManageBotMessages,
   ]);
 
   // Admin navigation (Super Admin only)

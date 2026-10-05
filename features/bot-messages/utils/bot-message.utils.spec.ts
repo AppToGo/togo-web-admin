@@ -108,6 +108,22 @@ describe("bot-message.utils", () => {
     expect(withSampleValues("Aviso de {futureVar}")).toBe("Aviso de {futureVar}");
   });
 
+  it("usa el nombre real del negocio y del asistente cuando se dan", () => {
+    expect(
+      withSampleValues("Bienvenido a *{businessName}*, soy {assistantName}", {
+        businessName: "Pollos Ricos",
+        assistantName: "Rica",
+      })
+    ).toBe("Bienvenido a *Pollos Ricos*, soy Rica");
+  });
+
+  it("sin nombre del asistente usa ToGo por defecto", () => {
+    expect(withSampleValues("Soy {assistantName}")).toBe("Soy ToGo");
+    expect(
+      withSampleValues("Soy {assistantName}", { assistantName: "" })
+    ).toBe("Soy ToGo");
+  });
+
   it("shownVersions prefiere el borrador sobre lo publicado", () => {
     const published = { variants: ["a"], origin: "TEMPLATE" as const };
     const draft = { variants: ["b"], origin: "MANUAL" as const };

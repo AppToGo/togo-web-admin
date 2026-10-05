@@ -261,6 +261,10 @@
       "body": "Tus clientes frecuentes ven estos mensajes muchas veces. Si siempre leen exactamente lo mismo, la conversación se siente automática. Con 3 o más versiones el asistente va rotando entre ellas, sin repetir la misma dos veces seguidas en una conversación, y suena como una persona de tu equipo. Todas dicen lo mismo; solo cambia la forma.",
       "short": "El asistente rota entre las versiones para no repetir siempre el mismo texto. Recomendamos 3 o más."
     },
+    "overridesVoice": {
+      "title": "Lo que escribes pisa el tuteo",
+      "body": "Tus mensajes publicados se envían tal como los escribes: mandan sobre el trato de tú/usted de la voz del asistente, sin conversiones."
+    },
     "ai": {
       "cardTitle": "Editar con IA (opcional)",
       "cardDescription": "Escribe cómo dirías 3 mensajes y la IA redacta todos los demás con tu estilo. Después puedes retocar lo que no te convenza.",

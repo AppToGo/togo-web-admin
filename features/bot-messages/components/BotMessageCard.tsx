@@ -18,6 +18,7 @@ import type {
   BotMessageOrigin,
   BotMessagesCatalog,
 } from "../types/bot-messages.types";
+import type { PreviewOverrides } from "../utils/bot-message.utils";
 import {
   useRegenerateBotMessage,
   useResetBotMessage,
@@ -45,6 +46,8 @@ interface BotMessageCardProps {
   aiAvailable: boolean;
   /** La última "Editar con IA" no logró completar este mensaje. */
   aiFailed: boolean;
+  /** Datos reales para la vista previa (nombre del negocio y del asistente). */
+  previewVars: PreviewOverrides;
 }
 
 export function BotMessageCard({
@@ -53,6 +56,7 @@ export function BotMessageCard({
   voice,
   aiAvailable,
   aiFailed,
+  previewVars,
 }: BotMessageCardProps) {
   const t = useTranslations("settings.botMessages");
   const [editing, setEditing] = useState(false);
@@ -186,7 +190,7 @@ export function BotMessageCard({
               key={i}
               className="max-w-[90%] whitespace-pre-line rounded-lg bg-white px-3 py-2 text-sm text-slate-700 shadow-sm"
             >
-              {withWhatsAppBold(withSampleValues(text))}
+              {withWhatsAppBold(withSampleValues(text, previewVars))}
             </p>
           ))}
         </div>
