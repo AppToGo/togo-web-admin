@@ -261,6 +261,10 @@
       "body": "Your regular customers see these messages many times. If they always read exactly the same text, the conversation feels automated. With 3 or more versions the assistant rotates between them, never repeating the same one twice in a row in a conversation, and sounds like someone on your team. They all say the same thing; only the wording changes.",
       "short": "The assistant rotates between versions so it doesn't always repeat the same text. We recommend 3 or more."
     },
+    "overridesVoice": {
+      "title": "What you write overrides formality",
+      "body": "Your published messages are sent exactly as you write them: they override the tú/usted formality from the assistant's voice, with no conversion."
+    },
     "ai": {
       "cardTitle": "Edit with AI (optional)",
       "cardDescription": "Write how you would say 3 messages and AI drafts all the others in your style. Then tweak anything you don't like.",
