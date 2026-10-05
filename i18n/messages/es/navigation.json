@@ -26,7 +26,8 @@
     "business": "Datos del Negocio",
     "businesses": "Negocios",
     "users": "Usuarios",
-    "billing": "Facturación"
+    "billing": "Facturación",
+    "botMessages": "Mensajes del asistente"
   },
   "breadcrumbs": {
     "home": "Inicio",

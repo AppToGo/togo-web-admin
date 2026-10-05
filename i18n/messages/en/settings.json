@@ -134,8 +134,7 @@
       },
       "paraphrase": {
         "label": "Rewrite notices with AI (beta)",
-        "description": "AI rewrites some notices, like \"I didn't understand\" or \"pick an option\", in your tone. A validator checks every text; if a price, number or name changes, the original message is sent. It never touches orders, amounts or payment details.",
-        "unavailable": "Not enabled in ToGo yet. If you already had it on, it won't have any effect until we enable it."
+        "description": "AI rewrites some notices, like \"I didn't understand\" or \"pick an option\", in your tone. A validator checks every text; if a price, number or name changes, the original message is sent. It never touches orders, amounts or payment details."
       },
       "preview": {
         "title": "Preview",
@@ -216,7 +215,9 @@
     "success": "Changes saved successfully",
     "error": "Error saving changes"
   },
-  "error": { "carga": "Error loading business" },
+  "error": {
+    "carga": "Error loading business"
+  },
   "adminBusinesses": {
     "page": {
       "title": "Business Management",
@@ -249,6 +250,128 @@
     },
     "buttons": {
       "clearAll": "Clear all"
+    }
+  },
+  "botMessages": {
+    "title": "Assistant messages",
+    "subtitle": "This is how your WhatsApp assistant replies at each point of the conversation. Write them in your own words.",
+    "back": "Back to business settings",
+    "whyVersions": {
+      "title": "Why does each message have 3 or more versions?",
+      "body": "Your regular customers see these messages many times. If they always read exactly the same text, the conversation feels automated. With 3 or more versions the assistant rotates between them, never repeating the same one twice in a row in a conversation, and sounds like someone on your team. They all say the same thing; only the wording changes.",
+      "short": "The assistant rotates between versions so it doesn't always repeat the same text. We recommend 3 or more."
+    },
+    "ai": {
+      "cardTitle": "Edit with AI (optional)",
+      "cardDescription": "Write how you would say 3 messages and AI drafts all the others in your style. Then tweak anything you don't like.",
+      "unavailable": "AI generation isn't available right now. You can still edit the messages by hand.",
+      "open": "Edit with AI",
+      "title": "Edit with AI",
+      "description": "Show the AI how you talk to your customers with 3 examples.",
+      "howItWorks": "AI will write every message on this page in your style, with 3 or more versions each. Everything stays as a draft: nothing reaches your customers until you review and publish it.",
+      "exampleLabel": "Example {n}",
+      "todaySays": "Today the assistant says:",
+      "examplePlaceholder": "Write how you would say it…",
+      "styleNotes": {
+        "label": "How do you talk to your customers? (optional)",
+        "placeholder": "E.g.: friendly and upbeat, we say \"con gusto\", no technical words"
+      },
+      "keepManual": "Keep {count, plural, one {the message you already wrote} other {the # messages you already wrote}} by hand",
+      "limit": "{count, plural, =0 {You've used all of today's generations. Try again tomorrow.} one {You have 1 generation left today.} other {You have # generations left today.}}",
+      "submit": "Generate messages",
+      "progress": {
+        "writing": "Writing your messages…",
+        "count": "{done} of {total} messages",
+        "done": "{count, plural, one {Done: 1 message written in your style} other {Done: # messages written in your style}}",
+        "failed": "We couldn't finish the generation. Try again in a few minutes.",
+        "someFailed": "{count, plural, one {1 message couldn't be completed; it's flagged for you to write.} other {# messages couldn't be completed; they're flagged for you to write.}}",
+        "review": "Review the draft and publish when you're happy with it.",
+        "close": "See messages"
+      },
+      "errors": {
+        "start": "Couldn't start the generation"
+      }
+    },
+    "stages": {
+      "saludo": "Greeting",
+      "busqueda": "Product search",
+      "carrito": "Order in progress",
+      "entrega": "Delivery",
+      "pago": "Payment",
+      "confirmacion": "Confirmation",
+      "estado": "Order status",
+      "ayuda": "Help and other notices"
+    },
+    "messageCount": "{count, plural, one {1 message} other {# messages}}",
+    "versionCount": "{count, plural, one {1 version} other {# versions}}",
+    "origin": {
+      "TEMPLATE": "ToGo text",
+      "MANUAL": "Yours",
+      "AI": "AI",
+      "AI_EDITED": "AI, edited"
+    },
+    "unpublished": "Unpublished",
+    "aiFailed": "AI couldn't complete this message. Write it yourself with \"Edit\".",
+    "hasErrors": "This message has errors; edit it before publishing.",
+    "actions": {
+      "edit": "Edit",
+      "regenerate": "Regenerate with AI",
+      "reset": "Back to ToGo text"
+    },
+    "editor": {
+      "variables": "Data you can use (click to insert):",
+      "requiredVariable": "Required: the customer needs this data",
+      "optionalVariable": "Optional",
+      "requiredHint": "Each version must include {variables}.",
+      "placeholder": "Write the message as you'd say it to your customer",
+      "removeVersion": "Remove version",
+      "addVersion": "Add version",
+      "fewVersions": "We recommend at least {min} versions so the assistant doesn't always repeat the same text.",
+      "save": "Save to draft"
+    },
+    "issues": {
+      "empty": "This version is empty.",
+      "too_long": "It's over the {max}-character limit.",
+      "missing_variable": "{variable} is missing: the customer needs that data.",
+      "unknown_variable": "{variable} isn't available for this message.",
+      "url": "Don't include links or web addresses.",
+      "duplicate": "It repeats another version of this message.",
+      "address": "It uses \"tú\", but your assistant uses \"usted\".",
+      "emojis": "It has emojis, but you turned them off: they'll be removed when sent."
+    },
+    "publish": {
+      "button": "Publish changes",
+      "pending": "{count, plural, one {1 message with unpublished changes} other {# messages with unpublished changes}}",
+      "blocked": "Fix the messages with errors to publish.",
+      "success": "{count, plural, one {Published: the assistant now uses the new message} other {Published: the assistant now uses the # new messages}}",
+      "error": "Couldn't publish the changes"
+    },
+    "discard": {
+      "button": "Discard draft",
+      "confirmTitle": "Discard the draft?",
+      "confirmDescription": "All unpublished changes are lost, including the ones written by AI. What's published doesn't change.",
+      "success": "Draft discarded",
+      "error": "Couldn't discard the draft"
+    },
+    "errors": {
+      "loadTitle": "We couldn't load the messages",
+      "load": "Try again in a few minutes.",
+      "save": "Couldn't save the message",
+      "reset": "Couldn't go back to the ToGo text",
+      "regenerate": "Couldn't regenerate the message"
+    },
+    "noPermission": {
+      "title": "You don't have access to this section",
+      "description": "Ask a business admin for the \"Edit assistant messages\" permission."
+    },
+    "locked": {
+      "description": "Customizing the assistant messages is available on the Pro and Enterprise plans.",
+      "cta": "Upgrade plan"
+    },
+    "link": {
+      "title": "Assistant messages",
+      "description": "Write in your own words how the assistant replies at each moment, by hand or with AI.",
+      "button": "Customize messages"
     }
   }
 }
