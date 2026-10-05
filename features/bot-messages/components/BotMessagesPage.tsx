@@ -10,6 +10,7 @@
  */
 
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
@@ -39,6 +40,7 @@ import { useCurrentBusiness } from "@/features/business";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { canCustomizeAssistant } from "@/features/subscription/utils/plan.util";
 import {
   useBotMessages,
   useDiscardBotMessagesDraft,
@@ -50,16 +52,15 @@ import { EditWithAiDialog } from "./EditWithAiDialog";
 
 export const BOT_MESSAGES_PERMISSION = "bot_messages.manage";
 
-/** Mismo criterio que la voz del asistente (T18): Pro y Enterprise. */
-const canCustomize = (plan: number | undefined) => plan === 3 || plan === 4;
-
 export function BotMessagesPage() {
   const t = useTranslations("settings.botMessages");
   const tc = useTranslations("common");
   const { data: business, isLoading: businessLoading } = useCurrentBusiness();
   const jwtPlan = useAuthStore((state) => state.user?.subscriptionPlan);
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
-  const allowedPlan = canCustomize(business?.subscriptionPlan ?? jwtPlan);
+  const allowedPlan = canCustomizeAssistant(
+    business?.subscriptionPlan ?? jwtPlan
+  );
   const allowed = !permissionsLoading && hasPermission(BOT_MESSAGES_PERMISSION);
 
   const businessId = business?.id ?? "";
@@ -178,6 +179,23 @@ export function BotMessagesPage() {
       const result = await publish.mutateAsync();
       toast.success(t("publish.success", { count: result.published }));
     } catch (err) {
+      // La API dice qué mensajes tienen errores: se despliegan sus etapas
+      // para encontrarlos sin buscar entre los 55.
+      const response = isAxiosError(err) ? err.response?.data : undefined;
+      const invalid = (response as { invalidIds?: unknown } | undefined)
+        ?.invalidIds;
+      const ids = Array.isArray(invalid)
+        ? invalid.filter((id): id is string => typeof id === "string")
+        : [];
+      if (ids.length > 0) {
+        setCollapsed((prev) => {
+          const next = new Set(prev);
+          for (const { stage, messages } of data.stages) {
+            if (messages.some((m) => ids.includes(m.id))) next.delete(stage);
+          }
+          return next;
+        });
+      }
       toast.error(extractErrorMessage(err, t("publish.error")));
     }
   };

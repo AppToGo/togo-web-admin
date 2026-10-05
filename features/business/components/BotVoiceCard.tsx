@@ -28,7 +28,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Link } from "@/i18n/routing";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { canCustomizeAssistant } from "@/features/subscription/utils/plan.util";
 import { useBotVoicePreview, useUpdateBusiness } from "../hooks/useBusiness";
 import type { BotVoice, Business } from "../types/business.types";
 
@@ -43,11 +45,6 @@ function lockedVoice(defaultName: string): BotVoice {
     assistantName: defaultName,
     paraphrase: false,
   };
-}
-
-/** Planes con acceso a configurar la voz del asistente. */
-function canEditVoice(plan: number | undefined): boolean {
-  return plan === 3 || plan === 4;
 }
 
 function voiceOf(business: Business): BotVoice {
@@ -91,7 +88,15 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
   );
   // El negocio trae el plan fresco de la BD (`/businesses/me` lo incluye
   // en la respuesta); el JWT es el fallback (ej. SUPER_ADMIN sin negocio).
-  const editable = canEditVoice(business.subscriptionPlan ?? subscriptionPlan);
+  const editable = canCustomizeAssistant(
+    business.subscriptionPlan ?? subscriptionPlan
+  );
+  const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
+  // Sin `bot_messages.manage` el enlace sería un callejón (la página muestra
+  // "sin acceso"). El plan no se filtra: la página destino invita a mejorar
+  // el plan. Mientras cargan los permisos se muestra para no parpadear.
+  const showMessagesLink =
+    permissionsLoading || hasPermission("bot_messages.manage");
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
   // Sin acceso (Basic/Free) se muestra la voz por defecto con el nombre
@@ -340,20 +345,22 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
-          <div className="space-y-0.5">
-            <p className="flex items-center gap-2 text-base font-medium text-slate-900">
-              <MessagesSquare className="h-4 w-4 text-indigo-600" />
-              {tm("title")}
-            </p>
-            <p className="text-sm text-slate-500">{tm("description")}</p>
+        {showMessagesLink && (
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
+            <div className="space-y-0.5">
+              <p className="flex items-center gap-2 text-base font-medium text-slate-900">
+                <MessagesSquare className="h-4 w-4 text-indigo-600" />
+                {tm("title")}
+              </p>
+              <p className="text-sm text-slate-500">{tm("description")}</p>
+            </div>
+            <Link href="/dashboard/settings/general/bot-messages">
+              <Button type="button" variant="slate-outline" size="sm">
+                {tm("button")}
+              </Button>
+            </Link>
           </div>
-          <Link href="/dashboard/settings/general/bot-messages">
-            <Button type="button" variant="slate-outline" size="sm">
-              {tm("button")}
-            </Button>
-          </Link>
-        </div>
+        )}
 
         <div className="flex justify-end">
           <Button

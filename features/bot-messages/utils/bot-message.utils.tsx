@@ -13,8 +13,11 @@ import type {
 } from "../types/bot-messages.types";
 
 const VARIABLE = /\{(\w+)\}/g;
+// Espejo de `api-togo/src/conversation/paraphrase/paraphrase-validator.ts`
+// (URL_OR_DOMAIN, TUTEO, EMOJI): si la API amplía esas listas, hay que
+// traer el cambio acá o el editor dirá "válido" y guardar devolverá 400.
 const URL_OR_DOMAIN =
-  /(https?:\/\/|www\.)|\b[\w-]+\.(com|co|net|org|app|io|me|ly|shop|store)\b/i;
+  /(https?:\/\/|www\.)|\b[\w-]+\.(com|co|net|org|app|io|me|ly|shop|store|ai|dev|online|biz|info|site|page|link|xyz|tech|blog)\b/i;
 const TUTEO =
   /(?<![\p{L}])(te|ti|tu|tus|contigo|quieres|puedes|tienes|prefieres|escríbeme|dime|elige|toca|escribe)(?![\p{L}])/iu;
 const EMOJI = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
