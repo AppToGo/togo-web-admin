@@ -49,6 +49,7 @@ import {
   withSampleValues,
   withWhatsAppBold,
 } from "../utils/bot-message.utils";
+import type { PreviewOverrides } from "../utils/bot-message.utils";
 
 /** Mensajes sugeridos como ejemplo: los que más dicen de cómo habla un negocio. */
 const SUGGESTED_EXAMPLES = [
@@ -68,6 +69,8 @@ interface EditWithAiDialogProps {
   catalog: BotMessagesCatalog;
   open: boolean;
   onClose: () => void;
+  /** Datos reales para la vista previa (nombre del negocio y del asistente). */
+  previewVars: PreviewOverrides;
 }
 
 export function EditWithAiDialog({
@@ -75,6 +78,7 @@ export function EditWithAiDialog({
   catalog,
   open,
   onClose,
+  previewVars,
 }: EditWithAiDialogProps) {
   const t = useTranslations("settings.botMessages.ai");
   const tm = useTranslations("settings.botMessages");
@@ -269,7 +273,10 @@ export function EditWithAiDialog({
                       <p>{t("todaySays")}</p>
                       <p className="whitespace-pre-line rounded-md bg-slate-50 px-2 py-1.5 text-slate-600">
                         {withWhatsAppBold(
-                          withSampleValues(message.templateVariants[0] ?? "")
+                          withSampleValues(
+                            message.templateVariants[0] ?? "",
+                            previewVars
+                          )
                         )}
                       </p>
                     </div>

@@ -158,6 +158,12 @@ export function BotMessagesPage() {
   }
 
   const data = catalog.data;
+  // La vista previa usa los datos reales del negocio, no ejemplos genéricos.
+  // Sin nombre del asistente configurado, el bot firma como ToGo.
+  const previewVars = {
+    businessName: business?.name ?? "",
+    assistantName: business?.botVoice?.assistantName || "ToGo",
+  };
   const failedIds = new Set(data.latestRun?.failedIds ?? []);
   const draftCount = data.stages
     .flatMap((s) => s.messages)
@@ -219,6 +225,8 @@ export function BotMessagesPage() {
         <div className="space-y-1 text-sm text-indigo-900">
           <p className="font-medium">{t("whyVersions.title")}</p>
           <p>{t("whyVersions.body")}</p>
+          <p className="font-medium pt-2">{t("overridesVoice.title")}</p>
+          <p>{t("overridesVoice.body")}</p>
         </div>
       </div>
 
@@ -276,6 +284,7 @@ export function BotMessagesPage() {
                     voice={data.voice}
                     aiAvailable={data.aiAvailable}
                     aiFailed={failedIds.has(message.id)}
+                    previewVars={previewVars}
                   />
                 ))}
               </CardContent>
@@ -349,6 +358,7 @@ export function BotMessagesPage() {
           catalog={data}
           open={aiOpen}
           onClose={() => setAiOpen(false)}
+          previewVars={previewVars}
         />
       )}
     </div>

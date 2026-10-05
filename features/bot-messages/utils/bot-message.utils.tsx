@@ -94,7 +94,8 @@ export const hasErrors = (issues: BotMessageIssue[]) =>
 /** Valores de ejemplo para la vista previa (datos ficticios). */
 const SAMPLE_VALUES: Record<string, string> = {
   businessName: "Tu negocio",
-  assistantName: "Sofía",
+  // Marca por defecto si el negocio no configuró nombre del asistente.
+  assistantName: "ToGo",
   customerFirstName: "Laura",
   customerName: "Laura",
   contactName: "Laura",
@@ -118,9 +119,19 @@ const SAMPLE_VALUES: Record<string, string> = {
   orderRef: " (pedido #1024)",
 };
 
-export function withSampleValues(text: string): string {
+export interface PreviewOverrides {
+  /** Nombre real del negocio (si se conoce). */
+  businessName?: string;
+  /** Nombre del asistente configurado (si hay). */
+  assistantName?: string;
+}
+
+export function withSampleValues(text: string, overrides?: PreviewOverrides): string {
+  const values = { ...SAMPLE_VALUES };
+  if (overrides?.businessName) values.businessName = overrides.businessName;
+  if (overrides?.assistantName) values.assistantName = overrides.assistantName;
   return text
-    .replace(VARIABLE, (match, name: string) => SAMPLE_VALUES[name] ?? match)
+    .replace(VARIABLE, (match, name: string) => values[name] ?? match)
     .replace(/\n{3,}/g, "\n\n");
 }
 
