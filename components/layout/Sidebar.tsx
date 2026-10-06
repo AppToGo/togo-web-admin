@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
+import { useLinkStatus } from "next/link";
 import { Filter, Inbox, MessageCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
@@ -530,7 +531,7 @@ function CollapsibleNavItem({
         href={item.href}
         onClick={onMenuClick}
         className={cn(
-          "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
           isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
           isActive
             ? isAdmin
@@ -551,6 +552,7 @@ function CollapsibleNavItem({
           )}
         />
         {!isCollapsed && <span>{item.name}</span>}
+        <NavLinkPending isCollapsed={isCollapsed} />
       </Link>
     );
   }
@@ -563,7 +565,7 @@ function CollapsibleNavItem({
         href={firstChild.href}
         onClick={onMenuClick}
         className={cn(
-          "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
           "justify-center px-3 py-3",
           isParentActive
             ? isAdmin
@@ -583,6 +585,7 @@ function CollapsibleNavItem({
               : "text-slate-400"
           )}
         />
+        <NavLinkPending isCollapsed />
       </Link>
     );
   }
@@ -639,7 +642,7 @@ function CollapsibleNavItem({
                 href={child.href}
                 onClick={onMenuClick}
                 className={cn(
-                  "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                  "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
                   "gap-3 px-4 py-2.5",
                   isThisChildActive
                     ? isAdmin
@@ -659,12 +662,34 @@ function CollapsibleNavItem({
                   )}
                 />
                 <span>{child.name}</span>
+                <NavLinkPending />
               </Link>
             );
           })}
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Spinner shown on the clicked menu item while its route loads, so the click
+ * gets instant feedback even before the next page (or its loading state)
+ * renders. Must be rendered inside the <Link>.
+ */
+function NavLinkPending({ isCollapsed = false }: { isCollapsed?: boolean }) {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "absolute rounded-full border-2 border-current border-t-transparent animate-spin",
+        isCollapsed
+          ? "top-1 right-1 w-3 h-3"
+          : "right-3 top-1/2 -translate-y-1/2 w-4 h-4"
+      )}
+    />
   );
 }
 
