@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useOrderPaymentProof } from "../hooks/useOrderPaymentProof";
 import { PaymentVerificationCard } from "./PaymentVerificationCard";
+import { HoverTooltip } from "./HoverTooltip";
 import {
   useRejectPaymentProof,
   useUpdateOrderPaymentStatus,
@@ -556,6 +557,61 @@ export function PaymentProofDialog({
 }
 
 /**
+ * Color del ícono según el último análisis del comprobante, con la misma
+ * paleta que el visor (`PaymentVerificationCard`). El nivel lo manda el
+ * backend (`riskLevel`): el front no reumbraliza. Solo informa.
+ */
+function indicatorTone(order: Order): {
+  className: string;
+  tip:
+    | {
+        key: "indicatorTip";
+        level: "verificationHigh" | "verificationMedium" | "verificationLow";
+        score: number;
+      }
+    | { key: "indicatorPending" | "indicatorNoScore" | "tooltip" };
+} {
+  const verification = order.paymentVerification;
+  if (!verification) {
+    return {
+      className: "border-sky-200 bg-sky-50 text-sky-700",
+      tip: { key: "tooltip" },
+    };
+  }
+  if (verification.analysisStatus === "PENDING") {
+    return {
+      className: "border-sky-200 bg-sky-50 text-sky-700",
+      tip: { key: "indicatorPending" },
+    };
+  }
+  const score = verification.confidenceScore;
+  if (verification.analysisStatus === "ANALYZED" && score !== null) {
+    switch (verification.riskLevel) {
+      case "LOW":
+        return {
+          className: "border-green-200 bg-green-50 text-green-600",
+          tip: { key: "indicatorTip", level: "verificationHigh", score },
+        };
+      case "MEDIUM":
+        return {
+          className: "border-amber-200 bg-amber-50 text-amber-600",
+          tip: { key: "indicatorTip", level: "verificationMedium", score },
+        };
+      case "HIGH":
+        return {
+          className: "border-red-200 bg-red-50 text-red-600",
+          tip: { key: "indicatorTip", level: "verificationLow", score },
+        };
+    }
+  }
+  // Sin cupo, sin datos para comparar o análisis fallido: no hay índice.
+  return {
+    className: "border-slate-200 bg-slate-50 text-slate-500",
+    tip: { key: "indicatorNoScore" },
+  };
+}
+
+/**
  * Icono de "hay comprobante" para el tablero y las listas.
  *
  * No renderiza nada cuando el pedido no tiene comprobante, así se puede
@@ -576,6 +632,15 @@ export function PaymentProofIndicator({
 
   if (!order.paymentProofUrl) return null;
 
+  const tone = indicatorTone(order);
+  const tip =
+    tone.tip.key === "indicatorTip"
+      ? t("paymentProof.indicatorTip", {
+          level: t(`paymentProof.${tone.tip.level}`),
+          score: tone.tip.score,
+        })
+      : t(`paymentProof.${tone.tip.key}`);
+
   return (
     // stopPropagation: el click no tiene que abrir además el detalle del
     // pedido ni arrancar un drag de la tarjeta.
@@ -583,26 +648,27 @@ export function PaymentProofIndicator({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        title={t("paymentProof.tooltip")}
-        aria-label={t("paymentProof.tooltip")}
-        className={cn(
-          "inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50",
-          "text-sky-700 transition-opacity hover:opacity-80",
-          variant === "labeled" ? "px-2.5 py-1 text-xs" : "px-1.5 py-0.5",
-          className
-        )}
-      >
-        <Receipt
-          className={variant === "labeled" ? "h-3.5 w-3.5" : "h-3 w-3"}
-        />
-        {variant === "labeled" && <span>{t("paymentProof.badge")}</span>}
-      </button>
+      <HoverTooltip content={tip}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
+          aria-label={tip}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border transition-opacity hover:opacity-80",
+            tone.className,
+            variant === "labeled" ? "px-2.5 py-1 text-xs" : "px-1.5 py-0.5",
+            className
+          )}
+        >
+          <Receipt
+            className={variant === "labeled" ? "h-3.5 w-3.5" : "h-3 w-3"}
+          />
+          {variant === "labeled" && <span>{t("paymentProof.badge")}</span>}
+        </button>
+      </HoverTooltip>
 
       {open && (
         <PaymentProofDialog order={order} open={open} onOpenChange={setOpen} />

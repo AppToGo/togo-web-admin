@@ -36,6 +36,8 @@ const WS_EVENTS = {
   ORDER_UPDATED: 'order:updated',
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
   ORDER_CUSTOMER_EDIT: 'order:customerEdit',
+  ORDER_PAYMENT_PROOF: 'order:paymentProof',
+  ORDER_PAYMENT_VERIFICATION: 'order:paymentVerification',
   METRICS_UPDATED: 'order:metricsUpdated',
   OPERATOR_JOINED: 'operator:joined',
   OPERATOR_LEFT: 'operator:left',
@@ -72,6 +74,15 @@ interface OrderCustomerEditEvent {
   orderId: string;
   phase: 'LOCKED' | 'CONFIRMED' | 'DISCARDED' | 'EXPIRED' | 'INTERRUPTED';
   changed: boolean;
+  timestamp: string;
+}
+
+/**
+ * Llegó el comprobante de un pedido (`order:paymentProof`) o terminó su
+ * análisis (`order:paymentVerification`).
+ */
+interface OrderPaymentProofEvent {
+  orderId: string;
   timestamp: string;
 }
 
@@ -299,6 +310,21 @@ export function useOrdersRealtime(): RealtimeState {
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
     });
+
+    // Sin esto el ícono del comprobante (y su color de confianza) recién
+    // aparecía al recargar la página. El detalle invalida también el
+    // comprobante y su análisis, que cuelgan de la misma key.
+    const refreshPaymentProof = (data: OrderPaymentProofEvent) => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(data.orderId) });
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, 'completed'],
+      });
+    };
+    socket.on(WS_EVENTS.ORDER_PAYMENT_PROOF, refreshPaymentProof);
+    socket.on(WS_EVENTS.ORDER_PAYMENT_VERIFICATION, refreshPaymentProof);
 
     socket.on(WS_EVENTS.ORDER_PAYMENT_UPDATED, (data: OrderPaymentUpdatedEvent) => {
       // Actualizar detalle de orden en cache

@@ -82,7 +82,10 @@
       "PRESIGN_FAILED": "No se pudo abrir el comprobante. Probá de nuevo en un momento.",
       "NOT_FOUND": "Este pedido no tiene comprobante todavía.",
       "FAILED": "No se pudo cargar el comprobante."
-    }
+    },
+    "indicatorTip": "Comprobante: {level} ({score}/100). Clic para verlo",
+    "indicatorPending": "Comprobante: analizando la confianza… Clic para verlo",
+    "indicatorNoScore": "Comprobante sin índice de confianza: revisar manualmente. Clic para verlo"
   },
   "orderNotFound": "No se encontró la orden",
   "includesDelivery": "Incluye domicilio: {fee}",
