@@ -479,3 +479,100 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
     ).toHaveAttribute("src", LATEST_MEDIA.url);
   });
 });
+
+/**
+ * El ícono del comprobante en el tablero toma el color de la confianza del
+ * último análisis y la muestra en un tooltip, sin abrir el visor. Solo
+ * informa: no aprueba ni rechaza el pago.
+ */
+test.describe("Orders — ícono del comprobante en el tablero", () => {
+  async function mockBoardWith(page: Page, order: unknown) {
+    await page.context().clearCookies();
+    await page.addInitScript(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await mockLoginSuccess(page);
+    await mockOrdersDashboard(page);
+    await mockProofScenario(
+      page,
+      () => undefined,
+      () => undefined,
+      () => ({ customerNotified: true, reason: "SENT" })
+    );
+    // Registrada después: Playwright prueba primero la última ruta.
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith("/orders") && !url.searchParams.get("status")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify([order]),
+        });
+      }
+      await route.fallback();
+    });
+  }
+
+  test("confianza baja: ícono en rojo y tooltip con el nivel y el puntaje", async ({
+    page,
+  }) => {
+    await mockBoardWith(page, {
+      ...PROOF_ORDER,
+      paymentVerification: {
+        analysisStatus: "ANALYZED",
+        riskLevel: "HIGH",
+        confidenceScore: 20,
+      },
+    });
+    await openBoard(page);
+
+    const label = "Comprobante: Confianza baja (20/100). Clic para verlo";
+    const icon = page.getByRole("button", { name: label }).first();
+    await expect(icon).toBeVisible();
+    await expect(icon).toHaveClass(/text-red-600/);
+
+    await icon.hover();
+    await expect(page.getByRole("tooltip")).toHaveText(label);
+  });
+
+  test("confianza alta: ícono en verde", async ({ page }) => {
+    await mockBoardWith(page, {
+      ...PROOF_ORDER,
+      paymentVerification: {
+        analysisStatus: "ANALYZED",
+        riskLevel: "LOW",
+        confidenceScore: 91,
+      },
+    });
+    await openBoard(page);
+
+    const icon = page
+      .getByRole("button", {
+        name: "Comprobante: Confianza alta (91/100). Clic para verlo",
+      })
+      .first();
+    await expect(icon).toHaveClass(/text-green-600/);
+  });
+
+  test("sin índice de confianza (sin cupo): ícono neutro que pide revisar", async ({
+    page,
+  }) => {
+    await mockBoardWith(page, {
+      ...PROOF_ORDER,
+      paymentVerification: {
+        analysisStatus: "QUOTA_EXCEEDED",
+        riskLevel: "UNKNOWN",
+        confidenceScore: null,
+      },
+    });
+    await openBoard(page);
+
+    const icon = page
+      .getByRole("button", {
+        name: "Comprobante sin índice de confianza: revisar manualmente. Clic para verlo",
+      })
+      .first();
+    await expect(icon).toHaveClass(/text-slate-500/);
+  });
+});
