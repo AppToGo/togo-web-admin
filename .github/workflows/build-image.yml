@@ -180,3 +180,33 @@ jobs:
           package-name: togo-web-admin
           package-type: container
           min-versions-to-keep: 10
+
+  # Si el build (o la limpieza) falla, Dokploy nunca recibe el webhook y su
+  # notificación de Telegram no se dispara. Este job manda el aviso al mismo
+  # chat. Requiere los secrets TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID; si no
+  # están, no hace nada.
+  notify-failure:
+    needs: [build, cleanup]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Avisar por Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          VERSION: ${{ inputs.version || github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+            echo "Faltan TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID: no se envía el aviso."
+            exit 0
+          fi
+          # La línea del commit que trae la versión ("Release vX.Y.Z: ..."), o la primera.
+          RELEASE=$(printf '%s\n' "$VERSION" | grep -m1 -E 'v[0-9]+\.[0-9]+\.[0-9]+' || printf '%s\n' "$VERSION" | head -1)
+          RELEASE=$(printf '%s' "$RELEASE" | cut -c1-120)
+          TEXT=$(printf '❌ Falló el build de la imagen de togo-web-admin\n\n%s\n\nNo se desplegó nada: producción sigue con la versión anterior.\n\n%s' "$RELEASE" "$RUN_URL")
+          curl -fsS -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=${TEXT}" \
+            --data-urlencode "disable_web_page_preview=true" > /dev/null
+          echo "Aviso enviado a Telegram."
