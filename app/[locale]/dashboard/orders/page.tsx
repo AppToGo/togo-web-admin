@@ -48,6 +48,7 @@ import { useBranchStore } from "@/stores/branch.store";
 import { useOrdersRealtime } from "@/features/orders/hooks";
 import { useConversationsRealtime } from "@/features/conversations/hooks";
 import { TourProvider, useTourContext } from "@/components/tour";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
 
 const BOARD_VIEW_STORAGE_KEY = "togo-orders-board-view";
@@ -56,6 +57,9 @@ const DENSITY_STORAGE_KEY = "togo-orders-card-density";
 function TourHelpButton() {
   const { startTour } = useTourContext();
   const t = useTranslations("orders.tour");
+  const isMobile = useIsMobile();
+  // The tour is not available on mobile
+  if (isMobile) return null;
   return (
     <HoverTooltip content={t("startButton")} side="bottom">
       <button

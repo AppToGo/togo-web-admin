@@ -13,7 +13,9 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const t = useTranslations("navigation");
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  // Only drives the mobile drawer (< lg): starts closed and opens with the
+  // hamburger button. On desktop the sidebar is always visible.
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
   // Seed branch store for users with exactly one branch.
@@ -30,13 +32,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         isCollapsed={sidebarCollapsed}
         onClose={() => setSidebarOpen(false)}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onMenuClick={() => setSidebarOpen(false)}
       />
 
       {/* Mobile menu button - shown when sidebar is closed */}
       <button
         onClick={() => setSidebarOpen(true)}
         className={cn(
-          "fixed top-4 left-4 z-30 lg:hidden",
+          "fixed top-4 right-4 z-30 lg:hidden",
           "w-10 h-10 rounded-card glass",
           "flex items-center justify-center",
           "text-slate-600 hover:text-slate-900",
