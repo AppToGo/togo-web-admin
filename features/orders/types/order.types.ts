@@ -56,6 +56,18 @@ export interface OrderItem {
 }
 
 // Orden completa
+/** Resumen del último análisis del comprobante (lista de pedidos). */
+export interface PaymentVerificationSummary {
+  analysisStatus:
+    | "PENDING"
+    | "ANALYZED"
+    | "INCONCLUSIVE"
+    | "QUOTA_EXCEEDED"
+    | "FAILED";
+  riskLevel: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+  confidenceScore: number | null;
+}
+
 export interface Order {
   id: string;
   /**
@@ -72,6 +84,12 @@ export interface Order {
   paymentProofUrl?: string;
   paymentProofType?: string;
   paymentProofReceivedAt?: Date;
+  /**
+   * Último análisis del comprobante, para pintar el ícono del comprobante.
+   * Ausente si no hay comprobante o todavía no hay análisis. Solo informa:
+   * no aprueba ni rechaza el pago.
+   */
+  paymentVerification?: PaymentVerificationSummary;
   subtotal: number;
   tax: number;
   total: number;

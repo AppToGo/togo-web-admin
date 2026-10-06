@@ -82,7 +82,10 @@
       "PRESIGN_FAILED": "Could not open the receipt. Try again in a moment.",
       "NOT_FOUND": "This order has no receipt yet.",
       "FAILED": "Could not load the receipt."
-    }
+    },
+    "indicatorTip": "Receipt: {level} ({score}/100). Click to view it",
+    "indicatorPending": "Receipt: checking confidence… Click to view it",
+    "indicatorNoScore": "Receipt with no confidence score: review manually. Click to view it"
   },
   "orderNotFound": "Order not found",
   "includesDelivery": "Includes delivery: {fee}",
