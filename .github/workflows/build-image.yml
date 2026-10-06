@@ -1,0 +1,154 @@
+name: Build image (GHCR)
+
+# Construye la imagen Docker del admin en GitHub Actions y la publica en
+# GitHub Container Registry, para que el servidor (Hetzner CX23, 4 GB) no
+# tenga que correr `npm ci` + `next build`: esos builds se quedaban sin
+# memoria y Dokploy cancelaba el deploy (v0.23.8, v0.23.11, v0.23.12).
+#
+# Se dispara con el mismo push a main que crea el tag de release. No puede
+# escuchar `push: tags`, porque el tag lo crea auto-tag-release.yml con el
+# GITHUB_TOKEN y GitHub no dispara otros workflows por eventos de ese token.
+# Por eso replica la detección de versión: si el commit que llega a main no
+# trae un patrón vX.Y.Z en el mensaje, no construye nada.
+#
+# Imagen: ghcr.io/apptogo/togo-web-admin:<vX.Y.Z> y :latest.
+#
+# Configuración (Settings → Secrets and variables → Actions):
+#   - Variables: los mismos build args NEXT_PUBLIC_* que hoy tiene Dokploy
+#     (se hornean en el bundle del cliente, son públicos por diseño).
+#   - Secret DOKPLOY_DEPLOY_WEBHOOK (opcional): URL del webhook de deploy de
+#     la app en Dokploy. Si no existe, la imagen se publica pero no se avisa
+#     a Dokploy, así que este workflow no afecta el deploy actual hasta que
+#     la app de Dokploy se pase a fuente "Docker".
+#
+# Para reconstruir una versión a mano: Actions → "Build image (GHCR)" →
+# Run workflow, con el tag (por ejemplo v0.23.12).
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag a construir (vX.Y.Z)'
+        required: true
+
+concurrency:
+  group: build-image-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/apptogo/togo-web-admin
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      skip: ${{ steps.version.outputs.skip }}
+    steps:
+      - name: Detectar version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION=$(printf '%s' "$COMMIT_MSG" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+          fi
+          if ! printf '%s' "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "No hay version vX.Y.Z en el commit: no es un release, no se construye."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        if: steps.version.outputs.skip == 'false'
+        uses: actions/checkout@v4
+        with:
+          # Manual: construye el tag pedido. Push a main: el commit del release.
+          ref: ${{ inputs.version || github.sha }}
+
+      - name: Login a GHCR
+        if: steps.version.outputs.skip == 'false'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Buildx
+        if: steps.version.outputs.skip == 'false'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build y push
+        if: steps.version.outputs.skip == 'false'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          # Sin attestations: cada una crea una version "untagged" extra en
+          # GHCR y ensucia la limpieza de versiones viejas.
+          provenance: false
+          sbom: false
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE }}:latest
+          # Caché de capas en GitHub: si package-lock.json no cambió,
+          # `npm ci` no se repite y el build tarda bastante menos.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_WS_URL=${{ vars.NEXT_PUBLIC_WS_URL }}
+            NEXT_PUBLIC_APP_NAME=${{ vars.NEXT_PUBLIC_APP_NAME }}
+            NEXT_PUBLIC_APP_VERSION=${{ steps.version.outputs.version }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+            NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID }}
+            NEXT_PUBLIC_META_APP_ID=${{ vars.NEXT_PUBLIC_META_APP_ID }}
+            NEXT_PUBLIC_META_CONFIG_ID=${{ vars.NEXT_PUBLIC_META_CONFIG_ID }}
+            NEXT_PUBLIC_META_GRAPH_VERSION=${{ vars.NEXT_PUBLIC_META_GRAPH_VERSION }}
+            NEXT_PUBLIC_WEB_CATALOG_BASE_URL=${{ vars.NEXT_PUBLIC_WEB_CATALOG_BASE_URL }}
+
+      - name: Avisar a Dokploy
+        if: steps.version.outputs.skip == 'false'
+        env:
+          WEBHOOK: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "DOKPLOY_DEPLOY_WEBHOOK no está configurado: imagen publicada, sin deploy automático."
+            exit 0
+          fi
+          curl -fsS -X POST "$WEBHOOK" > /dev/null
+          echo "Dokploy notificado."
+
+      - name: Resumen
+        if: steps.version.outputs.skip == 'false'
+        run: |
+          echo "### 🐳 \`${{ env.IMAGE }}:${{ steps.version.outputs.version }}\` publicada" >> "$GITHUB_STEP_SUMMARY"
+
+  # Deja solo las últimas 10 versiones de la imagen en GHCR, para que el
+  # almacenamiento no crezca sin límite.
+  cleanup:
+    needs: build
+    if: needs.build.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: togo-web-admin
+          package-type: container
+          min-versions-to-keep: 10
