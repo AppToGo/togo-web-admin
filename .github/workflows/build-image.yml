@@ -14,8 +14,11 @@ name: Build image (GHCR)
 # Imagen: ghcr.io/apptogo/togo-web-admin:<vX.Y.Z> y :latest.
 #
 # Configuración (Settings → Secrets and variables → Actions):
-#   - Variables: los mismos build args NEXT_PUBLIC_* que hoy tiene Dokploy
-#     (se hornean en el bundle del cliente, son públicos por diseño).
+#   - Variable TOGOWEBADMIN: el bloque de build args tal como está en
+#     Dokploy (Build-time Arguments), una línea KEY=VALUE por variable; las
+#     comillas alrededor del valor se quitan. Son las NEXT_PUBLIC_* que se
+#     hornean en el bundle del cliente: públicas por diseño, por eso van
+#     como variable y no como secret. NEXT_PUBLIC_APP_VERSION se toma del tag.
 #   - Secret DOKPLOY_DEPLOY_WEBHOOK (opcional): URL del webhook de deploy de
 #     la app en Dokploy. Si no existe, la imagen se publica pero no se avisa
 #     a Dokploy, así que este workflow no afecta el deploy actual hasta que
@@ -91,6 +94,41 @@ jobs:
         if: steps.version.outputs.skip == 'false'
         uses: docker/setup-buildx-action@v3
 
+      - name: Build args desde la variable TOGOWEBADMIN
+        if: steps.version.outputs.skip == 'false'
+        id: args
+        env:
+          RAW: ${{ vars.TOGOWEBADMIN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          ARGS=$(printf '%s\n' "$RAW" | tr -d '\r' | python3 -c '
+          import os, re, sys
+          out = {}
+          for line in sys.stdin:
+              line = line.strip()
+              if not line or line.startswith("#"):
+                  continue
+              line = re.sub(r"^export\s+", "", line)
+              if "=" not in line:
+                  continue
+              key, val = line.split("=", 1)
+              key, val = key.strip(), val.strip()
+              if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"\x27":
+                  val = val[1:-1]
+              out[key] = val
+          out["NEXT_PUBLIC_APP_VERSION"] = os.environ["VERSION"]
+          if not out.get("NEXT_PUBLIC_API_URL"):
+              sys.exit("Falta NEXT_PUBLIC_API_URL en la variable TOGOWEBADMIN")
+          for k, v in out.items():
+              print(f"{k}={v}")
+          ')
+          echo "Build args: $(printf '%s\n' "$ARGS" | cut -d= -f1 | tr '\n' ' ')"
+          {
+            echo "list<<EOF_ARGS"
+            printf '%s\n' "$ARGS"
+            echo "EOF_ARGS"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build y push
         if: steps.version.outputs.skip == 'false'
         uses: docker/build-push-action@v6
@@ -109,17 +147,7 @@ jobs:
           # `npm ci` no se repite y el build tarda bastante menos.
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
-            NEXT_PUBLIC_WS_URL=${{ vars.NEXT_PUBLIC_WS_URL }}
-            NEXT_PUBLIC_APP_NAME=${{ vars.NEXT_PUBLIC_APP_NAME }}
-            NEXT_PUBLIC_APP_VERSION=${{ steps.version.outputs.version }}
-            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
-            NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID }}
-            NEXT_PUBLIC_META_APP_ID=${{ vars.NEXT_PUBLIC_META_APP_ID }}
-            NEXT_PUBLIC_META_CONFIG_ID=${{ vars.NEXT_PUBLIC_META_CONFIG_ID }}
-            NEXT_PUBLIC_META_GRAPH_VERSION=${{ vars.NEXT_PUBLIC_META_GRAPH_VERSION }}
-            NEXT_PUBLIC_WEB_CATALOG_BASE_URL=${{ vars.NEXT_PUBLIC_WEB_CATALOG_BASE_URL }}
+          build-args: ${{ steps.args.outputs.list }}
 
       - name: Avisar a Dokploy
         if: steps.version.outputs.skip == 'false'
