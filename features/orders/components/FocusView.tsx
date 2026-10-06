@@ -41,25 +41,29 @@ function FocusTab({
       onClick={onPick}
       {...dropHandlers}
       className={cn(
-        "relative text-left rounded-2xl px-3 py-2 border-2 transition-all duration-200",
+        "relative text-left rounded-2xl px-2.5 py-1.5 md:px-3 md:py-2 border-2 transition-all duration-200",
+        // Mobile: tabs keep their natural width inside a horizontal scroll row
+        "shrink-0 md:shrink",
         active || isDragOver
           ? "bg-white shadow-card border-indigo-200"
           : "bg-white/60 hover:bg-white/80 border-transparent"
       )}
     >
       {/* Compact tab: dot + count, with the status name and oldest-order time
-          stacked next to it. */}
-      <div className="flex items-center gap-2.5">
+          stacked next to it. On mobile the count is smaller so the name fits. */}
+      <div className="flex items-center gap-2 md:gap-2.5">
         <span className={cn("w-2 h-2 rounded-full shrink-0", dotVariants({ status }))} />
-        <span className="text-[26px] font-bold tracking-tight text-slate-900 tabular-nums leading-none shrink-0">
+        <span className="text-lg md:text-[26px] font-bold tracking-tight text-slate-900 tabular-nums leading-none shrink-0">
           {count}
         </span>
         <div className="flex flex-col min-w-0">
-          <span className="text-xs font-semibold text-slate-600 truncate">{label}</span>
+          <span className="text-xs font-semibold text-slate-600 whitespace-nowrap md:truncate">
+            {label}
+          </span>
           {oldestMinutes !== null && (
             <span
               className={cn(
-                "text-[11px] font-medium",
+                "text-[11px] font-medium whitespace-nowrap",
                 getLatenessLevel(oldestMinutes) === "critical"
                   ? "text-red-600"
                   : "text-slate-500"
@@ -117,9 +121,12 @@ export function FocusView({
 
   return (
     <div className="h-full min-h-0 flex flex-col gap-3">
-      {/* Column count depends on how many statuses are visible, so it can't be a static class. */}
+      {/* Mobile: a horizontally scrollable row of tabs (the equal-width grid
+          leaves no room for the status name). md+: grid whose column count
+          depends on how many statuses are visible, so it can't be a static
+          class — the inline gridTemplateColumns is ignored while it's flex. */}
       <div
-        className="grid gap-2.5 shrink-0"
+        className="flex gap-2 overflow-x-auto scrollbar-thin pb-1 md:grid md:gap-2.5 md:overflow-visible md:pb-0 shrink-0"
         style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(0, 1fr))` }}
       >
         {statuses.map((status) => {
