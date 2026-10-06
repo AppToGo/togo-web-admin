@@ -272,13 +272,17 @@ export function Sidebar({
           "glass-strong border-r border-white/50",
           "transition-all duration-300 ease-in-out",
           "lg:translate-x-0",
-          !isOpen && "-translate-x-full lg:hidden",
+          !isOpen && "-translate-x-full",
           isCollapsed ? "w-20" : "w-64"
         )}
       >
         {/* Logo */}
         <div className="h-16 shrink-0 flex items-center justify-center border-b border-slate-100/50">
-          <Link href="/dashboard/orders" className="flex items-center gap-3">
+          <Link
+            href="/dashboard/orders"
+            onClick={onMenuClick}
+            className="flex items-center gap-3"
+          >
             <Image
               src="/logo.png"
               alt="Togo"
