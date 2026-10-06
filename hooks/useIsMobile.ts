@@ -5,6 +5,11 @@ import { useSyncExternalStore } from "react";
 // Mobile breakpoint: below Tailwind's `md` (768px).
 const MOBILE_QUERY = "(max-width: 767px)";
 
+/** Non-hook check for effects and callbacks (always false on the server). */
+export function isMobileViewport(): boolean {
+  return typeof window !== "undefined" && window.matchMedia(MOBILE_QUERY).matches;
+}
+
 function subscribe(onChange: () => void) {
   const mql = window.matchMedia(MOBILE_QUERY);
   mql.addEventListener("change", onChange);
@@ -19,7 +24,7 @@ function subscribe(onChange: () => void) {
 export function useIsMobile(): boolean {
   return useSyncExternalStore(
     subscribe,
-    () => window.matchMedia(MOBILE_QUERY).matches,
+    isMobileViewport,
     () => false
   );
 }
