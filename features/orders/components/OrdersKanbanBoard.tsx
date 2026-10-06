@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Minimize2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { KanbanColumn, RAIL_WIDTH } from "./KanbanColumn";
 import { OrderDetailDialog } from "./OrderDetailDialog";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
@@ -135,7 +136,11 @@ export function OrdersKanbanBoard({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   // Stats panel collapsed to a narrow rail (inside the already open sidebar)
   // — independent from the isSidebarOpen/ColumnVisibilityBar cookie.
-  const [statsRailCollapsed, setStatsRailCollapsed] = useState(false);
+  // null = the user hasn't toggled it yet: starts collapsed on mobile (so the
+  // board gets the width) and expanded on desktop.
+  const isMobile = useIsMobile();
+  const [statsRailCollapsedChoice, setStatsRailCollapsed] = useState<boolean | null>(null);
+  const statsRailCollapsed = statsRailCollapsedChoice ?? isMobile;
 
   // Columns collapsed to a rail in the Board view — Delivered and Cancelled
   // start collapsed (the least checked during day-to-day operation).
@@ -407,8 +412,11 @@ export function OrdersKanbanBoard({
                   // With few EXPANDED columns use the full width; otherwise
                   // scroll horizontally. Rails barely take space
                   // (RAIL_WIDTH), so they don't count as a full 320px column.
-                  minWidth:
-                    expandedColumnCount <= 4
+                  // On mobile every expanded column is as wide as the visible
+                  // area, so the first one is seen whole without scrolling.
+                  minWidth: isMobile
+                    ? `calc(${expandedColumnCount * 100}% + ${(visibleColumnCount - 1) * COLUMN_GAP_PX + collapsedVisibleCount * RAIL_WIDTH}px)`
+                    : expandedColumnCount <= 4
                       ? "100%"
                       : `${expandedColumnCount * 320 + collapsedVisibleCount * RAIL_WIDTH}px`,
                 }}
@@ -437,7 +445,7 @@ export function OrdersKanbanBoard({
                       // subtracting the rails' fixed space (rails ignore
                       // flexBasis and use their own fixed width).
                       flexBasis={`calc((100% - ${(visibleColumnCount - 1) * COLUMN_GAP_PX}px - ${collapsedVisibleCount * RAIL_WIDTH}px) / ${expandedColumnCount})`}
-                      minWidth={320}
+                      minWidth={isMobile ? 0 : 320}
                       // Infinite scroll props for COMPLETED column
                       isArchive={isCompletedColumn}
                       hasMore={isCompletedColumn ? hasNextPage : false}
