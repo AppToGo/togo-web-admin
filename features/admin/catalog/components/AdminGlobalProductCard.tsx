@@ -15,11 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { formatSuggestedPrice } from "../utils/format-price";
-import type {
-  GlobalProduct,
-  GlobalProductVariant,
-  AdminGlobalProductCardProps,
-} from "../types/admin-catalog.types";
+import type { GlobalProductVariant, AdminGlobalProductCardProps } from "../types/admin-catalog.types";
 
 const MAX_VISIBLE_VARIANTS = 3;
 

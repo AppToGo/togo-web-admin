@@ -6,7 +6,6 @@ import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useTranslations } from "next-intl";
 import { DateRangeFilter } from "@/features/filters/components";
-import { useDateFilterPreset } from "@/features/filters/stores";
 import {
   KpiSection,
   KpiSectionSkeleton,
@@ -22,7 +21,6 @@ export default function DashboardPage() {
   useAuthGuard();
 
   const user = useCurrentUser();
-  const currentPreset = useDateFilterPreset();
 
   return (
     <DashboardLayout>

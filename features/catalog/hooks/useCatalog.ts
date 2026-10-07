@@ -11,30 +11,7 @@ import {
   type UseQueryOptions,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type {
-  BusinessProduct,
-  GlobalProduct,
-  BusinessCategory,
-  CreateCustomProductDto,
-  ActivateGlobalProductDto,
-  UpdateProductDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  ProductFilters,
-  GlobalCatalogFilters,
-  PaginatedGlobalCatalog,
-  PaginatedBusinessProducts,
-  PaginatedProducts,
-  CatalogProduct,
-  ProductVariant,
-  CreateProductDto,
-  ActivateCatalogProductDto,
-  UpdateCatalogProductDto,
-  CreateVariantDto,
-  UpdateVariantDto,
-  VariantTemplate,
-  CatalogProductsFilters,
-} from "../types/catalog.types";
+import type { BusinessProduct, BusinessCategory, CreateCustomProductDto, ActivateGlobalProductDto, UpdateProductDto, CreateCategoryDto, UpdateCategoryDto, ProductFilters, GlobalCatalogFilters, PaginatedGlobalCatalog, PaginatedBusinessProducts, PaginatedProducts, CatalogProduct, ProductVariant, CreateProductDto, ActivateCatalogProductDto, UpdateCatalogProductDto, CreateVariantDto, UpdateVariantDto, VariantTemplate, CatalogProductsFilters } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
 import type { Business } from "@/types";
 import * as catalogService from "../services/catalog.service";

@@ -91,7 +91,6 @@ function AcceptingStatusBadge({
 export const BranchCard = memo(function BranchCard({
   branch,
   onEdit,
-  onConfigure,
   onDelete,
   onMakeMain,
   onConnectWhatsApp,

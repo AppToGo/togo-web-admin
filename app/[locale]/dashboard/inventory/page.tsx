@@ -14,10 +14,9 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import { useShowProductImages } from "@/features/business/hooks/useBusiness";
 import { BranchInventoryManager } from "@/features/branch-inventory/components/BranchInventoryManager";
-import { Store, Package, Info } from "lucide-react";
+import { Store, Package } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslations } from "next-intl";
 
 function LoadingState() {
@@ -90,7 +89,6 @@ function NoBranchesState() {
 }
 
 export default function InventoryPage() {
-  const t = useTranslations("inventory");
 
   useAuthGuard();
 

@@ -4,15 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import {
-  Trophy,
-  ShoppingCart,
-  DollarSign,
-  Medal,
-  ExternalLink,
-  Users,
-} from "lucide-react";
+import { Trophy, DollarSign, Medal, ExternalLink, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useGlobalCustomerMetrics } from "../../hooks";
 

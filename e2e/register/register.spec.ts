@@ -70,7 +70,7 @@ test.describe("Registration wizard", () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   test.describe("real API", () => {
-    test("successful full registration flow", async ({ page }) => {
+    test("successful full registration flow", async () => {
       const emailPrefix = process.env.E2E_REGISTER_EMAIL_PREFIX;
       if (!emailPrefix) {
         test.skip(
@@ -142,9 +142,7 @@ test.describe("Registration wizard", () => {
       await expect(page).toHaveURL(/\/es\/register/);
     });
 
-    test("password mismatch shows error and disables submit", async ({
-      page,
-    }) => {
+    test("password mismatch shows error and disables submit", async () => {
       await registerPage.goto();
       await registerPage.fillStep1({
         ...VALID_FORM_DATA,
@@ -179,7 +177,7 @@ test.describe("Registration wizard", () => {
       expect(registerCallCount).toBe(0);
     });
 
-    test("step 2 renders business data fields", async ({ page }) => {
+    test("step 2 renders business data fields", async () => {
       await registerPage.goto();
       await registerPage.fillStep1(VALID_FORM_DATA);
       await registerPage.submitStep1();
@@ -261,7 +259,7 @@ test.describe("Registration wizard", () => {
       ).toBeVisible({ timeout: 5_000 });
     });
 
-    test("mock: go back button returns to step 1", async ({ page }) => {
+    test("mock: go back button returns to step 1", async () => {
       await registerPage.goto();
       await registerPage.fillStep1(VALID_FORM_DATA);
       await registerPage.submitStep1();

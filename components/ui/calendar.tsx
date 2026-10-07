@@ -15,7 +15,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 // Componente Calendar - personalizado con colores de la plataforma
 export function Calendar(props: CalendarProps) {
   // Ignoramos className general
-  const { className, ...restProps } = props;
+  const { className: _className, ...restProps } = props;
 
   // Obtenemos los classNames por defecto
   const defaultClassNames = getDefaultClassNames();
@@ -37,7 +37,7 @@ export function Calendar(props: CalendarProps) {
       components={{
         // Botón de día personalizado con colores indigo
         DayButton: (buttonProps) => {
-          const { day, ...rest } = buttonProps;
+          const { day: _day, ...rest } = buttonProps;
           return (
             <button
               {...rest}

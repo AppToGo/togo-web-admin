@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCatalogTranslations } from "@/features/admin/catalog/hooks";
-import { Plus, Search, LayoutGrid, List, Filter, Upload } from "lucide-react";
+import { Plus, Search, Filter, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -119,7 +119,7 @@ export default function GlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
   const isSuperAdmin = useIsSuperAdmin();
-  const { admin, common, catalog } = useAdminCatalogTranslations();
+  const { admin, common } = useAdminCatalogTranslations();
 
   // View state
   const [viewMode, setViewMode] = useState<ViewMode>("grid");

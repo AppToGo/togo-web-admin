@@ -7,7 +7,7 @@
  * Permite configurar disponibilidad, stock y precio por sucursal.
  */
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

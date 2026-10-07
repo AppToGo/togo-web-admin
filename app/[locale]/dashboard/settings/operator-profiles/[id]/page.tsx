@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Shield, Save, Copy, Trash2, Users } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -21,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -78,13 +78,17 @@ export default function EditProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCloneDialog, setShowCloneDialog] = useState(false);
 
-  // Initialize form data when profile loads
-  useEffect(() => {
+  // Inicializa el formulario cuando llega (o cambia) el perfil. Ajuste de
+  // estado durante el render en vez de un efecto: evita una pasada con el
+  // formulario vacío.
+  const [syncedProfile, setSyncedProfile] = useState<typeof profile | null>(null);
+  if (profile !== syncedProfile) {
+    setSyncedProfile(profile);
     if (profile) {
       setName(profile.name);
       setSelectedPermissions(profile.permissions || []);
     }
-  }, [profile]);
+  }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

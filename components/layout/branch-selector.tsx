@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { Building2, ChevronDown, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { useBranches, useCanCreateBranch, useSelectedBranch } from "@/features/branches/hooks";
+import { useBranches, useCanCreateBranch } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import type { Branch } from "@/features/branches/types";
 import {
