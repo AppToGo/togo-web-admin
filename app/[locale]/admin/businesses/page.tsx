@@ -5,7 +5,7 @@
  * Super Admin page for managing business subscriptions
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -64,14 +64,18 @@ export default function BusinessManagementPage() {
   const [isProofQuotaModalOpen, setIsProofQuotaModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
-  // Update filters when debounced search changes
-  useEffect(() => {
+  // Al cambiar la búsqueda (debounced) se actualiza el filtro y se vuelve a
+  // la página 1. Ajuste de estado durante el render en vez de un efecto: se
+  // aplica en el mismo render, sin una pasada intermedia con filtros viejos.
+  const [prevDebouncedSearch, setPrevDebouncedSearch] = useState(debouncedSearch);
+  if (debouncedSearch !== prevDebouncedSearch) {
+    setPrevDebouncedSearch(debouncedSearch);
     setFilters((prev) => ({
       ...prev,
       search: debouncedSearch || undefined,
       page: 1,
     }));
-  }, [debouncedSearch]);
+  }
 
   // Queries
   const { data: businessesData, isLoading: isBusinessesLoading } = useBusinesses(filters);

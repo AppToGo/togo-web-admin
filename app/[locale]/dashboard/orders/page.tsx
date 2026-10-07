@@ -126,19 +126,19 @@ function OrdersPageInner() {
   // start with the defaults and are hydrated from localStorage in an effect
   // to avoid an SSR/client hydration mismatch (same pattern as
   // ColumnVisibilityBar with cookies).
-  const [boardView, setBoardView] = useState<BoardViewMode>("board");
-  const [density, setDensity] = useState<CardDensity>("regular");
-
-  useEffect(() => {
-    const savedView = localStorage.getItem(BOARD_VIEW_STORAGE_KEY);
-    if (savedView === "board" || savedView === "focus" || savedView === "list") {
-      setBoardView(savedView);
-    }
-    const savedDensity = localStorage.getItem(DENSITY_STORAGE_KEY);
-    if (savedDensity === "compact" || savedDensity === "regular") {
-      setDensity(savedDensity);
-    }
-  }, []);
+  // Preferencias guardadas leídas en el inicializador, sin efecto: el
+  // dashboard no se renderiza en el servidor (AuthProvider muestra el spinner
+  // hasta restaurar la sesión), así que no hay riesgo de hidratación.
+  const [boardView, setBoardView] = useState<BoardViewMode>(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(BOARD_VIEW_STORAGE_KEY) : null;
+    return saved === "board" || saved === "focus" || saved === "list" ? saved : "board";
+  });
+  const [density, setDensity] = useState<CardDensity>(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(DENSITY_STORAGE_KEY) : null;
+    return saved === "compact" || saved === "regular" ? saved : "regular";
+  });
 
   const handleBoardViewChange = (view: BoardViewMode) => {
     setBoardView(view);

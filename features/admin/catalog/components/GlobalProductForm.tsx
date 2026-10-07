@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, AlertCircle, Plus, Trash2, ImagePlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -93,40 +93,48 @@ export function GlobalProductForm({
     product?.id
   );
 
-  // Initialize form with product data when editing
-  useEffect(() => {
-    if (product) {
-      // Encontrar la industria asociada a la categoría del producto
-      const productCategory = industryCategories.find(
-        (cat) => cat.id === product.industryCategoryId
+  // Inicializa el formulario con el producto al editar, y otra vez cuando
+  // llegan las categorías y se conoce su industria. Ajuste de estado durante
+  // el render en vez de un efecto. Se compara la industria resuelta (string)
+  // y no el array de categorías: el padre puede pasar un `[]` nuevo en cada
+  // render mientras carga, y eso reiniciaba el formulario sin motivo.
+  const productIndustryId = product
+    ? industryCategories.find((cat) => cat.id === product.industryCategoryId)
+        ?.industries[0]?.id || ""
+    : "";
+  const [syncedFor, setSyncedFor] = useState<{
+    product: typeof product | null;
+    industryId: string;
+  }>({ product: null, industryId: "" });
+  if (
+    product &&
+    (product !== syncedFor.product || productIndustryId !== syncedFor.industryId)
+  ) {
+    setSyncedFor({ product, industryId: productIndustryId });
+    setSelectedIndustryId(productIndustryId);
+
+    setFormData({
+      sku: product.sku,
+      name: product.name,
+      description: product.description || "",
+      image: product.image || "",
+      brand: product.brand || "",
+      industryCategoryId: product.industryCategoryId || "",
+      attributes: product.attributes || {},
+      isActive: product.isActive,
+    });
+    setImagePreview(product.image || "");
+
+    // Convert attributes object to array
+    if (product.attributes) {
+      setAttributes(
+        Object.entries(product.attributes).map(([key, value]) => ({
+          key,
+          value: String(value),
+        }))
       );
-      const productIndustryId = productCategory?.industries[0]?.id || "";
-
-      setSelectedIndustryId(productIndustryId);
-
-      setFormData({
-        sku: product.sku,
-        name: product.name,
-        description: product.description || "",
-        image: product.image || "",
-        brand: product.brand || "",
-        industryCategoryId: product.industryCategoryId || "",
-        attributes: product.attributes || {},
-        isActive: product.isActive,
-      });
-      setImagePreview(product.image || "");
-
-      // Convert attributes object to array
-      if (product.attributes) {
-        setAttributes(
-          Object.entries(product.attributes).map(([key, value]) => ({
-            key,
-            value: String(value),
-          }))
-        );
-      }
     }
-  }, [product, industryCategories]);
+  }
 
   // Filter categories by selected industry
   const filteredCategories = industryCategories.filter((cat) =>

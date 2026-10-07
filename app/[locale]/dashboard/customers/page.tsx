@@ -68,12 +68,10 @@ export default function CustomersPage() {
   // Hook de branches
   const { showBranchSelector, defaultBranchId } = useEffectiveBranches();
 
-  // Efecto para auto-seleccionar sede cuando no hay selector
-  useEffect(() => {
-    if (!showBranchSelector && defaultBranchId) {
-      setSelectedBranchId(defaultBranchId);
-    }
-  }, [showBranchSelector, defaultBranchId]);
+  // Sin selector visible se usa la sede por defecto (valor derivado, no un
+  // efecto que copia el default al estado).
+  const effectiveBranchId =
+    !showBranchSelector && defaultBranchId ? defaultBranchId : selectedBranchId;
 
   // Query de clientes
   const {
@@ -84,7 +82,7 @@ export default function CustomersPage() {
     page,
     limit,
     businessId: selectedBusinessId || undefined,
-    branchId: selectedBranchId || undefined,
+    branchId: effectiveBranchId || undefined,
   });
 
   // Para usuarios normales sin negocio, mostrar error
@@ -122,7 +120,7 @@ export default function CustomersPage() {
           <div className="flex flex-row items-center gap-2">
             {showBranchSelector && (
               <BranchSingleSelector
-                value={selectedBranchId}
+                value={effectiveBranchId}
                 onChange={setSelectedBranchId}
               />
             )}
@@ -157,7 +155,7 @@ export default function CustomersPage() {
             <Suspense fallback={<Skeleton className="h-80" />}>
               <TopCustomersCharts
                 businessId={selectedBusinessId || undefined}
-                branchId={selectedBranchId || undefined}
+                branchId={effectiveBranchId || undefined}
               />
             </Suspense>
           </div>

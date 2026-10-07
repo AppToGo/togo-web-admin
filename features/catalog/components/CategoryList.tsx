@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Folder, Tag, AlertCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -125,15 +125,17 @@ export function CategoryList({
   const [searchKeywords, setSearchKeywords] = useState<KeywordEntry[]>([]);
 
   // handleOpenEdit sets the initial value synchronously (avoids a one-frame
-  // flash of empty chips); this effect re-syncs it afterward when
-  // editingCategory's keywords change externally (e.g. AI regeneration
-  // finishing) — same "sync local draft from external data" pattern as
-  // ProductForm's searchKeywords effect.
-  useEffect(() => {
-    if (editingCategory?.searchKeywords) {
-      setSearchKeywords(editingCategory.searchKeywords);
-    }
-  }, [editingCategory?.searchKeywords]);
+  // flash of empty chips); this re-syncs it afterward when editingCategory's
+  // keywords change externally (e.g. AI regeneration finishing). Ajuste de
+  // estado durante el render en vez de un efecto.
+  const externalKeywords = editingCategory?.searchKeywords;
+  const [syncedKeywords, setSyncedKeywords] = useState<
+    typeof externalKeywords | null
+  >(null);
+  if (externalKeywords !== syncedKeywords) {
+    setSyncedKeywords(externalKeywords);
+    if (externalKeywords) setSearchKeywords(externalKeywords);
+  }
 
   // Filter categories locally
   const filteredCategories = categories.filter((cat) => {

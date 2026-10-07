@@ -381,7 +381,7 @@ export function BranchInventoryManager({
   const handleActivate = useCallback((product: InventoryItem) => {
     if (readOnly) return;
     setActivatingProduct(product);
-  }, []);
+  }, [readOnly]);
 
   const handleConfirmActivate = useCallback(
     (data: {
