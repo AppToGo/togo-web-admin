@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   OrdersKanbanBoard,
