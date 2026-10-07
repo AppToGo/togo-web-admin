@@ -71,7 +71,9 @@ export const useNotificationPreferences = create<NotificationPreferencesStore>()
 
 /**
  * Hook to manually trigger rehydration of notification preferences from localStorage.
- * Call this in a component that mounts after the app is ready (e.g., DashboardLayout or page).
+ * Se llama una vez en DashboardRealtime (layout del dashboard), así las
+ * preferencias aplican al sonido en cualquier pantalla. Las páginas no
+ * necesitan llamarlo, salvo settings/notifications.
  */
 export function useHydrateNotificationPreferences(): void {
   useEffect(() => {

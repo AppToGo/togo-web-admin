@@ -98,5 +98,9 @@
     "RELAY_AMBIGUOUS": "The operator has more than one active direct WhatsApp conversation",
     "RELAY_WINDOW_EXPIRED": "The WhatsApp reply window expired",
     "OUTBOUND_BLOCKED_WINDOW": "Couldn't send: the WhatsApp window already expired"
+  },
+  "notifications": {
+    "humanRequested": "A customer asked to talk to an agent",
+    "view": "View"
   }
 }
