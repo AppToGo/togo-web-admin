@@ -16,7 +16,9 @@ import { useRealtimeStatusStore } from "@/stores/realtime-status.store";
  * Cada socket se abre solo con el permiso de su pantalla: `/orders` con
  * `order.view` (sin él, el usuario no puede ver el pedido que le suena) y
  * `/conversations` con `conversation.view` (el gateway rechaza al resto y el
- * cliente reintentaría para siempre).
+ * cliente reintentaría para siempre). Efecto consciente: con `order.view`
+ * pero sin `conversation.view`, el tab "Conversación" del detalle de pedido
+ * pierde el vivo y depende de refetch.
  */
 export function DashboardRealtime() {
   useHydrateNotificationPreferences();

@@ -50,11 +50,9 @@ togo-web-admin/
 ├── features/auth/
 │   ├── components/          # LoginForm, RegisterForm, etc.
 │   ├── hooks/               # useAuth, useAuthGuard
-│   ├── stores/                  # Stores globales (sucursales, sesión, realtime-status)
-├── services/            # auth.service.ts
 │   └── stores/              # auth.store.ts
-├── services/
-│   └── api.service.ts       # Axios + interceptores + queue
+├── stores/                  # Stores globales (sucursales, sesión, realtime-status)
+├── services/                # api.service.ts (Axios + interceptores), auth-sync, session, csrf
 ├── middleware.ts            # Protección SSR de rutas
 └── SECURITY.md              # Documentación detallada de seguridad
 ```
@@ -260,6 +258,7 @@ Los sockets de `/orders` y `/conversations` se abren **una sola vez** en `app/[l
 - No montes `useOrdersRealtime` / `useConversationsRealtime` en una página: abrirías una segunda conexión y el sonido se duplicaría.
 - Para mostrar el estado de conexión, leelo de `stores/realtime-status.store.ts`.
 - Eventos y payloads: `api-togo/docs/realtime-eventos.md`.
+- Los badges dependen de la API (`unseen-count`, `order:viewed`, `needsAttention`): desplegar primero la API con su migración.
 
 ## 🚀 Cómo ejecutar
 

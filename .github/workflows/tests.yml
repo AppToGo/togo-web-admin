@@ -1,0 +1,42 @@
+name: Tests
+
+# Gate de cada PR: typecheck + lint. Sin build ni e2e (el build ya lo valida
+# build-image.yml en main y los e2e de Playwright necesitan entorno con
+# backend). Los e2e (`npm run test:e2e`) siguen corriendo en local/CI manual
+# con `.env.e2e`.
+#
+# Solo en PRs: igual que la API, para no duplicar minutos en el push a
+# develop que deja el merge.
+
+on:
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint

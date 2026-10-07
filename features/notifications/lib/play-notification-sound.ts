@@ -19,20 +19,42 @@ function removeExpiredClaims(now: number): void {
   }
 }
 
+// Lee la marca y escribe `now` si está vencida. Puede lanzar si localStorage
+// no está disponible (modo privado, bloqueado).
+function checkAndSetClaim(storageKey: string, now: number): boolean {
+  const last = Number(localStorage.getItem(storageKey));
+  if (last && now - last < DEDUPE_WINDOW_MS) return false;
+  localStorage.setItem(storageKey, String(now));
+  removeExpiredClaims(now);
+  return true;
+}
+
 /**
  * Reclama el aviso `key` para esta pestaña. Si otra ya lo reclamó dentro de
- * la ventana, devuelve false. Sin localStorage (modo privado, bloqueado)
+ * la ventana, devuelve false. El check-and-set corre dentro de un Web Lock
+ * (exclusivo por clave), así que dos pestañas que reciben el mismo evento
+ * del socket al mismo tiempo no suenan las dos: el lock serializa el
+ * reclamo. Sin Web Locks o sin localStorage (modo privado, bloqueado)
  * suena siempre: mejor repetido que mudo.
  */
-function claimNotification(key: string): boolean {
+async function claimNotification(key: string): Promise<boolean> {
+  const storageKey = `${DEDUPE_STORAGE_PREFIX}${key}`;
+  const now = Date.now();
   try {
-    const storageKey = `${DEDUPE_STORAGE_PREFIX}${key}`;
-    const now = Date.now();
-    const last = Number(localStorage.getItem(storageKey));
-    if (last && now - last < DEDUPE_WINDOW_MS) return false;
-    localStorage.setItem(storageKey, String(now));
-    removeExpiredClaims(now);
-    return true;
+    if (navigator.locks) {
+      return await navigator.locks.request(storageKey, async () => {
+        try {
+          return checkAndSetClaim(storageKey, now);
+        } catch {
+          return true;
+        }
+      });
+    }
+  } catch {
+    // Web Locks no disponible o rechazado: camino sin lock.
+  }
+  try {
+    return checkAndSetClaim(storageKey, now);
   } catch {
     return true;
   }
@@ -46,7 +68,7 @@ function claimNotification(key: string): boolean {
  * admin esté abierto en varias pestañas.
  */
 export async function playNotificationSound(dedupeKey?: string): Promise<void> {
-  if (dedupeKey && !claimNotification(dedupeKey)) return;
+  if (dedupeKey && !(await claimNotification(dedupeKey))) return;
 
   try {
     const audio = new Audio(SOUND_PATH);
