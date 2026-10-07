@@ -22,17 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Package,
-  Power,
-  PowerOff,
-  Plus,
-  Minus,
-  X,
-  Check,
-  AlertTriangle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Package, Power, PowerOff, Plus, Minus, X, AlertTriangle } from "lucide-react";
 
 interface BulkInventoryActionsProps {
   selectedCount: number;

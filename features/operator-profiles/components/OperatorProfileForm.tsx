@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useId, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Shield, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

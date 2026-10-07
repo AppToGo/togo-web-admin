@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useMemo, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   OrdersKanbanBoard,
@@ -18,18 +18,7 @@ import {
 } from "@/features/filters/stores";
 import { useDateFilterParams } from "@/features/filters/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import {
-  SearchIcon,
-  X,
-  Filter,
-  Check,
-  Clock,
-  Home,
-  Store,
-  HelpCircle,
-  Utensils,
-} from "lucide-react";
+import { SearchIcon, Filter, Check, Clock, Home, Store, HelpCircle, Utensils } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -130,7 +119,6 @@ function OrdersPageInner() {
   // Filtros globales de fecha
   const dateParams = useDateFilterParams();
   const datePreset = useDateFilterPreset();
-  const { range: dateRange } = useDateFilterStore();
 
   const [searchQuery, setSearchQuery] = useState("");
 

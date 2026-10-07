@@ -165,10 +165,6 @@ export function CategoryList({
     });
   };
 
-  // Check if any filter is active
-  const hasActiveFilters =
-    filters.name || filters.isActive !== null || filters.industryCategoryId;
-
   // Generate slug from name
   const generateSlug = (name: string): string => {
     return name

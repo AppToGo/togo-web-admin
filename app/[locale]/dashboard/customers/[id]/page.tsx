@@ -5,7 +5,6 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { CustomerDetail } from "@/features/customers";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
 
 interface CustomerDetailPageProps {
   params: Promise<{
@@ -68,7 +67,6 @@ function CustomerDetailLoading() {
 export default function CustomerDetailPage({
   params,
 }: CustomerDetailPageProps) {
-  const t = useTranslations("customers");
   useAuthGuard();
 
   // El socket de `/conversations` (pestaña "Conversación" del pedido y

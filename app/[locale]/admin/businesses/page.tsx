@@ -51,7 +51,6 @@ const DEFAULT_FILTERS: BusinessFiltersType = {
 
 export default function BusinessManagementPage() {
   const t = useTranslations("settings");
-  const tc = useTranslations("common");
   const { isLoading: isAuthLoading } = useAuthGuard();
   const isSuperAdmin = useIsSuperAdmin();
 

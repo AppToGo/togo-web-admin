@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  Plus,
-  Tags,
-  TrendingUp,
-  CheckCircle2,
-  XCircle,
-  Search,
-} from "lucide-react";
+import { Plus, Tags, CheckCircle2, XCircle, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";

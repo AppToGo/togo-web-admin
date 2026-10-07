@@ -8,16 +8,7 @@
 
 import apiClient from "@/services/api.service";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
-import type {
-  Customer,
-  CustomerWithMetrics,
-  CustomerMetrics,
-  PaginatedCustomersResponse,
-  GlobalCustomerMetrics,
-  GetCustomersParams,
-  UpdateCustomerRequest,
-  PaginatedOrdersResponse,
-} from "../types";
+import type { Customer, CustomerMetrics, PaginatedCustomersResponse, GlobalCustomerMetrics, GetCustomersParams, UpdateCustomerRequest, PaginatedOrdersResponse } from "../types";
 
 /**
  * Obtener el businessId del usuario autenticado

@@ -13,15 +13,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { ADMIN_BUSINESS_KEYS } from "./query-keys";
 import * as adminBusinessService from "../services/admin-business.service";
-import type {
-  BusinessWithSubscription,
-  BusinessFilters,
-  PaginatedBusinesses,
-  UpdateBranchesLimitDto,
-  UpdateProofQuotaDto,
-  RecordPaymentDto,
-  SendNotificationDto,
-} from "../types/business-subscription.types";
+import type { BusinessFilters, PaginatedBusinesses, UpdateBranchesLimitDto, UpdateProofQuotaDto, RecordPaymentDto, SendNotificationDto } from "../types/business-subscription.types";
 
 // ============================================================================
 // QUERY HOOKS
@@ -159,7 +151,6 @@ export function useRecordPayment() {
  * Hook to send notification to a business
  */
 export function useSendNotification() {
-  const queryClient = useQueryClient();
   const t = useTranslations("admin-businesses");
 
   return useMutation({

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { X, CheckSquare, Users } from "lucide-react";
+import { X, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SelectionBarProps {

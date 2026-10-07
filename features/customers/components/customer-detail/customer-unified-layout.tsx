@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   MessageCircle,
@@ -36,10 +35,6 @@ interface CustomerUnifiedLayoutProps {
 export function CustomerUnifiedLayout({
   customer,
   customerId,
-  notes,
-  onNotesChange,
-  onNotesSave,
-  isSavingNotes,
   conversationHref,
 }: CustomerUnifiedLayoutProps) {
   const t = useTranslations("customers");

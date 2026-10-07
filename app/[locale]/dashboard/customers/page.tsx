@@ -4,11 +4,6 @@ import { Suspense, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
-import {
-  useDateFilterStore,
-  useDateFilterPreset,
-} from "@/features/filters/stores";
-import { useDateFilterParams } from "@/features/filters/hooks";
 import { CustomersTable, TopCustomersCharts } from "@/features/customers";
 import { useCustomers } from "@/features/customers";
 import {
@@ -57,16 +52,11 @@ function CustomersLoading() {
 
 export default function CustomersPage() {
   const t = useTranslations("customers");
-  const tc = useTranslations("common");
 
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
-
-  // Filtros globales de fecha
-  const dateParams = useDateFilterParams();
-  const datePreset = useDateFilterPreset();
 
   // Estado local de paginación
   const [page, setPage] = useState(1);

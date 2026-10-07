@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useId } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

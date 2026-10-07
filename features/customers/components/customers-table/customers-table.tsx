@@ -58,7 +58,6 @@ export function CustomersTable({
   isLoading,
   pagination,
   onPageChange,
-  onSortChange,
 }: CustomersTableProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
