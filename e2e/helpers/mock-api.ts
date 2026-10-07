@@ -90,6 +90,43 @@ export async function mockLoginSuccess(
 }
 
 /**
+ * Mock only the backend login call (POST [glob]v1/auth/login) WITHOUT
+ * intercepting the internal set-cookie route.
+ *
+ * Use this when the test needs to control the second step of the flow
+ * (e.g. simulate a set-cookie failure) by adding a separate route handler
+ * for the internal set-cookie endpoint.
+ */
+export async function mockLoginBackendSuccess(page: Page): Promise<void> {
+  await page.route("**/v1/auth/login", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(FAKE_LOGIN_RESPONSE),
+    })
+  );
+}
+
+/**
+ * Simulate an already-authenticated browser: refresh cookie present upfront
+ * AND a healthy /api/auth/refresh endpoint.
+ *
+ * Use this for "authenticated user visits a public auth route" scenarios —
+ * the middleware redirects to /dashboard on the server side, and the mocked
+ * refresh keeps AuthProvider from bouncing back to /login.
+ */
+export async function mockAuthenticatedSession(page: Page): Promise<void> {
+  await page.context().addCookies([FAKE_REFRESH_TOKEN_COOKIE]);
+  await page.route("**/api/auth/refresh", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(FAKE_LOGIN_RESPONSE),
+    })
+  );
+}
+
+/**
  * Mock a failed login response.
  *
  * @param status - HTTP status code (401 for invalid credentials, 403 for forbidden)
@@ -240,6 +277,67 @@ export async function mockRegisterWithDelay(
       status: 201,
       contentType: "application/json",
       body: JSON.stringify(FAKE_REGISTER_RESPONSE),
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Forgot-password mocks
+//
+// The flow involves ONE network call (fetch, NOT Axios):
+//   POST {API_BASE_URL}/auth/forgot-password — request reset email
+//
+// The backend always responds 200, even for unknown emails.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Mock a successful POST to the forgot-password endpoint (200).
+ */
+export async function mockForgotPasswordSuccess(page: Page): Promise<void> {
+  await page.route(/\/auth\/forgot-password$/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "Reset email queued" }),
+    })
+  );
+}
+
+/**
+ * Mock a failed POST to the forgot-password endpoint.
+ *
+ * @param status  - HTTP error status (e.g. 429 | 500)
+ * @param message - Error message returned by the backend
+ */
+export async function mockForgotPasswordError(
+  page: Page,
+  status: 429 | 500,
+  message: string
+): Promise<void> {
+  await page.route(/\/auth\/forgot-password$/, (route) =>
+    route.fulfill({
+      status,
+      contentType: "application/json",
+      body: JSON.stringify({ message, statusCode: status }),
+    })
+  );
+}
+
+/**
+ * Mock a slow POST to the forgot-password endpoint to test the loading state.
+ *
+ * @param delayMs - Milliseconds to wait before resolving (default: 1500ms)
+ */
+export async function mockForgotPasswordWithDelay(
+  page: Page,
+  delayMs = 1500
+): Promise<void> {
+  await page.route(/\/auth\/forgot-password$/, async (route) => {
+    await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "Reset email queued" }),
     });
   });
 }

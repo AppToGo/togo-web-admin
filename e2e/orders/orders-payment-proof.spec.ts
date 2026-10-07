@@ -2,6 +2,11 @@ import { test, expect, type Page } from "playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 import { mockLoginSuccess } from "../helpers/mock-api";
 import { mockOrdersDashboard } from "../helpers/mock-orders-api";
+import {
+  blockUnmockedApiCalls,
+  blockRealtimeSockets,
+  mockRefreshSuccess,
+} from "./board";
 
 /**
  * Regresión: el visor "Comprobante de pago" abierto DESDE el detalle del
@@ -244,8 +249,14 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
       localStorage.clear();
       sessionStorage.clear();
     });
+    // Same hardening as the board specs: with the real backend up,
+    // unmocked calls 401 the fake token (session bounce) and the realtime
+    // socket invalidates queries in a loop.
+    await blockUnmockedApiCalls(page);
+    await blockRealtimeSockets(page);
     await mockLoginSuccess(page);
     await mockOrdersDashboard(page);
+    await mockRefreshSuccess(page);
     await mockProofScenario(
       page,
       (body) => paymentUpdates.push(body),
@@ -478,6 +489,140 @@ test.describe("Orders — comprobante de pago desde el detalle", () => {
       page.getByRole("img", { name: "Comprobante de pago" })
     ).toHaveAttribute("src", LATEST_MEDIA.url);
   });
+
+  test("el visor abre desde la tarjeta sin pasar por el detalle", async ({
+    page,
+  }) => {
+    await openBoard(page);
+
+    // The card indicator (no verification embedded → default tooltip).
+    // Its click must NOT open the order detail behind it.
+    await page
+      .getByRole("button", { name: "Ver el comprobante de pago" })
+      .first()
+      .click();
+
+    await expect(
+      page.getByRole("heading", { name: "Comprobante de pago" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Detalle del Pedido" })
+    ).toHaveCount(0);
+  });
+
+  test("comprobante con media id vigente se muestra descargable", async ({
+    page,
+  }) => {
+    const signedUrl = "https://example.com/whatsapp-signed/abc123.jpg";
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith("/orders/proof01/payment-proof")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            receivedAt: new Date().toISOString(),
+            proofType: "image",
+            media: {
+              kind: "WHATSAPP_MEDIA_ID",
+              url: signedUrl,
+              mimeType: "image/jpeg",
+              filename: "comprobante.jpg",
+            },
+            proofs: [],
+          }),
+        });
+      }
+      await route.fallback();
+    });
+    await openBoard(page);
+
+    await page.getByText("#104").click();
+    const drawer = page.getByRole("dialog");
+    await expect(
+      drawer.getByRole("heading", { name: "Detalle del Pedido" })
+    ).toBeVisible();
+    await drawer
+      .getByRole("button", { name: "Ver el comprobante de pago" })
+      .click();
+
+    await expect(
+      page.getByRole("heading", { name: "Comprobante de pago" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("img", { name: "Comprobante de pago" })
+    ).toHaveAttribute("src", signedUrl);
+  });
+
+  test("endpoint 404 muestra no-disponible sin colgar el visor", async ({
+    page,
+  }) => {
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith("/orders/proof01/payment-proof")) {
+        return route.fulfill({
+          status: 404,
+          contentType: "application/json",
+          body: JSON.stringify({ message: "No proof" }),
+        });
+      }
+      await route.fallback();
+    });
+    await openBoard(page);
+
+    await page.getByText("#104").click();
+    const drawer = page.getByRole("dialog");
+    await expect(
+      drawer.getByRole("heading", { name: "Detalle del Pedido" })
+    ).toBeVisible();
+    await drawer
+      .getByRole("button", { name: "Ver el comprobante de pago" })
+      .click();
+
+    await expect(
+      page.getByRole("heading", { name: "Comprobante de pago" })
+    ).toBeVisible();
+    await expect(
+      page.getByText("Este pedido no tiene comprobante todavía.")
+    ).toBeVisible({ timeout: 5_000 });
+  });
+
+  test("pago ya confirmado no ofrece el botón Pago recibido", async ({
+    page,
+  }) => {
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith("/orders/proof01")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ ...PROOF_ORDER, paymentStatus: "PAID" }),
+        });
+      }
+      await route.fallback();
+    });
+    await openBoard(page);
+
+    await page.getByText("#104").click();
+    const drawer = page.getByRole("dialog");
+    await expect(
+      drawer.getByRole("heading", { name: "Detalle del Pedido" })
+    ).toBeVisible();
+    await drawer
+      .getByRole("button", { name: "Ver el comprobante de pago" })
+      .click();
+
+    const viewer = viewerDialog(page);
+    await expect(
+      page.getByRole("heading", { name: "Comprobante de pago" })
+    ).toBeVisible();
+    await expect(viewer.getByText("Pago confirmado")).toBeVisible({
+      timeout: 5_000,
+    });
+    await expect(
+      viewer.getByRole("button", { name: "Pago recibido" })
+    ).toHaveCount(0);
+  });
 });
 
 /**
@@ -492,8 +637,11 @@ test.describe("Orders — ícono del comprobante en el tablero", () => {
       localStorage.clear();
       sessionStorage.clear();
     });
+    await blockUnmockedApiCalls(page);
+    await blockRealtimeSockets(page);
     await mockLoginSuccess(page);
     await mockOrdersDashboard(page);
+    await mockRefreshSuccess(page);
     await mockProofScenario(
       page,
       () => undefined,
