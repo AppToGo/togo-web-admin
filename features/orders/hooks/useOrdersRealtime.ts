@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
 import { useBranchStore } from '@/stores/branch.store';
+import { useSessionStore } from '@/stores/session.store';
 import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
@@ -93,6 +94,23 @@ interface OperatorEvent {
   userId: string;
 }
 
+
+/**
+ * ¿El pedido cuenta en el badge de Pedidos? Mismo alcance que
+ * `GET /orders/unseen-count`: las sucursales seleccionadas o, sin selección,
+ * las sedes de la sesión del usuario (OWNER: todas). Sin sedes de sesión
+ * cargadas no se puede saber y suena: mejor de más que mudo.
+ */
+function isOrderInBadgeScope(branchId: string | null | undefined): boolean {
+  const { selectedBranchIds } = useBranchStore.getState();
+  if (selectedBranchIds.length > 0) {
+    return !!branchId && selectedBranchIds.includes(branchId);
+  }
+  if (useAuthStore.getState().user?.role === 'OWNER') return true;
+  const sessionBranchIds = useSessionStore.getState().branches.map((b) => b.id);
+  if (sessionBranchIds.length === 0) return true;
+  return !!branchId && sessionBranchIds.includes(branchId);
+}
 
 // Utilidad para console.debug solo en desarrollo
 const debugLog = (message: string, ...args: unknown[]) => {
@@ -289,18 +307,11 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
       });
       refreshUnseenCount();
 
-      // Solo suena si el pedido es de una sucursal seleccionada (sin
-      // selección = todas), igual que el badge, que con sucursales
-      // seleccionadas tampoco cuenta un pedido sin branchId. Se lee del
-      // store al llegar el evento para no reconectar el socket al cambiar
-      // de sucursal.
-      const { selectedBranchIds } = useBranchStore.getState();
-      if (
-        selectedBranchIds.length > 0 &&
-        (!data.branchId || !selectedBranchIds.includes(data.branchId))
-      ) {
-        return;
-      }
+      // Solo suena si el pedido cuenta en el badge: de una sucursal
+      // seleccionada o, sin selección, de una sede asignada al usuario
+      // (OWNER ve todas, igual que el backend). Se lee de los stores al
+      // llegar el evento para no reconectar el socket al cambiar de sucursal.
+      if (!isOrderInBadgeScope(data.branchId)) return;
 
       // Trigger notification (sound + toast) based on user preferences
       notifyNewOrderRef.current(data.orderId, data.orderNumber);
