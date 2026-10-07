@@ -19,8 +19,10 @@ import {
  * suites stay deterministic.
  *
  *   - Without order.create there is no "Nuevo pedido" button
- *   - Completed infinite query fires paginated on mount (full scroll
- *     pagination pending the visibility-toggle product fix)
+ *   - Completed infinite query fires paginated on mount, and scrolling the
+ *     Entregada column past the archive sentinel fetches the next page
+ *     (regression: the sentinel observer used to miss the sentinel's
+ *     (re)mount after expanding the rail, leaving pagination dead)
  */
 
 function completedOrder(orderNumber: number) {
@@ -78,13 +80,35 @@ test.describe("Orders — permisos y paginación", () => {
     ).toHaveCount(0);
   });
 
+  test("el toggle Entregada muestra y oculta su columna", async ({ page }) => {
+    // Regression: the visibility toggle persisted the cookie but the board
+    // never rendered/removed the column.
+    await mockBoardPermissions(page);
+    await openBoard(page);
+
+    // Entregada starts collapsed to a rail — expand it so the column
+    // heading exists before exercising the visibility toggle.
+    const rail = page
+      .getByRole("button", { name: "Expandir columna" })
+      .filter({ hasText: "Entregada" });
+    await rail.click();
+
+    const columnHeading = page.getByRole("heading", { name: "Entregada" });
+    await expect(columnHeading).toBeVisible();
+
+    const toggle = page
+      .getByRole("button", { name: /Entregada/ })
+      .filter({ hasText: "Entregada" })
+      .last();
+    await toggle.click();
+    await expect(columnHeading).toHaveCount(0);
+
+    await toggle.click();
+    await expect(columnHeading).toBeVisible();
+  });
+
   test("las completadas se piden paginadas al montar", async ({ page }) => {
     const requestedPages: string[] = [];
-    // NOTE: full infinite-scroll pagination is blocked by a product bug —
-    // the Entregada visibility toggle flips its persisted state but the
-    // board never renders the column, so the archive sentinel can't be
-    // reached. This pins the query wiring; the scroll half stays pending
-    // on that fix.
     await mockBoardPermissions(page);
     await page.route("**/v1/**", async (route) => {
       const url = new URL(route.request().url());
@@ -113,5 +137,53 @@ test.describe("Orders — permisos y paginación", () => {
       .poll(() => requestedPages.length, { timeout: 10_000 })
       .toBeGreaterThan(0);
     expect(requestedPages[0]).toBe("1");
+  });
+
+  test("el scroll de Entregada pide la página siguiente", async ({ page }) => {
+    const requestedPages: string[] = [];
+    await mockBoardPermissions(page);
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.searchParams.get("status") === "COMPLETED") {
+        const pageParam = url.searchParams.get("page") ?? "1";
+        requestedPages.push(pageParam);
+        // Every page reports more available so the sentinel stays armed.
+        // Numbers in the 9xx range avoid colliding with the dashboard mock.
+        const orders = [completedOrder(900 + Number(pageParam))];
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            orders,
+            total: 30,
+            page: Number(pageParam),
+            totalPages: 3,
+            hasMore: true,
+          }),
+        });
+      }
+      await route.fallback();
+    });
+    await openBoard(page);
+
+    // Entregada starts collapsed to a rail (no sentinel) — expand it, then
+    // scroll its list to the bottom so the archive sentinel fires page 2.
+    const rail = page
+      .getByRole("button", { name: "Expandir columna" })
+      .filter({ hasText: "Entregada" });
+    await rail.click();
+    await expect(
+      page.getByRole("heading", { name: "Entregada" })
+    ).toBeVisible();
+
+    // Scrolling the last card to the bottom of the column list brings the
+    // archive sentinel into view, which fires the next page.
+    await page.getByText("#901", { exact: true }).scrollIntoViewIfNeeded();
+
+    await expect
+      .poll(() => requestedPages.length, { timeout: 10_000 })
+      .toBeGreaterThan(1);
+    expect(requestedPages).toContain("2");
+    await expect(page.getByText("#902", { exact: true })).toBeVisible();
   });
 });

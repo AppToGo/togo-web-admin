@@ -107,6 +107,9 @@ export const KanbanColumn = memo(function KanbanColumn({
     [status, onStatusChange]
   );
 
+  // The active observer, shared with the sentinel callback ref below.
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
   // IntersectionObserver for infinite scroll (archive columns only)
   useEffect(() => {
     if (!isArchive || !onLoadMore || !hasMore) return;
@@ -123,6 +126,7 @@ export const KanbanColumn = memo(function KanbanColumn({
         threshold: 0.1,
       }
     );
+    observerRef.current = observer;
 
     if (sentinelRef.current) {
       observer.observe(sentinelRef.current);
@@ -130,8 +134,23 @@ export const KanbanColumn = memo(function KanbanColumn({
 
     return () => {
       observer.disconnect();
+      observerRef.current = null;
     };
   }, [isArchive, hasMore, isFetchingNextPage, onLoadMore]);
+
+  // Callback ref: the sentinel (re)mounts without re-running the effect
+  // above — e.g. expanding a collapsed rail after data arrived, or any
+  // collapse/expand cycle. Observe it whenever it (re)appears so the
+  // archive pagination can't go dead.
+  const setSentinelRef = useCallback((node: HTMLDivElement | null) => {
+    const prev = sentinelRef.current;
+    sentinelRef.current = node;
+    const observer = observerRef.current;
+    if (observer) {
+      if (prev) observer.unobserve(prev);
+      if (node) observer.observe(node);
+    }
+  }, []);
 
   // Collapsed rail: a narrow column that still accepts drops, showing only
   // the status dot, the count and a vertical label. Clicking expands it;
@@ -291,7 +310,7 @@ export const KanbanColumn = memo(function KanbanColumn({
             {/* Sentinel div for infinite scroll (archive columns only) */}
             {isArchive && (
               <div
-                ref={sentinelRef}
+                ref={setSentinelRef}
                 className="h-4 w-full"
                 aria-hidden="true"
               />
