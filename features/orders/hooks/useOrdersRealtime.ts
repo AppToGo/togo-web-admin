@@ -115,7 +115,7 @@ export interface RealtimeState {
 // de la pestaña del browser activo indefinidamente.
 const MAX_CONSECUTIVE_AUTH_FAILURES = 3;
 
-export function useOrdersRealtime(): RealtimeState {
+export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const authFailureCountRef = useRef(0);
@@ -207,7 +207,7 @@ export function useOrdersRealtime(): RealtimeState {
   });
 
   useEffect(() => {
-    if (!APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || user?.role === 'SUPER_ADMIN') {
+    if (!enabled || !APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || user?.role === 'SUPER_ADMIN') {
       setState({ isConnected: false, isConnecting: false, error: null });
       return;
     }
@@ -290,13 +290,14 @@ export function useOrdersRealtime(): RealtimeState {
       refreshUnseenCount();
 
       // Solo suena si el pedido es de una sucursal seleccionada (sin
-      // selección = todas), igual que el badge. Se lee del store al llegar
-      // el evento para no reconectar el socket al cambiar de sucursal.
+      // selección = todas), igual que el badge, que con sucursales
+      // seleccionadas tampoco cuenta un pedido sin branchId. Se lee del
+      // store al llegar el evento para no reconectar el socket al cambiar
+      // de sucursal.
       const { selectedBranchIds } = useBranchStore.getState();
       if (
-        data.branchId &&
         selectedBranchIds.length > 0 &&
-        !selectedBranchIds.includes(data.branchId)
+        (!data.branchId || !selectedBranchIds.includes(data.branchId))
       ) {
         return;
       }
@@ -395,7 +396,7 @@ export function useOrdersRealtime(): RealtimeState {
       socketRef.current = null;
       setState({ isConnected: false, isConnecting: false, error: null });
     };
-  }, [businessId, getToken, queryClient, refreshAndReconnect]);
+  }, [enabled, businessId, getToken, queryClient, refreshAndReconnect]);
 
   return state;
 }

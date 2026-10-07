@@ -29,6 +29,7 @@ import {
   useOrderMetrics,
   useMarkOrderViewed,
 } from "../hooks";
+import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import type { Order, OrderStatus } from "../types";
 import {
   getKanbanColumns,
@@ -351,16 +352,22 @@ export function OrdersKanbanBoard({
   );
 
   // Abrir un pedido nuevo lo descuenta del badge de Pedidos del sidebar
-  // para todo el negocio. Solo los CONFIRMED: los demás ya no cuentan.
+  // para todo el negocio. Solo los CONFIRMED: los demás ya no cuentan. Un
+  // SUPER_ADMIN mirando el tablero de un cliente no es alguien del negocio
+  // (el backend también lo ignora).
+  const isSuperAdmin = useIsSuperAdmin();
   const { mutate: markViewed } = markOrderViewed;
   const handleOrderClick = useCallback(
     (orderId: string) => {
       setSelectedOrderId(orderId);
-      if (ordersByStatus.CONFIRMED?.some((order) => order.id === orderId)) {
+      if (
+        !isSuperAdmin &&
+        ordersByStatus.CONFIRMED?.some((order) => order.id === orderId)
+      ) {
         markViewed(orderId);
       }
     },
-    [ordersByStatus, markViewed]
+    [isSuperAdmin, ordersByStatus, markViewed]
   );
 
   const handleCloseDetail = useCallback(() => {

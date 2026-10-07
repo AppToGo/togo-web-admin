@@ -22,7 +22,7 @@ export function useInboxNotification() {
 
   const notifyHumanRequested = useCallback(
     (sessionId: string): void => {
-      if (enableSounds) void playNotificationSound();
+      if (enableSounds) void playNotificationSound(`human:${sessionId}`);
       if (!enableNotifications) return;
 
       // En el inbox la conversación ya aparece en la lista: sin botón "Ver"
@@ -33,7 +33,7 @@ export function useInboxNotification() {
           ? undefined
           : {
               label: t("view"),
-              onClick: () => router.push(`${INBOX_PATH}?session=${sessionId}`),
+              onClick: () => router.push(`${INBOX_PATH}?session=${encodeURIComponent(sessionId)}`),
             },
       });
     },

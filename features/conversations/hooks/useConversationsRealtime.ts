@@ -315,9 +315,11 @@ export function useConversationsRealtime(
     socket.on(WS_EVENTS.CONTROL, (event: ConversationControlEvent) => {
       invalidateSession(event);
       // Un cliente pidió asesor: suena para todos si está sin asignar, y
-      // solo para el asignado si ya tiene dueño.
+      // solo para el asignado si ya tiene dueño. Solo BOT → PENDING_HUMAN es
+      // una solicitud nueva; HUMAN → PENDING_HUMAN es el fin de un relay que
+      // devuelve la conversación a la espera, y no debe sonar.
       const isNewRequest =
-        event.control === "PENDING_HUMAN" && event.previousControl !== "PENDING_HUMAN";
+        event.control === "PENDING_HUMAN" && event.previousControl === "BOT";
       const isForMe =
         !event.assignedUserId ||
         event.assignedUserId === useAuthStore.getState().user?.userId;

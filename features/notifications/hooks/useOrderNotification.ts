@@ -22,10 +22,13 @@ export function useOrderNotification() {
   /**
    * Plays the new order sound notification (if sounds are enabled)
    */
-  const playNewOrderSound = useCallback(async (): Promise<void> => {
-    if (!enableSounds) return;
-    await playNotificationSound();
-  }, [enableSounds]);
+  const playNewOrderSound = useCallback(
+    async (orderId?: string): Promise<void> => {
+      if (!enableSounds) return;
+      await playNotificationSound(orderId ? `order:${orderId}` : undefined);
+    },
+    [enableSounds]
+  );
 
   /**
    * Shows a toast notification for a new order
@@ -49,7 +52,7 @@ export function useOrderNotification() {
       const formattedOrderNumber = formatOrderNumber(orderId, orderNumber);
 
       // Play sound first (non-blocking)
-      playNewOrderSound();
+      playNewOrderSound(orderId);
 
       // Show toast
       showNewOrderToast(formattedOrderNumber);

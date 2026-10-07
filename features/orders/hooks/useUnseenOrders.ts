@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useSelectedBranchIds } from "@/stores/branch.store";
+import { useDateFilterParams } from "@/features/filters/hooks";
 import { getUnseenOrdersCount, markOrderViewed } from "../services/order.service";
 import { ORDERS_KEYS } from "../types/order-cache.types";
 
@@ -11,17 +12,21 @@ const UNSEEN_COUNT_STALE_TIME = 60 * 1000;
 
 /**
  * Badge de Pedidos del sidebar: pedidos CONFIRMED que nadie del negocio ha
- * abierto, en las sucursales seleccionadas. No hace polling: lo refrescan
- * los eventos `order:created`, `order:updated` y `order:viewed` del socket
- * global (useOrdersRealtime).
+ * abierto, con los mismos filtros que el tablero (sucursales seleccionadas y
+ * rango de fechas). Así todo pedido que cuenta se puede abrir desde la
+ * columna y bajar el badge. No hace polling: lo refrescan los eventos
+ * `order:created`, `order:updated` y `order:viewed` del socket global
+ * (useOrdersRealtime).
  */
 export function useUnseenOrdersCount(enabled: boolean = true): number {
   const businessId = useEffectiveBusinessId();
   const branchIds = useSelectedBranchIds();
+  const { dateFrom, dateTo } = useDateFilterParams();
+  const filters = { branchIds, dateFrom, dateTo };
 
   const { data } = useQuery({
-    queryKey: ORDERS_KEYS.unseenCount(businessId, branchIds),
-    queryFn: () => getUnseenOrdersCount(businessId!, branchIds),
+    queryKey: ORDERS_KEYS.unseenCount(businessId, filters),
+    queryFn: () => getUnseenOrdersCount(businessId!, filters),
     enabled: enabled && !!businessId,
     staleTime: UNSEEN_COUNT_STALE_TIME,
   });

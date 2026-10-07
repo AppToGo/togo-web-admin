@@ -13,19 +13,21 @@ import { useRealtimeStatusStore } from "@/stores/realtime-status.store";
  * sonido de pedido nuevo / solicitud de asesor y los badges del sidebar
  * funcionen en cualquier pantalla, con una sola conexión por namespace.
  *
- * `/conversations` solo se abre con `conversation.view`: el gateway rechaza
- * al resto y el cliente reintentaría para siempre.
+ * Cada socket se abre solo con el permiso de su pantalla: `/orders` con
+ * `order.view` (sin él, el usuario no puede ver el pedido que le suena) y
+ * `/conversations` con `conversation.view` (el gateway rechaza al resto y el
+ * cliente reintentaría para siempre).
  */
 export function DashboardRealtime() {
   useHydrateNotificationPreferences();
 
   const isSuperAdmin = useIsSuperAdmin();
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
-  const canViewConversations =
-    !isSuperAdmin && !permissionsLoading && hasPermission("conversation.view");
+  const canUse = (permission: string) =>
+    !isSuperAdmin && !permissionsLoading && hasPermission(permission);
 
-  const orders = useOrdersRealtime();
-  const conversations = useConversationsRealtime(canViewConversations);
+  const orders = useOrdersRealtime(canUse("order.view"));
+  const conversations = useConversationsRealtime(canUse("conversation.view"));
 
   const setOrdersConnected = useRealtimeStatusStore((s) => s.setOrdersConnected);
   const setConversationsConnected = useRealtimeStatusStore(

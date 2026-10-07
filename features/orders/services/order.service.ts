@@ -202,17 +202,30 @@ export async function deleteOrder(
   await apiClient.delete(`${getBaseUrl(businessId)}/${orderId}`);
 }
 
+export interface UnseenOrdersFilters {
+  branchIds?: string[];
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 /**
  * Pedidos CONFIRMED que nadie del negocio ha abierto (badge de Pedidos del
- * sidebar). Sin `branchIds` cuenta todo el negocio.
+ * sidebar), con los mismos filtros que el tablero. Sin `branchIds` cuenta
+ * todas las sucursales.
  */
 export async function getUnseenOrdersCount(
   businessId: string,
-  branchIds?: string[]
+  { branchIds, dateFrom, dateTo }: UnseenOrdersFilters = {}
 ): Promise<number> {
   const { data } = await apiClient.get<{ count: number }>(
     `${getBaseUrl(businessId)}/unseen-count`,
-    { params: branchIds?.length ? { branchIds } : undefined }
+    {
+      params: {
+        ...(branchIds?.length && { branchIds }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo }),
+      },
+    }
   );
   return data.count;
 }
