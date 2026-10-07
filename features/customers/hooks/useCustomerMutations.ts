@@ -94,12 +94,12 @@ export function useUpdateCustomer() {
 
       // Mostrar error
       const errorMessage = getHumanizedErrorMessage(err);
-      toast.error(errorMessage || t("errors.updateFailed"));
+      toast.error(errorMessage || t("notifications.updateError"));
     },
 
     // Success
     onSuccess: () => {
-      toast.success(t("updateSuccess"));
+      toast.success(t("notifications.updateSuccess"));
     },
 
     // Revalidar después de la mutación
