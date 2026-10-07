@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Lock, Store, Wifi, WifiOff } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 import {
   useInboxConversations,
   useInboxSummary,
-  useConversationsRealtime,
 } from "@/features/conversations/hooks";
+import { useConversationsConnected } from "@/stores/realtime-status.store";
 import { InboxLayout } from "@/features/conversations/components/inbox/inbox-layout";
 import { InboxList } from "@/features/conversations/components/inbox/inbox-list";
 import { InboxThreadPanel } from "@/features/conversations/components/inbox/inbox-thread-panel";
@@ -46,15 +46,15 @@ export default function InboxPage() {
 
   const [activeTab, setActiveTab] = useState<InboxTab>("waiting");
   const [search, setSearch] = useState("");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-
   // Deep-link `?session=<id>` (ej. "Abrir conversación" desde el detalle del
-  // cliente). Se lee tras montar, no en el initializer de useState: en SSR no
-  // hay `window` y un valor distinto en el primer render rompería la hidratación.
-  useEffect(() => {
-    const session = new URLSearchParams(window.location.search).get("session");
-    if (session) setSelectedSessionId(session);
-  }, []);
+  // cliente), leído en el inicializador. No hay riesgo de hidratación: el
+  // dashboard no se renderiza en el servidor (AuthProvider muestra el spinner
+  // hasta restaurar la sesión).
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("session")
+      : null
+  );
 
   // Ajuste de estado durante el render (no un useEffect, mismo patrón que
   // la página de "sin pedido" de Fase B): sin esto, un SUPER_ADMIN que
@@ -67,7 +67,8 @@ export default function InboxPage() {
     setSelectedSessionId(null);
   }
 
-  const { isConnected } = useConversationsRealtime(canViewInbox);
+  // El socket lo abre DashboardRealtime (layout del dashboard).
+  const isConnected = useConversationsConnected();
   const { data: summary } = useInboxSummary(canViewInbox);
   const { data: conversations, isLoading, isAllBusinessesSelected } =
     useInboxConversations(

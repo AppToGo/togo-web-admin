@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useId, useCallback } from "react";
+import { useState, useId, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Shield, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,8 +43,11 @@ export function OperatorProfileForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // Initialize form with profile data when editing
-  useEffect(() => {
+  // Inicializa el formulario con el perfil al editar. Ajuste de estado
+  // durante el render en vez de un efecto.
+  const [syncedProfile, setSyncedProfile] = useState<typeof profile | null>(null);
+  if (profile !== syncedProfile) {
+    setSyncedProfile(profile);
     if (profile) {
       setFormData({
         name: profile.name,
@@ -53,7 +55,7 @@ export function OperatorProfileForm({
       setErrors({});
       setTouched({});
     }
-  }, [profile]);
+  }
 
   // Validate field
   const validateField = useCallback((name: string, value: string): string => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,8 @@ import { useConversations, isWindowOpen } from "@/features/conversations";
 import { useCustomer, useUpdateCustomer } from "../../hooks";
 import { CustomerUnifiedLayout } from "./customer-unified-layout";
 import { MAX_NOTES_LENGTH } from "../../constants";
+
+const NOT_SYNCED = Symbol("not-synced");
 
 interface CustomerDetailProps {
   customerId: string;
@@ -46,6 +48,14 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Mutación
   const updateCustomer = useUpdateCustomer();
 
+  // Último valor de notas confirmado (cargado o guardado).
+  const savedNotesRef = useRef<string | null>(null);
+  // Solo una edición real del usuario (vía onNotesChange) habilita el
+  // auto-save. Comparar el valor con debounce contra el estado no alcanza:
+  // el setNotes del init es asíncrono y el "" inicial previo a la carga se
+  // confunde con una edición, haciendo PATCH al montar y borrando notas.
+  const userEditedRef = useRef(false);
+
   // Guardar notas - memoizado para evitar recreaciones
   const handleSaveNotes = useCallback(async () => {
     if (!customer) return;
@@ -55,24 +65,49 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
         customerId,
         data: { notes: debouncedNotes.slice(0, MAX_NOTES_LENGTH) },
       });
+      savedNotesRef.current = debouncedNotes;
+      userEditedRef.current = false;
     } catch {
       // Error ya manejado en el hook
     }
   }, [customer, customerId, debouncedNotes, updateCustomer]);
 
-  // Initialize notes from customer data
-  useEffect(() => {
-    if (customer?.notes !== undefined) {
-      setNotes(customer.notes || "");
-    }
-  }, [customer?.notes]);
+  // Edición del usuario: única vía que habilita el auto-save.
+  const handleNotesChange = useCallback((value: string) => {
+    userEditedRef.current = true;
+    setNotes(value);
+  }, []);
 
-  // Auto-save notes when debounced value changes
+  // Inicializa las notas con las del cliente (y las resincroniza si cambian
+  // en el servidor). Ajuste de estado durante el render en vez de un efecto.
+  const serverNotes = customer?.notes;
+  // Centinela distinto de cualquier valor real: si el cliente ya viene del
+  // caché al montar, el primer render igual sincroniza.
+  const [syncedServerNotes, setSyncedServerNotes] = useState<
+    typeof serverNotes | typeof NOT_SYNCED
+  >(NOT_SYNCED);
+  if (serverNotes !== syncedServerNotes) {
+    setSyncedServerNotes(serverNotes);
+    if (serverNotes !== undefined) setNotes(serverNotes || "");
+  }
+  // La referencia al valor confirmado se actualiza en un efecto (no se
+  // escriben refs durante el render); corre antes que el auto-save de abajo.
   useEffect(() => {
-    if (customer && debouncedNotes !== (customer.notes || "")) {
+    if (serverNotes !== undefined) savedNotesRef.current = serverNotes || "";
+  }, [serverNotes]);
+
+  // Auto-save notes when debounced value changes — solo tras edición real
+  // y sin un guardado ya en vuelo.
+  useEffect(() => {
+    if (
+      customer &&
+      userEditedRef.current &&
+      !updateCustomer.isPending &&
+      debouncedNotes !== savedNotesRef.current
+    ) {
       handleSaveNotes();
     }
-  }, [debouncedNotes, customer, handleSaveNotes]);
+  }, [debouncedNotes, customer, handleSaveNotes, updateCustomer.isPending]);
 
   // Loading skeleton
   if (isLoadingCustomer) {
@@ -129,7 +164,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
       customer={customer}
       customerId={customerId}
       notes={notes}
-      onNotesChange={setNotes}
+      onNotesChange={handleNotesChange}
       onNotesSave={handleSaveNotes}
       isSavingNotes={updateCustomer.isPending}
       conversationHref={conversationHref}

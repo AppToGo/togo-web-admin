@@ -40,27 +40,19 @@ togo-web-admin/
 │   ├── login/               # Página de login
 │   ├── register/            # Página de registro
 │   ├── forgot-password/     # Recuperación de contraseña
-│   ├── dashboard/           # Dashboard principal
+│   ├── dashboard/           # Dashboard principal (layout.tsx monta los sockets globales)
 │   ├── layout.tsx           # Root layout (con AuthProvider)
-│   ├── providers.tsx        # React Query provider
-│   └── globals.css          # Estilos globales
-│   ├── login/               # Página de login
-│   ├── register/            # Página de registro
-│   ├── forgot-password/     # Recuperación de contraseña
-│   ├── dashboard/           # Dashboard principal
-│   ├── layout.tsx           # Root layout
 │   ├── providers.tsx        # React Query provider
 │   └── globals.css          # Estilos globales
 ├── components/
 │   ├── ui/                  # Button, Input, Card
-│   └── layout/              # DashboardLayout, Sidebar, Header
+│   └── layout/              # DashboardLayout, Sidebar, Header, DashboardRealtime
 ├── features/auth/
 │   ├── components/          # LoginForm, RegisterForm, etc.
 │   ├── hooks/               # useAuth, useAuthGuard
-│   ├── services/            # auth.service.ts
 │   └── stores/              # auth.store.ts
-├── services/
-│   └── api.service.ts       # Axios + interceptores + queue
+├── stores/                  # Stores globales (sucursales, sesión, realtime-status)
+├── services/                # api.service.ts (Axios + interceptores), auth-sync, session, csrf
 ├── middleware.ts            # Protección SSR de rutas
 └── SECURITY.md              # Documentación detallada de seguridad
 ```
@@ -258,6 +250,15 @@ function authenticateRequest(req) {
 **Si decides mantener el header (por logging/debug):**
 - Úsalo solo para logging, NUNCA para lógica de negocio
 - El JWT es la única fuente de verdad
+
+## 🔔 Tiempo real (sockets)
+
+Los sockets de `/orders` y `/conversations` se abren **una sola vez** en `app/[locale]/dashboard/layout.tsx` (`components/layout/DashboardRealtime.tsx`). Por eso el sonido de pedido nuevo o de solicitud de asesor, y los badges del sidebar (Pedidos e Inbox), funcionan en cualquier pantalla.
+
+- No montes `useOrdersRealtime` / `useConversationsRealtime` en una página: abrirías una segunda conexión y el sonido se duplicaría.
+- Para mostrar el estado de conexión, leelo de `stores/realtime-status.store.ts`.
+- Eventos y payloads: `api-togo/docs/realtime-eventos.md`.
+- Los badges dependen de la API (`unseen-count`, `order:viewed`, `needsAttention`): desplegar primero la API con su migración.
 
 ## 🚀 Cómo ejecutar
 

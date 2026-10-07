@@ -9,28 +9,11 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardProps } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Store,
-  Package,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  X,
-  Search,
-} from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { Store, Package, AlertTriangle, CheckCircle, XCircle, X, Search } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import {
   useBranchInventory,
   useActivateProduct,
@@ -256,7 +239,6 @@ export function BranchInventoryManager({
   showProductImages = false,
 }: BranchInventoryManagerProps) {
   const t = useTranslations("inventory");
-  const tc = useTranslations("common");
 
   // State - initialize with main branch or first available branch
   const [selectedBranchId, setSelectedBranchId] = useState<string>(() => {
@@ -337,7 +319,6 @@ export function BranchInventoryManager({
   const {
     data: inventoryData,
     isLoading,
-    refetch,
   } = useBranchInventory(businessId, selectedBranchId || null, inventoryFilters);
 
   // Mutations
@@ -400,7 +381,7 @@ export function BranchInventoryManager({
   const handleActivate = useCallback((product: InventoryItem) => {
     if (readOnly) return;
     setActivatingProduct(product);
-  }, []);
+  }, [readOnly]);
 
   const handleConfirmActivate = useCallback(
     (data: {
@@ -487,8 +468,6 @@ export function BranchInventoryManager({
     },
     [setAvailabilityMutation]
   );
-
-  const selectedBranch = branches.find((b) => b.id === selectedBranchId);
 
   return (
     <div className="space-y-6">

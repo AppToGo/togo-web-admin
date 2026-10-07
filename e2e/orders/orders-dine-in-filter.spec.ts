@@ -2,6 +2,11 @@ import { test, expect } from "playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 import { mockLoginSuccess } from "../helpers/mock-api";
 import { mockOrdersDashboard, MOCK_ORDER_NUMBERS } from "../helpers/mock-orders-api";
+import {
+  blockUnmockedApiCalls,
+  blockRealtimeSockets,
+  mockRefreshSuccess,
+} from "./board";
 
 /**
  * Regression test for docs/architecture/pedidos-en-mesa.md, Fase 1.
@@ -26,8 +31,13 @@ test.describe("Orders — filtro de tipo de entrega (dine-in)", () => {
     // **/v1/** en bloque y hace fallback() a este handler para lo que no
     // reconoce (Playwright ejecuta el route registrado más recientemente
     // primero).
+    // Hardening: con el backend real levantado, lo no mockeado responde
+    // 401 al token falso (rebote de sesión) y el socket invalida en loop.
+    await blockUnmockedApiCalls(page);
+    await blockRealtimeSockets(page);
     await mockLoginSuccess(page);
     await mockOrdersDashboard(page);
+    await mockRefreshSuccess(page);
   });
 
   test("dineIn y pickup se filtran de forma independiente", async ({ page }) => {

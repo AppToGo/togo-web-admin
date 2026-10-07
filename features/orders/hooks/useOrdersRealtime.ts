@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
-import { useBusinessStore } from '@/features/business/stores/business.store';
+import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
+import { useBranchStore } from '@/stores/branch.store';
+import { useSessionStore } from '@/stores/session.store';
 import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
@@ -36,6 +38,7 @@ const WS_EVENTS = {
   ORDER_UPDATED: 'order:updated',
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
   ORDER_CUSTOMER_EDIT: 'order:customerEdit',
+  ORDER_VIEWED: 'order:viewed',
   ORDER_PAYMENT_PROOF: 'order:paymentProof',
   ORDER_PAYMENT_VERIFICATION: 'order:paymentVerification',
   METRICS_UPDATED: 'order:metricsUpdated',
@@ -48,6 +51,7 @@ const WS_EVENTS = {
 interface OrderCreatedEvent {
   orderId: string;
   orderNumber?: string | number | null;
+  branchId?: string | null;
   status: string;
   timestamp: string;
 }
@@ -91,6 +95,23 @@ interface OperatorEvent {
 }
 
 
+/**
+ * ¿El pedido cuenta en el badge de Pedidos? Mismo alcance que
+ * `GET /orders/unseen-count`: las sucursales seleccionadas o, sin selección,
+ * las sedes de la sesión del usuario (OWNER: todas). Sin sedes de sesión
+ * cargadas no se puede saber y suena: mejor de más que mudo.
+ */
+function isOrderInBadgeScope(branchId: string | null | undefined): boolean {
+  const { selectedBranchIds } = useBranchStore.getState();
+  if (selectedBranchIds.length > 0) {
+    return !!branchId && selectedBranchIds.includes(branchId);
+  }
+  if (useAuthStore.getState().user?.role === 'OWNER') return true;
+  const sessionBranchIds = useSessionStore.getState().branches.map((b) => b.id);
+  if (sessionBranchIds.length === 0) return true;
+  return !!branchId && sessionBranchIds.includes(branchId);
+}
+
 // Utilidad para console.debug solo en desarrollo
 const debugLog = (message: string, ...args: unknown[]) => {
   if (process.env.NODE_ENV === 'development') {
@@ -112,15 +133,17 @@ export interface RealtimeState {
 // de la pestaña del browser activo indefinidamente.
 const MAX_CONSECUTIVE_AUTH_FAILURES = 3;
 
-export function useOrdersRealtime(): RealtimeState {
+export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const authFailureCountRef = useRef(0);
 
   const user = useAuthStore((state) => state.user);
-  const { selectedBusinessId } = useBusinessStore();
-  const businessId = selectedBusinessId || user?.businessId || null;
-  
+  // useEffectiveBusinessId() en vez de `selectedBusinessId || user?.businessId`:
+  // ignora un selectedBusinessId obsoleto en localStorage (mismo criterio que
+  // useConversationsRealtime).
+  const businessId = useEffectiveBusinessId();
+
   // Use the order notification hook for sound + toast notifications
   const { notifyNewOrder } = useOrderNotification();
   
@@ -202,7 +225,7 @@ export function useOrdersRealtime(): RealtimeState {
   });
 
   useEffect(() => {
-    if (!APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || user?.role === 'SUPER_ADMIN') {
+    if (!enabled || !APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || user?.role === 'SUPER_ADMIN') {
       setState({ isConnected: false, isConnecting: false, error: null });
       return;
     }
@@ -272,15 +295,30 @@ export function useOrdersRealtime(): RealtimeState {
       handlingAuthError = false;
     });
 
+    // Badge de Pedidos del sidebar (todas las variantes de sucursales)
+    const refreshUnseenCount = () => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.unseenCount(businessId) });
+    };
+
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
       // Invalidar cache de órdenes LIVE del negocio (nueva orden siempre va a CONFIRMED)
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
-      
+      refreshUnseenCount();
+
+      // Solo suena si el pedido cuenta en el badge: de una sucursal
+      // seleccionada o, sin selección, de una sede asignada al usuario
+      // (OWNER ve todas, igual que el backend). Se lee de los stores al
+      // llegar el evento para no reconectar el socket al cambiar de sucursal.
+      if (!isOrderInBadgeScope(data.branchId)) return;
+
       // Trigger notification (sound + toast) based on user preferences
       notifyNewOrderRef.current(data.orderId, data.orderNumber);
     });
+
+    // Alguien del negocio abrió un pedido nuevo: baja el badge.
+    socket.on(WS_EVENTS.ORDER_VIEWED, refreshUnseenCount);
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
       // Actualizar detalle de orden en cache
@@ -293,6 +331,8 @@ export function useOrdersRealtime(): RealtimeState {
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
+      // Si salió de CONFIRMED sin abrirse, deja de contar en el badge.
+      refreshUnseenCount();
       
       // Si la orden llegó a COMPLETED, invalidar también el cache de completadas
       if (data.newStatus === ARCHIVE_STATUS) {
@@ -367,7 +407,7 @@ export function useOrdersRealtime(): RealtimeState {
       socketRef.current = null;
       setState({ isConnected: false, isConnecting: false, error: null });
     };
-  }, [businessId, getToken, queryClient, refreshAndReconnect]);
+  }, [enabled, businessId, getToken, queryClient, refreshAndReconnect]);
 
   return state;
 }

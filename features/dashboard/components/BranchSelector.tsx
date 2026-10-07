@@ -54,9 +54,6 @@ export function BranchSelector({ className }: BranchSelectorProps) {
   // Verificar si está seleccionada una sucursal específica
   const hasSelection = selectedBranchId !== null;
 
-  // No renderizar si no debe mostrarse el selector (solo 1 sucursal o cargando permisos)
-  if (!showBranchSelector && !isLoading) return null;
-
   // Estado de carga
   if (isLoading) {
     return (
@@ -72,7 +69,9 @@ export function BranchSelector({ className }: BranchSelectorProps) {
     );
   }
 
-  // Estado de error
+  // Estado de error — antes del early-return de abajo: con la sesión caída
+  // no hay sucursales y `showBranchSelector` es false, así que si este
+  // chequeo va después, el error nunca se muestra.
   if (error) {
     return (
       <div
@@ -87,7 +86,8 @@ export function BranchSelector({ className }: BranchSelectorProps) {
     );
   }
 
-  // Sin sucursales disponibles
+  // Sin sucursales disponibles — mismo motivo que el error: con 0
+  // sucursales `showBranchSelector` es false y el early-return lo taparía.
   if (branches.length === 0) {
     return (
       <div
@@ -101,6 +101,10 @@ export function BranchSelector({ className }: BranchSelectorProps) {
       </div>
     );
   }
+
+  // No renderizar si no debe mostrarse el selector (solo 1 sucursal o
+  // cargando permisos) — después de error/vacío para no taparlos.
+  if (!showBranchSelector && !isLoading) return null;
 
   return (
     <Popover>

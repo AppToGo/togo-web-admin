@@ -17,13 +17,7 @@ import {
 } from "lucide-react";
 import type { Order, OrderItem, PaymentStatus } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
-import {
-  formatCurrency,
-  getTimeElapsed,
-  canCompleteOrder,
-  getPaymentStatusLabel,
-  isCustomerEditing,
-} from "../utils/order-status.utils";
+import { formatCurrency, getTimeElapsed, getPaymentStatusLabel, isCustomerEditing } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import {
   kanbanCardVariants,
@@ -39,8 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
-import { toast } from "sonner";
-import { extractErrorMessage } from "@/lib/error.utils";
 import {
   getElapsedMinutes,
   getLatenessLevel,
@@ -178,20 +170,6 @@ export function PaymentStatusEditor({
       </DropdownMenu>
     </div>
   );
-}
-
-// Función para formatear el método de pago - uses translations
-function formatPaymentMethod(method?: string, t?: ReturnType<typeof useTranslations>): string {
-  if (!method) return t?.("paymentMethods.NOT_SPECIFIED") || "NOT_SPECIFIED";
-  const key = method.toUpperCase();
-  return t?.(`paymentMethods.${key}`) || key;
-}
-
-// Función para formatear el estado de pago - uses translations
-function formatPaymentStatus(status?: string, t?: ReturnType<typeof useTranslations>): string {
-  if (!status) return t?.("paymentStatus.UNKNOWN") || "UNKNOWN";
-  const key = status.toUpperCase();
-  return t?.(`paymentStatus.${key}`) || key;
 }
 
 // Tipo de orden basado en deliveryType (docs/architecture/pedidos-en-mesa.md)
@@ -420,7 +398,6 @@ export const OrderCard = memo(function OrderCard({
   order,
   onStatusChange,
   onClick,
-  badgeVariant = "slate",
   currentStatus,
   dragColor = "indigo",
   density = "regular",
@@ -433,19 +410,6 @@ export const OrderCard = memo(function OrderCard({
   // Mientras el cliente edita el pedido no se puede arrastrar a otra
   // columna: el backend rechaza mandarlo a producción.
   const customerEditing = isCustomerEditing(order);
-
-  const handleCompleteClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const validation = canCompleteOrder(order);
-      if (!validation.valid) {
-        toast.error(validation.message ? t(`errors.${validation.message}`) : t("errors.cannotComplete"));
-        return;
-      }
-      onStatusChange?.(order.id, "COMPLETED");
-    },
-    [order, onStatusChange, t]
-  );
 
   const handleCardClick = useCallback(() => {
     onClick?.();

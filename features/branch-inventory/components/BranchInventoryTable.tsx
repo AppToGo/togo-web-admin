@@ -36,15 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import {
-  Package,
-  AlertTriangle,
-  Check,
-  X,
-  TrendingUp,
-  TrendingDown,
-  MoreHorizontal,
-} from "lucide-react";
+import { Package, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { InventoryItem } from "../types";
 

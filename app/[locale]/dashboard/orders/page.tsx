@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useMemo, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   OrdersKanbanBoard,
@@ -18,18 +18,7 @@ import {
 } from "@/features/filters/stores";
 import { useDateFilterParams } from "@/features/filters/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import {
-  SearchIcon,
-  X,
-  Filter,
-  Check,
-  Clock,
-  Home,
-  Store,
-  HelpCircle,
-  Utensils,
-} from "lucide-react";
+import { SearchIcon, Filter, Check, Clock, Home, Store, HelpCircle, Utensils } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -45,8 +34,6 @@ import {
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
-import { useOrdersRealtime } from "@/features/orders/hooks";
-import { useConversationsRealtime } from "@/features/conversations/hooks";
 import { TourProvider, useTourContext } from "@/components/tour";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
@@ -125,22 +112,13 @@ function OrdersPageInner() {
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
 
-  // Initialize WebSocket connection for realtime order updates
-  useOrdersRealtime();
-  // Conexión al namespace `/conversations` (no solo `/orders`): el tab
-  // "Conversación" del detalle de pedido (OrderConversationPanel) lee del
-  // mismo cache (`CONVERSATIONS_KEYS.detail`) que actualiza este socket. Sin
-  // esto, un mensaje del cliente respondiendo desde acá no llegaba hasta que
-  // algo más refrescara esa query — el operador no veía la respuesta sin
-  // recargar. Mismo hook que usa la página de Inbox (`useConversationsRealtime`),
-  // sin gate de permiso: el tab de conversación del pedido se muestra a
-  // cualquiera que vea el pedido, no sólo a quien tiene `conversation.view`.
-  useConversationsRealtime();
+  // Los sockets de `/orders` y `/conversations` (este último alimenta el tab
+  // "Conversación" del detalle) los abre DashboardRealtime en el layout del
+  // dashboard, para que el sonido y los badges funcionen en cualquier pantalla.
 
   // Filtros globales de fecha
   const dateParams = useDateFilterParams();
   const datePreset = useDateFilterPreset();
-  const { range: dateRange } = useDateFilterStore();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -148,19 +126,19 @@ function OrdersPageInner() {
   // start with the defaults and are hydrated from localStorage in an effect
   // to avoid an SSR/client hydration mismatch (same pattern as
   // ColumnVisibilityBar with cookies).
-  const [boardView, setBoardView] = useState<BoardViewMode>("board");
-  const [density, setDensity] = useState<CardDensity>("regular");
-
-  useEffect(() => {
-    const savedView = localStorage.getItem(BOARD_VIEW_STORAGE_KEY);
-    if (savedView === "board" || savedView === "focus" || savedView === "list") {
-      setBoardView(savedView);
-    }
-    const savedDensity = localStorage.getItem(DENSITY_STORAGE_KEY);
-    if (savedDensity === "compact" || savedDensity === "regular") {
-      setDensity(savedDensity);
-    }
-  }, []);
+  // Preferencias guardadas leídas en el inicializador, sin efecto: el
+  // dashboard no se renderiza en el servidor (AuthProvider muestra el spinner
+  // hasta restaurar la sesión), así que no hay riesgo de hidratación.
+  const [boardView, setBoardView] = useState<BoardViewMode>(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(BOARD_VIEW_STORAGE_KEY) : null;
+    return saved === "board" || saved === "focus" || saved === "list" ? saved : "board";
+  });
+  const [density, setDensity] = useState<CardDensity>(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(DENSITY_STORAGE_KEY) : null;
+    return saved === "compact" || saved === "regular" ? saved : "regular";
+  });
 
   const handleBoardViewChange = (view: BoardViewMode) => {
     setBoardView(view);

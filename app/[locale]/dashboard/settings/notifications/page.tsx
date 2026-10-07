@@ -20,7 +20,6 @@ import {
 
 export default function NotificationSettingsPage() {
   const t = useTranslations("settings");
-  const tc = useTranslations("common");
   const {
     enableSounds,
     enableNotifications,

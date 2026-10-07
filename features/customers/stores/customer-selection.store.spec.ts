@@ -4,13 +4,8 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  useCustomerSelectionStore,
-  useSelectedCustomerCount,
-  useHasCustomerSelection,
-  useIsCustomerSelected,
-} from "./customer-selection.store";
+import { describe, it, expect, beforeEach } from "vitest";
+import { useCustomerSelectionStore } from "./customer-selection.store";
 
 describe("customer-selection.store", () => {
   beforeEach(() => {
@@ -115,7 +110,6 @@ describe("customer-selection.store", () => {
       const store = useCustomerSelectionStore.getState();
       store.selectAllPages(100);
 
-      const count = useSelectedCustomerCount.getState?.() || 100;
       expect(store.totalItems).toBe(100);
     });
 

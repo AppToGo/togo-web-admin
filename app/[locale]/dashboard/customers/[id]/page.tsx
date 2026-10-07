@@ -5,8 +5,6 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { CustomerDetail } from "@/features/customers";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
-import { useConversationsRealtime } from "@/features/conversations/hooks";
 
 interface CustomerDetailPageProps {
   params: Promise<{
@@ -69,15 +67,11 @@ function CustomerDetailLoading() {
 export default function CustomerDetailPage({
   params,
 }: CustomerDetailPageProps) {
-  const t = useTranslations("customers");
   useAuthGuard();
 
-  // Conexión al namespace `/conversations`: esta página muestra la pestaña
-  // "Conversación" del detalle de pedido y la sección de conversaciones del
-  // cliente, ambas leyendo del mismo cache que actualiza este socket
-  // (`CONVERSATIONS_KEYS.detail`). Sin esto, la respuesta del cliente al
-  // operador no aparecía hasta refrescar — mismo hook que usa Inbox.
-  useConversationsRealtime();
+  // El socket de `/conversations` (pestaña "Conversación" del pedido y
+  // sección de conversaciones del cliente) lo abre DashboardRealtime en el
+  // layout del dashboard.
 
   // Usar React.use() para unwrap el Promise de params (Next.js 15)
   const { id } = React.use(params);

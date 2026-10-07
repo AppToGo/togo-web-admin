@@ -1,14 +1,9 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
-import {
-  useDateFilterStore,
-  useDateFilterPreset,
-} from "@/features/filters/stores";
-import { useDateFilterParams } from "@/features/filters/hooks";
 import { CustomersTable, TopCustomersCharts } from "@/features/customers";
 import { useCustomers } from "@/features/customers";
 import {
@@ -57,16 +52,11 @@ function CustomersLoading() {
 
 export default function CustomersPage() {
   const t = useTranslations("customers");
-  const tc = useTranslations("common");
 
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
-
-  // Filtros globales de fecha
-  const dateParams = useDateFilterParams();
-  const datePreset = useDateFilterPreset();
 
   // Estado local de paginación
   const [page, setPage] = useState(1);
@@ -78,12 +68,10 @@ export default function CustomersPage() {
   // Hook de branches
   const { showBranchSelector, defaultBranchId } = useEffectiveBranches();
 
-  // Efecto para auto-seleccionar sede cuando no hay selector
-  useEffect(() => {
-    if (!showBranchSelector && defaultBranchId) {
-      setSelectedBranchId(defaultBranchId);
-    }
-  }, [showBranchSelector, defaultBranchId]);
+  // Sin selector visible se usa la sede por defecto (valor derivado, no un
+  // efecto que copia el default al estado).
+  const effectiveBranchId =
+    !showBranchSelector && defaultBranchId ? defaultBranchId : selectedBranchId;
 
   // Query de clientes
   const {
@@ -94,7 +82,7 @@ export default function CustomersPage() {
     page,
     limit,
     businessId: selectedBusinessId || undefined,
-    branchId: selectedBranchId || undefined,
+    branchId: effectiveBranchId || undefined,
   });
 
   // Para usuarios normales sin negocio, mostrar error
@@ -132,7 +120,7 @@ export default function CustomersPage() {
           <div className="flex flex-row items-center gap-2">
             {showBranchSelector && (
               <BranchSingleSelector
-                value={selectedBranchId}
+                value={effectiveBranchId}
                 onChange={setSelectedBranchId}
               />
             )}
@@ -167,7 +155,7 @@ export default function CustomersPage() {
             <Suspense fallback={<Skeleton className="h-80" />}>
               <TopCustomersCharts
                 businessId={selectedBusinessId || undefined}
-                branchId={selectedBranchId || undefined}
+                branchId={effectiveBranchId || undefined}
               />
             </Suspense>
           </div>

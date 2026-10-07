@@ -4,15 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import {
-  Trophy,
-  ShoppingCart,
-  DollarSign,
-  Medal,
-  ExternalLink,
-  Users,
-} from "lucide-react";
+import { Trophy, DollarSign, Medal, ExternalLink, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useGlobalCustomerMetrics } from "../../hooks";
 
@@ -126,7 +118,7 @@ export function TopCustomersCharts({ businessId, branchId }: TopCustomersChartsP
                         </div>
                         <div>
                           <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                            {customer.name || t("table.anonymous")}
+                            {customer.name || t("table.noName")}
                           </p>
                           <p className="text-sm text-slate-500">
                             {customer.phoneNumber}
@@ -189,7 +181,7 @@ export function TopCustomersCharts({ businessId, branchId }: TopCustomersChartsP
                         </div>
                         <div>
                           <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">
-                            {customer.name || t("table.anonymous")}
+                            {customer.name || t("table.noName")}
                           </p>
                           <p className="text-sm text-slate-500">
                             {customer.phoneNumber}
