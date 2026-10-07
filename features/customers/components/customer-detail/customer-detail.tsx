@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,6 +46,14 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Mutación
   const updateCustomer = useUpdateCustomer();
 
+  // Último valor de notas confirmado (cargado o guardado).
+  const savedNotesRef = useRef<string | null>(null);
+  // Solo una edición real del usuario (vía onNotesChange) habilita el
+  // auto-save. Comparar el valor con debounce contra el estado no alcanza:
+  // el setNotes del init es asíncrono y el "" inicial previo a la carga se
+  // confunde con una edición, haciendo PATCH al montar y borrando notas.
+  const userEditedRef = useRef(false);
+
   // Guardar notas - memoizado para evitar recreaciones
   const handleSaveNotes = useCallback(async () => {
     if (!customer) return;
@@ -55,24 +63,39 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
         customerId,
         data: { notes: debouncedNotes.slice(0, MAX_NOTES_LENGTH) },
       });
+      savedNotesRef.current = debouncedNotes;
+      userEditedRef.current = false;
     } catch {
       // Error ya manejado en el hook
     }
   }, [customer, customerId, debouncedNotes, updateCustomer]);
 
+  // Edición del usuario: única vía que habilita el auto-save.
+  const handleNotesChange = useCallback((value: string) => {
+    userEditedRef.current = true;
+    setNotes(value);
+  }, []);
+
   // Initialize notes from customer data
   useEffect(() => {
     if (customer?.notes !== undefined) {
       setNotes(customer.notes || "");
+      savedNotesRef.current = customer.notes || "";
     }
   }, [customer?.notes]);
 
-  // Auto-save notes when debounced value changes
+  // Auto-save notes when debounced value changes — solo tras edición real
+  // y sin un guardado ya en vuelo.
   useEffect(() => {
-    if (customer && debouncedNotes !== (customer.notes || "")) {
+    if (
+      customer &&
+      userEditedRef.current &&
+      !updateCustomer.isPending &&
+      debouncedNotes !== savedNotesRef.current
+    ) {
       handleSaveNotes();
     }
-  }, [debouncedNotes, customer, handleSaveNotes]);
+  }, [debouncedNotes, customer, handleSaveNotes, updateCustomer.isPending]);
 
   // Loading skeleton
   if (isLoadingCustomer) {
@@ -129,7 +152,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
       customer={customer}
       customerId={customerId}
       notes={notes}
-      onNotesChange={setNotes}
+      onNotesChange={handleNotesChange}
       onNotesSave={handleSaveNotes}
       isSavingNotes={updateCustomer.isPending}
       conversationHref={conversationHref}
