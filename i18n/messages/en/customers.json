@@ -105,7 +105,7 @@
     "selected": "{count} customer(s) selected",
     "selectAll": "Select all",
     "clearSelection": "Clear selection",
-    "selectAllPages": "Select all {total} customers"
+    "selectAllPages": "Select all {count} customers"
   },
 
   "filters": {

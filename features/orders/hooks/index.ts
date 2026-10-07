@@ -37,5 +37,8 @@ export { useOrderDropZone } from './useOrderDropZone';
 export { useOrdersRealtime } from './useOrdersRealtime';
 export type { RealtimeState } from './useOrdersRealtime';
 
+// Badge de Pedidos del sidebar (pedidos nuevos sin ver)
+export { useUnseenOrdersCount, useMarkOrderViewed } from './useUnseenOrders';
+
 // Comprobante de pago (transferencias)
 export { useOrderPaymentProof, paymentProofKey } from './useOrderPaymentProof';

@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 import {
   useInboxConversations,
   useInboxSummary,
-  useConversationsRealtime,
 } from "@/features/conversations/hooks";
+import { useConversationsConnected } from "@/stores/realtime-status.store";
 import { InboxLayout } from "@/features/conversations/components/inbox/inbox-layout";
 import { InboxList } from "@/features/conversations/components/inbox/inbox-list";
 import { InboxThreadPanel } from "@/features/conversations/components/inbox/inbox-thread-panel";
@@ -67,7 +67,8 @@ export default function InboxPage() {
     setSelectedSessionId(null);
   }
 
-  const { isConnected } = useConversationsRealtime(canViewInbox);
+  // El socket lo abre DashboardRealtime (layout del dashboard).
+  const isConnected = useConversationsConnected();
   const { data: summary } = useInboxSummary(canViewInbox);
   const { data: conversations, isLoading, isAllBusinessesSelected } =
     useInboxConversations(

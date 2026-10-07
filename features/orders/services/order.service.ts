@@ -202,6 +202,45 @@ export async function deleteOrder(
   await apiClient.delete(`${getBaseUrl(businessId)}/${orderId}`);
 }
 
+export interface UnseenOrdersFilters {
+  branchIds?: string[];
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+/**
+ * Pedidos CONFIRMED que nadie del negocio ha abierto (badge de Pedidos del
+ * sidebar), con los mismos filtros que el tablero. Sin `branchIds` cuenta
+ * todas las sucursales.
+ */
+export async function getUnseenOrdersCount(
+  businessId: string,
+  { branchIds, dateFrom, dateTo }: UnseenOrdersFilters = {}
+): Promise<number> {
+  const { data } = await apiClient.get<{ count: number }>(
+    `${getBaseUrl(businessId)}/unseen-count`,
+    {
+      params: {
+        ...(branchIds?.length && { branchIds }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo }),
+      },
+    }
+  );
+  return data.count;
+}
+
+/**
+ * Marca el pedido como visto para todo el negocio. Idempotente: el backend
+ * solo registra la primera apertura.
+ */
+export async function markOrderViewed(
+  orderId: string,
+  businessId: string
+): Promise<void> {
+  await apiClient.post(`${getBaseUrl(businessId)}/${orderId}/view`);
+}
+
 /**
  * Actualizar el estado de pago de una orden
  */

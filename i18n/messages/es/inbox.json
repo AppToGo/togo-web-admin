@@ -98,5 +98,9 @@
     "RELAY_AMBIGUOUS": "El operador tiene más de una conversación activa por WhatsApp directo",
     "RELAY_WINDOW_EXPIRED": "Se venció la ventana de WhatsApp para responder",
     "OUTBOUND_BLOCKED_WINDOW": "No se pudo enviar: la ventana de WhatsApp ya venció"
+  },
+  "notifications": {
+    "humanRequested": "Un cliente pidió hablar con un asesor",
+    "view": "Ver"
   }
 }
