@@ -36,12 +36,21 @@ export class RegisterPage {
    */
   readonly continueStep1Button: Locator;
 
+  // ── Step 1 — country prefix ────────────────────────────────────────────────
+
+  /** Phone country-code trigger (Radix Select, aria-label "Indicativo país") */
+  readonly countryCodeCombobox: Locator;
+
   // ── Step 2 — inputs ────────────────────────────────────────────────────────
 
   /** "Nombre del negocio" label — now in Step 2 */
   readonly businessNameInput: Locator;
-  /** "Ciudad" label — new in Step 2 */
-  readonly cityInput: Locator;
+  /**
+   * City AutocompleteSelect trigger. It is the only disabled combobox on
+   * Step 2 until a department is chosen (the label has no htmlFor, so
+   * getByLabel cannot target it).
+   */
+  readonly cityCombobox: Locator;
   /** "Dirección del local" label — new in Step 2 */
   readonly addressInput: Locator;
   /** "Crear cuenta" button (Step 2 submit) */
@@ -77,9 +86,14 @@ export class RegisterPage {
       name: /^continuar$/i,
     });
 
+    // Phone country-code trigger
+    this.countryCodeCombobox = page.getByRole("combobox", {
+      name: "Indicativo país",
+    });
+
     // Step 2 inputs
     this.businessNameInput = page.getByLabel("Nombre del negocio");
-    this.cityInput = page.getByLabel("Ciudad");
+    this.cityCombobox = page.getByRole("combobox", { disabled: true });
     this.addressInput = page.getByLabel("Dirección del local");
 
     // Step 2 buttons
@@ -137,15 +151,41 @@ export class RegisterPage {
   // ── Step 2 methods ─────────────────────────────────────────────────────────
 
   /**
+   * Pick a department in the Step 2 AutocompleteSelect.
+   * The triggers carry no accessible name (plain label, no htmlFor),
+   * so they are located by their visible placeholder/value text.
+   */
+  async selectDepartment(name: string): Promise<void> {
+    await this.page
+      .getByRole("combobox")
+      .filter({ hasText: /^seleccioná un departamento$/i })
+      .click();
+    await this.page.getByRole("option", { name }).click();
+  }
+
+  /** Pick a city in the Step 2 AutocompleteSelect (department first). */
+  async selectCity(name: string): Promise<void> {
+    await this.page
+      .getByRole("combobox")
+      .filter({ hasText: /^seleccioná una ciudad$/i })
+      .click();
+    await this.page.getByRole("option", { name }).click();
+  }
+
+  /**
    * Fill Step 2 business data fields.
+   *
+   * City requires its department to be chosen first (cascading selects).
    */
   async fillStep2(data: {
     businessName: string;
+    department?: string;
     city?: string;
     address?: string;
   }): Promise<void> {
     await this.businessNameInput.fill(data.businessName);
-    if (data.city) await this.cityInput.fill(data.city);
+    if (data.department) await this.selectDepartment(data.department);
+    if (data.city) await this.selectCity(data.city);
     if (data.address) await this.addressInput.fill(data.address);
   }
 

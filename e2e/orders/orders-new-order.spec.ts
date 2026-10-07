@@ -2,6 +2,11 @@ import { test, expect, type Page } from "playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 import { mockLoginSuccess } from "../helpers/mock-api";
 import { mockOrdersDashboard } from "../helpers/mock-orders-api";
+import {
+  blockUnmockedApiCalls,
+  blockRealtimeSockets,
+  mockRefreshSuccess,
+} from "./board";
 
 /**
  * "Nuevo pedido" desde la pantalla de pedidos: el botón de la columna
@@ -107,8 +112,13 @@ test.describe("Orders — nuevo pedido desde el admin", () => {
       localStorage.clear();
       sessionStorage.clear();
     });
+    // Hardening: with the real backend up, unmocked calls 401 the fake
+    // token (session bounce) and the realtime socket loops invalidations.
+    await blockUnmockedApiCalls(page);
+    await blockRealtimeSockets(page);
     await mockLoginSuccess(page);
     await mockOrdersDashboard(page);
+    await mockRefreshSuccess(page);
     await mockNewOrderApi(page, (body) => created.push(body));
   });
 
