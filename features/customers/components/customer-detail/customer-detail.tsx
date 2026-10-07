@@ -11,6 +11,8 @@ import { useCustomer, useUpdateCustomer } from "../../hooks";
 import { CustomerUnifiedLayout } from "./customer-unified-layout";
 import { MAX_NOTES_LENGTH } from "../../constants";
 
+const NOT_SYNCED = Symbol("not-synced");
+
 interface CustomerDetailProps {
   customerId: string;
 }
@@ -76,13 +78,23 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
     setNotes(value);
   }, []);
 
-  // Initialize notes from customer data
+  // Inicializa las notas con las del cliente (y las resincroniza si cambian
+  // en el servidor). Ajuste de estado durante el render en vez de un efecto.
+  const serverNotes = customer?.notes;
+  // Centinela distinto de cualquier valor real: si el cliente ya viene del
+  // caché al montar, el primer render igual sincroniza.
+  const [syncedServerNotes, setSyncedServerNotes] = useState<
+    typeof serverNotes | typeof NOT_SYNCED
+  >(NOT_SYNCED);
+  if (serverNotes !== syncedServerNotes) {
+    setSyncedServerNotes(serverNotes);
+    if (serverNotes !== undefined) setNotes(serverNotes || "");
+  }
+  // La referencia al valor confirmado se actualiza en un efecto (no se
+  // escriben refs durante el render); corre antes que el auto-save de abajo.
   useEffect(() => {
-    if (customer?.notes !== undefined) {
-      setNotes(customer.notes || "");
-      savedNotesRef.current = customer.notes || "";
-    }
-  }, [customer?.notes]);
+    if (serverNotes !== undefined) savedNotesRef.current = serverNotes || "";
+  }, [serverNotes]);
 
   // Auto-save notes when debounced value changes — solo tras edición real
   // y sin un guardado ya en vuelo.
