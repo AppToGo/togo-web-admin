@@ -7,6 +7,11 @@ name: Tests
 #
 # Solo en PRs: igual que la API, para no duplicar minutos en el push a
 # develop que deja el merge.
+#
+# Lint corre solo sobre los archivos que cambia el PR: el repo arrastra
+# errores de lint de antes de que existiera este gate, y correrlo completo
+# bloquearía cualquier PR por código que no tocó. Así ningún archivo tocado
+# puede quedar con errores y la deuda baja a medida que se edita.
 
 on:
   pull_request:
@@ -26,6 +31,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Historial completo para comparar contra la rama base del PR.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -38,5 +46,15 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint (archivos cambiados)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff -z --name-only --diff-filter=ACMR "origin/${BASE_REF}...HEAD" \
+            -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' > changed-files
+          if [ ! -s changed-files ]; then
+            echo "Sin archivos JS/TS cambiados: no hay nada que lintear."
+            exit 0
+          fi
+          tr '\0' '\n' < changed-files
+          xargs -0 npx eslint --no-warn-ignored < changed-files
