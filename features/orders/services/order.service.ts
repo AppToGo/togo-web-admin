@@ -203,6 +203,32 @@ export async function deleteOrder(
 }
 
 /**
+ * Pedidos CONFIRMED que nadie del negocio ha abierto (badge de Pedidos del
+ * sidebar). Sin `branchIds` cuenta todo el negocio.
+ */
+export async function getUnseenOrdersCount(
+  businessId: string,
+  branchIds?: string[]
+): Promise<number> {
+  const { data } = await apiClient.get<{ count: number }>(
+    `${getBaseUrl(businessId)}/unseen-count`,
+    { params: branchIds?.length ? { branchIds } : undefined }
+  );
+  return data.count;
+}
+
+/**
+ * Marca el pedido como visto para todo el negocio. Idempotente: el backend
+ * solo registra la primera apertura.
+ */
+export async function markOrderViewed(
+  orderId: string,
+  businessId: string
+): Promise<void> {
+  await apiClient.post(`${getBaseUrl(businessId)}/${orderId}/view`);
+}
+
+/**
  * Actualizar el estado de pago de una orden
  */
 export interface UpdatePaymentStatusRequest {

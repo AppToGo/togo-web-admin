@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
-import { useBusinessStore } from '@/features/business/stores/business.store';
+import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
+import { useBranchStore } from '@/stores/branch.store';
 import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
@@ -36,6 +37,7 @@ const WS_EVENTS = {
   ORDER_UPDATED: 'order:updated',
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
   ORDER_CUSTOMER_EDIT: 'order:customerEdit',
+  ORDER_VIEWED: 'order:viewed',
   ORDER_PAYMENT_PROOF: 'order:paymentProof',
   ORDER_PAYMENT_VERIFICATION: 'order:paymentVerification',
   METRICS_UPDATED: 'order:metricsUpdated',
@@ -48,6 +50,7 @@ const WS_EVENTS = {
 interface OrderCreatedEvent {
   orderId: string;
   orderNumber?: string | number | null;
+  branchId?: string | null;
   status: string;
   timestamp: string;
 }
@@ -118,9 +121,11 @@ export function useOrdersRealtime(): RealtimeState {
   const authFailureCountRef = useRef(0);
 
   const user = useAuthStore((state) => state.user);
-  const { selectedBusinessId } = useBusinessStore();
-  const businessId = selectedBusinessId || user?.businessId || null;
-  
+  // useEffectiveBusinessId() en vez de `selectedBusinessId || user?.businessId`:
+  // ignora un selectedBusinessId obsoleto en localStorage (mismo criterio que
+  // useConversationsRealtime).
+  const businessId = useEffectiveBusinessId();
+
   // Use the order notification hook for sound + toast notifications
   const { notifyNewOrder } = useOrderNotification();
   
@@ -272,15 +277,36 @@ export function useOrdersRealtime(): RealtimeState {
       handlingAuthError = false;
     });
 
+    // Badge de Pedidos del sidebar (todas las variantes de sucursales)
+    const refreshUnseenCount = () => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.unseenCount(businessId) });
+    };
+
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
       // Invalidar cache de órdenes LIVE del negocio (nueva orden siempre va a CONFIRMED)
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
-      
+      refreshUnseenCount();
+
+      // Solo suena si el pedido es de una sucursal seleccionada (sin
+      // selección = todas), igual que el badge. Se lee del store al llegar
+      // el evento para no reconectar el socket al cambiar de sucursal.
+      const { selectedBranchIds } = useBranchStore.getState();
+      if (
+        data.branchId &&
+        selectedBranchIds.length > 0 &&
+        !selectedBranchIds.includes(data.branchId)
+      ) {
+        return;
+      }
+
       // Trigger notification (sound + toast) based on user preferences
       notifyNewOrderRef.current(data.orderId, data.orderNumber);
     });
+
+    // Alguien del negocio abrió un pedido nuevo: baja el badge.
+    socket.on(WS_EVENTS.ORDER_VIEWED, refreshUnseenCount);
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
       // Actualizar detalle de orden en cache
@@ -293,6 +319,8 @@ export function useOrdersRealtime(): RealtimeState {
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
+      // Si salió de CONFIRMED sin abrirse, deja de contar en el badge.
+      refreshUnseenCount();
       
       // Si la orden llegó a COMPLETED, invalidar también el cache de completadas
       if (data.newStatus === ARCHIVE_STATUS) {

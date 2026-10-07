@@ -29,6 +29,8 @@ import { usePaymentAlerts } from "@/features/admin/business-management/hooks/use
 import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { useUnseenOrdersCount } from "@/features/orders/hooks/useUnseenOrders";
+import { useInboxSummary } from "@/features/conversations/hooks/useInboxSummary";
 
 
 interface SidebarProps {
@@ -44,6 +46,8 @@ type NavigationItem = {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: NavigationItem[];
+  /** Contador rojo junto al item; no se muestra si es 0. */
+  badge?: number;
 };
 
 export function Sidebar({
@@ -106,6 +110,15 @@ export function Sidebar({
   // Embudo del bot (plan bot natural, T20): mismo permiso que su endpoint.
   const canViewConversationFunnel = hasPermission("metrics.view");
 
+  // Badges: pedidos nuevos sin ver (por negocio, sucursales seleccionadas) y
+  // conversaciones que esperan asesor. Los refrescan los sockets globales de
+  // DashboardRealtime. SUPER_ADMIN no tiene negocio propio ni socket.
+  const unseenOrdersCount = useUnseenOrdersCount(
+    !isSuperAdmin && hasPermission("order.view")
+  );
+  const { data: inboxSummary } = useInboxSummary(!isSuperAdmin && canViewInbox);
+  const inboxAttentionCount = inboxSummary?.needsAttention ?? 0;
+
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
     const items: NavigationItem[] = [
@@ -113,6 +126,7 @@ export function Sidebar({
         name: t("sidebar.orders"),
         href: "/dashboard/orders",
         icon: ShoppingBagIcon,
+        badge: unseenOrdersCount,
       },
       {
         name: t("sidebar.dashboard"),
@@ -130,6 +144,7 @@ export function Sidebar({
               name: t("sidebar.inbox"),
               href: "/dashboard/inbox",
               icon: Inbox,
+              badge: inboxAttentionCount,
             },
           ]
         : []),
@@ -233,6 +248,8 @@ export function Sidebar({
     canViewConversationFunnel,
     canViewInbox,
     canViewBilling,
+    unseenOrdersCount,
+    inboxAttentionCount,
   ]);
 
   // Admin navigation (Super Admin only)
@@ -241,6 +258,7 @@ export function Sidebar({
       name: t("sidebar.businesses"),
       href: "/admin/businesses",
       icon: BuildingStoreIcon,
+      badge: alertCount,
     },
     {
       name: t("sidebar.globalCatalog"),
@@ -336,21 +354,14 @@ export function Sidebar({
               )}
               <nav className="px-3 pb-3 space-y-1">
                 {adminNavigation.map((item) => (
-                  <div key={item.name} className="relative">
-                    <CollapsibleNavItem
-                      item={item}
-                      pathname={pathname}
-                      isCollapsed={isCollapsed}
-                      isAdmin
-                      onMenuClick={onMenuClick}
-                    />
-                    {/* Alert badge for Businesses link */}
-                    {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
-                        {alertCount > 9 ? "9+" : alertCount}
-                      </span>
-                    )}
-                  </div>
+                  <CollapsibleNavItem
+                    key={item.name}
+                    item={item}
+                    pathname={pathname}
+                    isCollapsed={isCollapsed}
+                    isAdmin
+                    onMenuClick={onMenuClick}
+                  />
                 ))}
               </nav>
             </>
@@ -552,6 +563,7 @@ function CollapsibleNavItem({
           )}
         />
         {!isCollapsed && <span>{item.name}</span>}
+        <NavBadge count={item.badge} isCollapsed={isCollapsed} />
         <NavLinkPending isCollapsed={isCollapsed} />
       </Link>
     );
@@ -585,6 +597,7 @@ function CollapsibleNavItem({
               : "text-slate-400"
           )}
         />
+        <NavBadge count={item.badge} isCollapsed />
         <NavLinkPending isCollapsed />
       </Link>
     );
@@ -669,6 +682,31 @@ function CollapsibleNavItem({
         </div>
       )}
     </div>
+  );
+}
+
+// Contador rojo del item (pedidos nuevos, inbox, alertas de pago). Expandido
+// va al final de la fila; colapsado, en la esquina del ícono. Se oculta
+// mientras carga la ruta: el spinner de NavLinkPending ocupa el mismo lugar.
+// Debe renderizarse dentro del <Link>.
+function NavBadge({
+  count,
+  isCollapsed = false,
+}: {
+  count?: number;
+  isCollapsed?: boolean;
+}) {
+  const { pending } = useLinkStatus();
+  if (!count || count <= 0 || pending) return null;
+  return (
+    <span
+      className={cn(
+        "min-w-5 h-5 flex items-center justify-center bg-destructive text-destructive-foreground text-xs font-bold px-1.5 rounded-badge",
+        isCollapsed ? "absolute top-1 right-1" : "ml-auto"
+      )}
+    >
+      {count > 9 ? "9+" : count}
+    </span>
   );
 }
 

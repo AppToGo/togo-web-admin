@@ -177,6 +177,8 @@ export interface ConversationSummary {
   mine: number;
   unassigned: number;
   unreadInHandoff: number;
+  /** Badge de Inbox del sidebar: solicitudes de asesor sin asignar + asignadas a mí con mensajes sin leer. */
+  needsAttention: number;
 }
 
 export interface PaginationMeta {

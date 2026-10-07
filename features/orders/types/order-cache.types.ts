@@ -24,6 +24,11 @@ export const ORDERS_KEYS = {
     [...ORDERS_KEYS.all, businessId, "live", filters] as const,
   completed: (businessId: string | undefined, filters: object) =>
     [...ORDERS_KEYS.all, businessId, "completed", filters] as const,
+  // Badge de Pedidos del sidebar. Sin branchIds invalida todas las variantes.
+  unseenCount: (businessId: string | null | undefined, branchIds?: string[]) =>
+    branchIds
+      ? ([...ORDERS_KEYS.all, businessId, "unseen-count", branchIds] as const)
+      : ([...ORDERS_KEYS.all, businessId, "unseen-count"] as const),
 };
 
 /**

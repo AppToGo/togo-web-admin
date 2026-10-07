@@ -10,5 +10,7 @@ export {
   getLiveOrders,
   getCompletedOrders,
   createOrder,
+  getUnseenOrdersCount,
+  markOrderViewed,
 } from './order.service';
 export type { UpdatePaymentStatusRequest } from './order.service';

@@ -14,6 +14,7 @@ import {
 } from "@/services/auth-sync.service";
 import { forceLogout } from "@/services/session.service";
 import { createReconnectScheduler } from "@/lib/socket-reconnect";
+import { useInboxNotification } from "@/features/notifications/hooks/useInboxNotification";
 import { CONVERSATIONS_KEYS } from "./query-keys";
 import type { ConversationDetail, ConversationMessage } from "../types";
 
@@ -68,6 +69,12 @@ interface ConversationSessionEvent {
   [key: string]: unknown;
 }
 
+interface ConversationControlEvent extends ConversationSessionEvent {
+  control: "BOT" | "PENDING_HUMAN" | "HUMAN";
+  previousControl: "BOT" | "PENDING_HUMAN" | "HUMAN";
+  assignedUserId: string | null;
+}
+
 export interface ConversationsRealtimeState {
   isConnected: boolean;
   isConnecting: boolean;
@@ -97,6 +104,14 @@ export function useConversationsRealtime(
   // no coincide con el negocio del usuario (ej. tras un cambio de cuenta),
   // lo que dejaría al socket escuchando en la room equivocada en silencio.
   const businessId = useEffectiveBusinessId();
+
+  // Ref para no reconectar el socket cuando cambian las preferencias de
+  // sonido (mismo patrón que notifyNewOrderRef en useOrdersRealtime).
+  const { notifyHumanRequested } = useInboxNotification();
+  const notifyHumanRequestedRef = useRef(notifyHumanRequested);
+  useEffect(() => {
+    notifyHumanRequestedRef.current = notifyHumanRequested;
+  }, [notifyHumanRequested]);
 
   const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
@@ -269,6 +284,9 @@ export function useConversationsRealtime(
       }
 
       queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEYS.lists() });
+      // unreadCount cambió: el badge de Inbox del sidebar cuenta las
+      // conversaciones asignadas a mí con mensajes sin leer.
+      queryClient.invalidateQueries({ queryKey: [...CONVERSATIONS_KEYS.all, "summary"] });
     });
 
     socket.on(WS_EVENTS.STATUS, (event: ConversationStatusEvent) => {
@@ -294,7 +312,19 @@ export function useConversationsRealtime(
       queryClient.invalidateQueries({ queryKey: [...CONVERSATIONS_KEYS.all, "summary"] });
     };
 
-    socket.on(WS_EVENTS.CONTROL, invalidateSession);
+    socket.on(WS_EVENTS.CONTROL, (event: ConversationControlEvent) => {
+      invalidateSession(event);
+      // Un cliente pidió asesor: suena para todos si está sin asignar, y
+      // solo para el asignado si ya tiene dueño.
+      const isNewRequest =
+        event.control === "PENDING_HUMAN" && event.previousControl !== "PENDING_HUMAN";
+      const isForMe =
+        !event.assignedUserId ||
+        event.assignedUserId === useAuthStore.getState().user?.userId;
+      if (isNewRequest && isForMe) {
+        notifyHumanRequestedRef.current(event.sessionId);
+      }
+    });
     socket.on(WS_EVENTS.ASSIGNED, invalidateSession);
     socket.on(WS_EVENTS.NOTE, invalidateSession);
     socket.on(WS_EVENTS.CLOSED, invalidateSession);

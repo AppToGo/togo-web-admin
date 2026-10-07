@@ -27,8 +27,8 @@ import {
   useUpdateOrderStatus,
   useCompletedOrdersInfinite,
   useOrderMetrics,
+  useMarkOrderViewed,
 } from "../hooks";
-import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
 import type { Order, OrderStatus } from "../types";
 import {
   getKanbanColumns,
@@ -126,9 +126,6 @@ export function OrdersKanbanBoard({
 }: OrdersKanbanBoardProps) {
   const t = useTranslations("orders");
 
-  // Hydrate notification preferences when the orders page mounts
-  useHydrateNotificationPreferences();
-
   // Get metrics for total counts per status
   const { data: metrics } = useOrderMetrics();
 
@@ -200,6 +197,7 @@ export function OrdersKanbanBoard({
   });
 
   const updateStatus = useUpdateOrderStatus();
+  const markOrderViewed = useMarkOrderViewed();
 
   // Combine errors
   const error = errorLive || errorCompleted;
@@ -352,9 +350,18 @@ export function OrdersKanbanBoard({
     [hasNextPage, isFetchingNextPage, fetchNextPage]
   );
 
-  const handleOrderClick = useCallback((orderId: string) => {
-    setSelectedOrderId(orderId);
-  }, []);
+  // Abrir un pedido nuevo lo descuenta del badge de Pedidos del sidebar
+  // para todo el negocio. Solo los CONFIRMED: los demás ya no cuentan.
+  const { mutate: markViewed } = markOrderViewed;
+  const handleOrderClick = useCallback(
+    (orderId: string) => {
+      setSelectedOrderId(orderId);
+      if (ordersByStatus.CONFIRMED?.some((order) => order.id === orderId)) {
+        markViewed(orderId);
+      }
+    },
+    [ordersByStatus, markViewed]
+  );
 
   const handleCloseDetail = useCallback(() => {
     setSelectedOrderId(null);

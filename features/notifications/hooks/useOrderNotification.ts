@@ -10,9 +10,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useNotificationPreferences } from "../stores/notification-preferences.store";
 import { formatOrderNumber } from "@/features/orders/utils/order-number.utils";
-
-// Path to the notification sound file
-const SOUND_PATH = "/sounds/beep.mp3";
+import { playNotificationSound } from "../lib/play-notification-sound";
 
 /**
  * Hook for managing order notifications (sound + toast)
@@ -22,28 +20,11 @@ export function useOrderNotification() {
   const { enableSounds, enableNotifications } = useNotificationPreferences();
 
   /**
-   * Plays the new order sound notification
-   * Creates fresh audio instance each time to ensure it plays reliably
-   * Handles browser autoplay policy by catching errors
+   * Plays the new order sound notification (if sounds are enabled)
    */
   const playNewOrderSound = useCallback(async (): Promise<void> => {
     if (!enableSounds) return;
-
-    try {
-      // Create fresh audio instance each time (ensures it's ready to play)
-      const audio = new Audio(SOUND_PATH);
-      audio.volume = 0.5;
-
-      // Play sound - modern browsers return a Promise
-      await audio.play();
-    } catch (error) {
-      // Browser autoplay policy blocked the sound
-      // This is expected before user interaction
-      if (process.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
-        console.debug("[Notification] Sound play prevented:", error);
-      }
-    }
+    await playNotificationSound();
   }, [enableSounds]);
 
   /**
