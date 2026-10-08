@@ -11,6 +11,7 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { Business } from "@/types";
 import type {
   Order,
+  OrderStatus,
   OrderStatusHistory,
   GetOrdersParams,
   UpdateOrderStatusRequest,
@@ -206,6 +207,27 @@ export interface UnseenOrdersFilters {
   branchIds?: string[];
   dateFrom?: string;
   dateTo?: string;
+}
+
+/** Estados del flujo del tablero que el negocio no usa (IN_PROGRESS / READY). */
+export interface BusinessOrderFlow {
+  skippedStatuses: OrderStatus[];
+}
+
+export async function getOrderFlow(businessId: string): Promise<BusinessOrderFlow> {
+  const { data } = await apiClient.get<BusinessOrderFlow>(`${getBaseUrl(businessId)}/flow`);
+  return data;
+}
+
+/** Solo OWNER/ADMIN: el backend responde 403 a los demás. */
+export async function updateOrderFlow(
+  businessId: string,
+  skippedStatuses: OrderStatus[]
+): Promise<BusinessOrderFlow> {
+  const { data } = await apiClient.put<BusinessOrderFlow>(`${getBaseUrl(businessId)}/flow`, {
+    skippedStatuses,
+  });
+  return data;
 }
 
 /**

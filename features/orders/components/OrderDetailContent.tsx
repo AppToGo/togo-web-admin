@@ -53,7 +53,7 @@ import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
 import { checkStatusMove } from "../utils/order-flow.utils";
-import { useOrderFlow } from "../context/OrderFlowContext";
+import { useOrderFlow } from "../hooks/useOrderFlow";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 
 export interface OrderDetailContentProps {

@@ -8,7 +8,7 @@ import {
   isCustomerEditing,
 } from "../utils/order-status.utils";
 import { getNextVisibleStatus } from "../utils/order-flow.utils";
-import { useOrderFlow } from "../context/OrderFlowContext";
+import { useOrderFlow } from "../hooks/useOrderFlow";
 import { HoverTooltip } from "./HoverTooltip";
 
 // El botón ofrece el siguiente estado VISIBLE: si el negocio ocultó "En

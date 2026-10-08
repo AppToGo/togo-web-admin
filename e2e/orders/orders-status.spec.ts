@@ -19,29 +19,10 @@ import {
  *   - Cancel from the detail dropdown patches CANCELLED
  *   - Failed PATCH (422) shows a toast and moves nothing
  *   - Completing an unpaid READY order is blocked client-side (no PATCH)
- *   - Hidden columns are skipped: only the next VISIBLE column is required
+ *   - Statuses the business doesn't use are skipped: only the next one in
+ *     the business flow (GET /orders/flow) is required
  *   - Going back needs order.revert_status
  */
-
-/** Hide board columns the way ColumnVisibilityBar persists them (cookie). */
-async function hideColumns(page: Page, hidden: string[]): Promise<void> {
-  const visibility: Record<string, boolean> = {
-    CONFIRMED: true,
-    IN_PROGRESS: true,
-    READY: true,
-    COMPLETED: true,
-    CANCELLED: false,
-  };
-  for (const status of hidden) visibility[status] = false;
-  const baseURL = test.info().project.use.baseURL ?? "http://localhost:3002";
-  await page.context().addCookies([
-    {
-      name: "kanban-column-visibility",
-      value: encodeURIComponent(JSON.stringify(visibility)),
-      url: baseURL,
-    },
-  ]);
-}
 
 const BUSINESS_ID = "e2e-test-business-id";
 const BRANCH_ID = "e2e-test-branch-id";
@@ -79,6 +60,8 @@ async function mockStatusScenario(
     extraLive?: Array<Record<string, unknown>>;
     initialStatus?: string;
     permissions?: string[];
+    skippedStatuses?: string[];
+    flowUpdates?: unknown[];
   } = {}
 ): Promise<void> {
   let deliveryStatus = opts.initialStatus ?? "CONFIRMED";
@@ -95,6 +78,14 @@ async function mockStatusScenario(
     const json = (body: unknown, status = 200) =>
       route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
+    if (path.endsWith("/orders/flow")) {
+      if (request.method() === "PUT") {
+        const body = request.postDataJSON() as { skippedStatuses: string[] };
+        opts.flowUpdates?.push(body);
+        opts.skippedStatuses = body.skippedStatuses;
+      }
+      return json({ skippedStatuses: opts.skippedStatuses ?? [] });
+    }
     if (path.endsWith("/auth/me/permissions")) {
       return json(opts.permissions ?? ["order.view", "order.create"]);
     }
@@ -233,11 +224,13 @@ test.describe("Orders — transiciones de estado", () => {
     expect(scenario.patches).toHaveLength(0);
   });
 
-  test("con En proceso oculto, Nuevo ofrece Marcar listo y patchea READY", async ({ page }) => {
+  test("si el negocio no usa En proceso, Nuevo ofrece Marcar listo y patchea READY", async ({ page }) => {
     const scenario: StatusScenario = { patches: [] };
-    await mockStatusScenario(page, scenario);
-    await hideColumns(page, ["IN_PROGRESS"]);
+    await mockStatusScenario(page, scenario, { skippedStatuses: ["IN_PROGRESS"] });
     await openBoard(page);
+
+    // La columna que el negocio no usa no se muestra.
+    await expect(page.getByRole("heading", { name: "En proceso" })).toHaveCount(0);
 
     const card = page.locator('div[draggable="true"]', {
       has: page.getByText("#101", { exact: true }),
@@ -289,4 +282,48 @@ test.describe("Orders — transiciones de estado", () => {
       { orderId: "delivery1", body: { status: "IN_PROGRESS" } },
     ]);
   });
+
+  test("un ADMIN quita En proceso del flujo y la columna desaparece", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    const flowUpdates: unknown[] = [];
+    await mockStatusScenario(page, scenario, { flowUpdates });
+    await openBoard(page);
+
+    await expect(page.getByRole("heading", { name: "En proceso" })).toBeVisible();
+    await page.getByRole("button", { name: "Flujo del negocio" }).click();
+    await page.getByRole("switch", { name: "En proceso" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/flujo del negocio actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(flowUpdates).toEqual([{ skippedStatuses: ["IN_PROGRESS"] }]);
+    await expect(page.getByRole("heading", { name: "En proceso" })).toHaveCount(0);
+  });
+
+  test("las columnas colapsadas se recuerdan en el navegador", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario);
+    await openBoard(page);
+
+    // Entregada arranca colapsada; se expande y se contrae "Nueva".
+    const expandButtons = page.getByRole("button", { name: "Expandir columna" });
+    const collapsedBefore = await expandButtons.count();
+    await page.getByRole("button", { name: "Contraer columna" }).first().click();
+    await expect(expandButtons).toHaveCount(collapsedBefore + 1);
+
+    const saved = await page.evaluate(() =>
+      localStorage.getItem("togo-kanban-collapsed-columns")
+    );
+    expect(JSON.parse(saved ?? "{}")).toMatchObject({ CONFIRMED: true });
+
+    // Al volver a la pantalla (el tablero se monta de nuevo y lee la
+    // preferencia guardada) sigue colapsada. Navegación del lado del cliente:
+    // recargar volvería a correr el init script que limpia localStorage.
+    await page.getByRole("link", { name: "Dashboard" }).first().click();
+    await expect(page).toHaveURL(/\/dashboard\/?$/, { timeout: 15_000 });
+    await page.getByRole("link", { name: "Pedidos" }).first().click();
+    await expect(page).toHaveURL(/\/dashboard\/orders/, { timeout: 15_000 });
+    await expect(expandButtons).toHaveCount(collapsedBefore + 1, { timeout: 15_000 });
+  });
 });
+

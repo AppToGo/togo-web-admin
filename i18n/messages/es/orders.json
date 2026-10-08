@@ -215,14 +215,6 @@
     "ready": "Listos",
     "delivered": "Entregados"
   },
-  "columnVisibility": {
-    "minOneColumn": "Debe haber al menos una columna visible",
-    "hideColumn": "Ocultar {column}",
-    "showColumn": "Mostrar {column}",
-    "hideStatsPanel": "Ocultar panel de estadísticas",
-    "showStatsPanel": "Mostrar panel de estadísticas",
-    "statistics": "Estadísticas"
-  },
   "columns": {
     "orderNumber": "Pedido #",
     "customer": "Cliente",
@@ -337,10 +329,6 @@
         "title": "Vista del tablero y densidad",
         "description": "Cambiá entre Tablero, Por estado o Lista agrupada, y ajustá qué tan detalladas se ven las tarjetas."
       },
-      "columnVisibility": {
-        "title": "Mostrar u ocultar columnas",
-        "description": "Con este control podés ocultar los estados que no necesitás ver en este momento para simplificar la pantalla."
-      },
       "kanbanBoard": {
         "title": "Tablero de pedidos",
         "description": "Los pedidos se organizan en columnas por estado: Nueva → En proceso → Listo → En camino → Completado. Arrastrá o usá el dropdown para moverlos."
@@ -397,5 +385,11 @@
       "address": "Ingresa la dirección de entrega",
       "table": "Selecciona la mesa"
     }
+  },
+  "orderFlow": {
+    "title": "Flujo del negocio",
+    "description": "Elige los estados que usa tu operación. Los que no uses no aparecen en el tablero y los pedidos los saltan. Aplica a todo el equipo.",
+    "alwaysOn": "«Nueva» y «Entregada» siempre forman parte del flujo.",
+    "saved": "Flujo del negocio actualizado"
   }
 }

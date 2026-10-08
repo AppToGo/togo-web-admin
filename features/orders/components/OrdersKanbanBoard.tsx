@@ -17,10 +17,6 @@ import { NewOrderDrawer } from "./NewOrderDrawer";
 import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
 
-import {
-  ColumnVisibilityBar,
-  type ColumnVisibilityConfig,
-} from "./ColumnVisibilityBar";
 
 import {
   useOrdersByStatus,
@@ -39,8 +35,8 @@ import {
   canCompleteOrder,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
-import { checkStatusMove, type VisibleStatuses } from "../utils/order-flow.utils";
-import { OrderFlowProvider, useOrderFlow } from "../context/OrderFlowContext";
+import { checkStatusMove } from "../utils/order-flow.utils";
+import { useOrderFlow } from "../hooks/useOrderFlow";
 import type { CardDensity } from "./OrderCard";
 
 // Gap between board columns — must match the container's `gap-3` (12px)
@@ -116,6 +112,28 @@ function filterOrdersBySearch(
   });
 }
 
+const COLLAPSED_COLUMNS_STORAGE_KEY = "togo-kanban-collapsed-columns";
+const DEFAULT_COLLAPSED_COLUMNS: Partial<Record<OrderStatus, boolean>> = {
+  COMPLETED: true,
+  CANCELLED: true,
+};
+
+/**
+ * Columnas colapsadas guardadas en este navegador. Se lee en el
+ * inicializador: el dashboard no se renderiza en el servidor (AuthProvider
+ * muestra el spinner hasta restaurar la sesión).
+ */
+function readCollapsedColumns(): Partial<Record<OrderStatus, boolean>> {
+  try {
+    const saved = typeof window !== "undefined"
+      ? localStorage.getItem(COLLAPSED_COLUMNS_STORAGE_KEY)
+      : null;
+    return saved ? { ...DEFAULT_COLLAPSED_COLUMNS, ...JSON.parse(saved) } : DEFAULT_COLLAPSED_COLUMNS;
+  } catch {
+    return DEFAULT_COLLAPSED_COLUMNS;
+  }
+}
+
 export function OrdersKanbanBoard({
   searchQuery = "",
   boardView = "board",
@@ -132,10 +150,7 @@ export function OrdersKanbanBoard({
   // Get metrics for total counts per status
   const { data: metrics } = useOrderMetrics();
 
-  // Estado local del sidebar de estadísticas
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  // Stats panel collapsed to a narrow rail (inside the already open sidebar)
-  // — independent from the isSidebarOpen/ColumnVisibilityBar cookie.
+  // Stats panel collapsed to a narrow rail.
   // null = the user hasn't toggled it yet: starts collapsed on mobile (so the
   // board gets the width) and expanded on desktop.
   const isMobile = useIsMobile();
@@ -143,13 +158,23 @@ export function OrdersKanbanBoard({
   const statsRailCollapsed = statsRailCollapsedChoice ?? isMobile;
 
   // Columns collapsed to a rail in the Board view — Delivered and Cancelled
-  // start collapsed (the least checked during day-to-day operation).
+  // start collapsed (the least checked during day-to-day operation). Which
+  // ones the user keeps collapsed or expanded is a per-browser preference
+  // (localStorage); which columns exist is the business flow (backend).
   const [collapsedColumns, setCollapsedColumns] = useState<
     Partial<Record<OrderStatus, boolean>>
-  >({ COMPLETED: true, CANCELLED: true });
+  >(readCollapsedColumns);
   const handleColumnCollapsedChange = useCallback(
     (status: OrderStatus, collapsed: boolean) => {
-      setCollapsedColumns((prev) => ({ ...prev, [status]: collapsed }));
+      setCollapsedColumns((prev) => {
+        const next = { ...prev, [status]: collapsed };
+        try {
+          localStorage.setItem(COLLAPSED_COLUMNS_STORAGE_KEY, JSON.stringify(next));
+        } catch {
+          // Sin localStorage (modo privado): la preferencia dura la sesión.
+        }
+        return next;
+      });
     },
     []
   );
@@ -157,14 +182,6 @@ export function OrdersKanbanBoard({
   // Active status in the "By status" (Focus) view
   const [focusStatusOverride, setFocusStatusOverride] = useState<OrderStatus | null>(null);
 
-  const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibilityConfig>({
-      CONFIRMED: true,
-      IN_PROGRESS: true,
-      READY: true,
-      COMPLETED: true,
-      CANCELLED: false,
-    });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
@@ -207,13 +224,13 @@ export function OrdersKanbanBoard({
 
   const allColumns = useMemo(() => getKanbanColumns(), []);
 
-  // Filter columns based on visibility
-  const columns = useMemo(() => {
-    return allColumns.filter((column) => {
-      const key = column.id as keyof ColumnVisibilityConfig;
-      return columnVisibility[key] ?? true;
-    });
-  }, [allColumns, columnVisibility]);
+  // Columnas del flujo del negocio (OWNER/ADMIN eligen qué estados usa;
+  // los que no usa no se muestran y el pedido los salta).
+  const { visible: flowStatuses, canRevert } = useOrderFlow();
+  const columns = useMemo(
+    () => allColumns.filter((column) => flowStatuses?.has(column.id) ?? true),
+    [allColumns, flowStatuses]
+  );
 
   const visibleColumnCount = columns.length;
 
@@ -303,14 +320,6 @@ export function OrdersKanbanBoard({
     [filteredOrdersByStatus]
   );
 
-  // Columnas visibles: el flujo las sigue (las ocultas se saltan) en el
-  // botón de la card, los drops y el detalle.
-  const visibleStatuses = useMemo<VisibleStatuses>(
-    () => new Set(columns.map((c) => c.id as OrderStatus)),
-    [columns]
-  );
-  const { canRevert } = useOrderFlow();
-
   // Single entry point for every status change on this screen (drag & drop,
   // "Move to" menu, next-step button, "By status" tab drops). Checks the move
   // against the visible columns (only the next visible one is mandatory;
@@ -329,7 +338,7 @@ export function OrdersKanbanBoard({
         return;
       }
       const move = checkStatusMove(order.status, newStatus as OrderStatus, {
-        visible: visibleStatuses,
+        visible: flowStatuses,
         canRevert,
       });
       if (!move.ok) {
@@ -356,7 +365,7 @@ export function OrdersKanbanBoard({
         data: { status: newStatus as OrderStatus },
       });
     },
-    [updateStatus, filteredOrdersByStatus, visibleStatuses, canRevert, t]
+    [updateStatus, filteredOrdersByStatus, flowStatuses, canRevert, t]
   );
 
   // Delivered orders come from a separate paginated query; every view uses
@@ -430,7 +439,7 @@ export function OrdersKanbanBoard({
   }
 
   return (
-    <OrderFlowProvider visible={visibleStatuses}>
+    <>
       {/* Contenedor principal - sin overflow para evitar scroll global */}
       <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
         {/* Main Kanban Container - con overflow controlado */}
@@ -555,11 +564,9 @@ export function OrdersKanbanBoard({
           className={cn(
             "shrink-0 ml-0 transition-all duration-300 ease-in-out",
             "rounded-card-xl overflow-hidden flex flex-col",
-            !isSidebarOpen && "w-0 opacity-0 border-0 ml-0",
-            isSidebarOpen &&
-              !statsRailCollapsed &&
+            !statsRailCollapsed &&
               "w-72 opacity-100 ml-3 bg-white/30 backdrop-blur-xl border border-white/40",
-            isSidebarOpen && statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
+            statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
           )}
         >
           {statsRailCollapsed ? (
@@ -603,15 +610,6 @@ export function OrdersKanbanBoard({
         </aside>
       </div>
 
-      {/* Column Visibility Floating Bar */}
-      <div data-tour-step="column-visibility">
-        <ColumnVisibilityBar
-          onVisibilityChange={setColumnVisibility}
-          isSidebarOpen={isSidebarOpen}
-          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-      </div>
-
       <NewOrderDrawer
         isOpen={isNewOrderOpen}
         onClose={() => setIsNewOrderOpen(false)}
@@ -626,6 +624,6 @@ export function OrdersKanbanBoard({
           variant="drawer"
         />
       )}
-    </OrderFlowProvider>
+    </>
   );
 }

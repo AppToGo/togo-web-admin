@@ -115,7 +115,8 @@ export const KANBAN_COLUMN_CONFIG: Record<OrderStatus, ColumnConfig> = {
 
 /**
  * Estados que se muestran por defecto en el Kanban
- * CANCELLED is included but hidden by default via ColumnVisibilityBar
+ * Las que el negocio no usa (En proceso / Lista) las filtra el tablero según
+ * su flujo (backend). Entregada y Cancelada arrancan colapsadas.
  */
 export const DEFAULT_KANBAN_STATUSES: OrderStatus[] = [
   "CONFIRMED",

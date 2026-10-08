@@ -215,14 +215,6 @@
     "ready": "Ready",
     "delivered": "Delivered"
   },
-  "columnVisibility": {
-    "minOneColumn": "At least one column must be visible",
-    "hideColumn": "Hide {column}",
-    "showColumn": "Show {column}",
-    "hideStatsPanel": "Hide statistics panel",
-    "showStatsPanel": "Show statistics panel",
-    "statistics": "Statistics"
-  },
   "columns": {
     "orderNumber": "Order #",
     "customer": "Customer",
@@ -337,10 +329,6 @@
         "title": "Board view and density",
         "description": "Switch between Board, By status or Grouped list, and adjust how detailed the cards look."
       },
-      "columnVisibility": {
-        "title": "Show or hide columns",
-        "description": "With this control you can hide the states you don't need to see right now to simplify the screen."
-      },
       "kanbanBoard": {
         "title": "Orders board",
         "description": "Orders are organized in columns by state: New → In progress → Ready → On the way → Completed. Drag or use the dropdown to move them."
@@ -397,5 +385,11 @@
       "address": "Enter the delivery address",
       "table": "Select the table"
     }
+  },
+  "orderFlow": {
+    "title": "Business flow",
+    "description": "Choose the statuses your operation uses. Unused ones don't show on the board and orders skip them. Applies to the whole team.",
+    "alwaysOn": "“New” and “Delivered” are always part of the flow.",
+    "saved": "Business flow updated"
   }
 }

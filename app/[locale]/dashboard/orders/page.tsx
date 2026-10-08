@@ -6,6 +6,7 @@ import {
   OrdersKanbanBoard,
   BranchMultiSelector,
   OrderBoardToolbar,
+  OrderFlowSettings,
   HoverTooltip,
   type BoardViewMode,
   type CardDensity,
@@ -122,10 +123,7 @@ function OrdersPageInner() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Board view (Board / By status / Grouped list) and card density. They
-  // start with the defaults and are hydrated from localStorage in an effect
-  // to avoid an SSR/client hydration mismatch (same pattern as
-  // ColumnVisibilityBar with cookies).
+  // Board view (Board / By status / Grouped list) and card density.
   // Preferencias guardadas leídas en el inicializador, sin efecto: el
   // dashboard no se renderiza en el servidor (AuthProvider muestra el spinner
   // hasta restaurar la sesión), así que no hay riesgo de hidratación.
@@ -462,6 +460,9 @@ function OrdersPageInner() {
                   </div>
                 </PopoverContent>
               </Popover>
+
+              {/* Flujo del negocio (solo OWNER/ADMIN): qué estados usa el tablero */}
+              <OrderFlowSettings />
 
               {/* Board view (Board / By status / List) + card density */}
               <div data-tour-step="view-toggle">
