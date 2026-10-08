@@ -36,7 +36,6 @@ togo-web-admin/
 │   │   ├── clear-cookie/    # Elimina cookie en logout
 │   │   ├── refresh/         # Refresca tokens usando cookie
 │   │   └── logout-proxy/    # Proxy para logout con cookie
-│   ├── api/csrf/            # Genera tokens CSRF para operaciones críticas
 │   ├── login/               # Página de login
 │   ├── register/            # Página de registro
 │   ├── forgot-password/     # Recuperación de contraseña
@@ -52,7 +51,7 @@ togo-web-admin/
 │   ├── hooks/               # useAuth, useAuthGuard
 │   └── stores/              # auth.store.ts
 ├── stores/                  # Stores globales (sucursales, sesión, realtime-status)
-├── services/                # api.service.ts (Axios + interceptores), auth-sync, session, csrf
+├── services/                # api.service.ts (Axios + interceptores), auth-sync, session
 ├── middleware.ts            # Protección SSR de rutas
 └── SECURITY.md              # Documentación detallada de seguridad
 ```
@@ -155,29 +154,11 @@ Proceso:
 - Muestra loading spinner mientras restaura
 - Las páginas protegidas esperan a que `restoreState === "restored"`
 
-### CSRF Protection (Operaciones Críticas)
+### CSRF
 
-Para operaciones sensibles (pagos, eliminación, cambio de email):
-
-```typescript
-import { useCsrf } from "@/features/auth/hooks/useCsrf";
-
-function DeleteBusinessButton() {
-  const { getCsrfToken, isLoading } = useCsrf();
-  
-  const handleDelete = async () => {
-    const csrfToken = await getCsrfToken();
-    await deleteBusiness({ csrfToken });
-  };
-  
-  return <Button onClick={handleDelete} disabled={isLoading}>Eliminar</Button>;
-}
-```
-
-**API de CSRF:**
-- `GET /api/csrf` - Genera token CSRF (almacenado en cookie httpOnly)
-- Header requerido: `X-CSRF-Token: <token>`
-- Válido por 1 hora
+No hay tokens CSRF: no hacen falta con este modelo.
+- Las llamadas al API llevan el access token en `Authorization: Bearer`, guardado en memoria. Un sitio externo no puede hacer que el navegador lo envíe, así que no son vulnerables a CSRF.
+- Las únicas rutas que dependen de cookie son `/api/auth/refresh` y `/api/auth/logout`. La cookie `togo_refresh_token` es `httpOnly` y `SameSite=Lax`, que el navegador no envía en POST desde otro sitio.
 
 ## 🛡️ Protección de Rutas
 
@@ -320,7 +301,7 @@ features/[feature]/
 ### Seguridad
 
 - ✅ XSS protection (tokens no en localStorage)
-- ✅ CSRF protection (SameSite=Lax, CSRF tokens para operaciones críticas)
+- ✅ CSRF: Bearer en memoria para el API y cookie de sesión `SameSite=Lax`
 - ✅ SSR route protection (middleware)
 - ✅ Token rotation
 - ✅ Server-side token revocation

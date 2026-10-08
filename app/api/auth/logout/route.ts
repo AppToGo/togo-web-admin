@@ -42,7 +42,6 @@ export async function POST() {
     console.warn("Backend logout failed (token might already be expired):", error);
   } finally {
     cookieStore.delete("togo_refresh_token");
-    cookieStore.delete("togo_csrf_token");
     cookieStore.delete("togo_session");
   }
 
