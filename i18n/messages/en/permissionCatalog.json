@@ -39,6 +39,10 @@
     "label": "Confirm while the store is closed",
     "description": "Lets you confirm an order even if the branch is outside business hours or marked as closed. Without this permission, the order stays blocked until the branch opens."
   },
+  "order_revert_status": {
+    "label": "Move orders back to a previous status",
+    "description": "Lets the user move an in-progress order back to a previous status (for example, from Ready to In progress). Delivered and cancelled orders can't be reopened. No message is sent to the customer."
+  },
   "order_item_add": {
     "label": "Add order items",
     "description": "Lets you add products to an order that's already been created."

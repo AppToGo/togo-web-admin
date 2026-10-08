@@ -19,7 +19,29 @@ import {
  *   - Cancel from the detail dropdown patches CANCELLED
  *   - Failed PATCH (422) shows a toast and moves nothing
  *   - Completing an unpaid READY order is blocked client-side (no PATCH)
+ *   - Hidden columns are skipped: only the next VISIBLE column is required
+ *   - Going back needs order.revert_status
  */
+
+/** Hide board columns the way ColumnVisibilityBar persists them (cookie). */
+async function hideColumns(page: Page, hidden: string[]): Promise<void> {
+  const visibility: Record<string, boolean> = {
+    CONFIRMED: true,
+    IN_PROGRESS: true,
+    READY: true,
+    COMPLETED: true,
+    CANCELLED: false,
+  };
+  for (const status of hidden) visibility[status] = false;
+  const baseURL = test.info().project.use.baseURL ?? "http://localhost:3002";
+  await page.context().addCookies([
+    {
+      name: "kanban-column-visibility",
+      value: encodeURIComponent(JSON.stringify(visibility)),
+      url: baseURL,
+    },
+  ]);
+}
 
 const BUSINESS_ID = "e2e-test-business-id";
 const BRANCH_ID = "e2e-test-branch-id";
@@ -52,9 +74,14 @@ interface StatusScenario {
 async function mockStatusScenario(
   page: Page,
   scenario: StatusScenario,
-  opts: { patchError?: { status: number; message: string }; extraLive?: Array<Record<string, unknown>> } = {}
+  opts: {
+    patchError?: { status: number; message: string };
+    extraLive?: Array<Record<string, unknown>>;
+    initialStatus?: string;
+    permissions?: string[];
+  } = {}
 ): Promise<void> {
-  let deliveryStatus = "CONFIRMED";
+  let deliveryStatus = opts.initialStatus ?? "CONFIRMED";
   const liveOrders = () => [
     baseOrder({ id: "delivery1", orderNumber: 101, deliveryType: "DELIVERY", status: deliveryStatus }),
     baseOrder({ id: "pickup01", orderNumber: 102, deliveryType: "PICKUP" }),
@@ -68,7 +95,9 @@ async function mockStatusScenario(
     const json = (body: unknown, status = 200) =>
       route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
-    if (path.endsWith("/auth/me/permissions")) return json(["order.view", "order.create"]);
+    if (path.endsWith("/auth/me/permissions")) {
+      return json(opts.permissions ?? ["order.view", "order.create"]);
+    }
     const statusMatch = path.match(/\/orders\/([^/]+)\/status$/);
     if (statusMatch && request.method() === "PATCH") {
       const body = request.postDataJSON();
@@ -202,5 +231,62 @@ test.describe("Orders — transiciones de estado", () => {
       page.locator("li[data-sonner-toast]").getByText(/el pago está pendiente/i)
     ).toBeVisible({ timeout: 8_000 });
     expect(scenario.patches).toHaveLength(0);
+  });
+
+  test("con En proceso oculto, Nuevo ofrece Marcar listo y patchea READY", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario);
+    await hideColumns(page, ["IN_PROGRESS"]);
+    await openBoard(page);
+
+    const card = page.locator('div[draggable="true"]', {
+      has: page.getByText("#101", { exact: true }),
+    });
+    await expect(card.getByRole("button", { name: "Pasar a proceso" })).toHaveCount(0);
+    await card.getByRole("button", { name: "Marcar listo" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(scenario.patches).toEqual([{ orderId: "delivery1", body: { status: "READY" } }]);
+  });
+
+  test("sin el permiso no se puede devolver un pedido a un estado anterior", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, { initialStatus: "READY" });
+    await openBoard(page);
+
+    await page.getByText("#101", { exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 8_000 });
+    await dialog.getByRole("button", { name: /lista/i }).first().click();
+
+    await expect(page.getByRole("menuitem", { name: "En proceso" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    expect(scenario.patches).toHaveLength(0);
+  });
+
+  test("con order.revert_status se devuelve Lista → En proceso", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      initialStatus: "READY",
+      permissions: ["order.view", "order.create", "order.revert_status"],
+    });
+    await openBoard(page);
+
+    await page.getByText("#101", { exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 8_000 });
+    await dialog.getByRole("button", { name: /lista/i }).first().click();
+    await page.getByRole("menuitem", { name: "En proceso" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(scenario.patches).toEqual([
+      { orderId: "delivery1", body: { status: "IN_PROGRESS" } },
+    ]);
   });
 });

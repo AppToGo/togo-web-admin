@@ -9,3 +9,4 @@ export {
   useHasDateFilter,
   useDateFilterDays,
 } from "./useDateFilterQuery";
+export { useKeepDateRangeFresh } from "./useKeepDateRangeFresh";

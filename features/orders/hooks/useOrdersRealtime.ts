@@ -7,6 +7,7 @@ import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
 import { useBranchStore } from '@/stores/branch.store';
 import { useSessionStore } from '@/stores/session.store';
+import { useDateFilterStore } from '@/features/filters/stores/date-filter.store';
 import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
@@ -301,6 +302,11 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
     };
 
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
+      // Si cambió el día desde la última revisión, "Hoy" se corre antes de
+      // refetchear: si no, el tablero pediría el día anterior y el pedido
+      // nuevo no aparecería.
+      useDateFilterStore.getState().recalculateRange();
+
       // Invalidar cache de órdenes LIVE del negocio (nueva orden siempre va a CONFIRMED)
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],

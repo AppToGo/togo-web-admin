@@ -39,6 +39,8 @@ import {
   canCompleteOrder,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
+import { checkStatusMove, type VisibleStatuses } from "../utils/order-flow.utils";
+import { OrderFlowProvider, useOrderFlow } from "../context/OrderFlowContext";
 import type { CardDensity } from "./OrderCard";
 
 // Gap between board columns — must match the container's `gap-3` (12px)
@@ -301,21 +303,45 @@ export function OrdersKanbanBoard({
     [filteredOrdersByStatus]
   );
 
+  // Columnas visibles: el flujo las sigue (las ocultas se saltan) en el
+  // botón de la card, los drops y el detalle.
+  const visibleStatuses = useMemo<VisibleStatuses>(
+    () => new Set(columns.map((c) => c.id as OrderStatus)),
+    [columns]
+  );
+  const { canRevert } = useOrderFlow();
+
   // Single entry point for every status change on this screen (drag & drop,
-  // "Move to" menu, next-step button, "By status" tab drops). Moving to
-  // Delivered runs the same canCompleteOrder check as the detail status
-  // editor, so no view can complete an unpaid or not-ready order.
+  // "Move to" menu, next-step button, "By status" tab drops). Checks the move
+  // against the visible columns (only the next visible one is mandatory;
+  // going back needs order.revert_status), and moving to Delivered runs the
+  // same canCompleteOrder check as the detail status editor, so no view can
+  // complete an unpaid order.
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
+      const order = Object.values(filteredOrdersByStatus)
+        .flat()
+        .find((o) => o.id === orderId);
+      // Fail closed: a card can only be dragged while it's rendered, so a
+      // missing order means stale state — don't move it unchecked.
+      if (!order) {
+        toast.error(t("errors.updateStatusFailed"));
+        return;
+      }
+      const move = checkStatusMove(order.status, newStatus as OrderStatus, {
+        visible: visibleStatuses,
+        canRevert,
+      });
+      if (!move.ok) {
+        toast.error(
+          move.reason === "mustPassThrough"
+            ? t("errors.mustPassThrough", { status: t(`status.${move.next}`) })
+            : t(`errors.${move.reason}`)
+        );
+        return;
+      }
       if (newStatus === "COMPLETED") {
-        const order = Object.values(filteredOrdersByStatus)
-          .flat()
-          .find((o) => o.id === orderId);
-        // Fail closed: a card can only be dragged while it's rendered, so a
-        // missing order means stale state — don't complete it unchecked.
-        const validation: { valid: boolean; message?: string } = order
-          ? canCompleteOrder(order)
-          : { valid: false };
+        const validation = canCompleteOrder(order);
         if (!validation.valid) {
           toast.error(
             validation.message
@@ -330,7 +356,7 @@ export function OrdersKanbanBoard({
         data: { status: newStatus as OrderStatus },
       });
     },
-    [updateStatus, filteredOrdersByStatus, t]
+    [updateStatus, filteredOrdersByStatus, visibleStatuses, canRevert, t]
   );
 
   // Delivered orders come from a separate paginated query; every view uses
@@ -404,7 +430,7 @@ export function OrdersKanbanBoard({
   }
 
   return (
-    <>
+    <OrderFlowProvider visible={visibleStatuses}>
       {/* Contenedor principal - sin overflow para evitar scroll global */}
       <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
         {/* Main Kanban Container - con overflow controlado */}
@@ -600,6 +626,6 @@ export function OrdersKanbanBoard({
           variant="drawer"
         />
       )}
-    </>
+    </OrderFlowProvider>
   );
 }

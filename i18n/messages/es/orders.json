@@ -114,7 +114,10 @@
     "mustBeReadyOrOnTheWay": "La orden debe estar 'Lista' o 'En camino' para completarse",
     "cannotCancelCompleted": "No se puede cancelar una orden que ya está completada",
     "cannotCancelDelivered": "No se puede cancelar una orden que ya fue entregada",
-    "invalidStatusTransition": "Transición de estado no válida"
+    "invalidStatusTransition": "Transición de estado no válida",
+    "mustPassThrough": "Primero pasa el pedido a «{status}»",
+    "noRevertPermission": "No tienes permiso para devolver un pedido a un estado anterior",
+    "notAllowed": "No se puede mover el pedido a ese estado"
   },
   "history": {
     "created": "Creado: {status}"

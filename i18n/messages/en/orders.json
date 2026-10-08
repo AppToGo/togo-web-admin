@@ -114,7 +114,10 @@
     "mustBeReadyOrOnTheWay": "Order must be 'Ready' or 'On the way' to be completed",
     "cannotCancelCompleted": "Cannot cancel an order that is already completed",
     "cannotCancelDelivered": "Cannot cancel an order that has already been delivered",
-    "invalidStatusTransition": "Invalid status transition"
+    "invalidStatusTransition": "Invalid status transition",
+    "mustPassThrough": "Move the order to “{status}” first",
+    "noRevertPermission": "You don't have permission to move an order back to a previous status",
+    "notAllowed": "The order can't be moved to that status"
   },
   "history": {
     "created": "Created: {status}"

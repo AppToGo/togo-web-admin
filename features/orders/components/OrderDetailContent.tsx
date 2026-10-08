@@ -52,6 +52,8 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
+import { checkStatusMove } from "../utils/order-flow.utils";
+import { useOrderFlow } from "../context/OrderFlowContext";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 
 export interface OrderDetailContentProps {
@@ -125,6 +127,9 @@ function OrderStatusEditor({
   const [isOpen, setIsOpen] = useState(false);
   const variant = getColumnVariant(currentStatus);
   const tStatus = useTranslations("orders.status");
+  // Mismas reglas que el tablero: solo la siguiente columna visible, cancelar,
+  // o retroceder con permiso. Las demás opciones quedan deshabilitadas.
+  const flow = useOrderFlow();
 
   const handleSelect = useCallback(
     (newStatus: OrderStatus) => {
@@ -169,7 +174,8 @@ function OrderStatusEditor({
         {availableStatuses.map((status) => {
           const isCurrent = status === currentStatus;
           const isBlocked =
-            customerEditing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status);
+            (customerEditing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status)) ||
+            (!isCurrent && !checkStatusMove(currentStatus, status, flow).ok);
           return (
             <DropdownMenuItem
               key={status}
@@ -252,9 +258,11 @@ export function OrderDetailContent({
       : []),
   ] as const;
 
+  const flow = useOrderFlow();
   const handleStatusChange = useCallback(
     (newStatus: OrderStatus) => {
       if (!order || newStatus === order.status) return;
+      if (!checkStatusMove(order.status, newStatus, flow).ok) return;
 
       if (newStatus === "COMPLETED") {
         const validation = canCompleteOrder(order);
@@ -273,7 +281,7 @@ export function OrderDetailContent({
         }
       );
     },
-    [order, orderId, updateStatus, onClose, t]
+    [order, orderId, updateStatus, onClose, t, flow]
   );
 
   // El borrador solo vale para la visita a la pestaña que dispara el ⚠: al
