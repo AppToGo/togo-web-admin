@@ -40,5 +40,12 @@ export type { RealtimeState } from './useOrdersRealtime';
 // Badge de Pedidos del sidebar (pedidos nuevos sin ver)
 export { useUnseenOrdersCount, useMarkOrderViewed } from './useUnseenOrders';
 
+// Flujo del tablero del negocio (estados que usa) y retroceso con permiso
+export {
+  useOrderFlow,
+  useBusinessOrderFlow,
+  useUpdateBusinessOrderFlow,
+} from './useOrderFlow';
+
 // Comprobante de pago (transferencias)
 export { useOrderPaymentProof, paymentProofKey } from './useOrderPaymentProof';

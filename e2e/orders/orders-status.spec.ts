@@ -19,6 +19,9 @@ import {
  *   - Cancel from the detail dropdown patches CANCELLED
  *   - Failed PATCH (422) shows a toast and moves nothing
  *   - Completing an unpaid READY order is blocked client-side (no PATCH)
+ *   - Statuses the business doesn't use are skipped: only the next one in
+ *     the business flow (GET /orders/flow) is required
+ *   - Going back needs order.revert_status
  */
 
 const BUSINESS_ID = "e2e-test-business-id";
@@ -52,9 +55,17 @@ interface StatusScenario {
 async function mockStatusScenario(
   page: Page,
   scenario: StatusScenario,
-  opts: { patchError?: { status: number; message: string }; extraLive?: Array<Record<string, unknown>> } = {}
+  opts: {
+    patchError?: { status: number; message: string };
+    extraLive?: Array<Record<string, unknown>>;
+    initialStatus?: string;
+    permissions?: string[];
+    skippedStatuses?: string[];
+    flowUpdates?: unknown[];
+    flowUpdateError?: { status: number; message: string };
+  } = {}
 ): Promise<void> {
-  let deliveryStatus = "CONFIRMED";
+  let deliveryStatus = opts.initialStatus ?? "CONFIRMED";
   const liveOrders = () => [
     baseOrder({ id: "delivery1", orderNumber: 101, deliveryType: "DELIVERY", status: deliveryStatus }),
     baseOrder({ id: "pickup01", orderNumber: 102, deliveryType: "PICKUP" }),
@@ -68,7 +79,30 @@ async function mockStatusScenario(
     const json = (body: unknown, status = 200) =>
       route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
-    if (path.endsWith("/auth/me/permissions")) return json(["order.view", "order.create"]);
+    if (path.endsWith("/orders/flow")) {
+      if (request.method() === "PUT" && opts.flowUpdateError) {
+        return json(
+          { message: opts.flowUpdateError.message, statusCode: opts.flowUpdateError.status },
+          opts.flowUpdateError.status
+        );
+      }
+      if (request.method() === "PUT") {
+        const body = request.postDataJSON() as { skippedStatuses: string[] };
+        opts.flowUpdates?.push(body);
+        opts.skippedStatuses = body.skippedStatuses;
+      }
+      // Flujo de fábrica: "En camino" apagado.
+      return json({ skippedStatuses: opts.skippedStatuses ?? ["ON_THE_WAY"] });
+    }
+    if (path.endsWith("/orders/delivery-candidates")) {
+      return json([
+        { id: "user-ana", name: "Ana Repartidora" },
+        { id: "user-pedro", name: "Pedro Repartidor" },
+      ]);
+    }
+    if (path.endsWith("/auth/me/permissions")) {
+      return json(opts.permissions ?? ["order.view", "order.create"]);
+    }
     const statusMatch = path.match(/\/orders\/([^/]+)\/status$/);
     if (statusMatch && request.method() === "PATCH") {
       const body = request.postDataJSON();
@@ -202,5 +236,186 @@ test.describe("Orders — transiciones de estado", () => {
       page.locator("li[data-sonner-toast]").getByText(/el pago está pendiente/i)
     ).toBeVisible({ timeout: 8_000 });
     expect(scenario.patches).toHaveLength(0);
+  });
+
+  test("si el negocio no usa En proceso, Nuevo ofrece Marcar listo y patchea READY", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, { skippedStatuses: ["IN_PROGRESS"] });
+    await openBoard(page);
+
+    // La columna que el negocio no usa no se muestra.
+    await expect(page.getByRole("heading", { name: "En proceso" })).toHaveCount(0);
+
+    const card = page.locator('div[draggable="true"]', {
+      has: page.getByText("#101", { exact: true }),
+    });
+    await expect(card.getByRole("button", { name: "Pasar a proceso" })).toHaveCount(0);
+    await card.getByRole("button", { name: "Marcar listo" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(scenario.patches).toEqual([{ orderId: "delivery1", body: { status: "READY" } }]);
+  });
+
+  test("sin el permiso no se puede devolver un pedido a un estado anterior", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, { initialStatus: "READY" });
+    await openBoard(page);
+
+    await page.getByText("#101", { exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 8_000 });
+    await dialog.getByRole("button", { name: /lista/i }).first().click();
+
+    await expect(page.getByRole("menuitem", { name: "En proceso" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    expect(scenario.patches).toHaveLength(0);
+  });
+
+  test("con order.revert_status se devuelve Lista → En proceso", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      initialStatus: "READY",
+      permissions: ["order.view", "order.create", "order.revert_status"],
+    });
+    await openBoard(page);
+
+    await page.getByText("#101", { exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 8_000 });
+    await dialog.getByRole("button", { name: /lista/i }).first().click();
+    await page.getByRole("menuitem", { name: "En proceso" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(scenario.patches).toEqual([
+      { orderId: "delivery1", body: { status: "IN_PROGRESS" } },
+    ]);
+  });
+
+  test("un ADMIN quita En proceso del flujo y la columna desaparece", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    const flowUpdates: unknown[] = [];
+    await mockStatusScenario(page, scenario, { flowUpdates });
+    await openBoard(page);
+
+    await expect(page.getByRole("heading", { name: "En proceso" })).toBeVisible();
+    await page.getByRole("button", { name: "Flujo del negocio" }).click();
+    await page.getByRole("switch", { name: "En proceso" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/flujo del negocio actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(flowUpdates).toEqual([{ skippedStatuses: ["ON_THE_WAY", "IN_PROGRESS"] }]);
+    await expect(page.getByRole("heading", { name: "En proceso" })).toHaveCount(0);
+  });
+
+  test("las columnas colapsadas se recuerdan en el navegador", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario);
+    await openBoard(page);
+
+    // Entregada arranca colapsada; se expande y se contrae "Nueva".
+    const expandButtons = page.getByRole("button", { name: "Expandir columna" });
+    const collapsedBefore = await expandButtons.count();
+    await page.getByRole("button", { name: "Contraer columna" }).first().click();
+    await expect(expandButtons).toHaveCount(collapsedBefore + 1);
+
+    const saved = await page.evaluate(() =>
+      localStorage.getItem("togo-kanban-collapsed-columns")
+    );
+    expect(JSON.parse(saved ?? "{}")).toMatchObject({ CONFIRMED: true });
+
+    // Al volver a la pantalla (el tablero se monta de nuevo y lee la
+    // preferencia guardada) sigue colapsada. Navegación del lado del cliente:
+    // recargar volvería a correr el init script que limpia localStorage.
+    await page.getByRole("link", { name: "Dashboard" }).first().click();
+    await expect(page).toHaveURL(/\/dashboard\/?$/, { timeout: 15_000 });
+    await page.getByRole("link", { name: "Pedidos" }).first().click();
+    await expect(page).toHaveURL(/\/dashboard\/orders/, { timeout: 15_000 });
+    await expect(expandButtons).toHaveCount(collapsedBefore + 1, { timeout: 15_000 });
+  });
+
+  test("con En camino activo, un domicilio Lista se envía eligiendo repartidor", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      initialStatus: "READY",
+      skippedStatuses: [],
+    });
+    await openBoard(page);
+
+    await expect(page.getByRole("heading", { name: "En camino" })).toBeVisible();
+    const card = page.locator('div[draggable="true"]', {
+      has: page.getByText("#101", { exact: true }),
+    });
+    // Domicilio: de Lista no se entrega directo, se envía.
+    await expect(card.getByRole("button", { name: "Entregar" })).toHaveCount(0);
+    await card.getByRole("button", { name: "Enviar" }).click();
+
+    // El Dialog del proyecto no expone role="dialog": se busca por contenido.
+    await expect(page.getByRole("heading", { name: "¿Quién lleva el pedido?" })).toBeVisible();
+    expect(scenario.patches).toHaveLength(0);
+    await page.getByRole("radio", { name: "Pedro Repartidor" }).click();
+    await page.getByRole("button", { name: "Enviar pedido" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(scenario.patches).toEqual([
+      {
+        orderId: "delivery1",
+        body: { status: "ON_THE_WAY", assignedDeliveryId: "user-pedro" },
+      },
+    ]);
+  });
+
+  test("con En camino activo, un pedido para recoger pasa de Lista a Entregar", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      skippedStatuses: [],
+      extraLive: [
+        baseOrder({
+          id: "pickupready",
+          orderNumber: 105,
+          status: "READY",
+          deliveryType: "PICKUP",
+          paymentStatus: "PAID",
+        }),
+      ],
+    });
+    await openBoard(page);
+
+    const card = page.locator('div[draggable="true"]', {
+      has: page.getByText("#105", { exact: true }),
+    });
+    await expect(card.getByRole("button", { name: "Enviar" })).toHaveCount(0);
+    await expect(card.getByRole("button", { name: "Entregar" })).toBeVisible();
+  });
+
+  test("no se puede quitar del flujo un estado que todavía tiene pedidos", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      flowUpdateError: {
+        status: 409,
+        message:
+          "Hay pedidos en un estado que quieres dejar de usar (2 en En proceso). Muévelos antes de cambiar el flujo.",
+      },
+    });
+    await openBoard(page);
+
+    await page.getByRole("button", { name: "Flujo del negocio" }).click();
+    const toggle = page.getByRole("switch", { name: "En proceso" });
+    await toggle.click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/2 en En proceso/i)
+    ).toBeVisible({ timeout: 8_000 });
+    // El flujo no cambió: la columna sigue y el switch vuelve a quedar activo.
+    await expect(page.getByRole("heading", { name: "En proceso" })).toBeVisible();
+    await expect(toggle).toBeChecked();
   });
 });

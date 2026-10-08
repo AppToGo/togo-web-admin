@@ -7,6 +7,7 @@ import { useOrdersRealtime } from "@/features/orders/hooks/useOrdersRealtime";
 import { useConversationsRealtime } from "@/features/conversations/hooks/useConversationsRealtime";
 import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
 import { useRealtimeStatusStore } from "@/stores/realtime-status.store";
+import { useKeepDateRangeFresh } from "@/features/filters/hooks/useKeepDateRangeFresh";
 
 /**
  * Sockets globales del dashboard (sin UI). Viven en el layout para que el
@@ -22,6 +23,8 @@ import { useRealtimeStatusStore } from "@/stores/realtime-status.store";
  */
 export function DashboardRealtime() {
   useHydrateNotificationPreferences();
+  // "Hoy" del tablero al día aunque la pestaña quede abierta de un día a otro.
+  useKeepDateRangeFresh();
 
   const isSuperAdmin = useIsSuperAdmin();
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();

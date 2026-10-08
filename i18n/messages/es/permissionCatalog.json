@@ -39,6 +39,10 @@
     "label": "Confirmar con la sede cerrada",
     "description": "Permite confirmar un pedido aunque la sede esté fuera de horario o marcada como cerrada. Sin este permiso el pedido queda bloqueado hasta que la sede abra."
   },
+  "order_revert_status": {
+    "label": "Devolver pedidos a un estado anterior",
+    "description": "Permite regresar un pedido en curso a un estado anterior (entre Nueva, En proceso, Lista y En camino). Entregados y cancelados no se pueden reabrir. Al cliente no se le envía ningún mensaje."
+  },
   "order_item_add": {
     "label": "Agregar productos al pedido",
     "description": "Permite sumar productos a un pedido ya creado."

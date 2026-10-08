@@ -14,13 +14,10 @@ import { GroupedListView } from "./GroupedListView";
 import { HoverTooltip } from "./HoverTooltip";
 import { StatsTickerRail } from "./StatsTickerRail";
 import { NewOrderDrawer } from "./NewOrderDrawer";
+import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
 import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
 
-import {
-  ColumnVisibilityBar,
-  type ColumnVisibilityConfig,
-} from "./ColumnVisibilityBar";
 
 import {
   useOrdersByStatus,
@@ -39,6 +36,8 @@ import {
   canCompleteOrder,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
+import { checkStatusMove } from "../utils/order-flow.utils";
+import { useOrderFlow } from "../hooks/useOrderFlow";
 import type { CardDensity } from "./OrderCard";
 
 // Gap between board columns — must match the container's `gap-3` (12px)
@@ -114,6 +113,28 @@ function filterOrdersBySearch(
   });
 }
 
+const COLLAPSED_COLUMNS_STORAGE_KEY = "togo-kanban-collapsed-columns";
+const DEFAULT_COLLAPSED_COLUMNS: Partial<Record<OrderStatus, boolean>> = {
+  COMPLETED: true,
+  CANCELLED: true,
+};
+
+/**
+ * Columnas colapsadas guardadas en este navegador. Se lee en el
+ * inicializador: el dashboard no se renderiza en el servidor (AuthProvider
+ * muestra el spinner hasta restaurar la sesión).
+ */
+function readCollapsedColumns(): Partial<Record<OrderStatus, boolean>> {
+  try {
+    const saved = typeof window !== "undefined"
+      ? localStorage.getItem(COLLAPSED_COLUMNS_STORAGE_KEY)
+      : null;
+    return saved ? { ...DEFAULT_COLLAPSED_COLUMNS, ...JSON.parse(saved) } : DEFAULT_COLLAPSED_COLUMNS;
+  } catch {
+    return DEFAULT_COLLAPSED_COLUMNS;
+  }
+}
+
 export function OrdersKanbanBoard({
   searchQuery = "",
   boardView = "board",
@@ -130,10 +151,7 @@ export function OrdersKanbanBoard({
   // Get metrics for total counts per status
   const { data: metrics } = useOrderMetrics();
 
-  // Estado local del sidebar de estadísticas
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  // Stats panel collapsed to a narrow rail (inside the already open sidebar)
-  // — independent from the isSidebarOpen/ColumnVisibilityBar cookie.
+  // Stats panel collapsed to a narrow rail.
   // null = the user hasn't toggled it yet: starts collapsed on mobile (so the
   // board gets the width) and expanded on desktop.
   const isMobile = useIsMobile();
@@ -141,13 +159,23 @@ export function OrdersKanbanBoard({
   const statsRailCollapsed = statsRailCollapsedChoice ?? isMobile;
 
   // Columns collapsed to a rail in the Board view — Delivered and Cancelled
-  // start collapsed (the least checked during day-to-day operation).
+  // start collapsed (the least checked during day-to-day operation). Which
+  // ones the user keeps collapsed or expanded is a per-browser preference
+  // (localStorage); which columns exist is the business flow (backend).
   const [collapsedColumns, setCollapsedColumns] = useState<
     Partial<Record<OrderStatus, boolean>>
-  >({ COMPLETED: true, CANCELLED: true });
+  >(readCollapsedColumns);
   const handleColumnCollapsedChange = useCallback(
     (status: OrderStatus, collapsed: boolean) => {
-      setCollapsedColumns((prev) => ({ ...prev, [status]: collapsed }));
+      setCollapsedColumns((prev) => {
+        const next = { ...prev, [status]: collapsed };
+        try {
+          localStorage.setItem(COLLAPSED_COLUMNS_STORAGE_KEY, JSON.stringify(next));
+        } catch {
+          // Sin localStorage (modo privado): la preferencia dura la sesión.
+        }
+        return next;
+      });
     },
     []
   );
@@ -155,14 +183,6 @@ export function OrdersKanbanBoard({
   // Active status in the "By status" (Focus) view
   const [focusStatusOverride, setFocusStatusOverride] = useState<OrderStatus | null>(null);
 
-  const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibilityConfig>({
-      CONFIRMED: true,
-      IN_PROGRESS: true,
-      READY: true,
-      COMPLETED: true,
-      CANCELLED: false,
-    });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
@@ -205,13 +225,13 @@ export function OrdersKanbanBoard({
 
   const allColumns = useMemo(() => getKanbanColumns(), []);
 
-  // Filter columns based on visibility
-  const columns = useMemo(() => {
-    return allColumns.filter((column) => {
-      const key = column.id as keyof ColumnVisibilityConfig;
-      return columnVisibility[key] ?? true;
-    });
-  }, [allColumns, columnVisibility]);
+  // Columnas del flujo del negocio (OWNER/ADMIN eligen qué estados usa;
+  // los que no usa no se muestran y el pedido los salta).
+  const { visible: flowStatuses, canRevert } = useOrderFlow();
+  const columns = useMemo(
+    () => allColumns.filter((column) => flowStatuses?.has(column.id) ?? true),
+    [allColumns, flowStatuses]
+  );
 
   const visibleColumnCount = columns.length;
 
@@ -301,21 +321,41 @@ export function OrdersKanbanBoard({
     [filteredOrdersByStatus]
   );
 
+  // Pedido que espera repartidor para pasar a "En camino".
+  const [deliveryPickerOrder, setDeliveryPickerOrder] = useState<Order | null>(null);
+
   // Single entry point for every status change on this screen (drag & drop,
-  // "Move to" menu, next-step button, "By status" tab drops). Moving to
-  // Delivered runs the same canCompleteOrder check as the detail status
-  // editor, so no view can complete an unpaid or not-ready order.
+  // "Move to" menu, next-step button, "By status" tab drops). Checks the move
+  // against the visible columns (only the next visible one is mandatory;
+  // going back needs order.revert_status), and moving to Delivered runs the
+  // same canCompleteOrder check as the detail status editor, so no view can
+  // complete an unpaid order.
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
+      const order = Object.values(filteredOrdersByStatus)
+        .flat()
+        .find((o) => o.id === orderId);
+      // Fail closed: a card can only be dragged while it's rendered, so a
+      // missing order means stale state — don't move it unchecked.
+      if (!order) {
+        toast.error(t("errors.updateStatusFailed"));
+        return;
+      }
+      const move = checkStatusMove(order.status, newStatus as OrderStatus, {
+        visible: flowStatuses,
+        canRevert,
+        deliveryType: order.deliveryType,
+      });
+      if (!move.ok) {
+        toast.error(
+          move.reason === "mustPassThrough"
+            ? t("errors.mustPassThrough", { status: t(`status.${move.next}`) })
+            : t(`errors.${move.reason}`)
+        );
+        return;
+      }
       if (newStatus === "COMPLETED") {
-        const order = Object.values(filteredOrdersByStatus)
-          .flat()
-          .find((o) => o.id === orderId);
-        // Fail closed: a card can only be dragged while it's rendered, so a
-        // missing order means stale state — don't complete it unchecked.
-        const validation: { valid: boolean; message?: string } = order
-          ? canCompleteOrder(order)
-          : { valid: false };
+        const validation = canCompleteOrder(order);
         if (!validation.valid) {
           toast.error(
             validation.message
@@ -325,12 +365,32 @@ export function OrdersKanbanBoard({
           return;
         }
       }
+      // "En camino" exige repartidor: si el pedido no tiene, se pide antes
+      // de mover la card.
+      if (newStatus === "ON_THE_WAY" && !order.assignedDeliveryId) {
+        setDeliveryPickerOrder(order);
+        return;
+      }
       updateStatus.mutate({
         orderId,
         data: { status: newStatus as OrderStatus },
       });
     },
-    [updateStatus, filteredOrdersByStatus, t]
+    [updateStatus, filteredOrdersByStatus, flowStatuses, canRevert, t]
+  );
+
+  const handleDeliveryConfirm = useCallback(
+    (assignedDeliveryId: string) => {
+      if (!deliveryPickerOrder) return;
+      updateStatus.mutate(
+        {
+          orderId: deliveryPickerOrder.id,
+          data: { status: "ON_THE_WAY", assignedDeliveryId },
+        },
+        { onSettled: () => setDeliveryPickerOrder(null) }
+      );
+    },
+    [deliveryPickerOrder, updateStatus]
   );
 
   // Delivered orders come from a separate paginated query; every view uses
@@ -529,11 +589,9 @@ export function OrdersKanbanBoard({
           className={cn(
             "shrink-0 ml-0 transition-all duration-300 ease-in-out",
             "rounded-card-xl overflow-hidden flex flex-col",
-            !isSidebarOpen && "w-0 opacity-0 border-0 ml-0",
-            isSidebarOpen &&
-              !statsRailCollapsed &&
+            !statsRailCollapsed &&
               "w-72 opacity-100 ml-3 bg-white/30 backdrop-blur-xl border border-white/40",
-            isSidebarOpen && statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
+            statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
           )}
         >
           {statsRailCollapsed ? (
@@ -577,18 +635,21 @@ export function OrdersKanbanBoard({
         </aside>
       </div>
 
-      {/* Column Visibility Floating Bar */}
-      <div data-tour-step="column-visibility">
-        <ColumnVisibilityBar
-          onVisibilityChange={setColumnVisibility}
-          isSidebarOpen={isSidebarOpen}
-          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-      </div>
-
       <NewOrderDrawer
         isOpen={isNewOrderOpen}
         onClose={() => setIsNewOrderOpen(false)}
+      />
+
+      <DeliveryPickerDialog
+        isOpen={!!deliveryPickerOrder}
+        orderLabel={
+          deliveryPickerOrder
+            ? formatOrderNumber(deliveryPickerOrder.id, deliveryPickerOrder.orderNumber)
+            : undefined
+        }
+        isSubmitting={updateStatus.isPending}
+        onClose={() => setDeliveryPickerOrder(null)}
+        onConfirm={handleDeliveryConfirm}
       />
 
       {/* Order detail as a side panel - only rendered when an order is selected */}
