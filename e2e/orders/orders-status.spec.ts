@@ -7,6 +7,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -117,7 +118,7 @@ test.describe("Orders — transiciones de estado", () => {
     // Next-step button on the #101 card (CONFIRMED → IN_PROGRESS).
     // Cards are the only draggable divs containing the order number.
     const card = page.locator('div[draggable="true"]', {
-      has: page.getByText("#101", { exact: true }),
+      has: boardOrderNumber(page, "#101"),
     });
     await card.getByRole("button", { name: "Pasar a proceso" }).click();
 
@@ -127,7 +128,7 @@ test.describe("Orders — transiciones de estado", () => {
     expect(scenario.patches).toEqual([{ orderId: "delivery1", body: { status: "IN_PROGRESS" } }]);
 
     // Card detail now reports the new status
-    await page.getByText("#101", { exact: true }).click();
+    await boardOrderNumber(page, "#101").click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 8_000 });
     await expect(dialog.getByRole("button", { name: /en proceso/i }).first()).toBeVisible();
@@ -138,7 +139,7 @@ test.describe("Orders — transiciones de estado", () => {
     await mockStatusScenario(page, scenario);
     await openBoard(page);
 
-    await page.getByText("#101", { exact: true }).click();
+    await boardOrderNumber(page, "#101").click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 8_000 });
 
@@ -160,7 +161,7 @@ test.describe("Orders — transiciones de estado", () => {
     await openBoard(page);
 
     const card = page.locator('div[draggable="true"]', {
-      has: page.getByText("#101", { exact: true }),
+      has: boardOrderNumber(page, "#101"),
     });
     await card.getByRole("button", { name: "Pasar a proceso" }).click();
 
@@ -172,7 +173,7 @@ test.describe("Orders — transiciones de estado", () => {
 
     // Attempt was sent, but the card stays put
     expect(scenario.patches).toHaveLength(1);
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Nueva" })).toBeVisible();
   });
 
@@ -191,10 +192,10 @@ test.describe("Orders — transiciones de estado", () => {
     });
     await openBoard(page);
 
-    await expect(page.getByText("#104", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#104")).toBeVisible();
 
     const card = page.locator('div[draggable="true"]', {
-      has: page.getByText("#104", { exact: true }),
+      has: boardOrderNumber(page, "#104"),
     });
     await card.getByRole("button", { name: "Entregar" }).click();
 

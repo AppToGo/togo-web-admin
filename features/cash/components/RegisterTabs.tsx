@@ -11,12 +11,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { useCreateRegister } from "../hooks/useCashMutations";
 import type { CashRegister } from "../types/cash.types";
@@ -92,12 +92,12 @@ export function RegisterTabs({
           {t("addRegister")}
         </Button>
       )}
-      <Dialog open={creating} onOpenChange={setCreating}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("addRegister")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
+      <Drawer open={creating} onOpenChange={setCreating}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{t("addRegister")}</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex-1 space-y-2 overflow-y-auto px-6 py-4">
             <label htmlFor="cash-register-name" className="text-sm font-medium">
               {t("registerName")}
             </label>
@@ -111,16 +111,16 @@ export function RegisterTabs({
               }}
             />
           </div>
-          <DialogFooter>
+          <DrawerFooter>
             <Button
               onClick={submit}
               disabled={!name.trim() || createRegister.isPending}
             >
               {t("addRegister")}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

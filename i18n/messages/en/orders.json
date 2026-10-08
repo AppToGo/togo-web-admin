@@ -393,6 +393,8 @@
     "cashSessionOption": "Shift · {register}",
     "cashChange": "Change: {change}",
     "noOpenSession": "No open shift in this branch. Open cash to charge in cash.",
+    "noCashPermission": "You don't have permission to view cash. Ask whoever runs the register to charge this order.",
+    "cashReceivedPlaceholder": "Tendered (empty = exact amount)",
     "success": "Order #{number} created",
     "error": "Could not create the order",
     "validation": {
@@ -402,7 +404,8 @@
       "name": "Enter who the order is for",
       "address": "Enter the delivery address",
       "table": "Select the table",
-      "cashSession": "Select the shift receiving the cash"
+      "cashSession": "Select the shift receiving the cash",
+      "cashReceived": "The cash received doesn't cover the total"
     }
   }
 }

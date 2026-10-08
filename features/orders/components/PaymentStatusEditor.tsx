@@ -23,6 +23,7 @@ import { categoryBadgeVariants } from "../styles";
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
 import { CashChargeDrawer } from "./CashChargeDrawer";
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
+import { isCashPaymentMethod } from "@/features/cash/utils/cash.utils";
 import type { PaymentStatus } from "../types";
 
 interface PaymentStatusEditorProps {
@@ -55,7 +56,7 @@ export function PaymentStatusEditor({
       }
       // Efectivo pendiente se cobra con destino explícito; el resto es
       // solo confirmación (transfer/datáfono no mueven caja).
-      if (newStatus === "PAID" && paymentMethod === "CASH") {
+      if (newStatus === "PAID" && isCashPaymentMethod(paymentMethod)) {
         setMenuOpen(false);
         setChargeOpen(true);
         return;
@@ -126,11 +127,23 @@ export function PaymentStatusEditor({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <CashChargeDrawer
-        order={{ id: orderId, total, paymentMethod, branchId }}
-        open={chargeOpen}
-        onOpenChange={setChargeOpen}
-      />
+      {/*
+        El drawer se monta en un portal, pero los eventos de React suben por
+        el árbol de componentes: sin este contenedor cada clic dentro del
+        cobro (radio, turno, monto, "Cobrar") también disparaba el onClick
+        de la card y abría el detalle del pedido encima.
+      */}
+      <div
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <CashChargeDrawer
+          order={{ id: orderId, total, paymentMethod, branchId }}
+          open={chargeOpen}
+          onOpenChange={setChargeOpen}
+        />
+      </div>
     </>
   );
 }

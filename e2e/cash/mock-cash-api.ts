@@ -131,8 +131,30 @@ const COLLECTIONS = [
   },
 ];
 
+/** Authorizers returned by `GET …/cash/authorizers` (withdrawals). */
+export const AUTHORIZERS = [{ id: "owner-1", name: "Dueña E2E" }];
+
 const SESSIONS_HISTORY = {
   items: [
+    // An OPEN shift of another register: the API returns it unless the
+    // client filters by `status` / `cashRegisterId`.
+    {
+      id: "sess-open-2",
+      businessId: BUSINESS_ID,
+      branchId: BRANCH_ID,
+      cashRegisterId: "reg-2",
+      status: "OPEN",
+      openedById: "user-1",
+      openedAt: new Date().toISOString(),
+      openingAmount: "0",
+      closedById: null,
+      closedAt: null,
+      expectedAmount: null,
+      countedAmount: null,
+      difference: null,
+      closingNotes: null,
+      register: { id: "reg-2", name: "Caja 2 en curso" },
+    },
     {
       id: "sess-0",
       businessId: BUSINESS_ID,
@@ -216,10 +238,26 @@ export async function mockCashDashboard(
     }
 
     if (path.includes("/cash/sessions")) {
+      // Same filters as the backend (`status`, `cashRegisterId`).
+      const status = url.searchParams.get("status");
+      const registerId = url.searchParams.get("cashRegisterId");
+      const items = SESSIONS_HISTORY.items.filter(
+        (session) =>
+          (!status || session.status === status) &&
+          (!registerId || session.cashRegisterId === registerId)
+      );
       return route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify(SESSIONS_HISTORY),
+        body: JSON.stringify({ ...SESSIONS_HISTORY, items, total: items.length }),
+      });
+    }
+
+    if (path.endsWith("/cash/authorizers")) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(AUTHORIZERS),
       });
     }
 

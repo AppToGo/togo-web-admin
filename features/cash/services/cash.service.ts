@@ -4,7 +4,6 @@
  * basePath con businessId+branchId y `useCashStore` de zustand.
  */
 import apiClient from "@/services/api.service";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type {
   CashRegister,
   CashSession,
@@ -14,15 +13,8 @@ import type {
   CashAuditEntry,
   OwnerOverviewBranch,
   Paginated,
+  WithdrawalAuthorizer,
 } from "../types/cash.types";
-
-function getBusinessId(): string {
-  const { user } = useAuthStore.getState();
-  if (!user?.businessId) {
-    throw new Error("Se requiere un businessId para operar caja");
-  }
-  return user.businessId;
-}
 
 function basePath(businessId: string, branchId: string): string {
   return `/businesses/${businessId}/branches/${branchId}/cash`;
@@ -84,10 +76,19 @@ export async function getOpenSessions(businessId: string, branchId: string) {
   >;
 }
 
+export interface SessionsHistoryParams {
+  page?: number;
+  limit?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  status?: CashSession["status"];
+  cashRegisterId?: string;
+}
+
 export async function getSessionsHistory(
   businessId: string,
   branchId: string,
-  params?: { page?: number; limit?: number; dateFrom?: string; dateTo?: string }
+  params?: SessionsHistoryParams
 ): Promise<Paginated<CashSession & { register: { id: string; name: string } }>> {
   const { data } = await apiClient.get<Paginated<CashSession & { register: { id: string; name: string } }>>(
     `${basePath(businessId, branchId)}/sessions`,
@@ -185,10 +186,23 @@ export async function getCollections(
   return data;
 }
 
-export async function getOwnerOverview(businessId?: string): Promise<OwnerOverviewBranch[]> {
-  const effectiveBusinessId = businessId || getBusinessId();
+/**
+ * Quién puede autorizar un retiro en la sede (sin el propio cajero). Endpoint
+ * propio de la acción (`cash.withdraw`): no depende de `user.view`.
+ */
+export async function getWithdrawalAuthorizers(
+  businessId: string,
+  branchId: string
+): Promise<WithdrawalAuthorizer[]> {
+  const { data } = await apiClient.get<WithdrawalAuthorizer[]>(
+    `${basePath(businessId, branchId)}/authorizers`
+  );
+  return data;
+}
+
+export async function getOwnerOverview(businessId: string): Promise<OwnerOverviewBranch[]> {
   const { data } = await apiClient.get<OwnerOverviewBranch[]>(
-    `${businessPath(effectiveBusinessId)}/overview`
+    `${businessPath(businessId)}/overview`
   );
   return data;
 }

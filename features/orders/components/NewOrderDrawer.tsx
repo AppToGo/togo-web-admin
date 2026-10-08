@@ -62,6 +62,7 @@ import { formatCurrency } from "../utils/order-status.utils";
 import { isCounterEnabled } from "@/features/branches/types/branch-config.types";
 import { useOpenSessions } from "@/features/cash/hooks/useCash";
 import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import type {
   ManualOrderDeliveryType,
   ManualOrderPaymentMethod,
@@ -100,6 +101,15 @@ function productLabel(item: InventoryItem): string {
   return item.variantLabel && item.variantLabel !== item.productName
     ? `${item.productName} · ${item.variantLabel}`
     : item.productName;
+}
+
+/**
+ * 409 `COUNTER_SALE_PAYMENT_PENDING`: la venta de mostrador se creó pero el
+ * cobro en caja falló. No es un error para reintentar.
+ */
+function isCounterSalePaymentPending(err: unknown): boolean {
+  const data = (err as { response?: { data?: { code?: unknown } } } | null)?.response?.data;
+  return data?.code === "COUNTER_SALE_PAYMENT_PENDING";
 }
 
 export function NewOrderDrawer({
@@ -144,7 +154,7 @@ export function NewOrderDrawer({
   const [addressText, setAddressText] = useState("");
   const [tableId, setTableId] = useState<string | null>(null);
   // Mostrador + efectivo: turno donde entra el dinero y recibido del cliente.
-  const [cashSessionId, setCashSessionId] = useState<string | null>(null);
+  const [pickedCashSessionId, setCashSessionId] = useState<string | null>(null);
   const [cashReceived, setCashReceived] = useState(0);
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -249,14 +259,27 @@ export function NewOrderDrawer({
     setCart({});
     setTableId(null);
     setCategoryId(null);
+    // El turno es de la sede anterior: mandarlo con la nueva lo rechaza el
+    // servidor después de crear el pedido.
+    setCashSessionId(null);
+    setCashReceived(0);
   };
 
   const needsCustomer = deliveryType !== "DINE_IN" && deliveryType !== "COUNTER";
   const isCounterCash = deliveryType === "COUNTER" && paymentMethod === "CASH";
-  const { data: openSessions = [] } = useOpenSessions(
-    isOpen && isCounterCash ? businessId : null,
-    isOpen && isCounterCash ? branchId : null
+  // Ver los turnos exige `cash.view`: sin él no se piden (403 con reintentos).
+  const { hasPermission } = useMyPermissions();
+  const canSeeCash = hasPermission("cash.view");
+  const { data: fetchedSessions = [] } = useOpenSessions(
+    isOpen && isCounterCash && canSeeCash ? businessId : null,
+    isOpen && isCounterCash && canSeeCash ? branchId : null
   );
+  const openSessions = canSeeCash ? fetchedSessions : [];
+  // Solo vale un turno que siga abierto en esta sede.
+  const cashSessionId =
+    pickedCashSessionId && openSessions.some((session) => session.id === pickedCashSessionId)
+      ? pickedCashSessionId
+      : null;
   const errors = {
     items: cartLines.length === 0 ? t("validation.items") : undefined,
     paymentMethod: !paymentMethod ? t("validation.paymentMethod") : undefined,
@@ -267,6 +290,12 @@ export function NewOrderDrawer({
       deliveryType === "DELIVERY" && !addressText.trim() ? t("validation.address") : undefined,
     tableId: deliveryType === "DINE_IN" && !tableId ? t("validation.table") : undefined,
     cashSession: isCounterCash && !cashSessionId ? t("validation.cashSession") : undefined,
+    // Vacío = pago exacto. Si se escribe, tiene que cubrir el total: con
+    // menos el servidor rechaza el cobro cuando el pedido ya está creado.
+    cashReceived:
+      isCounterCash && cashReceived > 0 && cashReceived < total
+        ? t("validation.cashReceived")
+        : undefined,
   };
   const isValid = !!branchId && Object.values(errors).every((error) => !error);
   const showError = (error: string | undefined) => (submitted ? error : undefined);
@@ -327,9 +356,16 @@ export function NewOrderDrawer({
       });
       resetForm();
       onClose();
-    } catch {
+    } catch (err) {
       // El toast de error lo muestra useCreateOrder; el formulario queda
       // intacto para que el operador corrija y reintente.
+      if (isCounterSalePaymentPending(err)) {
+        // Excepción: el pedido SÍ quedó creado, solo falló el cobro. Se
+        // cierra el formulario para que no lo vuelvan a crear; el toast ya
+        // dice el número y que se cobra desde el tablero.
+        resetForm();
+        onClose();
+      }
     }
   };
 
@@ -547,7 +583,9 @@ export function NewOrderDrawer({
 
               {isCounterCash && (
                 <FieldGroup label={t("cashSection")} icon={Banknote}>
-                  {openSessions.length === 0 ? (
+                  {!canSeeCash ? (
+                    <p className="text-xs text-amber-700">{t("noCashPermission")}</p>
+                  ) : openSessions.length === 0 ? (
                     <p className="text-xs text-amber-700">{t("noOpenSession")}</p>
                   ) : (
                     <>
@@ -572,8 +610,15 @@ export function NewOrderDrawer({
                       {showError(errors.cashSession) && (
                         <p className="text-xs text-red-600">{errors.cashSession}</p>
                       )}
-                      <CurrencyInput value={cashReceived} onChange={setCashReceived} min={0} />
-                      {cashReceived > 0 && (
+                      <CurrencyInput
+                        value={cashReceived}
+                        onChange={setCashReceived}
+                        placeholder={t("cashReceivedPlaceholder")}
+                      />
+                      {showError(errors.cashReceived) && (
+                        <p className="text-xs text-red-600">{errors.cashReceived}</p>
+                      )}
+                      {cashReceived >= total && cashReceived > 0 && (
                         <p className="text-xs text-slate-500">
                           {t("cashChange", {
                             change: formatCurrency(Math.max(0, cashReceived - total)),

@@ -1,30 +1,32 @@
 "use client";
 /**
  * Apertura de turno: base inicial (>= 0) + referencia del último cierre
- * de la caja (plan: "referencia último cierre").
+ * de ESTA caja (plan: "referencia último cierre"). El cierre se pide acá,
+ * filtrado por caja y solo al abrir el panel: con el historial de la sede
+ * la referencia podía ser el cierre de otra caja.
  */
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencyInput } from "./CurrencyInput";
 import { useOpenSession } from "../hooks/useCashMutations";
+import { useSessionsHistory } from "../hooks/useCash";
 import { formatCOP } from "../utils/cash.utils";
-import type { CashRegister, CashSession } from "../types/cash.types";
+import type { CashRegister } from "../types/cash.types";
 
 interface OpenSessionDialogProps {
   businessId: string;
   branchId: string;
   register: CashRegister | null;
-  lastClosed: (CashSession & { register?: { id: string; name: string } }) | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpened?: (sessionId: string) => void;
@@ -34,7 +36,6 @@ export function OpenSessionDialog({
   businessId,
   branchId,
   register,
-  lastClosed,
   open,
   onOpenChange,
   onOpened,
@@ -43,6 +44,12 @@ export function OpenSessionDialog({
   const [openingAmount, setOpeningAmount] = useState(0);
   const [notes, setNotes] = useState("");
   const openSession = useOpenSession(businessId, branchId);
+  const { data: closedPage, isLoading: isLoadingLastClosed } = useSessionsHistory(
+    open && register ? businessId : null,
+    branchId,
+    { page: 1, limit: 1, status: "CLOSED", cashRegisterId: register?.id }
+  );
+  const lastClosed = closedPage?.items[0] ?? null;
 
   const submit = () => {
     if (!register) return;
@@ -64,20 +71,22 @@ export function OpenSessionDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>
             {t("openSession")}
             {register ? ` — ${register.name}` : ""}
-          </DialogTitle>
-          <DialogDescription>
-            {lastClosed?.closedAt
-              ? `${t("lastClose")}: ${formatCOP(lastClosed.countedAmount ?? lastClosed.expectedAmount ?? 0)}`
-              : t("neverClosed")}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
+          </DrawerTitle>
+          <DrawerDescription>
+            {isLoadingLastClosed
+              ? "…"
+              : lastClosed?.closedAt
+                ? `${t("lastClose")}: ${formatCOP(lastClosed.countedAmount ?? lastClosed.expectedAmount ?? 0)}`
+                : t("neverClosed")}
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
           <div className="space-y-2">
             <label htmlFor="cash-opening-amount" className="text-sm font-medium">
               {t("openingAmount")}
@@ -86,7 +95,6 @@ export function OpenSessionDialog({
               id="cash-opening-amount"
               value={openingAmount}
               onChange={setOpeningAmount}
-              min={0}
             />
             <p className="text-xs text-slate-500">{t("openingAmountHint")}</p>
           </div>
@@ -102,15 +110,15 @@ export function OpenSessionDialog({
             />
           </div>
         </div>
-        <DialogFooter>
+        <DrawerFooter>
           <Button
             onClick={submit}
             disabled={!register || openSession.isPending}
           >
             {t("openSession")}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

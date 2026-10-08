@@ -1,7 +1,12 @@
 "use client";
 /**
  * Input numérico de COP: solo dígitos, muestra formato es-CO mientras se
- * escribe. El valor real (number, sin formato) sale por `onChange`.
+ * escribe. El valor real (number, sin formato) sale por `onChange`; campo
+ * vacío = 0.
+ *
+ * No recorta a un mínimo: con un mínimo de 1 el campo no se podía vaciar
+ * (al borrar quedaba "1" y escribir 2000 daba 12.000). Los mínimos los
+ * valida quien usa el input, antes de habilitar su botón.
  */
 import { Input } from "@/components/ui/input";
 import { parseCOPInput } from "../utils/cash.utils";
@@ -12,7 +17,6 @@ interface CurrencyInputProps {
   placeholder?: string;
   disabled?: boolean;
   id?: string;
-  min?: number;
 }
 
 export function CurrencyInput({
@@ -21,7 +25,6 @@ export function CurrencyInput({
   placeholder,
   disabled,
   id,
-  min = 0,
 }: CurrencyInputProps) {
   const display =
     value > 0
@@ -35,10 +38,7 @@ export function CurrencyInput({
       value={display}
       placeholder={placeholder}
       disabled={disabled}
-      onChange={(event) => {
-        const parsed = parseCOPInput(event.target.value);
-        onChange(Math.max(min, parsed));
-      }}
+      onChange={(event) => onChange(parseCOPInput(event.target.value))}
     />
   );
 }

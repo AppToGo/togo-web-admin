@@ -18,6 +18,8 @@ export const CASH_KEYS = {
     [...CASH_KEYS.all, "movements", businessId, branchId, sessionId, params] as const,
   collections: (businessId?: string, branchId?: string, status?: string) =>
     [...CASH_KEYS.all, "collections", businessId, branchId, status] as const,
+  authorizers: (businessId?: string, branchId?: string) =>
+    [...CASH_KEYS.all, "authorizers", businessId, branchId] as const,
   overview: (businessId?: string) => [...CASH_KEYS.all, "overview", businessId] as const,
   audit: (businessId?: string, params?: unknown) =>
     [...CASH_KEYS.all, "audit", businessId, params] as const,

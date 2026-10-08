@@ -3,7 +3,10 @@
  * Cierre de turno: conteo por denominación COP. El total contado se
  * deriva en el cliente solo para mostrar; el servidor recalcula y manda
  * (`countedAmount` del request es referencia, el cierre es autoritativo).
- * Si hay "Por liquidar" pendientes, el cierre se bloquea (plan).
+ * Los "Por liquidar" de la sede no bloquean el cierre: son plata que
+ * todavía no entró a ninguna caja (puede ser de otro turno o de un
+ * domiciliario que no ha vuelto) y el servidor tampoco lo exige. Solo se
+ * avisa, para que el cajero no los olvide.
  */
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -56,7 +59,6 @@ export function CloseSessionDrawer({
   const counted = useMemo(() => sumDenominations(counts), [counts]);
   const expected = Number(expectedAmount);
   const difference = counted - expected;
-  const blocked = pendingCount > 0;
   // El servidor exige motivo cuando hay diferencia.
   const needsReason = difference !== 0;
 
@@ -72,7 +74,7 @@ export function CloseSessionDrawer({
   };
 
   const submit = () => {
-    if (!sessionId || blocked) return;
+    if (!sessionId) return;
     if (needsReason && !notes.trim()) return;
     closeSession.mutate(
       {
@@ -140,9 +142,9 @@ export function CloseSessionDrawer({
           </DrawerDescription>
         </DrawerHeader>
         <div className="max-h-[50vh] space-y-5 overflow-y-auto px-4">
-          {blocked && (
+          {pendingCount > 0 && (
             <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
-              {t("close.blockedPending", { count: pendingCount })}
+              {t("close.pendingWarning", { count: pendingCount })}
             </p>
           )}
           <div className="grid gap-5 sm:grid-cols-2">
@@ -175,7 +177,6 @@ export function CloseSessionDrawer({
             onClick={submit}
             disabled={
               !sessionId ||
-              blocked ||
               (needsReason && !notes.trim()) ||
               closeSession.isPending
             }

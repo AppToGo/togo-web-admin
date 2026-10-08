@@ -93,7 +93,6 @@ export function SettleDrawer({
               id="cash-settle-received"
               value={received}
               onChange={setReceived}
-              min={0}
             />
             {received > 0 && (
               <p className="text-xs text-slate-500">

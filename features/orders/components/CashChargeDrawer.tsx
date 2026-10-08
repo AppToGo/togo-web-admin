@@ -8,6 +8,8 @@
  *   - dejar por liquidar (el servidor crea la colección PENDING con el
  *     portador resuelto en el servidor: domiciliario asignado → operador).
  * Las vueltas y el esperado los calcula el servidor; acá solo se muestran.
+ * Liquidar en un turno exige ver la caja y operarla (`cash.view` +
+ * `cash.operate`): sin ellos solo se ofrece dejarlo por liquidar.
  */
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -36,6 +38,7 @@ import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 
 export interface ChargeableOrder {
   id: string;
@@ -52,6 +55,7 @@ interface CashChargeDrawerProps {
 
 export function CashChargeDrawer({ order, open, onOpenChange }: CashChargeDrawerProps) {
   const t = useTranslations("cash");
+  const tOrders = useTranslations("orders");
   const businessId = useEffectiveBusinessId();
   const { defaultBranchId } = useEffectiveBranches();
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
@@ -61,7 +65,11 @@ export function CashChargeDrawer({ order, open, onOpenChange }: CashChargeDrawer
     (selectedBranchIds?.length === 1 ? selectedBranchIds[0] : null) ??
     defaultBranchId;
 
-  const [destination, setDestination] = useState<"settle" | "pending">("settle");
+  const { hasPermission } = useMyPermissions();
+  const canSettle = hasPermission("cash.view") && hasPermission("cash.operate");
+
+  const [pickedDestination, setDestination] = useState<"settle" | "pending">("settle");
+  const destination = canSettle ? pickedDestination : "pending";
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [received, setReceived] = useState(0);
   const updatePaymentStatus = useUpdateOrderPaymentStatus();
@@ -90,6 +98,8 @@ export function CashChargeDrawer({ order, open, onOpenChange }: CashChargeDrawer
         orderId: order.id,
         data: {
           paymentStatus: "PAID",
+          // Misma nota de historial que la confirmación en 1 clic.
+          changeNotes: tOrders("paymentNotes.confirmedFromAdmin"),
           ...(destination === "settle" && sessionId
             ? {
                 cash: {
@@ -130,10 +140,12 @@ export function CashChargeDrawer({ order, open, onOpenChange }: CashChargeDrawer
             onValueChange={(value) => setDestination(value as "settle" | "pending")}
             className="space-y-2"
           >
-            <div className="flex items-center gap-2">
-              <RadioGroupItem value="settle" id="cash-charge-settle" />
-              <Label htmlFor="cash-charge-settle">{t("orders.settleNow")}</Label>
-            </div>
+            {canSettle && (
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="settle" id="cash-charge-settle" />
+                <Label htmlFor="cash-charge-settle">{t("orders.settleNow")}</Label>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <RadioGroupItem value="pending" id="cash-charge-pending" />
               <Label htmlFor="cash-charge-pending">{t("orders.leavePending")}</Label>
@@ -167,7 +179,6 @@ export function CashChargeDrawer({ order, open, onOpenChange }: CashChargeDrawer
                   id="cash-charge-received"
                   value={received}
                   onChange={setReceived}
-                  min={0}
                 />
                 {received > 0 && (
                   <p className="text-xs text-slate-500">

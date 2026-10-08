@@ -15,9 +15,15 @@ import { formatCurrency } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import { useOrdersByStatus } from "../hooks/useOrders";
 import { CashChargeDrawer, type ChargeableOrder } from "./CashChargeDrawer";
+import { isCashPaymentMethod } from "@/features/cash/utils/cash.utils";
 
 interface ToCollectPanelProps {
+  // Los MISMOS filtros que el tablero: así el panel comparte su consulta
+  // (una sola petición) y la refrescan los mismos eventos en tiempo real.
+  businessId?: string;
   branchIds?: string[];
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 const GROUP_LABELS = {
@@ -27,17 +33,32 @@ const GROUP_LABELS = {
   COUNTER: "deliveryTypes.COUNTER",
 } as const;
 
-export function ToCollectPanel({ branchIds }: ToCollectPanelProps) {
+export function ToCollectPanel({
+  businessId,
+  branchIds,
+  dateFrom,
+  dateTo,
+}: ToCollectPanelProps) {
   const t = useTranslations("cash");
   const tOrders = useTranslations("orders");
   const [collapsed, setCollapsed] = useState(false);
   const [charging, setCharging] = useState<ChargeableOrder | null>(null);
 
-  const { orders = [] } = useOrdersByStatus({ branchIds });
+  // Antes se llamaba solo con `branchIds`: la key quedaba como
+  // ['orders', undefined, 'live', …], distinta a la del tablero. Los eventos
+  // en tiempo real no la invalidaban, los pedidos se pedían dos veces y a
+  // un SUPER_ADMIN (consulta deshabilitada sin negocio) nunca le aparecía.
+  const { orders = [] } = useOrdersByStatus({
+    dateFrom,
+    dateTo,
+    businessId,
+    branchIds,
+  });
 
   const pending = useMemo(() => {
     return orders.filter(
-      (order) => order.paymentStatus === "PENDING" && order.paymentMethod === "CASH"
+      (order) =>
+        order.paymentStatus === "PENDING" && isCashPaymentMethod(order.paymentMethod)
     );
   }, [orders]);
 
@@ -58,7 +79,7 @@ export function ToCollectPanel({ branchIds }: ToCollectPanelProps) {
   if (pending.length === 0) return null;
 
   return (
-    <Card>
+    <Card data-testid="to-collect-panel">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Banknote className="h-4 w-4" />

@@ -7,6 +7,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -93,7 +94,7 @@ async function mockDetailApi(page: Page, opts: DetailApiOptions = {}) {
 
 async function openDetail(page: Page) {
   await openBoard(page);
-  await page.getByText("#101", { exact: true }).click();
+  await boardOrderNumber(page, "#101").click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible({ timeout: 8_000 });
   return dialog;

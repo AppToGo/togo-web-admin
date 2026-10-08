@@ -5,10 +5,12 @@
  * Gateo por pestaña: sin `cash.view` no se renderiza nada operativo.
  * La caja opera por sede: con una sola sede efectiva (o una filtrada en
  * el tablero) se muestra `CashPage`; con varias, selector + vista dueño.
+ * Lo que se elige en el selector de esta página manda sobre el filtro del
+ * tablero y la sede por defecto, incluido "Todas las sedes".
  */
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Store } from "lucide-react";
+import { Loader2, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
@@ -30,7 +32,7 @@ export default function CashRoutePage() {
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const businessId = useEffectiveBusinessId();
-  const { hasPermission } = useMyPermissions();
+  const { hasPermission, isLoading: isLoadingPermissions } = useMyPermissions();
 
   const {
     branches: effectiveBranches,
@@ -38,15 +40,19 @@ export default function CashRoutePage() {
     defaultBranchId,
   } = useEffectiveBranches();
   const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
-  const [pickedBranchId, setPickedBranchId] = useState<string | null>(null);
+  // `undefined` = todavía no eligió acá; `null` = eligió "Todas las sedes".
+  const [pickedBranchId, setPickedBranchId] = useState<string | null | undefined>(
+    undefined
+  );
 
-  // Una sola sede: la única filtrada, la elegida aquí, la default o la
+  // Sin elección propia: la única filtrada en el tablero, la default o la
   // única efectiva — misma heurística que `NewOrderDrawer`.
-  const singleBranchId =
+  const fallbackBranchId =
     (selectedBranchIds?.length === 1 ? selectedBranchIds[0] : null) ??
-    pickedBranchId ??
     defaultBranchId ??
     (effectiveBranches.length === 1 ? effectiveBranches[0].id : null);
+  const singleBranchId =
+    pickedBranchId !== undefined ? pickedBranchId : fallbackBranchId;
 
   const gate = (
     <DashboardLayout>
@@ -68,6 +74,18 @@ export default function CashRoutePage() {
 
   if (!isLoadingBranches && effectiveBranches.length === 0 && !isSuperAdmin) {
     return gate;
+  }
+
+  // Mientras cargan los permisos no se sabe si puede ver la caja: no mostrar
+  // "sin permiso" a quien sí lo tiene.
+  if (isLoadingPermissions) {
+    return (
+      <DashboardLayout>
+        <div className="flex h-[calc(100vh-200px)] items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        </div>
+      </DashboardLayout>
+    );
   }
 
   if (!hasPermission("cash.view")) {

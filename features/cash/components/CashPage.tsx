@@ -20,7 +20,6 @@ import {
   useRegisters,
   useSessionMovements,
   useSessionSummary,
-  useSessionsHistory,
 } from "../hooks/useCash";
 import { RegisterTabs } from "./RegisterTabs";
 import { OpenSessionDialog } from "./OpenSessionDialog";
@@ -75,10 +74,6 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
     openSessionId,
     { page: 1, limit: 30 }
   );
-  const { data: history } = useSessionsHistory(businessId, branchId, {
-    page: 1,
-    limit: 5,
-  });
 
   const [opening, setOpening] = useState(false);
   const [moving, setMoving] = useState(false);
@@ -91,10 +86,6 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
         .reduce((acc, item) => acc + Number(item.amount), 0)
         .toFixed(2),
     [collections]
-  );
-  const lastClosed = useMemo(
-    () => (history?.items ?? []).find((item) => item.status === "CLOSED") ?? null,
-    [history]
   );
 
   if (isLoading) {
@@ -205,7 +196,6 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
         businessId={businessId}
         branchId={branchId}
         register={register}
-        lastClosed={lastClosed}
         open={opening}
         onOpenChange={setOpening}
       />

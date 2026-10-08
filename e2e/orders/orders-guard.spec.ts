@@ -8,6 +8,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -74,7 +75,7 @@ test.describe("Orders — permisos y paginación", () => {
     await loginPage.waitForDashboardRedirect();
 
     // Board renders, but the gated action does not
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Nuevo pedido" })
     ).toHaveCount(0);
@@ -178,12 +179,12 @@ test.describe("Orders — permisos y paginación", () => {
 
     // Scrolling the last card to the bottom of the column list brings the
     // archive sentinel into view, which fires the next page.
-    await page.getByText("#901", { exact: true }).scrollIntoViewIfNeeded();
+    await boardOrderNumber(page, "#901").scrollIntoViewIfNeeded();
 
     await expect
       .poll(() => requestedPages.length, { timeout: 10_000 })
       .toBeGreaterThan(1);
     expect(requestedPages).toContain("2");
-    await expect(page.getByText("#902", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#902")).toBeVisible();
   });
 });

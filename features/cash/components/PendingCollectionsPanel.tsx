@@ -28,11 +28,18 @@ export function PendingCollectionsPanel({
   canOperate,
 }: PendingCollectionsPanelProps) {
   const t = useTranslations("cash");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [picked, setPicked] = useState<string[]>([]);
   const [settling, setSettling] = useState(false);
 
+  // Solo cuentan los recaudos que siguen pendientes: si otro cajero liquida
+  // uno mientras está marcado, sale de la selección en vez de mandarse (y
+  // hacer fallar todo el lote).
+  const selected = picked.filter((id) =>
+    collections.some((collection) => collection.id === id)
+  );
+
   const toggle = (id: string) => {
-    setSelected((prev) =>
+    setPicked((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
@@ -88,7 +95,7 @@ export function PendingCollectionsPanel({
           open={settling}
           onOpenChange={(open) => {
             setSettling(open);
-            if (!open) setSelected([]);
+            if (!open) setPicked([]);
           }}
         />
       )}

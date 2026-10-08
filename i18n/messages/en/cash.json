@@ -64,6 +64,7 @@
     "reasonPlaceholder": "E.g. dairy supplier payment",
     "authorizedBy": "Authorized by",
     "authorizedByHint": "A withdrawal is authorized by a manager of the same business.",
+    "noAuthorizers": "Nobody else can authorize withdrawals in this branch. Ask the owner or an admin to register it.",
     "register": "Record",
     "types": {
       "ORDER_PAYMENT": "Order payment",
@@ -102,7 +103,7 @@
     "notes": "Closing notes",
     "notesRequired": "Explain the difference to close",
     "confirm": "Close shift",
-    "blockedPending": "You can't close: {count} collections still need settling in this shift."
+    "pendingWarning": "There are {count} collections still to settle in this branch. You can close the shift; they stay pending to be settled later."
   },
   "overview": {
     "title": "Open registers",

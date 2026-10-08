@@ -123,6 +123,12 @@ export interface OwnerOverviewBranch {
   pendingSettlement: { count: number; total: string; holders: string[] };
 }
 
+/** Usuario que puede autorizar un retiro (`GET …/cash/authorizers`). */
+export interface WithdrawalAuthorizer {
+  id: string;
+  name: string;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

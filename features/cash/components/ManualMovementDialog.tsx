@@ -7,12 +7,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { CurrencyInput } from "./CurrencyInput";
 import { useCreateManualMovement } from "../hooks/useCashMutations";
-import { useUsers } from "@/features/users/hooks/useUsers";
+import { useWithdrawalAuthorizers } from "../hooks/useCash";
 
 type MovementKind = "MANUAL_IN" | "MANUAL_OUT" | "WITHDRAWAL";
 
@@ -55,9 +55,12 @@ export function ManualMovementDialog({
   const [reason, setReason] = useState("");
   const [authorizedBy, setAuthorizedBy] = useState("");
   const createMovement = useCreateManualMovement(businessId, branchId, sessionId ?? "");
-  const { data: users = [] } = useUsers();
 
   const isWithdrawal = kind === "WITHDRAWAL";
+  // Endpoint propio del retiro (`cash.withdraw`), no el listado de usuarios
+  // del negocio (`user.view`, que un cajero no tiene). Solo al necesitarlo.
+  const { data: authorizers = [], isLoading: isLoadingAuthorizers } =
+    useWithdrawalAuthorizers(businessId, branchId, open && isWithdrawal);
   const valid =
     !!sessionId &&
     amount > 0 &&
@@ -88,18 +91,18 @@ export function ManualMovementDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>
             {kind === "MANUAL_IN"
               ? t("movements.manualIn")
               : kind === "MANUAL_OUT"
                 ? t("movements.manualOut")
                 : t("movements.withdrawal")}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
+          </DrawerTitle>
+        </DrawerHeader>
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
           <div className="space-y-2">
             <label htmlFor="cash-movement-kind" className="text-sm font-medium">
               {t("summary.movements")}
@@ -132,7 +135,6 @@ export function ManualMovementDialog({
               id="cash-movement-amount"
               value={amount}
               onChange={setAmount}
-              min={1}
             />
           </div>
           {kind === "MANUAL_OUT" && (
@@ -172,23 +174,27 @@ export function ManualMovementDialog({
                   <SelectValue placeholder={t("movements.authorizedBy")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((user) => (
+                  {authorizers.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-slate-500">{t("movements.authorizedByHint")}</p>
+              <p className="text-xs text-slate-500">
+                {!isLoadingAuthorizers && authorizers.length === 0
+                  ? t("movements.noAuthorizers")
+                  : t("movements.authorizedByHint")}
+              </p>
             </div>
           )}
         </div>
-        <DialogFooter>
+        <DrawerFooter>
           <Button onClick={submit} disabled={!valid || createMovement.isPending}>
             {t("movements.register")}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

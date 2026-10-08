@@ -30,7 +30,7 @@ export function useOpenSessions(businessId: string | null, branchId: string | nu
 export function useSessionsHistory(
   businessId: string | null,
   branchId: string | null,
-  params?: { page?: number; limit?: number; dateFrom?: string; dateTo?: string }
+  params?: cashService.SessionsHistoryParams
 ) {
   return useQuery({
     queryKey: CASH_KEYS.sessionsHistory(
@@ -89,6 +89,23 @@ export function useCollections(
     queryKey: CASH_KEYS.collections(businessId ?? undefined, branchId ?? undefined, status),
     queryFn: () => cashService.getCollections(businessId!, branchId!, status),
     enabled: !!businessId && !!branchId,
+    staleTime: STALE_TIME,
+  });
+}
+
+/**
+ * Autorizadores de un retiro. Se pide solo cuando hace falta (`enabled`):
+ * el diálogo abierto y en modo retiro.
+ */
+export function useWithdrawalAuthorizers(
+  businessId: string | null,
+  branchId: string | null,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: CASH_KEYS.authorizers(businessId ?? undefined, branchId ?? undefined),
+    queryFn: () => cashService.getWithdrawalAuthorizers(businessId!, branchId!),
+    enabled: !!businessId && !!branchId && enabled,
     staleTime: STALE_TIME,
   });
 }

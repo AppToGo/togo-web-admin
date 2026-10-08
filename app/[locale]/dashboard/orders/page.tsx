@@ -539,7 +539,12 @@ function OrdersPageInner() {
               </button>
             </div>
           )}
-          <ToCollectPanel branchIds={selectedBranchIds || undefined} />
+          <ToCollectPanel
+            businessId={selectedBusinessId ?? undefined}
+            branchIds={selectedBranchIds || undefined}
+            dateFrom={dateParams.dateFrom}
+            dateTo={dateParams.dateTo}
+          />
           <Suspense fallback={<OrdersLoading />}>
             <OrdersKanbanBoard
               searchQuery={searchQuery}

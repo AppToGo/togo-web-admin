@@ -1,6 +1,8 @@
 "use client";
 /**
  * Historial de turnos cerrados con filtro "Solo con diferencia" (plan).
+ * Pide solo CLOSED: un turno abierto no tiene diferencia ni fecha de cierre
+ * y aparecía como un cierre "exacto" sin fecha.
  */
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -23,6 +25,7 @@ export function SessionsHistory({ businessId, branchId, onSelectSession }: Sessi
   const { data, isLoading } = useSessionsHistory(businessId, branchId, {
     page: 1,
     limit: 50,
+    status: "CLOSED",
   });
 
   const items = (data?.items ?? []).filter((session) =>

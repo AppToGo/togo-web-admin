@@ -81,3 +81,61 @@ test.describe("Caja — gateo y turno", () => {
     await expect(page).toHaveURL(/\/dashboard\/cash/);
   });
 });
+
+test.describe("Caja — historial, cierre y retiro", () => {
+  test("el historial solo lista turnos cerrados", async ({ page }) => {
+    await loginAndOpenCash(page, ["cash.view"]);
+
+    await expect(page.getByText("Historial de turnos")).toBeVisible();
+    await expect(page.getByText("Exacto")).toBeVisible();
+    // El turno abierto de otra caja no es un cierre.
+    await expect(page.getByText("Caja 2 en curso")).toHaveCount(0);
+  });
+
+  test("abrir turno muestra el último cierre de esa caja", async ({ page }) => {
+    await loginAndOpenCash(page, ["cash.view", "cash.operate"], {
+      openSession: false,
+    });
+
+    const lastCloseRequest = page.waitForRequest(
+      (request) =>
+        request.url().includes("/cash/sessions?") &&
+        request.url().includes("cashRegisterId=reg-1") &&
+        request.url().includes("status=CLOSED")
+    );
+    await page.getByRole("button", { name: "Abrir turno" }).click();
+    await lastCloseRequest;
+    await expect(page.getByText("Último cierre: $ 40.000")).toBeVisible();
+  });
+
+  test("lo por liquidar de la sede avisa pero no bloquea el cierre", async ({
+    page,
+  }) => {
+    await loginAndOpenCash(page, ["cash.view", "cash.close"]);
+
+    await page.getByRole("button", { name: "Cerrar turno" }).click();
+    await expect(page.getByText(/Puedes cerrar el turno/)).toBeVisible();
+    // Contado = esperado ($ 50.000): sin diferencia no pide motivo.
+    await page.getByRole("button", { name: "+1 × 50000" }).click();
+    await expect(
+      page.getByRole("button", { name: "Cerrar turno" }).last()
+    ).toBeEnabled();
+  });
+
+  test("el retiro lista autorizadores sin pedir los usuarios del negocio", async ({
+    page,
+  }) => {
+    const userListRequests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname.endsWith("/users")) {
+        userListRequests.push(request.url());
+      }
+    });
+    await loginAndOpenCash(page, ["cash.view", "cash.withdraw"]);
+
+    await page.getByRole("button", { name: "Movimientos" }).click();
+    await page.locator("#cash-movement-auth").click();
+    await expect(page.getByRole("option", { name: "Dueña E2E" })).toBeVisible();
+    expect(userListRequests).toEqual([]);
+  });
+});

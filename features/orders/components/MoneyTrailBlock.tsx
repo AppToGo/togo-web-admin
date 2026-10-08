@@ -4,11 +4,13 @@
  *
  * Muestra dónde está el efectivo (por liquidar en manos de alguien, o
  * liquidado en una caja) y, si está por liquidar, permite liquidarlo en
- * 1 clic contra un turno abierto de la sede. La colección se resuelve
- * por `orderId` desde las colecciones pendientes de la sede (sin pedir
- * el id de colección al backend).
+ * 1 clic contra un turno abierto de la sede, por el monto exacto del
+ * pedido. Una liquidación con diferencia (faltante/sobrante) exige motivo
+ * y se hace desde Caja (`SettleDrawer`), no desde acá. La colección se
+ * resuelve por `orderId` desde las colecciones pendientes de la sede.
  */
 import { useMemo, useState } from "react";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useTranslations } from "next-intl";
 import { Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
 import { formatCOP } from "@/features/cash/utils/cash.utils";
 import { useCollections, useOpenSessions } from "@/features/cash/hooks/useCash";
 import { useSettleCollections } from "@/features/cash/hooks/useCashMutations";
@@ -42,10 +43,15 @@ export function MoneyTrailBlock({ order }: MoneyTrailBlockProps) {
   const collection = order.cashCollection;
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [received, setReceived] = useState(0);
+
+  // Liquidar necesita ver los turnos (cash.view) y operar caja
+  // (cash.operate): sin ellos no se piden esos datos (403 con reintentos) ni
+  // se ofrece el botón.
+  const { hasPermission } = useMyPermissions();
+  const canSettle = hasPermission("cash.view") && hasPermission("cash.operate");
 
   const pending = collection?.status === "PENDING_SETTLEMENT";
-  const branchId = pending ? order.branchId : undefined;
+  const branchId = pending && canSettle ? order.branchId : undefined;
 
   const { data: collections = [] } = useCollections(
     businessId,
@@ -71,10 +77,11 @@ export function MoneyTrailBlock({ order }: MoneyTrailBlockProps) {
 
   const submit = () => {
     if (!mine || !sessionId) return;
-    settle.mutate({
-      collectionIds: [mine.id],
-      receivedAmount: received > 0 ? received : Number(mine.amount),
-    });
+    // Monto exacto de la custodia: sin diferencia no hace falta motivo.
+    settle.mutate(
+      { collectionIds: [mine.id], receivedAmount: Number(mine.amount) },
+      { onSuccess: () => setSessionId(null) }
+    );
   };
 
   return (
@@ -111,15 +118,6 @@ export function MoneyTrailBlock({ order }: MoneyTrailBlockProps) {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="money-trail-received">{t("orders.tendered")}</Label>
-                <CurrencyInput
-                  id="money-trail-received"
-                  value={received}
-                  onChange={setReceived}
-                  min={0}
-                />
               </div>
               <Button
                 size="sm"

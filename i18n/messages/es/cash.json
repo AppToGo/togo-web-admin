@@ -64,6 +64,7 @@
     "reasonPlaceholder": "Ej: pago a proveedor lácteos",
     "authorizedBy": "Autorizado por",
     "authorizedByHint": "El retiro lo autoriza un responsable del mismo negocio.",
+    "noAuthorizers": "Nadie más puede autorizar retiros en esta sede. Pídele al dueño o a un administrador que lo registre.",
     "register": "Registrar",
     "types": {
       "ORDER_PAYMENT": "Pago de pedido",
@@ -102,7 +103,7 @@
     "notes": "Notas de cierre",
     "notesRequired": "Explica la diferencia para cerrar",
     "confirm": "Cerrar turno",
-    "blockedPending": "No puedes cerrar: hay {count} recaudos por liquidar en este turno."
+    "pendingWarning": "Hay {count} recaudos por liquidar en la sede. Puedes cerrar el turno; quedan pendientes para liquidarlos después."
   },
   "overview": {
     "title": "Cajas abiertas",
