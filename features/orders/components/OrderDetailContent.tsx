@@ -12,6 +12,7 @@ import {
   Store,
   Home,
   Utensils,
+  Banknote,
   AlertTriangle,
   ChevronDown,
   Check,
@@ -24,7 +25,6 @@ import {
   useOrder,
   useOrderHistory,
   useUpdateOrderStatus,
-  useUpdateOrderPaymentStatus,
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
 import {
@@ -56,6 +56,8 @@ import { checkStatusMove, isStatusApplicable } from "../utils/order-flow.utils";
 import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
 import { useOrderFlow } from "../hooks/useOrderFlow";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
+import { PaymentStatusEditor } from "./PaymentStatusEditor";
+import { MoneyTrailBlock } from "./MoneyTrailBlock";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -85,6 +87,16 @@ function getOrderTypeInfo(
       label: t("deliveryTypes.delivery"),
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
+    };
+  }
+
+  // Venta de mostrador (docs/caja-pedidos.md): cobrada y entregada en el
+  // acto desde caja.
+  if (order.deliveryType === "COUNTER") {
+    return {
+      label: t("deliveryTypes.COUNTER"),
+      icon: <Banknote className="w-3 h-3" />,
+      variant: "amber",
     };
   }
 
@@ -648,6 +660,8 @@ export function OrderDetailContent({
             >
               <PaymentStatusEditor
                 orderId={order.id ?? ""}
+                total={order.total}
+                branchId={order.branchId}
                 paymentMethod={order.paymentMethod}
                 currentStatus={order.paymentStatus}
               />
@@ -658,6 +672,7 @@ export function OrderDetailContent({
                 </span>
               )}
             </div>
+            <MoneyTrailBlock order={order} />
           </div>
         </TabsContent>
 
@@ -714,93 +729,6 @@ export function OrderDetailContent({
           </TabsContent>
         )}
       </Tabs>
-    </div>
-  );
-}
-
-// PaymentStatusEditor component
-function PaymentStatusEditor({
-  orderId,
-  currentStatus,
-}: {
-  orderId: string;
-  currentStatus: import("../types").PaymentStatus;
-  paymentMethod?: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const updatePaymentStatus = useUpdateOrderPaymentStatus();
-  const t = useTranslations("orders");
-
-  const handleSelect = useCallback(
-    (newStatus: import("../types").PaymentStatus) => {
-      if (newStatus !== currentStatus) {
-        updatePaymentStatus.mutate({
-          orderId,
-          data: {
-            paymentStatus: newStatus,
-            changeNotes: "Confirmed from admin panel",
-          },
-        });
-      }
-      setIsOpen(false);
-    },
-    [currentStatus, orderId, updatePaymentStatus]
-  );
-
-  // Badge base con icono de método de pago
-  const badgeContent = (
-    <>
-      <span>{t(`paymentStatus.${currentStatus}`)}</span>
-    </>
-  );
-
-  // Si ya está pagado, mostrar badge estático (no editable)
-  if (currentStatus === "PAID") {
-    return (
-      <span
-        className={cn(
-          categoryBadgeVariants({ variant: "green" }),
-          "flex items-center gap-1"
-        )}
-      >
-        {badgeContent}
-      </span>
-    );
-  }
-
-  // Si está pendiente, mostrar dropdown para marcar como pagado
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              categoryBadgeVariants({ variant: "amber" }),
-              "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
-            )}
-          >
-            {badgeContent}
-            <ChevronDown className="w-3 h-3 opacity-60" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-35 z-9999"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DropdownMenuItem
-            onSelect={() => handleSelect("PAID")}
-            className="flex items-center gap-2 text-xs cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-slate-700">{t("paymentStatus.PAID")}</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
     </div>
   );
 }

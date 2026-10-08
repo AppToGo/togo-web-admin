@@ -326,5 +326,29 @@
   "bot_messages_manage": {
     "label": "Editar mensajes del asistente",
     "description": "Permite cambiar en el admin cómo responde el asistente de WhatsApp en cada momento de la conversación, generar los mensajes con IA y publicarlos."
+  },
+  "cash_view": {
+    "label": "Ver caja",
+    "description": "Da acceso a la página de Caja: ver cajas, turnos y resúmenes de sus sedes."
+  },
+  "cash_operate": {
+    "label": "Operar caja",
+    "description": "Abrir turnos, cobrar pedidos en efectivo, liquidar recaudos y registrar ingresos."
+  },
+  "cash_withdraw": {
+    "label": "Egresos y retiros",
+    "description": "Registrar egresos y retiros de caja (el retiro exige autorización y motivo)."
+  },
+  "cash_close": {
+    "label": "Cerrar turnos",
+    "description": "Cerrar turnos de caja con conteo y arqueo."
+  },
+  "cash_manage": {
+    "label": "Configurar cajas",
+    "description": "Crear y configurar cajas de sus sedes."
+  },
+  "cash_audit": {
+    "label": "Auditoría de caja",
+    "description": "Consultar la auditoría de movimientos de dinero."
   }
 }

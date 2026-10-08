@@ -1,11 +1,13 @@
 {
+  "cashPendingSettlement": "Por liquidar",
   "deliveryTypes": {
     "delivery": "Domicilio",
     "table": "En mesa",
     "pickup": "Recoger",
     "DELIVERY": "Domicilio",
     "PICKUP": "Recoger",
-    "DINE_IN": "A la mesa"
+    "DINE_IN": "A la mesa",
+    "COUNTER": "Mostrador"
   },
   "paymentMethods": {
     "CASH": "Efectivo",
@@ -150,7 +152,8 @@
       "title": "Tipo de envío",
       "delivery": "A domicilio",
       "pickup": "Recoger en tienda",
-      "dineIn": "En mesa"
+      "dineIn": "En mesa",
+      "counter": "Mostrador"
     },
     "activeFilters": {
       "paidOnly": "• Solo pagadas",
@@ -377,6 +380,14 @@
     "deliveryFee": "Domicilio",
     "deliveryFeeByDistance": "Se calcula al crear",
     "submit": "Crear pedido",
+    "submitCounter": "Cobrar y entregar",
+    "cashSection": "Efectivo de mostrador",
+    "cashSessionPlaceholder": "Turno donde entra el efectivo",
+    "cashSessionOption": "Turno · {register}",
+    "cashChange": "Vueltas: {change}",
+    "noOpenSession": "No hay turno abierto en esta sede. Abre caja para cobrar en efectivo.",
+    "noCashPermission": "No tienes permiso para ver la caja. Pídele a quien la opera que cobre este pedido.",
+    "cashReceivedPlaceholder": "Paga con (vacío = pago exacto)",
     "success": "Pedido #{number} creado",
     "error": "No se pudo crear el pedido",
     "validation": {
@@ -385,7 +396,9 @@
       "phone": "Ingresa un teléfono válido",
       "name": "Ingresa a nombre de quién es el pedido",
       "address": "Ingresa la dirección de entrega",
-      "table": "Selecciona la mesa"
+      "table": "Selecciona la mesa",
+      "cashSession": "Selecciona el turno donde entra el efectivo",
+      "cashReceived": "El efectivo recibido no cubre el total"
     }
   },
   "orderFlow": {

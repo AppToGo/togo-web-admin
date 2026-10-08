@@ -7,6 +7,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -131,7 +132,7 @@ test.describe("Orders — estadísticas", () => {
     await openBoard(page);
 
     // The Kanban keeps working; no full-board error takes over
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Error al cargar órdenes" })
     ).toHaveCount(0);

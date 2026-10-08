@@ -326,5 +326,29 @@
   "bot_messages_manage": {
     "label": "Edit assistant messages",
     "description": "Lets the user change how the WhatsApp assistant replies at each point of the conversation, generate the messages with AI, and publish them."
+  },
+  "cash_view": {
+    "label": "View cash",
+    "description": "Access the Cash page: view registers, shifts and summaries of their branches."
+  },
+  "cash_operate": {
+    "label": "Operate cash",
+    "description": "Open shifts, charge cash orders, settle collections and record income."
+  },
+  "cash_withdraw": {
+    "label": "Expenses and withdrawals",
+    "description": "Record cash expenses and withdrawals (withdrawals require authorization and reason)."
+  },
+  "cash_close": {
+    "label": "Close shifts",
+    "description": "Close cash shifts with count and reconciliation."
+  },
+  "cash_manage": {
+    "label": "Configure registers",
+    "description": "Create and configure registers of their branches."
+  },
+  "cash_audit": {
+    "label": "Cash audit",
+    "description": "Query the money movement audit trail."
   }
 }
