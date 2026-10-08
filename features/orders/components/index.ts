@@ -2,7 +2,13 @@
 export { OrdersKanbanBoard } from "./OrdersKanbanBoard";
 export { OrderStatusBadge } from "./order-status-badge";
 export { KanbanColumn } from "./KanbanColumn";
-export { OrderCard, PaymentStatusEditor, type CardDensity } from "./OrderCard";
+export { OrderCard, type CardDensity } from "./OrderCard";
+export { PaymentStatusEditor } from "./PaymentStatusEditor";
+export { PaymentMethodIcon } from "./PaymentMethodIcon";
+export { CashChargeDrawer, type ChargeableOrder } from "./CashChargeDrawer";
+export { MoneyTrailBlock } from "./MoneyTrailBlock";
+export { ToCollectPanel } from "./ToCollectPanel";
+export { NewOrderDrawer } from "./NewOrderDrawer";
 export { OrderBoardToolbar, type BoardViewMode } from "./OrderBoardToolbar";
 export { HoverTooltip } from "./HoverTooltip";
 export { OrderDetail } from "./OrderDetail";

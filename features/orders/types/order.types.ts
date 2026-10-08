@@ -68,6 +68,16 @@ export interface PaymentVerificationSummary {
   confidenceScore: number | null;
 }
 
+/**
+ * Custodia del efectivo de un pedido (docs/caja-pedidos.md). Espeja
+ * `CashCollectionInfoDto` del backend: solo estado y nombres, sin PII.
+ */
+export interface CashCollectionInfo {
+  status: "PENDING_SETTLEMENT" | "SETTLED" | "VOIDED";
+  holderName?: string | null;
+  registerName?: string | null;
+}
+
 export interface Order {
   id: string;
   /**
@@ -93,6 +103,10 @@ export interface Order {
   subtotal: number;
   tax: number;
   total: number;
+  /** Sede del pedido (viene en `OrderResponseDto`; se usa para caja). */
+  branchId?: string;
+  /** Custodia del efectivo, solo si el pago fue en efectivo. */
+  cashCollection?: CashCollectionInfo;
   /** @deprecated usar total */
   totalAmount: number;
   customerId: string;
@@ -106,7 +120,7 @@ export interface Order {
    * expresa en `createdByType`, no acá.
    */
   source?: "WHATSAPP" | "WEB_PUBLIC" | "QR_CODE" | "SOCIAL_MEDIA" | "DIRECT";
-  deliveryType?: "DELIVERY" | "PICKUP" | "DINE_IN";
+  deliveryType?: "DELIVERY" | "PICKUP" | "DINE_IN" | "COUNTER";
   deliveryFee?: number;
   notes?: string;
   /** Pedidos en mesa (docs/architecture/pedidos-en-mesa.md, Fase 1). */
@@ -221,8 +235,12 @@ export interface OrderFilters {
 // Nuevo pedido desde el admin (POST /businesses/:businessId/orders)
 // ============================================================================
 
-/** Tipo de pedido que puede crear un operador desde el admin. */
-export type ManualOrderDeliveryType = "DELIVERY" | "PICKUP" | "DINE_IN";
+/**
+ * Tipo de pedido que puede crear un operador desde el admin.
+ * `COUNTER` es venta de mostrador (docs/caja-pedidos.md): se cobra y
+ * entrega en el acto, solo si la sede tiene `counterConfig.enabled`.
+ */
+export type ManualOrderDeliveryType = "DELIVERY" | "PICKUP" | "DINE_IN" | "COUNTER";
 
 /**
  * Métodos de pago del bot de WhatsApp: efectivo y datáfono siempre,
@@ -250,6 +268,16 @@ export interface CreateOrderRequest {
   /** Requerido para mesa */
   tableId?: string;
   notes?: string;
+  /**
+   * Cobro en mostrador (solo `deliveryType: COUNTER` + pago en efectivo).
+   * `sessionId` es el turno abierto donde entra el efectivo; sin
+   * `receivedAmount` se asume pago exacto (las vueltas las calcula el
+   * servidor). Espeja `CounterCashDto` del backend.
+   */
+  cash?: {
+    sessionId?: string;
+    receivedAmount?: number;
+  };
 }
 
 export interface CreateOrderResponse {

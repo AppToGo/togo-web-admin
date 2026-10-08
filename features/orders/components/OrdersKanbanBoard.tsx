@@ -66,6 +66,7 @@ interface OrdersKanbanBoardProps {
     delivery: boolean;
     pickup: boolean;
     dineIn: boolean;
+    counter: boolean;
   };
 }
 
@@ -123,7 +124,7 @@ export function OrdersKanbanBoard({
   businessId,
   branchIds,
   paymentStatusFilter = { paid: true, pending: true },
-  deliveryTypeFilter = { delivery: true, pickup: true, dineIn: true },
+  deliveryTypeFilter = { delivery: true, pickup: true, dineIn: true, counter: true },
 }: OrdersKanbanBoardProps) {
   const t = useTranslations("orders");
 
@@ -268,10 +269,12 @@ export function OrdersKanbanBoard({
       if (
         !deliveryTypeFilter.delivery ||
         !deliveryTypeFilter.pickup ||
-        !deliveryTypeFilter.dineIn
+        !deliveryTypeFilter.dineIn ||
+        !deliveryTypeFilter.counter
       ) {
         result = result.filter((order) => {
           if (order.deliveryType === "DINE_IN") return deliveryTypeFilter.dineIn;
+          if (order.deliveryType === "COUNTER") return deliveryTypeFilter.counter;
           // Usar deliveryType si está disponible, sino usar addressId como fallback
           const isDelivery = order.deliveryType
             ? order.deliveryType === "DELIVERY"

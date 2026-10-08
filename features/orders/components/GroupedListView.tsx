@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { OrderTypeBadge, PaymentStatusEditor, TimeBadge } from "./OrderCard";
+import { OrderTypeBadge, TimeBadge } from "./OrderCard";
+import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 import type { ArchivePagination, Order, OrderStatus } from "../types";
 import { getColumnConfig } from "../config/kanban-columns.config";
@@ -83,6 +84,8 @@ function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: List
       <span className="flex items-center gap-1 text-xs text-slate-400">
         <PaymentStatusEditor
           orderId={order.id}
+          total={order.total}
+          branchId={order.branchId}
           paymentMethod={order.paymentMethod}
           currentStatus={order.paymentStatus}
         />

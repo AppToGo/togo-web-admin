@@ -7,6 +7,7 @@ import {
   BranchMultiSelector,
   OrderBoardToolbar,
   HoverTooltip,
+  ToCollectPanel,
   type BoardViewMode,
   type CardDensity,
 } from "@/features/orders/components";
@@ -18,7 +19,7 @@ import {
 } from "@/features/filters/stores";
 import { useDateFilterParams } from "@/features/filters/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SearchIcon, Filter, Check, Clock, Home, Store, HelpCircle, Utensils } from "lucide-react";
+import { SearchIcon, Filter, Check, Clock, Home, Store, HelpCircle, Utensils, Banknote } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -160,7 +161,8 @@ function OrdersPageInner() {
     delivery: boolean;
     pickup: boolean;
     dineIn: boolean;
-  }>({ delivery: true, pickup: true, dineIn: true });
+    counter: boolean;
+  }>({ delivery: true, pickup: true, dineIn: true, counter: true });
 
   // Verificar si hay filtros activos
   const isCustomDate = datePreset === "custom";
@@ -169,13 +171,14 @@ function OrdersPageInner() {
   const hasDeliveryFilter =
     !deliveryTypeFilter.delivery ||
     !deliveryTypeFilter.pickup ||
-    !deliveryTypeFilter.dineIn;
+    !deliveryTypeFilter.dineIn ||
+    !deliveryTypeFilter.counter;
   const hasAnyFilter = isCustomDate || hasPaymentFilter || hasDeliveryFilter;
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
     setPaymentStatusFilter({ paid: true, pending: true });
-    setDeliveryTypeFilter({ delivery: true, pickup: true, dineIn: true });
+    setDeliveryTypeFilter({ delivery: true, pickup: true, dineIn: true, counter: true });
     // Resetear a "today" si está en custom
     if (datePreset === "custom") {
       useDateFilterStore.getState().setPreset("today");
@@ -309,6 +312,7 @@ function OrdersPageInner() {
                             delivery: true,
                             pickup: true,
                             dineIn: true,
+                            counter: true,
                           });
                           if (datePreset === "custom") {
                             useDateFilterStore.getState().setPreset("today");
@@ -457,6 +461,25 @@ function OrdersPageInner() {
                             }
                           />
                         </label>
+                        <label className="flex items-center justify-between cursor-pointer group">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                              <Banknote className="w-4 h-4 text-amber-600" />
+                            </div>
+                            <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                              {t("filters.deliveryType.counter")}
+                            </span>
+                          </div>
+                          <Switch
+                            checked={deliveryTypeFilter.counter}
+                            onCheckedChange={(checked) =>
+                              setDeliveryTypeFilter((prev) => ({
+                                ...prev,
+                                counter: checked,
+                              }))
+                            }
+                          />
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -516,6 +539,7 @@ function OrdersPageInner() {
               </button>
             </div>
           )}
+          <ToCollectPanel branchIds={selectedBranchIds || undefined} />
           <Suspense fallback={<OrdersLoading />}>
             <OrdersKanbanBoard
               searchQuery={searchQuery}

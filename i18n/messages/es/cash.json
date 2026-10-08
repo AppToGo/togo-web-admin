@@ -1,0 +1,153 @@
+{
+  "title": "Caja",
+  "description": "Turnos, movimientos y recaudo en efectivo de esta sede",
+  "selectBranch": "Selecciona una sede para operar la caja",
+  "selectBranchDescription": "La caja opera por sede: filtra el tablero a una sola sede o elígela aquí.",
+  "noPermission": "No tienes permiso para ver la caja",
+  "noRegisters": "Sin cajas configuradas",
+  "noRegistersDescription": "Crea la primera caja de esta sede para empezar a abrir turnos.",
+  "addRegister": "Nueva caja",
+  "registerName": "Nombre de la caja",
+  "registerNamePlaceholder": "Ej: Caja 1",
+  "openSession": "Abrir turno",
+  "openingAmount": "Base inicial (COP)",
+  "openingAmountHint": "Efectivo con el que arranca el turno. Puede ser 0.",
+  "lastClose": "Último cierre",
+  "neverClosed": "Esta caja nunca se ha cerrado",
+  "expectedNow": "Esperado en caja ahora",
+  "open": "Abierto",
+  "closed": "Cerrado",
+  "registers": {
+    "created": "Caja \"{name}\" creada",
+    "updated": "Caja actualizada",
+    "deactivate": "Desactivar",
+    "activate": "Activar"
+  },
+  "sessions": {
+    "opened": "Turno abierto",
+    "closed": "Turno cerrado",
+    "close": "Cerrar turno",
+    "history": "Historial de turnos",
+    "noHistory": "Aún no hay turnos cerrados",
+    "onlyWithDifference": "Solo con diferencia",
+    "openedBy": "Abrió",
+    "closedBy": "Cerró",
+    "opening": "Base",
+    "expected": "Esperado",
+    "counted": "Contado",
+    "difference": "Diferencia",
+    "shortage": "Faltante",
+    "surplus": "Sobrante",
+    "exact": "Exacto",
+    "notes": "Notas de cierre"
+  },
+  "summary": {
+    "title": "Resumen del turno",
+    "cashSales": "Ventas en efectivo",
+    "otherMethods": "Otros medios",
+    "pendingCollections": "Por liquidar",
+    "movements": "Movimientos",
+    "expected": "Efectivo esperado en caja"
+  },
+  "movements": {
+    "title": "Movimientos",
+    "created": "Movimiento registrado",
+    "manualIn": "Ingreso manual",
+    "manualOut": "Egreso manual",
+    "withdrawal": "Retiro",
+    "empty": "Este turno aún no tiene movimientos",
+    "amount": "Monto (COP)",
+    "category": "Categoría",
+    "categoryPlaceholder": "Ej: pago proveedor",
+    "notes": "Notas",
+    "reason": "Motivo (queda en auditoría)",
+    "reasonPlaceholder": "Ej: pago a proveedor lácteos",
+    "authorizedBy": "Autorizado por",
+    "authorizedByHint": "El retiro lo autoriza un responsable del mismo negocio.",
+    "register": "Registrar",
+    "types": {
+      "ORDER_PAYMENT": "Pago de pedido",
+      "SETTLEMENT": "Liquidación",
+      "MANUAL_IN": "Ingreso",
+      "MANUAL_OUT": "Egreso",
+      "WITHDRAWAL": "Retiro",
+      "REFUND": "Reembolso"
+    }
+  },
+  "collections": {
+    "toSettle": "Por liquidar",
+    "toCollect": "Por cobrar",
+    "noPending": "Nada por liquidar",
+    "noPendingCollect": "Nada por cobrar",
+    "holder": "Lo tiene",
+    "order": "Pedido",
+    "settle": "Liquidar",
+    "settleSelected": "Liquidar selección",
+    "received": "Recibido (COP)",
+    "change": "Vueltas",
+    "differenceHint": "Si lo recibido difiere del esperado, queda un ajuste con motivo en el turno."
+  },
+  "settlements": {
+    "settled": "{count, plural, one {# recaudo liquidado} other {# recaudos liquidados}}"
+  },
+  "close": {
+    "title": "Cerrar turno",
+    "denominations": "Conteo por denominación",
+    "bills": "Billetes",
+    "coins": "Monedas",
+    "totalCounted": "Total contado",
+    "expected": "Esperado del sistema",
+    "difference": "Diferencia",
+    "countedEqualsExpected": "El conteo coincide con lo esperado.",
+    "notes": "Notas de cierre",
+    "notesRequired": "Explica la diferencia para cerrar",
+    "confirm": "Cerrar turno",
+    "blockedPending": "No puedes cerrar: hay {count} recaudos por liquidar en este turno."
+  },
+  "overview": {
+    "title": "Cajas abiertas",
+    "noOpen": "No hay turnos abiertos en ninguna sede",
+    "pendingSettlement": "Por liquidar"
+  },
+  "audit": {
+    "title": "Auditoría",
+    "filters": "Filtros",
+    "action": "Acción",
+    "channel": "Canal",
+    "session": "Turno",
+    "operator": "Operador",
+    "orderNumber": "N.º pedido",
+    "all": "Todos",
+    "empty": "Sin registros para estos filtros",
+    "before": "Antes",
+    "after": "Después",
+    "channels": {
+      "ADMIN": "Admin",
+      "WHATSAPP": "WhatsApp"
+    }
+  },
+  "orders": {
+    "collectPending": "Por liquidar",
+    "charge": "Cobrar",
+    "tendered": "Paga con (COP)",
+    "change": "Vueltas",
+    "destination": "Destino del efectivo",
+    "settleNow": "Liquidar de una vez en el turno",
+    "leavePending": "Dejar por liquidar",
+    "noOpenSession": "No hay turno abierto en esta caja",
+    "openCash": "Abrir caja",
+    "moneyTrail": "Recorrido del dinero",
+    "settleOneClick": "Liquidar ahora",
+    "tableTab": "Por cobrar",
+    "newOrder": "Nuevo pedido",
+    "counter": "Mostrador",
+    "chargeAndDeliver": "Cobrar y entregar",
+    "counterLocked": "Mostrador: cobra desde Caja"
+  },
+  "errors": {
+    "operationFailed": "No se pudo completar la operación de caja",
+    "openFailed": "No se pudo abrir el turno (¿ya hay uno abierto en esta caja?)",
+    "settleFailed": "No se pudo liquidar",
+    "closeFailed": "No se pudo cerrar el turno"
+  }
+}

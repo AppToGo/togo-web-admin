@@ -23,6 +23,7 @@ import {
   Truck,
   Store,
   Utensils,
+  Banknote,
   Phone,
   User,
   MapPin,
@@ -58,6 +59,9 @@ import type { InventoryItem } from "@/features/branch-inventory/types";
 import { useCreateOrder } from "../hooks";
 import { useOrderableProducts } from "../hooks/useOrderableProducts";
 import { formatCurrency } from "../utils/order-status.utils";
+import { isCounterEnabled } from "@/features/branches/types/branch-config.types";
+import { useOpenSessions } from "@/features/cash/hooks/useCash";
+import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
 import type {
   ManualOrderDeliveryType,
   ManualOrderPaymentMethod,
@@ -66,6 +70,13 @@ import type {
 interface NewOrderDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * Sede preseleccionada (la página de Caja abre el drawer ya ubicado en
+   * su sede). El operador puede cambiarla con el selector interno.
+   */
+  presetBranchId?: string | null;
+  /** Tipo preseleccionado (Caja abre en Mostrador cuando aplica). */
+  presetDeliveryType?: ManualOrderDeliveryType;
 }
 
 interface CartLine {
@@ -82,6 +93,7 @@ const DELIVERY_TYPE_ICONS: Record<ManualOrderDeliveryType, LucideIcon> = {
   DELIVERY: Truck,
   PICKUP: Store,
   DINE_IN: Utensils,
+  COUNTER: Banknote,
 };
 
 function productLabel(item: InventoryItem): string {
@@ -90,7 +102,12 @@ function productLabel(item: InventoryItem): string {
     : item.productName;
 }
 
-export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
+export function NewOrderDrawer({
+  isOpen,
+  onClose,
+  presetBranchId: presetBranchIdProp,
+  presetDeliveryType,
+}: NewOrderDrawerProps) {
   const t = useTranslations("orders.createOrder");
   const tStatus = useTranslations("orders.status");
   const tDelivery = useTranslations("orders.deliveryTypes");
@@ -110,17 +127,25 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
 
   // Selección explícita del operador; mientras no elija, la sede inicial
   // (que puede resolverse después de montar, cuando cargan las sedes).
-  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+  // `presetBranchId` (p. ej. desde Caja) arranca como selección explícita.
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(
+    presetBranchIdProp ?? null
+  );
   const branchId = selectedBranchId ?? initialBranchId;
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [cart, setCart] = useState<Record<string, CartLine>>({});
-  const [selectedDeliveryType, setDeliveryType] = useState<ManualOrderDeliveryType>("DELIVERY");
+  const [selectedDeliveryType, setDeliveryType] = useState<ManualOrderDeliveryType>(
+    presetDeliveryType ?? "DELIVERY"
+  );
   const [selectedPaymentMethod, setPaymentMethod] = useState<ManualOrderPaymentMethod | null>(null);
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [addressText, setAddressText] = useState("");
   const [tableId, setTableId] = useState<string | null>(null);
+  // Mostrador + efectivo: turno donde entra el dinero y recibido del cliente.
+  const [cashSessionId, setCashSessionId] = useState<string | null>(null);
+  const [cashReceived, setCashReceived] = useState(0);
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -132,15 +157,20 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
   );
 
   const dineInAllowed = !!branch?.dineInConfig?.enabled && !!branch.dineInConfig.allowOperators;
+  // Mostrador (docs/caja-pedidos.md): solo si la sede lo tiene habilitado.
+  const counterAllowed = isCounterEnabled(branch?.counterConfig);
   const { data: tables = [] } = useTables(
     isOpen && dineInAllowed ? businessId : null,
     branchId
   );
   const activeTables = useMemo(() => tables.filter((table) => table.isActive), [tables]);
 
-  const deliveryTypes: ManualOrderDeliveryType[] = dineInAllowed
-    ? ["DELIVERY", "PICKUP", "DINE_IN"]
-    : ["DELIVERY", "PICKUP"];
+  const deliveryTypes: ManualOrderDeliveryType[] = [
+    "DELIVERY",
+    "PICKUP",
+    ...(dineInAllowed ? ["DINE_IN" as const] : []),
+    ...(counterAllowed ? ["COUNTER" as const] : []),
+  ];
 
   const hasTransfer =
     !!branch?.transferOptions?.enabled && (branch.transferOptions.options?.length ?? 0) > 0;
@@ -221,7 +251,12 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
     setCategoryId(null);
   };
 
-  const needsCustomer = deliveryType !== "DINE_IN";
+  const needsCustomer = deliveryType !== "DINE_IN" && deliveryType !== "COUNTER";
+  const isCounterCash = deliveryType === "COUNTER" && paymentMethod === "CASH";
+  const { data: openSessions = [] } = useOpenSessions(
+    isOpen && isCounterCash ? businessId : null,
+    isOpen && isCounterCash ? branchId : null
+  );
   const errors = {
     items: cartLines.length === 0 ? t("validation.items") : undefined,
     paymentMethod: !paymentMethod ? t("validation.paymentMethod") : undefined,
@@ -231,6 +266,7 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
     addressText:
       deliveryType === "DELIVERY" && !addressText.trim() ? t("validation.address") : undefined,
     tableId: deliveryType === "DINE_IN" && !tableId ? t("validation.table") : undefined,
+    cashSession: isCounterCash && !cashSessionId ? t("validation.cashSession") : undefined,
   };
   const isValid = !!branchId && Object.values(errors).every((error) => !error);
   const showError = (error: string | undefined) => (submitted ? error : undefined);
@@ -241,13 +277,16 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
     setSearch("");
     setCategoryId(null);
     setCart({});
-    setDeliveryType("DELIVERY");
+    setSelectedBranchId(presetBranchIdProp ?? null);
+    setDeliveryType(presetDeliveryType ?? "DELIVERY");
     setPaymentMethod(null);
     setCustomerPhone("");
     setCustomerName("");
     setAddressText("");
     setTableId(null);
     setNotes("");
+    setCashSessionId(null);
+    setCashReceived(0);
     setSubmitted(false);
   };
 
@@ -275,6 +314,15 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
         }),
         ...(deliveryType === "DELIVERY" && { addressText: addressText.trim() }),
         ...(deliveryType === "DINE_IN" && tableId && { tableId }),
+        // Mostrador en efectivo: el turno es obligatorio (validado arriba);
+        // sin recibido se asume pago exacto y el servidor calcula las vueltas.
+        ...(isCounterCash &&
+          cashSessionId && {
+            cash: {
+              sessionId: cashSessionId,
+              ...(cashReceived > 0 && { receivedAmount: cashReceived }),
+            },
+          }),
         ...(notes.trim() && { notes: notes.trim() }),
       });
       resetForm();
@@ -386,7 +434,12 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
           <aside className="flex flex-col min-h-0 md:w-105 md:shrink-0 bg-slate-50/60">
             <div className="md:flex-1 md:min-h-0 md:overflow-y-auto scrollbar-thin p-4 sm:p-6 space-y-6">
               <FieldGroup label={t("orderType")}>
-                <div className="grid grid-cols-3 gap-1 p-1 rounded-card bg-slate-100">
+                <div
+                  className={cn(
+                    "grid gap-1 p-1 rounded-card bg-slate-100",
+                    deliveryTypes.length > 3 ? "grid-cols-4" : "grid-cols-3"
+                  )}
+                >
                   {deliveryTypes.map((type) => {
                     const Icon = DELIVERY_TYPE_ICONS[type];
                     const active = deliveryType === type;
@@ -492,6 +545,46 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
                 )}
               </FieldGroup>
 
+              {isCounterCash && (
+                <FieldGroup label={t("cashSection")} icon={Banknote}>
+                  {openSessions.length === 0 ? (
+                    <p className="text-xs text-amber-700">{t("noOpenSession")}</p>
+                  ) : (
+                    <>
+                      <Select
+                        value={cashSessionId ?? undefined}
+                        onValueChange={setCashSessionId}
+                      >
+                        <SelectTrigger aria-invalid={!!showError(errors.cashSession)}>
+                          <SelectValue placeholder={t("cashSessionPlaceholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {openSessions.map((session) => (
+                            <SelectItem key={session.id} value={session.id}>
+                              {t("cashSessionOption", {
+                                register:
+                                  session.register?.name ?? session.cashRegisterId,
+                              })}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {showError(errors.cashSession) && (
+                        <p className="text-xs text-red-600">{errors.cashSession}</p>
+                      )}
+                      <CurrencyInput value={cashReceived} onChange={setCashReceived} min={0} />
+                      {cashReceived > 0 && (
+                        <p className="text-xs text-slate-500">
+                          {t("cashChange", {
+                            change: formatCurrency(Math.max(0, cashReceived - total)),
+                          })}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </FieldGroup>
+              )}
+
               <FieldGroup label={t("notes")}>
                 <Input
                   value={notes}
@@ -557,7 +650,7 @@ export function NewOrderDrawer({ isOpen, onClose }: NewOrderDrawerProps) {
               >
                 <span className="flex items-center gap-2">
                   {createOrder.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {t("submit")}
+                  {deliveryType === "COUNTER" ? t("submitCounter") : t("submit")}
                 </span>
                 <span>{formatCurrency(total)}</span>
               </button>

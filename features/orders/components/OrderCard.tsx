@@ -6,18 +6,15 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  CreditCard,
   Store,
   Home,
   Utensils,
   Banknote,
-  ArrowLeftRight,
-  Wallet,
   PencilLine,
 } from "lucide-react";
-import type { Order, OrderItem, PaymentStatus } from "../types";
+import type { Order, OrderItem } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
-import { formatCurrency, getTimeElapsed, getPaymentStatusLabel, isCustomerEditing } from "../utils/order-status.utils";
+import { formatCurrency, getTimeElapsed, isCustomerEditing } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import {
   kanbanCardVariants,
@@ -26,13 +23,7 @@ import {
 } from "../styles";
 import { cn } from "@/lib/utils";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
+import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import {
   getElapsedMinutes,
   getLatenessLevel,
@@ -53,125 +44,6 @@ interface OrderCardProps {
   density?: CardDensity;
 }
 
-// Icono de método de pago con tooltip
-function PaymentMethodIcon({ method }: { method?: string }) {
-  const t = useTranslations("orders");
-  const getIconAndLabel = () => {
-    if (!method) return { icon: CreditCard, label: t("paymentMethods.NOT_SPECIFIED") };
-    const lower = method.toLowerCase();
-    if (lower === "cash") return { icon: Banknote, label: t("paymentMethods.CASH") };
-    if (lower.includes("card") || lower === "dataphone")
-      return { icon: CreditCard, label: t("paymentMethods.CREDIT_CARD") };
-    if (lower === "transfer")
-      return { icon: ArrowLeftRight, label: t("paymentMethods.TRANSFER") };
-    if (lower === "wallet") return { icon: Wallet, label: t("paymentMethods.OTHER") };
-    return { icon: CreditCard, label: method };
-  };
-
-  const { icon: Icon, label } = getIconAndLabel();
-
-  return (
-    <div className="group relative">
-      <Icon className="w-3.5 h-3.5 text-current" />
-      {/* Tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-// Componente para editar el estado de pago con DropdownMenu de shadcn
-// NOTA: El backend no permite transición de PAID a PENDING, solo PENDING a PAID
-export function PaymentStatusEditor({
-  orderId,
-  currentStatus,
-  paymentMethod,
-}: {
-  orderId: string;
-  currentStatus: PaymentStatus;
-  paymentMethod?: string;
-}) {
-  const t = useTranslations("orders");
-  const [isOpen, setIsOpen] = useState(false);
-  const updatePaymentStatus = useUpdateOrderPaymentStatus();
-
-  const handleSelect = useCallback(
-    (newStatus: PaymentStatus) => {
-      if (newStatus !== currentStatus) {
-        updatePaymentStatus.mutate({
-          orderId,
-          data: {
-            paymentStatus: newStatus,
-            changeNotes: t("paymentNotes.confirmedFromAdmin"),
-          },
-        });
-      }
-      setIsOpen(false);
-    },
-    [currentStatus, orderId, updatePaymentStatus, t]
-  );
-
-  // Badge base con icono de método de pago
-  const badgeContent = (
-    <>
-      <PaymentMethodIcon method={paymentMethod} />
-      <span>{getPaymentStatusLabel(currentStatus)}</span>
-    </>
-  );
-
-  // Si ya está pagado, mostrar badge estático (no editable)
-  if (currentStatus === "PAID") {
-    return (
-      <span
-        className={cn(
-          categoryBadgeVariants({ variant: "green" }),
-          "flex items-center gap-1"
-        )}
-      >
-        {badgeContent}
-      </span>
-    );
-  }
-
-  // Si está pendiente, mostrar dropdown para marcar como pagado
-  // Wrapper con stopPropagation para evitar que se abra el modal de detalle
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              categoryBadgeVariants({ variant: "amber" }),
-              "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
-            )}
-          >
-            {badgeContent}
-            <ChevronDown className="w-3 h-3 opacity-60" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[140px] z-[9999]"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DropdownMenuItem
-            onSelect={() => handleSelect("PAID")}
-            className="flex items-center gap-2 text-xs cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-slate-700">{t("actions.confirmPayment")}</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
 // Tipo de orden basado en deliveryType (docs/architecture/pedidos-en-mesa.md)
 function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>): {
   label: string;
@@ -190,6 +62,17 @@ function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>):
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
       isDelivery: true,
+    };
+  }
+
+  // Venta de mostrador (docs/caja-pedidos.md): se cobra y entrega en el
+  // acto, no pasa por reparto ni mesa.
+  if (order.deliveryType === "COUNTER") {
+    return {
+      label: t?.("deliveryTypes.COUNTER") || "COUNTER",
+      icon: <Banknote className="w-3 h-3" />,
+      variant: "amber",
+      isDelivery: false,
     };
   }
 
@@ -512,9 +395,23 @@ export const OrderCard = memo(function OrderCard({
           {/* Payment method (icon) + Editable payment status */}
           <PaymentStatusEditor
             orderId={order.id}
+            total={order.total}
+            branchId={order.branchId}
             paymentMethod={order.paymentMethod}
             currentStatus={order.paymentStatus}
           />
+          {order.cashCollection?.status === "PENDING_SETTLEMENT" && (
+            <span
+              className={cn(
+                categoryBadgeVariants({ variant: "amber" }),
+                "flex items-center gap-1"
+              )}
+              title={order.cashCollection.holderName ?? undefined}
+            >
+              <Banknote className="w-3 h-3" />
+              <span>{t("cashPendingSettlement")}</span>
+            </span>
+          )}
           <PaymentProofIndicator order={order} />
           <span className="flex-1" />
           <NextStatusButton

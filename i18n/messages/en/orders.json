@@ -1,11 +1,13 @@
 {
+  "cashPendingSettlement": "To settle",
   "deliveryTypes": {
     "delivery": "Delivery",
     "table": "Table",
     "pickup": "Pickup",
     "DELIVERY": "Delivery",
     "PICKUP": "Pickup",
-    "DINE_IN": "Dine in"
+    "DINE_IN": "Dine in",
+    "COUNTER": "Counter"
   },
   "paymentMethods": {
     "CASH": "Cash",
@@ -146,7 +148,8 @@
       "title": "Delivery type",
       "delivery": "Delivery",
       "pickup": "Pickup",
-      "dineIn": "Dine-in"
+      "dineIn": "Dine-in",
+      "counter": "Counter"
     },
     "activeFilters": {
       "paidOnly": "• Paid only",
@@ -384,6 +387,12 @@
     "deliveryFee": "Delivery",
     "deliveryFeeByDistance": "Calculated on create",
     "submit": "Create order",
+    "submitCounter": "Charge and deliver",
+    "cashSection": "Counter cash",
+    "cashSessionPlaceholder": "Shift receiving the cash",
+    "cashSessionOption": "Shift · {register}",
+    "cashChange": "Change: {change}",
+    "noOpenSession": "No open shift in this branch. Open cash to charge in cash.",
     "success": "Order #{number} created",
     "error": "Could not create the order",
     "validation": {
@@ -392,7 +401,8 @@
       "phone": "Enter a valid phone number",
       "name": "Enter who the order is for",
       "address": "Enter the delivery address",
-      "table": "Select the table"
+      "table": "Select the table",
+      "cashSession": "Select the shift receiving the cash"
     }
   }
 }

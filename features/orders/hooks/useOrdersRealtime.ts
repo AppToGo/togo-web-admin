@@ -42,6 +42,8 @@ const WS_EVENTS = {
   ORDER_PAYMENT_PROOF: 'order:paymentProof',
   ORDER_PAYMENT_VERIFICATION: 'order:paymentVerification',
   METRICS_UPDATED: 'order:metricsUpdated',
+  CASH_SESSION_UPDATED: 'cash:sessionUpdated',
+  CASH_COLLECTION_UPDATED: 'cash:collectionUpdated',
   OPERATOR_JOINED: 'operator:joined',
   OPERATOR_LEFT: 'operator:left',
   AUTH_ERROR: 'auth_error',
@@ -391,6 +393,19 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
         queryKey: METRICS_KEYS.business(businessId ?? undefined),
       });
     });
+
+    // Caja (docs/caja-pedidos.md): turno o recaudo cambió en el negocio —
+    // se invalida toda la caché de caja y el tablero de pedidos (el chip
+    // "Por liquidar" y el tab "Por cobrar" dependen de ambos).
+    // Viaja por el mismo namespace `/orders`, sin segundo socket.
+    const refreshCash = () => {
+      queryClient.invalidateQueries({ queryKey: ["cash"] });
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, "live"],
+      });
+    };
+    socket.on(WS_EVENTS.CASH_SESSION_UPDATED, refreshCash);
+    socket.on(WS_EVENTS.CASH_COLLECTION_UPDATED, refreshCash);
 
     socket.on(WS_EVENTS.OPERATOR_JOINED, ({ userId }: OperatorEvent) => {
       debugLog('[WS] Operador conectado:', userId);
