@@ -21,8 +21,14 @@ export const FORWARD_FLOW: readonly OrderStatus[] = [
   "COMPLETED",
 ];
 
-/** Estados en curso entre los que se puede retroceder (Entregado y Cancelado son finales). */
-const REVERTIBLE_FLOW: readonly OrderStatus[] = ["CONFIRMED", "IN_PROGRESS", "READY"];
+/**
+ * Estados en curso, en orden: los únicos entre los que se puede retroceder
+ * (Entregado y Cancelado son finales). Derivado de FORWARD_FLOW, como en el
+ * backend, para no mantener un segundo orden a mano.
+ */
+const IN_FLIGHT_FLOW: readonly OrderStatus[] = FORWARD_FLOW.filter(
+  (status) => status !== "COMPLETED"
+);
 
 /** Posición en el flujo de los estados sin columna propia. */
 const FLOW_POSITION: Partial<Record<OrderStatus, OrderStatus>> = {
@@ -30,19 +36,17 @@ const FLOW_POSITION: Partial<Record<OrderStatus, OrderStatus>> = {
   PAID: "CONFIRMED",
 };
 
-/** "En camino" solo existe para domicilio (misma regla que el backend). */
+/**
+ * "En camino" solo existe para domicilio (misma regla que el backend). Un
+ * pedido sin tipo de entrega cuenta como domicilio: son pedidos viejos que
+ * ya podían pasar a En camino.
+ */
 export function isStatusApplicable(
   status: OrderStatus,
   deliveryType: string | null | undefined
 ): boolean {
-  return status !== "ON_THE_WAY" || deliveryType === "DELIVERY";
+  return status !== "ON_THE_WAY" || deliveryType == null || deliveryType === "DELIVERY";
 }
-
-const REVERT_FROM_RANK: Partial<Record<OrderStatus, number>> = {
-  IN_PROGRESS: 1,
-  READY: 2,
-  ON_THE_WAY: 3,
-};
 
 /** Estados visibles en el tablero; `null` = todos (fuera del tablero). */
 export type VisibleStatuses = ReadonlySet<OrderStatus> | null;
@@ -74,9 +78,9 @@ export function getNextVisibleStatus(
 
 /** Devolver un pedido en curso a un estado anterior (copia de la regla del backend). */
 export function isRevertTransition(from: OrderStatus, to: OrderStatus): boolean {
-  const fromRank = REVERT_FROM_RANK[from];
-  const toRank = REVERTIBLE_FLOW.indexOf(to);
-  return fromRank !== undefined && toRank !== -1 && toRank < fromRank;
+  const fromIndex = IN_FLIGHT_FLOW.indexOf(from);
+  const toIndex = IN_FLIGHT_FLOW.indexOf(to);
+  return fromIndex !== -1 && toIndex !== -1 && toIndex < fromIndex;
 }
 
 export type StatusMoveCheck =
@@ -105,6 +109,8 @@ export function checkStatusMove(
   if (to === "CANCELLED") return { ok: true };
   if (!isStatusApplicable(to, deliveryType)) return { ok: false, reason: "onlyDelivery" };
   if (isRevertTransition(from, to)) {
+    // Tampoco se retrocede a un estado que el negocio no usa.
+    if (!isVisible(to, visible)) return { ok: false, reason: "notAllowed" };
     return canRevert ? { ok: true } : { ok: false, reason: "noRevertPermission" };
   }
   const next = getNextVisibleStatus(from, visible, deliveryType);

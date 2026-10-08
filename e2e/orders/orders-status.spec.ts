@@ -62,6 +62,7 @@ async function mockStatusScenario(
     permissions?: string[];
     skippedStatuses?: string[];
     flowUpdates?: unknown[];
+    flowUpdateError?: { status: number; message: string };
   } = {}
 ): Promise<void> {
   let deliveryStatus = opts.initialStatus ?? "CONFIRMED";
@@ -79,6 +80,12 @@ async function mockStatusScenario(
       route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
     if (path.endsWith("/orders/flow")) {
+      if (request.method() === "PUT" && opts.flowUpdateError) {
+        return json(
+          { message: opts.flowUpdateError.message, statusCode: opts.flowUpdateError.status },
+          opts.flowUpdateError.status
+        );
+      }
       if (request.method() === "PUT") {
         const body = request.postDataJSON() as { skippedStatuses: string[] };
         opts.flowUpdates?.push(body);
@@ -387,5 +394,28 @@ test.describe("Orders — transiciones de estado", () => {
     });
     await expect(card.getByRole("button", { name: "Enviar" })).toHaveCount(0);
     await expect(card.getByRole("button", { name: "Entregar" })).toBeVisible();
+  });
+
+  test("no se puede quitar del flujo un estado que todavía tiene pedidos", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      flowUpdateError: {
+        status: 409,
+        message:
+          "Hay pedidos en un estado que quieres dejar de usar (2 en En proceso). Muévelos antes de cambiar el flujo.",
+      },
+    });
+    await openBoard(page);
+
+    await page.getByRole("button", { name: "Flujo del negocio" }).click();
+    const toggle = page.getByRole("switch", { name: "En proceso" });
+    await toggle.click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/2 en En proceso/i)
+    ).toBeVisible({ timeout: 8_000 });
+    // El flujo no cambió: la columna sigue y el switch vuelve a quedar activo.
+    await expect(page.getByRole("heading", { name: "En proceso" })).toBeVisible();
+    await expect(toggle).toBeChecked();
   });
 });

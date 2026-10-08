@@ -40,6 +40,7 @@ const WS_EVENTS = {
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
   ORDER_CUSTOMER_EDIT: 'order:customerEdit',
   ORDER_VIEWED: 'order:viewed',
+  ORDER_FLOW_UPDATED: 'order:flowUpdated',
   ORDER_PAYMENT_PROOF: 'order:paymentProof',
   ORDER_PAYMENT_VERIFICATION: 'order:paymentVerification',
   METRICS_UPDATED: 'order:metricsUpdated',
@@ -325,6 +326,13 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
 
     // Alguien del negocio abrió un pedido nuevo: baja el badge.
     socket.on(WS_EVENTS.ORDER_VIEWED, refreshUnseenCount);
+
+    // OWNER/ADMIN cambió qué estados usa el negocio: recargar el flujo para
+    // no quedar con columnas y botones del flujo viejo (el backend ya
+    // rechazaría esos cambios).
+    socket.on(WS_EVENTS.ORDER_FLOW_UPDATED, () => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.flow(businessId) });
+    });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
       // Actualizar detalle de orden en cache

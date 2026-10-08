@@ -41,7 +41,7 @@
   },
   "order_revert_status": {
     "label": "Move orders back to a previous status",
-    "description": "Lets the user move an in-progress order back to a previous status (for example, from Ready to In progress). Delivered and cancelled orders can't be reopened. No message is sent to the customer."
+    "description": "Lets the user move an in-progress order back to a previous status (between New, In progress, Ready and On the way). Delivered and cancelled orders can't be reopened. No message is sent to the customer."
   },
   "order_item_add": {
     "label": "Add order items",

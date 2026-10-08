@@ -17,6 +17,9 @@ import {
  */
 test.describe("Orders — cambio de día con la pestaña abierta", () => {
   test("al pasar la medianoche el tablero pide los pedidos del día nuevo", async ({ page }) => {
+    // openBoard tiene esperas opcionales (tour, toast, modal) que con la
+    // suite completa en paralelo se acercan al timeout por defecto.
+    test.setTimeout(60_000);
     await page.context().clearCookies();
     await page.addInitScript(() => {
       localStorage.clear();
