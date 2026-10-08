@@ -117,7 +117,8 @@
     "invalidStatusTransition": "Transición de estado no válida",
     "mustPassThrough": "Primero pasa el pedido a «{status}»",
     "noRevertPermission": "No tienes permiso para devolver un pedido a un estado anterior",
-    "notAllowed": "No se puede mover el pedido a ese estado"
+    "notAllowed": "No se puede mover el pedido a ese estado",
+    "onlyDelivery": "Solo los pedidos a domicilio pasan a «En camino»"
   },
   "history": {
     "created": "Creado: {status}"
@@ -196,7 +197,8 @@
     "collapseColumn": "Contraer columna",
     "expandColumn": "Expandir columna",
     "collapseStats": "Contraer resumen",
-    "expandStats": "Expandir resumen"
+    "expandStats": "Expandir resumen",
+    "toOnTheWay": "Enviar"
   },
   "boardView": {
     "label": "Vista del tablero",
@@ -390,6 +392,14 @@
     "title": "Flujo del negocio",
     "description": "Elige los estados que usa tu operación. Los que no uses no aparecen en el tablero y los pedidos los saltan. Aplica a todo el equipo.",
     "alwaysOn": "«Nueva» y «Entregada» siempre forman parte del flujo.",
-    "saved": "Flujo del negocio actualizado"
+    "saved": "Flujo del negocio actualizado",
+    "onTheWayHint": "Solo domicilios. Avisa al cliente y pide repartidor."
+  },
+  "deliveryPicker": {
+    "title": "¿Quién lleva el pedido?",
+    "description": "Elige el repartidor del pedido {order}. Al confirmar pasa a «En camino» y se le avisa al cliente.",
+    "confirm": "Enviar pedido",
+    "empty": "No hay usuarios activos para asignar.",
+    "loadError": "No se pudieron cargar los repartidores."
   }
 }

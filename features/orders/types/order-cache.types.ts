@@ -24,6 +24,9 @@ export const ORDERS_KEYS = {
     [...ORDERS_KEYS.all, businessId, "live", filters] as const,
   completed: (businessId: string | undefined, filters: object) =>
     [...ORDERS_KEYS.all, businessId, "completed", filters] as const,
+  // Repartidores posibles al pasar un pedido a "En camino".
+  deliveryCandidates: (businessId: string | null | undefined) =>
+    [...ORDERS_KEYS.all, businessId, "delivery-candidates"] as const,
   // Flujo del tablero del negocio (estados que no usa).
   flow: (businessId: string | null | undefined) =>
     [...ORDERS_KEYS.all, businessId, "flow"] as const,

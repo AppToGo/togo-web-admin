@@ -209,7 +209,24 @@ export interface UnseenOrdersFilters {
   dateTo?: string;
 }
 
-/** Estados del flujo del tablero que el negocio no usa (IN_PROGRESS / READY). */
+/** Usuario del negocio que puede llevar un pedido a domicilio. */
+export interface DeliveryCandidate {
+  id: string;
+  name: string;
+}
+
+/**
+ * Repartidores posibles al pasar un pedido a "En camino". Endpoint propio de
+ * pedidos (permiso de cambiar estado), no el listado de usuarios del admin.
+ */
+export async function getDeliveryCandidates(businessId: string): Promise<DeliveryCandidate[]> {
+  const { data } = await apiClient.get<DeliveryCandidate[]>(
+    `${getBaseUrl(businessId)}/delivery-candidates`
+  );
+  return data;
+}
+
+/** Estados del flujo del tablero que el negocio no usa (IN_PROGRESS / READY / ON_THE_WAY). */
 export interface BusinessOrderFlow {
   skippedStatuses: OrderStatus[];
 }

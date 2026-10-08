@@ -17,6 +17,7 @@ import { HoverTooltip } from "./HoverTooltip";
 const LABEL_BY_TARGET: Partial<Record<OrderStatus, string>> = {
   IN_PROGRESS: "actions.toInProgress",
   READY: "actions.ready",
+  ON_THE_WAY: "actions.toOnTheWay",
   COMPLETED: "actions.deliver",
 };
 
@@ -29,7 +30,10 @@ interface NextStatusButtonProps {
 export function NextStatusButton({ order, status, onStatusChange }: NextStatusButtonProps) {
   const t = useTranslations("orders");
   const { visible } = useOrderFlow();
-  const to = status ? getNextVisibleStatus(status as OrderStatus, visible) : null;
+  // "En camino" solo se ofrece a los pedidos a domicilio.
+  const to = status
+    ? getNextVisibleStatus(status as OrderStatus, visible, order.deliveryType)
+    : null;
   const labelKey = to ? LABEL_BY_TARGET[to] : undefined;
   if (!to || !labelKey || !onStatusChange) return null;
   const next = { to, labelKey };

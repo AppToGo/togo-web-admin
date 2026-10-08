@@ -52,7 +52,8 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
-import { checkStatusMove } from "../utils/order-flow.utils";
+import { checkStatusMove, isStatusApplicable } from "../utils/order-flow.utils";
+import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
 import { useOrderFlow } from "../hooks/useOrderFlow";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 
@@ -115,11 +116,13 @@ function getOrderTypeInfo(
 // Component to change order status (similar to PaymentStatusEditor)
 function OrderStatusEditor({
   currentStatus,
+  deliveryType,
   onStatusChange,
   customerEditing = false,
 }: {
   orderId: string;
   currentStatus: OrderStatus;
+  deliveryType?: string;
   onStatusChange: (status: OrderStatus) => void;
   /** El cliente lo está editando: no se puede mandar a producción. */
   customerEditing?: boolean;
@@ -144,13 +147,15 @@ function OrderStatusEditor({
   // Available statuses (including current to show it in its position)
   // Logical flow: CONFIRMED → IN_PROGRESS → READY → ON_THE_WAY → COMPLETED
   // CANCELLED is shown at the end as an exception option
-  const availableStatuses: OrderStatus[] = [
-    "CONFIRMED",
-    "IN_PROGRESS",
-    "READY",
-    "COMPLETED",
-    "CANCELLED",
-  ];
+  // Solo los estados del flujo del negocio (más el actual, por si quedó en
+  // uno que el negocio dejó de usar); "En camino" solo para domicilio.
+  const availableStatuses = (
+    ["CONFIRMED", "IN_PROGRESS", "READY", "ON_THE_WAY", "COMPLETED", "CANCELLED"] as OrderStatus[]
+  ).filter(
+    (status) =>
+      status === currentStatus ||
+      ((flow.visible?.has(status) ?? true) && isStatusApplicable(status, deliveryType))
+  );
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
@@ -175,7 +180,8 @@ function OrderStatusEditor({
           const isCurrent = status === currentStatus;
           const isBlocked =
             (customerEditing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status)) ||
-            (!isCurrent && !checkStatusMove(currentStatus, status, flow).ok);
+            (!isCurrent &&
+              !checkStatusMove(currentStatus, status, { ...flow, deliveryType }).ok);
           return (
             <DropdownMenuItem
               key={status}
@@ -259,10 +265,19 @@ export function OrderDetailContent({
   ] as const;
 
   const flow = useOrderFlow();
+  // Selector de repartidor al pasar el pedido a "En camino".
+  const [isDeliveryPickerOpen, setIsDeliveryPickerOpen] = useState(false);
   const handleStatusChange = useCallback(
     (newStatus: OrderStatus) => {
       if (!order || newStatus === order.status) return;
-      if (!checkStatusMove(order.status, newStatus, flow).ok) return;
+      if (
+        !checkStatusMove(order.status, newStatus, {
+          ...flow,
+          deliveryType: order.deliveryType,
+        }).ok
+      ) {
+        return;
+      }
 
       if (newStatus === "COMPLETED") {
         const validation = canCompleteOrder(order);
@@ -270,6 +285,12 @@ export function OrderDetailContent({
           toast.error(t("errors.cannotComplete"));
           return;
         }
+      }
+
+      // "En camino" exige repartidor: si el pedido no tiene, se pide antes.
+      if (newStatus === "ON_THE_WAY" && !order.assignedDeliveryId) {
+        setIsDeliveryPickerOpen(true);
+        return;
       }
 
       updateStatus.mutate(
@@ -282,6 +303,21 @@ export function OrderDetailContent({
       );
     },
     [order, orderId, updateStatus, onClose, t, flow]
+  );
+
+  const handleDeliveryConfirm = useCallback(
+    (assignedDeliveryId: string) => {
+      updateStatus.mutate(
+        { orderId, data: { status: "ON_THE_WAY", assignedDeliveryId } },
+        {
+          onSuccess: () => {
+            setIsDeliveryPickerOpen(false);
+            onClose?.();
+          },
+        }
+      );
+    },
+    [orderId, updateStatus, onClose]
   );
 
   // El borrador solo vale para la visita a la pestaña que dispara el ⚠: al
@@ -371,8 +407,16 @@ export function OrderDetailContent({
             <OrderStatusEditor
               orderId={order.id ?? ""}
               currentStatus={order.status}
+              deliveryType={order.deliveryType}
               onStatusChange={handleStatusChange}
               customerEditing={customerEditing}
+            />
+            <DeliveryPickerDialog
+              isOpen={isDeliveryPickerOpen}
+              orderLabel={formatOrderNumber(order.id, order.orderNumber)}
+              isSubmitting={updateStatus.isPending}
+              onClose={() => setIsDeliveryPickerOpen(false)}
+              onConfirm={handleDeliveryConfirm}
             />
 
             {customerEditing && (

@@ -18,7 +18,7 @@ import type { OrderStatus } from "../types";
 import { HoverTooltip } from "./HoverTooltip";
 
 /** Estados del flujo que el negocio puede dejar de usar. */
-const OPTIONAL_STATUSES: OrderStatus[] = ["IN_PROGRESS", "READY"];
+const OPTIONAL_STATUSES: OrderStatus[] = ["IN_PROGRESS", "READY", "ON_THE_WAY"];
 
 /** Quién decide el flujo del negocio (el backend aplica la misma regla). */
 const FLOW_EDITOR_ROLES = ["OWNER", "ADMIN", "SUPER_ADMIN"];
@@ -83,6 +83,11 @@ export function OrderFlowSettings() {
                 >
                   <span className="text-sm text-slate-700 group-hover:text-slate-900">
                     {t(`status.${status}`)}
+                    {status === "ON_THE_WAY" && (
+                      <span className="block text-xs text-slate-500">
+                        {t("orderFlow.onTheWayHint")}
+                      </span>
+                    )}
                   </span>
                   <Switch
                     checked={used}

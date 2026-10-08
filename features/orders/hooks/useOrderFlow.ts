@@ -7,12 +7,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
-import { getOrderFlow, updateOrderFlow } from "../services/order.service";
+import {
+  getDeliveryCandidates,
+  getOrderFlow,
+  updateOrderFlow,
+} from "../services/order.service";
 import { ORDERS_KEYS } from "../types/order-cache.types";
 import { FORWARD_FLOW, type VisibleStatuses } from "../utils/order-flow.utils";
 import type { OrderStatus } from "../types";
 
 export const ORDER_REVERT_STATUS_PERMISSION = "order.revert_status";
+
+/** Flujo de fábrica de un negocio: "En camino" arranca apagado (igual que el backend). */
+const DEFAULT_SKIPPED_STATUSES: OrderStatus[] = ["ON_THE_WAY"];
 
 // El flujo lo cambia OWNER/ADMIN muy de vez en cuando.
 const FLOW_STALE_TIME = 5 * 60 * 1000;
@@ -27,6 +34,17 @@ export function useBusinessOrderFlow() {
     queryKey: ORDERS_KEYS.flow(businessId),
     queryFn: () => getOrderFlow(businessId!),
     enabled: !!businessId,
+    staleTime: FLOW_STALE_TIME,
+  });
+}
+
+/** Repartidores posibles; se piden recién al abrir el selector. */
+export function useDeliveryCandidates(enabled: boolean) {
+  const businessId = useEffectiveBusinessId();
+  return useQuery({
+    queryKey: ORDERS_KEYS.deliveryCandidates(businessId),
+    queryFn: () => getDeliveryCandidates(businessId!),
+    enabled: enabled && !!businessId,
     staleTime: FLOW_STALE_TIME,
   });
 }
@@ -52,7 +70,8 @@ export function useUpdateBusinessOrderFlow() {
 /**
  * Estados que usa el tablero (columnas y siguiente paso obligatorio) y si el
  * usuario puede devolver pedidos a un estado anterior. Mientras el flujo no
- * cargó se asume el completo: el backend valida igual.
+ * cargó se asume el de fábrica (todo menos "En camino"): el backend valida
+ * igual.
  */
 export function useOrderFlow(): {
   visible: VisibleStatuses;
@@ -62,7 +81,7 @@ export function useOrderFlow(): {
   const { data } = useBusinessOrderFlow();
   const { hasPermission } = useMyPermissions();
   const canRevert = hasPermission(ORDER_REVERT_STATUS_PERMISSION);
-  const skippedKey = (data?.skippedStatuses ?? []).join(",");
+  const skippedKey = (data?.skippedStatuses ?? DEFAULT_SKIPPED_STATUSES).join(",");
 
   return useMemo(() => {
     const skipped = skippedKey ? (skippedKey.split(",") as OrderStatus[]) : [];

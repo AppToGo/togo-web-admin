@@ -84,7 +84,14 @@ async function mockStatusScenario(
         opts.flowUpdates?.push(body);
         opts.skippedStatuses = body.skippedStatuses;
       }
-      return json({ skippedStatuses: opts.skippedStatuses ?? [] });
+      // Flujo de fábrica: "En camino" apagado.
+      return json({ skippedStatuses: opts.skippedStatuses ?? ["ON_THE_WAY"] });
+    }
+    if (path.endsWith("/orders/delivery-candidates")) {
+      return json([
+        { id: "user-ana", name: "Ana Repartidora" },
+        { id: "user-pedro", name: "Pedro Repartidor" },
+      ]);
     }
     if (path.endsWith("/auth/me/permissions")) {
       return json(opts.permissions ?? ["order.view", "order.create"]);
@@ -296,7 +303,7 @@ test.describe("Orders — transiciones de estado", () => {
     await expect(
       page.locator("li[data-sonner-toast]").getByText(/flujo del negocio actualizado/i)
     ).toBeVisible({ timeout: 8_000 });
-    expect(flowUpdates).toEqual([{ skippedStatuses: ["IN_PROGRESS"] }]);
+    expect(flowUpdates).toEqual([{ skippedStatuses: ["ON_THE_WAY", "IN_PROGRESS"] }]);
     await expect(page.getByRole("heading", { name: "En proceso" })).toHaveCount(0);
   });
 
@@ -325,5 +332,60 @@ test.describe("Orders — transiciones de estado", () => {
     await expect(page).toHaveURL(/\/dashboard\/orders/, { timeout: 15_000 });
     await expect(expandButtons).toHaveCount(collapsedBefore + 1, { timeout: 15_000 });
   });
-});
 
+  test("con En camino activo, un domicilio Lista se envía eligiendo repartidor", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      initialStatus: "READY",
+      skippedStatuses: [],
+    });
+    await openBoard(page);
+
+    await expect(page.getByRole("heading", { name: "En camino" })).toBeVisible();
+    const card = page.locator('div[draggable="true"]', {
+      has: page.getByText("#101", { exact: true }),
+    });
+    // Domicilio: de Lista no se entrega directo, se envía.
+    await expect(card.getByRole("button", { name: "Entregar" })).toHaveCount(0);
+    await card.getByRole("button", { name: "Enviar" }).click();
+
+    // El Dialog del proyecto no expone role="dialog": se busca por contenido.
+    await expect(page.getByRole("heading", { name: "¿Quién lleva el pedido?" })).toBeVisible();
+    expect(scenario.patches).toHaveLength(0);
+    await page.getByRole("radio", { name: "Pedro Repartidor" }).click();
+    await page.getByRole("button", { name: "Enviar pedido" }).click();
+
+    await expect(
+      page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
+    ).toBeVisible({ timeout: 8_000 });
+    expect(scenario.patches).toEqual([
+      {
+        orderId: "delivery1",
+        body: { status: "ON_THE_WAY", assignedDeliveryId: "user-pedro" },
+      },
+    ]);
+  });
+
+  test("con En camino activo, un pedido para recoger pasa de Lista a Entregar", async ({ page }) => {
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario, {
+      skippedStatuses: [],
+      extraLive: [
+        baseOrder({
+          id: "pickupready",
+          orderNumber: 105,
+          status: "READY",
+          deliveryType: "PICKUP",
+          paymentStatus: "PAID",
+        }),
+      ],
+    });
+    await openBoard(page);
+
+    const card = page.locator('div[draggable="true"]', {
+      has: page.getByText("#105", { exact: true }),
+    });
+    await expect(card.getByRole("button", { name: "Enviar" })).toHaveCount(0);
+    await expect(card.getByRole("button", { name: "Entregar" })).toBeVisible();
+  });
+});

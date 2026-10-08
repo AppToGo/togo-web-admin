@@ -14,6 +14,7 @@ import { GroupedListView } from "./GroupedListView";
 import { HoverTooltip } from "./HoverTooltip";
 import { StatsTickerRail } from "./StatsTickerRail";
 import { NewOrderDrawer } from "./NewOrderDrawer";
+import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
 import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
 
@@ -320,6 +321,9 @@ export function OrdersKanbanBoard({
     [filteredOrdersByStatus]
   );
 
+  // Pedido que espera repartidor para pasar a "En camino".
+  const [deliveryPickerOrder, setDeliveryPickerOrder] = useState<Order | null>(null);
+
   // Single entry point for every status change on this screen (drag & drop,
   // "Move to" menu, next-step button, "By status" tab drops). Checks the move
   // against the visible columns (only the next visible one is mandatory;
@@ -340,6 +344,7 @@ export function OrdersKanbanBoard({
       const move = checkStatusMove(order.status, newStatus as OrderStatus, {
         visible: flowStatuses,
         canRevert,
+        deliveryType: order.deliveryType,
       });
       if (!move.ok) {
         toast.error(
@@ -360,12 +365,32 @@ export function OrdersKanbanBoard({
           return;
         }
       }
+      // "En camino" exige repartidor: si el pedido no tiene, se pide antes
+      // de mover la card.
+      if (newStatus === "ON_THE_WAY" && !order.assignedDeliveryId) {
+        setDeliveryPickerOrder(order);
+        return;
+      }
       updateStatus.mutate({
         orderId,
         data: { status: newStatus as OrderStatus },
       });
     },
     [updateStatus, filteredOrdersByStatus, flowStatuses, canRevert, t]
+  );
+
+  const handleDeliveryConfirm = useCallback(
+    (assignedDeliveryId: string) => {
+      if (!deliveryPickerOrder) return;
+      updateStatus.mutate(
+        {
+          orderId: deliveryPickerOrder.id,
+          data: { status: "ON_THE_WAY", assignedDeliveryId },
+        },
+        { onSettled: () => setDeliveryPickerOrder(null) }
+      );
+    },
+    [deliveryPickerOrder, updateStatus]
   );
 
   // Delivered orders come from a separate paginated query; every view uses
@@ -613,6 +638,18 @@ export function OrdersKanbanBoard({
       <NewOrderDrawer
         isOpen={isNewOrderOpen}
         onClose={() => setIsNewOrderOpen(false)}
+      />
+
+      <DeliveryPickerDialog
+        isOpen={!!deliveryPickerOrder}
+        orderLabel={
+          deliveryPickerOrder
+            ? formatOrderNumber(deliveryPickerOrder.id, deliveryPickerOrder.orderNumber)
+            : undefined
+        }
+        isSubmitting={updateStatus.isPending}
+        onClose={() => setDeliveryPickerOrder(null)}
+        onConfirm={handleDeliveryConfirm}
       />
 
       {/* Order detail as a side panel - only rendered when an order is selected */}

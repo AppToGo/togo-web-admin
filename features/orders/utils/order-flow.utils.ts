@@ -9,11 +9,15 @@ import type { OrderStatus } from "../types";
  * El backend aplica las mismas reglas (api-togo `order-transitions.ts`).
  */
 
-/** Orden de avance. Entregado es siempre el cierre, aunque su columna esté oculta. */
+/**
+ * Orden de avance. Entregado es siempre el cierre, aunque su columna esté
+ * oculta. "En camino" solo aplica a domicilio: recoger y mesa lo saltan.
+ */
 export const FORWARD_FLOW: readonly OrderStatus[] = [
   "CONFIRMED",
   "IN_PROGRESS",
   "READY",
+  "ON_THE_WAY",
   "COMPLETED",
 ];
 
@@ -24,8 +28,15 @@ const REVERTIBLE_FLOW: readonly OrderStatus[] = ["CONFIRMED", "IN_PROGRESS", "RE
 const FLOW_POSITION: Partial<Record<OrderStatus, OrderStatus>> = {
   PAYMENT_PENDING: "CONFIRMED",
   PAID: "CONFIRMED",
-  ON_THE_WAY: "READY",
 };
+
+/** "En camino" solo existe para domicilio (misma regla que el backend). */
+export function isStatusApplicable(
+  status: OrderStatus,
+  deliveryType: string | null | undefined
+): boolean {
+  return status !== "ON_THE_WAY" || deliveryType === "DELIVERY";
+}
 
 const REVERT_FROM_RANK: Partial<Record<OrderStatus, number>> = {
   IN_PROGRESS: 1,
@@ -46,13 +57,17 @@ const isVisible = (status: OrderStatus, visible: VisibleStatuses) =>
  */
 export function getNextVisibleStatus(
   status: OrderStatus,
-  visible: VisibleStatuses
+  visible: VisibleStatuses,
+  deliveryType?: string | null
 ): OrderStatus | null {
   const position = FLOW_POSITION[status] ?? status;
   const index = FORWARD_FLOW.indexOf(position);
   if (index === -1 || position === "COMPLETED") return null;
   for (const candidate of FORWARD_FLOW.slice(index + 1)) {
-    if (candidate === "COMPLETED" || isVisible(candidate, visible)) return candidate;
+    if (candidate === "COMPLETED") return candidate;
+    if (isVisible(candidate, visible) && isStatusApplicable(candidate, deliveryType)) {
+      return candidate;
+    }
   }
   return null;
 }
@@ -67,7 +82,7 @@ export function isRevertTransition(from: OrderStatus, to: OrderStatus): boolean 
 export type StatusMoveCheck =
   | { ok: true }
   | { ok: false; reason: "mustPassThrough"; next: OrderStatus }
-  | { ok: false; reason: "noRevertPermission" | "notAllowed" };
+  | { ok: false; reason: "noRevertPermission" | "notAllowed" | "onlyDelivery" };
 
 const FINAL: readonly OrderStatus[] = ["COMPLETED", "CANCELLED", "ABANDONED"];
 
@@ -80,14 +95,19 @@ const FINAL: readonly OrderStatus[] = ["COMPLETED", "CANCELLED", "ABANDONED"];
 export function checkStatusMove(
   from: OrderStatus,
   to: OrderStatus,
-  { visible, canRevert }: { visible: VisibleStatuses; canRevert: boolean }
+  {
+    visible,
+    canRevert,
+    deliveryType,
+  }: { visible: VisibleStatuses; canRevert: boolean; deliveryType?: string | null }
 ): StatusMoveCheck {
   if (from === to || FINAL.includes(from)) return { ok: false, reason: "notAllowed" };
   if (to === "CANCELLED") return { ok: true };
+  if (!isStatusApplicable(to, deliveryType)) return { ok: false, reason: "onlyDelivery" };
   if (isRevertTransition(from, to)) {
     return canRevert ? { ok: true } : { ok: false, reason: "noRevertPermission" };
   }
-  const next = getNextVisibleStatus(from, visible);
+  const next = getNextVisibleStatus(from, visible, deliveryType);
   if (next === null) return { ok: false, reason: "notAllowed" };
   if (to === next) return { ok: true };
   const isFurtherAhead =

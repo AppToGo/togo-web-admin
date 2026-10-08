@@ -117,7 +117,8 @@
     "invalidStatusTransition": "Invalid status transition",
     "mustPassThrough": "Move the order to “{status}” first",
     "noRevertPermission": "You don't have permission to move an order back to a previous status",
-    "notAllowed": "The order can't be moved to that status"
+    "notAllowed": "The order can't be moved to that status",
+    "onlyDelivery": "Only delivery orders can move to “On the way”"
   },
   "history": {
     "created": "Created: {status}"
@@ -196,7 +197,8 @@
     "collapseColumn": "Collapse column",
     "expandColumn": "Expand column",
     "collapseStats": "Collapse summary",
-    "expandStats": "Expand summary"
+    "expandStats": "Expand summary",
+    "toOnTheWay": "Send out"
   },
   "boardView": {
     "label": "Board view",
@@ -390,6 +392,14 @@
     "title": "Business flow",
     "description": "Choose the statuses your operation uses. Unused ones don't show on the board and orders skip them. Applies to the whole team.",
     "alwaysOn": "“New” and “Delivered” are always part of the flow.",
-    "saved": "Business flow updated"
+    "saved": "Business flow updated",
+    "onTheWayHint": "Delivery orders only. Notifies the customer and asks for a courier."
+  },
+  "deliveryPicker": {
+    "title": "Who is delivering this order?",
+    "description": "Choose the courier for order {order}. On confirm it moves to “On the way” and the customer is notified.",
+    "confirm": "Send order",
+    "empty": "There are no active users to assign.",
+    "loadError": "Couldn't load couriers."
   }
 }
