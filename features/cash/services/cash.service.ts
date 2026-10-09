@@ -9,6 +9,7 @@ import type {
   CashSession,
   CashMovement,
   CashCollection,
+  CashReceivable,
   SessionSummary,
   CashAuditEntry,
   OwnerOverviewBranch,
@@ -190,6 +191,16 @@ export async function getCollections(
  * Quién puede autorizar un retiro en la sede (sin el propio cajero). Endpoint
  * propio de la acción (`cash.withdraw`): no depende de `user.view`.
  */
+export async function getReceivables(
+  businessId: string,
+  branchId: string
+): Promise<CashReceivable[]> {
+  const { data } = await apiClient.get<CashReceivable[]>(
+    `${basePath(businessId, branchId)}/receivables`
+  );
+  return data;
+}
+
 export async function getWithdrawalAuthorizers(
   businessId: string,
   branchId: string

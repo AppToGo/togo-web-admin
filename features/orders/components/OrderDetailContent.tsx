@@ -7,6 +7,7 @@ import {
   MapPin,
   Clock,
   CreditCard,
+  Wallet,
   Package,
   StickyNote,
   Store,
@@ -658,13 +659,28 @@ export function OrderDetailContent({
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
             >
-              <PaymentStatusEditor
-                orderId={order.id ?? ""}
-                total={order.total}
-                branchId={order.branchId}
-                paymentMethod={order.paymentMethod}
-                currentStatus={order.paymentStatus}
-              />
+              {order.cashCollection?.status === "PENDING_SETTLEMENT" ? (
+                <span
+                  className={cn(
+                    categoryBadgeVariants({ variant: "orange" }),
+                    "flex items-center gap-1"
+                  )}
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  <span>{t("cashPendingSettlement")}</span>
+                </span>
+              ) : (
+                <PaymentStatusEditor
+                  orderId={order.id ?? ""}
+                  total={order.total}
+                  branchId={order.branchId}
+                  paymentMethod={order.paymentMethod}
+                  currentStatus={order.paymentStatus}
+                  chargeLabel={
+                    order.id ? formatOrderNumber(order.id, order.orderNumber) : undefined
+                  }
+                />
+              )}
               <PaymentProofIndicator order={order} variant="labeled" />
               {order.paymentMethod && (
                 <span className="text-sm text-slate-600">

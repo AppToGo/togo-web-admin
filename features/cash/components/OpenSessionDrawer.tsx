@@ -1,12 +1,11 @@
 "use client";
 /**
- * Apertura de turno: base inicial (>= 0) + referencia del último cierre
- * de ESTA caja (plan: "referencia último cierre"). El cierre se pide acá,
- * filtrado por caja y solo al abrir el panel: con el historial de la sede
- * la referencia podía ser el cierre de otra caja.
+ * Apertura de turno: monto inicial contado (>= 0) + referencia del último
+ * cierre de ESTA caja (monto, fecha y quién cerró). El cierre se pide acá,
+ * filtrado por caja y solo al abrir el panel.
  */
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Drawer,
   DrawerContent,
@@ -17,13 +16,14 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { CurrencyInput } from "./CurrencyInput";
 import { useOpenSession } from "../hooks/useCashMutations";
 import { useSessionsHistory } from "../hooks/useCash";
 import { formatCOP } from "../utils/cash.utils";
 import type { CashRegister } from "../types/cash.types";
 
-interface OpenSessionDialogProps {
+interface OpenSessionDrawerProps {
   businessId: string;
   branchId: string;
   register: CashRegister | null;
@@ -32,15 +32,17 @@ interface OpenSessionDialogProps {
   onOpened?: (sessionId: string) => void;
 }
 
-export function OpenSessionDialog({
+export function OpenSessionDrawer({
   businessId,
   branchId,
   register,
   open,
   onOpenChange,
   onOpened,
-}: OpenSessionDialogProps) {
+}: OpenSessionDrawerProps) {
   const t = useTranslations("cash");
+  const locale = useLocale();
+  const user = useCurrentUser();
   const [openingAmount, setOpeningAmount] = useState(0);
   const [notes, setNotes] = useState("");
   const openSession = useOpenSession(businessId, branchId);
@@ -70,52 +72,66 @@ export function OpenSessionDialog({
     );
   };
 
+  const lastCloseText = isLoadingLastClosed
+    ? "…"
+    : lastClosed?.closedAt
+      ? t("openDrawer.lastCloseDetail", {
+          amount: formatCOP(lastClosed.countedAmount ?? lastClosed.expectedAmount ?? 0),
+          date: new Date(lastClosed.closedAt).toLocaleString(locale, {
+            day: "numeric",
+            month: "short",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          name: lastClosed.closedByName ?? "—",
+        })
+      : t("neverClosed");
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} isLoading={openSession.isPending}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>
-            {t("openSession")}
-            {register ? ` — ${register.name}` : ""}
-          </DrawerTitle>
-          <DrawerDescription>
-            {isLoadingLastClosed
-              ? "…"
-              : lastClosed?.closedAt
-                ? `${t("lastClose")}: ${formatCOP(lastClosed.countedAmount ?? lastClosed.expectedAmount ?? 0)}`
-                : t("neverClosed")}
-          </DrawerDescription>
+          <DrawerTitle>{t("openDrawer.title")}</DrawerTitle>
+          {register && <DrawerDescription>{register.name}</DrawerDescription>}
         </DrawerHeader>
-        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+        <div className="flex-1 min-h-0 space-y-5 overflow-y-auto px-6 py-4">
           <div className="space-y-2">
             <label htmlFor="cash-opening-amount" className="text-sm font-medium">
-              {t("openingAmount")}
+              {t("openDrawer.amountLabel")}
             </label>
             <CurrencyInput
               id="cash-opening-amount"
+              size="lg"
               value={openingAmount}
               onChange={setOpeningAmount}
+              placeholder="0"
             />
-            <p className="text-xs text-slate-500">{t("openingAmountHint")}</p>
+            <p className="text-xs text-slate-500">{lastCloseText}</p>
           </div>
           <div className="space-y-2">
             <label htmlFor="cash-open-notes" className="text-sm font-medium">
-              {t("sessions.notes")}
+              {t("openDrawer.noteLabel")}
             </label>
             <Textarea
               id="cash-open-notes"
               value={notes}
+              placeholder={t("openDrawer.notePlaceholder")}
               onChange={(event) => setNotes(event.target.value)}
-              rows={2}
+              rows={3}
             />
           </div>
+          {user?.name && (
+            <p className="rounded-card bg-slate-50 p-4 text-sm text-slate-600">
+              {t("openDrawer.responsible", { name: user.name })}
+            </p>
+          )}
         </div>
-        <DrawerFooter>
-          <Button
-            onClick={submit}
-            disabled={!register || openSession.isPending}
-          >
-            {t("openSession")}
+        <DrawerFooter className="gap-2 sm:space-x-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {t("actions.cancel")}
+          </Button>
+          <Button onClick={submit} disabled={!register || openSession.isPending}>
+            {t("openDrawer.confirm", { amount: formatCOP(openingAmount) })}
           </Button>
         </DrawerFooter>
       </DrawerContent>

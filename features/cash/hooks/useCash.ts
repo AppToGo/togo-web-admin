@@ -93,6 +93,16 @@ export function useCollections(
   });
 }
 
+/** Pedidos por cobrar de la sede (efectivo, mesa y recoger, pago pendiente). */
+export function useReceivables(businessId: string | null, branchId: string | null) {
+  return useQuery({
+    queryKey: CASH_KEYS.receivables(businessId ?? undefined, branchId ?? undefined),
+    queryFn: () => cashService.getReceivables(businessId!, branchId!),
+    enabled: !!businessId && !!branchId,
+    staleTime: STALE_TIME,
+  });
+}
+
 /**
  * Autorizadores de un retiro. Se pide solo cuando hace falta (`enabled`):
  * el diálogo abierto y en modo retiro.

@@ -412,6 +412,15 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
     // se invalida toda la caché de caja y el tablero de pedidos (el chip
     // "Por liquidar" y el tab "Por cobrar" dependen de ambos).
     // Viaja por el mismo namespace `/orders`, sin segundo socket.
+    // "Por cobrar" de Caja sale de los pedidos: cambia cuando entra uno,
+    // cambia de estado o se paga.
+    const refreshReceivables = () => {
+      queryClient.invalidateQueries({ queryKey: ["cash", "receivables"] });
+    };
+    socket.on(WS_EVENTS.ORDER_CREATED, refreshReceivables);
+    socket.on(WS_EVENTS.ORDER_UPDATED, refreshReceivables);
+    socket.on(WS_EVENTS.ORDER_PAYMENT_UPDATED, refreshReceivables);
+
     const refreshCash = () => {
       queryClient.invalidateQueries({ queryKey: ["cash"] });
       queryClient.invalidateQueries({

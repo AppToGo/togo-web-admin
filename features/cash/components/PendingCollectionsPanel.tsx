@@ -1,13 +1,12 @@
 "use client";
 /**
- * Panel "Por liquidar": recaudos PENDING_SETTLEMENT de la sede con
- * selección múltiple y liquidación (gateada `cash.operate`).
+ * Lista "Por liquidar": recaudos PENDING_SETTLEMENT de la sede agrupados
+ * por quien tiene el efectivo. Cada portador se liquida en un drawer
+ * (gateado `cash.operate`, exige turno abierto).
  */
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { formatCOP } from "../utils/cash.utils";
 import { SettleDrawer } from "./SettleDrawer";
 import type { CashCollection } from "../types/cash.types";
@@ -16,89 +15,110 @@ interface PendingCollectionsPanelProps {
   businessId: string;
   branchId: string;
   sessionId: string | null;
+  registerName: string;
   collections: CashCollection[];
   canOperate: boolean;
 }
+
+interface HolderGroup {
+  key: string;
+  name: string;
+  total: number;
+  since: string;
+  items: CashCollection[];
+}
+
+const NO_HOLDER = "__none";
 
 export function PendingCollectionsPanel({
   businessId,
   branchId,
   sessionId,
+  registerName,
   collections,
   canOperate,
 }: PendingCollectionsPanelProps) {
   const t = useTranslations("cash");
-  const [picked, setPicked] = useState<string[]>([]);
-  const [settling, setSettling] = useState(false);
+  const locale = useLocale();
+  const [settlingKey, setSettlingKey] = useState<string | null>(null);
 
-  // Solo cuentan los recaudos que siguen pendientes: si otro cajero liquida
-  // uno mientras está marcado, sale de la selección en vez de mandarse (y
-  // hacer fallar todo el lote).
-  const selected = picked.filter((id) =>
-    collections.some((collection) => collection.id === id)
-  );
+  const groups = useMemo<HolderGroup[]>(() => {
+    const byHolder = new Map<string, HolderGroup>();
+    for (const collection of collections) {
+      const key = collection.holderUserId ?? NO_HOLDER;
+      const group = byHolder.get(key) ?? {
+        key,
+        name: collection.holderName ?? t("pending.noHolder"),
+        total: 0,
+        since: collection.collectedAt,
+        items: [],
+      };
+      group.total += Number(collection.amount);
+      if (collection.collectedAt < group.since) group.since = collection.collectedAt;
+      group.items.push(collection);
+      byHolder.set(key, group);
+    }
+    return [...byHolder.values()];
+  }, [collections, t]);
 
-  const toggle = (id: string) => {
-    setPicked((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+  // Si otro cajero liquida al portador mientras el drawer está abierto, el
+  // grupo desaparece y el drawer se cierra solo.
+  const settling = groups.find((group) => group.key === settlingKey) ?? null;
+
+  if (collections.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-slate-500">{t("collections.noPending")}</p>
     );
-  };
+  }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base">
-          {t("collections.toSettle")} ({collections.length})
-        </CardTitle>
-        {canOperate && sessionId && selected.length > 0 && (
-          <Button size="sm" onClick={() => setSettling(true)}>
-            {t("collections.settleSelected")}
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        {collections.length === 0 ? (
-          <p className="py-4 text-center text-sm text-slate-500">{t("collections.noPending")}</p>
-        ) : (
-          <ul className="divide-y">
-            {collections.map((collection) => (
-              <li key={collection.id} className="flex items-center gap-3 py-2">
-                {canOperate && sessionId && (
-                  <Checkbox
-                    checked={selected.includes(collection.id)}
-                    onCheckedChange={() => toggle(collection.id)}
-                    aria-label={`${t("collections.settle")} #${collection.order?.orderNumber ?? collection.orderId}`}
-                  />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">
-                    {t("collections.order")} #
-                    {collection.order?.orderNumber ?? "—"}
-                  </p>
-                  <p className="truncate text-xs text-slate-500">
-                    {t("collections.holder")}: {collection.holderName ?? "—"}
-                  </p>
-                </div>
-                <p className="text-sm font-semibold">{formatCOP(collection.amount)}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-      {sessionId && (
+    <>
+      <ul className="space-y-3">
+        {groups.map((group) => (
+          <li
+            key={group.key}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-white/80 bg-white/50 px-4 py-3"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-900">{group.name}</p>
+              <p className="text-xs text-slate-500">
+                {group.items
+                  .map((item) => `#${item.order?.orderNumber ?? "—"}`)
+                  .join(" · ")}
+                {" · "}
+                {new Date(group.since).toLocaleTimeString(locale, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold tabular-nums">
+                {formatCOP(group.total)}
+              </span>
+              {canOperate && sessionId && (
+                <Button size="sm" onClick={() => setSettlingKey(group.key)}>
+                  {t("actions.settle")}
+                </Button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+      {sessionId && settling && (
         <SettleDrawer
           businessId={businessId}
           branchId={branchId}
           sessionId={sessionId}
-          collections={collections}
-          collectionIds={selected}
-          open={settling}
+          registerName={registerName}
+          holderName={settling.name}
+          collections={settling.items}
+          open
           onOpenChange={(open) => {
-            setSettling(open);
-            if (!open) setPicked([]);
+            if (!open) setSettlingKey(null);
           }}
         />
       )}
-    </Card>
+    </>
   );
 }

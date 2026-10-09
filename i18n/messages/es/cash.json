@@ -103,12 +103,17 @@
     "notes": "Notas de cierre",
     "notesRequired": "Explica la diferencia para cerrar",
     "confirm": "Cerrar turno",
-    "pendingWarning": "Hay {count} recaudos por liquidar en la sede. Puedes cerrar el turno; quedan pendientes para liquidarlos después."
+    "pendingWarning": "{count, plural, one {Hay # recaudo por liquidar en la sede} other {Hay # recaudos por liquidar en la sede}}. Puedes cerrar el turno; quedan pendientes para liquidarlos después."
   },
   "overview": {
     "title": "Cajas abiertas",
     "noOpen": "No hay turnos abiertos en ninguna sede",
-    "pendingSettlement": "Por liquidar"
+    "pendingSettlement": "Por liquidar",
+    "expectedOpen": "Efectivo esperado en cajas abiertas",
+    "responsibles": "Responsables",
+    "nobody": "Nadie en turno",
+    "openCount": "{count, plural, =0 {Sin caja abierta} one {# caja abierta} other {# cajas abiertas}}",
+    "pendingRow": "{amount} · {count, plural, one {# pedido} other {# pedidos}}"
   },
   "audit": {
     "title": "Auditoría",
@@ -123,8 +128,30 @@
     "before": "Antes",
     "after": "Después",
     "channels": {
-      "ADMIN": "Admin",
-      "WHATSAPP": "WhatsApp"
+      "ADMIN": "Admin web",
+      "WHATSAPP": "WhatsApp",
+      "ADMIN_WEB": "Admin web",
+      "SYSTEM": "Sistema"
+    },
+    "subtitle": "Todo lo que pasó con el dinero, en pedidos y en caja. No se puede editar ni borrar.",
+    "dateTime": "Fecha y hora",
+    "responsible": "Responsable",
+    "order": "Pedido",
+    "amount": "Monto",
+    "detail": "Motivo o detalle",
+    "actions": {
+      "REGISTER_CREATED": "Caja creada",
+      "REGISTER_UPDATED": "Caja actualizada",
+      "SESSION_OPENED": "Apertura de caja",
+      "SESSION_CLOSED": "Cierre de caja",
+      "MOVEMENT_CREATED": "Movimiento",
+      "MOVEMENT_REVERSED": "Reverso",
+      "COLLECTION_CREATED": "Pago confirmado · por liquidar",
+      "COLLECTION_SETTLED": "Liquidación recibida",
+      "COLLECTION_VOIDED": "Recaudo anulado",
+      "ORDER_PAYMENT_CONFIRMED": "Cobro en caja",
+      "ORDER_PAYMENT_REFUNDED": "Reembolso",
+      "ACTION_REJECTED": "Acción rechazada"
     }
   },
   "orders": {
@@ -150,5 +177,151 @@
     "openFailed": "No se pudo abrir el turno (¿ya hay uno abierto en esta caja?)",
     "settleFailed": "No se pudo liquidar",
     "closeFailed": "No se pudo cerrar el turno"
+  },
+  "tabs": {
+    "current": "Turno actual",
+    "history": "Historial",
+    "audit": "Auditoría"
+  },
+  "actions": {
+    "income": "Ingreso",
+    "expense": "Egreso",
+    "settle": "Liquidar",
+    "closeRegister": "Cerrar caja",
+    "openRegister": "Abrir caja",
+    "cancel": "Cancelar"
+  },
+  "registerOpenBy": "Abierta · {name}",
+  "registerOpen": "Abierta",
+  "registerClosed": "Cerrada",
+  "strip": {
+    "open": "Turno abierto",
+    "detail": "{name} · desde las {time} · apertura {amount}",
+    "closed": "Esta caja no tiene turno abierto",
+    "closedHint": "Ábrela para recibir efectivo y liquidar pedidos."
+  },
+  "kpi": {
+    "expected": "Efectivo esperado en caja",
+    "expectedDesc": "Apertura + entradas − salidas",
+    "cashSales": "Ventas en efectivo",
+    "cashSalesDesc": "{count, plural, =0 {Sin cobros en este turno} one {# cobro ya en caja} other {# cobros ya en caja}}",
+    "inOut": "Ingresos y egresos",
+    "inOutDesc": "{inCount, plural, one {# ingreso} other {# ingresos}} · {outCount, plural, one {# salida} other {# salidas}}",
+    "pending": "Por liquidar · fuera de caja",
+    "pendingDesc": "{count, plural, =0 {Todo el efectivo está en caja} one {# pedido pagado, efectivo fuera de caja} other {# pedidos pagados, efectivo fuera de caja}}"
+  },
+  "table": {
+    "title": "Movimientos del turno",
+    "time": "Hora",
+    "concept": "Concepto",
+    "responsible": "Responsable",
+    "amount": "Monto"
+  },
+  "concept": {
+    "orderPayment": "Cobro pedido #{number}",
+    "orderPaymentNoNumber": "Cobro de pedido",
+    "receivedChange": "Recibió {received} · vueltas {change}",
+    "exact": "Pago exacto",
+    "settlement": "Liquidación",
+    "settlementOrder": "Liquidación · pedido #{number}",
+    "manualIn": "Ingreso",
+    "manualOut": "Egreso",
+    "withdrawal": "Retiro a caja fuerte",
+    "refund": "Reembolso",
+    "refundOrder": "Reembolso pedido #{number}",
+    "withCategory": "{type} · {category}"
+  },
+  "pending": {
+    "collectHint": "Pedidos en efectivo de mesa y para recoger que el cliente aún no paga. Al cobrar, el dinero entra a esta caja.",
+    "settleHint": "Pedidos pagados cuyo dinero aún no llega a caja.",
+    "noHolder": "Sin responsable",
+    "needOpen": "Abre la caja para cobrar y liquidar.",
+    "pickup": "Recoger",
+    "table": "Mesa {name}",
+    "tableGeneric": "En mesa"
+  },
+  "otherMethods": {
+    "title": "Otros medios de pago",
+    "hint": "Informativo. No cuenta en el efectivo esperado.",
+    "row": "{method} · {count, plural, one {# pedido} other {# pedidos}}",
+    "none": "Sin pagos por otros medios en este turno"
+  },
+  "openDrawer": {
+    "title": "Abrir caja",
+    "register": "Caja",
+    "amountLabel": "Monto inicial contado",
+    "lastCloseDetail": "El último cierre de esta caja dejó {amount} ({date}, {name}).",
+    "noteLabel": "Nota (opcional)",
+    "notePlaceholder": "Ej.: base en billetes de 10 y 20",
+    "responsible": "Responsable del turno: {name}. Los cobros en efectivo y las liquidaciones de esta caja quedan a su nombre hasta el cierre.",
+    "confirm": "Abrir caja con {amount}"
+  },
+  "movementDrawer": {
+    "title": "Registrar movimiento",
+    "desc": "{register} · efectivo esperado {amount}",
+    "type": "Tipo de movimiento",
+    "remaining": "La caja queda en",
+    "confirmIn": "Registrar ingreso de {amount}",
+    "confirmOut": "Registrar egreso de {amount}",
+    "confirmWithdrawal": "Registrar retiro de {amount}",
+    "immutable": "No se puede editar ni borrar. Un error se corrige con un reverso, y ambos quedan en auditoría.",
+    "noteOptional": "Nota (opcional)"
+  },
+  "settleDrawer": {
+    "title": "Liquidar efectivo",
+    "desc": "Entra a {register}",
+    "holderOrders": "Pedidos pagados que tiene {name}",
+    "orderLine": "Pedido #{number}",
+    "mustDeliver": "Debe entregar",
+    "counted": "Entrega contada",
+    "noDifference": "Sin diferencia",
+    "shortage": "Faltan {amount}",
+    "surplus": "Sobran {amount}",
+    "confirm": "Recibir {amount} en {register}",
+    "reason": "Motivo de la diferencia (obligatorio)"
+  },
+  "closeDrawer": {
+    "title": "Cerrar {register}",
+    "desc": "Turno de {name} · abierto desde las {time}",
+    "keepCounting": "Seguir contando",
+    "confirm": "Cerrar caja con {amount}",
+    "reason": "Motivo de la diferencia (obligatorio)",
+    "note": "Nota de cierre (opcional)",
+    "expected": "Esperado",
+    "counted": "Contado",
+    "quantity": "Cantidad de {denomination}"
+  },
+  "history": {
+    "register": "Caja",
+    "balanced": "Cuadró"
+  },
+  "charge": {
+    "title": "Confirmar pago",
+    "total": "Total a cobrar",
+    "method": "Método de pago",
+    "payWith": "Paga con",
+    "exact": "Exacto",
+    "change": "Vueltas",
+    "missing": "Falta",
+    "where": "¿Dónde queda el dinero?",
+    "toRegister": "Entra a {register}",
+    "toRegisterHint": "Suma al efectivo esperado del turno.",
+    "chooseRegister": "Elige la caja",
+    "pending": "Queda por liquidar",
+    "pendingHint": "Lo tiene el domiciliario u otro operador. Entra a caja al liquidarlo.",
+    "nonCash": "El pedido queda pagado con {method}. No entra efectivo a la caja; aparece en \"Otros medios de pago\" del turno.",
+    "confirm": "Confirmar pago",
+    "confirmToRegister": "Confirmar y entrar a caja"
+  },
+  "trail": {
+    "paid": "El cliente pagó {amount} en efectivo",
+    "heldBy": "El efectivo lo tiene {name}",
+    "pendingSettle": "Por liquidar",
+    "entry": "Entrada a caja",
+    "entryPending": "Pendiente",
+    "entryDone": "Liquidado en {register}",
+    "settleIn": "Marcar como liquidado en {register}",
+    "settleHint": "Entran {amount} a {register}",
+    "noOpen": "No hay caja abierta en esta sede para liquidarlo."
   }
 }

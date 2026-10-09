@@ -9,6 +9,7 @@
  * valida quien usa el input, antes de habilitar su botón.
  */
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { parseCOPInput } from "../utils/cash.utils";
 
 interface CurrencyInputProps {
@@ -17,6 +18,9 @@ interface CurrencyInputProps {
   placeholder?: string;
   disabled?: boolean;
   id?: string;
+  /** `lg`: monto protagonista del drawer (cobro, apertura, liquidación). */
+  size?: "default" | "lg";
+  className?: string;
 }
 
 export function CurrencyInput({
@@ -25,6 +29,8 @@ export function CurrencyInput({
   placeholder,
   disabled,
   id,
+  size = "default",
+  className,
 }: CurrencyInputProps) {
   const display =
     value > 0
@@ -38,6 +44,10 @@ export function CurrencyInput({
       value={display}
       placeholder={placeholder}
       disabled={disabled}
+      className={cn(
+        size === "lg" && "h-13 rounded-icon text-xl font-semibold tabular-nums",
+        className
+      )}
       onChange={(event) => onChange(parseCOPInput(event.target.value))}
     />
   );
