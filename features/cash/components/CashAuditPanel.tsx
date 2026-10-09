@@ -1,11 +1,13 @@
 "use client";
 /**
- * Auditoría de caja: filtros (canal/turno/pedido/acción/operador/fecha) +
- * before/after expandible. Lecturas acotadas (rango máx. 90 días, plan).
+ * Auditoría de caja: tabla con fecha y hora, responsable, acción, pedido,
+ * monto y motivo; filtros por acción, canal y pedido; antes/después
+ * expandible por fila. Lecturas acotadas (rango máx. 90 días, plan).
  */
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Fragment, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { ChevronDown } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,7 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { formatCOP } from "../utils/cash.utils";
 import { useCashAudit } from "../hooks/useCash";
 
 interface CashAuditPanelProps {
@@ -35,10 +46,28 @@ const ACTIONS = [
   "COLLECTION_VOIDED",
   "ORDER_PAYMENT_CONFIRMED",
   "ORDER_PAYMENT_REFUNDED",
-];
+] as const;
+
+const KNOWN_CHANNELS = ["ADMIN", "ADMIN_WEB", "WHATSAPP", "SYSTEM"];
+
+/** Color del chip por tipo de acción: entra, sale, queda fuera, informativo. */
+function actionTone(action: string): string {
+  if (action === "ACTION_REJECTED") return "bg-red-700 text-white";
+  if (action === "ORDER_PAYMENT_CONFIRMED" || action === "COLLECTION_SETTLED") {
+    return "bg-emerald-100 text-emerald-800";
+  }
+  if (action === "ORDER_PAYMENT_REFUNDED" || action === "COLLECTION_VOIDED") {
+    return "bg-red-100 text-red-800";
+  }
+  if (action === "COLLECTION_CREATED") return "bg-amber-100 text-amber-800";
+  return "bg-indigo-100 text-indigo-800";
+}
+
+const headClass = "text-xs font-semibold uppercase tracking-wide text-slate-500";
 
 export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }: CashAuditPanelProps) {
   const t = useTranslations("cash");
+  const locale = useLocale();
   const [action, setAction] = useState<string>("");
   const [channel, setChannel] = useState<string>("");
   const [orderFilter, setOrderFilter] = useState(orderNumber ?? "");
@@ -56,13 +85,32 @@ export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }:
     orderNumber: orderFilter.trim() || undefined,
   });
 
+  const actionLabel = (value: string) =>
+    (ACTIONS as readonly string[]).includes(value) ||
+    value === "ACTION_REJECTED" ||
+    value === "MOVEMENT_REVERSED"
+      ? t(`audit.actions.${value}`)
+      : value;
+  const channelLabel = (value: string) =>
+    KNOWN_CHANNELS.includes(value) ? t(`audit.channels.${value}`) : value;
+
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t("audit.title")}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="grid gap-2 sm:grid-cols-4">
+    <Card variant="glass">
+      <CardContent className="space-y-4 p-6">
+        <div>
+          <h2 className="text-base font-semibold text-slate-900">{t("audit.title")}</h2>
+          <p className="text-xs text-slate-500">{t("audit.subtitle")}</p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {!orderNumber && (
+            <Input
+              value={orderFilter}
+              onChange={(event) => setOrderFilter(event.target.value)}
+              placeholder={t("audit.orderNumber")}
+              aria-label={t("audit.orderNumber")}
+              inputMode="numeric"
+            />
+          )}
           <Select value={action} onValueChange={setAction}>
             <SelectTrigger aria-label={t("audit.action")}>
               <SelectValue placeholder={t("audit.action")} />
@@ -71,7 +119,7 @@ export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }:
               <SelectItem value="__all">{t("audit.all")}</SelectItem>
               {ACTIONS.map((value) => (
                 <SelectItem key={value} value={value}>
-                  {value}
+                  {t(`audit.actions.${value}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -86,66 +134,120 @@ export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }:
               <SelectItem value="WHATSAPP">{t("audit.channels.WHATSAPP")}</SelectItem>
             </SelectContent>
           </Select>
-          {!orderNumber && (
-            <Input
-              value={orderFilter}
-              onChange={(event) => setOrderFilter(event.target.value)}
-              placeholder={t("audit.orderNumber")}
-              inputMode="numeric"
-            />
-          )}
         </div>
         {isLoading ? (
-          <p className="py-4 text-center text-sm text-slate-500">…</p>
+          <p className="py-8 text-center text-sm text-slate-500">…</p>
         ) : (data?.items.length ?? 0) === 0 ? (
-          <p className="py-4 text-center text-sm text-slate-500">{t("audit.empty")}</p>
+          <p className="py-8 text-center text-sm text-slate-500">{t("audit.empty")}</p>
         ) : (
-          <ul className="divide-y">
-            {(data?.items ?? []).map((entry) => (
-              <li key={entry.id} className="py-2">
-                <button
-                  type="button"
-                  className="flex w-full flex-wrap items-center gap-2 text-left"
-                  onClick={() => setExpanded((prev) => (prev === entry.id ? null : entry.id))}
-                >
-                  <Badge variant="outline">{entry.action}</Badge>
-                  <Badge variant="secondary">{entry.channel}</Badge>
-                  <span className="text-sm">{entry.actorName}</span>
-                  {entry.orderNumber != null && (
-                    <span className="text-xs text-slate-500">#{entry.orderNumber}</span>
-                  )}
-                  {entry.amount != null && (
-                    <span className="text-xs font-medium">{entry.amount}</span>
-                  )}
-                  <span className="ml-auto text-xs text-slate-400">
-                    {new Date(entry.createdAt).toLocaleString("es-CO")}
-                  </span>
-                </button>
-                {expanded === entry.id && (
-                  <div className="mt-2 grid gap-2 rounded-md bg-slate-50 p-2 text-xs sm:grid-cols-2">
-                    <div>
-                      <p className="font-medium">{t("audit.before")}</p>
-                      <pre className="overflow-x-auto whitespace-pre-wrap">
-                        {JSON.stringify(entry.before ?? null, null, 2)}
-                      </pre>
-                    </div>
-                    <div>
-                      <p className="font-medium">{t("audit.after")}</p>
-                      <pre className="overflow-x-auto whitespace-pre-wrap">
-                        {JSON.stringify(entry.after ?? null, null, 2)}
-                      </pre>
-                    </div>
-                    {entry.reason && (
-                      <p className="sm:col-span-2">
-                        <span className="font-medium">{t("movements.reason")}: </span>
-                        {entry.reason}
-                      </p>
+          <Table className="min-w-[860px]">
+            <TableHeader className="[&_tr]:border-slate-300/50">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className={headClass}>{t("audit.dateTime")}</TableHead>
+                <TableHead className={headClass}>{t("audit.responsible")}</TableHead>
+                <TableHead className={headClass}>{t("audit.action")}</TableHead>
+                <TableHead className={headClass}>{t("audit.order")}</TableHead>
+                <TableHead className={cn(headClass, "text-right")}>
+                  {t("audit.amount")}
+                </TableHead>
+                <TableHead className={headClass}>{t("audit.detail")}</TableHead>
+                <TableHead className="w-10" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(data?.items ?? []).map((entry) => {
+                const isOpen = expanded === entry.id;
+                const created = new Date(entry.createdAt);
+                return (
+                  <Fragment key={entry.id}>
+                    <TableRow
+                      className={cn(
+                        "border-slate-300/50 hover:bg-white/40",
+                        entry.action === "ACTION_REJECTED" && "bg-red-50/70"
+                      )}
+                    >
+                      <TableCell className="whitespace-nowrap tabular-nums">
+                        <p>
+                          {created.toLocaleTimeString(locale, {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {created.toLocaleDateString(locale, {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="font-medium text-slate-900">{entry.actorName}</p>
+                        <p className="text-xs text-slate-500">
+                          {channelLabel(entry.channel)}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={cn(
+                            "inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold",
+                            actionTone(entry.action)
+                          )}
+                        >
+                          {actionLabel(entry.action)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {entry.orderNumber != null ? `#${entry.orderNumber}` : "—"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right font-semibold tabular-nums">
+                        {entry.amount != null ? formatCOP(entry.amount) : "—"}
+                      </TableCell>
+                      <TableCell className="max-w-64 text-slate-600">
+                        {entry.reason ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          type="button"
+                          aria-expanded={isOpen}
+                          aria-label={`${t("audit.before")} / ${t("audit.after")}`}
+                          onClick={() => setExpanded(isOpen ? null : entry.id)}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-white/70 hover:text-slate-900"
+                        >
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform",
+                              isOpen && "rotate-180"
+                            )}
+                          />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                    {isOpen && (
+                      <TableRow className="border-slate-300/50 hover:bg-transparent">
+                        <TableCell colSpan={7}>
+                          <div className="grid gap-3 rounded-card bg-white/50 p-3 text-xs sm:grid-cols-2">
+                            <div>
+                              <p className="font-semibold">{t("audit.before")}</p>
+                              <pre className="overflow-x-auto whitespace-pre-wrap text-slate-600">
+                                {JSON.stringify(entry.before ?? null, null, 2)}
+                              </pre>
+                            </div>
+                            <div>
+                              <p className="font-semibold">{t("audit.after")}</p>
+                              <pre className="overflow-x-auto whitespace-pre-wrap text-slate-600">
+                                {JSON.stringify(entry.after ?? null, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+                  </Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

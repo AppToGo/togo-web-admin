@@ -61,8 +61,34 @@ test.describe("Caja — gateo y turno", () => {
     await expect(page.getByText("Caja 1").first()).toBeVisible();
     // Esperado del turno (formato COP es-CO)
     await expect(page.getByText("$ 50.000").first()).toBeVisible();
-    // Recaudo pendiente con su portador
+    // Recaudo pendiente con su portador, en la pestaña "Por liquidar"
+    await page.getByRole("tab", { name: /Por liquidar/ }).click();
     await expect(page.getByText("Repartidor E2E")).toBeVisible();
+  });
+
+  test("por cobrar agrupa por mesa e incluye pedidos ya entregados", async ({
+    page,
+  }) => {
+    await loginAndOpenCash(page, [
+      "cash.view",
+      "cash.operate",
+      "order.change_payment_status",
+    ]);
+
+    const panel = page.getByTestId("to-collect-panel");
+    await expect(page.getByRole("tab", { name: "Por cobrar · 2" })).toBeVisible();
+    await expect(panel.getByText("Mesa 2")).toBeVisible();
+    await expect(panel.getByText("Entregada")).toBeVisible();
+    await expect(panel.getByText(/Julián Mora/)).toBeVisible();
+
+    // Cobrar desde Caja: el dinero entra a esta caja, sin "queda por liquidar".
+    await panel.getByRole("button", { name: "Cobrar" }).first().click();
+    await expect(page.getByText("Confirmar pago")).toBeVisible();
+    await expect(page.getByText("Entra a Caja 1")).toBeVisible();
+    await expect(page.getByText("Queda por liquidar")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Confirmar y entrar a caja" })
+    ).toBeEnabled();
   });
 
   test("sin turno abierto ofrece abrirlo con base inicial", async ({ page }) => {
@@ -70,8 +96,8 @@ test.describe("Caja — gateo y turno", () => {
       openSession: false,
     });
 
-    await page.getByRole("button", { name: "Abrir turno" }).click();
-    await expect(page.getByText("Base inicial (COP)")).toBeVisible();
+    await page.getByRole("button", { name: "Abrir caja" }).click();
+    await expect(page.getByText("Monto inicial contado")).toBeVisible();
   });
 
   test("el sidebar lleva a Caja cuando hay permiso", async ({ page }) => {
@@ -86,8 +112,9 @@ test.describe("Caja — historial, cierre y retiro", () => {
   test("el historial solo lista turnos cerrados", async ({ page }) => {
     await loginAndOpenCash(page, ["cash.view"]);
 
+    await page.getByRole("tab", { name: "Historial" }).click();
     await expect(page.getByText("Historial de turnos")).toBeVisible();
-    await expect(page.getByText("Exacto")).toBeVisible();
+    await expect(page.getByText("Cuadró")).toBeVisible();
     // El turno abierto de otra caja no es un cierre.
     await expect(page.getByText("Caja 2 en curso")).toHaveCount(0);
   });
@@ -103,9 +130,11 @@ test.describe("Caja — historial, cierre y retiro", () => {
         request.url().includes("cashRegisterId=reg-1") &&
         request.url().includes("status=CLOSED")
     );
-    await page.getByRole("button", { name: "Abrir turno" }).click();
+    await page.getByRole("button", { name: "Abrir caja" }).click();
     await lastCloseRequest;
-    await expect(page.getByText("Último cierre: $ 40.000")).toBeVisible();
+    await expect(
+      page.getByText("El último cierre de esta caja dejó $ 40.000", { exact: false })
+    ).toBeVisible();
   });
 
   test("lo por liquidar de la sede avisa pero no bloquea el cierre", async ({
@@ -113,13 +142,14 @@ test.describe("Caja — historial, cierre y retiro", () => {
   }) => {
     await loginAndOpenCash(page, ["cash.view", "cash.close"]);
 
-    await page.getByRole("button", { name: "Cerrar turno" }).click();
+    await page.getByRole("button", { name: "Cerrar caja" }).click();
     await expect(page.getByText(/Puedes cerrar el turno/)).toBeVisible();
+    // Con la caja sin contar hay faltante: pide motivo y no deja cerrar.
+    const confirm = page.getByRole("button", { name: /Cerrar caja con/ });
+    await expect(confirm).toBeDisabled();
     // Contado = esperado ($ 50.000): sin diferencia no pide motivo.
-    await page.getByRole("button", { name: "+1 × 50000" }).click();
-    await expect(
-      page.getByRole("button", { name: "Cerrar turno" }).last()
-    ).toBeEnabled();
+    await page.getByLabel("Cantidad de $ 50.000").fill("1");
+    await expect(confirm).toBeEnabled();
   });
 
   test("el retiro lista autorizadores sin pedir los usuarios del negocio", async ({
@@ -133,7 +163,8 @@ test.describe("Caja — historial, cierre y retiro", () => {
     });
     await loginAndOpenCash(page, ["cash.view", "cash.withdraw"]);
 
-    await page.getByRole("button", { name: "Movimientos" }).click();
+    await page.getByRole("button", { name: "Egreso" }).click();
+    await page.getByRole("button", { name: "Retiro", exact: true }).click();
     await page.locator("#cash-movement-auth").click();
     await expect(page.getByRole("option", { name: "Dueña E2E" })).toBeVisible();
     expect(userListRequests).toEqual([]);

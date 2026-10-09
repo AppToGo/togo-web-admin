@@ -1,13 +1,11 @@
 "use client";
 /**
- * Tabs de cajas de la sede + creación (gateada `cash.manage`).
- * El plan pide gateo por pestaña: sin `cash.view` la página completa se
- * bloquea (ver `CashPage`); aquí cada tab muestra su estado.
+ * Cajas de la sede como pestañas-tarjeta: nombre + estado del turno y quién
+ * lo abrió. La creación (gateada `cash.manage`) va en un drawer.
  */
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,7 +15,7 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { useCreateRegister } from "../hooks/useCashMutations";
 import type { CashRegister } from "../types/cash.types";
 
@@ -58,34 +56,51 @@ export function RegisterTabs({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Tabs
-        value={selectedId ?? ""}
-        onValueChange={onSelect}
-        className="min-w-0 flex-1"
-      >
-        <TabsList className="flex-wrap">
-          {registers.map((register) => (
-            <TabsTrigger
-              key={register.id}
-              value={register.id}
-              className="gap-2"
+    <div className="flex flex-wrap items-stretch gap-2" role="tablist">
+      {registers.map((register) => {
+        const active = register.id === selectedId;
+        const session = register.openSession;
+        return (
+          <button
+            key={register.id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onSelect(register.id)}
+            className={cn(
+              "min-h-14 rounded-card px-4 py-2 text-left text-sm transition-colors",
+              active
+                ? "bg-indigo-100"
+                : "border border-white/80 bg-white/40 backdrop-blur-xl hover:bg-white/60"
+            )}
+          >
+            <span
+              className={cn(
+                "block font-semibold",
+                active ? "text-indigo-700" : "text-slate-900"
+              )}
             >
               {register.name}
-              <Badge
-                variant={register.openSession ? "default" : "secondary"}
-                className="text-[11px]"
-              >
-                {register.openSession ? t("open") : t("closed")}
-              </Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+            </span>
+            <span
+              className={cn(
+                "block text-xs",
+                session ? "text-emerald-700" : "text-slate-500"
+              )}
+            >
+              {session
+                ? session.openedByName
+                  ? t("registerOpenBy", { name: session.openedByName })
+                  : t("registerOpen")
+                : t("registerClosed")}
+            </span>
+          </button>
+        );
+      })}
       {canManage && (
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          className="min-h-14 rounded-card text-slate-600"
           onClick={() => setCreating(true)}
         >
           <Plus className="mr-1 h-4 w-4" />
@@ -111,7 +126,10 @@ export function RegisterTabs({
               }}
             />
           </div>
-          <DrawerFooter>
+          <DrawerFooter className="gap-2 sm:space-x-0">
+            <Button variant="outline" onClick={() => setCreating(false)}>
+              {t("actions.cancel")}
+            </Button>
             <Button
               onClick={submit}
               disabled={!name.trim() || createRegister.isPending}

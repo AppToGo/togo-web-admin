@@ -58,6 +58,8 @@ export interface CashMovement {
   category: string | null;
   notes: string | null;
   settlementBatchId: string | null;
+  createdById?: string;
+  createdByName?: string | null;
   createdAt: string;
   order?: { id: string; orderNumber: number | null; total: string } | null;
 }
@@ -79,6 +81,19 @@ export interface CashCollection {
     status: string;
     deliveryType: string;
   } | null;
+}
+
+/** Pedido por cobrar de la sede (`GET …/cash/receivables`). */
+export interface CashReceivable {
+  id: string;
+  orderNumber: number | null;
+  total: string;
+  status: string;
+  deliveryType: "DINE_IN" | "PICKUP";
+  paymentMethod: string | null;
+  tableLabel: string | null;
+  customerName: string | null;
+  createdAt: string;
 }
 
 export interface SessionSummary {

@@ -108,7 +108,12 @@
   "overview": {
     "title": "Open registers",
     "noOpen": "No open shifts in any branch",
-    "pendingSettlement": "To settle"
+    "pendingSettlement": "To settle",
+    "expectedOpen": "Expected cash in open registers",
+    "responsibles": "Shift owners",
+    "nobody": "No one on shift",
+    "openCount": "{count, plural, =0 {No open register} one {# open register} other {# open registers}}",
+    "pendingRow": "{amount} · {count, plural, one {# order} other {# orders}}"
   },
   "audit": {
     "title": "Audit",
@@ -123,8 +128,30 @@
     "before": "Before",
     "after": "After",
     "channels": {
-      "ADMIN": "Admin",
-      "WHATSAPP": "WhatsApp"
+      "ADMIN": "Admin web",
+      "WHATSAPP": "WhatsApp",
+      "ADMIN_WEB": "Admin web",
+      "SYSTEM": "System"
+    },
+    "subtitle": "Everything that happened with money, in orders and in the register. It cannot be edited or deleted.",
+    "dateTime": "Date and time",
+    "responsible": "By",
+    "order": "Order",
+    "amount": "Amount",
+    "detail": "Reason or detail",
+    "actions": {
+      "REGISTER_CREATED": "Register created",
+      "REGISTER_UPDATED": "Register updated",
+      "SESSION_OPENED": "Register opened",
+      "SESSION_CLOSED": "Register closed",
+      "MOVEMENT_CREATED": "Movement",
+      "MOVEMENT_REVERSED": "Reversal",
+      "COLLECTION_CREATED": "Payment confirmed · to settle",
+      "COLLECTION_SETTLED": "Settlement received",
+      "COLLECTION_VOIDED": "Collection voided",
+      "ORDER_PAYMENT_CONFIRMED": "Charged at register",
+      "ORDER_PAYMENT_REFUNDED": "Refund",
+      "ACTION_REJECTED": "Action rejected"
     }
   },
   "orders": {
@@ -150,5 +177,151 @@
     "openFailed": "Could not open the shift (is one already open in this register?)",
     "settleFailed": "Could not settle",
     "closeFailed": "Could not close the shift"
+  },
+  "tabs": {
+    "current": "Current shift",
+    "history": "History",
+    "audit": "Audit"
+  },
+  "actions": {
+    "income": "Cash in",
+    "expense": "Cash out",
+    "settle": "Settle",
+    "closeRegister": "Close register",
+    "openRegister": "Open register",
+    "cancel": "Cancel"
+  },
+  "registerOpenBy": "Open · {name}",
+  "registerOpen": "Open",
+  "registerClosed": "Closed",
+  "strip": {
+    "open": "Shift open",
+    "detail": "{name} · since {time} · opening {amount}",
+    "closed": "This register has no open shift",
+    "closedHint": "Open it to take cash and settle orders."
+  },
+  "kpi": {
+    "expected": "Expected cash in register",
+    "expectedDesc": "Opening + cash in − cash out",
+    "cashSales": "Cash sales",
+    "cashSalesDesc": "{count, plural, =0 {No payments this shift} one {# payment in the register} other {# payments in the register}}",
+    "inOut": "Cash in and out",
+    "inOutDesc": "{inCount, plural, one {# in} other {# in}} · {outCount, plural, one {# out} other {# out}}",
+    "pending": "To settle · outside the register",
+    "pendingDesc": "{count, plural, =0 {All cash is in the register} one {# paid order, cash outside the register} other {# paid orders, cash outside the register}}"
+  },
+  "table": {
+    "title": "Shift movements",
+    "time": "Time",
+    "concept": "Concept",
+    "responsible": "By",
+    "amount": "Amount"
+  },
+  "concept": {
+    "orderPayment": "Payment for order #{number}",
+    "orderPaymentNoNumber": "Order payment",
+    "receivedChange": "Received {received} · change {change}",
+    "exact": "Exact payment",
+    "settlement": "Settlement",
+    "settlementOrder": "Settlement · order #{number}",
+    "manualIn": "Cash in",
+    "manualOut": "Cash out",
+    "withdrawal": "Withdrawal to safe",
+    "refund": "Refund",
+    "refundOrder": "Refund for order #{number}",
+    "withCategory": "{type} · {category}"
+  },
+  "pending": {
+    "collectHint": "Dine-in and pickup cash orders the customer has not paid yet. When charged, the money goes into this register.",
+    "settleHint": "Paid orders whose cash has not reached the register yet.",
+    "noHolder": "No one assigned",
+    "needOpen": "Open the register to charge and settle.",
+    "pickup": "Pickup",
+    "table": "Table {name}",
+    "tableGeneric": "Dine-in"
+  },
+  "otherMethods": {
+    "title": "Other payment methods",
+    "hint": "For reference. Not counted in expected cash.",
+    "row": "{method} · {count, plural, one {# order} other {# orders}}",
+    "none": "No payments by other methods this shift"
+  },
+  "openDrawer": {
+    "title": "Open register",
+    "register": "Register",
+    "amountLabel": "Counted opening amount",
+    "lastCloseDetail": "The last close of this register left {amount} ({date}, {name}).",
+    "noteLabel": "Note (optional)",
+    "notePlaceholder": "E.g. opening float in 10k and 20k bills",
+    "responsible": "Shift owner: {name}. Cash payments and settlements in this register are recorded under their name until it is closed.",
+    "confirm": "Open register with {amount}"
+  },
+  "movementDrawer": {
+    "title": "Record movement",
+    "desc": "{register} · expected cash {amount}",
+    "type": "Movement type",
+    "remaining": "Register will hold",
+    "confirmIn": "Record cash in of {amount}",
+    "confirmOut": "Record cash out of {amount}",
+    "confirmWithdrawal": "Record withdrawal of {amount}",
+    "immutable": "It cannot be edited or deleted. A mistake is fixed with a reversal, and both stay in the audit log.",
+    "noteOptional": "Note (optional)"
+  },
+  "settleDrawer": {
+    "title": "Settle cash",
+    "desc": "Goes into {register}",
+    "holderOrders": "Paid orders held by {name}",
+    "orderLine": "Order #{number}",
+    "mustDeliver": "Must hand over",
+    "counted": "Counted amount",
+    "noDifference": "No difference",
+    "shortage": "{amount} short",
+    "surplus": "{amount} over",
+    "confirm": "Receive {amount} in {register}",
+    "reason": "Reason for the difference (required)"
+  },
+  "closeDrawer": {
+    "title": "Close {register}",
+    "desc": "Shift of {name} · open since {time}",
+    "keepCounting": "Keep counting",
+    "confirm": "Close register with {amount}",
+    "reason": "Reason for the difference (required)",
+    "note": "Closing note (optional)",
+    "expected": "Expected",
+    "counted": "Counted",
+    "quantity": "Quantity of {denomination}"
+  },
+  "history": {
+    "register": "Register",
+    "balanced": "Balanced"
+  },
+  "charge": {
+    "title": "Confirm payment",
+    "total": "Total to charge",
+    "method": "Payment method",
+    "payWith": "Pays with",
+    "exact": "Exact",
+    "change": "Change",
+    "missing": "Missing",
+    "where": "Where does the money go?",
+    "toRegister": "Goes into {register}",
+    "toRegisterHint": "Adds to the shift's expected cash.",
+    "chooseRegister": "Choose the register",
+    "pending": "Left to settle",
+    "pendingHint": "The courier or another operator holds it. It enters the register when settled.",
+    "nonCash": "The order is marked paid by {method}. No cash enters the register; it shows under \"Other payment methods\" for the shift.",
+    "confirm": "Confirm payment",
+    "confirmToRegister": "Confirm and add to register"
+  },
+  "trail": {
+    "paid": "The customer paid {amount} in cash",
+    "heldBy": "{name} holds the cash",
+    "pendingSettle": "To settle",
+    "entry": "Into the register",
+    "entryPending": "Pending",
+    "entryDone": "Settled in {register}",
+    "settleIn": "Mark as settled in {register}",
+    "settleHint": "{amount} goes into {register}",
+    "noOpen": "No register is open at this branch to settle it."
   }
 }

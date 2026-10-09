@@ -414,5 +414,6 @@
     "confirm": "Send order",
     "empty": "There are no active users to assign.",
     "loadError": "Couldn't load couriers."
-  }
+  },
+  "cashPaidHint": "The customer already paid in cash"
 }
