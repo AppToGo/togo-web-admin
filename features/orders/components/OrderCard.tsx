@@ -11,6 +11,7 @@ import {
   Utensils,
   Banknote,
   PencilLine,
+  Wallet,
 } from "lucide-react";
 import type { Order, OrderItem } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
@@ -294,6 +295,8 @@ export const OrderCard = memo(function OrderCard({
   // columna: el backend rechaza mandarlo a producción.
   const customerEditing = isCustomerEditing(order);
 
+  const cashToSettle = order.cashCollection?.status === "PENDING_SETTLEMENT";
+
   const handleCardClick = useCallback(() => {
     onClick?.();
   }, [onClick]);
@@ -359,6 +362,14 @@ export const OrderCard = memo(function OrderCard({
               {orderType.icon}
               {orderType.label}
             </span>
+            {cashToSettle && (
+              <HoverTooltip content={t("cashPaidHint")}>
+                <Banknote
+                  className="w-4 h-4 text-emerald-600"
+                  aria-label={t("cashPaidHint")}
+                />
+              </HoverTooltip>
+            )}
             <span className="flex-1" />
             <TimeBadge order={order} currentStatus={currentStatus} />
           </div>
@@ -393,24 +404,28 @@ export const OrderCard = memo(function OrderCard({
         {/* Footer: payment status (original styles) + next-step button */}
         <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
           {/* Payment method (icon) + Editable payment status */}
-          <PaymentStatusEditor
-            orderId={order.id}
-            total={order.total}
-            branchId={order.branchId}
-            paymentMethod={order.paymentMethod}
-            currentStatus={order.paymentStatus}
-          />
-          {order.cashCollection?.status === "PENDING_SETTLEMENT" && (
+          {cashToSettle ? (
+            // El cliente ya pagó (billete verde arriba); este chip pasa a
+            // decir dónde está el dinero. Al liquidar vuelve a "Pagado".
             <span
               className={cn(
-                categoryBadgeVariants({ variant: "amber" }),
+                categoryBadgeVariants({ variant: "orange" }),
                 "flex items-center gap-1"
               )}
-              title={order.cashCollection.holderName ?? undefined}
+              title={order.cashCollection?.holderName ?? undefined}
             >
-              <Banknote className="w-3 h-3" />
+              <Wallet className="w-3.5 h-3.5" />
               <span>{t("cashPendingSettlement")}</span>
             </span>
+          ) : (
+            <PaymentStatusEditor
+              orderId={order.id}
+              total={order.total}
+              branchId={order.branchId}
+              paymentMethod={order.paymentMethod}
+              currentStatus={order.paymentStatus}
+              chargeLabel={`${orderNumber} · ${orderType.label}`}
+            />
           )}
           <PaymentProofIndicator order={order} />
           <span className="flex-1" />

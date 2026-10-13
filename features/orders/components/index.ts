@@ -7,7 +7,6 @@ export { PaymentStatusEditor } from "./PaymentStatusEditor";
 export { PaymentMethodIcon } from "./PaymentMethodIcon";
 export { CashChargeDrawer, type ChargeableOrder } from "./CashChargeDrawer";
 export { MoneyTrailBlock } from "./MoneyTrailBlock";
-export { ToCollectPanel } from "./ToCollectPanel";
 export { NewOrderDrawer } from "./NewOrderDrawer";
 export { OrderBoardToolbar, type BoardViewMode } from "./OrderBoardToolbar";
 export { HoverTooltip } from "./HoverTooltip";

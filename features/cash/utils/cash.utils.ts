@@ -32,6 +32,17 @@ export function parseCOPInput(raw: string): number {
   return digits ? Number(digits) : 0;
 }
 
+/**
+ * Montos rápidos de "Paga con": el exacto y hasta tres billetes redondos
+ * por encima del total. Lo usan el drawer de pago y la venta de mostrador.
+ */
+export function quickCashAmounts(total: number): number[] {
+  const above = [10000, 20000, 50000, 100000]
+    .map((step) => Math.ceil(total / step) * step)
+    .filter((value) => value > total);
+  return [total, ...[...new Set(above)].sort((a, b) => a - b).slice(0, 3)];
+}
+
 export function differenceTone(difference: string | number | null | undefined): {
   tone: "exact" | "shortage" | "surplus";
   value: number;

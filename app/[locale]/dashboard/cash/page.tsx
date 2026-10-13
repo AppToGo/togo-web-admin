@@ -102,11 +102,11 @@ export default function CashRoutePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 p-4 sm:p-6">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-3">
           <div>
-            <h1 className="text-xl font-bold text-slate-900">{t("title")}</h1>
-            <p className="text-sm text-slate-500">{t("description")}</p>
+            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+            <p className="text-slate-500 mt-1">{t("description")}</p>
           </div>
           <span className="flex-1" />
           {effectiveBranches.length > 1 && (

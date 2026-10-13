@@ -237,6 +237,12 @@ export function getPaymentStatusColor(status: PaymentStatus): {
   if (status === "PAID") {
     return { bg: "bg-green-100", text: "text-green-700" };
   }
+  if (status === "FAILED") {
+    return { bg: "bg-red-100", text: "text-red-700" };
+  }
+  if (status === "REFUNDED") {
+    return { bg: "bg-slate-100", text: "text-slate-700" };
+  }
   return { bg: "bg-amber-100", text: "text-amber-700" };
 }
 
@@ -245,7 +251,7 @@ export function getPaymentStatusColor(status: PaymentStatus): {
  * Returns translation keys that should be used with useTranslations('orders.paymentStatus')
  */
 export function getPaymentStatusLabel(status: PaymentStatus): string {
-  return status === "PAID" ? "PAID" : "PENDING";
+  return status;
 }
 
 /**

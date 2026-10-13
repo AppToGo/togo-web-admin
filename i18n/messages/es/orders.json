@@ -414,5 +414,6 @@
     "confirm": "Enviar pedido",
     "empty": "No hay usuarios activos para asignar.",
     "loadError": "No se pudieron cargar los repartidores."
-  }
+  },
+  "cashPaidHint": "El cliente ya pagó en efectivo"
 }

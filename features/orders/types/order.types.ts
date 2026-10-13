@@ -18,7 +18,7 @@ export type OrderStatus =
   | "CANCELLED"
   | "ABANDONED";
 
-export type PaymentStatus = "PENDING" | "PAID";
+export type PaymentStatus = "PENDING" | "PAID" | "REFUNDED" | "FAILED";
 
 export type ConfirmationSource = "CUSTOMER" | "OPERATOR" | "SYSTEM";
 export type ConfirmationChannel = "WHATSAPP" | "BACKOFFICE" | "API" | "SYSTEM";

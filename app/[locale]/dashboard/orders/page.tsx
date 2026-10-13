@@ -8,7 +8,6 @@ import {
   OrderBoardToolbar,
   OrderFlowSettings,
   HoverTooltip,
-  ToCollectPanel,
   type BoardViewMode,
   type CardDensity,
 } from "@/features/orders/components";
@@ -540,12 +539,6 @@ function OrdersPageInner() {
               </button>
             </div>
           )}
-          <ToCollectPanel
-            businessId={selectedBusinessId ?? undefined}
-            branchIds={selectedBranchIds || undefined}
-            dateFrom={dateParams.dateFrom}
-            dateTo={dateParams.dateTo}
-          />
           <Suspense fallback={<OrdersLoading />}>
             <OrdersKanbanBoard
               searchQuery={searchQuery}

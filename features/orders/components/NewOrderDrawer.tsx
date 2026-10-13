@@ -62,6 +62,7 @@ import { formatCurrency } from "../utils/order-status.utils";
 import { isCounterEnabled } from "@/features/branches/types/branch-config.types";
 import { useOpenSessions } from "@/features/cash/hooks/useCash";
 import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
+import { quickCashAmounts } from "@/features/cash/utils/cash.utils";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import type {
   ManualOrderDeliveryType,
@@ -122,6 +123,7 @@ export function NewOrderDrawer({
   const tStatus = useTranslations("orders.status");
   const tDelivery = useTranslations("orders.deliveryTypes");
   const tPayment = useTranslations("orders.paymentMethods");
+  const tCash = useTranslations("cash");
 
   const user = useCurrentUser();
   const businessId = useEffectiveBusinessId();
@@ -279,7 +281,10 @@ export function NewOrderDrawer({
   const cashSessionId =
     pickedCashSessionId && openSessions.some((session) => session.id === pickedCashSessionId)
       ? pickedCashSessionId
-      : null;
+      : // Con un solo turno abierto no hay nada que elegir.
+        openSessions.length === 1
+        ? openSessions[0].id
+        : null;
   const errors = {
     items: cartLines.length === 0 ? t("validation.items") : undefined,
     paymentMethod: !paymentMethod ? t("validation.paymentMethod") : undefined,
@@ -588,44 +593,91 @@ export function NewOrderDrawer({
                   ) : openSessions.length === 0 ? (
                     <p className="text-xs text-amber-700">{t("noOpenSession")}</p>
                   ) : (
-                    <>
-                      <Select
-                        value={cashSessionId ?? undefined}
-                        onValueChange={setCashSessionId}
-                      >
-                        <SelectTrigger aria-invalid={!!showError(errors.cashSession)}>
-                          <SelectValue placeholder={t("cashSessionPlaceholder")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {openSessions.map((session) => (
-                            <SelectItem key={session.id} value={session.id}>
-                              {t("cashSessionOption", {
-                                register:
-                                  session.register?.name ?? session.cashRegisterId,
-                              })}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {showError(errors.cashSession) && (
-                        <p className="text-xs text-red-600">{errors.cashSession}</p>
-                      )}
+                    <div className="rounded-card border border-slate-100 bg-white shadow-card p-4 space-y-3">
+                      <Label htmlFor="new-order-cash-received">{tCash("charge.payWith")}</Label>
                       <CurrencyInput
+                        id="new-order-cash-received"
+                        size="lg"
+                        // Vacío = pago exacto: el total va de placeholder para
+                        // que el campo se pueda borrar y reescribir.
                         value={cashReceived}
                         onChange={setCashReceived}
-                        placeholder={t("cashReceivedPlaceholder")}
+                        placeholder={formatCurrency(total)}
                       />
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {quickCashAmounts(total).map((value, index) => {
+                          const active = (cashReceived > 0 ? cashReceived : total) === value;
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => setCashReceived(value)}
+                              className={cn(
+                                "h-10 rounded-lg border text-xs font-semibold tabular-nums transition-colors",
+                                active
+                                  ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                              )}
+                            >
+                              {index === 0 ? tCash("charge.exact") : formatCurrency(value)}
+                            </button>
+                          );
+                        })}
+                      </div>
                       {showError(errors.cashReceived) && (
                         <p className="text-xs text-red-600">{errors.cashReceived}</p>
                       )}
-                      {cashReceived >= total && cashReceived > 0 && (
-                        <p className="text-xs text-slate-500">
-                          {t("cashChange", {
-                            change: formatCurrency(Math.max(0, cashReceived - total)),
+                      <div
+                        className={cn(
+                          "flex items-baseline justify-between rounded-icon p-3",
+                          cashReceived > 0 && cashReceived < total
+                            ? "bg-red-100 text-red-800"
+                            : "bg-emerald-100 text-emerald-800"
+                        )}
+                      >
+                        <span className="text-sm font-semibold">
+                          {cashReceived > 0 && cashReceived < total
+                            ? tCash("charge.missing")
+                            : tCash("charge.change")}
+                        </span>
+                        <span className="text-xl font-bold tabular-nums">
+                          {formatCurrency(
+                            cashReceived > 0 ? Math.abs(cashReceived - total) : 0
+                          )}
+                        </span>
+                      </div>
+                      {openSessions.length > 1 ? (
+                        <Select
+                          value={cashSessionId ?? undefined}
+                          onValueChange={setCashSessionId}
+                        >
+                          <SelectTrigger aria-invalid={!!showError(errors.cashSession)}>
+                            <SelectValue placeholder={t("cashSessionPlaceholder")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {openSessions.map((session) => (
+                              <SelectItem key={session.id} value={session.id}>
+                                {t("cashSessionOption", {
+                                  register:
+                                    session.register?.name ?? session.cashRegisterId,
+                                })}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="flex items-center gap-2 text-xs text-slate-600">
+                          <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-600" />
+                          {tCash("charge.toRegister", {
+                            register: openSessions[0]?.register?.name ?? "",
                           })}
                         </p>
                       )}
-                    </>
+                      {showError(errors.cashSession) && (
+                        <p className="text-xs text-red-600">{errors.cashSession}</p>
+                      )}
+                    </div>
                   )}
                 </FieldGroup>
               )}

@@ -286,6 +286,8 @@ export async function markOrderViewed(
 export interface UpdatePaymentStatusRequest {
   paymentStatus: "PENDING" | "PAID";
   changeNotes?: string;
+  /** Método con el que finalmente pagó, si cambió al cobrar. */
+  paymentMethod?: string;
   /**
    * Datos del cobro en efectivo (espeja `CashPaymentDto` del backend).
    * Con `sessionId` el efectivo entra liquidado al turno; sin él queda

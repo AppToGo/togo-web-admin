@@ -180,6 +180,32 @@ const SESSIONS_HISTORY = {
 
 const EMPTY_AUDIT = { items: [], total: 0, page: 1, limit: 50 };
 
+/** Por cobrar: una mesa ya entregada sin pagar y un pedido para recoger. */
+const RECEIVABLES = [
+  {
+    id: "ord-rec-1",
+    orderNumber: 1056,
+    total: "46000",
+    status: "COMPLETED",
+    deliveryType: "DINE_IN",
+    paymentMethod: "CASH",
+    tableLabel: "2",
+    customerName: null,
+    createdAt: "2026-10-08T15:00:00.000Z",
+  },
+  {
+    id: "ord-rec-2",
+    orderNumber: 1060,
+    total: "27500",
+    status: "READY",
+    deliveryType: "PICKUP",
+    paymentMethod: null,
+    tableLabel: null,
+    customerName: "Julián Mora",
+    createdAt: "2026-10-08T15:20:00.000Z",
+  },
+];
+
 export async function mockCashDashboard(
   page: Page,
   options: CashMockOptions = {}
@@ -210,6 +236,14 @@ export async function mockCashDashboard(
         status: 200,
         contentType: "application/json",
         body: JSON.stringify([cashRegister(openSession)]),
+      });
+    }
+
+    if (path.endsWith("/cash/receivables")) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(RECEIVABLES),
       });
     }
 
