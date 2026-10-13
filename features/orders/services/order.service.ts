@@ -284,7 +284,7 @@ export async function markOrderViewed(
  * Actualizar el estado de pago de una orden
  */
 export interface UpdatePaymentStatusRequest {
-  paymentStatus: "PENDING" | "PAID";
+  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "FAILED";
   changeNotes?: string;
   /** Método con el que finalmente pagó, si cambió al cobrar. */
   paymentMethod?: string;

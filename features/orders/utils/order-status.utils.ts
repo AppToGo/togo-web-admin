@@ -145,8 +145,9 @@ export function canCompleteOrder(order: {
     };
   }
 
-  // Verificar si el pago está pendiente
-  if (order.paymentStatus === "PENDING") {
+  // Solo un pago confirmado permite completar; un cobro cancelado
+  // (FAILED) o reembolsado tampoco es dinero del negocio.
+  if (order.paymentStatus !== "PAID") {
     return {
       valid: false,
       message: "orders.errors.paymentPending",
