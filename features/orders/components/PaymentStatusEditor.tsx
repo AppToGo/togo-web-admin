@@ -4,6 +4,7 @@
  * siempre; lo que cambia es qué abre:
  *
  * - PAID → chip estático.
+ * - FAILED / REFUNDED → chip estático (el pago ya no se puede cobrar).
  * - PENDING → abre `CashChargeDrawer` (método, paga-con/vueltas y destino
  *   del dinero). Ya no hay menú intermedio "Confirmar pago".
  */
@@ -46,11 +47,17 @@ export function PaymentStatusEditor({
     </>
   );
 
-  if (currentStatus === "PAID") {
+  if (currentStatus !== "PENDING") {
+    const variant =
+      currentStatus === "PAID"
+        ? ("green" as const)
+        : currentStatus === "FAILED"
+          ? ("cancelled" as const)
+          : ("slate" as const);
     return (
       <span
         className={cn(
-          categoryBadgeVariants({ variant: "green" }),
+          categoryBadgeVariants({ variant }),
           "flex items-center gap-1"
         )}
       >

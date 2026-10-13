@@ -26,6 +26,8 @@
   "paymentStatus": {
     "PAID": "Paid",
     "PENDING": "Pending",
+    "REFUNDED": "Refunded",
+    "FAILED": "Not collectible",
     "UNKNOWN": "Unknown"
   },
   "paymentProof": {
