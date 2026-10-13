@@ -235,7 +235,7 @@
     "withCategory": "{type} · {category}"
   },
   "pending": {
-    "collectHint": "Dine-in and pickup cash orders the customer has not paid yet. When charged, the money goes into this register.",
+    "collectHint": "Dine-in and pickup cash orders from the last 7 days the customer has not paid yet. When charged, the money goes into this register.",
     "settleHint": "Paid orders whose cash has not reached the register yet.",
     "noHolder": "No one assigned",
     "needOpen": "Open the register to charge and settle.",

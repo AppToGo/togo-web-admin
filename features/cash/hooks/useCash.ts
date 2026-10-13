@@ -94,11 +94,19 @@ export function useCollections(
 }
 
 /** Pedidos por cobrar de la sede (efectivo, mesa y recoger, pago pendiente). */
-export function useReceivables(businessId: string | null, branchId: string | null) {
+/**
+ * El endpoint exige además `order.view` (devuelve datos de pedidos): quien
+ * no lo tenga pasa `enabled = false` para no pedirlo (403 con reintentos).
+ */
+export function useReceivables(
+  businessId: string | null,
+  branchId: string | null,
+  enabled = true
+) {
   return useQuery({
     queryKey: CASH_KEYS.receivables(businessId ?? undefined, branchId ?? undefined),
     queryFn: () => cashService.getReceivables(businessId!, branchId!),
-    enabled: !!businessId && !!branchId,
+    enabled: !!businessId && !!branchId && enabled,
     staleTime: STALE_TIME,
   });
 }
