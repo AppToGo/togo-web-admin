@@ -5,7 +5,8 @@
  * hay diferencia. El ajuste lo crea el servidor (docs/caja-pedidos.md).
  */
 import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import {
   Drawer,
   DrawerContent,
@@ -47,7 +48,7 @@ export function SettleDrawer({
 }: SettleDrawerProps) {
   const t = useTranslations("cash");
   const tOrders = useTranslations("orders");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const [excluded, setExcluded] = useState<string[]>([]);
   // `null` = aún no escribió: se asume que entrega exactamente lo esperado.
   const [typed, setTyped] = useState<number | null>(null);
@@ -141,10 +142,7 @@ export function SettleDrawer({
                       })}
                     </span>
                     <span className="block text-xs text-slate-600">
-                      {new Date(collection.collectedAt).toLocaleTimeString(locale, {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      {fmt.time(collection.collectedAt)}
                       {collection.order?.status
                         ? ` · ${tOrders(`status.${collection.order.status}`)}`
                         : ""}

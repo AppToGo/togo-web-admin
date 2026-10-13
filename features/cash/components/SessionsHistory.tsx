@@ -4,7 +4,8 @@
  * Pide solo CLOSED: un turno abierto no tiene diferencia ni fecha de cierre.
  */
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -27,7 +28,7 @@ const headClass = "text-xs font-semibold uppercase tracking-wide text-slate-500"
 
 export function SessionsHistory({ businessId, branchId }: SessionsHistoryProps) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const [onlyWithDifference, setOnlyWithDifference] = useState(false);
   const { data, isLoading } = useSessionsHistory(businessId, branchId, {
     page: 1,
@@ -41,12 +42,7 @@ export function SessionsHistory({ businessId, branchId }: SessionsHistoryProps) 
 
   const when = (value: string | null) =>
     value
-      ? new Date(value).toLocaleString(locale, {
-          day: "numeric",
-          month: "short",
-          hour: "numeric",
-          minute: "2-digit",
-        })
+      ? fmt.dateTime(value)
       : "—";
 
   return (

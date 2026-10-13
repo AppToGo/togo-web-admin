@@ -12,6 +12,7 @@
  * `cash.operate`): sin ellos solo se ofrece dejarlo por liquidar.
  */
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import {
   Drawer,
@@ -31,7 +32,12 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
-import { formatCOP, isCashPaymentMethod } from "@/features/cash/utils/cash.utils";
+import {
+  formatCOP,
+  isCashPaymentMethod,
+  quickCashAmounts,
+} from "@/features/cash/utils/cash.utils";
+import { useBranch } from "@/features/branches/hooks/useBranches";
 import { useOpenSessions } from "@/features/cash/hooks/useCash";
 import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -60,19 +66,10 @@ interface CashChargeDrawerProps {
 }
 
 type Method = "CASH" | "TRANSFER" | "DATAPHONE";
-const METHODS: Method[] = ["CASH", "TRANSFER", "DATAPHONE"];
 
 function toMethod(method: string | undefined): Method {
   if (isCashPaymentMethod(method)) return "CASH";
   return method?.toUpperCase() === "TRANSFER" ? "TRANSFER" : "DATAPHONE";
-}
-
-/** Montos rápidos: exacto + los siguientes billetes redondos por encima. */
-function quickAmounts(total: number): number[] {
-  const candidates = [10000, 20000, 50000, 100000]
-    .map((step) => Math.ceil(total / step) * step)
-    .filter((value) => value > total);
-  return [total, ...[...new Set(candidates)].sort((a, b) => a - b).slice(0, 3)];
 }
 
 export function CashChargeDrawer({
@@ -95,8 +92,20 @@ export function CashChargeDrawer({
   const { hasPermission } = useMyPermissions();
   const canSettle = hasPermission("cash.view") && hasPermission("cash.operate");
 
+  const queryClient = useQueryClient();
   const [pickedMethod, setMethod] = useState<Method | null>(null);
   const method = pickedMethod ?? toMethod(order?.paymentMethod);
+
+  // Transferencia solo si la sede la tiene configurada (misma regla que
+  // `NewOrderDrawer`) o si el pedido ya venía con ese método.
+  const { data: branch } = useBranch(branchId ?? null, open);
+  const hasTransfer =
+    !!branch?.transferOptions?.enabled &&
+    (branch.transferOptions.options?.length ?? 0) > 0;
+  const methods: Method[] =
+    hasTransfer || toMethod(order?.paymentMethod) === "TRANSFER"
+      ? ["CASH", "TRANSFER", "DATAPHONE"]
+      : ["CASH", "DATAPHONE"];
   const isCash = method === "CASH";
 
   const [pickedDestination, setDestination] = useState<"settle" | "pending">("settle");
@@ -159,6 +168,9 @@ export function CashChargeDrawer({
       },
       {
         onSuccess: () => {
+          // "Por cobrar", el esperado y lo por liquidar cambian con el pago:
+          // no depender solo del evento de socket para refrescarlos.
+          queryClient.invalidateQueries({ queryKey: ["cash"] });
           reset();
           onOpenChange(false);
         },
@@ -209,7 +221,7 @@ export function CashChargeDrawer({
           <div className="space-y-2">
             <p className="text-sm font-medium">{t("charge.method")}</p>
             <div role="group" aria-label={t("charge.method")} className="flex flex-wrap gap-2">
-              {METHODS.map((option) => (
+              {methods.map((option) => (
                 <button
                   key={option}
                   type="button"
@@ -250,7 +262,7 @@ export function CashChargeDrawer({
                   placeholder="0"
                 />
                 <div className="grid grid-cols-4 gap-2">
-                  {quickAmounts(total).map((value, index) => (
+                  {quickCashAmounts(total).map((value, index) => (
                     <button
                       key={value}
                       type="button"

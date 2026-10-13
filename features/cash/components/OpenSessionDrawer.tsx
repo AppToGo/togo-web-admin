@@ -5,7 +5,8 @@
  * filtrado por caja y solo al abrir el panel.
  */
 import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import {
   Drawer,
   DrawerContent,
@@ -41,7 +42,7 @@ export function OpenSessionDrawer({
   onOpened,
 }: OpenSessionDrawerProps) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const user = useCurrentUser();
   const [openingAmount, setOpeningAmount] = useState(0);
   const [notes, setNotes] = useState("");
@@ -77,12 +78,7 @@ export function OpenSessionDrawer({
     : lastClosed?.closedAt
       ? t("openDrawer.lastCloseDetail", {
           amount: formatCOP(lastClosed.countedAmount ?? lastClosed.expectedAmount ?? 0),
-          date: new Date(lastClosed.closedAt).toLocaleString(locale, {
-            day: "numeric",
-            month: "short",
-            hour: "numeric",
-            minute: "2-digit",
-          }),
+          date: fmt.dateTime(lastClosed.closedAt),
           name: lastClosed.closedByName ?? "—",
         })
       : t("neverClosed");

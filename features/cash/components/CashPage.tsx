@@ -10,7 +10,10 @@
  * nuevo pedido (`order.create`).
  */
 import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useBranch } from "@/features/branches/hooks/useBranches";
+import { CashTimeZoneProvider, useCashDateFormat } from "../utils/cash-time";
 import { Plus, Minus, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,9 +55,21 @@ const pillClass = (active: boolean) =>
       : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
   );
 
-export function CashPage({ businessId, branchId }: CashPageProps) {
+const MOVEMENTS_PAGE_SIZE = 30;
+
+/** Provee la zona horaria de la sede a toda la pantalla de Caja. */
+export function CashPage(props: CashPageProps) {
+  const { data: branch } = useBranch(props.branchId, true);
+  return (
+    <CashTimeZoneProvider timeZone={branch?.timezone}>
+      <CashPageContent {...props} />
+    </CashTimeZoneProvider>
+  );
+}
+
+function CashPageContent({ businessId, branchId }: CashPageProps) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const { hasPermission } = useMyPermissions();
 
   const canOperate = hasPermission("cash.operate");
@@ -91,12 +106,16 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
   const registerName = register?.name ?? "";
 
   const { data: summary } = useSessionSummary(businessId, branchId, openSessionId);
-  const { data: movementsPage } = useSessionMovements(
+  // La página vuelve a 1 al cambiar de caja (ver `selectRegister`).
+  const [movementsPage, setMovementsPage] = useState(1);
+  const { data: movementsData } = useSessionMovements(
     businessId,
     branchId,
     openSessionId,
-    { page: 1, limit: 30 }
+    { page: movementsPage, limit: MOVEMENTS_PAGE_SIZE }
   );
+  const movementsTotal = movementsData?.total ?? 0;
+  const movementsPages = Math.max(1, Math.ceil(movementsTotal / MOVEMENTS_PAGE_SIZE));
 
   const [opening, setOpening] = useState(false);
   const [movingKind, setMovingKind] = useState<MovementKind | null>(null);
@@ -189,7 +208,13 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
                 </Button>
               )}
               {canClose && (
-                <Button variant="slate" onClick={() => setClosing(true)}>
+                <Button
+                  variant="slate"
+                  // Sin el resumen el esperado saldría en $ 0 y la diferencia
+                  // del arqueo sería falsa.
+                  disabled={!summary}
+                  onClick={() => setClosing(true)}
+                >
                   <Lock className="mr-1 h-4 w-4" />
                   {t("actions.closeRegister")}
                 </Button>
@@ -212,7 +237,10 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
             branchId={branchId}
             registers={registers}
             selectedId={effectiveId}
-            onSelect={setSelectedId}
+            onSelect={(id) => {
+              setSelectedId(id);
+              setMovementsPage(1);
+            }}
             canManage={canManage}
           />
 
@@ -229,10 +257,7 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
                 <span className="text-sm text-slate-600">
                   {t("strip.detail", {
                     name: openSession.openedByName ?? "—",
-                    time: new Date(openSession.openedAt).toLocaleTimeString(locale, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    }),
+                    time: fmt.time(openSession.openedAt),
                     amount: formatCOP(summary?.session.openingAmount ?? 0),
                   })}
                 </span>
@@ -259,7 +284,38 @@ export function CashPage({ businessId, branchId }: CashPageProps) {
                 <h2 className="mb-3 text-base font-semibold text-slate-900">
                   {t("table.title")}
                 </h2>
-                <MovementsTable movements={movementsPage?.items ?? []} />
+                <MovementsTable movements={movementsData?.items ?? []} />
+                {movementsPages > 1 && (
+                  <div className="mt-3 flex items-center justify-between gap-3 text-sm text-slate-600">
+                    <span className="tabular-nums">
+                      {t("table.pageOf", {
+                        page: movementsPage,
+                        pages: movementsPages,
+                        total: movementsTotal,
+                      })}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label={t("table.previous")}
+                        disabled={movementsPage <= 1}
+                        onClick={() => setMovementsPage((page) => page - 1)}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label={t("table.next")}
+                        disabled={movementsPage >= movementsPages}
+                        onClick={() => setMovementsPage((page) => page + 1)}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

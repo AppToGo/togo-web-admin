@@ -215,7 +215,10 @@
     "time": "Time",
     "concept": "Concept",
     "responsible": "By",
-    "amount": "Amount"
+    "amount": "Amount",
+    "pageOf": "Page {page} of {pages} · {total} movements",
+    "previous": "Previous page",
+    "next": "Next page"
   },
   "concept": {
     "orderPayment": "Payment for order #{number}",

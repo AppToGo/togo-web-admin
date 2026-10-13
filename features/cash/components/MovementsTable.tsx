@@ -3,7 +3,8 @@
  * Tabla de movimientos del turno (solo lectura: el ledger es append-only).
  * Hora, concepto, responsable y monto, como en el prototipo acordado.
  */
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import {
   Table,
   TableBody,
@@ -68,7 +69,7 @@ function conceptDetail(movement: CashMovement, t: Translate): string | null {
 
 export function MovementsTable({ movements }: { movements: CashMovement[] }) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
 
   if (movements.length === 0) {
     return (
@@ -97,10 +98,7 @@ export function MovementsTable({ movements }: { movements: CashMovement[] }) {
               className="border-slate-300/50 hover:bg-white/40"
             >
               <TableCell className="whitespace-nowrap tabular-nums text-slate-600">
-                {new Date(movement.createdAt).toLocaleTimeString(locale, {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+                {fmt.time(movement.createdAt)}
               </TableCell>
               <TableCell>
                 <p className="font-medium text-slate-900">{conceptTitle(movement, t)}</p>

@@ -7,7 +7,8 @@
  * avisa, para que el cajero no los olvide.
  */
 import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import {
   Drawer,
   DrawerContent,
@@ -55,7 +56,7 @@ export function CloseSessionDrawer({
   onClosed,
 }: CloseSessionDrawerProps) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState("");
   const closeSession = useCloseSession(businessId, branchId, sessionId ?? "");
@@ -149,10 +150,7 @@ export function CloseSessionDrawer({
             <DrawerDescription>
               {t("closeDrawer.desc", {
                 name: openedByName ?? "—",
-                time: new Date(openedAt).toLocaleTimeString(locale, {
-                  hour: "numeric",
-                  minute: "2-digit",
-                }),
+                time: fmt.time(openedAt),
               })}
             </DrawerDescription>
           )}

@@ -215,7 +215,10 @@
     "time": "Hora",
     "concept": "Concepto",
     "responsible": "Responsable",
-    "amount": "Monto"
+    "amount": "Monto",
+    "pageOf": "Página {page} de {pages} · {total} movimientos",
+    "previous": "Página anterior",
+    "next": "Página siguiente"
   },
   "concept": {
     "orderPayment": "Cobro pedido #{number}",

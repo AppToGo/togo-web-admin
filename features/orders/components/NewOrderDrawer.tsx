@@ -62,6 +62,7 @@ import { formatCurrency } from "../utils/order-status.utils";
 import { isCounterEnabled } from "@/features/branches/types/branch-config.types";
 import { useOpenSessions } from "@/features/cash/hooks/useCash";
 import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
+import { quickCashAmounts } from "@/features/cash/utils/cash.utils";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import type {
   ManualOrderDeliveryType,
@@ -284,19 +285,6 @@ export function NewOrderDrawer({
         openSessions.length === 1
         ? openSessions[0].id
         : null;
-  // Montos rápidos de "Paga con": exacto + billetes redondos por encima.
-  const counterQuickAmounts = [
-    total,
-    ...[
-      ...new Set(
-        [10000, 20000, 50000, 100000]
-          .map((step) => Math.ceil(total / step) * step)
-          .filter((value) => value > total)
-      ),
-    ]
-      .sort((a, b) => a - b)
-      .slice(0, 3),
-  ];
   const errors = {
     items: cartLines.length === 0 ? t("validation.items") : undefined,
     paymentMethod: !paymentMethod ? t("validation.paymentMethod") : undefined,
@@ -610,12 +598,14 @@ export function NewOrderDrawer({
                       <CurrencyInput
                         id="new-order-cash-received"
                         size="lg"
-                        value={cashReceived > 0 ? cashReceived : total}
+                        // Vacío = pago exacto: el total va de placeholder para
+                        // que el campo se pueda borrar y reescribir.
+                        value={cashReceived}
                         onChange={setCashReceived}
-                        placeholder="0"
+                        placeholder={formatCurrency(total)}
                       />
                       <div className="grid grid-cols-4 gap-1.5">
-                        {counterQuickAmounts.map((value, index) => {
+                        {quickCashAmounts(total).map((value, index) => {
                           const active = (cashReceived > 0 ? cashReceived : total) === value;
                           return (
                             <button

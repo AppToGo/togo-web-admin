@@ -5,7 +5,8 @@
  * (gateado `cash.operate`, exige turno abierto).
  */
 import { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import { Button } from "@/components/ui/button";
 import { formatCOP } from "../utils/cash.utils";
 import { SettleDrawer } from "./SettleDrawer";
@@ -39,7 +40,7 @@ export function PendingCollectionsPanel({
   canOperate,
 }: PendingCollectionsPanelProps) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const [settlingKey, setSettlingKey] = useState<string | null>(null);
 
   const groups = useMemo<HolderGroup[]>(() => {
@@ -86,10 +87,7 @@ export function PendingCollectionsPanel({
                   .map((item) => `#${item.order?.orderNumber ?? "—"}`)
                   .join(" · ")}
                 {" · "}
-                {new Date(group.since).toLocaleTimeString(locale, {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+                {fmt.time(group.since)}
               </p>
             </div>
             <div className="flex items-center gap-3">

@@ -5,7 +5,8 @@
  * expandible por fila. Lecturas acotadas (rango máx. 90 días, plan).
  */
 import { Fragment, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useCashDateFormat } from "../utils/cash-time";
 import { ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -67,7 +68,7 @@ const headClass = "text-xs font-semibold uppercase tracking-wide text-slate-500"
 
 export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }: CashAuditPanelProps) {
   const t = useTranslations("cash");
-  const locale = useLocale();
+  const fmt = useCashDateFormat();
   const [action, setAction] = useState<string>("");
   const [channel, setChannel] = useState<string>("");
   const [orderFilter, setOrderFilter] = useState(orderNumber ?? "");
@@ -130,8 +131,10 @@ export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }:
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all">{t("audit.all")}</SelectItem>
-              <SelectItem value="ADMIN">{t("audit.channels.ADMIN")}</SelectItem>
+              {/* Valores del enum `CashChannel` del backend. */}
+              <SelectItem value="ADMIN_WEB">{t("audit.channels.ADMIN_WEB")}</SelectItem>
               <SelectItem value="WHATSAPP">{t("audit.channels.WHATSAPP")}</SelectItem>
+              <SelectItem value="SYSTEM">{t("audit.channels.SYSTEM")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -157,7 +160,6 @@ export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }:
             <TableBody>
               {(data?.items ?? []).map((entry) => {
                 const isOpen = expanded === entry.id;
-                const created = new Date(entry.createdAt);
                 return (
                   <Fragment key={entry.id}>
                     <TableRow
@@ -168,17 +170,10 @@ export function CashAuditPanel({ businessId, branchId, sessionId, orderNumber }:
                     >
                       <TableCell className="whitespace-nowrap tabular-nums">
                         <p>
-                          {created.toLocaleTimeString(locale, {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
+                          {fmt.time(entry.createdAt)}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {created.toLocaleDateString(locale, {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                          {fmt.date(entry.createdAt)}
                         </p>
                       </TableCell>
                       <TableCell>
