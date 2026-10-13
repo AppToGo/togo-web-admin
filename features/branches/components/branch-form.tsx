@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useId } from "react";
+import { useState, useCallback, useId } from "react";
 import { useTranslations } from "next-intl";
 import {
   Building2,
@@ -193,8 +193,12 @@ export function BranchForm({
   const [businessHoursErrors, setBusinessHoursErrors] =
     useState<BusinessHoursErrors | null>(null);
 
-  // Sync form when branch prop changes (e.g. after React Query background refetch)
-  useEffect(() => {
+  // Sync form when branch prop changes (e.g. after React Query background
+  // refetch). Se ajusta durante el render, no en un efecto: así no hay un
+  // render intermedio con los datos viejos.
+  const [syncedBranch, setSyncedBranch] = useState(branch);
+  if (branch !== syncedBranch) {
+    setSyncedBranch(branch);
     if (branch) {
       const to = branch.transferOptions as TransferOptions | null;
       const di = branch.dineInConfig as DineInConfig | null;
@@ -226,14 +230,7 @@ export function BranchForm({
       setBusinessHoursTouched(false);
       setBusinessHoursErrors(null);
     }
-  }, [branch]);
-
-  // Auto-generate slug from name
-  useEffect(() => {
-    if (!slugManuallyEdited && !isEditing && formData.name) {
-      setFormData((prev) => ({ ...prev, slug: generateSlug(prev.name) }));
-    }
-  }, [formData.name, slugManuallyEdited, isEditing]);
+  }
 
   // Validate field
   const validateField = useCallback(
@@ -259,7 +256,12 @@ export function BranchForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Al crear, el slug sigue al nombre hasta que el usuario lo edita a mano.
+    const autoSlug =
+      name === "name" && !slugManuallyEdited && !isEditing && value
+        ? { slug: generateSlug(value) }
+        : {};
+    setFormData((prev) => ({ ...prev, [name]: value, ...autoSlug }));
 
     if (touched[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
