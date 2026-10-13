@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { useLinkStatus } from "next/link";
-import { Filter, Inbox, MessageCircle } from "lucide-react";
+import { Filter, Inbox, MessageCircle, Banknote } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -110,6 +110,9 @@ export function Sidebar({
   // Embudo del bot (plan bot natural, T20): mismo permiso que su endpoint.
   const canViewConversationFunnel = hasPermission("metrics.view");
 
+  // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
+  const canViewCash = hasPermission("cash.view");
+
   // Badges: pedidos nuevos sin ver (por negocio, sucursales seleccionadas) y
   // conversaciones que esperan asesor. Los refrescan los sockets globales de
   // DashboardRealtime. SUPER_ADMIN no tiene negocio propio ni socket.
@@ -128,6 +131,15 @@ export function Sidebar({
         icon: ShoppingBagIcon,
         badge: unseenOrdersCount,
       },
+      ...(canViewCash
+        ? [
+            {
+              name: t("sidebar.cash"),
+              href: "/dashboard/cash",
+              icon: Banknote,
+            },
+          ]
+        : []),
       {
         name: t("sidebar.dashboard"),
         href: "/dashboard",
@@ -248,6 +260,7 @@ export function Sidebar({
     canViewConversationFunnel,
     canViewInbox,
     canViewBilling,
+    canViewCash,
     unseenOrdersCount,
     inboxAttentionCount,
   ]);

@@ -47,6 +47,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     subscription: (await import(`./messages/${validLocale}/subscription.json`)).default,
     whatsapp: (await import(`./messages/${validLocale}/whatsapp.json`)).default,
     permissionCatalog: (await import(`./messages/${validLocale}/permissionCatalog.json`)).default,
+    cash: (await import(`./messages/${validLocale}/cash.json`)).default,
   };
 
   return {

@@ -15,6 +15,8 @@
 
 import { useTranslations } from "next-intl";
 import type { OrderStatus, PaymentStatus } from "../types";
+// Import estático: kanban-columns.config solo depende de types y theme, sin ciclo.
+import { DEFAULT_KANBAN_STATUSES, getColumnConfig } from "../config/kanban-columns.config";
 
 /**
  * Status labels as translation keys.
@@ -35,13 +37,16 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   ABANDONED: "ABANDONED",
 };
 
-// Mapa de transiciones permitidas
+// Mapa de transiciones permitidas (copia de api-togo `order-transitions.ts`).
+// Los saltos hacia adelante existen para los negocios que ocultan columnas
+// que no usan; desde el tablero solo se ofrece la siguiente columna visible
+// (ver `order-flow.utils.ts`). Retroceder va aparte, con permiso.
 export const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   DRAFT: ["CONFIRMED", "CANCELLED", "ABANDONED"],
-  CONFIRMED: ["PAYMENT_PENDING", "PAID", "IN_PROGRESS", "CANCELLED"],
+  CONFIRMED: ["PAYMENT_PENDING", "PAID", "IN_PROGRESS", "READY", "COMPLETED", "CANCELLED"],
   PAYMENT_PENDING: ["PAID", "CANCELLED"],
-  PAID: ["IN_PROGRESS", "CANCELLED"],
-  IN_PROGRESS: ["READY", "CANCELLED"],
+  PAID: ["IN_PROGRESS", "READY", "COMPLETED", "CANCELLED"],
+  IN_PROGRESS: ["READY", "COMPLETED", "CANCELLED"],
   READY: ["ON_THE_WAY", "COMPLETED", "CANCELLED"],
   ON_THE_WAY: ["COMPLETED", "CANCELLED"],
   COMPLETED: [],
@@ -148,15 +153,9 @@ export function canCompleteOrder(order: {
     };
   }
 
-  // Verificar si la orden está en un estado que permite completarse
-  const canCompleteFrom: OrderStatus[] = ["READY", "ON_THE_WAY"];
-  if (!canCompleteFrom.includes(order.status)) {
-    return {
-      valid: false,
-      message: "orders.errors.mustBeReadyOrOnTheWay",
-    };
-  }
-
+  // Desde qué estado se puede entregar ya no es fijo (READY/ON_THE_WAY): si
+  // el negocio oculta "Listo", Entregado es el siguiente paso desde "En
+  // proceso". Eso lo decide `checkStatusMove` según las columnas visibles.
   return { valid: true };
 }
 
@@ -222,9 +221,6 @@ export function formatCurrency(amount: number): string {
  * Usa la configuración centralizada de KANBAN_COLUMN_CONFIG
  */
 export function getKanbanColumns(): { id: OrderStatus; title: string }[] {
-  // Importar dinámicamente para evitar dependencias circulares
-  const { DEFAULT_KANBAN_STATUSES, getColumnConfig } = require("../config/kanban-columns.config");
-  
   return DEFAULT_KANBAN_STATUSES.map((status: OrderStatus) => ({
     id: status,
     title: getColumnConfig(status).title,
@@ -241,6 +237,12 @@ export function getPaymentStatusColor(status: PaymentStatus): {
   if (status === "PAID") {
     return { bg: "bg-green-100", text: "text-green-700" };
   }
+  if (status === "FAILED") {
+    return { bg: "bg-red-100", text: "text-red-700" };
+  }
+  if (status === "REFUNDED") {
+    return { bg: "bg-slate-100", text: "text-slate-700" };
+  }
   return { bg: "bg-amber-100", text: "text-amber-700" };
 }
 
@@ -249,7 +251,7 @@ export function getPaymentStatusColor(status: PaymentStatus): {
  * Returns translation keys that should be used with useTranslations('orders.paymentStatus')
  */
 export function getPaymentStatusLabel(status: PaymentStatus): string {
-  return status === "PAID" ? "PAID" : "PENDING";
+  return status;
 }
 
 /**

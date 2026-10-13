@@ -8,6 +8,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -74,37 +75,34 @@ test.describe("Orders — permisos y paginación", () => {
     await loginPage.waitForDashboardRedirect();
 
     // Board renders, but the gated action does not
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Nuevo pedido" })
     ).toHaveCount(0);
   });
 
-  test("el toggle Entregada muestra y oculta su columna", async ({ page }) => {
-    // Regression: the visibility toggle persisted the cookie but the board
-    // never rendered/removed the column.
+  test("Entregada arranca colapsada y se expande y contrae", async ({ page }) => {
+    // Las columnas ya no se ocultan por usuario (eso es el flujo del negocio):
+    // se colapsan a un riel, y la preferencia queda en el navegador.
     await mockBoardPermissions(page);
     await openBoard(page);
 
-    // Entregada starts collapsed to a rail — expand it so the column
-    // heading exists before exercising the visibility toggle.
     const rail = page
       .getByRole("button", { name: "Expandir columna" })
       .filter({ hasText: "Entregada" });
-    await rail.click();
-
     const columnHeading = page.getByRole("heading", { name: "Entregada" });
-    await expect(columnHeading).toBeVisible();
-
-    const toggle = page
-      .getByRole("button", { name: /Entregada/ })
-      .filter({ hasText: "Entregada" })
-      .last();
-    await toggle.click();
     await expect(columnHeading).toHaveCount(0);
 
-    await toggle.click();
+    await rail.click();
     await expect(columnHeading).toBeVisible();
+
+    await page
+      .locator("section, div")
+      .filter({ has: columnHeading })
+      .getByRole("button", { name: "Contraer columna" })
+      .last()
+      .click();
+    await expect(columnHeading).toHaveCount(0);
   });
 
   test("las completadas se piden paginadas al montar", async ({ page }) => {
@@ -178,12 +176,12 @@ test.describe("Orders — permisos y paginación", () => {
 
     // Scrolling the last card to the bottom of the column list brings the
     // archive sentinel into view, which fires the next page.
-    await page.getByText("#901", { exact: true }).scrollIntoViewIfNeeded();
+    await boardOrderNumber(page, "#901").scrollIntoViewIfNeeded();
 
     await expect
       .poll(() => requestedPages.length, { timeout: 10_000 })
       .toBeGreaterThan(1);
     expect(requestedPages).toContain("2");
-    await expect(page.getByText("#902", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#902")).toBeVisible();
   });
 });

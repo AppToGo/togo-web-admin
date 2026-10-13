@@ -7,6 +7,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -39,13 +40,13 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
     const search = page.getByPlaceholder(/buscar por orden/i);
     await search.fill("101");
 
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
-    await expect(page.getByText("#102", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("#103", { exact: true })).toHaveCount(0);
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
+    await expect(boardOrderNumber(page, "#102")).toHaveCount(0);
+    await expect(boardOrderNumber(page, "#103")).toHaveCount(0);
 
     await search.fill("");
-    await expect(page.getByText("#102", { exact: true })).toBeVisible();
-    await expect(page.getByText("#103", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#102")).toBeVisible();
+    await expect(boardOrderNumber(page, "#103")).toBeVisible();
   });
 
   test("buscar sin coincidencias muestra Sin órdenes", async ({ page }) => {
@@ -53,7 +54,7 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
 
     await page.getByPlaceholder(/buscar por orden/i).fill("zzz-no-existe");
 
-    await expect(page.getByText("#101", { exact: true })).toHaveCount(0);
+    await expect(boardOrderNumber(page, "#101")).toHaveCount(0);
     await expect(page.getByText("Sin órdenes").first()).toBeVisible();
   });
 
@@ -67,12 +68,12 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
     await expect(deliverySwitch).toBeVisible();
 
     await deliverySwitch.click();
-    await expect(page.getByText("#101", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("#102", { exact: true })).toBeVisible();
-    await expect(page.getByText("#103", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toHaveCount(0);
+    await expect(boardOrderNumber(page, "#102")).toBeVisible();
+    await expect(boardOrderNumber(page, "#103")).toBeVisible();
 
     await deliverySwitch.click();
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
   });
 
   test("la vista lista reemplaza el kanban", async ({ page }) => {
@@ -82,7 +83,7 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
     await page.getByRole("tab", { name: "Lista agrupada" }).click();
 
     // Grouped rows keep the data, Kanban column headers are gone
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Nueva" })).toHaveCount(0);
   });
 
@@ -157,7 +158,7 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
     await page.keyboard.press("Escape");
 
     // Sucursal Norte has no orders — empty columns, board stays up
-    await expect(page.getByText("#101", { exact: true })).toHaveCount(0);
+    await expect(boardOrderNumber(page, "#101")).toHaveCount(0);
     await expect(page.getByText("Sin órdenes").first()).toBeVisible();
 
     await page
@@ -168,7 +169,7 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
     await page.getByRole("option", { name: "Sucursal Norte" }).click();
     await page.keyboard.press("Escape");
 
-    await expect(page.getByText("#101", { exact: true })).toBeVisible({
+    await expect(boardOrderNumber(page, "#101")).toBeVisible({
       timeout: 8_000,
     });
   });

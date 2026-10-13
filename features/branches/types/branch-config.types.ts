@@ -141,6 +141,27 @@ export const DEFAULT_DINE_IN_CONFIG: DineInConfig = {
   allowOperators: false,
 };
 
+/**
+ * Venta de mostrador (docs/caja-pedidos.md) — espeja
+ * `CounterConfigSchema` del backend. `enabled` es el maestro: si es
+ * false, el drawer "Nuevo pedido" no ofrece "Mostrador" en esa sede.
+ * Sedes anteriores a la feature traen `{}` (migración con DEFAULT),
+ * que se interpreta como apagado.
+ */
+export interface CounterConfig {
+  /** Maestro: si es false, "Mostrador" no aparece en el admin. */
+  enabled: boolean;
+}
+
+export const DEFAULT_COUNTER_CONFIG: CounterConfig = {
+  enabled: false,
+};
+
+export function isCounterEnabled(raw: unknown): boolean {
+  if (!raw || typeof raw !== "object") return false;
+  return (raw as CounterConfig).enabled === true;
+}
+
 // ============================================================================
 // CONFIGURACIÓN COMPLETA
 // ============================================================================

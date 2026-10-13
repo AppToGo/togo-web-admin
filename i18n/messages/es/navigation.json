@@ -2,6 +2,7 @@
   "sidebar": {
     "dashboard": "Dashboard",
     "orders": "Pedidos",
+    "cash": "Caja",
     "catalog": "Catálogo",
     "customers": "Clientes",
     "conversations": "Conversaciones",
@@ -32,6 +33,7 @@
     "home": "Inicio",
     "dashboard": "Dashboard",
     "orders": "Pedidos",
+    "cash": "Caja",
     "catalog": "Catálogo",
     "customers": "Clientes",
     "branches": "Sedes",

@@ -6,6 +6,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -47,8 +48,8 @@ test.describe("Orders — filtro de tipo de entrega (dine-in)", () => {
     await loginPage.submit();
     await loginPage.waitForDashboardRedirect();
 
-    const dineInOrder = page.getByText(`#${MOCK_ORDER_NUMBERS.dineIn}`, { exact: true });
-    const pickupOrder = page.getByText(`#${MOCK_ORDER_NUMBERS.pickup}`, { exact: true });
+    const dineInOrder = boardOrderNumber(page, `#${MOCK_ORDER_NUMBERS.dineIn}`);
+    const pickupOrder = boardOrderNumber(page, `#${MOCK_ORDER_NUMBERS.pickup}`);
 
     // Estado inicial: los 3 pedidos (delivery/pickup/dine-in) visibles.
     // Sirve además de punto de sincronización: recién acá el Kanban terminó

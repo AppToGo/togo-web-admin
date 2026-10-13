@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useId } from "react";
+import { useState, useCallback, useId } from "react";
 import { useTranslations } from "next-intl";
 import {
   Building2,
@@ -42,10 +42,12 @@ import type {
   BusinessHoursErrors,
   TransferOptions,
   DineInConfig,
+  CounterConfig,
 } from "../types";
 import {
   DEFAULT_TRANSFER_OPTIONS,
   DEFAULT_DINE_IN_CONFIG,
+  DEFAULT_COUNTER_CONFIG,
   parseBusinessHours,
   validateBusinessHours,
 } from "../types";
@@ -53,6 +55,7 @@ import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
 import { TransferOptionsSection } from "./TransferOptionsSection";
 import { DineInConfigSection } from "./DineInConfigSection";
+import { CounterConfigSection } from "./CounterConfigSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
@@ -146,10 +149,12 @@ export function BranchForm({
         businessHours: null as BusinessHours | null,
         transferOptions: DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: DEFAULT_DINE_IN_CONFIG,
+        counterConfig: DEFAULT_COUNTER_CONFIG,
       };
     }
     const to = branch.transferOptions as TransferOptions | null;
     const di = branch.dineInConfig as DineInConfig | null;
+    const co = branch.counterConfig as CounterConfig | null;
     return {
       name: branch.name,
       slug: branch.slug,
@@ -169,6 +174,7 @@ export function BranchForm({
       businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
       transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
       dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
+      counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
     };
   });
 
@@ -187,11 +193,16 @@ export function BranchForm({
   const [businessHoursErrors, setBusinessHoursErrors] =
     useState<BusinessHoursErrors | null>(null);
 
-  // Sync form when branch prop changes (e.g. after React Query background refetch)
-  useEffect(() => {
+  // Sync form when branch prop changes (e.g. after React Query background
+  // refetch). Se ajusta durante el render, no en un efecto: así no hay un
+  // render intermedio con los datos viejos.
+  const [syncedBranch, setSyncedBranch] = useState(branch);
+  if (branch !== syncedBranch) {
+    setSyncedBranch(branch);
     if (branch) {
       const to = branch.transferOptions as TransferOptions | null;
       const di = branch.dineInConfig as DineInConfig | null;
+      const co = branch.counterConfig as CounterConfig | null;
       setFormData({
         name: branch.name,
         slug: branch.slug,
@@ -211,6 +222,7 @@ export function BranchForm({
         businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
         transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
+        counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
       });
       setErrors({});
       setTouched({});
@@ -218,14 +230,7 @@ export function BranchForm({
       setBusinessHoursTouched(false);
       setBusinessHoursErrors(null);
     }
-  }, [branch]);
-
-  // Auto-generate slug from name
-  useEffect(() => {
-    if (!slugManuallyEdited && !isEditing && formData.name) {
-      setFormData((prev) => ({ ...prev, slug: generateSlug(prev.name) }));
-    }
-  }, [formData.name, slugManuallyEdited, isEditing]);
+  }
 
   // Validate field
   const validateField = useCallback(
@@ -251,7 +256,12 @@ export function BranchForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Al crear, el slug sigue al nombre hasta que el usuario lo edita a mano.
+    const autoSlug =
+      name === "name" && !slugManuallyEdited && !isEditing && value
+        ? { slug: generateSlug(value) }
+        : {};
+    setFormData((prev) => ({ ...prev, [name]: value, ...autoSlug }));
 
     if (touched[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
@@ -355,6 +365,7 @@ export function BranchForm({
           }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
+          counterConfig: { enabled: formData.counterConfig?.enabled === true },
         }
       : {
           name: formData.name,
@@ -374,6 +385,7 @@ export function BranchForm({
           }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
+          counterConfig: { enabled: formData.counterConfig?.enabled === true },
         };
 
     onSubmit(data);
@@ -702,6 +714,14 @@ export function BranchForm({
         value={formData.dineInConfig}
         onChange={(config) =>
           setFormData((prev) => ({ ...prev, dineInConfig: config }))
+        }
+      />
+
+      {/* Venta de mostrador (docs/caja-pedidos.md) */}
+      <CounterConfigSection
+        value={formData.counterConfig}
+        onChange={(config) =>
+          setFormData((prev) => ({ ...prev, counterConfig: config }))
         }
       />
 

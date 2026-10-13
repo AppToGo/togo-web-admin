@@ -11,6 +11,7 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { Business } from "@/types";
 import type {
   Order,
+  OrderStatus,
   OrderStatusHistory,
   GetOrdersParams,
   UpdateOrderStatusRequest,
@@ -208,6 +209,44 @@ export interface UnseenOrdersFilters {
   dateTo?: string;
 }
 
+/** Usuario del negocio que puede llevar un pedido a domicilio. */
+export interface DeliveryCandidate {
+  id: string;
+  name: string;
+}
+
+/**
+ * Repartidores posibles al pasar un pedido a "En camino". Endpoint propio de
+ * pedidos (permiso de cambiar estado), no el listado de usuarios del admin.
+ */
+export async function getDeliveryCandidates(businessId: string): Promise<DeliveryCandidate[]> {
+  const { data } = await apiClient.get<DeliveryCandidate[]>(
+    `${getBaseUrl(businessId)}/delivery-candidates`
+  );
+  return data;
+}
+
+/** Estados del flujo del tablero que el negocio no usa (IN_PROGRESS / READY / ON_THE_WAY). */
+export interface BusinessOrderFlow {
+  skippedStatuses: OrderStatus[];
+}
+
+export async function getOrderFlow(businessId: string): Promise<BusinessOrderFlow> {
+  const { data } = await apiClient.get<BusinessOrderFlow>(`${getBaseUrl(businessId)}/flow`);
+  return data;
+}
+
+/** Solo OWNER/ADMIN: el backend responde 403 a los demás. */
+export async function updateOrderFlow(
+  businessId: string,
+  skippedStatuses: OrderStatus[]
+): Promise<BusinessOrderFlow> {
+  const { data } = await apiClient.put<BusinessOrderFlow>(`${getBaseUrl(businessId)}/flow`, {
+    skippedStatuses,
+  });
+  return data;
+}
+
 /**
  * Pedidos CONFIRMED que nadie del negocio ha abierto (badge de Pedidos del
  * sidebar), con los mismos filtros que el tablero. Sin `branchIds` cuenta
@@ -247,6 +286,17 @@ export async function markOrderViewed(
 export interface UpdatePaymentStatusRequest {
   paymentStatus: "PENDING" | "PAID";
   changeNotes?: string;
+  /** Método con el que finalmente pagó, si cambió al cobrar. */
+  paymentMethod?: string;
+  /**
+   * Datos del cobro en efectivo (espeja `CashPaymentDto` del backend).
+   * Con `sessionId` el efectivo entra liquidado al turno; sin él queda
+   * por liquidar en manos del portador (resuelto en el servidor).
+   */
+  cash?: {
+    sessionId?: string;
+    receivedAmount?: number;
+  };
 }
 
 export async function updateOrderPaymentStatus(

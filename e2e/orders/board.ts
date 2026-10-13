@@ -1,4 +1,4 @@
-import { expect, type Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 
 /**
@@ -124,4 +124,15 @@ export async function openBoard(page: Page): Promise<void> {
     .getByText("Continuar con plan gratuito")
     .click({ timeout: 5_000 })
     .catch(() => undefined);
+}
+
+/**
+ * Número de pedido en el tablero (tarjeta o fila), sin contar el panel
+ * "Por cobrar": ese panel repite el número de los pedidos en efectivo con
+ * pago pendiente y no lo afectan la búsqueda ni los filtros del tablero.
+ */
+export function boardOrderNumber(page: Page, orderNumber: string): Locator {
+  return page
+    .getByText(orderNumber, { exact: true })
+    .and(page.locator(':not([data-testid="to-collect-panel"] *)'));
 }

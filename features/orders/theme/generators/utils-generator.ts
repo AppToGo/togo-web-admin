@@ -47,7 +47,7 @@ export function getStatusColorName(status: OrderStatus): ColorName {
 
 /**
  * Genera un mapping de colores de dot para un conjunto de estados
- * Útil para componentes como ColumnVisibilityBar
+ * Útil para leyendas o selectores de columnas
  */
 export function generateColumnColors(statuses: OrderStatus[]): Record<string, string> {
   return statuses.reduce((acc, status) => {

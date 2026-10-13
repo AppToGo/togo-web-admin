@@ -19,6 +19,10 @@ name: Build image (GHCR)
 #     comillas alrededor del valor se quitan. Son las NEXT_PUBLIC_* que se
 #     hornean en el bundle del cliente: públicas por diseño, por eso van
 #     como variable y no como secret. NEXT_PUBLIC_APP_VERSION se toma del tag.
+#     Solo se pasan las que el Dockerfile declara con ARG: el resto (claves
+#     de servidor como GOOGLE_MAPS_GEOCODING_KEY, API_INTERNAL_URL) no se usa
+#     al construir y aparecería en el log público del build. Esas van solo en
+#     el Environment de Dokploy (runtime).
 #   - Secret DOKPLOY_DEPLOY_WEBHOOK (opcional): URL del webhook de deploy de
 #     la app en Dokploy. Si no existe, la imagen se publica pero no se avisa
 #     a Dokploy, así que este workflow no afecta el deploy actual hasta que
@@ -103,6 +107,10 @@ jobs:
         run: |
           ARGS=$(printf '%s\n' "$RAW" | tr -d '\r' | python3 -c '
           import os, re, sys
+          # Solo los ARG que declara el Dockerfile: un build arg que no se
+          # declara no llega al build, pero docker/build-push-action lo
+          # imprime en el log (público).
+          declared = set(re.findall(r"^\s*ARG\s+([A-Za-z_][A-Za-z0-9_]*)", open("Dockerfile").read(), re.M))
           out = {}
           for line in sys.stdin:
               line = line.strip()
@@ -119,6 +127,10 @@ jobs:
           out["NEXT_PUBLIC_APP_VERSION"] = os.environ["VERSION"]
           if not out.get("NEXT_PUBLIC_API_URL"):
               sys.exit("Falta NEXT_PUBLIC_API_URL en la variable TOGOWEBADMIN")
+          for key in sorted(set(out) - declared):
+              # Solo el nombre, nunca el valor.
+              print(f"::warning::{key} no es un ARG del Dockerfile: se descarta del build (va en el Environment de Dokploy).", file=sys.stderr)
+              del out[key]
           for k, v in out.items():
               print(f"{k}={v}")
           ')

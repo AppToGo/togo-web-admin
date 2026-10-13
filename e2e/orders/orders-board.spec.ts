@@ -10,6 +10,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -90,9 +91,9 @@ test.describe("Orders — tablero base", () => {
     await expect(
       page.getByRole("heading", { name: "Nueva" })
     ).toBeVisible();
-    await expect(page.getByText("#101", { exact: true })).toBeVisible();
-    await expect(page.getByText("#102", { exact: true })).toBeVisible();
-    await expect(page.getByText("#103", { exact: true })).toBeVisible();
+    await expect(boardOrderNumber(page, "#101")).toBeVisible();
+    await expect(boardOrderNumber(page, "#102")).toBeVisible();
+    await expect(boardOrderNumber(page, "#103")).toBeVisible();
   });
 
   test("lista vacía muestra el estado Sin órdenes", async ({ page }) => {
@@ -146,7 +147,7 @@ test.describe("Orders — tablero base", () => {
     await mockOrderDetail(page);
     await openBoard(page);
 
-    await page.getByText("#101", { exact: true }).click();
+    await boardOrderNumber(page, "#101").click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 8_000 });

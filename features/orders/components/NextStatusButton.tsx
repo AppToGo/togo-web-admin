@@ -7,15 +7,18 @@ import {
   BLOCKED_WHILE_CUSTOMER_EDITING,
   isCustomerEditing,
 } from "../utils/order-status.utils";
+import { getNextVisibleStatus } from "../utils/order-flow.utils";
+import { useOrderFlow } from "../hooks/useOrderFlow";
 import { HoverTooltip } from "./HoverTooltip";
 
-// Un pedido no se salta estados: desde cada columna solo se ofrece el paso
-// siguiente. Mover a otro estado (retroceder, cancelar) sigue siendo por
-// arrastre entre columnas.
-const NEXT_STEP: Partial<Record<OrderStatus, { to: OrderStatus; labelKey: string }>> = {
-  CONFIRMED: { to: "IN_PROGRESS", labelKey: "actions.toInProgress" },
-  IN_PROGRESS: { to: "READY", labelKey: "actions.ready" },
-  READY: { to: "COMPLETED", labelKey: "actions.deliver" },
+// El botón ofrece el siguiente estado VISIBLE: si el negocio ocultó "En
+// proceso", desde Nuevo pasa directo a "Marcar listo". Mover a otro estado
+// (retroceder, cancelar) sigue siendo por arrastre entre columnas.
+const LABEL_BY_TARGET: Partial<Record<OrderStatus, string>> = {
+  IN_PROGRESS: "actions.toInProgress",
+  READY: "actions.ready",
+  ON_THE_WAY: "actions.toOnTheWay",
+  COMPLETED: "actions.deliver",
 };
 
 interface NextStatusButtonProps {
@@ -26,8 +29,14 @@ interface NextStatusButtonProps {
 
 export function NextStatusButton({ order, status, onStatusChange }: NextStatusButtonProps) {
   const t = useTranslations("orders");
-  const next = NEXT_STEP[status as OrderStatus];
-  if (!next || !onStatusChange) return null;
+  const { visible } = useOrderFlow();
+  // "En camino" solo se ofrece a los pedidos a domicilio.
+  const to = status
+    ? getNextVisibleStatus(status as OrderStatus, visible, order.deliveryType)
+    : null;
+  const labelKey = to ? LABEL_BY_TARGET[to] : undefined;
+  if (!to || !labelKey || !onStatusChange) return null;
+  const next = { to, labelKey };
 
   // Mientras el cliente edita el pedido el backend rechaza mandarlo a
   // producción, así que el botón queda deshabilitado con la explicación.

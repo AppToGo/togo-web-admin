@@ -289,6 +289,12 @@
       "allowCustomersDescription": "Los clientes pueden elegir \"Para la mesa\" al hacer su pedido",
       "allowOperators": "Operadores",
       "allowOperatorsDescription": "Los operadores pueden tomar pedidos de mesa (comando /nuevo)"
+    },
+    "counter": {
+      "title": "Venta de mostrador",
+      "description": "Para ventas en el local: el cliente pide, paga y se lleva el producto en el momento",
+      "enable": "Activar venta de mostrador",
+      "enableDescription": "Agrega el tipo \"Mostrador\" a \"Nuevo pedido\" en esta sede. El pedido se cobra y queda entregado en un solo paso; en efectivo exige una caja abierta."
     }
   }
 }

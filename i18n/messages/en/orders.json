@@ -1,11 +1,13 @@
 {
+  "cashPendingSettlement": "To settle",
   "deliveryTypes": {
     "delivery": "Delivery",
     "table": "Table",
     "pickup": "Pickup",
     "DELIVERY": "Delivery",
     "PICKUP": "Pickup",
-    "DINE_IN": "Dine in"
+    "DINE_IN": "Dine in",
+    "COUNTER": "Counter"
   },
   "paymentMethods": {
     "CASH": "Cash",
@@ -114,7 +116,11 @@
     "mustBeReadyOrOnTheWay": "Order must be 'Ready' or 'On the way' to be completed",
     "cannotCancelCompleted": "Cannot cancel an order that is already completed",
     "cannotCancelDelivered": "Cannot cancel an order that has already been delivered",
-    "invalidStatusTransition": "Invalid status transition"
+    "invalidStatusTransition": "Invalid status transition",
+    "mustPassThrough": "Move the order to “{status}” first",
+    "noRevertPermission": "You don't have permission to move an order back to a previous status",
+    "notAllowed": "The order can't be moved to that status",
+    "onlyDelivery": "Only delivery orders can move to “On the way”"
   },
   "history": {
     "created": "Created: {status}"
@@ -146,7 +152,8 @@
       "title": "Delivery type",
       "delivery": "Delivery",
       "pickup": "Pickup",
-      "dineIn": "Dine-in"
+      "dineIn": "Dine-in",
+      "counter": "Counter"
     },
     "activeFilters": {
       "paidOnly": "• Paid only",
@@ -193,7 +200,8 @@
     "collapseColumn": "Collapse column",
     "expandColumn": "Expand column",
     "collapseStats": "Collapse summary",
-    "expandStats": "Expand summary"
+    "expandStats": "Expand summary",
+    "toOnTheWay": "Send out"
   },
   "boardView": {
     "label": "Board view",
@@ -211,14 +219,6 @@
     "inProgress": "In preparation",
     "ready": "Ready",
     "delivered": "Delivered"
-  },
-  "columnVisibility": {
-    "minOneColumn": "At least one column must be visible",
-    "hideColumn": "Hide {column}",
-    "showColumn": "Show {column}",
-    "hideStatsPanel": "Hide statistics panel",
-    "showStatsPanel": "Show statistics panel",
-    "statistics": "Statistics"
   },
   "columns": {
     "orderNumber": "Order #",
@@ -334,10 +334,6 @@
         "title": "Board view and density",
         "description": "Switch between Board, By status or Grouped list, and adjust how detailed the cards look."
       },
-      "columnVisibility": {
-        "title": "Show or hide columns",
-        "description": "With this control you can hide the states you don't need to see right now to simplify the screen."
-      },
       "kanbanBoard": {
         "title": "Orders board",
         "description": "Orders are organized in columns by state: New → In progress → Ready → On the way → Completed. Drag or use the dropdown to move them."
@@ -384,6 +380,14 @@
     "deliveryFee": "Delivery",
     "deliveryFeeByDistance": "Calculated on create",
     "submit": "Create order",
+    "submitCounter": "Charge and deliver",
+    "cashSection": "Counter cash",
+    "cashSessionPlaceholder": "Shift receiving the cash",
+    "cashSessionOption": "Shift · {register}",
+    "cashChange": "Change: {change}",
+    "noOpenSession": "No open shift in this branch. Open cash to charge in cash.",
+    "noCashPermission": "You don't have permission to view cash. Ask whoever runs the register to charge this order.",
+    "cashReceivedPlaceholder": "Tendered (empty = exact amount)",
     "success": "Order #{number} created",
     "error": "Could not create the order",
     "validation": {
@@ -392,7 +396,24 @@
       "phone": "Enter a valid phone number",
       "name": "Enter who the order is for",
       "address": "Enter the delivery address",
-      "table": "Select the table"
+      "table": "Select the table",
+      "cashSession": "Select the shift receiving the cash",
+      "cashReceived": "The cash received doesn't cover the total"
     }
-  }
+  },
+  "orderFlow": {
+    "title": "Business flow",
+    "description": "Choose the statuses your operation uses. Unused ones don't show on the board and orders skip them. Applies to the whole team.",
+    "alwaysOn": "“New” and “Delivered” are always part of the flow.",
+    "saved": "Business flow updated",
+    "onTheWayHint": "Delivery orders only. Notifies the customer and asks for a courier."
+  },
+  "deliveryPicker": {
+    "title": "Who is delivering this order?",
+    "description": "Choose the courier for order {order}. On confirm it moves to “On the way” and the customer is notified.",
+    "confirm": "Send order",
+    "empty": "There are no active users to assign.",
+    "loadError": "Couldn't load couriers."
+  },
+  "cashPaidHint": "The customer already paid in cash"
 }

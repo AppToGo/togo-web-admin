@@ -7,6 +7,7 @@ import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
 import { useBranchStore } from '@/stores/branch.store';
 import { useSessionStore } from '@/stores/session.store';
+import { useDateFilterStore } from '@/features/filters/stores/date-filter.store';
 import { APP_CONFIG } from '@/config/app.config';
 import { ORDERS_KEYS } from '../types/order-cache.types';
 import { METRICS_KEYS } from './useOrderMetrics';
@@ -39,9 +40,12 @@ const WS_EVENTS = {
   ORDER_PAYMENT_UPDATED: 'order:paymentUpdated',
   ORDER_CUSTOMER_EDIT: 'order:customerEdit',
   ORDER_VIEWED: 'order:viewed',
+  ORDER_FLOW_UPDATED: 'order:flowUpdated',
   ORDER_PAYMENT_PROOF: 'order:paymentProof',
   ORDER_PAYMENT_VERIFICATION: 'order:paymentVerification',
   METRICS_UPDATED: 'order:metricsUpdated',
+  CASH_SESSION_UPDATED: 'cash:sessionUpdated',
+  CASH_COLLECTION_UPDATED: 'cash:collectionUpdated',
   OPERATOR_JOINED: 'operator:joined',
   OPERATOR_LEFT: 'operator:left',
   AUTH_ERROR: 'auth_error',
@@ -301,6 +305,11 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
     };
 
     socket.on(WS_EVENTS.ORDER_CREATED, (data: OrderCreatedEvent) => {
+      // Si cambió el día desde la última revisión, "Hoy" se corre antes de
+      // refetchear: si no, el tablero pediría el día anterior y el pedido
+      // nuevo no aparecería.
+      useDateFilterStore.getState().recalculateRange();
+
       // Invalidar cache de órdenes LIVE del negocio (nueva orden siempre va a CONFIRMED)
       queryClient.invalidateQueries({
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
@@ -319,6 +328,13 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
 
     // Alguien del negocio abrió un pedido nuevo: baja el badge.
     socket.on(WS_EVENTS.ORDER_VIEWED, refreshUnseenCount);
+
+    // OWNER/ADMIN cambió qué estados usa el negocio: recargar el flujo para
+    // no quedar con columnas y botones del flujo viejo (el backend ya
+    // rechazaría esos cambios).
+    socket.on(WS_EVENTS.ORDER_FLOW_UPDATED, () => {
+      queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.flow(businessId) });
+    });
 
     socket.on(WS_EVENTS.ORDER_UPDATED, (data: OrderUpdatedEvent) => {
       // Actualizar detalle de orden en cache
@@ -391,6 +407,28 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
         queryKey: METRICS_KEYS.business(businessId ?? undefined),
       });
     });
+
+    // Caja (docs/caja-pedidos.md): turno o recaudo cambió en el negocio —
+    // se invalida toda la caché de caja y el tablero de pedidos (el chip
+    // "Por liquidar" y el tab "Por cobrar" dependen de ambos).
+    // Viaja por el mismo namespace `/orders`, sin segundo socket.
+    // "Por cobrar" de Caja sale de los pedidos: cambia cuando entra uno,
+    // cambia de estado o se paga.
+    const refreshReceivables = () => {
+      queryClient.invalidateQueries({ queryKey: ["cash", "receivables"] });
+    };
+    socket.on(WS_EVENTS.ORDER_CREATED, refreshReceivables);
+    socket.on(WS_EVENTS.ORDER_UPDATED, refreshReceivables);
+    socket.on(WS_EVENTS.ORDER_PAYMENT_UPDATED, refreshReceivables);
+
+    const refreshCash = () => {
+      queryClient.invalidateQueries({ queryKey: ["cash"] });
+      queryClient.invalidateQueries({
+        queryKey: [...ORDERS_KEYS.all, businessId, "live"],
+      });
+    };
+    socket.on(WS_EVENTS.CASH_SESSION_UPDATED, refreshCash);
+    socket.on(WS_EVENTS.CASH_COLLECTION_UPDATED, refreshCash);
 
     socket.on(WS_EVENTS.OPERATOR_JOINED, ({ userId }: OperatorEvent) => {
       debugLog('[WS] Operador conectado:', userId);

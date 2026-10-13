@@ -7,6 +7,7 @@ import {
   blockUnmockedApiCalls,
   blockRealtimeSockets,
   mockRefreshSuccess,
+  boardOrderNumber,
 } from "./board";
 
 /**
@@ -191,7 +192,7 @@ test.describe("Orders — calificación de confianza", () => {
     await openBoard(page);
 
     // Open the viewer from the detail, like an operator would
-    await page.getByText("#105", { exact: true }).click();
+    await boardOrderNumber(page, "#105").click();
     const drawer = page.getByRole("dialog");
     await expect(drawer.getByRole("heading", { name: "Detalle del Pedido" })).toBeVisible();
     // Labeled variant shows the "Comprobante" badge; its aria-label carries
