@@ -42,10 +42,12 @@ import type {
   BusinessHoursErrors,
   TransferOptions,
   DineInConfig,
+  CounterConfig,
 } from "../types";
 import {
   DEFAULT_TRANSFER_OPTIONS,
   DEFAULT_DINE_IN_CONFIG,
+  DEFAULT_COUNTER_CONFIG,
   parseBusinessHours,
   validateBusinessHours,
 } from "../types";
@@ -53,6 +55,7 @@ import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
 import { TransferOptionsSection } from "./TransferOptionsSection";
 import { DineInConfigSection } from "./DineInConfigSection";
+import { CounterConfigSection } from "./CounterConfigSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
@@ -146,10 +149,12 @@ export function BranchForm({
         businessHours: null as BusinessHours | null,
         transferOptions: DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: DEFAULT_DINE_IN_CONFIG,
+        counterConfig: DEFAULT_COUNTER_CONFIG,
       };
     }
     const to = branch.transferOptions as TransferOptions | null;
     const di = branch.dineInConfig as DineInConfig | null;
+    const co = branch.counterConfig as CounterConfig | null;
     return {
       name: branch.name,
       slug: branch.slug,
@@ -169,6 +174,7 @@ export function BranchForm({
       businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
       transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
       dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
+      counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
     };
   });
 
@@ -192,6 +198,7 @@ export function BranchForm({
     if (branch) {
       const to = branch.transferOptions as TransferOptions | null;
       const di = branch.dineInConfig as DineInConfig | null;
+      const co = branch.counterConfig as CounterConfig | null;
       setFormData({
         name: branch.name,
         slug: branch.slug,
@@ -211,6 +218,7 @@ export function BranchForm({
         businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
         transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
+        counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
       });
       setErrors({});
       setTouched({});
@@ -355,6 +363,7 @@ export function BranchForm({
           }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
+          counterConfig: { enabled: formData.counterConfig?.enabled === true },
         }
       : {
           name: formData.name,
@@ -374,6 +383,7 @@ export function BranchForm({
           }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
+          counterConfig: { enabled: formData.counterConfig?.enabled === true },
         };
 
     onSubmit(data);
@@ -702,6 +712,14 @@ export function BranchForm({
         value={formData.dineInConfig}
         onChange={(config) =>
           setFormData((prev) => ({ ...prev, dineInConfig: config }))
+        }
+      />
+
+      {/* Venta de mostrador (docs/caja-pedidos.md) */}
+      <CounterConfigSection
+        value={formData.counterConfig}
+        onChange={(config) =>
+          setFormData((prev) => ({ ...prev, counterConfig: config }))
         }
       />
 

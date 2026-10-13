@@ -289,6 +289,12 @@
       "allowCustomersDescription": "Customers can choose \"For the table\" when placing an order",
       "allowOperators": "Operators",
       "allowOperatorsDescription": "Operators can take dine-in orders (/nuevo command)"
+    },
+    "counter": {
+      "title": "Counter sales",
+      "description": "For in-store sales: the customer orders, pays and takes the product right away",
+      "enable": "Enable counter sales",
+      "enableDescription": "Adds the \"Counter\" type to \"New order\" at this branch. The order is charged and marked delivered in one step; cash requires an open register."
     }
   }
 }

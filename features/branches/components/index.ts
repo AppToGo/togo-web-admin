@@ -6,4 +6,5 @@ export { BranchSingleSelector } from "./BranchSingleSelector";
 export { BusinessHoursSection } from "./BusinessHoursSection";
 export { DeliveryConfigSection } from "./DeliveryConfigSection";
 export { DineInConfigSection } from "./DineInConfigSection";
+export { CounterConfigSection } from "./CounterConfigSection";
 export { BranchSettingsForm, type BranchSettingsFormData } from "./BranchSettingsForm";
