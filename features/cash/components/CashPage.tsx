@@ -79,13 +79,20 @@ function CashPageContent({ businessId, branchId }: CashPageProps) {
   const canAudit = hasPermission("cash.audit");
   const canCreateOrder = hasPermission("order.create");
   const canCharge = hasPermission("order.change_payment_status");
+  // "Por cobrar" son pedidos: sin `order.view` no se pide ni se muestra.
+  const canViewOrders = hasPermission("order.view");
 
   const { data: registers = [], isLoading } = useRegisters(businessId, branchId);
   const { data: collections = [] } = useCollections(businessId, branchId);
-  const { data: receivables = [] } = useReceivables(businessId, branchId);
+  const { data: receivables = [] } = useReceivables(
+    businessId,
+    branchId,
+    canViewOrders
+  );
 
   const [section, setSection] = useState<Section>("current");
-  const [pendingTab, setPendingTab] = useState<PendingTab>("collect");
+  const [pickedPendingTab, setPendingTab] = useState<PendingTab>("collect");
+  const pendingTab: PendingTab = canViewOrders ? pickedPendingTab : "settle";
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Selección derivada (sin efecto): la explícita del operador, si no la
   // primera con turno abierto, si no la primera caja.
@@ -326,15 +333,17 @@ function CashPageContent({ businessId, branchId }: CashPageProps) {
                     role="tablist"
                     className="mb-3 inline-flex gap-1 rounded-card border border-slate-100 bg-white p-1"
                   >
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={pendingTab === "collect"}
-                      onClick={() => setPendingTab("collect")}
-                      className={pillClass(pendingTab === "collect")}
-                    >
-                      {t("collections.toCollect")} · {receivables.length}
-                    </button>
+                    {canViewOrders && (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={pendingTab === "collect"}
+                        onClick={() => setPendingTab("collect")}
+                        className={pillClass(pendingTab === "collect")}
+                      >
+                        {t("collections.toCollect")} · {receivables.length}
+                      </button>
+                    )}
                     <button
                       type="button"
                       role="tab"

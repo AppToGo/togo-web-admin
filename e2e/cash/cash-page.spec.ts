@@ -72,6 +72,7 @@ test.describe("Caja — gateo y turno", () => {
     await loginAndOpenCash(page, [
       "cash.view",
       "cash.operate",
+      "order.view",
       "order.change_payment_status",
     ]);
 
@@ -89,6 +90,20 @@ test.describe("Caja — gateo y turno", () => {
     await expect(
       page.getByRole("button", { name: "Confirmar y entrar a caja" })
     ).toBeEnabled();
+  });
+
+  test("sin order.view no se pide ni se muestra por cobrar", async ({ page }) => {
+    const receivableRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/cash/receivables")) {
+        receivableRequests.push(request.url());
+      }
+    });
+    await loginAndOpenCash(page, ["cash.view", "cash.operate"]);
+
+    await expect(page.getByRole("tab", { name: /Por liquidar/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /Por cobrar/ })).toHaveCount(0);
+    expect(receivableRequests).toEqual([]);
   });
 
   test("sin turno abierto ofrece abrirlo con base inicial", async ({ page }) => {

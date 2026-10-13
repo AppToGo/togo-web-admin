@@ -235,7 +235,7 @@
     "withCategory": "{type} · {category}"
   },
   "pending": {
-    "collectHint": "Pedidos en efectivo de mesa y para recoger que el cliente aún no paga. Al cobrar, el dinero entra a esta caja.",
+    "collectHint": "Pedidos en efectivo de mesa y para recoger de los últimos 7 días que el cliente aún no paga. Al cobrar, el dinero entra a esta caja.",
     "settleHint": "Pedidos pagados cuyo dinero aún no llega a caja.",
     "noHolder": "Sin responsable",
     "needOpen": "Abre la caja para cobrar y liquidar.",
