@@ -291,7 +291,7 @@ export async function mockCashDashboard(
       });
     }
     if (path.endsWith("/receipt/whatsapp") && request.method() === "POST") {
-      return json({ sent: true }, 201);
+      return json({ queued: true }, 201);
     }
     if (path.endsWith("/orders") && request.method() === "POST") {
       const body = request.postDataJSON() as Record<string, unknown>;

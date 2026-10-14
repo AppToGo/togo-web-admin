@@ -379,7 +379,7 @@
       "title": "Receipt",
       "print": "Print",
       "whatsapp": "WhatsApp",
-      "whatsappSent": "Receipt sent via WhatsApp",
+      "whatsappSent": "Receipt on its way via WhatsApp",
       "whatsappFailed": "Couldn't send the receipt via WhatsApp",
       "noPhone": "To send it via WhatsApp, add the customer's phone to the sale.",
       "windowClosed": "The customer hasn't written on WhatsApp in the last 24 hours: WhatsApp doesn't allow sending them the receipt.",

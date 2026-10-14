@@ -379,7 +379,7 @@
       "title": "Comprobante",
       "print": "Imprimir",
       "whatsapp": "WhatsApp",
-      "whatsappSent": "Recibo enviado por WhatsApp",
+      "whatsappSent": "Recibo en camino por WhatsApp",
       "whatsappFailed": "No se pudo enviar el recibo por WhatsApp",
       "noPhone": "Para enviarlo por WhatsApp agrega el teléfono del cliente en la venta.",
       "windowClosed": "El cliente no ha escrito por WhatsApp en las últimas 24 horas: WhatsApp no deja enviarle el recibo.",

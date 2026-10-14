@@ -253,7 +253,11 @@ export async function getReceiptWhatsappWindow(
   return data;
 }
 
-/** Envía el recibo por WhatsApp (409 `WHATSAPP_WINDOW_CLOSED` fuera de la ventana). */
+/**
+ * Pide el envío del recibo por WhatsApp. Es asíncrono: el historial del
+ * pedido dice si salió. 409 `WHATSAPP_WINDOW_CLOSED` fuera de la ventana;
+ * 429 si se acaba de enviar o se llegó al tope por pedido.
+ */
 export async function sendReceiptWhatsapp(businessId: string, orderId: string): Promise<void> {
   await apiClient.post(`/businesses/${businessId}/orders/${orderId}/receipt/whatsapp`);
 }

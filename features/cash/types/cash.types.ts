@@ -73,8 +73,8 @@ export interface CashCollection {
   status: "PENDING_SETTLEMENT" | "SETTLED" | "VOIDED";
   holderUserId: string | null;
   holderName: string | null;
-  /** Domiciliario asignado al pedido u operador que recibió el efectivo. */
-  holderKind?: "DELIVERY" | "OPERATOR";
+  /** Domiciliario asignado al pedido u operador que recibió el efectivo (null sin portador). */
+  holderKind?: "DELIVERY" | "OPERATOR" | null;
   collectedAt: string;
   order?: {
     id: string;
