@@ -375,6 +375,8 @@
     "paymentMethod": "Payment method",
     "notes": "Notes",
     "notesPlaceholder": "Order instructions (optional)",
+    "itemNotes": "Product note",
+    "itemNotesPlaceholder": "E.g. no onions (optional)",
     "summary": "Summary",
     "productsCount": "{count, plural, =0 {No products} one {# product} other {# products}}",
     "emptySummary": "Add products from the list",

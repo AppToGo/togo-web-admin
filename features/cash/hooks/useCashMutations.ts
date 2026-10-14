@@ -131,3 +131,22 @@ export function useCloseSession(businessId: string, branchId: string, sessionId:
     },
   });
 }
+
+/** Recibo por WhatsApp desde el cobro (docs/caja-pos.md). */
+export function useSendReceiptWhatsapp(businessId: string | null) {
+  const t = useTranslations("cash");
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => cashService.sendReceiptWhatsapp(businessId!, orderId),
+    onSuccess: () => {
+      toast.success(t("pos.receipt.whatsappSent"));
+    },
+    onError: (err, orderId) => {
+      toast.error(getHumanizedErrorMessage(err) || t("pos.receipt.whatsappFailed"));
+      // La ventana pudo cerrarse en el medio: el botón se vuelve a evaluar.
+      queryClient.invalidateQueries({
+        queryKey: CASH_KEYS.receiptWindow(businessId ?? undefined, orderId),
+      });
+    },
+  });
+}

@@ -159,3 +159,16 @@ export function useCashAudit(
     staleTime: STALE_TIME,
   });
 }
+
+/**
+ * ¿Se puede mandar el recibo de este pedido por WhatsApp? Solo dentro de la
+ * ventana de 24 h; fuera de ella la caja muestra el botón deshabilitado.
+ */
+export function useReceiptWhatsappWindow(businessId: string | null, orderId: string | null) {
+  return useQuery({
+    queryKey: CASH_KEYS.receiptWindow(businessId ?? undefined, orderId ?? undefined),
+    queryFn: () => cashService.getReceiptWhatsappWindow(businessId!, orderId!),
+    enabled: !!businessId && !!orderId,
+    staleTime: STALE_TIME,
+  });
+}
