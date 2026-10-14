@@ -403,7 +403,9 @@
       "table": "Selecciona la mesa",
       "cashSession": "Selecciona el turno donde entra el efectivo",
       "cashReceived": "El efectivo recibido no cubre el total"
-    }
+    },
+    "mobileContinue": "Continuar",
+    "mobileBack": "Productos ({count})"
   },
   "orderFlow": {
     "title": "Flujo del negocio",

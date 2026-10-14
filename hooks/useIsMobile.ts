@@ -28,3 +28,22 @@ export function useIsMobile(): boolean {
     () => false
   );
 }
+
+// Below Tailwind's `lg` (1024px): phones and portrait tablets, where the
+// sidebar is a drawer and two-pane screens (Inbox) show one pane at a time.
+const BELOW_DESKTOP_QUERY = "(max-width: 1023px)";
+
+function subscribeBelowDesktop(onChange: () => void) {
+  const mql = window.matchMedia(BELOW_DESKTOP_QUERY);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+
+/** True below `lg` (false on the server, like `useIsMobile`). */
+export function useIsBelowDesktop(): boolean {
+  return useSyncExternalStore(
+    subscribeBelowDesktop,
+    () => window.matchMedia(BELOW_DESKTOP_QUERY).matches,
+    () => false
+  );
+}

@@ -234,5 +234,23 @@
       "CANCELLING": "Cancelando",
       "ERROR_RECOVERY": "Recuperándose de un error"
     }
+  },
+  "mobile": {
+    "today": "hoy {time}",
+    "withoutOrder": "Sin pedido",
+    "back": "Volver a conversaciones",
+    "messages": "{count, plural, one {# mensaje} other {# mensajes}}",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "pageOf": "Página {page} de {total}",
+    "viewCustomer": "Ver cliente",
+    "reopenInInbox": "Reabrir en Inbox",
+    "outcomeShort": {
+      "ABANDONED": "Abandonada",
+      "SUPPORT": "Soporte",
+      "NO_INTENT": "Sin intención",
+      "SPAM": "Spam",
+      "ORDER_PLACED": "Con pedido"
+    }
   }
 }

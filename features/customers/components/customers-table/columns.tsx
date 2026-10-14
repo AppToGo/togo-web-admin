@@ -10,7 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { CustomerWithMetrics } from "../../types";
 
 // Helper para formatear fechas relativas
-function formatRelativeDate(date: Date | string | null, t: any): string {
+export function formatRelativeDate(date: Date | string | null, t: any): string {
   if (!date) return "-";
   const d = new Date(date);
   const now = new Date();

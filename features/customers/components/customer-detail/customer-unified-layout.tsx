@@ -20,6 +20,8 @@ import { FavoritesSection } from "./sections/favorites-section";
 import { ConversationsSection } from "./sections/conversations-section";
 import { AddressList } from "./address-list";
 import { useFormatDate } from "@/hooks/useFormatDate";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { CustomerMobileDetail } from "./customer-mobile-detail";
 
 interface CustomerUnifiedLayoutProps {
   customer: Customer | null;
@@ -35,12 +37,18 @@ interface CustomerUnifiedLayoutProps {
 export function CustomerUnifiedLayout({
   customer,
   customerId,
+  notes,
+  onNotesChange,
+  isSavingNotes,
   conversationHref,
 }: CustomerUnifiedLayoutProps) {
   const t = useTranslations("customers");
   const tc = useTranslations("common");
   const router = useRouter();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  // Teléfono: pantalla propia con pestañas (diseño móvil). Se elige una sola
+  // versión para no montar las dos ni pedir sus datos dos veces.
+  const isMobile = useIsMobile();
 
   // Formatear fecha de creación del cliente
   const customerSince = useFormatDate(customer?.createdAt, {
@@ -66,6 +74,19 @@ export function CustomerUnifiedLayout({
           </Button>
         </div>
       </div>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <CustomerMobileDetail
+        customer={customer}
+        customerId={customerId}
+        notes={notes}
+        onNotesChange={onNotesChange}
+        isSavingNotes={isSavingNotes}
+        conversationHref={conversationHref}
+      />
     );
   }
 

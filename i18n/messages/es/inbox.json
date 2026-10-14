@@ -102,5 +102,18 @@
   "notifications": {
     "humanRequested": "Un cliente pidió hablar con un asesor",
     "view": "Ver"
+  },
+  "mobile": {
+    "notePlaceholder": "Nota interna (no se envía al cliente)…",
+    "back": "Volver al inbox",
+    "actions": "Acciones de la conversación",
+    "trays": "Bandejas",
+    "unassigned": "sin asignar",
+    "assignedToYou": "asignada a ti",
+    "assignedTo": "asignada a {name}",
+    "assignOther": "Asignar a otro operador",
+    "releaseToBot": "Liberar (vuelve al bot)",
+    "viewCustomer": "Ver cliente",
+    "closeConversation": "Cerrar conversación"
   }
 }

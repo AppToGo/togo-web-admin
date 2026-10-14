@@ -18,6 +18,10 @@ import { InboxLayout } from "@/features/conversations/components/inbox/inbox-lay
 import { InboxList } from "@/features/conversations/components/inbox/inbox-list";
 import { InboxThreadPanel } from "@/features/conversations/components/inbox/inbox-thread-panel";
 import { InboxEmptyState } from "@/features/conversations/components/inbox/inbox-empty-state";
+import { InboxMobileList } from "@/features/conversations/components/inbox/inbox-mobile-list";
+import { InboxMobileThread } from "@/features/conversations/components/inbox/inbox-mobile-thread";
+import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
+import { useIsBelowDesktop } from "@/hooks/useIsMobile";
 import type { InboxTab } from "@/features/conversations/components/inbox/inbox-tabs";
 import type { GetConversationsParams } from "@/features/conversations/types";
 
@@ -66,6 +70,10 @@ export default function InboxPage() {
     setPrevBusinessId(effectiveBusinessId);
     setSelectedSessionId(null);
   }
+
+  // Teléfono y tablet vertical (< lg): una pantalla a la vez — la lista, o
+  // el hilo a pantalla completa (diseño móvil).
+  const isBelowDesktop = useIsBelowDesktop();
 
   // El socket lo abre DashboardRealtime (layout del dashboard).
   const isConnected = useConversationsConnected();
@@ -126,6 +134,31 @@ export default function InboxPage() {
             {t("selectBusinessDescription")}
           </p>
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isBelowDesktop) {
+    return (
+      <DashboardLayout>
+        <InboxMobileList
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          summary={summary}
+          conversations={conversations}
+          isLoading={isLoading}
+          isConnected={isConnected}
+          onSelect={setSelectedSessionId}
+          onSearch={setSearch}
+        />
+        <ConversationsMobileNav />
+        {selectedSessionId && (
+          <InboxMobileThread
+            key={selectedSessionId}
+            sessionId={selectedSessionId}
+            onBack={() => setSelectedSessionId(null)}
+          />
+        )}
       </DashboardLayout>
     );
   }
