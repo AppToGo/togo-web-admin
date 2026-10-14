@@ -1,9 +1,10 @@
 "use client";
 /**
- * Caja en el teléfono y la tablet (< lg), según el diseño móvil: las
- * pestañas y las acciones del encabezado pasan a una barra fija abajo
- * (Vender · Por cobrar · Por liquidar · Más). "Más" agrupa Turno, Historial
- * y Auditoría con las acciones del turno (movimiento, cerrar o abrir caja).
+ * Caja en el teléfono (< md), según el diseño móvil: las pestañas (submenú
+ * del Sidebar en escritorio, fila en la tablet) y las acciones del turno
+ * (junto al título) pasan a una barra fija abajo (Vender · Por cobrar · Por
+ * liquidar · Más). "Más" agrupa Turno, Historial y Auditoría con las
+ * acciones del turno (movimiento, cerrar o abrir caja).
  */
 import { useTranslations } from "next-intl";
 import {
@@ -17,7 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { PosTab } from "./CashHeader";
+import type { PosTab } from "./CashPosPage";
 
 /** Pestañas que viven dentro de "Más" en el teléfono. */
 export const MORE_TABS: PosTab[] = ["shift", "history", "audit"];
@@ -84,7 +85,7 @@ export function CashBottomNav({
   return (
     <nav
       aria-label={t("title")}
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
       data-testid="cash-bottom-nav"
     >
       <div
@@ -145,7 +146,7 @@ export function CashMoreMenu({
   ];
 
   return (
-    <div className="space-y-3 lg:hidden">
+    <div className="space-y-3 md:hidden">
       <div
         role="tablist"
         aria-label={t("pos.mobile.more")}

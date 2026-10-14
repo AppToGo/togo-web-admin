@@ -393,9 +393,7 @@
       "expected": "Expected cash",
       "cashSales": "Cash sales",
       "inOut": "Income · expenses",
-      "pending": "To settle",
-      "openShift": "See shift details",
-      "seeShift": "See shift"
+      "pending": "To settle"
     },
     "closed": {
       "title": "The register has no open shift",
