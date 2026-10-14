@@ -138,6 +138,61 @@ test.describe("Caja — gateo y turno", () => {
     await expect(page.getByText("Monto inicial contado")).toBeVisible();
   });
 
+  test("sin cajas no ofrece acciones ni pestañas que no hacen nada", async ({
+    page,
+  }) => {
+    await loginAndOpenCash(page, ["cash.view", "cash.operate"], {
+      registers: "none",
+    });
+
+    await expect(page.getByText("Sin cajas configuradas")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Caja" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Abrir caja" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Turno" })).toHaveCount(0);
+  });
+
+  test("con varias cajas el título es un selector de caja", async ({ page }) => {
+    await loginAndOpenCash(page, ["cash.view", "cash.operate"], {
+      registers: "two",
+    });
+
+    await expect(page.getByTestId("pos-session-status")).toContainText(
+      "Cajera E2E"
+    );
+    await page.getByRole("combobox", { name: "Caja" }).click();
+    await page.getByRole("option", { name: "Caja 2" }).click();
+
+    await expect(page.getByTestId("pos-session-status")).toHaveText(
+      "Sin turno abierto"
+    );
+    await expect(page.getByRole("button", { name: "Abrir caja" })).toBeVisible();
+  });
+
+  test("con el sidebar colapsado las pestañas se abren desde el ícono", async ({
+    page,
+  }) => {
+    await loginAndOpenCash(page, ["cash.view"]);
+    await expect(page.getByRole("heading", { name: "Caja 1" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Colapsar menú" }).click();
+    await page.getByRole("button", { name: "Caja", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Historial" }).click();
+
+    await expect(page.getByText("Historial de turnos")).toBeVisible();
+  });
+
+  test("en pantallas chicas las pestañas también están en la página", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 800, height: 900 });
+    await loginAndOpenCash(page, ["cash.view"]);
+
+    const tabs = page.getByRole("navigation", { name: "Caja" });
+    await tabs.getByRole("button", { name: "Historial" }).click();
+
+    await expect(page.getByText("Historial de turnos")).toBeVisible();
+  });
+
   test("el sidebar lleva a Caja cuando hay permiso", async ({ page }) => {
     await loginAndOpenCash(page, ["cash.view"]);
     // En Caja el item es el submenú de pestañas; fuera de ella, un link.

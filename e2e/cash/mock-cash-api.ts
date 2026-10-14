@@ -43,6 +43,11 @@ export interface CashMockOptions {
   whatsappWindow?: "OPEN" | "WINDOW_CLOSED" | "NO_PHONE";
   /** Receives every `POST …/orders` body (Caja · Vender). */
   onCreateOrder?: (body: Record<string, unknown>) => void;
+  /**
+   * Registers in the branch: none (empty state), one ("Caja 1", default) or
+   * two ("Caja 1" plus a closed "Caja 2").
+   */
+  registers?: "none" | "one" | "two";
 }
 
 /** Sellable inventory of the branch (Caja · Vender). */
@@ -269,7 +274,17 @@ export async function mockCashDashboard(
     productImages = false,
     whatsappWindow = "WINDOW_CLOSED",
     onCreateOrder,
+    registers = "one",
   } = options;
+  const registerList =
+    registers === "none"
+      ? []
+      : registers === "two"
+        ? [
+            cashRegister(openSession),
+            { ...cashRegister(false), id: "reg-2", name: "Caja 2" },
+          ]
+        : [cashRegister(openSession)];
   await page.route("**/v1/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -331,7 +346,7 @@ export async function mockCashDashboard(
       return route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify([cashRegister(openSession)]),
+        body: JSON.stringify(registerList),
       });
     }
 
