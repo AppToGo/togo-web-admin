@@ -393,9 +393,7 @@
       "expected": "Efectivo esperado",
       "cashSales": "Ventas en efectivo",
       "inOut": "Ingresos · egresos",
-      "pending": "Por liquidar",
-      "openShift": "Ver el detalle del turno",
-      "seeShift": "Ver turno"
+      "pending": "Por liquidar"
     },
     "closed": {
       "title": "La caja no tiene turno abierto",

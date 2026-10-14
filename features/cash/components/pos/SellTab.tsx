@@ -25,6 +25,7 @@ import { ProductCatalog } from "./ProductCatalog";
 import { SaleCart } from "./SaleCart";
 import { ShiftKpiStrip } from "./ShiftKpiStrip";
 import { CheckoutDrawer, type SaleSnapshot } from "./CheckoutDrawer";
+import { useFillViewport } from "./useFillViewport";
 
 interface SellTabProps {
   businessId: string;
@@ -35,7 +36,6 @@ interface SellTabProps {
   session: { id: string; registerName: string } | null;
   summary: SessionSummary | undefined;
   pendingTotal: string;
-  onOpenShift: () => void;
   onOpenRegister: (() => void) | null;
   /** `cash.operate`: recibir efectivo. */
   canOperate: boolean;
@@ -62,7 +62,6 @@ export function SellTab({
   session,
   summary,
   pendingTotal,
-  onOpenShift,
   onOpenRegister,
   canOperate,
   canChargeNow,
@@ -158,21 +157,25 @@ export function SellTab({
     total: composer.total,
   };
 
+  // Padding inferior del <main> (sm:p-6).
+  const fillRef = useFillViewport<HTMLDivElement>(24);
+
   return (
     <div className="flex flex-col gap-4">
-      {summary && (
-        <ShiftKpiStrip
-          summary={summary}
-          pendingTotal={pendingTotal}
-          onOpenShift={onOpenShift}
-        />
-      )}
-
-      {/* Alto de la ventana menos título, encabezado y KPIs: el pie de la
-          venta queda siempre visible. Bajo 1280 px el encabezado ocupa dos
-          filas. */}
-      <div className="flex min-h-[560px] flex-col gap-4 lg:h-[calc(100dvh-21.5rem)] lg:flex-row xl:h-[calc(100dvh-17rem)]">
-        <div className="flex min-h-[420px] min-w-0 flex-1 flex-col rounded-card-lg border border-white/80 bg-white/40 p-4 backdrop-blur-xl lg:min-h-0">
+      {/* Alto de la ventana desde donde empieza (medido): el pie de la
+          venta queda siempre visible aunque el título de la página se
+          envuelva. Los KPIs viven sobre los productos para no robarle alto
+          a la venta actual. */}
+      <div
+        ref={fillRef}
+        className="flex min-h-[560px] flex-col gap-4 lg:h-[var(--fill-height)] lg:flex-row"
+      >
+        <div className="flex min-h-[560px] min-w-0 flex-1 flex-col gap-3 rounded-card-lg border border-white/80 bg-white/40 p-4 backdrop-blur-xl lg:min-h-0">
+          {summary && (
+            <div className="shrink-0">
+              <ShiftKpiStrip summary={summary} pendingTotal={pendingTotal} />
+            </div>
+          )}
           <ProductCatalog ref={searchRef} composer={composer} />
         </div>
 

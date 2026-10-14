@@ -16,6 +16,7 @@ import {
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useLocaleStore } from "@/stores/localeStore";
+import { usePosPageStore, type PosMenuEntry } from "@/stores/pos-menu.store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,11 +42,19 @@ interface SidebarProps {
   onMenuClick?: () => void;
 }
 
+/** Referencia estable: sin Caja montada el selector no cambia. */
+const NO_POS_ENTRIES: PosMenuEntry[] = [];
+
 type NavigationItem = {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: NavigationItem[];
+  /**
+   * Hijos de acción (sin ruta): los registra la página activa (hoy Caja)
+   * para pintarse como submenú. Se limpian al salir de la página.
+   */
+  actionChildren?: PosMenuEntry[];
   /** Contador rojo junto al item; no se muestra si es 0. */
   badge?: number;
 };
@@ -112,6 +121,10 @@ export function Sidebar({
 
   // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
   const canViewCash = hasPermission("cash.view");
+  // Submenú de Caja: lo registra CashPosPage mientras está montada.
+  const posMenuEntries = usePosPageStore(
+    (state) => state.page?.entries ?? NO_POS_ENTRIES
+  );
 
   // Badges: pedidos nuevos sin ver (por negocio, sucursales seleccionadas) y
   // conversaciones que esperan asesor. Los refrescan los sockets globales de
@@ -137,6 +150,9 @@ export function Sidebar({
               name: t("sidebar.cash"),
               href: "/dashboard/cash",
               icon: Banknote,
+              ...(posMenuEntries.length > 0
+                ? { actionChildren: posMenuEntries }
+                : {}),
             },
           ]
         : []),
@@ -263,6 +279,7 @@ export function Sidebar({
     canViewCash,
     unseenOrdersCount,
     inboxAttentionCount,
+    posMenuEntries,
   ]);
 
   // Admin navigation (Super Admin only)
@@ -519,29 +536,31 @@ function CollapsibleNavItem({
   onMenuClick,
 }: CollapsibleNavItemProps) {
   const normalizedPathname = normalizePath(pathname);
+  const linkChildren = item.children ?? [];
+  const actionChildren = item.actionChildren ?? [];
 
-  const [isExpanded, setIsExpanded] = useState(() => {
-    // Auto-expand if a child is active
-    if (item.children) {
-      return item.children.some((child) =>
-        normalizedPathname.startsWith(normalizePath(child.href))
-      );
-    }
-    return false;
-  });
+  // Abierto si un hijo está activo, salvo que el usuario lo pliegue o
+  // despliegue a mano. Derivado (no estado inicial): los hijos de acción
+  // de Caja se registran después de montar la página, y con un estado
+  // inicial el submenú arrancaba plegado.
+  const [manualExpanded, setIsExpanded] = useState<boolean | null>(null);
+  const autoExpanded =
+    linkChildren.some((child) =>
+      normalizedPathname.startsWith(normalizePath(child.href))
+    ) || actionChildren.some((child) => child.active);
+  const isExpanded = manualExpanded ?? autoExpanded;
 
-  const hasChildren = item.children && item.children.length > 0;
+  const hasChildren = linkChildren.length > 0 || actionChildren.length > 0;
 
   // Determine active states
   const normalizedItemHref = normalizePath(item.href);
   const isParentActive =
     normalizedPathname === normalizedItemHref ||
     normalizedPathname.startsWith(`${normalizedItemHref}/`);
-  const isAnyChildActive = hasChildren
-    ? item.children!.some(
-        (child) => normalizedPathname === normalizePath(child.href)
-      )
-    : false;
+  const isAnyChildActive =
+    linkChildren.some(
+      (child) => normalizedPathname === normalizePath(child.href)
+    ) || actionChildren.some((child) => child.active);
 
   // If no children, render as simple Link
   if (!hasChildren) {
@@ -582,9 +601,71 @@ function CollapsibleNavItem({
     );
   }
 
-  // If collapsed and has children, navigate to first child on click
+  // Colapsado con hijos de acción (pestañas de Caja): el ícono abre un menú
+  // con ellas; sin esto no habría cómo cambiar de pestaña sin desplegar la
+  // barra.
+  if (isCollapsed && actionChildren.length > 0) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "relative flex w-full items-center rounded-card text-sm font-medium transition-all duration-200",
+              "justify-center px-3 py-3",
+              isParentActive
+                ? isAdmin
+                  ? "bg-purple-50 text-purple-600"
+                  : "bg-indigo-50 text-indigo-600"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            )}
+            title={item.name}
+            aria-label={item.name}
+          >
+            <item.icon
+              className={cn(
+                "w-5 h-5 shrink-0",
+                isParentActive
+                  ? isAdmin
+                    ? "text-purple-600"
+                    : "text-indigo-600"
+                  : "text-slate-400"
+              )}
+            />
+            <NavBadge count={item.badge} isCollapsed />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start" className="w-56">
+          <DropdownMenuLabel>{item.name}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {actionChildren.map((child) => (
+            <DropdownMenuItem
+              key={child.id}
+              aria-current={child.active ? "page" : undefined}
+              onSelect={() => {
+                child.onSelect();
+                onMenuClick?.();
+              }}
+              className={cn(
+                child.active && "bg-indigo-50 font-medium text-indigo-700"
+              )}
+            >
+              <span className="flex-1">{child.label}</span>
+              {child.count !== undefined && child.count > 0 && (
+                <span className="rounded-full bg-slate-200 px-1.5 text-xs font-semibold tabular-nums text-slate-700">
+                  {child.count}
+                </span>
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  // If collapsed and has children, navigate to first child on click.
   if (isCollapsed) {
-    const firstChild = item.children![0];
+    const firstChild = linkChildren[0];
     return (
       <Link
         href={firstChild.href}
@@ -659,7 +740,7 @@ function CollapsibleNavItem({
       {/* Children items */}
       {isExpanded && (
         <div className="space-y-1 pl-4">
-          {item.children!.map((child) => {
+          {linkChildren.map((child) => {
             const isThisChildActive =
               normalizedPathname === normalizePath(child.href);
             return (
@@ -692,6 +773,40 @@ function CollapsibleNavItem({
               </Link>
             );
           })}
+          {actionChildren.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              aria-current={child.active ? "page" : undefined}
+              onClick={() => {
+                child.onSelect();
+                onMenuClick?.();
+              }}
+              className={cn(
+                "w-full flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                "gap-2 px-4 py-2.5",
+                child.active
+                  ? isAdmin
+                    ? "bg-purple-50/50 text-purple-600"
+                    : "bg-indigo-50/50 text-indigo-600"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              )}
+            >
+              <span className="flex-1 text-left">{child.label}</span>
+              {child.count !== undefined && child.count > 0 && (
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 text-xs font-semibold tabular-nums",
+                    child.active
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-200 text-slate-700"
+                  )}
+                >
+                  {child.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>

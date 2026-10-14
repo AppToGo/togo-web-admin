@@ -110,15 +110,26 @@ export function useOrderComposer({
       ? fallbackDeliveryType
       : "DELIVERY";
 
-  // Categorías que tienen al menos un producto disponible en la sede.
+  // Subcategorías del negocio con al menos un producto disponible en la
+  // sede, ordenadas por el campo `order` (como el catálogo web). Sin orden
+  // configurado van al final, por nombre.
   const categories = useMemo(() => {
-    const byId = new Map<string, string>();
+    const byId = new Map<string, { name: string; order: number | null }>();
     for (const item of products) {
-      if (item.categoryId && item.categoryName) byId.set(item.categoryId, item.categoryName);
+      if (item.categoryId && item.categoryName && !byId.has(item.categoryId)) {
+        byId.set(item.categoryId, {
+          name: item.categoryName,
+          order: item.categoryOrder ?? null,
+        });
+      }
     }
     return [...byId.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .map(([id, category]) => ({ id, ...category }))
+      .sort(
+        (a, b) =>
+          (a.order ?? Number.MAX_SAFE_INTEGER) -
+            (b.order ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name)
+      );
   }, [products]);
 
   const visibleProducts = useMemo(() => {
