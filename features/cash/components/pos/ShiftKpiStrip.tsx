@@ -5,15 +5,8 @@
  * pestaña Turno. Todo viene calculado del servidor.
  */
 import { useTranslations } from "next-intl";
-import {
-  ArrowLeftRight,
-  Banknote,
-  Bike,
-  ChevronRight,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeftRight, Banknote, Bike, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { formatCOP } from "../../utils/cash.utils";
 import { manualTotals } from "../SessionSummary";
 import type { SessionSummary } from "../../types/cash.types";
@@ -21,14 +14,9 @@ import type { SessionSummary } from "../../types/cash.types";
 interface ShiftKpiStripProps {
   summary: SessionSummary;
   pendingTotal: string;
-  onOpenShift: () => void;
 }
 
-export function ShiftKpiStrip({
-  summary,
-  pendingTotal,
-  onOpenShift,
-}: ShiftKpiStripProps) {
+export function ShiftKpiStrip({ summary, pendingTotal }: ShiftKpiStripProps) {
   const t = useTranslations("cash");
   const { manualIn, manualOut } = manualTotals(summary);
 
@@ -70,11 +58,8 @@ export function ShiftKpiStrip({
   ];
 
   return (
-    <button
-      type="button"
-      onClick={onOpenShift}
-      aria-label={t("pos.kpi.openShift")}
-      className="group grid w-full grid-cols-2 gap-2 text-left lg:grid-cols-4 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]"
+    <div
+      className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
       data-testid="pos-kpi-strip"
     >
       {items.map((item) => (
@@ -88,15 +73,6 @@ export function ShiftKpiStrip({
           </p>
         </Card>
       ))}
-      <span
-        className={cn(
-          "hidden items-center gap-1 px-2 text-sm font-medium text-indigo-600 xl:flex",
-          "group-hover:text-indigo-700"
-        )}
-      >
-        {t("pos.kpi.seeShift")}
-        <ChevronRight className="h-4 w-4" />
-      </span>
-    </button>
+    </div>
   );
 }

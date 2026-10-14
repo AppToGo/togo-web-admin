@@ -35,7 +35,6 @@ interface SellTabProps {
   session: { id: string; registerName: string } | null;
   summary: SessionSummary | undefined;
   pendingTotal: string;
-  onOpenShift: () => void;
   onOpenRegister: (() => void) | null;
   /** `cash.operate`: recibir efectivo. */
   canOperate: boolean;
@@ -62,7 +61,6 @@ export function SellTab({
   session,
   summary,
   pendingTotal,
-  onOpenShift,
   onOpenRegister,
   canOperate,
   canChargeNow,
@@ -160,19 +158,16 @@ export function SellTab({
 
   return (
     <div className="flex flex-col gap-4">
-      {summary && (
-        <ShiftKpiStrip
-          summary={summary}
-          pendingTotal={pendingTotal}
-          onOpenShift={onOpenShift}
-        />
-      )}
-
-      {/* Alto de la ventana menos título, encabezado y KPIs: el pie de la
-          venta queda siempre visible. Bajo 1280 px el encabezado ocupa dos
-          filas. */}
-      <div className="flex min-h-[560px] flex-col gap-4 lg:h-[calc(100dvh-21.5rem)] lg:flex-row xl:h-[calc(100dvh-17rem)]">
-        <div className="flex min-h-[420px] min-w-0 flex-1 flex-col rounded-card-lg border border-white/80 bg-white/40 p-4 backdrop-blur-xl lg:min-h-0">
+      {/* Alto de la ventana menos el título de la página: el pie de la
+          venta queda siempre visible. Los KPIs viven sobre los productos
+          para no robarle alto a la venta actual. */}
+      <div className="flex min-h-[560px] flex-col gap-4 lg:h-[calc(100dvh-9.5rem)] lg:flex-row xl:h-[calc(100dvh-7rem)]">
+        <div className="flex min-h-[560px] min-w-0 flex-1 flex-col gap-3 rounded-card-lg border border-white/80 bg-white/40 p-4 backdrop-blur-xl lg:min-h-0">
+          {summary && (
+            <div className="shrink-0">
+              <ShiftKpiStrip summary={summary} pendingTotal={pendingTotal} />
+            </div>
+          )}
           <ProductCatalog ref={searchRef} composer={composer} />
         </div>
 

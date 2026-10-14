@@ -377,7 +377,7 @@ export function SaleCart({
             variant="outline"
             onClick={clear}
             disabled={empty && !notes}
-            className={cn(confirmingClear && "border-red-300 text-red-700")}
+            className={cn("h-12", confirmingClear && "border-red-300 text-red-700")}
             onBlur={() => setConfirmingClear(false)}
           >
             {confirmingClear ? t("cart.confirmClear") : t("cart.clear")}

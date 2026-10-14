@@ -21,6 +21,8 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { BranchSingleSelector } from "@/features/branches/components/BranchSingleSelector";
+import { CashHeaderActions } from "@/features/cash/components/pos/CashHeaderActions";
+import { usePosSessionHeaderStore } from "@/stores/pos-menu.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { CashPage, OwnerOverview } from "@/features/cash/components";
 
@@ -33,6 +35,8 @@ export default function CashRoutePage() {
   const isSuperAdmin = useIsSuperAdmin();
   const businessId = useEffectiveBusinessId();
   const { hasPermission, isLoading: isLoadingPermissions } = useMyPermissions();
+  // Caja abierta registrada por CashPosPage: reemplaza título y subtítulo.
+  const sessionHeader = usePosSessionHeaderStore((state) => state.header);
 
   const {
     branches: effectiveBranches,
@@ -104,11 +108,30 @@ export default function CashRoutePage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
-            <p className="text-slate-500 mt-1">{t("description")}</p>
-          </div>
+          {sessionHeader ? (
+            <div>
+              <h1 className="flex items-center gap-2.5 text-2xl font-bold text-slate-900">
+                <span
+                  aria-hidden
+                  className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600"
+                />
+                {sessionHeader.registerName}
+              </h1>
+              <p
+                className="mt-1 text-slate-500"
+                data-testid="pos-session-status"
+              >
+                {sessionHeader.statusText}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+              <p className="mt-1 text-slate-500">{t("description")}</p>
+            </div>
+          )}
           <span className="flex-1" />
+          <CashHeaderActions />
           {effectiveBranches.length > 1 && (
             <BranchSingleSelector
               value={singleBranchId}

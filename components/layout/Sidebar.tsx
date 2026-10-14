@@ -16,6 +16,7 @@ import {
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useLocaleStore } from "@/stores/localeStore";
+import { usePosMenuStore, type PosMenuEntry } from "@/stores/pos-menu.store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,11 @@ type NavigationItem = {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: NavigationItem[];
+  /**
+   * Hijos de acción (sin ruta): los registra la página activa (hoy Caja)
+   * para pintarse como submenú. Se limpian al salir de la página.
+   */
+  actionChildren?: PosMenuEntry[];
   /** Contador rojo junto al item; no se muestra si es 0. */
   badge?: number;
 };
@@ -112,6 +118,8 @@ export function Sidebar({
 
   // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
   const canViewCash = hasPermission("cash.view");
+  // Submenú de Caja: lo registra CashPosPage mientras está montada.
+  const posMenuEntries = usePosMenuStore((state) => state.entries);
 
   // Badges: pedidos nuevos sin ver (por negocio, sucursales seleccionadas) y
   // conversaciones que esperan asesor. Los refrescan los sockets globales de
@@ -137,6 +145,9 @@ export function Sidebar({
               name: t("sidebar.cash"),
               href: "/dashboard/cash",
               icon: Banknote,
+              ...(posMenuEntries.length > 0
+                ? { actionChildren: posMenuEntries }
+                : {}),
             },
           ]
         : []),
@@ -263,6 +274,7 @@ export function Sidebar({
     canViewCash,
     unseenOrdersCount,
     inboxAttentionCount,
+    posMenuEntries,
   ]);
 
   // Admin navigation (Super Admin only)
@@ -519,29 +531,31 @@ function CollapsibleNavItem({
   onMenuClick,
 }: CollapsibleNavItemProps) {
   const normalizedPathname = normalizePath(pathname);
+  const linkChildren = item.children ?? [];
+  const actionChildren = item.actionChildren ?? [];
 
-  const [isExpanded, setIsExpanded] = useState(() => {
-    // Auto-expand if a child is active
-    if (item.children) {
-      return item.children.some((child) =>
-        normalizedPathname.startsWith(normalizePath(child.href))
-      );
-    }
-    return false;
-  });
+  // Abierto si un hijo está activo, salvo que el usuario lo pliegue o
+  // despliegue a mano. Derivado (no estado inicial): los hijos de acción
+  // de Caja se registran después de montar la página, y con un estado
+  // inicial el submenú arrancaba plegado.
+  const [manualExpanded, setIsExpanded] = useState<boolean | null>(null);
+  const autoExpanded =
+    linkChildren.some((child) =>
+      normalizedPathname.startsWith(normalizePath(child.href))
+    ) || actionChildren.some((child) => child.active);
+  const isExpanded = manualExpanded ?? autoExpanded;
 
-  const hasChildren = item.children && item.children.length > 0;
+  const hasChildren = linkChildren.length > 0 || actionChildren.length > 0;
 
   // Determine active states
   const normalizedItemHref = normalizePath(item.href);
   const isParentActive =
     normalizedPathname === normalizedItemHref ||
     normalizedPathname.startsWith(`${normalizedItemHref}/`);
-  const isAnyChildActive = hasChildren
-    ? item.children!.some(
-        (child) => normalizedPathname === normalizePath(child.href)
-      )
-    : false;
+  const isAnyChildActive =
+    linkChildren.some(
+      (child) => normalizedPathname === normalizePath(child.href)
+    ) || actionChildren.some((child) => child.active);
 
   // If no children, render as simple Link
   if (!hasChildren) {
@@ -582,12 +596,13 @@ function CollapsibleNavItem({
     );
   }
 
-  // If collapsed and has children, navigate to first child on click
+  // If collapsed and has children, navigate to first child on click.
+  // Con hijos de acción (sin ruta) se va a la página del item.
   if (isCollapsed) {
-    const firstChild = item.children![0];
+    const firstChild = linkChildren[0];
     return (
       <Link
-        href={firstChild.href}
+        href={firstChild?.href ?? item.href}
         onClick={onMenuClick}
         className={cn(
           "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
@@ -659,7 +674,7 @@ function CollapsibleNavItem({
       {/* Children items */}
       {isExpanded && (
         <div className="space-y-1 pl-4">
-          {item.children!.map((child) => {
+          {linkChildren.map((child) => {
             const isThisChildActive =
               normalizedPathname === normalizePath(child.href);
             return (
@@ -692,6 +707,40 @@ function CollapsibleNavItem({
               </Link>
             );
           })}
+          {actionChildren.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              aria-current={child.active ? "page" : undefined}
+              onClick={() => {
+                child.onSelect();
+                onMenuClick?.();
+              }}
+              className={cn(
+                "w-full flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                "gap-2 px-4 py-2.5",
+                child.active
+                  ? isAdmin
+                    ? "bg-purple-50/50 text-purple-600"
+                    : "bg-indigo-50/50 text-indigo-600"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              )}
+            >
+              <span className="flex-1 text-left">{child.label}</span>
+              {child.count !== undefined && child.count > 0 && (
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 text-xs font-semibold tabular-nums",
+                    child.active
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-200 text-slate-700"
+                  )}
+                >
+                  {child.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>

@@ -35,7 +35,14 @@ import { ManualMovementDrawer } from "../ManualMovementDrawer";
 import { CloseSessionDrawer } from "../CloseSessionDrawer";
 import { SessionsHistory } from "../SessionsHistory";
 import { CashAuditPanel } from "../CashAuditPanel";
-import { CashHeader, type PosTab } from "./CashHeader";
+import {
+  usePosHeaderActionsStore,
+  usePosMenuStore,
+  usePosSessionHeaderStore,
+} from "@/stores/pos-menu.store";
+
+type PosTab =
+  "sell" | "receivables" | "settlements" | "shift" | "history" | "audit";
 import { SellTab } from "./SellTab";
 import { ReceivablesTab } from "./ReceivablesTab";
 import { SettlementsTab } from "./SettlementsTab";
@@ -171,6 +178,84 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
   const [moving, setMoving] = useState(false);
   const [closing, setClosing] = useState(false);
 
+  // Las pestañas viven en la barra lateral como submenú de Caja (mismo
+  // patrón que Catálogo): se registran mientras la página está montada.
+  const setPosMenu = usePosMenuStore((state) => state.setEntries);
+  const clearPosMenu = usePosMenuStore((state) => state.clearEntries);
+  const menuSignature = visibleTabs
+    .map((item) => `${item.value}:${item.label}:${item.count ?? 0}`)
+    .join("|");
+  useEffect(() => {
+    setPosMenu(
+      visibleTabs.map((item) => ({
+        id: item.value,
+        label: item.label,
+        count: item.count,
+        active: tab === item.value,
+        onSelect: () => setTab(item.value),
+      }))
+    );
+    return clearPosMenu;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menuSignature, tab, setPosMenu, clearPosMenu]);
+
+  // Acciones junto al título de la página ("Caja"), no en el encabezado de
+  // la sesión. Van antes de los retornos tempranos: son hooks.
+  const canOpenRegister = canOperate && !openSessionId;
+  const canMove = !!openSessionId && (canOperate || canWithdraw);
+  // Sin el resumen el esperado saldría en $ 0 y la diferencia del arqueo
+  // sería falsa.
+  const canCloseRegister = !!openSessionId && canClose && !!summary;
+  const openRegister = canOpenRegister ? () => setOpening(true) : null;
+  const setHeaderActions = usePosHeaderActionsStore(
+    (state) => state.setActions
+  );
+  const clearHeaderActions = usePosHeaderActionsStore(
+    (state) => state.clearActions
+  );
+  useEffect(() => {
+    setHeaderActions({
+      onMovement: canMove ? () => setMoving(true) : null,
+      onCloseRegister: canCloseRegister ? () => setClosing(true) : null,
+      onOpenRegister: canOpenRegister ? () => setOpening(true) : null,
+    });
+    return clearHeaderActions;
+  }, [
+    canMove,
+    canCloseRegister,
+    canOpenRegister,
+    setHeaderActions,
+    clearHeaderActions,
+  ]);
+
+  // Con turno abierto el título de la página es la caja (nombre + estado);
+  // sin turno no se registra nada y quedan "Caja" y su descripción.
+  const setSessionHeader = usePosSessionHeaderStore((state) => state.setHeader);
+  const clearSessionHeader = usePosSessionHeaderStore(
+    (state) => state.clearHeader
+  );
+  const sessionStatusText =
+    openSession && register
+      ? t("pos.header.open", {
+          name: openSession.openedByName ?? "—",
+          time: fmt.time(openSession.openedAt),
+        })
+      : null;
+  useEffect(() => {
+    setSessionHeader(
+      openSession && register && sessionStatusText
+        ? { registerName: register.name, statusText: sessionStatusText }
+        : null
+    );
+    return clearSessionHeader;
+  }, [
+    openSession,
+    register,
+    sessionStatusText,
+    setSessionHeader,
+    clearSessionHeader,
+  ]);
+
   const addToTable = (tableId: string) => {
     // Un pedido nuevo para la misma mesa: no se edita el ya enviado a cocina.
     composer.setDeliveryType("DINE_IN");
@@ -205,31 +290,8 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
     );
   }
 
-  const openRegister =
-    canOperate && !openSessionId ? () => setOpening(true) : null;
-
   return (
     <div className="space-y-4">
-      <CashHeader
-        registers={registers}
-        register={register}
-        onSelectRegister={setSelectedId}
-        tabs={visibleTabs}
-        tab={tab}
-        onTabChange={setTab}
-        onMovement={
-          openSessionId && (canOperate || canWithdraw)
-            ? () => setMoving(true)
-            : null
-        }
-        // Sin el resumen el esperado saldría en $ 0 y la diferencia del
-        // arqueo sería falsa.
-        onCloseRegister={
-          openSessionId && canClose && summary ? () => setClosing(true) : null
-        }
-        onOpenRegister={openRegister}
-      />
-
       {canSell && (
         // Montada siempre (oculta fuera de Vender): el foco y el scroll del
         // catálogo se conservan al ir y volver de otras pestañas.
@@ -242,7 +304,6 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
             session={session}
             summary={summary}
             pendingTotal={pendingTotal}
-            onOpenShift={() => setTab("shift")}
             onOpenRegister={openRegister}
             canOperate={canOperate}
             canChargeNow={canCharge}
