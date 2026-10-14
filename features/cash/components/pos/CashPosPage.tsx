@@ -40,9 +40,6 @@ import {
   usePosMenuStore,
   usePosSessionHeaderStore,
 } from "@/stores/pos-menu.store";
-
-type PosTab =
-  "sell" | "receivables" | "settlements" | "shift" | "history" | "audit";
 import { SellTab } from "./SellTab";
 import { ReceivablesTab } from "./ReceivablesTab";
 import { SettlementsTab } from "./SettlementsTab";
@@ -53,6 +50,9 @@ import {
   saveCart,
   saveLastDeliveryType,
 } from "./pos-storage";
+
+type PosTab =
+  "sell" | "receivables" | "settlements" | "shift" | "history" | "audit";
 
 interface CashPosPageProps {
   businessId: string;
