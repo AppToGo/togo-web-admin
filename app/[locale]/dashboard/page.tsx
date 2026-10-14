@@ -24,14 +24,15 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">
               {t("greeting", { name: user?.name || tc("empty.title") })}
             </h2>
-            <p className="text-slate-500 mt-1">
+            {/* En el teléfono el saludo basta: la bienvenida ocupa media pantalla. */}
+            <p className="hidden md:block text-slate-500 mt-1">
               {user?.businessName ? (
                 <>
                   {t("welcome.withBusiness", {
@@ -44,7 +45,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
             <BranchSelector />
             <DateRangeFilter
               variant="default"

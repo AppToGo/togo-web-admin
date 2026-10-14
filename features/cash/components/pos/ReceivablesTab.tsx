@@ -9,7 +9,7 @@
  * abierto). "+ Agregar productos" abre Vender con la mesa elegida y crea un
  * pedido nuevo para ella: no se editan pedidos ya enviados a cocina.
  */
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Store, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,20 @@ export function ReceivablesTab({
   const fmt = useCashDateFormat();
   const [pickedKey, setPickedKey] = useState<string | null>(null);
   const [charging, setCharging] = useState<ChargeableOrder | null>(null);
+
+  const accountRef = useRef<HTMLDivElement>(null);
+  /**
+   * < lg la cuenta queda debajo de las tarjetas: al elegir una se lleva a
+   * la vista para no tener que buscarla con scroll.
+   */
+  const pick = (key: string) => {
+    setPickedKey(key);
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      requestAnimationFrame(() =>
+        accountRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      );
+    }
+  };
 
   const groups = useMemo<ReceivableGroup[]>(() => {
     const byKey = new Map<string, ReceivableGroup>();
@@ -118,7 +132,7 @@ export function ReceivablesTab({
                 <button
                   type="button"
                   aria-pressed={active}
-                  onClick={() => setPickedKey(group.key)}
+                  onClick={() => pick(group.key)}
                   className={cn(
                     "flex w-full flex-col gap-2 rounded-card border p-4 text-left transition-colors",
                     active
@@ -156,7 +170,7 @@ export function ReceivablesTab({
       </div>
 
       {selected && (
-        <Card variant="glass" className="lg:sticky lg:top-4">
+        <Card ref={accountRef} variant="glass" className="scroll-mt-16 lg:sticky lg:top-4">
           <CardContent className="space-y-4 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>

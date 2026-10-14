@@ -158,6 +158,10 @@ export function OrdersKanbanBoard({
   const isMobile = useIsMobile();
   const [statsRailCollapsedChoice, setStatsRailCollapsed] = useState<boolean | null>(null);
   const statsRailCollapsed = statsRailCollapsedChoice ?? isMobile;
+  // En el teléfono el tablero de columnas no cabe: siempre la vista por
+  // estado (pestañas + una columna). La preferencia guardada no se toca y
+  // vuelve a aplicar en pantallas grandes.
+  const view: BoardViewMode = isMobile ? "focus" : boardView;
 
   // Columns collapsed to a rail in the Board view — Delivered and Cancelled
   // start collapsed (the least checked during day-to-day operation). Which
@@ -475,12 +479,13 @@ export function OrdersKanbanBoard({
           data-tour-step="kanban-board"
           className={cn(
             "relative rounded-card-xl flex flex-col min-h-0 overflow-hidden",
-            "bg-white/30 backdrop-blur-xl border border-white/40",
+            // Teléfono: sin marco, las tarjetas van directo sobre el fondo.
+            "md:bg-white/30 md:backdrop-blur-xl md:border md:border-white/40",
             "transition-all duration-300 ease-in-out",
             "flex-1"
           )}
         >
-          {boardView === "board" && (
+          {view === "board" && (
             /* Horizontal scroll only here */
             <div className="flex-1 min-w-0 py-3 px-3 overflow-x-auto overflow-y-hidden scrollbar-thin">
               <div
@@ -554,8 +559,8 @@ export function OrdersKanbanBoard({
             </div>
           )}
 
-          {boardView === "focus" && activeFocusStatus && (
-            <div className="flex-1 min-h-0 p-3">
+          {view === "focus" && activeFocusStatus && (
+            <div className="flex-1 min-h-0 pb-20 md:p-3">
               <FocusView
                 statuses={columns.map((c) => c.id)}
                 ordersByStatus={filteredOrdersByStatus}
@@ -572,7 +577,7 @@ export function OrdersKanbanBoard({
             </div>
           )}
 
-          {boardView === "list" && (
+          {view === "list" && (
             <div className="flex-1 min-h-0 p-3">
               <GroupedListView
                 statuses={columns.map((c) => c.id)}
@@ -588,10 +593,11 @@ export function OrdersKanbanBoard({
         </div>
 
         {/* Right Sidebar - Statistics - fuera del kanban */}
+        {/* Teléfono: sin riel de estadísticas (el ancho es para los pedidos). */}
         <aside
           className={cn(
-            "shrink-0 ml-0 transition-all duration-300 ease-in-out",
-            "rounded-card-xl overflow-hidden flex flex-col",
+            "hidden md:flex shrink-0 ml-0 transition-all duration-300 ease-in-out",
+            "rounded-card-xl overflow-hidden flex-col",
             !statsRailCollapsed &&
               "w-72 opacity-100 ml-3 bg-white/30 backdrop-blur-xl border border-white/40",
             statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
@@ -637,6 +643,19 @@ export function OrdersKanbanBoard({
           )}
         </aside>
       </div>
+
+      {/* Teléfono: el botón de la columna "Nueva" no existe en la vista por
+          estado, así que "Nuevo pedido" flota abajo a la derecha. */}
+      <Can permission="order.create">
+        <button
+          type="button"
+          onClick={() => setIsNewOrderOpen(true)}
+          className="md:hidden fixed right-4 bottom-6 z-30 h-14 pl-4 pr-5 rounded-full bg-slate-900 text-white shadow-lg flex items-center gap-2 text-sm font-semibold"
+        >
+          <Plus className="w-5 h-5" />
+          {t("createOrder.button")}
+        </button>
+      </Can>
 
       <NewOrderDrawer
         isOpen={isNewOrderOpen}

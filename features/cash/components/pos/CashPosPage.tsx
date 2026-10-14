@@ -42,6 +42,7 @@ import { SellTab } from "./SellTab";
 import { ReceivablesTab } from "./ReceivablesTab";
 import { SettlementsTab } from "./SettlementsTab";
 import { ShiftTab } from "./ShiftTab";
+import { CashBottomNav, CashMoreMenu, MORE_TABS } from "./CashMobileNav";
 import {
   readLastDeliveryType,
   readSavedCart,
@@ -49,7 +50,7 @@ import {
   saveLastDeliveryType,
 } from "./pos-storage";
 
-type PosTab =
+export type PosTab =
   "sell" | "receivables" | "settlements" | "shift" | "history" | "audit";
 
 interface CashPosPageProps {
@@ -295,13 +296,15 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Menos de 1024 px la barra lateral es un cajón: las pestañas van
+    // Teléfono: espacio abajo para la barra fija de pestañas.
+    <div className="space-y-4 pb-24 md:pb-0">
+      {/* Tablet (768–1023 px) la barra lateral es un cajón: las pestañas van
           también acá para no abrir el menú en cada cambio. Desde 1024 px
-          viven solo en el submenú de Caja. */}
+          viven solo en el submenú de Caja; en el teléfono, abajo
+          (CashBottomNav). */}
       <nav
         aria-label={t("title")}
-        className="flex gap-1 overflow-x-auto scrollbar-thin lg:hidden"
+        className="hidden gap-1 overflow-x-auto scrollbar-thin md:flex lg:hidden"
       >
         {visibleTabs.map((item) => {
           const active = tab === item.value;
@@ -335,6 +338,19 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
           );
         })}
       </nav>
+
+      {/* Teléfono: Turno · Historial · Auditoría y las acciones del turno,
+          que en pantallas grandes van junto al título. */}
+      {MORE_TABS.includes(tab) && (
+        <CashMoreMenu
+          tab={tab}
+          onTabChange={setTab}
+          canAudit={canAudit}
+          onMovement={movement}
+          onCloseRegister={closeRegister}
+          onOpenRegister={openRegister}
+        />
+      )}
 
       {canSell && (
         // Montada siempre (oculta fuera de Vender): el foco y el scroll del
@@ -398,6 +414,15 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
       {tab === "audit" && canAudit && (
         <CashAuditPanel businessId={businessId} branchId={branchId} />
       )}
+
+      <CashBottomNav
+        tab={tab}
+        onTabChange={setTab}
+        canSell={canSell}
+        canViewOrders={canViewOrders}
+        receivablesCount={receivables.length}
+        settlementsCount={collections.length}
+      />
 
       <OpenSessionDrawer
         businessId={businessId}
