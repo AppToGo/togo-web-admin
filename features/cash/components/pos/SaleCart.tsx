@@ -65,6 +65,11 @@ interface SaleCartProps {
   isHolding: boolean;
   /** Mostrar errores de validación (después del primer intento). */
   showErrors: boolean;
+  /**
+   * `sheet`: dentro del drawer de pantalla completa del teléfono (sin marco
+   * propio y con espacio arriba a la derecha para el botón de cerrar).
+   */
+  variant?: "panel" | "sheet";
 }
 
 export function SaleCart({
@@ -75,7 +80,9 @@ export function SaleCart({
   canChargeNow,
   isHolding,
   showErrors,
+  variant = "panel",
 }: SaleCartProps) {
+  const inSheet = variant === "sheet";
   const t = useTranslations("cash.pos");
   const tOrder = useTranslations("orders.createOrder");
   const tDelivery = useTranslations("orders.deliveryTypes");
@@ -132,11 +139,16 @@ export function SaleCart({
 
   return (
     <aside
-      className="flex min-h-0 flex-col overflow-hidden rounded-card-lg border border-white/80 bg-white/60 backdrop-blur-xl lg:w-80 lg:shrink-0 xl:w-96 2xl:w-105"
+      className={cn(
+        "flex min-h-0 flex-col overflow-hidden",
+        inSheet
+          ? "h-full"
+          : "rounded-card-lg border border-white/80 bg-white/60 backdrop-blur-xl lg:w-80 lg:shrink-0 xl:w-96 2xl:w-105"
+      )}
       aria-label={t("cart.title")}
     >
       <div className="shrink-0 space-y-3 border-b border-slate-100 p-4">
-        <div className="flex items-center justify-between">
+        <div className={cn("flex items-center justify-between", inSheet && "pr-12")}>
           <h2 className="text-base font-semibold text-slate-900">
             {t("cart.title")}
           </h2>

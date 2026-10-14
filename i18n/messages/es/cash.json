@@ -416,6 +416,10 @@
       "delivery": "Domiciliario",
       "operator": "Operador",
       "holderMeta": "{count, plural, one {# pedido} other {# pedidos}} · desde las {time}"
+    },
+    "mobile": {
+      "more": "Más",
+      "viewSale": "Ver venta"
     }
   }
 }

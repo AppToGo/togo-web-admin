@@ -70,11 +70,35 @@ export function ShiftKpiStrip({
   ];
 
   return (
+    <>
+    {/* Teléfono y tablet: un chip con lo que está en caja; el detalle vive
+        en Más › Turno. */}
     <button
       type="button"
       onClick={onOpenShift}
       aria-label={t("pos.kpi.openShift")}
-      className="group grid w-full grid-cols-2 gap-2 text-left lg:grid-cols-4 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]"
+      className="flex w-full items-center gap-3 rounded-card border border-white/80 bg-white/70 px-4 py-2.5 text-left lg:hidden"
+      data-testid="pos-kpi-chip"
+    >
+      <span className="flex flex-1 flex-col">
+        <span className="text-xs font-medium text-indigo-700">{t("pos.kpi.expected")}</span>
+        <span className="text-lg font-bold tabular-nums text-slate-900">
+          {formatCOP(summary.expectedAmount)}
+        </span>
+      </span>
+      <span className="flex flex-col items-end">
+        <span className="text-xs font-medium text-amber-700">{t("pos.kpi.pending")}</span>
+        <span className="text-sm font-semibold tabular-nums text-slate-700">
+          {formatCOP(pendingTotal)}
+        </span>
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+    </button>
+    <button
+      type="button"
+      onClick={onOpenShift}
+      aria-label={t("pos.kpi.openShift")}
+      className="group hidden w-full grid-cols-2 gap-2 text-left lg:grid lg:grid-cols-4 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]"
       data-testid="pos-kpi-strip"
     >
       {items.map((item) => (
@@ -98,5 +122,6 @@ export function ShiftKpiStrip({
         <ChevronRight className="h-4 w-4" />
       </span>
     </button>
+    </>
   );
 }

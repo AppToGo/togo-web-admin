@@ -36,6 +36,7 @@ import { CloseSessionDrawer } from "../CloseSessionDrawer";
 import { SessionsHistory } from "../SessionsHistory";
 import { CashAuditPanel } from "../CashAuditPanel";
 import { CashHeader, type PosTab } from "./CashHeader";
+import { CashBottomNav, CashMoreMenu, MORE_TABS } from "./CashMobileNav";
 import { SellTab } from "./SellTab";
 import { ReceivablesTab } from "./ReceivablesTab";
 import { SettlementsTab } from "./SettlementsTab";
@@ -207,9 +208,16 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
 
   const openRegister =
     canOperate && !openSessionId ? () => setOpening(true) : null;
+  const startMovement =
+    openSessionId && (canOperate || canWithdraw) ? () => setMoving(true) : null;
+  // Sin el resumen el esperado saldría en $ 0 y la diferencia del arqueo
+  // sería falsa.
+  const closeRegister =
+    openSessionId && canClose && summary ? () => setClosing(true) : null;
 
   return (
-    <div className="space-y-4">
+    // < lg: espacio abajo para la barra fija de pestañas.
+    <div className="space-y-4 pb-24 lg:pb-0">
       <CashHeader
         registers={registers}
         register={register}
@@ -217,18 +225,21 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
         tabs={visibleTabs}
         tab={tab}
         onTabChange={setTab}
-        onMovement={
-          openSessionId && (canOperate || canWithdraw)
-            ? () => setMoving(true)
-            : null
-        }
-        // Sin el resumen el esperado saldría en $ 0 y la diferencia del
-        // arqueo sería falsa.
-        onCloseRegister={
-          openSessionId && canClose && summary ? () => setClosing(true) : null
-        }
+        onMovement={startMovement}
+        onCloseRegister={closeRegister}
         onOpenRegister={openRegister}
       />
+
+      {MORE_TABS.includes(tab) && (
+        <CashMoreMenu
+          tab={tab}
+          onTabChange={setTab}
+          canAudit={canAudit}
+          onMovement={startMovement}
+          onCloseRegister={closeRegister}
+          onOpenRegister={openRegister}
+        />
+      )}
 
       {canSell && (
         // Montada siempre (oculta fuera de Vender): el foco y el scroll del
@@ -293,6 +304,15 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
       {tab === "audit" && canAudit && (
         <CashAuditPanel businessId={businessId} branchId={branchId} />
       )}
+
+      <CashBottomNav
+        tab={tab}
+        onTabChange={setTab}
+        canSell={canSell}
+        canViewOrders={canViewOrders}
+        receivablesCount={receivables.length}
+        settlementsCount={collections.length}
+      />
 
       <OpenSessionDrawer
         businessId={businessId}

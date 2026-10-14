@@ -102,9 +102,10 @@ export default function CashRoutePage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 lg:gap-6">
         <div className="flex flex-wrap items-center gap-3">
-          <div>
+          {/* En móvil el nombre de la sección ya está en la barra superior. */}
+          <div className="hidden lg:block">
             <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
             <p className="text-slate-500 mt-1">{t("description")}</p>
           </div>
@@ -113,7 +114,7 @@ export default function CashRoutePage() {
             <BranchSingleSelector
               value={singleBranchId}
               onChange={setPickedBranchId}
-              className="w-56"
+              className="w-full sm:w-56"
             />
           )}
         </div>

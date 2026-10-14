@@ -96,7 +96,8 @@ export function CashHeader({
       <div
         role="tablist"
         aria-label={t("title")}
-        className="order-3 flex w-full gap-1 overflow-x-auto scrollbar-thin xl:order-2 xl:w-auto xl:flex-1 xl:justify-center"
+        // < lg las pestañas van en la barra de abajo (CashBottomNav).
+        className="order-3 hidden w-full gap-1 overflow-x-auto scrollbar-thin lg:flex xl:order-2 xl:w-auto xl:flex-1 xl:justify-center"
       >
         {tabs.map((item) => {
           const active = tab === item.value;
@@ -132,7 +133,8 @@ export function CashHeader({
         })}
       </div>
 
-      <div className="order-2 ml-auto flex shrink-0 flex-wrap gap-2 px-1 xl:order-3 xl:ml-0">
+      {/* < lg las acciones del turno están en "Más" (CashMoreMenu). */}
+      <div className="order-2 ml-auto hidden shrink-0 flex-wrap gap-2 px-1 lg:flex xl:order-3 xl:ml-0">
         {onMovement && (
           <Button variant="outline" onClick={onMovement}>
             <ArrowLeftRight className="mr-1 h-4 w-4" />

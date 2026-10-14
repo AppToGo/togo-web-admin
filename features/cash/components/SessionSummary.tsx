@@ -32,14 +32,14 @@ function Metric({
 }) {
   return (
     <Card variant={variant} className="transition-shadow duration-200 hover:shadow-md">
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-slate-500">{title}</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{value}</p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-slate-900 md:text-2xl">{value}</p>
             <p className="mt-1 text-xs text-slate-500">{description}</p>
           </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20">
+          <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 md:flex">
             {icon}
           </div>
         </div>
@@ -76,7 +76,7 @@ export function SessionSummaryCard({ summary, pendingTotal, pendingCount }: Sess
   const { manualIn, manualOut, inCount, outCount } = manualTotals(summary);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
       <Metric
         variant="metrics-purple"
         title={t("kpi.expected")}

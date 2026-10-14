@@ -416,6 +416,10 @@
       "delivery": "Delivery",
       "operator": "Operator",
       "holderMeta": "{count, plural, one {# order} other {# orders}} · since {time}"
+    },
+    "mobile": {
+      "more": "More",
+      "viewSale": "View sale"
     }
   }
 }
