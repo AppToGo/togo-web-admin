@@ -278,10 +278,18 @@ export interface CreateOrderRequest {
     sessionId?: string;
     receivedAmount?: number;
   };
+  /**
+   * Cobrar al crear un pedido que no es de mostrador (Caja · Vender,
+   * docs/caja-pos.md): nace pagado pero sigue su flujo. En efectivo exige
+   * `cash.sessionId`. Mostrador siempre cobra al crear y no lo necesita.
+   */
+  payNow?: boolean;
 }
 
 export interface CreateOrderResponse {
   orderId: string;
   orderNumber: string;
   total: number;
+  /** Vueltas del cobro en efectivo al crear (calculadas por el servidor). */
+  change?: number;
 }

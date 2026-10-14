@@ -326,5 +326,96 @@
     "settleIn": "Mark as settled in {register}",
     "settleHint": "{amount} goes into {register}",
     "noOpen": "No register is open at this branch to settle it."
+  },
+  "pos": {
+    "tabs": {
+      "sell": "Sell",
+      "receivables": "To collect",
+      "settlements": "To settle",
+      "shift": "Shift"
+    },
+    "header": {
+      "register": "Register",
+      "open": "Open · {name} · since {time}",
+      "closed": "No open shift",
+      "movement": "Movement"
+    },
+    "searchPlaceholder": "Search product or scan code",
+    "view": {
+      "label": "Product view",
+      "list": "List",
+      "grid": "Grid",
+      "gridDisabled": "Grid unavailable: no product has a photo"
+    },
+    "cart": {
+      "title": "Current sale",
+      "addCustomer": "+ Customer",
+      "emptyTitle": "No products",
+      "emptyHint": "Tap a product or search for it on the left to start the sale.",
+      "unitPrice": "{price} each",
+      "addNote": "+ Order note",
+      "subtotal": "Subtotal · {count, plural, one {# product} other {# products}}",
+      "total": "Total",
+      "clear": "Clear",
+      "confirmClear": "Empty the sale?",
+      "charge": "Charge",
+      "chargeNow": "Charge now",
+      "sendToTable": "Send order · Table {table} (charge at the end)",
+      "sendToTableGeneric": "Send order to the table (charge at the end)",
+      "createUnpaid": "Create order without charging"
+    },
+    "checkout": {
+      "title": "Charge sale",
+      "doneTitle": "Sale charged",
+      "charged": "Order #{number} charged",
+      "paidWith": "Paid with {method}",
+      "noSession": "Open the register to receive cash.",
+      "noCashPermission": "You don't have permission to receive cash in the register.",
+      "newSale": "New sale",
+      "confirm": "Charge {total}",
+      "tableLabel": "Table {table}"
+    },
+    "receipt": {
+      "title": "Receipt",
+      "print": "Print",
+      "whatsapp": "WhatsApp",
+      "whatsappSent": "Receipt on its way via WhatsApp",
+      "whatsappFailed": "Couldn't send the receipt via WhatsApp",
+      "noPhone": "To send it via WhatsApp, add the customer's phone to the sale.",
+      "windowClosed": "The customer hasn't written on WhatsApp in the last 24 hours: WhatsApp doesn't allow sending them the receipt.",
+      "order": "Order",
+      "paidWith": "Paid with",
+      "received": "Received",
+      "thanks": "Thank you for your purchase!",
+      "popupBlocked": "The browser blocked the print window. Allow pop-ups for this site."
+    },
+    "kpi": {
+      "expected": "Expected cash",
+      "cashSales": "Cash sales",
+      "inOut": "Income · expenses",
+      "pending": "To settle",
+      "openShift": "See shift details",
+      "seeShift": "See shift"
+    },
+    "closed": {
+      "title": "The register has no open shift",
+      "hint": "Open the register to start selling and receiving cash.",
+      "openRegister": "Open register"
+    },
+    "receivables": {
+      "cardMeta": "{count, plural, one {# order} other {# orders}} · since {time}",
+      "ordersCount": "{count, plural, one {# unpaid order} other {# unpaid orders}}",
+      "charge": "Charge {number} · {total}",
+      "addProducts": "Add products"
+    },
+    "settlements": {
+      "kpiTotal": "To settle",
+      "kpiOrders": "Orders",
+      "kpiHolders": "People holding cash",
+      "kpiOldest": "Oldest pending",
+      "delivery": "Delivery",
+      "operator": "Operator",
+      "holderMeta": "{count, plural, one {# order} other {# orders}} · since {time}"
+    }
   }
 }

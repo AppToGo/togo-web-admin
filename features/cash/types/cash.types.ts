@@ -73,6 +73,8 @@ export interface CashCollection {
   status: "PENDING_SETTLEMENT" | "SETTLED" | "VOIDED";
   holderUserId: string | null;
   holderName: string | null;
+  /** Domiciliario asignado al pedido u operador que recibió el efectivo (null sin portador). */
+  holderKind?: "DELIVERY" | "OPERATOR" | null;
   collectedAt: string;
   order?: {
     id: string;
@@ -80,6 +82,8 @@ export interface CashCollection {
     total: string;
     status: string;
     deliveryType: string;
+    customerName?: string | null;
+    addressText?: string | null;
   } | null;
 }
 
@@ -91,9 +95,19 @@ export interface CashReceivable {
   status: string;
   deliveryType: "DINE_IN" | "PICKUP";
   paymentMethod: string | null;
+  tableId: string | null;
   tableLabel: string | null;
   customerName: string | null;
   createdAt: string;
+  /** La cuenta del pedido (`lineTotal` = precio unitario × cantidad). */
+  items: Array<{ name: string; quantity: number; lineTotal: string }>;
+}
+
+/** ¿Se puede mandar el recibo por WhatsApp? (`GET …/orders/:id/receipt/whatsapp-window`) */
+export interface ReceiptWhatsappWindow {
+  available: boolean;
+  reason: "OPEN" | "WINDOW_CLOSED" | "NO_PHONE";
+  windowExpiresAt: string | null;
 }
 
 export interface SessionSummary {

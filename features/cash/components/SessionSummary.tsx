@@ -48,20 +48,32 @@ function Metric({
   );
 }
 
-export function SessionSummaryCard({ summary, pendingTotal, pendingCount }: SessionSummaryProps) {
-  const t = useTranslations("cash");
-
-  const manualIn = summary.totalsByType.filter(
+/**
+ * Ingresos manuales y salidas (egresos, retiros, reembolsos) del turno. Lo
+ * comparten estas tarjetas y la franja de KPIs de Caja · Vender.
+ */
+export function manualTotals(summary: SessionSummary) {
+  const inRows = summary.totalsByType.filter(
     (row) => row.type === "MANUAL_IN" && row.direction === "IN"
   );
-  const manualOut = summary.totalsByType.filter(
+  const outRows = summary.totalsByType.filter(
     (row) =>
       row.direction === "OUT" &&
       (row.type === "MANUAL_OUT" || row.type === "WITHDRAWAL" || row.type === "REFUND")
   );
-  const sum = (rows: typeof manualIn) =>
-    rows.reduce((acc, row) => acc + Number(row.total), 0);
-  const count = (rows: typeof manualIn) => rows.reduce((acc, row) => acc + row.count, 0);
+  const sum = (rows: typeof inRows) => rows.reduce((acc, row) => acc + Number(row.total), 0);
+  const count = (rows: typeof inRows) => rows.reduce((acc, row) => acc + row.count, 0);
+  return {
+    manualIn: sum(inRows),
+    manualOut: sum(outRows),
+    inCount: count(inRows),
+    outCount: count(outRows),
+  };
+}
+
+export function SessionSummaryCard({ summary, pendingTotal, pendingCount }: SessionSummaryProps) {
+  const t = useTranslations("cash");
+  const { manualIn, manualOut, inCount, outCount } = manualTotals(summary);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -84,15 +96,12 @@ export function SessionSummaryCard({ summary, pendingTotal, pendingCount }: Sess
         title={t("kpi.inOut")}
         value={
           <>
-            <span className="text-emerald-700">+ {formatCOP(sum(manualIn))}</span>
+            <span className="text-emerald-700">+ {formatCOP(manualIn)}</span>
             <span className="text-slate-400"> · </span>
-            <span className="text-red-700">− {formatCOP(sum(manualOut))}</span>
+            <span className="text-red-700">− {formatCOP(manualOut)}</span>
           </>
         }
-        description={t("kpi.inOutDesc", {
-          inCount: count(manualIn),
-          outCount: count(manualOut),
-        })}
+        description={t("kpi.inOutDesc", { inCount, outCount })}
         icon={<ArrowLeftRight className="h-6 w-6 text-blue-700" />}
       />
       <Metric

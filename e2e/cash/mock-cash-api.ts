@@ -37,7 +37,54 @@ const FAKE_SESSION = {
 export interface CashMockOptions {
   /** When false, the register has no open session (shows "Abrir turno"). */
   openSession?: boolean;
+  /** Products with a photo: the POS grid view is available. */
+  productImages?: boolean;
+  /** `GET …/orders/:id/receipt/whatsapp-window` (default: window closed). */
+  whatsappWindow?: "OPEN" | "WINDOW_CLOSED" | "NO_PHONE";
+  /** Receives every `POST …/orders` body (Caja · Vender). */
+  onCreateOrder?: (body: Record<string, unknown>) => void;
 }
+
+/** Sellable inventory of the branch (Caja · Vender). */
+function inventory(withImages: boolean) {
+  return [
+    { name: "Hamburguesa clásica", category: ["cat-burgers", "Hamburguesas"], price: 18000 },
+    { name: "Limonada natural", category: ["cat-drinks", "Bebidas"], price: 8000 },
+    { name: "Papas a la francesa", category: ["cat-sides", "Adiciones"], price: 7000 },
+  ].map((product, index) => ({
+    id: `inv-${index}`,
+    businessId: BUSINESS_ID,
+    branchId: BRANCH_ID,
+    productVariantId: `var-${index}`,
+    productName: product.name,
+    productSlug: `p-${index}`,
+    productImage: withImages && index === 0 ? "data:image/gif;base64,R0lGODlhAQABAAAAACw=" : null,
+    basePrice: product.price,
+    stock: null,
+    isAvailable: true,
+    isActivated: true,
+    priceOverride: null,
+    effectivePrice: product.price,
+    categoryId: product.category[0],
+    categoryName: product.category[1],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }));
+}
+
+/** Branch config: counter, dine-in and flat delivery enabled. */
+const BRANCH_DETAIL = {
+  ...FAKE_BRANCH,
+  deliveryConfig: { type: "FLAT", flatFee: 4000 },
+  dineInConfig: { enabled: true, allowCustomers: false, allowOperators: true },
+  counterConfig: { enabled: true },
+  transferOptions: { enabled: false, options: [] },
+};
+
+const TABLES = [
+  { id: "table-2", name: "2", code: "M2", isActive: true, sortOrder: 1, branchId: BRANCH_ID },
+  { id: "table-4", name: "4", code: "M4", isActive: true, sortOrder: 2, branchId: BRANCH_ID },
+];
 
 export function cashRegister(openSession = true) {
   return {
@@ -120,6 +167,7 @@ const COLLECTIONS = [
     status: "PENDING_SETTLEMENT",
     holderUserId: "user-2",
     holderName: "Repartidor E2E",
+    holderKind: "DELIVERY",
     collectedAt: new Date().toISOString(),
     order: {
       id: "order-2",
@@ -127,6 +175,8 @@ const COLLECTIONS = [
       total: "20000",
       status: "CONFIRMED",
       deliveryType: "DELIVERY",
+      customerName: "Ana Ruiz",
+      addressText: "Cl. 45 #12-30",
     },
   },
 ];
@@ -189,9 +239,11 @@ const RECEIVABLES = [
     status: "COMPLETED",
     deliveryType: "DINE_IN",
     paymentMethod: "CASH",
+    tableId: "table-2",
     tableLabel: "2",
     customerName: null,
     createdAt: "2026-10-08T15:00:00.000Z",
+    items: [{ name: "Pasta boloñesa", quantity: 2, lineTotal: "46000" }],
   },
   {
     id: "ord-rec-2",
@@ -200,9 +252,11 @@ const RECEIVABLES = [
     status: "READY",
     deliveryType: "PICKUP",
     paymentMethod: null,
+    tableId: null,
     tableLabel: null,
     customerName: "Julián Mora",
     createdAt: "2026-10-08T15:20:00.000Z",
+    items: [{ name: "Hamburguesa doble", quantity: 1, lineTotal: "27500" }],
   },
 ];
 
@@ -210,10 +264,52 @@ export async function mockCashDashboard(
   page: Page,
   options: CashMockOptions = {}
 ): Promise<void> {
-  const { openSession = true } = options;
+  const {
+    openSession = true,
+    productImages = false,
+    whatsappWindow = "WINDOW_CLOSED",
+    onCreateOrder,
+  } = options;
   await page.route("**/v1/**", async (route) => {
-    const url = new URL(route.request().url());
+    const request = route.request();
+    const url = new URL(request.url());
     const path = url.pathname;
+    const json = (body: unknown, status = 200) =>
+      route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+
+    if (path.endsWith(`/branches/${BRANCH_ID}/inventory`)) {
+      const items = inventory(productImages);
+      return json({ items, total: items.length, page: 1, limit: 100 });
+    }
+    if (path.endsWith(`/branches/${BRANCH_ID}/tables`)) return json(TABLES);
+    if (path.endsWith(`/branches/${BRANCH_ID}`)) return json(BRANCH_DETAIL);
+    if (path.endsWith("/receipt/whatsapp-window")) {
+      return json({
+        available: whatsappWindow === "OPEN",
+        reason: whatsappWindow,
+        windowExpiresAt: null,
+      });
+    }
+    if (path.endsWith("/receipt/whatsapp") && request.method() === "POST") {
+      return json({ queued: true }, 201);
+    }
+    if (path.endsWith("/orders") && request.method() === "POST") {
+      const body = request.postDataJSON() as Record<string, unknown>;
+      onCreateOrder?.(body);
+      const cash = body.cash as { receivedAmount?: number } | undefined;
+      return json(
+        {
+          orderId: "pos-order-1",
+          orderNumber: "77",
+          total: 26000,
+          ...(body.paymentMethod === "CASH" &&
+            (body.deliveryType === "COUNTER" || body.payNow === true) && {
+              change: (cash?.receivedAmount ?? 26000) - 26000,
+            }),
+        },
+        201
+      );
+    }
 
     if (path.endsWith("/branches")) {
       return route.fulfill({
