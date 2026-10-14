@@ -104,8 +104,10 @@ export function SaleCart({
     deliveryFee,
     total,
     setLineQuantity,
+    setLineNote,
     errors,
   } = composer;
+  const [notedLines, setNotedLines] = useState<Record<string, boolean>>({});
 
   const types = TYPE_ORDER.filter((type) => deliveryTypes.includes(type));
   const error = (value: string | undefined) => (showErrors ? value : undefined);
@@ -268,31 +270,56 @@ export function SaleCart({
         ) : (
           <ul className="space-y-2" data-testid="pos-cart-lines">
             {cartLines.map((line) => (
-              <li key={line.variantId} className="flex items-center gap-3 py-1">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-900">
-                    {line.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {t("cart.unitPrice", {
-                      price: formatCurrency(line.unitPrice),
-                    })}
-                  </p>
+              <li key={line.variantId} className="py-1">
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {line.name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {t("cart.unitPrice", {
+                        price: formatCurrency(line.unitPrice),
+                      })}
+                    </p>
+                  </div>
+                  <QuantityStepper
+                    name={line.name}
+                    quantity={line.quantity}
+                    onChange={(quantity) =>
+                      setLineQuantity(line.variantId, quantity)
+                    }
+                    maxReached={line.quantity >= line.max}
+                    addLabel={tOrder("add")}
+                    removeLabel={tOrder("remove")}
+                    size="sm"
+                  />
+                  <span className="w-20 text-right text-sm font-semibold tabular-nums text-slate-900">
+                    {formatCurrency(line.unitPrice * line.quantity)}
+                  </span>
                 </div>
-                <QuantityStepper
-                  name={line.name}
-                  quantity={line.quantity}
-                  onChange={(quantity) =>
-                    setLineQuantity(line.variantId, quantity)
-                  }
-                  maxReached={line.quantity >= line.max}
-                  addLabel={tOrder("add")}
-                  removeLabel={tOrder("remove")}
-                  size="sm"
-                />
-                <span className="w-20 text-right text-sm font-semibold tabular-nums text-slate-900">
-                  {formatCurrency(line.unitPrice * line.quantity)}
-                </span>
+                {notedLines[line.variantId] || line.notes ? (
+                  <Input
+                    className="mt-1"
+                    autoFocus={!!notedLines[line.variantId] && !line.notes}
+                    value={line.notes ?? ""}
+                    onChange={(event) =>
+                      setLineNote(line.variantId, event.target.value)
+                    }
+                    placeholder={tOrder("itemNotesPlaceholder")}
+                    aria-label={tOrder("itemNotes")}
+                    maxLength={200}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNotedLines((prev) => ({ ...prev, [line.variantId]: true }))
+                    }
+                    className="mt-0.5 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                  >
+                    {tOrder("itemNotes")}
+                  </button>
+                )}
               </li>
             ))}
           </ul>

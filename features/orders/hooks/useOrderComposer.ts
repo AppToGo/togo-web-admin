@@ -38,6 +38,8 @@ export interface CartLine {
   /** Tope de la línea (carrito o stock). */
   max: number;
   image: string | null;
+  /** Nota de cocina de la línea (ej. "sin cebolla"). */
+  notes?: string;
 }
 
 export type OrderCart = Record<string, CartLine>;
@@ -158,6 +160,7 @@ export function useOrderComposer({
       if (clamped === 0) {
         delete next[item.productVariantId];
       } else {
+        const previousNotes = prev[item.productVariantId]?.notes;
         next[item.productVariantId] = {
           variantId: item.productVariantId,
           name: productLabel(item),
@@ -165,8 +168,21 @@ export function useOrderComposer({
           quantity: clamped,
           max,
           image: item.productImage ?? null,
+          ...(previousNotes && { notes: previousNotes }),
         };
       }
+      return next;
+    });
+  };
+
+  /** Nota de cocina de una línea (se conserva al cambiar cantidad). */
+  const setLineNote = (variantId: string, notes: string) => {
+    setCart((prev) => {
+      const line = prev[variantId];
+      if (!line) return prev;
+      const trimmed = notes.trim();
+      const next = { ...prev };
+      next[variantId] = trimmed ? { ...line, notes: trimmed } : { ...line, notes: undefined };
       return next;
     });
   };
@@ -212,6 +228,7 @@ export function useOrderComposer({
     items: cartLines.map((line) => ({
       productVariantId: line.variantId,
       quantity: line.quantity,
+      ...(line.notes?.trim() && { notes: line.notes.trim() }),
     })),
     ...(needsCustomer && {
       customerName: customerName.trim(),
@@ -265,6 +282,7 @@ export function useOrderComposer({
     total,
     setQuantity,
     setLineQuantity,
+    setLineNote,
     deliveryTypes,
     deliveryType,
     setDeliveryType,

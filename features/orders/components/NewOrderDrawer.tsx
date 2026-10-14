@@ -167,6 +167,7 @@ export function NewOrderDrawer({
     setTableId,
     notes,
     setNotes,
+    setLineNote,
   } = composer;
 
   const paymentMethod =
@@ -596,12 +597,22 @@ export function NewOrderDrawer({
                     <p className="text-slate-400">{t("emptySummary")}</p>
                   ) : (
                     cartLines.map((line) => (
-                      <div key={line.variantId} className="flex items-baseline gap-3">
-                        <span className="text-slate-400 w-8 shrink-0">{line.quantity}x</span>
-                        <span className="flex-1 text-slate-700 truncate">{line.name}</span>
-                        <span className="font-semibold text-slate-900">
-                          {formatCurrency(line.unitPrice * line.quantity)}
-                        </span>
+                      <div key={line.variantId} className="py-0.5">
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-slate-400 w-8 shrink-0">{line.quantity}x</span>
+                          <span className="flex-1 text-slate-700 truncate">{line.name}</span>
+                          <span className="font-semibold text-slate-900">
+                            {formatCurrency(line.unitPrice * line.quantity)}
+                          </span>
+                        </div>
+                        <Input
+                          className="mt-1"
+                          value={line.notes ?? ""}
+                          onChange={(e) => setLineNote(line.variantId, e.target.value)}
+                          placeholder={t("itemNotesPlaceholder")}
+                          aria-label={t("itemNotes")}
+                          maxLength={200}
+                        />
                       </div>
                     ))
                   )}

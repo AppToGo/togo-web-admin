@@ -68,15 +68,34 @@ export function saveProductView(view: ProductView): void {
   write(local, VIEW_KEY, view);
 }
 
+function isCartLine(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const line = value as Record<string, unknown>;
+  return (
+    typeof line.variantId === "string" &&
+    typeof line.name === "string" &&
+    typeof line.unitPrice === "number" &&
+    Number.isFinite(line.unitPrice) &&
+    typeof line.quantity === "number" &&
+    Number.isFinite(line.quantity) &&
+    (line.notes === undefined || typeof line.notes === "string")
+  );
+}
+
 /** La venta en curso sobrevive a una recarga de la pestaña. */
 export function readSavedCart(branchId: string): OrderCart | undefined {
   const raw = read(session, CART_KEY(branchId));
   if (!raw) return undefined;
   try {
-    const parsed = JSON.parse(raw) as unknown;
-    return parsed && typeof parsed === "object"
-      ? (parsed as OrderCart)
-      : undefined;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return undefined;
+    }
+    const entries = Object.entries(parsed as Record<string, unknown>);
+    if (entries.some(([key, line]) => typeof key !== "string" || !isCartLine(line))) {
+      return undefined;
+    }
+    return parsed as OrderCart;
   } catch {
     return undefined;
   }

@@ -329,6 +329,23 @@ test.describe("Caja — vender (POS)", () => {
     expect(created).toEqual([]);
   });
 
+  test("la nota del producto viaja en el item del pedido", async ({ page }) => {
+    const created: Array<Record<string, unknown>> = [];
+    await loginAndOpenCash(page, CASHIER, { onCreateOrder: (body) => created.push(body) });
+
+    await page.getByRole("button", { name: "Agregar Hamburguesa clásica" }).first().click();
+    await page.getByRole("button", { name: "Nota del producto" }).click();
+    await page.getByPlaceholder("Ej.: sin cebolla (opcional)").fill("Sin cebolla");
+    await page.getByRole("button", { name: /^Cobrar\s*\$ / }).click();
+    const drawer = page.getByRole("dialog");
+    await drawer.getByRole("button", { name: /^Cobrar \$/ }).click();
+
+    await expect.poll(() => created.length).toBe(1);
+    expect(created[0]).toMatchObject({
+      items: [{ productVariantId: "var-0", quantity: 1, notes: "Sin cebolla" }],
+    });
+  });
+
   test("con fotos la grilla está disponible y se recuerda la elección", async ({ page }) => {
     await loginAndOpenCash(page, CASHIER, { productImages: true });
 

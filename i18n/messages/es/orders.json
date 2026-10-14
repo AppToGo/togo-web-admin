@@ -375,6 +375,8 @@
     "paymentMethod": "Método de pago",
     "notes": "Notas",
     "notesPlaceholder": "Indicaciones para el pedido (opcional)",
+    "itemNotes": "Nota del producto",
+    "itemNotesPlaceholder": "Ej.: sin cebolla (opcional)",
     "summary": "Resumen",
     "productsCount": "{count, plural, =0 {Sin productos} one {# producto} other {# productos}}",
     "emptySummary": "Agrega productos desde la lista",
