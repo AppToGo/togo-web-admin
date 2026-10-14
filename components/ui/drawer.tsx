@@ -79,6 +79,9 @@ function DrawerContent({
         className={cn(
           "fixed inset-y-0 right-0 z-50 flex flex-col h-full w-full",
           "glass-strong border-l border-white/40 shadow-card-lg",
+          // Teléfono: el drawer ocupa toda la pantalla; translúcido deja ver
+          // el contenido de atrás y se lee mal.
+          "max-sm:bg-white!",
           sizeClasses[size],
           className
         )}

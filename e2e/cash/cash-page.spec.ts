@@ -61,18 +61,22 @@ test.describe("Caja — gateo y turno", () => {
   }) => {
     await loginAndOpenCash(page, ["cash.view", "cash.operate"]);
 
-    await expect(page.getByRole("heading", { name: "Caja" })).toBeVisible();
-    // Sin `order.create` no se vende: Caja abre en Turno y no hay Vender.
-    await expect(page.getByRole("tab", { name: "Turno" })).toHaveAttribute(
-      "aria-selected",
-      "true"
+    // Con turno abierto el título es la caja (con su estado debajo).
+    await expect(page.getByRole("heading", { name: "Caja 1" })).toBeVisible();
+    await expect(page.getByTestId("pos-session-status")).toContainText(
+      "Cajera E2E"
     );
-    await expect(page.getByRole("tab", { name: "Vender" })).toHaveCount(0);
+    // Sin `order.create` no se vende: Caja abre en Turno y no hay Vender.
+    await expect(page.getByRole("button", { name: "Turno" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    await expect(page.getByRole("button", { name: "Vender" })).toHaveCount(0);
     await expect(page.getByText("Caja 1").first()).toBeVisible();
     // Esperado del turno (formato COP es-CO)
     await expect(page.getByText("$ 50.000").first()).toBeVisible();
     // Recaudo pendiente con su portador, en la pestaña "Por liquidar"
-    await page.getByRole("tab", { name: /Por liquidar/ }).click();
+    await page.getByRole("button", { name: /Por liquidar/ }).click();
     await expect(page.getByText("Repartidor E2E")).toBeVisible();
   });
 
@@ -86,7 +90,7 @@ test.describe("Caja — gateo y turno", () => {
       "order.change_payment_status",
     ]);
 
-    const tab = page.getByRole("tab", { name: /Por cobrar/ });
+    const tab = page.getByRole("button", { name: /Por cobrar/ });
     await expect(tab).toContainText("2");
     await tab.click();
     const panel = page.getByTestId("to-collect-panel");
@@ -115,8 +119,8 @@ test.describe("Caja — gateo y turno", () => {
     });
     await loginAndOpenCash(page, ["cash.view", "cash.operate"]);
 
-    await expect(page.getByRole("tab", { name: /Por liquidar/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /Por cobrar/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Por liquidar/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Por cobrar/ })).toHaveCount(0);
     expect(receivableRequests).toEqual([]);
   });
 
@@ -125,12 +129,74 @@ test.describe("Caja — gateo y turno", () => {
       openSession: false,
     });
 
+    // Sin turno abierto el título sigue siendo la caja, con su estado.
+    await expect(page.getByRole("heading", { name: "Caja 1" })).toBeVisible();
+    await expect(page.getByTestId("pos-session-status")).toHaveText(
+      "Sin turno abierto"
+    );
     await page.getByRole("button", { name: "Abrir caja" }).click();
     await expect(page.getByText("Monto inicial contado")).toBeVisible();
   });
 
+  test("sin cajas no ofrece acciones ni pestañas que no hacen nada", async ({
+    page,
+  }) => {
+    await loginAndOpenCash(page, ["cash.view", "cash.operate"], {
+      registers: "none",
+    });
+
+    await expect(page.getByText("Sin cajas configuradas")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Caja" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Abrir caja" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Turno" })).toHaveCount(0);
+  });
+
+  test("con varias cajas el título es un selector de caja", async ({ page }) => {
+    await loginAndOpenCash(page, ["cash.view", "cash.operate"], {
+      registers: "two",
+    });
+
+    await expect(page.getByTestId("pos-session-status")).toContainText(
+      "Cajera E2E"
+    );
+    await page.getByRole("combobox", { name: "Caja" }).click();
+    await page.getByRole("option", { name: "Caja 2" }).click();
+
+    await expect(page.getByTestId("pos-session-status")).toHaveText(
+      "Sin turno abierto"
+    );
+    await expect(page.getByRole("button", { name: "Abrir caja" })).toBeVisible();
+  });
+
+  test("con el sidebar colapsado las pestañas se abren desde el ícono", async ({
+    page,
+  }) => {
+    await loginAndOpenCash(page, ["cash.view"]);
+    await expect(page.getByRole("heading", { name: "Caja 1" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Colapsar menú" }).click();
+    await page.getByRole("button", { name: "Caja", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Historial" }).click();
+
+    await expect(page.getByText("Historial de turnos")).toBeVisible();
+  });
+
+  test("en pantallas chicas las pestañas también están en la página", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 800, height: 900 });
+    await loginAndOpenCash(page, ["cash.view"]);
+
+    const tabs = page.getByRole("navigation", { name: "Caja" });
+    await tabs.getByRole("button", { name: "Historial" }).click();
+
+    await expect(page.getByText("Historial de turnos")).toBeVisible();
+  });
+
   test("el sidebar lleva a Caja cuando hay permiso", async ({ page }) => {
     await loginAndOpenCash(page, ["cash.view"]);
+    // En Caja el item es el submenú de pestañas; fuera de ella, un link.
+    await page.goto("/es/dashboard/orders");
 
     await page.getByRole("link", { name: "Caja" }).click();
     await expect(page).toHaveURL(/\/dashboard\/cash/);
@@ -141,7 +207,7 @@ test.describe("Caja — historial, cierre y retiro", () => {
   test("el historial solo lista turnos cerrados", async ({ page }) => {
     await loginAndOpenCash(page, ["cash.view"]);
 
-    await page.getByRole("tab", { name: "Historial" }).click();
+    await page.getByRole("button", { name: "Historial" }).click();
     await expect(page.getByText("Historial de turnos")).toBeVisible();
     await expect(page.getByText("Cuadró")).toBeVisible();
     // El turno abierto de otra caja no es un cierre.
@@ -214,9 +280,9 @@ test.describe("Caja — vender (POS)", () => {
     const created: Array<Record<string, unknown>> = [];
     await loginAndOpenCash(page, CASHIER, { onCreateOrder: (body) => created.push(body) });
 
-    await expect(page.getByRole("tab", { name: "Vender" })).toHaveAttribute(
-      "aria-selected",
-      "true"
+    await expect(page.getByRole("button", { name: "Vender" })).toHaveAttribute(
+      "aria-current",
+      "page"
     );
     await expect(page.getByTestId("pos-kpi-strip")).toBeVisible();
     // Sin fotos: solo lista, la grilla queda deshabilitada.
@@ -371,12 +437,12 @@ test.describe("Caja — vender (POS)", () => {
   test("+ Agregar productos lleva a Vender con la mesa elegida", async ({ page }) => {
     await loginAndOpenCash(page, CASHIER);
 
-    await page.getByRole("tab", { name: /Por cobrar/ }).click();
+    await page.getByRole("button", { name: /Por cobrar/ }).click();
     await page.getByRole("button", { name: "Agregar productos" }).click();
 
-    await expect(page.getByRole("tab", { name: "Vender" })).toHaveAttribute(
-      "aria-selected",
-      "true"
+    await expect(page.getByRole("button", { name: "Vender" })).toHaveAttribute(
+      "aria-current",
+      "page"
     );
     await expect(page.getByRole("button", { name: "A la mesa" })).toHaveAttribute(
       "aria-pressed",
@@ -388,7 +454,7 @@ test.describe("Caja — vender (POS)", () => {
   test("por liquidar agrupa por persona y se puede plegar", async ({ page }) => {
     await loginAndOpenCash(page, CASHIER);
 
-    await page.getByRole("tab", { name: /Por liquidar/ }).click();
+    await page.getByRole("button", { name: /Por liquidar/ }).click();
     const list = page.getByTestId("settlements-list");
     await expect(list.getByText("Domiciliario · Repartidor E2E")).toBeVisible();
     await expect(list.getByText(/Ana Ruiz · Cl. 45/)).toBeVisible();
