@@ -12,8 +12,9 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryList } from "@/features/catalog/components";
 import {
+  useBusiness,
   useCategories,
-  useIndustryCategories,
+  useIndustryCategoriesByIndustry,
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
@@ -35,7 +36,12 @@ export default function CategoriesPage() {
     isLoading: isLoadingCategories,
     error: categoriesError,
   } = useCategories(businessId ?? "");
-  const { data: industryCategoriesData } = useIndustryCategories();
+  // Solo las categorías de la industria del negocio (como la importación de
+  // productos), no las de todas las industrias.
+  const { data: businessData } = useBusiness(businessId ?? "");
+  const { data: industryCategoriesData } = useIndustryCategoriesByIndustry(
+    businessData?.industryId
+  );
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
   const industryCategories = Array.isArray(industryCategoriesData)
     ? industryCategoriesData
