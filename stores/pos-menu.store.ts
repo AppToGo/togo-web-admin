@@ -1,11 +1,14 @@
 /**
- * Submenú de Caja en la barra lateral.
+ * Lo que la página de Caja pinta fuera de sí misma.
  *
  * Las pestañas del POS (Vender, Por cobrar…) son estado interno de la
- * página, no rutas; por eso la página las registra acá y el Sidebar las
- * pinta como submenú de "Caja", igual que Catálogo. Sin registro (fuera de
- * Caja) el item vuelve a ser un link simple. No se persiste: al salir de
- * la página se limpia.
+ * página, no rutas; por eso `CashPosPage` las registra acá y el Sidebar las
+ * pinta como submenú de "Caja", igual que Catálogo. Lo mismo con la caja
+ * seleccionada (título de la página) y las acciones del turno (junto al
+ * título). Se registra todo junto y solo cuando la caja está lista: sin
+ * registro (cargando, sede sin cajas, fuera de Caja) el item del Sidebar
+ * vuelve a ser un link simple y la página muestra sus textos de siempre.
+ * No se persiste: al salir de la página se limpia.
  */
 import { create } from "zustand";
 
@@ -17,44 +20,18 @@ export interface PosMenuEntry {
   onSelect: () => void;
 }
 
-interface PosMenuState {
-  entries: PosMenuEntry[];
-  setEntries: (entries: PosMenuEntry[]) => void;
-  clearEntries: () => void;
-}
-
-export const usePosMenuStore = create<PosMenuState>()((set) => ({
-  entries: [],
-  setEntries: (entries) => set({ entries }),
-  clearEntries: () => set({ entries: [] }),
-}));
-
-export interface PosSessionHeader {
-  registerName: string;
-  /** Estado ya formateado: "Abierta · {quién} · desde las {hora}". */
+export interface PosRegisterHeader {
+  registers: Array<{ id: string; name: string }>;
+  selectedId: string;
+  onSelectRegister: (id: string) => void;
+  /** Turno abierto en la caja seleccionada (punto verde o gris). */
+  isOpen: boolean;
+  /**
+   * Estado ya formateado: "Abierta · {quién} · desde las {hora}" o "Sin
+   * turno abierto" (la hora depende de la zona de la sede).
+   */
   statusText: string;
 }
-
-interface PosSessionHeaderState {
-  header: PosSessionHeader | null;
-  setHeader: (header: PosSessionHeader | null) => void;
-  clearHeader: () => void;
-}
-
-/**
- * Caja abierta junto al título de la página: con turno abierto el título
- * deja de ser "Caja" y pasa a ser el nombre de la caja (con el punto
- * verde) y el subtítulo su estado. `CashPosPage` lo registra ya
- * formateado (la hora depende de la zona de la sede); sin turno abierto
- * es `null` y la página muestra sus textos de siempre.
- */
-export const usePosSessionHeaderStore = create<PosSessionHeaderState>()(
-  (set) => ({
-    header: null,
-    setHeader: (header) => set({ header }),
-    clearHeader: () => set({ header: null }),
-  })
-);
 
 export interface PosHeaderActions {
   onMovement: (() => void) | null;
@@ -62,20 +39,20 @@ export interface PosHeaderActions {
   onOpenRegister: (() => void) | null;
 }
 
-interface PosHeaderActionsState {
-  actions: PosHeaderActions | null;
-  setActions: (actions: PosHeaderActions) => void;
-  clearActions: () => void;
+export interface PosPage {
+  entries: PosMenuEntry[];
+  header: PosRegisterHeader;
+  actions: PosHeaderActions;
 }
 
-/**
- * Acciones de la caja (Movimiento, Cerrar/Abrir) para el título de la
- * página: viven en CashPosPage pero se pintan arriba junto a "Caja".
- */
-export const usePosHeaderActionsStore = create<PosHeaderActionsState>()(
-  (set) => ({
-    actions: null,
-    setActions: (actions) => set({ actions }),
-    clearActions: () => set({ actions: null }),
-  })
-);
+interface PosPageState {
+  page: PosPage | null;
+  setPage: (page: PosPage) => void;
+  clearPage: () => void;
+}
+
+export const usePosPageStore = create<PosPageState>()((set) => ({
+  page: null,
+  setPage: (page) => set({ page }),
+  clearPage: () => set({ page: null }),
+}));

@@ -1,7 +1,8 @@
 "use client";
 /**
- * Caja como punto de venta (docs/caja-pos.md): encabezado con la caja y el
- * turno, pestañas y la pestaña activa.
+ * Caja como punto de venta (docs/caja-pos.md): la pestaña activa. La caja
+ * y el turno (título), las acciones y las pestañas (submenú de Caja en el
+ * Sidebar) se pintan fuera y se registran en `usePosPageStore`.
  *
  * Pestañas: Vender (por defecto con turno abierto) · Por cobrar · Por
  * liquidar · Turno · Historial · Auditoría. Cada una se gatea por su
@@ -18,6 +19,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useBusiness } from "@/features/business/hooks/useBusiness";
 import { useOrderComposer } from "@/features/orders/hooks/useOrderComposer";
@@ -35,11 +37,7 @@ import { ManualMovementDrawer } from "../ManualMovementDrawer";
 import { CloseSessionDrawer } from "../CloseSessionDrawer";
 import { SessionsHistory } from "../SessionsHistory";
 import { CashAuditPanel } from "../CashAuditPanel";
-import {
-  usePosHeaderActionsStore,
-  usePosMenuStore,
-  usePosSessionHeaderStore,
-} from "@/stores/pos-menu.store";
+import { usePosPageStore } from "@/stores/pos-menu.store";
 import { SellTab } from "./SellTab";
 import { ReceivablesTab } from "./ReceivablesTab";
 import { SettlementsTab } from "./SettlementsTab";
@@ -178,83 +176,89 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
   const [moving, setMoving] = useState(false);
   const [closing, setClosing] = useState(false);
 
-  // Las pestañas viven en la barra lateral como submenú de Caja (mismo
-  // patrón que Catálogo): se registran mientras la página está montada.
-  const setPosMenu = usePosMenuStore((state) => state.setEntries);
-  const clearPosMenu = usePosMenuStore((state) => state.clearEntries);
-  const menuSignature = visibleTabs
-    .map((item) => `${item.value}:${item.label}:${item.count ?? 0}`)
-    .join("|");
-  useEffect(() => {
-    setPosMenu(
-      visibleTabs.map((item) => ({
-        id: item.value,
-        label: item.label,
-        count: item.count,
-        active: tab === item.value,
-        onSelect: () => setTab(item.value),
-      }))
-    );
-    return clearPosMenu;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [menuSignature, tab, setPosMenu, clearPosMenu]);
-
-  // Acciones junto al título de la página ("Caja"), no en el encabezado de
-  // la sesión. Van antes de los retornos tempranos: son hooks.
+  // Acciones del turno: un solo callback por acción, compartido por el
+  // encabezado de la página y la pestaña Vender.
   const canOpenRegister = canOperate && !openSessionId;
   const canMove = !!openSessionId && (canOperate || canWithdraw);
   // Sin el resumen el esperado saldría en $ 0 y la diferencia del arqueo
   // sería falsa.
   const canCloseRegister = !!openSessionId && canClose && !!summary;
-  const openRegister = canOpenRegister ? () => setOpening(true) : null;
-  const setHeaderActions = usePosHeaderActionsStore(
-    (state) => state.setActions
+  const openRegister = useMemo(
+    () => (canOpenRegister ? () => setOpening(true) : null),
+    [canOpenRegister]
   );
-  const clearHeaderActions = usePosHeaderActionsStore(
-    (state) => state.clearActions
+  const movement = useMemo(
+    () => (canMove ? () => setMoving(true) : null),
+    [canMove]
   );
-  useEffect(() => {
-    setHeaderActions({
-      onMovement: canMove ? () => setMoving(true) : null,
-      onCloseRegister: canCloseRegister ? () => setClosing(true) : null,
-      onOpenRegister: canOpenRegister ? () => setOpening(true) : null,
-    });
-    return clearHeaderActions;
-  }, [
-    canMove,
-    canCloseRegister,
-    canOpenRegister,
-    setHeaderActions,
-    clearHeaderActions,
-  ]);
+  const closeRegister = useMemo(
+    () => (canCloseRegister ? () => setClosing(true) : null),
+    [canCloseRegister]
+  );
 
-  // Con turno abierto el título de la página es la caja (nombre + estado);
-  // sin turno no se registra nada y quedan "Caja" y su descripción.
-  const setSessionHeader = usePosSessionHeaderStore((state) => state.setHeader);
-  const clearSessionHeader = usePosSessionHeaderStore(
-    (state) => state.clearHeader
-  );
-  const sessionStatusText =
-    openSession && register
-      ? t("pos.header.open", {
-          name: openSession.openedByName ?? "—",
-          time: fmt.time(openSession.openedAt),
-        })
-      : null;
+  const sessionStatusText = openSession
+    ? t("pos.header.open", {
+        name: openSession.openedByName ?? "—",
+        time: fmt.time(openSession.openedAt),
+      })
+    : t("pos.header.closed");
+
+  // Pestañas (submenú de Caja en el Sidebar), caja seleccionada (título de
+  // la página) y acciones del turno (junto al título). Solo con la caja
+  // lista: cargando o sin cajas los drawers no están montados y las
+  // pestañas no cambian nada en pantalla. Van antes de los retornos
+  // tempranos: son hooks.
+  const ready = !isLoading && registers.length > 0 && !!register;
+  const setPosPage = usePosPageStore((state) => state.setPage);
+  const clearPosPage = usePosPageStore((state) => state.clearPage);
+  const menuSignature = visibleTabs
+    .map((item) => `${item.value}:${item.label}:${item.count ?? 0}`)
+    .join("|");
+  const registersSignature = registers
+    .map((item) => `${item.id}:${item.name}`)
+    .join("|");
   useEffect(() => {
-    setSessionHeader(
-      openSession && register && sessionStatusText
-        ? { registerName: register.name, statusText: sessionStatusText }
-        : null
-    );
-    return clearSessionHeader;
+    if (!ready || !register) {
+      clearPosPage();
+      return;
+    }
+    setPosPage({
+      entries: visibleTabs.map((item) => ({
+        id: item.value,
+        label: item.label,
+        count: item.count,
+        active: tab === item.value,
+        onSelect: () => setTab(item.value),
+      })),
+      header: {
+        registers: registers.map(({ id, name }) => ({ id, name })),
+        selectedId: register.id,
+        onSelectRegister: setSelectedId,
+        isOpen: !!openSession,
+        statusText: sessionStatusText,
+      },
+      actions: {
+        onMovement: movement,
+        onCloseRegister: closeRegister,
+        onOpenRegister: openRegister,
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    ready,
+    menuSignature,
+    tab,
+    registersSignature,
+    register?.id,
     openSession,
-    register,
     sessionStatusText,
-    setSessionHeader,
-    clearSessionHeader,
+    movement,
+    closeRegister,
+    openRegister,
+    setPosPage,
+    clearPosPage,
   ]);
+  useEffect(() => clearPosPage, [clearPosPage]);
 
   const addToTable = (tableId: string) => {
     // Un pedido nuevo para la misma mesa: no se edita el ya enviado a cocina.
@@ -292,6 +296,46 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
 
   return (
     <div className="space-y-4">
+      {/* Menos de 1024 px la barra lateral es un cajón: las pestañas van
+          también acá para no abrir el menú en cada cambio. Desde 1024 px
+          viven solo en el submenú de Caja. */}
+      <nav
+        aria-label={t("title")}
+        className="flex gap-1 overflow-x-auto scrollbar-thin lg:hidden"
+      >
+        {visibleTabs.map((item) => {
+          const active = tab === item.value;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              aria-current={active ? "page" : undefined}
+              onClick={() => setTab(item.value)}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
+                active
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              )}
+            >
+              {item.label}
+              {item.count !== undefined && item.count > 0 && (
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 text-xs font-semibold tabular-nums",
+                    active
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-200 text-slate-700"
+                  )}
+                >
+                  {item.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
       {canSell && (
         // Montada siempre (oculta fuera de Vender): el foco y el scroll del
         // catálogo se conservan al ir y volver de otras pestañas.

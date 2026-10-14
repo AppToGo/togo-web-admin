@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Tags, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -12,8 +13,10 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryList } from "@/features/catalog/components";
 import {
+  catalogKeys,
   useBusiness,
   useCategories,
+  useIndustryCategories,
   useIndustryCategoriesByIndustry,
   useCreateCategory,
   useUpdateCategory,
@@ -37,15 +40,41 @@ export default function CategoriesPage() {
     error: categoriesError,
   } = useCategories(businessId ?? "");
   // Solo las categorías de la industria del negocio (como la importación de
-  // productos), no las de todas las industrias.
-  const { data: businessData } = useBusiness(businessId ?? "");
-  const { data: industryCategoriesData } = useIndustryCategoriesByIndustry(
-    businessData?.industryId
+  // productos), no las de todas las industrias. Un negocio sin industria
+  // asignada ve todas: si no, no podría crear ninguna categoría.
+  const { data: businessData, isSuccess: isBusinessLoaded } = useBusiness(
+    businessId ?? ""
   );
-  const categories = Array.isArray(categoriesData) ? categoriesData : [];
-  const industryCategories = Array.isArray(industryCategoriesData)
-    ? industryCategoriesData
-    : [];
+  const industryId = businessData?.industryId ?? null;
+  const { data: byIndustryData } = useIndustryCategoriesByIndustry(industryId);
+  const { data: allIndustryCategoriesData } = useIndustryCategories({
+    queryKey: catalogKeys.industryCategories(),
+    enabled: isBusinessLoaded && !industryId,
+  });
+  const categories = useMemo(
+    () => (Array.isArray(categoriesData) ? categoriesData : []),
+    [categoriesData]
+  );
+  const industryCategories = useMemo(() => {
+    const source = industryId ? byIndustryData : allIndustryCategoriesData;
+    const options: Array<{ id: string; name: string }> = Array.isArray(source)
+      ? source.map(({ id, name }) => ({ id, name }))
+      : [];
+    // Categorías ya creadas que apuntan a una categoría de otra industria
+    // (datos previos al filtro): se conserva su opción para que editarlas
+    // no deje el selector vacío ni pierda el vínculo al guardar.
+    const known = new Set(options.map((option) => option.id));
+    for (const category of categories) {
+      if (category.industryCategoryId && !known.has(category.industryCategoryId)) {
+        known.add(category.industryCategoryId);
+        options.push({
+          id: category.industryCategoryId,
+          name: category.industryCategoryName ?? category.industryCategoryId,
+        });
+      }
+    }
+    return options;
+  }, [industryId, byIndustryData, allIndustryCategoriesData, categories]);
 
   // MUTACIONES
   const createCategory = useCreateCategory(businessId ?? "");

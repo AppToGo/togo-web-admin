@@ -129,8 +129,11 @@ test.describe("Caja — gateo y turno", () => {
       openSession: false,
     });
 
-    // Sin turno abierto el título y el subtítulo son los de la sección.
-    await expect(page.getByRole("heading", { name: "Caja" })).toBeVisible();
+    // Sin turno abierto el título sigue siendo la caja, con su estado.
+    await expect(page.getByRole("heading", { name: "Caja 1" })).toBeVisible();
+    await expect(page.getByTestId("pos-session-status")).toHaveText(
+      "Sin turno abierto"
+    );
     await page.getByRole("button", { name: "Abrir caja" }).click();
     await expect(page.getByText("Monto inicial contado")).toBeVisible();
   });

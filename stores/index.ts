@@ -9,12 +9,11 @@ export {
   setSelectedBranchId,
 } from "./branch.store";
 export {
-  usePosMenuStore,
-  usePosHeaderActionsStore,
-  usePosSessionHeaderStore,
+  usePosPageStore,
   type PosMenuEntry,
   type PosHeaderActions,
-  type PosSessionHeader,
+  type PosPage,
+  type PosRegisterHeader,
 } from "./pos-menu.store";
 export {
   useSessionStore,

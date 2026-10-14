@@ -16,7 +16,7 @@ import {
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useLocaleStore } from "@/stores/localeStore";
-import { usePosMenuStore, type PosMenuEntry } from "@/stores/pos-menu.store";
+import { usePosPageStore, type PosMenuEntry } from "@/stores/pos-menu.store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +41,9 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   onMenuClick?: () => void;
 }
+
+/** Referencia estable: sin Caja montada el selector no cambia. */
+const NO_POS_ENTRIES: PosMenuEntry[] = [];
 
 type NavigationItem = {
   name: string;
@@ -119,7 +122,9 @@ export function Sidebar({
   // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
   const canViewCash = hasPermission("cash.view");
   // Submenú de Caja: lo registra CashPosPage mientras está montada.
-  const posMenuEntries = usePosMenuStore((state) => state.entries);
+  const posMenuEntries = usePosPageStore(
+    (state) => state.page?.entries ?? NO_POS_ENTRIES
+  );
 
   // Badges: pedidos nuevos sin ver (por negocio, sucursales seleccionadas) y
   // conversaciones que esperan asesor. Los refrescan los sockets globales de
@@ -596,13 +601,74 @@ function CollapsibleNavItem({
     );
   }
 
+  // Colapsado con hijos de acción (pestañas de Caja): el ícono abre un menú
+  // con ellas; sin esto no habría cómo cambiar de pestaña sin desplegar la
+  // barra.
+  if (isCollapsed && actionChildren.length > 0) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "relative flex w-full items-center rounded-card text-sm font-medium transition-all duration-200",
+              "justify-center px-3 py-3",
+              isParentActive
+                ? isAdmin
+                  ? "bg-purple-50 text-purple-600"
+                  : "bg-indigo-50 text-indigo-600"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            )}
+            title={item.name}
+            aria-label={item.name}
+          >
+            <item.icon
+              className={cn(
+                "w-5 h-5 shrink-0",
+                isParentActive
+                  ? isAdmin
+                    ? "text-purple-600"
+                    : "text-indigo-600"
+                  : "text-slate-400"
+              )}
+            />
+            <NavBadge count={item.badge} isCollapsed />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start" className="w-56">
+          <DropdownMenuLabel>{item.name}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {actionChildren.map((child) => (
+            <DropdownMenuItem
+              key={child.id}
+              aria-current={child.active ? "page" : undefined}
+              onSelect={() => {
+                child.onSelect();
+                onMenuClick?.();
+              }}
+              className={cn(
+                child.active && "bg-indigo-50 font-medium text-indigo-700"
+              )}
+            >
+              <span className="flex-1">{child.label}</span>
+              {child.count !== undefined && child.count > 0 && (
+                <span className="rounded-full bg-slate-200 px-1.5 text-xs font-semibold tabular-nums text-slate-700">
+                  {child.count}
+                </span>
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   // If collapsed and has children, navigate to first child on click.
-  // Con hijos de acción (sin ruta) se va a la página del item.
   if (isCollapsed) {
     const firstChild = linkChildren[0];
     return (
       <Link
-        href={firstChild?.href ?? item.href}
+        href={firstChild.href}
         onClick={onMenuClick}
         className={cn(
           "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",

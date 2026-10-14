@@ -1,18 +1,18 @@
 "use client";
 /**
  * Acciones del turno (Movimiento, Cerrar caja / Abrir caja) junto al título
- * de la página "Caja". `CashPosPage` las registra en
- * `usePosHeaderActionsStore` mientras está montada; fuera de ella (o sin
- * permiso) no se pinta nada.
+ * de la página "Caja". `CashPosPage` las registra en `usePosPageStore`
+ * mientras está montada y con la caja lista; fuera de ella (o sin permiso)
+ * no se pinta nada.
  */
 import { useTranslations } from "next-intl";
 import { ArrowLeftRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePosHeaderActionsStore } from "@/stores/pos-menu.store";
+import { usePosPageStore } from "@/stores/pos-menu.store";
 
 export function CashHeaderActions() {
   const t = useTranslations("cash");
-  const actions = usePosHeaderActionsStore((state) => state.actions);
+  const actions = usePosPageStore((state) => state.page?.actions ?? null);
   if (!actions) return null;
   const { onMovement, onCloseRegister, onOpenRegister } = actions;
   if (!onMovement && !onCloseRegister && !onOpenRegister) return null;
