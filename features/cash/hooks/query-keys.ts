@@ -25,4 +25,6 @@ export const CASH_KEYS = {
   overview: (businessId?: string) => [...CASH_KEYS.all, "overview", businessId] as const,
   audit: (businessId?: string, params?: unknown) =>
     [...CASH_KEYS.all, "audit", businessId, params] as const,
+  receiptWindow: (businessId?: string, orderId?: string) =>
+    [...CASH_KEYS.all, "receipt-window", businessId, orderId] as const,
 };

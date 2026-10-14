@@ -14,12 +14,10 @@
  * - Transferencia: solo si la sede tiene `transferOptions` configuradas
  */
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Search,
-  Minus,
-  Plus,
   Truck,
   Store,
   Utensils,
@@ -41,7 +39,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Select,
   SelectContent,
@@ -52,14 +50,11 @@ import {
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useEffectiveBranches } from "@/features/branches/hooks";
-import { useBranch } from "@/features/branches/hooks/useBranches";
 import { useBranchStore } from "@/stores/branch.store";
-import { useTables } from "@/features/tables/hooks";
-import type { InventoryItem } from "@/features/branch-inventory/types";
 import { useCreateOrder } from "../hooks";
-import { useOrderableProducts } from "../hooks/useOrderableProducts";
+import { useOrderComposer } from "../hooks/useOrderComposer";
 import { formatCurrency } from "../utils/order-status.utils";
-import { isCounterEnabled } from "@/features/branches/types/branch-config.types";
+import { ProductRow } from "./ProductRow";
 import { useOpenSessions } from "@/features/cash/hooks/useCash";
 import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
 import { quickCashAmounts } from "@/features/cash/utils/cash.utils";
@@ -81,28 +76,12 @@ interface NewOrderDrawerProps {
   presetDeliveryType?: ManualOrderDeliveryType;
 }
 
-interface CartLine {
-  variantId: string;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-}
-
-/** Mismo tope por línea que el carrito de WhatsApp. */
-const MAX_QUANTITY = 99;
-
 const DELIVERY_TYPE_ICONS: Record<ManualOrderDeliveryType, LucideIcon> = {
   DELIVERY: Truck,
   PICKUP: Store,
   DINE_IN: Utensils,
   COUNTER: Banknote,
 };
-
-function productLabel(item: InventoryItem): string {
-  return item.variantLabel && item.variantLabel !== item.productName
-    ? `${item.productName} · ${item.variantLabel}`
-    : item.productName;
-}
 
 /**
  * 409 `COUNTER_SALE_PAYMENT_PENDING`: la venta de mostrador se creó pero el
@@ -144,130 +123,66 @@ export function NewOrderDrawer({
     presetBranchIdProp ?? null
   );
   const branchId = selectedBranchId ?? initialBranchId;
-  const [search, setSearch] = useState("");
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [cart, setCart] = useState<Record<string, CartLine>>({});
-  const [selectedDeliveryType, setDeliveryType] = useState<ManualOrderDeliveryType>(
-    presetDeliveryType ?? "DELIVERY"
-  );
   const [selectedPaymentMethod, setPaymentMethod] = useState<ManualOrderPaymentMethod | null>(null);
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [addressText, setAddressText] = useState("");
-  const [tableId, setTableId] = useState<string | null>(null);
   // Mostrador + efectivo: turno donde entra el dinero y recibido del cliente.
   const [pickedCashSessionId, setCashSessionId] = useState<string | null>(null);
   const [cashReceived, setCashReceived] = useState(0);
-  const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const { data: branch } = useBranch(branchId, isOpen);
-  const { data: products = [], isLoading: isLoadingProducts } = useOrderableProducts(
+  const composer = useOrderComposer({
     businessId,
     branchId,
-    isOpen
-  );
+    enabled: isOpen,
+    initialDeliveryType: presetDeliveryType ?? "DELIVERY",
+  });
+  const {
+    products,
+    isLoadingProducts,
+    categories,
+    visibleProducts,
+    search,
+    setSearch,
+    categoryId,
+    setCategoryId,
+    cart,
+    cartLines,
+    itemCount,
+    subtotal,
+    deliveryFee,
+    total,
+    setQuantity,
+    deliveryTypes,
+    deliveryType,
+    setDeliveryType,
+    paymentMethods,
+    activeTables,
+    needsCustomer,
+    customerPhone,
+    setCustomerPhone,
+    customerName,
+    setCustomerName,
+    addressText,
+    setAddressText,
+    tableId,
+    setTableId,
+    notes,
+    setNotes,
+  } = composer;
 
-  const dineInAllowed = !!branch?.dineInConfig?.enabled && !!branch.dineInConfig.allowOperators;
-  // Mostrador (docs/caja-pedidos.md): solo si la sede lo tiene habilitado.
-  const counterAllowed = isCounterEnabled(branch?.counterConfig);
-  const { data: tables = [] } = useTables(
-    isOpen && dineInAllowed ? businessId : null,
-    branchId
-  );
-  const activeTables = useMemo(() => tables.filter((table) => table.isActive), [tables]);
-
-  const deliveryTypes: ManualOrderDeliveryType[] = [
-    "DELIVERY",
-    "PICKUP",
-    ...(dineInAllowed ? ["DINE_IN" as const] : []),
-    ...(counterAllowed ? ["COUNTER" as const] : []),
-  ];
-
-  const hasTransfer =
-    !!branch?.transferOptions?.enabled && (branch.transferOptions.options?.length ?? 0) > 0;
-  const paymentMethods: ManualOrderPaymentMethod[] = hasTransfer
-    ? ["CASH", "TRANSFER", "DATAPHONE"]
-    : ["CASH", "DATAPHONE"];
-
-  // Si la sede cambia y la opción elegida ya no está disponible, se ignora.
-  const deliveryType = deliveryTypes.includes(selectedDeliveryType)
-    ? selectedDeliveryType
-    : "DELIVERY";
   const paymentMethod =
     selectedPaymentMethod && paymentMethods.includes(selectedPaymentMethod)
       ? selectedPaymentMethod
       : null;
 
-  // Categorías que tienen al menos un producto disponible en la sede.
-  const categories = useMemo(() => {
-    const byId = new Map<string, string>();
-    for (const item of products) {
-      if (item.categoryId && item.categoryName) byId.set(item.categoryId, item.categoryName);
-    }
-    return [...byId.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [products]);
-
-  const visibleProducts = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return products.filter(
-      (item) =>
-        (!categoryId || item.categoryId === categoryId) &&
-        (!query || productLabel(item).toLowerCase().includes(query))
-    );
-  }, [products, search, categoryId]);
-
-  const cartLines = Object.values(cart);
-  const itemCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
-  const subtotal = cartLines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
-
-  // Vista previa del domicilio: tarifa plana o gratis se conocen acá; por
-  // distancia la calcula el backend al crear (necesita geocodificar).
-  const deliveryConfig = branch?.deliveryConfig;
-  const deliveryFee: number | null =
-    deliveryType !== "DELIVERY"
-      ? 0
-      : deliveryConfig?.type === "FLAT"
-        ? (deliveryConfig.flatFee ?? 0)
-        : deliveryConfig?.type === "FREE" || !deliveryConfig
-          ? 0
-          : null;
-  const total = subtotal + (deliveryFee ?? 0);
-
-  const setQuantity = (item: InventoryItem, quantity: number) => {
-    setCart((prev) => {
-      const next = { ...prev };
-      const max = Math.min(MAX_QUANTITY, item.stock ?? MAX_QUANTITY);
-      const clamped = Math.min(Math.max(quantity, 0), max);
-      if (clamped === 0) {
-        delete next[item.productVariantId];
-      } else {
-        next[item.productVariantId] = {
-          variantId: item.productVariantId,
-          name: productLabel(item),
-          unitPrice: item.effectivePrice,
-          quantity: clamped,
-        };
-      }
-      return next;
-    });
-  };
-
   const handleBranchChange = (id: string) => {
-    // Precios, disponibilidad y mesas son por sede: el carrito no se arrastra.
     setSelectedBranchId(id);
-    setCart({});
-    setTableId(null);
-    setCategoryId(null);
+    composer.resetForBranch();
     // El turno es de la sede anterior: mandarlo con la nueva lo rechaza el
     // servidor después de crear el pedido.
     setCashSessionId(null);
     setCashReceived(0);
   };
 
-  const needsCustomer = deliveryType !== "DINE_IN" && deliveryType !== "COUNTER";
   const isCounterCash = deliveryType === "COUNTER" && paymentMethod === "CASH";
   // Ver los turnos exige `cash.view`: sin él no se piden (403 con reintentos).
   const { hasPermission } = useMyPermissions();
@@ -286,14 +201,8 @@ export function NewOrderDrawer({
         ? openSessions[0].id
         : null;
   const errors = {
-    items: cartLines.length === 0 ? t("validation.items") : undefined,
+    ...composer.errors,
     paymentMethod: !paymentMethod ? t("validation.paymentMethod") : undefined,
-    customerPhone:
-      needsCustomer && !PHONE_REGEX.test(customerPhone) ? t("validation.phone") : undefined,
-    customerName: needsCustomer && !customerName.trim() ? t("validation.name") : undefined,
-    addressText:
-      deliveryType === "DELIVERY" && !addressText.trim() ? t("validation.address") : undefined,
-    tableId: deliveryType === "DINE_IN" && !tableId ? t("validation.table") : undefined,
     cashSession: isCounterCash && !cashSessionId ? t("validation.cashSession") : undefined,
     // Vacío = pago exacto. Si se escribe, tiene que cubrir el total: con
     // menos el servidor rechaza el cobro cuando el pedido ya está creado.
@@ -308,17 +217,10 @@ export function NewOrderDrawer({
   const createOrder = useCreateOrder(businessId ?? undefined);
 
   const resetForm = () => {
-    setSearch("");
-    setCategoryId(null);
-    setCart({});
+    composer.clear();
     setSelectedBranchId(presetBranchIdProp ?? null);
     setDeliveryType(presetDeliveryType ?? "DELIVERY");
     setPaymentMethod(null);
-    setCustomerPhone("");
-    setCustomerName("");
-    setAddressText("");
-    setTableId(null);
-    setNotes("");
     setCashSessionId(null);
     setCashReceived(0);
     setSubmitted(false);
@@ -334,31 +236,19 @@ export function NewOrderDrawer({
     setSubmitted(true);
     if (!isValid || !branchId || !paymentMethod) return;
     try {
-      await createOrder.mutateAsync({
-        branchId,
-        deliveryType,
-        paymentMethod,
-        items: cartLines.map((line) => ({
-          productVariantId: line.variantId,
-          quantity: line.quantity,
-        })),
-        ...(needsCustomer && {
-          customerName: customerName.trim(),
-          customerPhone,
-        }),
-        ...(deliveryType === "DELIVERY" && { addressText: addressText.trim() }),
-        ...(deliveryType === "DINE_IN" && tableId && { tableId }),
-        // Mostrador en efectivo: el turno es obligatorio (validado arriba);
-        // sin recibido se asume pago exacto y el servidor calcula las vueltas.
-        ...(isCounterCash &&
-          cashSessionId && {
-            cash: {
-              sessionId: cashSessionId,
-              ...(cashReceived > 0 && { receivedAmount: cashReceived }),
-            },
-          }),
-        ...(notes.trim() && { notes: notes.trim() }),
-      });
+      await createOrder.mutateAsync(
+        composer.buildRequest(paymentMethod, {
+          // Mostrador en efectivo: el turno es obligatorio (validado arriba);
+          // sin recibido se asume pago exacto y el servidor calcula las vueltas.
+          ...(isCounterCash &&
+            cashSessionId && {
+              cash: {
+                sessionId: cashSessionId,
+                ...(cashReceived > 0 && { receivedAmount: cashReceived }),
+              },
+            }),
+        })
+      );
       resetForm();
       onClose();
     } catch (err) {
@@ -803,78 +693,3 @@ function FieldGroup({
   );
 }
 
-function ProductRow({
-  item,
-  quantity,
-  onChange,
-  addLabel,
-  removeLabel,
-}: {
-  item: InventoryItem;
-  quantity: number;
-  onChange: (quantity: number) => void;
-  addLabel: string;
-  removeLabel: string;
-}) {
-  const name = productLabel(item);
-  const maxReached = quantity >= Math.min(MAX_QUANTITY, item.stock ?? MAX_QUANTITY);
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 p-3 rounded-card transition-colors",
-        quantity > 0 ? "bg-indigo-50/60" : "hover:bg-slate-50"
-      )}
-    >
-      {item.productImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={item.productImage}
-          alt=""
-          className="w-12 h-12 rounded-icon object-cover shrink-0 bg-slate-100"
-        />
-      ) : (
-        <div className="w-12 h-12 rounded-icon bg-slate-100 text-slate-400 font-semibold flex items-center justify-center shrink-0">
-          {name.charAt(0).toUpperCase()}
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900 truncate">{name}</p>
-        <p className="text-xs text-slate-500 truncate">
-          {[item.categoryName, formatCurrency(item.effectivePrice)].filter(Boolean).join(" · ")}
-        </p>
-      </div>
-      {quantity > 0 ? (
-        <div className="flex items-center rounded-icon bg-indigo-600 text-white shrink-0">
-          <button
-            type="button"
-            onClick={() => onChange(quantity - 1)}
-            aria-label={`${removeLabel} ${name}`}
-            className="w-9 h-9 flex items-center justify-center hover:bg-indigo-700 rounded-l-icon"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <span className="w-7 text-center text-sm font-semibold">{quantity}</span>
-          <button
-            type="button"
-            onClick={() => onChange(quantity + 1)}
-            disabled={maxReached}
-            aria-label={`${addLabel} ${name}`}
-            className="w-9 h-9 flex items-center justify-center hover:bg-indigo-700 rounded-r-icon disabled:opacity-50"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => onChange(1)}
-          aria-label={`${addLabel} ${name}`}
-          className="w-9 h-9 rounded-icon bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center justify-center shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      )}
-    </div>
-  );
-}

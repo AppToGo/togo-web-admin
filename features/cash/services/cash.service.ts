@@ -14,6 +14,7 @@ import type {
   CashAuditEntry,
   OwnerOverviewBranch,
   Paginated,
+  ReceiptWhatsappWindow,
   WithdrawalAuthorizer,
 } from "../types/cash.types";
 
@@ -239,4 +240,20 @@ export async function queryAudit(
     { params }
   );
   return data;
+}
+
+/** Ventana de 24 h de WhatsApp del cliente del pedido (recibo). */
+export async function getReceiptWhatsappWindow(
+  businessId: string,
+  orderId: string
+): Promise<ReceiptWhatsappWindow> {
+  const { data } = await apiClient.get<ReceiptWhatsappWindow>(
+    `/businesses/${businessId}/orders/${orderId}/receipt/whatsapp-window`
+  );
+  return data;
+}
+
+/** Envía el recibo por WhatsApp (409 `WHATSAPP_WINDOW_CLOSED` fuera de la ventana). */
+export async function sendReceiptWhatsapp(businessId: string, orderId: string): Promise<void> {
+  await apiClient.post(`/businesses/${businessId}/orders/${orderId}/receipt/whatsapp`);
 }

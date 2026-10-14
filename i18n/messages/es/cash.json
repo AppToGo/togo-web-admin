@@ -326,5 +326,96 @@
     "settleIn": "Marcar como liquidado en {register}",
     "settleHint": "Entran {amount} a {register}",
     "noOpen": "No hay caja abierta en esta sede para liquidarlo."
+  },
+  "pos": {
+    "tabs": {
+      "sell": "Vender",
+      "receivables": "Por cobrar",
+      "settlements": "Por liquidar",
+      "shift": "Turno"
+    },
+    "header": {
+      "register": "Caja",
+      "open": "Abierta · {name} · desde las {time}",
+      "closed": "Sin turno abierto",
+      "movement": "Movimiento"
+    },
+    "searchPlaceholder": "Buscar producto o escanear código",
+    "view": {
+      "label": "Vista de productos",
+      "list": "Lista",
+      "grid": "Grilla",
+      "gridDisabled": "Grilla no disponible: ningún producto tiene foto"
+    },
+    "cart": {
+      "title": "Venta actual",
+      "addCustomer": "+ Cliente",
+      "emptyTitle": "Sin productos",
+      "emptyHint": "Toca un producto o búscalo a la izquierda para empezar la venta.",
+      "unitPrice": "{price} c/u",
+      "addNote": "+ Nota para la orden",
+      "subtotal": "Subtotal · {count, plural, one {# producto} other {# productos}}",
+      "total": "Total",
+      "clear": "Limpiar",
+      "confirmClear": "¿Vaciar la venta?",
+      "charge": "Cobrar",
+      "chargeNow": "Cobrar ahora",
+      "sendToTable": "Enviar pedido · Mesa {table} (cobrar al final)",
+      "sendToTableGeneric": "Enviar pedido a la mesa (cobrar al final)",
+      "createUnpaid": "Crear pedido sin cobrar"
+    },
+    "checkout": {
+      "title": "Cobrar venta",
+      "doneTitle": "Venta cobrada",
+      "charged": "Pedido #{number} cobrado",
+      "paidWith": "Pagado con {method}",
+      "noSession": "Abre la caja para recibir efectivo.",
+      "noCashPermission": "No tienes permiso para recibir efectivo en la caja.",
+      "newSale": "Nueva venta",
+      "confirm": "Cobrar {total}",
+      "tableLabel": "Mesa {table}"
+    },
+    "receipt": {
+      "title": "Comprobante",
+      "print": "Imprimir",
+      "whatsapp": "WhatsApp",
+      "whatsappSent": "Recibo enviado por WhatsApp",
+      "whatsappFailed": "No se pudo enviar el recibo por WhatsApp",
+      "noPhone": "Para enviarlo por WhatsApp agrega el teléfono del cliente en la venta.",
+      "windowClosed": "El cliente no ha escrito por WhatsApp en las últimas 24 horas: WhatsApp no deja enviarle el recibo.",
+      "order": "Pedido",
+      "paidWith": "Pagado con",
+      "received": "Recibido",
+      "thanks": "¡Gracias por tu compra!",
+      "popupBlocked": "El navegador bloqueó la ventana de impresión. Permite ventanas emergentes para este sitio."
+    },
+    "kpi": {
+      "expected": "Efectivo esperado",
+      "cashSales": "Ventas en efectivo",
+      "inOut": "Ingresos · egresos",
+      "pending": "Por liquidar",
+      "openShift": "Ver el detalle del turno",
+      "seeShift": "Ver turno"
+    },
+    "closed": {
+      "title": "La caja no tiene turno abierto",
+      "hint": "Abre la caja para empezar a vender y recibir efectivo.",
+      "openRegister": "Abrir caja"
+    },
+    "receivables": {
+      "cardMeta": "{count, plural, one {# pedido} other {# pedidos}} · desde las {time}",
+      "ordersCount": "{count, plural, one {# pedido sin pagar} other {# pedidos sin pagar}}",
+      "charge": "Cobrar {number} · {total}",
+      "addProducts": "Agregar productos"
+    },
+    "settlements": {
+      "kpiTotal": "Por liquidar",
+      "kpiOrders": "Pedidos",
+      "kpiHolders": "Personas con efectivo",
+      "kpiOldest": "Pendiente más antiguo",
+      "delivery": "Domiciliario",
+      "operator": "Operador",
+      "holderMeta": "{count, plural, one {# pedido} other {# pedidos}} · desde las {time}"
+    }
   }
 }
