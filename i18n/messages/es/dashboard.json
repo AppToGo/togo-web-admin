@@ -88,17 +88,33 @@
     "emptyDescription": "Los pedidos y acciones aparecerán aquí"
   },
   "charts": {
-    "conversionFunnel": {
-      "title": "Embudo de Conversión",
-      "confirmed": "Nuevas",
-      "paid": "Pagadas",
-      "completed": "Completadas",
-      "subtitle": "De pedido nuevo a completado"
-    },
     "revenue": {
       "title": "Ingresos por día",
       "current": "Período actual",
       "previous": "Período anterior"
+    },
+    "orderStatus": {
+      "title": "Estado de los pedidos",
+      "subtitle": "{total, plural, one {# pedido} other {# pedidos}} del período, según cómo están hoy",
+      "completed": "Completados",
+      "inProgress": "En curso",
+      "cancelled": "Cancelados",
+      "unconfirmed": "Sin confirmar",
+      "pendingPayment": "Por cobrar: {count, plural, one {# pedido} other {# pedidos}} · {amount}",
+      "empty": "Sin pedidos en el período."
+    },
+    "botConversations": {
+      "title": "Conversaciones del bot",
+      "subtitle": "{total, plural, one {# conversación} other {# conversaciones}} en el período",
+      "withOrder": "Terminan en pedido",
+      "open": "En curso",
+      "abandoned": "Abandonadas",
+      "other": "Otras (soporte, sin intención…)",
+      "handoff": "Piden un asesor: {rate}",
+      "allBranches": "Incluye todas las sedes",
+      "viewMore": "Ver embudo del bot",
+      "empty": "Sin conversaciones en el período.",
+      "error": "No se pudieron cargar las conversaciones."
     },
     "peakHours": {
       "title": "Horas Pico",

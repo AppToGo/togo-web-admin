@@ -88,17 +88,33 @@
     "emptyDescription": "Orders and actions will appear here"
   },
   "charts": {
-    "conversionFunnel": {
-      "title": "Conversion Funnel",
-      "confirmed": "New",
-      "paid": "Paid",
-      "completed": "Completed",
-      "subtitle": "From new order to completed"
-    },
     "revenue": {
       "title": "Revenue per day",
       "current": "Current period",
       "previous": "Previous period"
+    },
+    "orderStatus": {
+      "title": "Order status",
+      "subtitle": "{total, plural, one {# order} other {# orders}} in the period, by current status",
+      "completed": "Completed",
+      "inProgress": "In progress",
+      "cancelled": "Cancelled",
+      "unconfirmed": "Not confirmed",
+      "pendingPayment": "To collect: {count, plural, one {# order} other {# orders}} · {amount}",
+      "empty": "No orders in the period."
+    },
+    "botConversations": {
+      "title": "Bot conversations",
+      "subtitle": "{total, plural, one {# conversation} other {# conversations}} in the period",
+      "withOrder": "End in an order",
+      "open": "Open",
+      "abandoned": "Abandoned",
+      "other": "Other (support, no intent…)",
+      "handoff": "Ask for an agent: {rate}",
+      "allBranches": "Includes all branches",
+      "viewMore": "View bot funnel",
+      "empty": "No conversations in the period.",
+      "error": "Conversations could not be loaded."
     },
     "peakHours": {
       "title": "Peak Hours",

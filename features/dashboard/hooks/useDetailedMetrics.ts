@@ -30,11 +30,12 @@ interface DetailedMetricsResponse {
     };
   };
   conteos: {
-    pagadas: number;
+    pendientesPago: number;
   };
   /** Pedidos del período según su estado ACTUAL. */
   porEstadoOrden?: Partial<Record<string, number>>;
   recaudos: {
+    pendientesPago?: { total: number };
     porDia?: Array<{
       date: string;
       amount: number;
@@ -84,7 +85,7 @@ async function fetchDetailedMetrics(
       previous: data.comparativa.recaudoTotal.valorAnterior,
       growth: data.comparativa.recaudoTotal.crecimiento,
     },
-    conversionFunnel: toConversionFunnel(data),
+    orderStatus: toOrderStatus(data),
     revenueChart: data.recaudos.porDia || [],
     peakHours: data.horasPico.map((h: DetailedMetricsResponse['horasPico'][0]) => ({
       hour: h.hora,
@@ -93,33 +94,35 @@ async function fetchDetailedMetrics(
   };
 }
 
-// Estados en los que el pedido nunca llegó a confirmarse.
-const NOT_CONFIRMED_STATUSES = new Set(['DRAFT', 'ABANDONED']);
+const IN_PROGRESS_STATUSES = [
+  'CONFIRMED',
+  'PAYMENT_PENDING',
+  'PAID',
+  'IN_PROGRESS',
+  'READY',
+  'ON_THE_WAY',
+];
 
 /**
- * Embudo acumulado del período. `tasasConversion.conteos` de la API cuenta
- * los pedidos por su estado ACTUAL (cuántos siguen en CONFIRMED o en PAID), y
- * los pedidos pasan de largo esos estados: un pedido pagado y entregado queda
- * en COMPLETED, así que "pagadas" daba 0. Acá cada etapa cuenta a todos los
- * que llegaron a ella:
- * - confirmadas: todo pedido que salió de borrador (incluye cancelados).
- * - pagadas: `paymentStatus = PAID` (`conteos.pagadas`), sin importar el estado.
- * - completadas: estado COMPLETED.
+ * Estado de los pedidos del período. `porEstadoOrden` cuenta cada pedido por
+ * su estado ACTUAL, que es justo lo que se quiere mostrar: cuántos ya se
+ * completaron, cuántos siguen en curso y cuántos se perdieron.
  */
-function toConversionFunnel(
+function toOrderStatus(
   data: DetailedMetricsResponse
-): DetailedMetrics['conversionFunnel'] {
+): DetailedMetrics['orderStatus'] {
   const byStatus = data.porEstadoOrden ?? {};
-  const confirmed = Object.entries(byStatus).reduce(
-    (sum, [status, count]) =>
-      NOT_CONFIRMED_STATUSES.has(status) ? sum : sum + (count ?? 0),
-    0
-  );
+  const count = (status: string) => byStatus[status] ?? 0;
 
   return {
-    confirmed,
-    paid: data.conteos.pagadas,
-    completed: byStatus.COMPLETED ?? 0,
+    completed: count('COMPLETED'),
+    inProgress: IN_PROGRESS_STATUSES.reduce((sum, s) => sum + count(s), 0),
+    cancelled: count('CANCELLED'),
+    unconfirmed: count('DRAFT') + count('ABANDONED'),
+    pendingPayment: {
+      count: data.conteos.pendientesPago,
+      amount: data.recaudos.pendientesPago?.total ?? 0,
+    },
   };
 }
 

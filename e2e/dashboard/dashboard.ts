@@ -42,6 +42,7 @@ export function defaultMetricsBody() {
     },
     recaudos: {
       pagadas: { total: 1250000 },
+      pendientesPago: { total: 480000 },
       porDia: [
         { date: "2026-10-01", amount: 400000 },
         { date: "2026-10-02", amount: 850000 },
