@@ -51,7 +51,8 @@ test.describe("Dashboard — gráficos", () => {
 
     // Estado de los pedidos: los 340 del mock según su estado actual
     // (COMPLETED 290; en curso = CONFIRMED 10 + IN_PROGRESS 15; CANCELLED 15;
-    // sin confirmar = DRAFT 5 + ABANDONED 5).
+    // sin confirmar = DRAFT 5 + ABANDONED 5). Porcentajes por mayor residuo
+    // para que sumen 100: 85,29 · 7,35 · 4,41 · 2,94 → 85 · 7 · 5 · 3.
     const status = (name: string) =>
       analysis.getByRole("listitem").filter({ hasText: name });
     await expect(
@@ -59,7 +60,7 @@ test.describe("Dashboard — gráficos", () => {
     ).toBeVisible();
     await expect(status("Completados")).toContainText("290 · 85%");
     await expect(status("En curso")).toContainText("25 · 7%");
-    await expect(status("Cancelados")).toContainText("15 · 4%");
+    await expect(status("Cancelados")).toContainText("15 · 5%");
     await expect(status("Sin confirmar")).toContainText("10 · 3%");
     await expect(
       analysis.getByText("Por cobrar: 40 pedidos · $ 480.000")
@@ -86,9 +87,11 @@ test.describe("Dashboard — gráficos", () => {
       analysis.getByText("Conversaciones del bot", { exact: true })
     ).toBeVisible();
     // 7 conversaciones: 2 con pedido, 1 abierta, 2 abandonadas, 2 otras.
+    // 28,57% × 3 y 14,29%: para sumar 100 solo dos de los tres empates suben
+    // a 29 (los primeros en el orden de la leyenda).
     await expect(bot("Terminan en pedido")).toContainText("2 · 29%");
     await expect(bot("Abandonadas")).toContainText("2 · 29%");
-    await expect(bot("Otras")).toContainText("2 · 29%");
+    await expect(bot("Otras")).toContainText("2 · 28%");
     await expect(analysis.getByText(/^Piden un asesor:/)).toBeVisible();
     await expect(
       analysis.getByRole("link", { name: "Ver embudo del bot" })
