@@ -1,7 +1,7 @@
 export interface KpiMetrics {
   ordersToday: number;
   ordersCompletedToday: number;
-  revenueToday: number;
+  periodRevenue: number;
   revenueGrowth: number;
   ordersGrowth: number;
   totalOrders: number;
@@ -12,7 +12,7 @@ export interface KpiMetrics {
 export interface DetailedMetrics {
   paymentMethods: PaymentMethod[];
   trendComparison: TrendComparison;
-  conversionFunnel: ConversionFunnelData;
+  orderStatus: OrderStatusBreakdown;
   revenueChart: RevenueChartPoint[];
   peakHours: PeakHour[];
 }
@@ -30,14 +30,16 @@ export interface TrendComparison {
   growth: number;
 }
 
-export interface ConversionFunnelData {
-  confirmed: number;
-  paid: number;
+/** Pedidos creados en el período agrupados por su estado ACTUAL. */
+export interface OrderStatusBreakdown {
   completed: number;
-  rates: {
-    confirmedToPaid: number;
-    paidToCompleted: number;
-  };
+  /** Confirmados que todavía no se entregan (en preparación, en camino…). */
+  inProgress: number;
+  cancelled: number;
+  /** Borradores y abandonados: nunca se confirmaron. */
+  unconfirmed: number;
+  /** Pedidos vivos con pago pendiente y lo que suman (con domicilio). */
+  pendingPayment: { count: number; amount: number };
 }
 
 export interface RevenueChartPoint {

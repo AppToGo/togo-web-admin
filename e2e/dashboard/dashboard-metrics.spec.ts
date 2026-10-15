@@ -34,30 +34,52 @@ test.describe("Dashboard — métricas detalladas", () => {
     await mockBoardPermissions(page);
   });
 
-  test("métodos de pago y comparativa con datos", async ({ page }) => {
+  test("ingresos con comparativa y métodos de pago con datos", async ({
+    page,
+  }) => {
     await openDashboard(page);
 
     // The lazy section mounts on scroll (rootMargin may already cover it,
     // scrolling keeps this deterministic).
-    await page
-      .getByRole("heading", { name: "Métricas Detalladas" })
-      .scrollIntoViewIfNeeded();
+    const detail = page.getByRole("region", { name: "Métricas detalladas" });
+    await detail.scrollIntoViewIfNeeded();
 
     await expect(
-      page.getByText("Métodos de Pago", { exact: true }).first()
+      detail.getByText("Métodos de Pago", { exact: true })
     ).toBeVisible();
-    await expect(page.getByText("CASH", { exact: true })).toBeVisible();
-    await expect(page.getByText("CARD", { exact: true })).toBeVisible();
-    await expect(page.getByText("56%", { exact: true })).toBeVisible();
-    await expect(page.getByText("44%", { exact: true })).toBeVisible();
+    await expect(detail.getByText("CASH", { exact: true })).toBeVisible();
+    await expect(detail.getByText("CARD", { exact: true })).toBeVisible();
+    await expect(detail.getByText("56%", { exact: true })).toBeVisible();
+    await expect(detail.getByText("44%", { exact: true })).toBeVisible();
 
+    // Comparativa del período en el encabezado del gráfico de ingresos.
     await expect(
-      page.getByText("Comparativa", { exact: true })
+      detail.getByText("Ingresos por día", { exact: true })
     ).toBeVisible();
+    await expect(detail.getByText("Período actual")).toBeVisible();
     await expect(
-      page.getByText("+25.0% vs período anterior")
+      detail.getByText("$ 1.000.000", { exact: true })
     ).toBeVisible();
-    await expect(page.getByText("Anterior: $ 1.000.000")).toBeVisible();
+    await expect(detail.getByText("↑ 25.0%", { exact: true })).toBeVisible();
+  });
+
+  test("los porcentajes de métodos de pago se muestran redondeados", async ({
+    page,
+  }) => {
+    // La API manda cantidad/total×100 sin redondear (7 de 12 → 58.33…).
+    const body = defaultMetricsBody();
+    body.metodosPago = [
+      { metodo: "CASH", cantidad: 7, monto: 700000, porcentaje: (7 / 12) * 100 },
+      { metodo: "CARD", cantidad: 5, monto: 550000, porcentaje: (5 / 12) * 100 },
+    ];
+    await mockDashboardMetrics(page, { body });
+    await openDashboard(page);
+
+    const detail = page.getByRole("region", { name: "Métricas detalladas" });
+    await detail.scrollIntoViewIfNeeded();
+
+    await expect(detail.getByText("58%", { exact: true })).toBeVisible();
+    await expect(detail.getByText("42%", { exact: true })).toBeVisible();
   });
 
   test("sin métodos de pago no hay filas pero la tarjeta existe", async ({
@@ -73,19 +95,14 @@ test.describe("Dashboard — métricas detalladas", () => {
     await mockDashboardMetrics(page, { body });
     await openDashboard(page);
 
-    await page
-      .getByRole("heading", { name: "Métricas Detalladas" })
-      .scrollIntoViewIfNeeded();
+    const detail = page.getByRole("region", { name: "Métricas detalladas" });
+    await detail.scrollIntoViewIfNeeded();
 
     await expect(
-      page.getByText("Métodos de Pago", { exact: true }).first()
+      detail.getByText("Métodos de Pago", { exact: true })
     ).toBeVisible();
-    await expect(page.getByText("CASH", { exact: true })).toHaveCount(0);
-    await expect(
-      page.getByText("Comparativa", { exact: true })
-    ).toBeVisible();
-    await expect(
-      page.getByText("0.0% vs período anterior")
-    ).toBeVisible();
+    await expect(detail.getByText("CASH", { exact: true })).toHaveCount(0);
+    await expect(detail.getByText("Período actual")).toBeVisible();
+    await expect(detail.getByText("0.0%", { exact: true })).toBeVisible();
   });
 });
