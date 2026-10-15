@@ -53,10 +53,10 @@ test.describe("Dashboard — KPIs", () => {
 
     // Titles — exactly the four KPI cards.
     for (const title of [
-      "Órdenes Hoy",
-      "Ingresos Hoy",
-      "Total Órdenes",
-      "Ticket Promedio",
+      "Pedidos hoy",
+      "Ingresos del período",
+      "Pedidos del período",
+      "Ticket promedio",
     ]) {
       await expect(kpis.getByText(title, { exact: true })).toBeVisible();
     }
@@ -68,13 +68,13 @@ test.describe("Dashboard — KPIs", () => {
     await expect(
       kpis.getByRole("paragraph").filter({ hasText: /^12$/ })
     ).toBeVisible();
-    await expect(kpis.getByText("8 completadas")).toBeVisible();
+    await expect(kpis.getByText("8 completados")).toBeVisible();
     await expect(kpis.getByText("1.250.000")).toBeVisible();
     await expect(
       kpis.getByRole("paragraph").filter({ hasText: /^340$/ })
     ).toBeVisible();
     await expect(
-      kpis.getByText("300 pagadas · 40 pendientes")
+      kpis.getByText("300 pagados · 40 pendientes")
     ).toBeVisible();
     // COP has no minor unit so Intl renders zero decimals (4.167).
     await expect(kpis.getByText("4.167")).toBeVisible();
@@ -82,6 +82,24 @@ test.describe("Dashboard — KPIs", () => {
     // Positive growth renders up-trends with one decimal.
     await expect(kpis.getByText("↑ 25.0%")).toBeVisible();
     await expect(kpis.getByText("↑ 8.5%")).toBeVisible();
+  });
+
+  test("los títulos siguen el período del filtro", async ({ page }) => {
+    await openDashboard(page);
+    const kpis = page.getByRole("region", { name: "Indicadores" });
+
+    // Con "Hoy" la tarjeta de ingresos lo dice en la descripción.
+    await expect(kpis.getByText("Hoy", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: /Hoy/ }).first().click();
+    await page.getByRole("button", { name: "Este mes" }).click();
+
+    await expect(kpis.getByText("Este mes", { exact: true })).toBeVisible();
+    await expect(
+      kpis.getByText("Ingresos del período", { exact: true })
+    ).toBeVisible();
+    // "Pedidos hoy" sigue siendo de hoy: la API lo calcula sin el filtro.
+    await expect(kpis.getByText("Pedidos hoy", { exact: true })).toBeVisible();
   });
 
   test("crecimiento negativo muestra tendencia a la baja", async ({
@@ -108,9 +126,9 @@ test.describe("Dashboard — KPIs", () => {
     await openDashboard(page);
     const kpis = page.getByRole("region", { name: "Indicadores" });
 
-    await expect(kpis.getByText("0 completadas")).toBeVisible();
+    await expect(kpis.getByText("0 completados")).toBeVisible();
     await expect(
-      kpis.getByText("0 pagadas · 0 pendientes")
+      kpis.getByText("0 pagados · 0 pendientes")
     ).toBeVisible();
     // Neutral growth renders no trend line at all.
     await expect(kpis.getByText("↑")).toHaveCount(0);

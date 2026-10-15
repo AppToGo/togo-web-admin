@@ -26,6 +26,20 @@ export function defaultMetricsBody() {
       pagadas: 300,
       pendientesPago: 40,
     },
+    // Estado ACTUAL de los 340 pedidos del período: casi todos pasaron de
+    // largo CONFIRMED/PAID, como en producción.
+    porEstadoOrden: {
+      DRAFT: 5,
+      CONFIRMED: 10,
+      PAYMENT_PENDING: 0,
+      PAID: 0,
+      IN_PROGRESS: 15,
+      READY: 0,
+      ON_THE_WAY: 0,
+      COMPLETED: 290,
+      CANCELLED: 15,
+      ABANDONED: 5,
+    },
     recaudos: {
       pagadas: { total: 1250000 },
       porDia: [

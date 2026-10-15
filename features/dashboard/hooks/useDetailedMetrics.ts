@@ -29,18 +29,11 @@ interface DetailedMetricsResponse {
       crecimiento: number;
     };
   };
-  tasasConversion: {
-    conteos: {
-      confirmado: number;
-      pagado: number;
-      completado: number;
-    };
-    confirmacion: number;
-    pago: number;
-    completitud: number;
-    cancelacion: number;
-    abandono: number;
+  conteos: {
+    pagadas: number;
   };
+  /** Pedidos del período según su estado ACTUAL. */
+  porEstadoOrden?: Partial<Record<string, number>>;
   recaudos: {
     porDia?: Array<{
       date: string;
@@ -91,21 +84,42 @@ async function fetchDetailedMetrics(
       previous: data.comparativa.recaudoTotal.valorAnterior,
       growth: data.comparativa.recaudoTotal.crecimiento,
     },
-    conversionFunnel: {
-      // Usar conteos desde tasasConversion.conteos (estructura correcta del backend)
-      confirmed: data.tasasConversion.conteos.confirmado,
-      paid: data.tasasConversion.conteos.pagado,
-      completed: data.tasasConversion.conteos.completado,
-      rates: {
-        confirmedToPaid: data.tasasConversion.pago,
-        paidToCompleted: data.tasasConversion.completitud,
-      },
-    },
+    conversionFunnel: toConversionFunnel(data),
     revenueChart: data.recaudos.porDia || [],
     peakHours: data.horasPico.map((h: DetailedMetricsResponse['horasPico'][0]) => ({
       hour: h.hora,
       count: h.cantidad,
     })),
+  };
+}
+
+// Estados en los que el pedido nunca llegó a confirmarse.
+const NOT_CONFIRMED_STATUSES = new Set(['DRAFT', 'ABANDONED']);
+
+/**
+ * Embudo acumulado del período. `tasasConversion.conteos` de la API cuenta
+ * los pedidos por su estado ACTUAL (cuántos siguen en CONFIRMED o en PAID), y
+ * los pedidos pasan de largo esos estados: un pedido pagado y entregado queda
+ * en COMPLETED, así que "pagadas" daba 0. Acá cada etapa cuenta a todos los
+ * que llegaron a ella:
+ * - confirmadas: todo pedido que salió de borrador (incluye cancelados).
+ * - pagadas: `paymentStatus = PAID` (`conteos.pagadas`), sin importar el estado.
+ * - completadas: estado COMPLETED.
+ */
+function toConversionFunnel(
+  data: DetailedMetricsResponse
+): DetailedMetrics['conversionFunnel'] {
+  const byStatus = data.porEstadoOrden ?? {};
+  const confirmed = Object.entries(byStatus).reduce(
+    (sum, [status, count]) =>
+      NOT_CONFIRMED_STATUSES.has(status) ? sum : sum + (count ?? 0),
+    0
+  );
+
+  return {
+    confirmed,
+    paid: data.conteos.pagadas,
+    completed: byStatus.COMPLETED ?? 0,
   };
 }
 

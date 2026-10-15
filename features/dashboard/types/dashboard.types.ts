@@ -1,7 +1,7 @@
 export interface KpiMetrics {
   ordersToday: number;
   ordersCompletedToday: number;
-  revenueToday: number;
+  periodRevenue: number;
   revenueGrowth: number;
   ordersGrowth: number;
   totalOrders: number;
@@ -34,10 +34,6 @@ export interface ConversionFunnelData {
   confirmed: number;
   paid: number;
   completed: number;
-  rates: {
-    confirmedToPaid: number;
-    paidToCompleted: number;
-  };
 }
 
 export interface RevenueChartPoint {

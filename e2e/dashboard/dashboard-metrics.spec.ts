@@ -54,7 +54,7 @@ test.describe("Dashboard — métricas detalladas", () => {
 
     // Comparativa del período en el encabezado del gráfico de ingresos.
     await expect(
-      detail.getByText("Ingresos del período", { exact: true })
+      detail.getByText("Ingresos por día", { exact: true })
     ).toBeVisible();
     await expect(detail.getByText("Período actual")).toBeVisible();
     await expect(

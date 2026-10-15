@@ -10,6 +10,14 @@
     "detail": "Métricas detalladas",
     "analysis": "Análisis"
   },
+  "periods": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "week": "Esta semana",
+    "last7days": "Últimos 7 días",
+    "month": "Este mes",
+    "custom": "Período seleccionado"
+  },
   "stats": {
     "ordersToday": {
       "title": "Pedidos hoy",
@@ -58,7 +66,14 @@
     },
     "averageTicket": {
       "title": "Ticket promedio",
-      "description": "Por orden pagada"
+      "description": "Por pedido pagado"
+    },
+    "periodRevenue": {
+      "title": "Ingresos del período"
+    },
+    "periodOrders": {
+      "title": "Pedidos del período",
+      "description": "{paid} pagados · {pending} pendientes"
     }
   },
   "trend": {
@@ -81,7 +96,7 @@
       "subtitle": "De pedido nuevo a completado"
     },
     "revenue": {
-      "title": "Ingresos del período",
+      "title": "Ingresos por día",
       "current": "Período actual",
       "previous": "Período anterior"
     },

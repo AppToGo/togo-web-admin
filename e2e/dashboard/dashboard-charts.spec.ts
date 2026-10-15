@@ -47,7 +47,7 @@ test.describe("Dashboard — gráficos", () => {
       .scrollIntoViewIfNeeded();
 
     await expect(
-      page.getByText("Ingresos del período", { exact: true })
+      page.getByText("Ingresos por día", { exact: true })
     ).toBeVisible();
     await expect(
       page.getByText("Horas Pico", { exact: true })
@@ -55,6 +55,16 @@ test.describe("Dashboard — gráficos", () => {
     await expect(
       page.getByText("Embudo de Conversión", { exact: true })
     ).toBeVisible();
+    // Embudo acumulado: confirmadas = todo lo que salió de borrador
+    // (340 − 5 DRAFT − 5 ABANDONED), pagadas = paymentStatus PAID (300),
+    // completadas = COMPLETED (290). Ninguna etapa queda en 0 aunque no haya
+    // pedidos parados en PAID.
+    const stage = (name: string) =>
+      page.getByRole("listitem").filter({ hasText: name });
+    await expect(stage("Nuevas")).toContainText("330 · 100%");
+    await expect(stage("Pagadas")).toContainText("300 · 91%");
+    await expect(stage("Completadas")).toContainText("290 · 88%");
+
     // Una fila por etapa del embudo, con su barra de progreso.
     for (const stage of ["Nuevas", "Pagadas", "Completadas"]) {
       await expect(page.getByText(stage, { exact: true })).toHaveCount(1);

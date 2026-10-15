@@ -10,6 +10,14 @@
     "detail": "Detailed metrics",
     "analysis": "Analysis"
   },
+  "periods": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "week": "This week",
+    "last7days": "Last 7 days",
+    "month": "This month",
+    "custom": "Selected period"
+  },
   "stats": {
     "ordersToday": {
       "title": "Orders today",
@@ -59,6 +67,13 @@
     "averageTicket": {
       "title": "Average ticket",
       "description": "Per paid order"
+    },
+    "periodRevenue": {
+      "title": "Revenue for the period"
+    },
+    "periodOrders": {
+      "title": "Orders for the period",
+      "description": "{paid} paid · {pending} pending"
     }
   },
   "trend": {
@@ -81,7 +96,7 @@
       "subtitle": "From new order to completed"
     },
     "revenue": {
-      "title": "Revenue for the period",
+      "title": "Revenue per day",
       "current": "Current period",
       "previous": "Previous period"
     },

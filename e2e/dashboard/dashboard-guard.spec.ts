@@ -51,10 +51,10 @@ test.describe("Dashboard — guard y errores", () => {
     await expect(
       page.getByRole("heading", { name: "Dashboard", level: 1, exact: true })
     ).toBeVisible();
-    await expect(page.getByText("Órdenes Hoy", { exact: true })).toBeVisible({
+    await expect(page.getByText("Pedidos hoy", { exact: true })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.getByText("0 completadas")).toBeVisible({
+    await expect(page.getByText("0 completados")).toBeVisible({
       timeout: 20_000,
     });
   });

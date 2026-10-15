@@ -64,7 +64,7 @@ async function fetchKpiMetrics(
   return {
     ordersToday: data.conteos.hoy,
     ordersCompletedToday: data.conteos.completadasHoy,
-    revenueToday: data.recaudos.pagadas.total,
+    periodRevenue: data.recaudos.pagadas.total,
     revenueGrowth: data.comparativa.recaudoTotal.crecimiento,
     ordersGrowth: data.comparativa.ordenesTotales.crecimiento,
     totalOrders: data.conteos.total,
