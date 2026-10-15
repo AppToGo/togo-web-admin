@@ -165,8 +165,8 @@
   "dates": {
     "today": "Today",
     "yesterday": "Yesterday",
-    "daysAgo": "{{count}} days ago",
-    "weeksAgo": "{{count}} weeks ago"
+    "daysAgo": "{count} days ago",
+    "weeksAgo": "{count} weeks ago"
   },
 
   "mobileSort": {

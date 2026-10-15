@@ -23,6 +23,9 @@ interface InboxMobileListProps {
   summary: ConversationSummary | undefined;
   conversations: ConversationListItem[];
   isLoading: boolean;
+  /** La carga falló: se muestra el error, no "no hay conversaciones". */
+  isError: boolean;
+  onRetry: () => void;
   isConnected: boolean;
   onSelect: (sessionId: string) => void;
   onSearch: (query: string) => void;
@@ -34,6 +37,8 @@ export function InboxMobileList({
   summary,
   conversations,
   isLoading,
+  isError,
+  onRetry,
   isConnected,
   onSelect,
   onSearch,
@@ -138,6 +143,17 @@ export function InboxMobileList({
               </div>
             </div>
           ))}
+        </div>
+      ) : isError ? (
+        <div className="mx-6 mt-12 flex flex-col items-center gap-3 text-center" role="alert">
+          <p className="text-[15px] font-medium text-slate-900">{t("mobile.loadError")}</p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="h-10 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm"
+          >
+            {t("mobile.retry")}
+          </button>
         </div>
       ) : conversations.length === 0 ? (
         <p className="mx-6 mt-12 text-center text-[15px] text-slate-500">{t("list.empty")}</p>

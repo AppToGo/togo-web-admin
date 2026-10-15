@@ -102,7 +102,8 @@ function message(
   };
 }
 
-function detail(id: string) {
+/** Detalle de una sesión del mock (para variantes en un spec). */
+export function conversationDetail(id: string) {
   const base =
     [...INBOX_SESSIONS, ...WITHOUT_ORDER_SESSIONS].find((s) => s.id === id) ??
     INBOX_SESSIONS[0];
@@ -158,6 +159,6 @@ export async function mockConversationsApi(page: Page): Promise<void> {
     }
     if (id === "assignable-users") return json([{ id: "op-1", name: "Operadora E2E" }]);
     if (route.request().method() === "POST") return json({ ok: true });
-    return json(detail(id));
+    return json(conversationDetail(id));
   });
 }
