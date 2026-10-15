@@ -5,7 +5,7 @@ import { Filter } from 'lucide-react';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '../loading/CardSkeleton';
 import { DashboardCardHeader } from '../DashboardCardHeader';
 
 // Cada etapa un tono más claro, igual que la leyenda de métodos de pago.
@@ -19,7 +19,7 @@ export function ConversionFunnel() {
   const t = useTranslations('dashboard.charts.conversionFunnel');
   const { data, isLoading } = useDetailedMetrics();
 
-  if (isLoading) return <Skeleton className="h-80 rounded-card-xl" />;
+  if (isLoading) return <CardSkeleton className="h-80" />;
   if (!data) return null;
 
   const { conversionFunnel } = data;
@@ -55,7 +55,8 @@ export function ConversionFunnel() {
                 </span>
               </div>
               <Progress
-                value={stage.percentage}
+                // Radix descarta valores > max y dibuja la barra vacía.
+                value={Math.min(stage.percentage, 100)}
                 className={`h-3 bg-white/70 ${BAR_CLASSES[index]}`}
                 aria-label={stage.name}
               />

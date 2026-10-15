@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { TrendingUp } from 'lucide-react';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '../loading/CardSkeleton';
 import {
   AreaChart,
   Area,
@@ -22,7 +22,7 @@ export function RevenueChart() {
   const t = useTranslations('dashboard.charts.revenue');
   const { data, isLoading } = useDetailedMetrics();
 
-  if (isLoading) return <Skeleton className="h-96 rounded-card-xl" />;
+  if (isLoading) return <CardSkeleton className="h-96" />;
   if (!data) return null;
 
   const { trendComparison } = data;

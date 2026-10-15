@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Clock } from 'lucide-react';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '../loading/CardSkeleton';
 import {
   BarChart,
   Bar,
@@ -23,7 +23,7 @@ export function PeakHours() {
   const t = useTranslations('dashboard.charts.peakHours');
   const { data, isLoading } = useDetailedMetrics();
 
-  if (isLoading) return <Skeleton className="h-80 rounded-card-xl" />;
+  if (isLoading) return <CardSkeleton className="h-80" />;
   if (!data) return null;
 
   const chartData = data.peakHours.map((hour) => ({

@@ -80,7 +80,8 @@ async function fetchDetailedMetrics(
     method: m.metodo,
     count: m.cantidad,
     amount: m.monto,
-    percentage: m.porcentaje,
+    // La API manda cantidad/total×100 sin redondear (p. ej. 58.33…).
+    percentage: Math.round(m.porcentaje),
   }));
 
   return {

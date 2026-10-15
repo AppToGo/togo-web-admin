@@ -9,7 +9,7 @@ interface KpiCardProps {
   value: string;
   description: string;
   icon: React.ReactNode;
-  trend?: "up" | "down" | "neutral";
+  /** Variación vs el período anterior; sin valor o en 0 no se muestra. */
   trendValue?: number;
   variant?: "emerald" | "blue" | "purple" | "amber" | "default";
 }
@@ -19,7 +19,6 @@ export const KpiCard = memo(function KpiCard({
   value,
   description,
   icon,
-  trend,
   trendValue,
   variant = "default",
 }: KpiCardProps) {
@@ -44,7 +43,7 @@ export const KpiCard = memo(function KpiCard({
           </div>
         </div>
 
-        {trendValue !== undefined && trend !== "neutral" && (
+        {trendValue !== undefined && trendValue !== 0 && (
           <div className="mt-3">
             <TrendBadge value={trendValue} />
           </div>

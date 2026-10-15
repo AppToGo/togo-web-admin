@@ -78,11 +78,10 @@
       "confirmed": "Nuevas",
       "paid": "Pagadas",
       "completed": "Completadas",
-      "ofTotal": "% del total",
       "subtitle": "De pedido nuevo a completado"
     },
     "revenue": {
-      "title": "Ingresos últimos 30 días",
+      "title": "Ingresos del período",
       "current": "Período actual",
       "previous": "Período anterior"
     },

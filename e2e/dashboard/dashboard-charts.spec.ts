@@ -47,7 +47,7 @@ test.describe("Dashboard — gráficos", () => {
       .scrollIntoViewIfNeeded();
 
     await expect(
-      page.getByText("Ingresos últimos 30 días", { exact: true })
+      page.getByText("Ingresos del período", { exact: true })
     ).toBeVisible();
     await expect(
       page.getByText("Horas Pico", { exact: true })

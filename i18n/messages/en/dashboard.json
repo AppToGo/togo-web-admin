@@ -78,11 +78,10 @@
       "confirmed": "New",
       "paid": "Paid",
       "completed": "Completed",
-      "ofTotal": "% of total",
       "subtitle": "From new order to completed"
     },
     "revenue": {
-      "title": "Revenue last 30 days",
+      "title": "Revenue for the period",
       "current": "Current period",
       "previous": "Previous period"
     },

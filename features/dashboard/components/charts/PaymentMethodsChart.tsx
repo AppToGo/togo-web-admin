@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { CreditCard } from 'lucide-react';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '../loading/CardSkeleton';
 import {
   PieChart,
   Pie,
@@ -22,7 +22,7 @@ export function PaymentMethodsChart() {
   const t = useTranslations('dashboard.charts.paymentMethods');
   const { data, isLoading } = useDetailedMetrics();
 
-  if (isLoading) return <Skeleton className="h-96 rounded-card-xl" />;
+  if (isLoading) return <CardSkeleton className="h-96" />;
   if (!data) return null;
 
   // Verificar si hay métodos de pago

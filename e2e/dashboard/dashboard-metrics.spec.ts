@@ -54,13 +54,32 @@ test.describe("Dashboard — métricas detalladas", () => {
 
     // Comparativa del período en el encabezado del gráfico de ingresos.
     await expect(
-      detail.getByText("Ingresos últimos 30 días", { exact: true })
+      detail.getByText("Ingresos del período", { exact: true })
     ).toBeVisible();
     await expect(detail.getByText("Período actual")).toBeVisible();
     await expect(
       detail.getByText("$ 1.000.000", { exact: true })
     ).toBeVisible();
     await expect(detail.getByText("↑ 25.0%", { exact: true })).toBeVisible();
+  });
+
+  test("los porcentajes de métodos de pago se muestran redondeados", async ({
+    page,
+  }) => {
+    // La API manda cantidad/total×100 sin redondear (7 de 12 → 58.33…).
+    const body = defaultMetricsBody();
+    body.metodosPago = [
+      { metodo: "CASH", cantidad: 7, monto: 700000, porcentaje: (7 / 12) * 100 },
+      { metodo: "CARD", cantidad: 5, monto: 550000, porcentaje: (5 / 12) * 100 },
+    ];
+    await mockDashboardMetrics(page, { body });
+    await openDashboard(page);
+
+    const detail = page.getByRole("region", { name: "Métricas detalladas" });
+    await detail.scrollIntoViewIfNeeded();
+
+    await expect(detail.getByText("58%", { exact: true })).toBeVisible();
+    await expect(detail.getByText("42%", { exact: true })).toBeVisible();
   });
 
   test("sin métodos de pago no hay filas pero la tarjeta existe", async ({
