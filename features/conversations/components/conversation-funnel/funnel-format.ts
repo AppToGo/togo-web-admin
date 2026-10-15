@@ -2,6 +2,9 @@
 
 import { useTranslations } from "next-intl";
 
+/** Recuadro de un número dentro de una tarjeta glass (mismo estilo que el dashboard). */
+export const FUNNEL_TILE = "rounded-card bg-white/60 p-4";
+
 /** Tasa de 0 a 1 como porcentaje; "—" si no hay datos. */
 export function formatRate(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";

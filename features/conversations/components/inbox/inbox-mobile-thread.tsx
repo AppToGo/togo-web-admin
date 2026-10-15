@@ -38,8 +38,11 @@ import {
 } from "../../hooks/useConversationControl";
 import { useAssignConversation } from "../../hooks/useAssignConversation";
 import { useCloseConversation } from "../../hooks/useCloseConversation";
-import { useSendConversationMessage } from "../../hooks/useSendConversationMessage";
-import { useAddConversationNote } from "../../hooks/useAddConversationNote";
+import {
+  useComposerGate,
+  useMessageDraft,
+  useNoteDraft,
+} from "../../hooks/useComposerDraft";
 import { isWindowOpen } from "../../utils/conversation-window";
 import { ConversationThreadView } from "../conversation-thread/conversation-thread-view";
 import { InboxAssignDialog } from "./inbox-assign-dialog";
@@ -154,17 +157,14 @@ function ThreadFooter({ conversation }: { conversation: ConversationDetail }) {
   const user = useCurrentUser();
   const { hasPermission } = useMyPermissions();
   const takeover = useTakeoverConversation(conversation.id);
+  const assign = useAssignConversation(conversation.id);
   // Nota interna desde cualquier estado (cerrada, ventana vencida, sin
   // tomar, en manos de otro), como el botón de nota del escritorio.
   const [writingNote, setWritingNote] = useState(false);
   const canNote = hasPermission("conversation.note");
+  const gate = useComposerGate(conversation);
 
-  const isOpen = conversation.status === "OPEN";
-  const windowOpen = isWindowOpen(conversation.windowExpiresAt);
-  const heldByMe =
-    conversation.control === "HUMAN" && conversation.assignedUserId === user?.userId;
-
-  if (isOpen && windowOpen && heldByMe) {
+  if (gate === "ready") {
     return <MobileComposer conversation={conversation} canNote={canNote} />;
   }
   if (writingNote) {
@@ -189,25 +189,43 @@ function ThreadFooter({ conversation }: { conversation: ConversationDetail }) {
     </button>
   );
 
-  // Mismo orden que el composer de escritorio: cerrada → ventana vencida →
-  // en manos de otro → sin tomar.
+  // Mismas reglas que el composer de escritorio (`useComposerGate`).
   let state: ReactNode;
-  if (!isOpen) {
+  if (gate === "closed") {
     state = (
       <ReopenConversationNotice
         sessionId={conversation.id}
         windowExpiresAt={conversation.windowExpiresAt}
       />
     );
-  } else if (!windowOpen) {
+  } else if (gate === "windowExpired") {
     state = <InboxWindowNotice />;
-  } else if (conversation.control === "HUMAN") {
+  } else if (gate === "heldByOther") {
     // La atiende otro operador: el escritorio no ofrece tomarla (solo
     // liberar o reasignar, que viven en la hoja de acciones).
     state = (
       <p className="px-3 pt-3 text-center text-[13px] text-slate-500">
         {t("mobile.heldByOther", { name: conversation.assignedTo?.name ?? "—" })}
       </p>
+    );
+  } else if (gate === "unassigned") {
+    // En HUMAN sin nadie: no se puede "tomar", pero sí asignársela.
+    state = (
+      <div className="flex flex-col gap-2 px-3 pt-3">
+        <p className="text-center text-[13px] text-slate-500">
+          {t("composer.unassignedPrompt")}
+        </p>
+        {hasPermission("conversation.assign") && user?.userId && (
+          <button
+            type="button"
+            disabled={assign.isPending}
+            onClick={() => assign.mutate(user.userId)}
+            className="h-[52px] rounded-[14px] bg-indigo-600 text-base font-bold text-white disabled:opacity-60"
+          >
+            {t("actions.assignToMe")}
+          </button>
+        )}
+      </div>
     );
   } else {
     state = (
@@ -249,29 +267,16 @@ function MobileComposer({ conversation, canNote, noteOnly, onCancelNote }: Mobil
   const t = useTranslations("inbox");
   const [noteToggle, setNoteToggle] = useState(false);
   const noteMode = noteOnly || noteToggle;
-  const [text, setText] = useState("");
-  const sendMessage = useSendConversationMessage(conversation.id);
-  const addNote = useAddConversationNote(conversation.id);
-  const pending = noteMode ? addNote.isPending : sendMessage.isPending;
+  // Un borrador por modo: alternar entre mensaje y nota no borra ninguno.
+  const message = useMessageDraft(conversation.id);
+  const note = useNoteDraft(conversation.id);
+  const { text, setText } = noteMode ? note : message;
+  const canSubmit = noteMode ? note.canSubmit : message.canSend;
   const placeholder = noteMode ? t("mobile.notePlaceholder") : t("composer.placeholder");
 
   const submit = () => {
-    const trimmed = text.trim();
-    if (!trimmed || pending) return;
-    if (noteMode) {
-      addNote.mutate(
-        { text: trimmed },
-        {
-          onSuccess: () => {
-            setText("");
-            onCancelNote?.();
-          },
-        }
-      );
-    } else {
-      sendMessage.mutate({ text: trimmed });
-      setText("");
-    }
+    if (noteMode) note.submit(onCancelNote);
+    else message.send();
   };
 
   return (
@@ -307,7 +312,7 @@ function MobileComposer({ conversation, canNote, noteOnly, onCancelNote }: Mobil
         <button
           type="button"
           onClick={submit}
-          disabled={!text.trim() || pending}
+          disabled={!canSubmit}
           aria-label={noteMode ? t("composer.addNote") : t("composer.send")}
           className={cn(
             "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full text-white disabled:opacity-50",

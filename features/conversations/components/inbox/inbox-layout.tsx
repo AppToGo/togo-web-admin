@@ -4,16 +4,18 @@ import type { ReactNode } from "react";
 
 interface InboxLayoutProps {
   list: ReactNode;
+  /** Hilo (y panel del cliente) o el estado vacío: cada uno trae su tarjeta. */
   panel: ReactNode;
 }
 
+/** Columnas glass del Inbox de escritorio: lista · hilo · datos del cliente. */
 export function InboxLayout({ list, panel }: InboxLayoutProps) {
   return (
-    <div className="flex flex-row flex-1 min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <aside className="w-100 shrink-0 border-r border-slate-200 overflow-hidden">
+    <div className="flex flex-1 min-h-0 gap-4">
+      <aside className="flex w-80 shrink-0 flex-col overflow-hidden rounded-card-xl border border-white/80 bg-white/45 backdrop-blur-xl">
         {list}
       </aside>
-      <div className="flex-1 min-w-0 overflow-hidden">{panel}</div>
+      <div className="flex min-w-0 flex-1 gap-4">{panel}</div>
     </div>
   );
 }

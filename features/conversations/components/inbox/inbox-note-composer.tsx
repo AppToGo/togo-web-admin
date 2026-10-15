@@ -6,7 +6,7 @@ import { StickyNote, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Can } from "@/components/auth/Can";
-import { useAddConversationNote } from "../../hooks/useAddConversationNote";
+import { useNoteDraft } from "../../hooks/useComposerDraft";
 import { InboxComposer } from "./inbox-composer";
 import type { ConversationDetail } from "../../types";
 
@@ -18,14 +18,7 @@ interface InboxNoteComposerProps {
 
 function NoteInput({ sessionId, onDone }: { sessionId: string; onDone: () => void }) {
   const t = useTranslations("inbox");
-  const [text, setText] = useState("");
-  const addNote = useAddConversationNote(sessionId);
-
-  const handleSubmit = () => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    addNote.mutate({ text: trimmed }, { onSuccess: () => setText("") });
-  };
+  const draft = useNoteDraft(sessionId);
 
   return (
     <div className="border-t border-amber-200 bg-amber-50/50 px-4 py-3">
@@ -44,16 +37,16 @@ function NoteInput({ sessionId, onDone }: { sessionId: string; onDone: () => voi
       </div>
       <div className="flex items-end gap-2">
         <Textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          value={draft.text}
+          onChange={(e) => draft.setText(e.target.value)}
           placeholder={t("composer.notePlaceholder")}
           className="min-h-[40px] flex-1 resize-none"
           rows={1}
         />
         <Button
           variant="outline"
-          disabled={!text.trim() || addNote.isPending}
-          onClick={handleSubmit}
+          disabled={!draft.canSubmit}
+          onClick={() => draft.submit()}
         >
           {t("composer.addNote")}
         </Button>
@@ -66,27 +59,28 @@ export function InboxNoteComposer({ conversation, initialText }: InboxNoteCompos
   const t = useTranslations("inbox");
   const [isNoteMode, setIsNoteMode] = useState(false);
 
+  // Los dos quedan montados (solo se oculta el inactivo) para que alternar
+  // entre mensaje y nota no borre ninguno de los dos borradores.
   return (
     <div>
-      {isNoteMode ? (
+      <div hidden={!isNoteMode}>
         <NoteInput sessionId={conversation.id} onDone={() => setIsNoteMode(false)} />
-      ) : (
-        <>
-          <InboxComposer conversation={conversation} initialText={initialText} />
-          <Can permission="conversation.note">
-            <div className="border-t border-slate-100 px-4 py-1.5">
-              <button
-                type="button"
-                onClick={() => setIsNoteMode(true)}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
-              >
-                <StickyNote className="h-3.5 w-3.5" />
-                {t("composer.noteToggleOff")}
-              </button>
-            </div>
-          </Can>
-        </>
-      )}
+      </div>
+      <div hidden={isNoteMode}>
+        <InboxComposer conversation={conversation} initialText={initialText} />
+        <Can permission="conversation.note">
+          <div className="border-t border-slate-100 px-4 py-1.5">
+            <button
+              type="button"
+              onClick={() => setIsNoteMode(true)}
+              className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700"
+            >
+              <StickyNote className="h-3.5 w-3.5" />
+              {t("composer.noteToggleOff")}
+            </button>
+          </div>
+        </Can>
+      </div>
     </div>
   );
 }

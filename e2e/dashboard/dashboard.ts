@@ -26,8 +26,23 @@ export function defaultMetricsBody() {
       pagadas: 300,
       pendientesPago: 40,
     },
+    // Estado ACTUAL de los 340 pedidos del período: casi todos pasaron de
+    // largo CONFIRMED/PAID, como en producción.
+    porEstadoOrden: {
+      DRAFT: 5,
+      CONFIRMED: 10,
+      PAYMENT_PENDING: 0,
+      PAID: 0,
+      IN_PROGRESS: 15,
+      READY: 0,
+      ON_THE_WAY: 0,
+      COMPLETED: 290,
+      CANCELLED: 15,
+      ABANDONED: 5,
+    },
     recaudos: {
       pagadas: { total: 1250000 },
+      pendientesPago: { total: 480000 },
       porDia: [
         { date: "2026-10-01", amount: 400000 },
         { date: "2026-10-02", amount: 850000 },
@@ -162,9 +177,9 @@ export async function openDashboard(page: Page): Promise<void> {
   await loginPage.waitForDashboardRedirect();
   await page.goto("/es/dashboard");
 
-  // Sync point: the greeting means the dashboard hydrated.
+  // Sync point: the page title means the dashboard hydrated.
   await expect(
-    page.getByRole("heading", { name: "¡Hola, Test User!" })
+    page.getByRole("heading", { name: "Dashboard", level: 1, exact: true })
   ).toBeVisible();
 
   // Full-screen onboarding spotlight — dismiss when present.

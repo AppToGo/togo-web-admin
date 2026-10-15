@@ -5,55 +5,35 @@
     "withBusiness": "Bienvenido a {businessName}. Aquí podrás gestionar tus pedidos y productos.",
     "withoutBusiness": "Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos."
   },
+  "sections": {
+    "kpis": "Indicadores",
+    "detail": "Métricas detalladas",
+    "analysis": "Análisis"
+  },
+  "periods": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "week": "Esta semana",
+    "last7days": "Últimos 7 días",
+    "month": "Este mes",
+    "custom": "Período seleccionado"
+  },
   "stats": {
     "ordersToday": {
       "title": "Pedidos hoy",
       "description": "{count} completados",
       "none": "Sin pedidos"
     },
-    "ordersYesterday": {
-      "title": "Pedidos ayer",
-      "description": "{count} completados",
-      "none": "Sin pedidos"
-    },
-    "ordersWeek": {
-      "title": "Pedidos (7 días)",
-      "description": "{count} completados",
-      "none": "Sin pedidos"
-    },
-    "ordersMonth": {
-      "title": "Pedidos (mes)",
-      "description": "{count} completados",
-      "none": "Sin pedidos"
-    },
-    "revenueToday": {
-      "title": "Ingresos hoy",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "revenueYesterday": {
-      "title": "Ingresos ayer",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "revenueWeek": {
-      "title": "Ingresos (7 días)",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "revenueMonth": {
-      "title": "Ingresos (mes)",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "totalOrders": {
-      "title": "Total órdenes",
-      "description": "{paid} pagadas · {pending} pendientes",
-      "none": "Sin órdenes"
-    },
     "averageTicket": {
       "title": "Ticket promedio",
-      "description": "Por orden pagada"
+      "description": "Por pedido pagado"
+    },
+    "periodRevenue": {
+      "title": "Ingresos del período"
+    },
+    "periodOrders": {
+      "title": "Pedidos del período",
+      "description": "{paid} pagados · {pending} pendientes"
     }
   },
   "trend": {
@@ -68,25 +48,46 @@
     "emptyDescription": "Los pedidos y acciones aparecerán aquí"
   },
   "charts": {
-    "conversionFunnel": {
-      "title": "Embudo de Conversión",
-      "confirmed": "Nuevas",
-      "paid": "Pagadas",
-      "completed": "Completadas",
-      "ofTotal": "% del total"
-    },
     "revenue": {
-      "title": "Ingresos últimos 30 días"
+      "title": "Ingresos por día",
+      "current": "Período actual",
+      "previous": "Período anterior"
+    },
+    "orderStatus": {
+      "title": "Estado de los pedidos",
+      "subtitle": "{total, plural, one {# pedido} other {# pedidos}} del período, según cómo están hoy",
+      "completed": "Completados",
+      "inProgress": "En curso",
+      "cancelled": "Cancelados",
+      "unconfirmed": "Sin confirmar",
+      "pendingPayment": "Por cobrar: {count, plural, one {# pedido} other {# pedidos}} · {amount}",
+      "empty": "Sin pedidos en el período."
+    },
+    "botConversations": {
+      "title": "Conversaciones del bot",
+      "subtitle": "{total, plural, one {# conversación} other {# conversaciones}} en el período",
+      "withOrder": "Terminan en pedido",
+      "open": "En curso",
+      "abandoned": "Abandonadas",
+      "other": "Otras (soporte, sin intención…)",
+      "handoff": "Piden un asesor: {rate}",
+      "allBranches": "Incluye todas las sedes",
+      "viewMore": "Ver embudo del bot",
+      "noBusiness": "Selecciona un negocio para ver sus conversaciones.",
+      "empty": "Sin conversaciones en el período.",
+      "error": "No se pudieron cargar las conversaciones."
     },
     "peakHours": {
       "title": "Horas Pico",
       "peakLabel": "Hora pico:",
-      "orders": "órdenes"
+      "orders": "órdenes",
+      "subtitle": "Pedidos por hora del día"
     },
     "paymentMethods": {
       "title": "Métodos de Pago",
       "orders": "órdenes",
-      "noData": "No hay datos de métodos de pago disponibles"
+      "noData": "No hay datos de métodos de pago disponibles",
+      "subtitle": "Pedidos del período por método"
     }
   },
   "filters": {

@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useDebounce } from "@/hooks/shared/useDebounce";
@@ -16,6 +16,7 @@ import { PillGroup } from "@/components/ui/pill-group";
 import { cn } from "@/lib/utils";
 import { CONTROL_BADGE } from "./control-badge";
 import type { InboxTab } from "./inbox-tabs";
+import { useListTime } from "../../hooks/useListTime";
 import type { ConversationListItem, ConversationSummary } from "../../types";
 
 interface InboxMobileListProps {
@@ -45,7 +46,7 @@ export function InboxMobileList({
   onSearch,
 }: InboxMobileListProps) {
   const t = useTranslations("inbox");
-  const format = useFormatter();
+  const listTime = useListTime();
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebounce(searchValue, 300);
 
@@ -151,7 +152,7 @@ export function InboxMobileList({
                           unread ? "text-indigo-700" : "text-slate-500"
                         )}
                       >
-                        {format.relativeTime(new Date(conversation.lastMessageAt))}
+                        {listTime(conversation.lastMessageAt)}
                       </span>
                     </span>
                     {name && (

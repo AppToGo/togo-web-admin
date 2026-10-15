@@ -8,6 +8,7 @@
     "catalog": "Catalog",
     "customers": "Customers",
     "conversations": "Conversations",
+    "conversationHistory": "History",
     "conversationFunnel": "Bot funnel",
     "inbox": "Inbox",
     "settings": "Settings",

@@ -29,19 +29,13 @@ interface DetailedMetricsResponse {
       crecimiento: number;
     };
   };
-  tasasConversion: {
-    conteos: {
-      confirmado: number;
-      pagado: number;
-      completado: number;
-    };
-    confirmacion: number;
-    pago: number;
-    completitud: number;
-    cancelacion: number;
-    abandono: number;
+  conteos: {
+    pendientesPago: number;
   };
+  /** Pedidos del período según su estado ACTUAL. */
+  porEstadoOrden?: Partial<Record<string, number>>;
   recaudos: {
+    pendientesPago?: { total: number };
     porDia?: Array<{
       date: string;
       amount: number;
@@ -80,7 +74,8 @@ async function fetchDetailedMetrics(
     method: m.metodo,
     count: m.cantidad,
     amount: m.monto,
-    percentage: m.porcentaje,
+    // La API manda cantidad/total×100 sin redondear (p. ej. 58.33…).
+    percentage: Math.round(m.porcentaje),
   }));
 
   return {
@@ -90,21 +85,44 @@ async function fetchDetailedMetrics(
       previous: data.comparativa.recaudoTotal.valorAnterior,
       growth: data.comparativa.recaudoTotal.crecimiento,
     },
-    conversionFunnel: {
-      // Usar conteos desde tasasConversion.conteos (estructura correcta del backend)
-      confirmed: data.tasasConversion.conteos.confirmado,
-      paid: data.tasasConversion.conteos.pagado,
-      completed: data.tasasConversion.conteos.completado,
-      rates: {
-        confirmedToPaid: data.tasasConversion.pago,
-        paidToCompleted: data.tasasConversion.completitud,
-      },
-    },
+    orderStatus: toOrderStatus(data),
     revenueChart: data.recaudos.porDia || [],
     peakHours: data.horasPico.map((h: DetailedMetricsResponse['horasPico'][0]) => ({
       hour: h.hora,
       count: h.cantidad,
     })),
+  };
+}
+
+const IN_PROGRESS_STATUSES = [
+  'CONFIRMED',
+  'PAYMENT_PENDING',
+  'PAID',
+  'IN_PROGRESS',
+  'READY',
+  'ON_THE_WAY',
+];
+
+/**
+ * Estado de los pedidos del período. `porEstadoOrden` cuenta cada pedido por
+ * su estado ACTUAL, que es justo lo que se quiere mostrar: cuántos ya se
+ * completaron, cuántos siguen en curso y cuántos se perdieron.
+ */
+function toOrderStatus(
+  data: DetailedMetricsResponse
+): DetailedMetrics['orderStatus'] {
+  const byStatus = data.porEstadoOrden ?? {};
+  const count = (status: string) => byStatus[status] ?? 0;
+
+  return {
+    completed: count('COMPLETED'),
+    inProgress: IN_PROGRESS_STATUSES.reduce((sum, s) => sum + count(s), 0),
+    cancelled: count('CANCELLED'),
+    unconfirmed: count('DRAFT') + count('ABANDONED'),
+    pendingPayment: {
+      count: data.conteos.pendientesPago,
+      amount: data.recaudos.pendientesPago?.total ?? 0,
+    },
   };
 }
 

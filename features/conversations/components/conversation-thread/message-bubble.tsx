@@ -28,8 +28,10 @@ function bubbleStyles(senderType: MessageSenderType): string {
   switch (senderType) {
     case "CUSTOMER":
       return "bg-white border border-slate-200 text-slate-900";
+    // El bot va en índigo suave para que lo que escribe una persona
+    // (operador, en verde) se distinga de un vistazo.
     case "BOT":
-      return "bg-indigo-600 text-white";
+      return "bg-indigo-50 border border-indigo-100 text-indigo-950";
     case "OPERATOR":
       return "bg-emerald-600 text-white";
     case "SYSTEM":
@@ -89,9 +91,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const t = useTranslations("conversations");
   const isMediaHandled = MEDIA_CONTENT_TYPES.has(message.contentType);
   const preview = buildInteractivePreview(message);
-  // Sólo las burbujas CUSTOMER tienen fondo claro (`bubbleStyles`); BOT/OPERATOR/SYSTEM
-  // son sólidas y oscuras, así que la superficie secundaria del preview necesita más contraste ahí.
-  const tone = message.senderType === "CUSTOMER" ? "onLight" : "onDark";
+  // Solo la burbuja del operador es oscura (`bubbleStyles`); cliente, bot y
+  // sistema van sobre fondo claro. El preview interactivo y los ticks de
+  // entrega ajustan su contraste según eso.
+  const tone = message.senderType === "OPERATOR" ? "onDark" : "onLight";
   // El aviso genérico queda sólo para lo que el normalizador no supo interpretar.
   const showUnsupportedNotice =
     !preview && !isMediaHandled && message.contentType !== "TEXT" && !message.text;
@@ -131,7 +134,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             minute: "2-digit",
           })}
           {message.direction === "OUTBOUND" && (
-            <MessageStatusIcon status={message.status} errorCode={message.errorCode} />
+            <MessageStatusIcon
+              status={message.status}
+              errorCode={message.errorCode}
+              tone={tone}
+            />
           )}
         </div>
       </div>

@@ -1,14 +1,14 @@
 "use client";
 
 import { OrdersTodayCard } from "./OrdersTodayCard";
-import { RevenueTodayCard } from "./RevenueTodayCard";
-import { TotalOrdersCard } from "./TotalOrdersCard";
+import { PeriodRevenueCard } from "./PeriodRevenueCard";
+import { PeriodOrdersCard } from "./PeriodOrdersCard";
 import { AverageTicketCard } from "./AverageTicketCard";
 
 /**
- * En el teléfono (2 columnas): Ingresos primero y a todo el ancho, Pedidos y
- * Ticket lado a lado, Total órdenes abajo. Desde `md` vuelve al orden de
- * siempre.
+ * En el teléfono (2 columnas): Ingresos primero y a todo el ancho, Pedidos de
+ * hoy y Ticket lado a lado, Pedidos del período abajo. Desde `md` vuelve al
+ * orden de siempre.
  */
 export function KpiSection() {
   return (
@@ -17,10 +17,10 @@ export function KpiSection() {
         <OrdersTodayCard />
       </div>
       <div className="order-1 col-span-2 md:order-none md:col-span-1">
-        <RevenueTodayCard />
+        <PeriodRevenueCard />
       </div>
       <div className="order-4 col-span-2 md:order-none md:col-span-1">
-        <TotalOrdersCard />
+        <PeriodOrdersCard />
       </div>
       <div className="order-3 md:order-none">
         <AverageTicketCard />
