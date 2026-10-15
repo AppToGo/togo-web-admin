@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { SettingsMobileHub } from "@/components/layout/SettingsMobileHub";
-import { useIsBelowDesktop } from "@/hooks/useIsMobile";
-
-/** Mismo corte que `useIsBelowDesktop` (Tailwind `lg`). */
-const BELOW_DESKTOP_QUERY = "(max-width: 1023px)";
+import { isBelowDesktopViewport, useIsBelowDesktop } from "@/hooks/useIsMobile";
 
 /**
  * Settings Page
@@ -27,7 +24,7 @@ export default function SettingsPage() {
     // Se mira el ancho real, no el hook: en la hidratación el hook todavía
     // devuelve el valor del servidor (escritorio) y redirigiría también en
     // el teléfono.
-    if (window.matchMedia(BELOW_DESKTOP_QUERY).matches) return;
+    if (isBelowDesktopViewport()) return;
     router.replace(`/${locale}/dashboard/settings/general/business`);
   }, [router, locale]);
 
