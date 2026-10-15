@@ -19,7 +19,8 @@ export interface PillOption<T extends string> {
 interface PillGroupProps<T extends string> {
   label: string;
   options: PillOption<T>[];
-  value: T;
+  /** `null`: ninguna elegida (filtro que se puede desmarcar). */
+  value: T | null;
   onChange: (value: T) => void;
   /** `tabs`: role="tablist" + aria-selected; `filter`: aria-pressed. */
   variant?: "tabs" | "filter";

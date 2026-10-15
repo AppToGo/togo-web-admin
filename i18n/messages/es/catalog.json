@@ -523,7 +523,8 @@
     "nav": {
       "products": "Productos",
       "inventory": "Inventario",
-      "categories": "Categorías"
+      "categories": "Categorías",
+      "global": "Global"
     },
     "searchProducts": "Buscar productos...",
     "categoryFilter": "Filtrar por categoría",

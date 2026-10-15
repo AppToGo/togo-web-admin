@@ -9,11 +9,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PillGroup } from "@/components/ui/pill-group";
 import { BranchSingleSelector } from "@/features/branches/components";
 import { CatalogMobileNav } from "@/features/catalog/components/mobile/CatalogMobileNav";
+import { SearchField } from "@/components/ui/search-field";
 import { cn, formatCurrency } from "@/lib/utils";
 import { IMPORT_DEFAULT_VARIANT_LABEL } from "@/features/products/import";
 import type { InventoryItem } from "../types";
@@ -46,6 +46,8 @@ const FILTERS: Record<MobileFilter, (item: InventoryItem) => boolean> = {
 
 interface InventoryMobileViewProps {
   items: InventoryItem[];
+  /** Total en la sede: la lista trae como máximo 100 (sin paginar). */
+  total: number;
   isLoading: boolean;
   branchId: string;
   onBranchChange: (branchId: string) => void;
@@ -55,6 +57,7 @@ interface InventoryMobileViewProps {
 
 export function InventoryMobileView({
   items,
+  total,
   isLoading,
   branchId,
   onBranchChange,
@@ -79,20 +82,7 @@ export function InventoryMobileView({
     <div className="-mx-4 -mt-4 flex flex-col sm:-mx-6 sm:-mt-6" data-testid="inventory-mobile-view">
       <div className="flex flex-col gap-2.5 border-b border-slate-200/70 bg-white px-4 pb-3 pt-1 sm:px-6">
         <BranchSingleSelector value={branchId || null} onChange={(id) => onBranchChange(id as string)} />
-        <label className="relative block">
-          <Search
-            aria-hidden
-            className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-500"
-          />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("table.search")}
-            aria-label={t("table.search")}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-[42px] pr-3.5 text-[15px] text-slate-900 outline-none focus:border-indigo-400"
-          />
-        </label>
+        <SearchField value={search} onChange={onSearchChange} placeholder={t("table.search")} />
         <PillGroup
           label={t("mobile.stockFilter")}
           value={filter}
@@ -170,6 +160,12 @@ export function InventoryMobileView({
           </ul>
         )}
       </div>
+
+      {total > items.length && (
+        <p className="px-4 pb-3 text-center text-xs text-slate-500">
+          {t("mobile.partial", { shown: items.length, total })}
+        </p>
+      )}
 
       <CatalogMobileNav />
     </div>

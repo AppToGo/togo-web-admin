@@ -8,13 +8,9 @@
 
 import type { LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/routing";
+import { HIDDEN_FROM, type HiddenFrom } from "./hidden-from";
 import { cn } from "@/lib/utils";
 
-/** Desde qué ancho se oculta (ahí la sección usa el Sidebar). */
-const HIDDEN_FROM = {
-  md: "md:hidden",
-  lg: "lg:hidden",
-} as const;
 
 export interface MobileBottomNavItem {
   href: string;
@@ -26,7 +22,7 @@ export interface MobileBottomNavItem {
 interface MobileBottomNavProps {
   label: string;
   items: MobileBottomNavItem[];
-  hiddenFrom: keyof typeof HIDDEN_FROM;
+  hiddenFrom: HiddenFrom;
   testId?: string;
 }
 

@@ -128,6 +128,10 @@ export default function UsersPage() {
           isLimitReached={isLimitReached}
           onUpgrade={() => setIsUpgradeOpen(true)}
           onCreate={() => setIsCreateOpen(true)}
+          currentUserId={user?.userId}
+          onDeactivate={setDeleteTarget}
+          onActivate={handleActivate}
+          isActivating={activateUser.isPending}
         />
       ) : (
       <div className="flex flex-col gap-6">

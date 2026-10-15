@@ -299,6 +299,10 @@ export function BranchInventoryManager({
   }, []);
 
   const inventoryFilters: InventoryFiltersType = useMemo(() => {
+    // Teléfono: solo la búsqueda. Los filtros de escritorio no tienen control
+    // ahí y, si quedaron puestos, recortarían la lista sin que se vea.
+    if (isMobile) return { search: globalFilter || undefined, limit: 100 };
+
     // Traduce el par de switches a un booleano tri-state, mismo patrón que
     // sourceFilter -> isFromTemplate en catalog/products/page.tsx
     const isAvailable =
@@ -316,7 +320,7 @@ export function BranchInventoryManager({
       stockStatus: stockFilterToStatuses(stockFilter),
       limit: 100,
     };
-  }, [globalFilter, selectedCategory, selectedSubcategory, availabilityFilter, stockFilter]);
+  }, [isMobile, globalFilter, selectedCategory, selectedSubcategory, availabilityFilter, stockFilter]);
 
   // Queries
   const {
@@ -477,6 +481,7 @@ export function BranchInventoryManager({
     return (
       <InventoryMobileView
         items={items}
+        total={inventoryData?.total ?? items.length}
         isLoading={isLoading}
         branchId={selectedBranchId}
         onBranchChange={setSelectedBranchId}

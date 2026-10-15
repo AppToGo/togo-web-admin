@@ -16,8 +16,8 @@ import { useEffectiveBranches } from "@/features/branches/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { PillGroup } from "@/components/ui/pill-group";
 
 /** Orden rápido de la lista en el teléfono (la tabla ordena por columnas). */
 const MOBILE_SORTS = {
@@ -155,26 +155,20 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Teléfono: orden rápido de la lista */}
-        <div role="group" aria-label={t("mobileSort.label")} className="flex gap-2 md:hidden">
-          {(Object.keys(MOBILE_SORTS) as MobileSort[]).map((key) => (
-            <button
-              key={key}
-              type="button"
-              aria-pressed={mobileSort === key}
-              onClick={() => {
-                setMobileSort(mobileSort === key ? null : key);
-                setPage(1);
-              }}
-              className={cn(
-                "h-9 rounded-full px-3.5 text-sm font-semibold transition-colors",
-                mobileSort === key ? "bg-slate-900 text-white" : "bg-white text-slate-700"
-              )}
-            >
-              {t(`mobileSort.${key}`)}
-            </button>
-          ))}
-        </div>
+        {/* Teléfono: orden rápido de la lista (tocar el elegido lo quita) */}
+        <PillGroup
+          label={t("mobileSort.label")}
+          value={mobileSort}
+          onChange={(key) => {
+            setMobileSort(mobileSort === key ? null : key);
+            setPage(1);
+          }}
+          options={(Object.keys(MOBILE_SORTS) as MobileSort[]).map((key) => ({
+            id: key,
+            label: t(`mobileSort.${key}`),
+          }))}
+          className="md:hidden"
+        />
 
         <div className="grid grid-cols-6 gap-4">
           {/* Customers Table */}

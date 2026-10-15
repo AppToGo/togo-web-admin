@@ -144,7 +144,12 @@ async function mockCatalogAndSettings(page: Page, patches: unknown[] = []): Prom
         inventoryItem("i-3", "Limonada natural", null),
         inventoryItem("i-4", "Gaseosa", 30, false),
       ];
-      return json({ items, total: items.length, page: 1, limit: 100 });
+      // `total` mayor que lo cargado: la lista móvil avisa que es parcial.
+      return json({ items, total: 140, page: 1, limit: 100 });
+    }
+    if (path.endsWith("/activate") && request.method() === "PATCH") {
+      patches.push({ activate: path });
+      return json({});
     }
     if (path.includes("/users")) return json(USERS);
     if (path.endsWith("/branches/can-create")) {
@@ -241,6 +246,7 @@ test.describe("Catálogo en el teléfono", () => {
     await expect(view.getByText("Gaseosa")).toBeVisible();
     await expect(view.getByText("Hamburguesa doble")).toHaveCount(0);
     await expect(view.getByRole("switch")).toHaveCount(0);
+    await expect(view.getByText("Se muestran 4 de 140", { exact: false })).toBeVisible();
   });
 
   test("categorías: busca y crea desde el botón flotante", async ({ page }) => {
@@ -287,5 +293,54 @@ test.describe("Configuración en el teléfono", () => {
       "href",
       /\/dashboard\/users\/u-op2/
     );
+  });
+});
+
+test.describe("Configuración: permisos y acciones en el teléfono", () => {
+  test("sin bot_messages.manage no ofrece Mensajes del bot", async ({ page }) => {
+    await login(page);
+    await page.goto("/es/dashboard/settings");
+
+    const hub = page.getByTestId("settings-mobile-hub");
+    await expect(hub.getByRole("link", { name: /Usuarios/ })).toBeVisible();
+    await expect(hub.getByRole("link", { name: /Mensajes del bot/ })).toHaveCount(0);
+  });
+
+  test("usuarios: desactivar pide confirmación y reactivar guarda", async ({ page }) => {
+    const patches: unknown[] = [];
+    await login(page, patches);
+    await page.goto("/es/dashboard/settings/users");
+
+    await page.getByRole("button", { name: "Acciones de Andrés Rojas" }).click();
+    await page.getByRole("menuitem", { name: "Eliminar usuario" }).click();
+    await expect(page.getByRole("alertdialog")).toBeVisible();
+    await page.getByRole("button", { name: "Cancelar" }).click();
+
+    await page.getByRole("button", { name: "Acciones de Mateo Cruz" }).click();
+    await page.getByRole("menuitem", { name: "Reactivar usuario" }).click();
+    await expect.poll(() => patches).toContainEqual({
+      activate: "/v1/businesses/e2e-test-business-id/users/u-op2/activate",
+    });
+  });
+
+  test("al pasar a escritorio la lista de Configuración redirige", async ({ page }) => {
+    await login(page);
+    await page.goto("/es/dashboard/settings");
+    await expect(page.getByTestId("settings-mobile-hub")).toBeVisible();
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page).toHaveURL(/\/dashboard\/settings\/general\/business/);
+  });
+});
+
+test.describe("Menú en la tablet", () => {
+  test.use({ viewport: { width: 820, height: 1180 } });
+
+  test("Catálogo conserva su submenú (no hay barra inferior)", async ({ page }) => {
+    await login(page);
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+    await page.getByRole("button", { name: "Catálogo" }).click();
+    await expect(page.getByRole("link", { name: /Inventario/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Categor/ })).toBeVisible();
   });
 });

@@ -27,12 +27,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
-import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
-import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useShowGlobalCatalog } from "@/features/catalog/hooks";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useUnseenOrdersCount } from "@/features/orders/hooks/useUnseenOrders";
 import { useInboxSummary } from "@/features/conversations/hooks/useInboxSummary";
-import { useIsBelowDesktop } from "@/hooks/useIsMobile";
+import { useIsBelowDesktop, useIsMobile } from "@/hooks/useIsMobile";
 
 
 interface SidebarProps {
@@ -79,11 +78,17 @@ const CONVERSATION_HREFS = [
  * pantallas de conversaciones se agrupan bajo una sola entrada que abre el
  * Inbox, si se tiene acceso a él.
  */
-function flattenForPhone(items: NavigationItem[], canViewInbox: boolean): NavigationItem[] {
+function flattenForPhone(
+  items: NavigationItem[],
+  { canViewInbox, flattenCatalog }: { canViewInbox: boolean; flattenCatalog: boolean }
+): NavigationItem[] {
   const flat = items.map((item): NavigationItem => {
     if (!item.children?.length) return item;
     const children = item.children.map((child) => child.href);
     const isSettings = item.href === "/dashboard/settings";
+    // La barra inferior de Catálogo solo existe < md: en la tablet el
+    // submenú se mantiene, o no habría cómo llegar a Inventario.
+    if (!isSettings && !flattenCatalog) return item;
     return {
       ...item,
       children: undefined,
@@ -123,7 +128,6 @@ export function Sidebar({
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
-  const effectiveBusinessId = useEffectiveBusinessId();
 
   // Menú de usuario colapsable (idioma + cerrar sesión) — mismo patrón que
   // LanguageSwitcher, inline acá para compartir un solo DropdownMenu con
@@ -142,10 +146,7 @@ export function Sidebar({
 
   // El catálogo global solo se muestra si el negocio tiene productos
   // disponibles para su industria, o si el usuario es super admin
-  const { hasProducts: hasGlobalProducts } = useHasGlobalCatalogProducts(
-    isSuperAdmin ? null : effectiveBusinessId
-  );
-  const showGlobalCatalog = isSuperAdmin || hasGlobalProducts;
+  const showGlobalCatalog = useShowGlobalCatalog();
 
   // Gating por rol en cliente, sólo UX — el permiso real (conversation.view)
   // lo aplica el backend (403). Mismo patrón que `canViewHistory` en
@@ -186,10 +187,12 @@ export function Sidebar({
   const { data: inboxSummary } = useInboxSummary(!isSuperAdmin && canViewInbox);
   const inboxAttentionCount = inboxSummary?.needsAttention ?? 0;
 
-  // Teléfono y tablet (< lg, el Sidebar es un cajón): Catálogo y
-  // Configuración van directo a su pantalla (barra inferior / lista de
-  // configuración) y las tres de conversaciones se agrupan en una.
+  // Teléfono y tablet (< lg, el Sidebar es un cajón): Configuración va
+  // directo a su lista y las tres de conversaciones se agrupan en una (sus
+  // pantallas existen hasta lg). Catálogo solo en el teléfono (< md), donde
+  // está su barra inferior.
   const isBelowDesktop = useIsBelowDesktop();
+  const isMobile = useIsMobile();
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -324,9 +327,12 @@ export function Sidebar({
       },
     ];
 
-    return isBelowDesktop ? flattenForPhone(items, canViewInbox) : items;
+    return isBelowDesktop
+      ? flattenForPhone(items, { canViewInbox, flattenCatalog: isMobile })
+      : items;
   }, [
     isBelowDesktop,
+    isMobile,
     t,
     showGlobalCatalog,
     canViewConversations,

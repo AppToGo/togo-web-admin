@@ -38,6 +38,7 @@ import {
 import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
 import { useIsBelowDesktop } from "@/hooks/useIsMobile";
 import { useUrlParamState } from "@/hooks/useUrlParamState";
+import { useConversation } from "@/features/conversations/hooks/useConversation";
 
 /**
  * Outcomes que califican como "sin pedido" (§1.1 del plan Fase B, backend
@@ -146,6 +147,13 @@ export default function ConversationsWithoutOrderPage() {
   // la lista. En escritorio es el diálogo, con estado local.
   const [conversationParam, openConversation, closeConversation] =
     useUrlParamState("conversation");
+  // La abierta puede no estar en la página cargada (recarga o enlace con
+  // `?conversation=` de otra página): entonces se pide su detalle.
+  const listedConversation = conversations.find((item) => item.id === conversationParam);
+  const { data: fetchedConversation } = useConversation(
+    conversationParam,
+    isBelowDesktop && !!conversationParam && !listedConversation
+  );
 
   if (!hasBusiness && !isSuperAdmin) {
     return (
@@ -199,7 +207,7 @@ export default function ConversationsWithoutOrderPage() {
   }
 
   if (isBelowDesktop) {
-    const selected = conversations.find((item) => item.id === conversationParam);
+    const selected = listedConversation ?? fetchedConversation;
     return (
       <DashboardLayout>
         <ConversationsMobileList

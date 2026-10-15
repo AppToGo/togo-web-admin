@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { BOT_MESSAGES_PERMISSION } from "@/features/bot-messages";
 
 interface HubItem {
   href: string;
@@ -33,7 +34,7 @@ interface HubItem {
 export function SettingsMobileHub() {
   const t = useTranslations("navigation.sidebar");
   const th = useTranslations("navigation.settingsHub");
-  const { hasPermission } = useMyPermissions();
+  const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
 
   const groups: Array<{ title: string; items: HubItem[] }> = [
     {
@@ -51,6 +52,9 @@ export function SettingsMobileHub() {
           title: th("botMessagesTitle"),
           description: th("botMessages"),
           icon: MessageSquareText,
+          // Mismo permiso que el enlace de Datos del negocio: sin él la
+          // pantalla solo dice "sin acceso".
+          show: permissionsLoading || hasPermission(BOT_MESSAGES_PERMISSION),
         },
       ],
     },

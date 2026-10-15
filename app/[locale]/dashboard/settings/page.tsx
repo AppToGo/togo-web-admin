@@ -24,9 +24,11 @@ export default function SettingsPage() {
     // Se mira el ancho real, no el hook: en la hidratación el hook todavía
     // devuelve el valor del servidor (escritorio) y redirigiría también en
     // el teléfono.
+    // También corre al cruzar a escritorio con la página abierta (girar la
+    // tablet): si no, quedaría en blanco.
     if (isBelowDesktopViewport()) return;
     router.replace(`/${locale}/dashboard/settings/general/business`);
-  }, [router, locale]);
+  }, [router, locale, isBelowDesktop]);
 
   if (!isBelowDesktop) return null;
 

@@ -47,6 +47,9 @@ test.describe("Admin en el teléfono", () => {
     await base(page);
     await mockBranches(page);
     await mockDashboardMetrics(page);
+    // El test navega a Pedidos: sin sus métricas, el riel de estadísticas
+    // recibía las del dashboard (otra forma) y fallaba de forma intermitente.
+    await mockOrdersDashboard(page);
     await mockRefreshSuccess(page);
     await mockBoardPermissions(page);
     await openDashboard(page);

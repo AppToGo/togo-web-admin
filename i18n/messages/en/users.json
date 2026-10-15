@@ -126,6 +126,7 @@
   },
   "activateSuccess": "User activated successfully",
   "mobile": {
+    "actionsFor": "Actions for {name}",
     "roleFilter": "Filter by role",
     "roles": {
       "all": "All",

@@ -9,11 +9,12 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MobileFab } from "@/components/ui/mobile-fab";
 import { PillGroup, SegmentedControl } from "@/components/ui/pill-group";
+import { SearchField } from "@/components/ui/search-field";
 import { cn, formatCurrency } from "@/lib/utils";
 import { CatalogMobileNav } from "./CatalogMobileNav";
 import type { BusinessCategory, CatalogProduct } from "../../types/catalog.types";
@@ -116,20 +117,7 @@ export function ProductsMobileView({
             {t("products.import")}
           </button>
         </div>
-        <label className="relative block">
-          <Search
-            aria-hidden
-            className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-500"
-          />
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("mobile.searchProducts")}
-            aria-label={t("mobile.searchProducts")}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-[42px] pr-3.5 text-[15px] text-slate-900 outline-none focus:border-indigo-400"
-          />
-        </label>
+        <SearchField value={searchQuery} onChange={onSearchChange} placeholder={t("mobile.searchProducts")} />
         {categories.length > 0 && (
           <PillGroup
             label={t("mobile.categoryFilter")}

@@ -3,13 +3,16 @@
 /**
  * Usuarios en el teléfono (< md), según el diseño móvil: uso del plan,
  * filtro por rol con su contador y filas con avatar, rol y contacto. Tocar
- * una abre el detalle (editar, desactivar); el botón flotante crea uno.
+ * una abre el detalle; su botón de acciones, una hoja con editar y
+ * desactivar / reactivar (como la tabla de escritorio). El botón flotante
+ * crea uno.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronRight, Crown } from "lucide-react";
-import { Link } from "@/i18n/routing";
+import { Crown, MoreVertical, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { Link, useRouter } from "@/i18n/routing";
+import { BottomSheet, BottomSheetItem } from "@/components/ui/bottom-sheet";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { MobileFab } from "@/components/ui/mobile-fab";
 import { PillGroup } from "@/components/ui/pill-group";
@@ -33,6 +36,12 @@ interface UsersMobileViewProps {
   isLimitReached: boolean;
   onUpgrade: () => void;
   onCreate: () => void;
+  /** Usuario logueado: no puede desactivarse a sí mismo. */
+  currentUserId: string | undefined;
+  /** Abre la confirmación de desactivar (la misma de escritorio). */
+  onDeactivate: (user: User) => void;
+  onActivate: (user: User) => void;
+  isActivating: boolean;
 }
 
 export function UsersMobileView({
@@ -42,10 +51,30 @@ export function UsersMobileView({
   isLimitReached,
   onUpgrade,
   onCreate,
+  currentUserId,
+  onDeactivate,
+  onActivate,
+  isActivating,
 }: UsersMobileViewProps) {
   const t = useTranslations("users");
   const tc = useTranslations("common");
+  const router = useRouter();
   const [role, setRole] = useState<RoleFilter>("all");
+  const [actionsFor, setActionsFor] = useState<User | null>(null);
+  // La confirmación de desactivar es un diálogo: se abre cuando la hoja
+  // termina de cerrarse (o tras un respaldo), una sola vez.
+  const afterCloseRef = useRef<(() => void) | null>(null);
+  const runAfterClose = () => {
+    const action = afterCloseRef.current;
+    afterCloseRef.current = null;
+    action?.();
+  };
+  const closeThen = (action: () => void, waitForSheet: boolean) => {
+    setActionsFor(null);
+    if (!waitForSheet) return action();
+    afterCloseRef.current = action;
+    window.setTimeout(runAfterClose, 500);
+  };
 
   const list = useMemo(() => users ?? [], [users]);
   const visible = role === "all" ? list : list.filter((user) => user.role === role);
@@ -96,11 +125,11 @@ export function UsersMobileView({
         ) : (
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl bg-white">
             {visible.map((user) => (
-              <li key={user.id}>
+              <li key={user.id} className="flex items-center">
                 <Link
                   href={`/dashboard/users/${user.id}`}
                   className={cn(
-                    "flex min-h-16 items-center gap-3 px-3.5 py-2.5",
+                    "flex min-h-16 min-w-0 flex-1 items-center gap-3 py-2.5 pl-3.5",
                     !user.active && "opacity-55"
                   )}
                 >
@@ -125,8 +154,15 @@ export function UsersMobileView({
                         .join(" · ")}
                     </span>
                   </span>
-                  <ChevronRight aria-hidden className="h-5 w-5 shrink-0 text-slate-400" />
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => setActionsFor(user)}
+                  aria-label={t("mobile.actionsFor", { name: user.name })}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center text-slate-500"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </button>
               </li>
             ))}
           </ul>
@@ -135,6 +171,53 @@ export function UsersMobileView({
       </div>
 
       <MobileFab label={t("mobile.newUser")} onClick={isLimitReached ? onUpgrade : onCreate} />
+
+      <BottomSheet
+        open={!!actionsFor}
+        onOpenChange={(open) => !open && setActionsFor(null)}
+        title={t("mobile.actionsFor", { name: actionsFor?.name ?? "" })}
+        onClosed={runAfterClose}
+      >
+        {actionsFor && (
+          <>
+            <BottomSheetItem
+              icon={Pencil}
+              onSelect={() => {
+                const id = actionsFor.id;
+                closeThen(() => router.push(`/dashboard/users/${id}`), false);
+              }}
+            >
+              {t("list.actions.edit")}
+            </BottomSheetItem>
+            {actionsFor.active ? (
+              <BottomSheetItem
+                icon={Trash2}
+                destructive
+                disabled={actionsFor.id === currentUserId}
+                onSelect={() => {
+                  const target = actionsFor;
+                  closeThen(() => onDeactivate(target), true);
+                }}
+              >
+                {actionsFor.id === currentUserId
+                  ? t("list.actions.deleteSelfDisabled")
+                  : t("list.actions.delete")}
+              </BottomSheetItem>
+            ) : (
+              <BottomSheetItem
+                icon={RotateCcw}
+                disabled={isActivating}
+                onSelect={() => {
+                  const target = actionsFor;
+                  closeThen(() => onActivate(target), false);
+                }}
+              >
+                {t("list.actions.activate")}
+              </BottomSheetItem>
+            )}
+          </>
+        )}
+      </BottomSheet>
     </div>
   );
 }

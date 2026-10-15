@@ -8,10 +8,11 @@
 
 import { useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useDebounce } from "@/hooks/shared/useDebounce";
+import { SearchField } from "@/components/ui/search-field";
+import { PillGroup } from "@/components/ui/pill-group";
 import { cn } from "@/lib/utils";
 import { CONTROL_BADGE } from "./control-badge";
 import type { InboxTab } from "./inbox-tabs";
@@ -81,55 +82,16 @@ export function InboxMobileList({
           {isConnected ? t("connection.connected") : t("connection.disconnected")}
         </span>
 
-        <label className="relative block">
-          <Search
-            aria-hidden
-            className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-500"
-          />
-          <input
-            type="search"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder={t("list.searchPlaceholder")}
-            aria-label={t("list.searchPlaceholder")}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-[42px] pr-3.5 text-[15px] text-slate-900 outline-none focus:border-indigo-400"
-          />
-        </label>
+        <SearchField value={searchValue} onChange={setSearchValue} placeholder={t("list.searchPlaceholder")} />
 
-        <div
-          role="tablist"
-          aria-label={t("mobile.trays")}
-          className="-mx-4 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6"
-        >
-          {tabs.map((tab) => {
-            const on = tab.id === activeTab;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                onClick={() => onTabChange(tab.id)}
-                className={cn(
-                  "flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-colors",
-                  on ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"
-                )}
-              >
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span
-                    className={cn(
-                      "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs tabular-nums",
-                      on ? "bg-white text-slate-900" : "bg-slate-200 text-slate-700"
-                    )}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <PillGroup
+          label={t("mobile.trays")}
+          variant="tabs"
+          value={activeTab}
+          onChange={onTabChange}
+          options={tabs}
+          className="-mx-4 px-4 sm:-mx-6 sm:px-6"
+        />
       </div>
 
       {isLoading ? (

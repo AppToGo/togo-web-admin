@@ -135,6 +135,7 @@
   "productsLink": "Productos",
   "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí.",
   "mobile": {
+    "partial": "Se muestran {shown} de {total}: busca un producto para encontrar el resto.",
     "untracked": "Sin control",
     "units": "{count} u.",
     "unitsLow": "{count} u. · bajo",

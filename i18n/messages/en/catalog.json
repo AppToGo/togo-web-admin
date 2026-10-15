@@ -517,7 +517,8 @@
     "nav": {
       "products": "Products",
       "inventory": "Inventory",
-      "categories": "Categories"
+      "categories": "Categories",
+      "global": "Global"
     },
     "searchProducts": "Search products...",
     "categoryFilter": "Filter by category",
