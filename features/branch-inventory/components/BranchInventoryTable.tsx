@@ -57,6 +57,8 @@ interface BranchInventoryTableProps {
     value: number
   ) => void;
   readOnly?: boolean;
+  /** `inventory.set_availability`: sin él, la disponibilidad solo se ve. */
+  canSetAvailability?: boolean;
   showProductImages?: boolean;
   globalFilter: string;
   setGlobalFilter: (value: string) => void;
@@ -161,6 +163,7 @@ export function BranchInventoryTable({
   debouncedUpdate,
   onToggleAvailability,
   readOnly = false,
+  canSetAvailability = true,
   showProductImages = false,
   globalFilter,
   setGlobalFilter,
@@ -330,10 +333,10 @@ export function BranchInventoryTable({
             <Switch
               checked={item.isAvailable}
               onCheckedChange={(checked) => {
-                if (readOnly) return;
+                if (readOnly || !canSetAvailability) return;
                 onToggleAvailability(item.productVariantId, checked);
               }}
-              disabled={readOnly}
+              disabled={readOnly || !canSetAvailability}
             />
           );
         },
@@ -435,6 +438,7 @@ export function BranchInventoryTable({
       editingPrice,
       onToggleAvailability,
       readOnly,
+      canSetAvailability,
       showProductImages,
       t,
     ]

@@ -241,7 +241,8 @@ function OrdersPageInner() {
       <div className="flex flex-col gap-6 flex-1 min-h-0">
         {/* Header con título, buscador, filtro de fecha y toggle de vista */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
-          <div>
+          {/* En móvil el nombre de la sección ya está en la barra superior. */}
+          <div className="hidden lg:block">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
               <TourHelpButton />
@@ -254,7 +255,7 @@ function OrdersPageInner() {
             <div className="flex items-center gap-2">
 
               {/* Buscador */}
-              <div data-tour-step="search" className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
+              <div data-tour-step="search" className="flex flex-1 sm:flex-none items-center bg-white rounded-card px-4 py-2.5 min-h-11 w-full sm:w-auto sm:min-w-64">
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
                   type="text"
@@ -483,11 +484,15 @@ function OrdersPageInner() {
                 </PopoverContent>
               </Popover>
 
-              {/* Flujo del negocio (solo OWNER/ADMIN): qué estados usa el tablero */}
-              <OrderFlowSettings />
+              {/* Flujo del negocio (solo OWNER/ADMIN): qué estados usa el tablero.
+                  En el teléfono se configura desde una pantalla grande. */}
+              <div className="hidden md:contents">
+                <OrderFlowSettings />
+              </div>
 
-              {/* Board view (Board / By status / List) + card density */}
-              <div data-tour-step="view-toggle">
+              {/* Board view (Board / By status / List) + card density. En el
+                  teléfono la vista es siempre "por estado". */}
+              <div data-tour-step="view-toggle" className="hidden md:block">
                 <OrderBoardToolbar
                   view={boardView}
                   onViewChange={handleBoardViewChange}

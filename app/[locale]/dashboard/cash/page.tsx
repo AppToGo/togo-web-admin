@@ -108,23 +108,27 @@ export default function CashRoutePage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 lg:gap-6">
         <div className="flex flex-wrap items-center gap-3">
           {hasRegisterTitle ? (
             <CashRegisterTitle />
           ) : (
-            <div>
+            // < lg el nombre de la sección ya está en la barra superior.
+            <div className="hidden lg:block">
               <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
               <p className="mt-1 text-slate-500">{t("description")}</p>
             </div>
           )}
           <span className="flex-1" />
-          <CashHeaderActions />
+          {/* En el teléfono las acciones del turno están en "Más". */}
+          <div className="hidden md:contents">
+            <CashHeaderActions />
+          </div>
           {effectiveBranches.length > 1 && (
             <BranchSingleSelector
               value={singleBranchId}
               onChange={setPickedBranchId}
-              className="w-56"
+              className="w-full sm:w-56"
             />
           )}
         </div>

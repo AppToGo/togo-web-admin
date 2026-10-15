@@ -124,5 +124,14 @@
     "createFailed": "Error al crear el usuario",
     "activateFailed": "Error al reactivar el usuario"
   },
-  "activateSuccess": "Usuario reactivado exitosamente"
+  "activateSuccess": "Usuario reactivado exitosamente",
+  "mobile": {
+    "actionsFor": "Acciones de {name}",
+    "roleFilter": "Filtrar por rol",
+    "roles": {
+      "all": "Todos",
+      "operators": "Operadores"
+    },
+    "newUser": "Nuevo usuario"
+  }
 }

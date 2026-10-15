@@ -27,18 +27,19 @@ export const KpiCard = memo(function KpiCard({
       variant={`metrics-${variant}`}
       className="hover:shadow-md transition-shadow duration-200"
     >
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-slate-500">{title}</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1 truncate">
+            <p className="text-xl md:text-2xl font-bold text-slate-900 mt-1 truncate">
               {value}
             </p>
             <p className="text-xs text-slate-500 mt-1 truncate">
               {description}
             </p>
           </div>
-          <div className="w-11 h-11 shrink-0 rounded-icon flex items-center justify-center bg-white/75">
+          {/* En el teléfono el ícono le quita espacio al número. */}
+          <div className="hidden md:flex w-11 h-11 shrink-0 rounded-icon items-center justify-center bg-white/75">
             {icon}
           </div>
         </div>

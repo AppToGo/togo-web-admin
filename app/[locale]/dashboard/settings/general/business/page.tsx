@@ -273,8 +273,8 @@ export default function BusinessSettingsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        {/* Header (< md el título y volver están en la barra superior) */}
+        <div className="hidden md:flex items-center gap-4 mb-6">
           <Link href="/dashboard">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
@@ -510,15 +510,17 @@ export default function BusinessSettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-4">
-            <Link href="/dashboard">
+          {/* Actions — < md: "Guardar" fijo abajo a todo el ancho (volver
+              ya está en la barra superior). */}
+          <div className="sticky bottom-0 z-10 -mx-4 flex justify-end gap-4 border-t border-slate-200/70 bg-white px-4 py-3 sm:-mx-6 sm:px-6 md:static md:mx-0 md:border-0 md:bg-transparent md:p-0">
+            <Link href="/dashboard" className="hidden md:block">
               <Button type="button" variant="outline">
                 {tb("buttons.cancel")}
               </Button>
             </Link>
             <Button
               type="submit"
+              className="h-12 flex-1 text-base md:h-10 md:flex-none md:text-sm"
               disabled={!isDirty || updateBusiness.isPending}
               isLoading={updateBusiness.isPending}
             >

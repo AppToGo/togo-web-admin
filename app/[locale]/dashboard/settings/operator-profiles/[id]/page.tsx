@@ -229,6 +229,7 @@ export default function EditProfilePage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
+            className="hidden md:inline-flex"
             variant="ghost"
             size="icon"
             onClick={() => router.push("/dashboard/settings/operator-profiles")}

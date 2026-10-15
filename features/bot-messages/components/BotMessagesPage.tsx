@@ -75,7 +75,8 @@ export function BotMessagesPage() {
   const [collapsed, setCollapsed] = useState<Set<BotMessageStage>>(new Set());
 
   const header = (
-    <div className="mb-6 flex items-center gap-4">
+    // < md el título y volver están en la barra superior.
+    <div className="mb-6 hidden items-center gap-4 md:flex">
       <Link href="/dashboard/settings/general/business">
         <Button variant="ghost" size="icon" aria-label={t("back")}>
           <ArrowLeft className="h-5 w-5" />

@@ -18,6 +18,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Search,
+  ChevronLeft,
   Truck,
   Store,
   Utensils,
@@ -128,6 +129,9 @@ export function NewOrderDrawer({
   const [pickedCashSessionId, setCashSessionId] = useState<string | null>(null);
   const [cashReceived, setCashReceived] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  // Teléfono (< md): primero los productos a pantalla completa y después
+  // los datos del pedido, como la venta de Caja. En md+ van lado a lado.
+  const [mobileStep, setMobileStep] = useState<"products" | "details">("products");
 
   const composer = useOrderComposer({
     businessId,
@@ -225,6 +229,7 @@ export function NewOrderDrawer({
     setCashSessionId(null);
     setCashReceived(0);
     setSubmitted(false);
+    setMobileStep("products");
   };
 
   const handleClose = () => {
@@ -285,9 +290,14 @@ export function NewOrderDrawer({
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row md:overflow-hidden">
           {/* Productos */}
-          <section className="flex flex-col min-h-0 md:flex-1 p-4 sm:p-6 gap-4 md:border-r border-slate-100">
+          <section
+            className={cn(
+              "flex-1 flex-col min-h-0 p-4 sm:p-6 gap-4 md:border-r border-slate-100",
+              mobileStep === "products" ? "flex" : "hidden md:flex"
+            )}
+          >
             {branches.length > 1 && (
               <div className="space-y-2">
                 <Label>{t("branch")}</Label>
@@ -335,7 +345,7 @@ export function NewOrderDrawer({
               </div>
             )}
 
-            <div className="md:flex-1 md:min-h-0 md:overflow-y-auto scrollbar-thin space-y-2 pr-1">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin space-y-2 pr-1">
               {isLoadingProducts ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <Skeleton key={i} className="h-16 w-full rounded-card" />
@@ -360,11 +370,42 @@ export function NewOrderDrawer({
             {showError(errors.items) && (
               <p className="text-xs text-red-600">{errors.items}</p>
             )}
+
+            {/* Teléfono: pasa a los datos del pedido. */}
+            <button
+              type="button"
+              onClick={() => setMobileStep("details")}
+              disabled={itemCount === 0}
+              className="md:hidden shrink-0 h-14 flex items-center justify-between gap-3 px-5 rounded-card bg-indigo-600 text-white font-semibold disabled:bg-indigo-300"
+              data-testid="new-order-continue"
+            >
+              <span className="flex items-center gap-2.5">
+                <span className="h-6 min-w-6 px-1.5 rounded-full bg-white text-indigo-700 text-xs font-bold flex items-center justify-center tabular-nums">
+                  {itemCount}
+                </span>
+                {t("mobileContinue")}
+              </span>
+              <span className="tabular-nums">{formatCurrency(total)}</span>
+            </button>
           </section>
 
           {/* Datos del pedido */}
-          <aside className="flex flex-col min-h-0 md:w-105 md:shrink-0 bg-slate-50/60">
-            <div className="md:flex-1 md:min-h-0 md:overflow-y-auto scrollbar-thin p-4 sm:p-6 space-y-6">
+          <aside
+            className={cn(
+              "flex-1 md:flex-none flex-col min-h-0 md:w-105 md:shrink-0 bg-slate-50/60",
+              mobileStep === "details" ? "flex" : "hidden md:flex"
+            )}
+          >
+            {/* Teléfono: volver a los productos. */}
+            <button
+              type="button"
+              onClick={() => setMobileStep("products")}
+              className="md:hidden shrink-0 flex items-center gap-1.5 px-4 pt-3 text-sm font-semibold text-indigo-600"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {t("mobileBack", { count: itemCount })}
+            </button>
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin p-4 sm:p-6 space-y-6">
               <FieldGroup label={t("orderType")}>
                 <div
                   className={cn(

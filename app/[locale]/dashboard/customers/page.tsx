@@ -16,6 +16,16 @@ import { useEffectiveBranches } from "@/features/branches/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { PillGroup } from "@/components/ui/pill-group";
+
+/** Orden rápido de la lista en el teléfono (la tabla ordena por columnas). */
+const MOBILE_SORTS = {
+  recent: { sortBy: "lastOrderDate", sortOrder: "desc" },
+  orders: { sortBy: "totalOrders", sortOrder: "desc" },
+  spent: { sortBy: "totalSpent", sortOrder: "desc" },
+} as const;
+type MobileSort = keyof typeof MOBILE_SORTS;
 
 function CustomersLoading() {
   return (
@@ -62,6 +72,11 @@ export default function CustomersPage() {
   const [page, setPage] = useState(1);
   const limit = 10;
 
+  const [mobileSort, setMobileSort] = useState<MobileSort | null>(null);
+  // El orden rápido solo existe en el teléfono: al pasar a la tabla (girar
+  // la tablet) deja de aplicarse, porque ahí no hay control para quitarlo.
+  const isMobile = useIsMobile();
+
   // Estado para sede seleccionada
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
 
@@ -81,6 +96,7 @@ export default function CustomersPage() {
   } = useCustomers({
     page,
     limit,
+    ...(isMobile && mobileSort ? MOBILE_SORTS[mobileSort] : {}),
     businessId: selectedBusinessId || undefined,
     branchId: effectiveBranchId || undefined,
   });
@@ -106,10 +122,11 @@ export default function CustomersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Header con título y filtro de fecha */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-          <div>
+          {/* < lg el nombre de la sección ya está en la barra superior. */}
+          <div className="hidden lg:block">
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Users className="h-6 w-6 text-indigo-600" />
               {t("title")}
@@ -117,7 +134,7 @@ export default function CustomersPage() {
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
-          <div className="flex flex-row items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row sm:items-center">
             {showBranchSelector && (
               <BranchSingleSelector
                 value={effectiveBranchId}
@@ -138,9 +155,24 @@ export default function CustomersPage() {
           </div>
         </div>
 
+        {/* Teléfono: orden rápido de la lista (tocar el elegido lo quita) */}
+        <PillGroup
+          label={t("mobileSort.label")}
+          value={mobileSort}
+          onChange={(key) => {
+            setMobileSort(mobileSort === key ? null : key);
+            setPage(1);
+          }}
+          options={(Object.keys(MOBILE_SORTS) as MobileSort[]).map((key) => ({
+            id: key,
+            label: t(`mobileSort.${key}`),
+          }))}
+          className="md:hidden"
+        />
+
         <div className="grid grid-cols-6 gap-4">
           {/* Customers Table */}
-          <div className="col-span-4">
+          <div className="col-span-6 lg:col-span-4">
             <Suspense fallback={<CustomersLoading />}>
               <CustomersTable
                 data={customers}
@@ -150,8 +182,8 @@ export default function CustomersPage() {
               />
             </Suspense>
           </div>
-          {/* Top Customers Charts */}
-          <div className="col-span-2">
+          {/* Top Customers Charts (pantallas grandes) */}
+          <div className="hidden lg:col-span-2 lg:block">
             <Suspense fallback={<Skeleton className="h-80" />}>
               <TopCustomersCharts
                 businessId={selectedBusinessId || undefined}

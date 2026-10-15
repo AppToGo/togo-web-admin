@@ -118,19 +118,19 @@ export function SettlementsTab({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         {kpis.map((kpi) => (
           <Card key={kpi.key} variant={kpi.variant}>
-            <CardContent className="flex items-start justify-between gap-3 p-5">
+            <CardContent className="flex items-start justify-between gap-3 p-4 md:p-5">
               <div>
                 <p className="text-sm font-medium text-slate-500">
                   {kpi.label}
                 </p>
-                <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+                <p className="mt-1 text-xl font-bold tabular-nums text-slate-900 md:text-2xl">
                   {kpi.value}
                 </p>
               </div>
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+              <span className="hidden h-10 w-10 items-center justify-center rounded-full bg-white/20 md:flex">
                 {kpi.icon}
               </span>
             </CardContent>
@@ -159,12 +159,13 @@ export function SettlementsTab({
             return (
               <li key={group.key}>
                 <Card variant="glass">
-                  <div className="flex flex-wrap items-center gap-3 px-5 py-4">
+                  <div className="flex flex-wrap items-center gap-3 px-4 py-4 md:px-5">
                     <button
                       type="button"
                       aria-expanded={open}
                       onClick={() => toggle(group.key)}
-                      className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                      // Teléfono: nombre en su propia fila; total y Liquidar debajo.
+                      className="flex min-w-0 flex-1 basis-full items-center gap-3 text-left sm:basis-0"
                     >
                       <ChevronDown
                         className={cn(
@@ -189,7 +190,7 @@ export function SettlementsTab({
                         </span>
                       </span>
                     </button>
-                    <span className="text-lg font-bold tabular-nums">
+                    <span className="flex-1 pl-7 text-lg font-bold tabular-nums sm:flex-none sm:pl-0">
                       {formatCOP(group.total)}
                     </span>
                     {canOperate && session && (

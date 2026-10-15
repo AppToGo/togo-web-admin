@@ -406,7 +406,7 @@ export function BranchForm({
           <CardDescription>{t("form.descriptions.basic")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Name */}
             <div className="space-y-2">
               <Label htmlFor={`${formId}-name`}>
@@ -489,7 +489,7 @@ export function BranchForm({
           <CardDescription>{t("form.descriptions.location")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Timezone */}
             <div className="space-y-2">
               <Label htmlFor={`${formId}-timezone`}>
@@ -544,7 +544,7 @@ export function BranchForm({
           </div>
 
           {/* Department & City */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Department */}
             <AutocompleteSelect
               label={t("form.fields.department")}

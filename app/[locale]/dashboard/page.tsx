@@ -25,15 +25,16 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <LayoutDashboard className="h-6 w-6 text-indigo-600" />
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <LayoutDashboard className="h-5 w-5 md:h-6 md:w-6 text-indigo-600" />
               {t("title")}
             </h1>
-            <p className="text-slate-500 mt-1 text-sm">
+            {/* En el teléfono el título basta: la bienvenida ocupa media pantalla. */}
+            <p className="hidden md:block text-slate-500 mt-1 text-sm">
               {t("greeting", { name: user?.name || tc("empty.title") })}{" "}
               {user?.businessName
                 ? t("welcome.withBusiness", {
@@ -43,7 +44,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3 shrink-0">
             <BranchSelector />
             <DateRangeFilter
               variant="default"

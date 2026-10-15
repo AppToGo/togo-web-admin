@@ -58,8 +58,28 @@ export function ShiftKpiStrip({ summary, pendingTotal }: ShiftKpiStripProps) {
   ];
 
   return (
+    <>
+    {/* Teléfono: un chip con lo que está en caja y lo que falta liquidar;
+        el detalle vive en Más › Turno. */}
     <div
-      className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4"
+      className="flex w-full items-center gap-3 rounded-card bg-white/70 px-4 py-2.5 md:hidden"
+      data-testid="pos-kpi-chip"
+    >
+      <span className="flex flex-1 flex-col">
+        <span className="text-xs font-medium text-indigo-700">{t("pos.kpi.expected")}</span>
+        <span className="text-lg font-bold tabular-nums text-slate-900">
+          {formatCOP(summary.expectedAmount)}
+        </span>
+      </span>
+      <span className="flex flex-col items-end">
+        <span className="text-xs font-medium text-amber-700">{t("pos.kpi.pending")}</span>
+        <span className="text-sm font-semibold tabular-nums text-slate-700">
+          {formatCOP(pendingTotal)}
+        </span>
+      </span>
+    </div>
+    <div
+      className="hidden w-full grid-cols-2 gap-2 sm:grid-cols-4 md:grid"
       data-testid="pos-kpi-strip"
     >
       {items.map((item) => (
@@ -74,5 +94,6 @@ export function ShiftKpiStrip({ summary, pendingTotal }: ShiftKpiStripProps) {
         </Card>
       ))}
     </div>
+    </>
   );
 }
