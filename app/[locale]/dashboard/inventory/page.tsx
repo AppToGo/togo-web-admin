@@ -124,7 +124,6 @@ export default function InventoryPage() {
     <DashboardLayout>
       {/* Inventory management component */}
       <BranchInventoryManager
-        readOnly={true}
         businessId={businessId}
         showProductImages={showProductImages}
         branches={branches.map((b) => ({

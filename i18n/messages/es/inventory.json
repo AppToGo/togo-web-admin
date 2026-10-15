@@ -133,5 +133,36 @@
   "manageAvailability": "para gestionar disponibilidad.",
   "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
   "productsLink": "Productos",
-  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
+  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí.",
+  "mobile": {
+    "notActivated": "Todavía no está activado en esta sede: al guardar se activa.",
+    "availableHere": "Disponible en esta sede",
+    "availableHint": "Si lo apagas, no se ofrece en el menú de la sede",
+    "availableNoPermission": "No tienes permiso para cambiar la disponibilidad",
+    "availableFor": "{name} disponible",
+    "stockMinus": "Quitar una unidad",
+    "stockPlus": "Agregar una unidad",
+    "untrackedOption": "Sin control de stock (siempre disponible)",
+    "priceHere": "Precio en esta sede",
+    "priceHint": "Precio base del producto: {price}. Déjalo vacío para usar el precio base.",
+    "saving": "Guardando…",
+    "save": "Guardar",
+    "activateAndSave": "Activar en la sede",
+    "saved": "Cambios guardados",
+    "saveError": "No se pudo guardar: {error}",
+    "partial": "Se muestran {shown} de {total}: busca un producto para encontrar el resto.",
+    "untracked": "Sin control",
+    "units": "{count} u.",
+    "unitsLow": "{count} u. · bajo",
+    "stockFilter": "Filtrar por estado",
+    "filters": {
+      "all": "Todos",
+      "out": "Agotados",
+      "low": "Stock bajo",
+      "off": "No disponibles"
+    },
+    "empty": "Ningún producto coincide con el filtro.",
+    "available": "Disponible",
+    "unavailable": "No disponible"
+  }
 }

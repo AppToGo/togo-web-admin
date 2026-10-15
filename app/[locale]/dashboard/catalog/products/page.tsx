@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { ExternalLink, Plus, Package, Store, Upload } from "lucide-react";
@@ -35,6 +35,11 @@ import type { SourceFilter } from "@/features/catalog/components/ProductFilters"
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
 import { getVariants } from "@/features/catalog/services/catalog.service";
+import {
+  ProductsMobileView,
+  type ProductStatusFilter,
+} from "@/features/catalog/components/mobile/ProductsMobileView";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   usePublicCatalogUrl,
   useShowProductImages,
@@ -120,6 +125,9 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  // Teléfono: Todos · Activos · Inactivos (el escritorio no filtra por estado).
+  const [statusFilter, setStatusFilter] = useState<ProductStatusFilter>("all");
+  const isMobile = useIsMobile();
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>({
     custom: true,
     catalog: true,
@@ -149,9 +157,14 @@ export default function ProductsPage() {
     setSourceFilter({ custom: true, catalog: true });
   };
 
-  useEffect(() => {
+  // Cambiar un filtro vuelve a la página 1. Ajuste de estado durante el
+  // render (no un efecto), mismo patrón que la página de conversaciones.
+  const filtersKey = JSON.stringify([searchQuery, selectedCategory, sourceFilter, statusFilter]);
+  const [prevFiltersKey, setPrevFiltersKey] = useState(filtersKey);
+  if (filtersKey !== prevFiltersKey) {
+    setPrevFiltersKey(filtersKey);
     setPage(1);
-  }, [searchQuery, selectedCategory, sourceFilter]);
+  }
 
   const { data: categoriesData } = useCategories(businessId ?? "");
   const categories: BusinessCategory[] = Array.isArray(categoriesData)
@@ -171,8 +184,10 @@ export default function ProductsPage() {
       limit: pageSize,
       businessCategoryId: selectedCategory !== "all" ? selectedCategory : undefined,
       isFromTemplate,
+      isActive:
+        isMobile && statusFilter !== "all" ? statusFilter === "active" : undefined,
     };
-  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter]);
+  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter, isMobile, statusFilter]);
 
   const {
     data: productsData,
@@ -282,6 +297,32 @@ export default function ProductsPage() {
 
   return (
     <DashboardLayout>
+      {isMobile ? (
+        <ProductsMobileView
+          products={products}
+          total={productCounts?.total}
+          isLoading={isLoading}
+          isError={!!error}
+          categories={categories}
+          categoryMap={categoryMap}
+          showImages={showProductImages}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          status={statusFilter}
+          onStatusChange={setStatusFilter}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onEdit={openEdit}
+          onToggleActive={(product, isActive) =>
+            updateProduct.mutate({ productId: product.id, dto: { isActive } })
+          }
+          onCreate={() => setIsCreateModalOpen(true)}
+          onImport={() => router.push("/dashboard/catalog/products/import")}
+        />
+      ) : (
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -417,6 +458,7 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Create Drawer */}
       <Drawer

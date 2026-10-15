@@ -512,5 +512,31 @@
       "subtitle": "An unexpected error occurred. Try with another file.",
       "confirmFailed": "Error confirming the import. Please try again."
     }
+  },
+  "mobile": {
+    "nav": {
+      "products": "Products",
+      "inventory": "Inventory",
+      "categories": "Categories",
+      "global": "Global"
+    },
+    "searchProducts": "Search products...",
+    "categoryFilter": "Filter by category",
+    "allCategories": "All",
+    "statusFilter": "Product status",
+    "status": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "noProducts": "No product matches the filters.",
+    "priceFrom": "From {price}",
+    "variants": "{count, plural, =0 {No variants} one {# variant} other {# variants}}",
+    "productActive": "{name} active",
+    "categoriesHint": "They organize the menu and help the bot find products",
+    "searchCategories": "Search categories...",
+    "keywords": "Keywords: {list}",
+    "noKeywords": "No keywords",
+    "inactive": "Inactive"
   }
 }

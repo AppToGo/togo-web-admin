@@ -518,5 +518,31 @@
       "subtitle": "Ocurrió un error inesperado. Intentá con otro archivo.",
       "confirmFailed": "Error al confirmar la importación. Intentá nuevamente."
     }
+  },
+  "mobile": {
+    "nav": {
+      "products": "Productos",
+      "inventory": "Inventario",
+      "categories": "Categorías",
+      "global": "Global"
+    },
+    "searchProducts": "Buscar productos...",
+    "categoryFilter": "Filtrar por categoría",
+    "allCategories": "Todas",
+    "statusFilter": "Estado del producto",
+    "status": {
+      "all": "Todos",
+      "active": "Activos",
+      "inactive": "Inactivos"
+    },
+    "noProducts": "Ningún producto coincide con los filtros.",
+    "priceFrom": "Desde {price}",
+    "variants": "{count, plural, =0 {Sin variantes} one {# variante} other {# variantes}}",
+    "productActive": "{name} activo",
+    "categoriesHint": "Organizan el menú y ayudan al bot a encontrar productos",
+    "searchCategories": "Buscar categorías...",
+    "keywords": "Palabras clave: {list}",
+    "noKeywords": "Sin palabras clave",
+    "inactive": "Inactiva"
   }
 }

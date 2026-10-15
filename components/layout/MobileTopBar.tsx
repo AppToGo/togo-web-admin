@@ -7,8 +7,8 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Menu } from "lucide-react";
-import { usePathname } from "@/i18n/routing";
+import { ChevronLeft, Menu } from "lucide-react";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 /** Ruta → clave de `navigation.sidebar`. Gana el prefijo más largo. */
@@ -37,6 +37,37 @@ const SECTIONS: Array<[string, string]> = [
   ["/dashboard", "dashboard"],
 ];
 
+/**
+ * Subpantallas de Configuración (diseño móvil): la barra muestra volver a su
+ * pantalla padre en vez del menú. Gana el prefijo más largo; el título sale
+ * de `navigation.sidebar`.
+ */
+const BACK_ROUTES: Array<{ prefix: string; parent: string; key: string }> = [
+  { prefix: "/dashboard/settings/general/business", parent: "/dashboard/settings", key: "business" },
+  { prefix: "/dashboard/settings/general/bot-messages", parent: "/dashboard/settings", key: "botMessages" },
+  { prefix: "/dashboard/settings/users", parent: "/dashboard/settings", key: "users" },
+  { prefix: "/dashboard/users", parent: "/dashboard/settings/users", key: "users" },
+  { prefix: "/dashboard/settings/operator-profiles", parent: "/dashboard/settings", key: "operatorProfiles" },
+  { prefix: "/dashboard/settings/operator-profiles/", parent: "/dashboard/settings/operator-profiles", key: "operatorProfiles" },
+  { prefix: "/dashboard/settings/notifications", parent: "/dashboard/settings", key: "notifications" },
+  { prefix: "/dashboard/settings/billing", parent: "/dashboard/settings", key: "billing" },
+  { prefix: "/dashboard/branches", parent: "/dashboard/settings", key: "branches" },
+  { prefix: "/dashboard/branches/", parent: "/dashboard/branches", key: "branches" },
+];
+
+export function backRouteFor(pathname: string) {
+  // Sin la barra final (trailingSlash): "/x/" y "/x" son la misma pantalla.
+  const path = pathname.replace(/\/+$/, "");
+  return (
+    BACK_ROUTES.filter(({ prefix }) =>
+      // Prefijo con "/" final: solo sus pantallas hijas, no la lista.
+      prefix.endsWith("/")
+        ? path.startsWith(prefix)
+        : path === prefix || path.startsWith(`${prefix}/`)
+    ).sort((a, b) => b.prefix.length - a.prefix.length)[0] ?? null
+  );
+}
+
 export function sectionKeyFor(pathname: string): string | null {
   const match = SECTIONS.filter(
     ([prefix]) => pathname === prefix || pathname.startsWith(`${prefix}/`)
@@ -52,7 +83,8 @@ interface MobileTopBarProps {
 export function MobileTopBar({ onMenuClick, menuOpen }: MobileTopBarProps) {
   const t = useTranslations("navigation.sidebar");
   const pathname = usePathname();
-  const key = sectionKeyFor(pathname);
+  const back = backRouteFor(pathname);
+  const key = back?.key ?? sectionKeyFor(pathname);
 
   return (
     <header
@@ -62,15 +94,26 @@ export function MobileTopBar({ onMenuClick, menuOpen }: MobileTopBarProps) {
         "bg-white/85 backdrop-blur-xl border-b border-slate-200/70"
       )}
     >
-      <button
-        type="button"
-        onClick={onMenuClick}
-        aria-label={t("openMenu")}
-        aria-expanded={menuOpen}
-        className="w-11 h-11 rounded-card flex items-center justify-center text-slate-700 hover:bg-slate-100"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
+      {back ? (
+        <Link
+          href={back.parent}
+          aria-label={t("back")}
+          className="w-11 h-11 rounded-card flex items-center justify-center text-slate-700 hover:bg-slate-100"
+          data-testid="mobile-back"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </Link>
+      ) : (
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label={t("openMenu")}
+          aria-expanded={menuOpen}
+          className="w-11 h-11 rounded-card flex items-center justify-center text-slate-700 hover:bg-slate-100"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      )}
       {key && (
         <span className="text-lg font-bold text-slate-900 truncate" data-testid="mobile-section-title">
           {t(key)}

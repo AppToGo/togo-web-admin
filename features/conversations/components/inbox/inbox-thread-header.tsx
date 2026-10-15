@@ -16,21 +16,11 @@ import { useCloseConversation } from "../../hooks/useCloseConversation";
 import { isWindowOpen } from "../../utils/conversation-window";
 import { InboxAssignDialog } from "./inbox-assign-dialog";
 import { InboxCloseDialog } from "./inbox-close-dialog";
+import { CONTROL_BADGE } from "./control-badge";
 import type { ConversationDetail, ConversationOutcome } from "../../types";
 
 interface InboxThreadHeaderProps {
   conversation: ConversationDetail;
-}
-
-function controlBadgeVariant(control: ConversationDetail["control"]): string {
-  switch (control) {
-    case "HUMAN":
-      return "bg-emerald-100 text-emerald-700";
-    case "PENDING_HUMAN":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-slate-100 text-slate-600";
-  }
 }
 
 export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
@@ -64,7 +54,7 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[11px] font-medium",
-              controlBadgeVariant(conversation.control)
+              CONTROL_BADGE[conversation.control]
             )}
           >
             {t(`control.${conversation.control}`)}

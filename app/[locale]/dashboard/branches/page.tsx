@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { MobileFab } from "@/components/ui/mobile-fab";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useHasBusiness,
@@ -160,8 +161,8 @@ export default function BranchesPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6 flex-1 min-h-0">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Header (< md: título en la barra superior y crear en el botón flotante) */}
+        <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Store className="h-6 w-6 text-indigo-600" />
@@ -238,6 +239,9 @@ export default function BranchesPage() {
           account={dialogAccount}
           existingRouting={dialogRouting}
         />
+      )}
+      {(!limitData || limitData.allowed) && (
+        <MobileFab label={t("createBranch")} onClick={handleCreateBranch} />
       )}
     </DashboardLayout>
   );
