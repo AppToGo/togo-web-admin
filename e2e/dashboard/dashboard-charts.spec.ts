@@ -12,15 +12,12 @@ import {
   mockRefreshSuccess,
   mockBoardPermissions,
 } from "../orders/board";
+import { mockConversationFunnel } from "../helpers/mock-conversation-funnel-api";
 
 /**
- * Dashboard charts (Parte 4): the lazily-loaded analysis section —
- * revenue, peak hours, conversion funnel and payment methods — mounts
- * with data and degrades to an empty state without it.
- *
- * NOTE: funnel counts/percentages only live inside recharts tooltips
- * (hover-only, unsuitable for deterministic asserts), so the funnel is
- * pinned by its title and stage labels.
+ * Dashboard charts (Parte 4): the lazily-loaded sections — revenue, payment
+ * methods, order status, bot conversations and peak hours — mount with data
+ * and degrade to an empty state without it.
  */
 
 test.describe("Dashboard — gráficos", () => {
@@ -42,23 +39,60 @@ test.describe("Dashboard — gráficos", () => {
   test("la sección de análisis monta con datos", async ({ page }) => {
     await openDashboard(page);
 
-    await page
-      .getByRole("heading", { name: "Análisis" })
-      .scrollIntoViewIfNeeded();
+    const analysis = page.getByRole("region", { name: "Análisis" });
+    await analysis.scrollIntoViewIfNeeded();
 
     await expect(
-      page.getByText("Ingresos últimos 30 días", { exact: true })
+      page.getByText("Ingresos por día", { exact: true })
     ).toBeVisible();
     await expect(
-      page.getByText("Horas Pico", { exact: true })
+      analysis.getByText("Horas Pico", { exact: true })
     ).toBeVisible();
+
+    // Estado de los pedidos: los 340 del mock según su estado actual
+    // (COMPLETED 290; en curso = CONFIRMED 10 + IN_PROGRESS 15; CANCELLED 15;
+    // sin confirmar = DRAFT 5 + ABANDONED 5).
+    const status = (name: string) =>
+      analysis.getByRole("listitem").filter({ hasText: name });
     await expect(
-      page.getByText("Embudo de Conversión", { exact: true })
+      analysis.getByText("Estado de los pedidos", { exact: true })
     ).toBeVisible();
-    // Funnel stage labels render twice each: Y-axis tick + legend row.
-    for (const stage of ["Nuevas", "Pagadas", "Completadas"]) {
-      await expect(page.getByText(stage, { exact: true })).toHaveCount(2);
-    }
+    await expect(status("Completados")).toContainText("290 · 85%");
+    await expect(status("En curso")).toContainText("25 · 7%");
+    await expect(status("Cancelados")).toContainText("15 · 4%");
+    await expect(status("Sin confirmar")).toContainText("10 · 3%");
+    await expect(
+      analysis.getByText("Por cobrar: 40 pedidos · $ 480.000")
+    ).toBeVisible();
+
+    // Sin metrics.view no se pide ni se muestra el embudo del bot.
+    await expect(
+      analysis.getByText("Conversaciones del bot", { exact: true })
+    ).toHaveCount(0);
+  });
+
+  test("con metrics.view muestra el resumen del bot", async ({ page }) => {
+    await mockConversationFunnel(page, {
+      permissions: ["order.view", "metrics.view"],
+    });
+    await openDashboard(page);
+
+    const analysis = page.getByRole("region", { name: "Análisis" });
+    await analysis.scrollIntoViewIfNeeded();
+
+    const bot = (name: string) =>
+      analysis.getByRole("listitem").filter({ hasText: name });
+    await expect(
+      analysis.getByText("Conversaciones del bot", { exact: true })
+    ).toBeVisible();
+    // 7 conversaciones: 2 con pedido, 1 abierta, 2 abandonadas, 2 otras.
+    await expect(bot("Terminan en pedido")).toContainText("2 · 29%");
+    await expect(bot("Abandonadas")).toContainText("2 · 29%");
+    await expect(bot("Otras")).toContainText("2 · 29%");
+    await expect(analysis.getByText(/^Piden un asesor:/)).toBeVisible();
+    await expect(
+      analysis.getByRole("link", { name: "Ver embudo del bot" })
+    ).toHaveAttribute("href", /\/dashboard\/conversation-funnel\/?$/);
   });
 
   test("sin métodos de pago el gráfico muestra su vacío", async ({
@@ -70,7 +104,7 @@ test.describe("Dashboard — gráficos", () => {
     await openDashboard(page);
 
     await page
-      .getByRole("heading", { name: "Análisis" })
+      .getByRole("region", { name: "Métricas detalladas" })
       .scrollIntoViewIfNeeded();
 
     await expect(

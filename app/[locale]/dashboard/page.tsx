@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { LayoutDashboard } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
@@ -26,26 +27,24 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900">
-              {t("greeting", { name: user?.name || tc("empty.title") })}
-            </h2>
-            {/* En el teléfono el saludo basta: la bienvenida ocupa media pantalla. */}
-            <p className="hidden md:block text-slate-500 mt-1">
-              {user?.businessName ? (
-                <>
-                  {t("welcome.withBusiness", {
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <LayoutDashboard className="h-5 w-5 md:h-6 md:w-6 text-indigo-600" />
+              {t("title")}
+            </h1>
+            {/* En el teléfono el título basta: la bienvenida ocupa media pantalla. */}
+            <p className="hidden md:block text-slate-500 mt-1 text-sm">
+              {t("greeting", { name: user?.name || tc("empty.title") })}{" "}
+              {user?.businessName
+                ? t("welcome.withBusiness", {
                     businessName: user.businessName,
-                  })}
-                </>
-              ) : (
-                t("welcome.withoutBusiness")
-              )}
+                  })
+                : t("welcome.withoutBusiness")}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3 shrink-0">
             <BranchSelector />
             <DateRangeFilter
               variant="default"
@@ -63,19 +62,19 @@ export default function DashboardPage() {
         </div>
 
         {/* KPIs - Carga inmediata con Suspense */}
-        <Suspense fallback={<KpiSectionSkeleton />}>
-          <KpiSection />
-        </Suspense>
+        <section aria-label={t("sections.kpis")}>
+          <Suspense fallback={<KpiSectionSkeleton />}>
+            <KpiSection />
+          </Suspense>
+        </section>
 
-        {/* Metrics Grid - Lazy load */}
-        <section>
-          <h3 className="text-lg font-semibold mb-4">Métricas Detalladas</h3>
+        {/* Ingresos + métodos de pago - Lazy load */}
+        <section aria-label={t("sections.detail")}>
           <LazyMetricsGrid />
         </section>
 
-        {/* Charts - Lazy load */}
-        <section>
-          <h3 className="text-lg font-semibold mb-4">Análisis</h3>
+        {/* Embudo + horas pico - Lazy load */}
+        <section aria-label={t("sections.analysis")}>
           <LazyChartsSection />
         </section>
       </div>
