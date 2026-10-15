@@ -39,7 +39,8 @@ export function InboxThreadPanel({ sessionId }: InboxThreadPanelProps) {
             heightClassName="h-full"
           />
         </div>
-        {data && <InboxReplyBox conversation={data} />}
+        {/* key: los borradores son de cada conversación, no pasan a la siguiente. */}
+        {data && <InboxReplyBox key={data.id} conversation={data} />}
       </section>
       {/* Datos del cliente: solo con ancho de sobra (≥ xl). */}
       {data && <InboxContextPanel conversation={data} />}

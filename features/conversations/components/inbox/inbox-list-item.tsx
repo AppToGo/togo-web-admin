@@ -1,23 +1,16 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useListTime } from "../../hooks/useListTime";
 import type { ConversationListItem } from "../../types";
 
 interface InboxListItemProps {
   conversation: ConversationListItem;
   isSelected: boolean;
   onClick: () => void;
-}
-
-export function initials(name: string | null): string {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
 }
 
 function controlDotColor(control: ConversationListItem["control"]): string {
@@ -61,29 +54,6 @@ function useStatusLine(conversation: ConversationListItem) {
   }
 }
 
-/** "ahora", "4 min", "12:10" (hoy), "Ayer" o "12 oct". */
-function useRelativeTime(iso: string): string {
-  const t = useTranslations("inbox.list.time");
-  const locale = useLocale();
-  const date = new Date(iso);
-  const now = new Date();
-  const minutes = Math.floor((now.getTime() - date.getTime()) / 60_000);
-
-  if (minutes < 1) return t("now");
-  if (minutes < 60) return t("minutes", { count: minutes });
-
-  const startOfToday = new Date(now);
-  startOfToday.setHours(0, 0, 0, 0);
-  if (date >= startOfToday) {
-    return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
-  }
-  const startOfYesterday = new Date(startOfToday);
-  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-  if (date >= startOfYesterday) return t("yesterday");
-
-  return date.toLocaleDateString(locale, { day: "numeric", month: "short" });
-}
-
 export function InboxListItem({
   conversation,
   isSelected,
@@ -92,7 +62,8 @@ export function InboxListItem({
   const t = useTranslations("inbox");
   const name = conversation.customer?.name ?? null;
   const status = useStatusLine(conversation);
-  const time = useRelativeTime(conversation.lastMessageAt);
+  const listTime = useListTime();
+  const time = listTime(conversation.lastMessageAt);
 
   return (
     <button
@@ -107,14 +78,10 @@ export function InboxListItem({
       )}
     >
       <div className="relative shrink-0">
-        <div
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-bold",
-            name ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"
-          )}
-        >
-          {initials(name)}
-        </div>
+        <InitialsAvatar
+          name={name}
+          seed={conversation.customer?.id ?? conversation.phoneNumber}
+        />
         <span
           className={cn(
             "absolute -bottom-px -right-px h-3 w-3 rounded-full border-2 border-white",

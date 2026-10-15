@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Bot, MoreHorizontal, RotateCcw, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { Can } from "@/components/auth/Can";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import {
@@ -24,7 +25,6 @@ import { isWindowOpen } from "../../utils/conversation-window";
 import { InboxAssignDialog } from "./inbox-assign-dialog";
 import { InboxCloseDialog } from "./inbox-close-dialog";
 import { CONTROL_BADGE } from "./control-badge";
-import { initials } from "./inbox-list-item";
 import type { ConversationDetail, ConversationOutcome } from "../../types";
 
 /** Botones del encabezado: más altos y redondeados que el `Button` base. */
@@ -64,9 +64,11 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/80 px-5 py-4">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
-          {initials(conversation.customer?.name ?? null)}
-        </div>
+        <InitialsAvatar
+          name={conversation.customer?.name}
+          seed={conversation.customer?.id ?? conversation.phoneNumber}
+          size="md"
+        />
         <div className="min-w-0">
           <h2 className="truncate text-lg font-semibold text-slate-900">
             {name}
@@ -144,7 +146,10 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
 
             {/* Liberar y Cerrar: menos frecuentes, van al menú "⋯". */}
             {(canRelease || canClose) && (
-              <DropdownMenu>
+              // No modal: "Cerrar conversación" abre un Dialog desde el menú,
+              // y con los dos modales Radix deja el body sin clics (mismo
+              // arreglo que OrderDetailContent).
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="slate-outline"

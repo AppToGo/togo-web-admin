@@ -648,6 +648,15 @@ function CollapsibleNavItem({
     linkChildren.some(
       (child) => normalizedPathname === normalizePath(child.href)
     ) || actionChildren.some((child) => child.active);
+  // Colapsado solo se ve el ícono del grupo: debe marcarse en cualquiera de
+  // sus pantallas, no solo en la del `href` del padre (en "Conversaciones"
+  // el padre apunta al Inbox, hermano de Historial y Embudo, no prefijo).
+  const isGroupActive =
+    isParentActive ||
+    isAnyChildActive ||
+    linkChildren.some((child) =>
+      normalizedPathname.startsWith(`${normalizePath(child.href)}/`)
+    );
 
   // If no children, render as simple Link
   if (!hasChildren) {
@@ -703,7 +712,7 @@ function CollapsibleNavItem({
             className={cn(
               "relative flex w-full items-center rounded-card text-sm font-medium transition-all duration-200",
               "justify-center px-3 py-3",
-              isParentActive
+              isGroupActive
                 ? isAdmin
                   ? "bg-purple-50 text-purple-600"
                   : "bg-indigo-50 text-indigo-600"
@@ -715,7 +724,7 @@ function CollapsibleNavItem({
             <item.icon
               className={cn(
                 "w-5 h-5 shrink-0",
-                isParentActive
+                isGroupActive
                   ? isAdmin
                     ? "text-purple-600"
                     : "text-indigo-600"
@@ -763,7 +772,7 @@ function CollapsibleNavItem({
         className={cn(
           "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
           "justify-center px-3 py-3",
-          isParentActive
+          isGroupActive
             ? isAdmin
               ? "bg-purple-50 text-purple-600"
               : "bg-indigo-50 text-indigo-600"
@@ -774,7 +783,7 @@ function CollapsibleNavItem({
         <item.icon
           className={cn(
             "w-5 h-5 shrink-0",
-            isParentActive
+            isGroupActive
               ? isAdmin
                 ? "text-purple-600"
                 : "text-indigo-600"
@@ -912,9 +921,14 @@ function CountBadge({ count }: { count?: number }) {
   if (!count || count <= 0) return null;
   return (
     <span className="min-w-5 h-5 flex items-center justify-center bg-destructive text-destructive-foreground text-xs font-bold px-1.5 rounded-badge">
-      {count}
+      {badgeLabel(count)}
     </span>
   );
+}
+
+// Mismo tope en el encabezado del grupo y en sus hijos.
+function badgeLabel(count: number): string {
+  return count > 9 ? "9+" : String(count);
 }
 
 // Contador rojo del item (pedidos nuevos, inbox, alertas de pago). Expandido
@@ -937,7 +951,7 @@ function NavBadge({
         isCollapsed ? "absolute top-1 right-1" : "ml-auto"
       )}
     >
-      {count > 9 ? "9+" : count}
+      {badgeLabel(count)}
     </span>
   );
 }

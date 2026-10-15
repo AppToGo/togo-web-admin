@@ -91,9 +91,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const t = useTranslations("conversations");
   const isMediaHandled = MEDIA_CONTENT_TYPES.has(message.contentType);
   const preview = buildInteractivePreview(message);
-  // Sólo las burbujas CUSTOMER tienen fondo claro (`bubbleStyles`); BOT/OPERATOR/SYSTEM
-  // son sólidas y oscuras, así que la superficie secundaria del preview necesita más contraste ahí.
-  // Solo el operador va sobre fondo oscuro.
+  // Solo la burbuja del operador es oscura (`bubbleStyles`); cliente, bot y
+  // sistema van sobre fondo claro. El preview interactivo y los ticks de
+  // entrega ajustan su contraste según eso.
   const tone = message.senderType === "OPERATOR" ? "onDark" : "onLight";
   // El aviso genérico queda sólo para lo que el normalizador no supo interpretar.
   const showUnsupportedNotice =
@@ -134,7 +134,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             minute: "2-digit",
           })}
           {message.direction === "OUTBOUND" && (
-            <MessageStatusIcon status={message.status} errorCode={message.errorCode} />
+            <MessageStatusIcon
+              status={message.status}
+              errorCode={message.errorCode}
+              tone={tone}
+            />
           )}
         </div>
       </div>

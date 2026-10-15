@@ -60,7 +60,8 @@
     "more": "More actions",
     "releaseToBot": "Hand back to the bot",
     "closeConversation": "Close conversation",
-    "takeAndReply": "Take and reply"
+    "takeAndReply": "Take and reply",
+    "assignToMe": "Assign to me"
   },
   "composer": {
     "placeholder": "Type a message...",
@@ -77,7 +78,8 @@
     "reply": "Reply",
     "noteHint": "Only your team sees it; it is not sent to the customer",
     "takeoverPrompt": "To reply, take the conversation. The bot stops answering while you handle it.",
-    "sendHint": "Enter to send · Shift + Enter for a new line"
+    "sendHint": "Enter to send · Shift + Enter for a new line",
+    "unassignedPrompt": "Nobody is assigned to it. Assign it to yourself to reply."
   },
   "assignDialog": {
     "title": "Assign conversation",
