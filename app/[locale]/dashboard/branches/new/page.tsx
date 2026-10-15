@@ -71,6 +71,7 @@ export default function CreateBranchPage() {
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <Button
+              className="hidden md:inline-flex"
               variant="ghost"
               size="icon"
               onClick={() => router.push("/dashboard/branches")}
@@ -117,6 +118,7 @@ export default function CreateBranchPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
+            className="hidden md:inline-flex"
             variant="ghost"
             size="icon"
             onClick={() => router.push("/dashboard/branches")}

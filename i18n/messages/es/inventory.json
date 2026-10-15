@@ -133,5 +133,20 @@
   "manageAvailability": "para gestionar disponibilidad.",
   "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
   "productsLink": "Productos",
-  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
+  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí.",
+  "mobile": {
+    "untracked": "Sin control",
+    "units": "{count} u.",
+    "unitsLow": "{count} u. · bajo",
+    "stockFilter": "Filtrar por estado",
+    "filters": {
+      "all": "Todos",
+      "out": "Agotados",
+      "low": "Stock bajo",
+      "off": "No disponibles"
+    },
+    "empty": "Ningún producto coincide con el filtro.",
+    "available": "Disponible",
+    "unavailable": "No disponible"
+  }
 }

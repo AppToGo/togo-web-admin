@@ -32,6 +32,7 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useUnseenOrdersCount } from "@/features/orders/hooks/useUnseenOrders";
 import { useInboxSummary } from "@/features/conversations/hooks/useInboxSummary";
+import { useIsBelowDesktop } from "@/hooks/useIsMobile";
 
 
 interface SidebarProps {
@@ -57,7 +58,57 @@ type NavigationItem = {
   actionChildren?: PosMenuEntry[];
   /** Contador rojo junto al item; no se muestra si es 0. */
   badge?: number;
+  /**
+   * Otras rutas en las que el item (sin hijos) se marca activo: en el
+   * teléfono, "Catálogo" sigue activo en Inventario y Categorías.
+   */
+  activePaths?: string[];
 };
+
+const INBOX_HREF = "/dashboard/inbox";
+const CONVERSATION_HREFS = [
+  INBOX_HREF,
+  "/dashboard/conversations",
+  "/dashboard/conversation-funnel",
+];
+
+/**
+ * Menú del teléfono (diseño móvil): los items con submenú pasan a ser un
+ * link a su primera pantalla — sus hermanas se alcanzan desde la barra
+ * inferior de la sección (Catálogo) o su lista (Configuración) — y las
+ * pantallas de conversaciones se agrupan bajo una sola entrada que abre el
+ * Inbox, si se tiene acceso a él.
+ */
+function flattenForPhone(items: NavigationItem[], canViewInbox: boolean): NavigationItem[] {
+  const flat = items.map((item): NavigationItem => {
+    if (!item.children?.length) return item;
+    const children = item.children.map((child) => child.href);
+    const isSettings = item.href === "/dashboard/settings";
+    return {
+      ...item,
+      children: undefined,
+      // Configuración abre su lista; Catálogo, su primera pantalla.
+      href: isSettings ? item.href : item.children[0].href,
+      activePaths: [item.href, ...children],
+    };
+  });
+  if (!canViewInbox) return flat;
+
+  const inbox = flat.find((item) => item.href === INBOX_HREF);
+  const conversations = flat.find((item) => item.href === "/dashboard/conversations");
+  return flat
+    .filter((item) => !CONVERSATION_HREFS.includes(item.href) || item.href === INBOX_HREF)
+    .map((item) =>
+      item.href === INBOX_HREF && inbox
+        ? {
+            ...inbox,
+            name: conversations?.name ?? inbox.name,
+            icon: conversations?.icon ?? inbox.icon,
+            activePaths: CONVERSATION_HREFS,
+          }
+        : item
+    );
+}
 
 export function Sidebar({
   isOpen,
@@ -134,6 +185,11 @@ export function Sidebar({
   );
   const { data: inboxSummary } = useInboxSummary(!isSuperAdmin && canViewInbox);
   const inboxAttentionCount = inboxSummary?.needsAttention ?? 0;
+
+  // Teléfono y tablet (< lg, el Sidebar es un cajón): Catálogo y
+  // Configuración van directo a su pantalla (barra inferior / lista de
+  // configuración) y las tres de conversaciones se agrupan en una.
+  const isBelowDesktop = useIsBelowDesktop();
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
@@ -268,8 +324,9 @@ export function Sidebar({
       },
     ];
 
-    return items;
+    return isBelowDesktop ? flattenForPhone(items, canViewInbox) : items;
   }, [
+    isBelowDesktop,
     t,
     showGlobalCatalog,
     canViewConversations,
@@ -564,11 +621,14 @@ function CollapsibleNavItem({
 
   // If no children, render as simple Link
   if (!hasChildren) {
+    const matches = (href: string) => {
+      const path = normalizePath(href);
+      return normalizedPathname === path || normalizedPathname.startsWith(`${path}/`);
+    };
     const isActive =
       normalizedItemHref === "/dashboard"
         ? normalizedPathname === "/dashboard"
-        : normalizedPathname === normalizedItemHref ||
-          normalizedPathname.startsWith(`${normalizedItemHref}/`);
+        : matches(item.href) || (item.activePaths ?? []).some(matches);
     return (
       <Link
         href={item.href}

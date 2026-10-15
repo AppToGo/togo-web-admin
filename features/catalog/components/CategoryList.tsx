@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { CategoriesMobileList } from "./mobile/CategoriesMobileList";
 import { useTranslations } from "next-intl";
 import { Plus, Folder, Tag, AlertCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -102,6 +104,7 @@ export function CategoryList({
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isMobile = useIsMobile();
   // Id only, not the object — the object is derived from `categories` below
   // so "Regenerar con IA" (which invalidates that query) is reflected in an
   // already-open modal instead of requiring a close/reopen.
@@ -277,8 +280,22 @@ export function CategoryList({
     onToggleStatus(category.id, !category.isActive);
   };
 
+  // Teléfono: tarjetas con buscador (diseño móvil); el diálogo de crear y
+  // editar es el mismo.
+  const list = isMobile ? (
+    <CategoriesMobileList
+      categories={filteredCategories}
+      search={filters.name ?? ""}
+      onSearchChange={(name) => setFilters({ ...filters, name })}
+      onEdit={handleOpenEdit}
+      onCreate={handleOpenCreate}
+    />
+  ) : null;
+
   return (
     <div className="space-y-6">
+      {list}
+      {!isMobile && (<>
       {/* Header con título a la izquierda y filtros/botón a la derecha */}
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         {/* Izquierda: Título */}
@@ -436,6 +453,8 @@ export function CategoryList({
           </div>
         </Card>
       )}
+
+      </>)}
 
       {/* Create/Edit Dialog */}
       <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>

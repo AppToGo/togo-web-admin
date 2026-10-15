@@ -134,5 +134,20 @@
   "readOnlyDescription": "This page shows the current inventory status by branch. To activate/deactivate products or make catalog changes, go to",
   "manageAvailability": "to manage availability.",
   "productsLink": "Products",
-  "operatorsNote": "Operators can make basic stock adjustments from here."
+  "operatorsNote": "Operators can make basic stock adjustments from here.",
+  "mobile": {
+    "untracked": "Not tracked",
+    "units": "{count} u.",
+    "unitsLow": "{count} u. · low",
+    "stockFilter": "Filter by status",
+    "filters": {
+      "all": "All",
+      "out": "Out of stock",
+      "low": "Low stock",
+      "off": "Unavailable"
+    },
+    "empty": "No product matches the filter.",
+    "available": "Available",
+    "unavailable": "Unavailable"
+  }
 }

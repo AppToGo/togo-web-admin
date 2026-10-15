@@ -1,5 +1,7 @@
 {
   "sidebar": {
+    "back": "Back",
+    "botMessages": "Bot messages",
     "dashboard": "Dashboard",
     "orders": "Orders",
     "cash": "Cash",
@@ -61,5 +63,20 @@
     "es": "Español",
     "en": "English",
     "pt": "Português"
+  },
+  "settingsHub": {
+    "groups": {
+      "business": "Business",
+      "team": "Team",
+      "account": "Account"
+    },
+    "business": "Name, catalog URL and welcome",
+    "branches": "Addresses, hours, delivery and payments",
+    "botMessagesTitle": "Bot messages",
+    "botMessages": "Texts and voice it replies with",
+    "users": "Who signs in to the admin and with which role",
+    "operatorProfiles": "Profiles and their permissions",
+    "notifications": "Sound and alerts for new orders",
+    "billing": "Plan, payments and billing notices"
   }
 }

@@ -1,0 +1,177 @@
+"use client";
+
+/**
+ * Inventario por sede en el teléfono (< md), según el diseño móvil: sede,
+ * buscador, filtros por estado del stock con su contador y filas con el
+ * stock, el precio de la sede (y el base tachado si cambia) y si está
+ * disponible. Solo lectura, como la tabla de escritorio en esta pantalla.
+ */
+
+import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import { Search } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PillGroup } from "@/components/ui/pill-group";
+import { BranchSingleSelector } from "@/features/branches/components";
+import { CatalogMobileNav } from "@/features/catalog/components/mobile/CatalogMobileNav";
+import { cn, formatCurrency } from "@/lib/utils";
+import { IMPORT_DEFAULT_VARIANT_LABEL } from "@/features/products/import";
+import type { InventoryItem } from "../types";
+
+/** Igual que el badge de la tabla de escritorio: menos de 10 es stock bajo. */
+const LOW_STOCK = 10;
+
+type StockKind = "out" | "low" | "ok" | "untracked";
+type MobileFilter = "all" | "out" | "low" | "off";
+
+function stockKind(item: InventoryItem): StockKind {
+  if (item.stock === null) return "untracked";
+  if (item.stock === 0) return "out";
+  return item.stock < LOW_STOCK ? "low" : "ok";
+}
+
+const STOCK_BADGE: Record<StockKind, string> = {
+  out: "bg-red-100 text-red-800",
+  low: "bg-amber-100 text-amber-800",
+  ok: "bg-emerald-50 text-emerald-800",
+  untracked: "bg-slate-200 text-slate-700",
+};
+
+const FILTERS: Record<MobileFilter, (item: InventoryItem) => boolean> = {
+  all: () => true,
+  out: (item) => stockKind(item) === "out",
+  low: (item) => stockKind(item) === "low",
+  off: (item) => !item.isAvailable,
+};
+
+interface InventoryMobileViewProps {
+  items: InventoryItem[];
+  isLoading: boolean;
+  branchId: string;
+  onBranchChange: (branchId: string) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
+}
+
+export function InventoryMobileView({
+  items,
+  isLoading,
+  branchId,
+  onBranchChange,
+  search,
+  onSearchChange,
+}: InventoryMobileViewProps) {
+  const t = useTranslations("inventory");
+  const [filter, setFilter] = useState<MobileFilter>("all");
+  const visible = useMemo(() => items.filter(FILTERS[filter]), [items, filter]);
+
+  const count = (id: MobileFilter) => items.filter(FILTERS[id]).length;
+  const stockLabel = (item: InventoryItem) => {
+    const kind = stockKind(item);
+    if (kind === "untracked") return t("mobile.untracked");
+    if (kind === "out") return t("table.outOfStock");
+    return kind === "low"
+      ? t("mobile.unitsLow", { count: item.stock ?? 0 })
+      : t("mobile.units", { count: item.stock ?? 0 });
+  };
+
+  return (
+    <div className="-mx-4 -mt-4 flex flex-col sm:-mx-6 sm:-mt-6" data-testid="inventory-mobile-view">
+      <div className="flex flex-col gap-2.5 border-b border-slate-200/70 bg-white px-4 pb-3 pt-1 sm:px-6">
+        <BranchSingleSelector value={branchId || null} onChange={(id) => onBranchChange(id as string)} />
+        <label className="relative block">
+          <Search
+            aria-hidden
+            className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-500"
+          />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={t("table.search")}
+            aria-label={t("table.search")}
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-[42px] pr-3.5 text-[15px] text-slate-900 outline-none focus:border-indigo-400"
+          />
+        </label>
+        <PillGroup
+          label={t("mobile.stockFilter")}
+          value={filter}
+          onChange={setFilter}
+          className="-mx-4 px-4 sm:-mx-6 sm:px-6"
+          options={[
+            { id: "all", label: t("mobile.filters.all"), count: count("all"), dotClassName: "bg-slate-400" },
+            { id: "out", label: t("mobile.filters.out"), count: count("out"), dotClassName: "bg-red-600" },
+            { id: "low", label: t("mobile.filters.low"), count: count("low"), dotClassName: "bg-amber-600" },
+            { id: "off", label: t("mobile.filters.off"), count: count("off"), dotClassName: "bg-slate-500" },
+          ]}
+        />
+      </div>
+
+      <div className="p-3 sm:px-6">
+        {isLoading ? (
+          <div className="flex flex-col gap-1">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 rounded-xl" />
+            ))}
+          </div>
+        ) : visible.length === 0 ? (
+          <p className="mt-8 text-center text-[15px] text-slate-500">{t("mobile.empty")}</p>
+        ) : (
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl bg-white">
+            {visible.map((item) => {
+              const kind = stockKind(item);
+              const hasOverride = item.effectivePrice !== item.basePrice;
+              return (
+                <li
+                  key={item.id}
+                  className={cn(
+                    "flex min-h-16 items-center gap-3 px-3.5 py-2.5",
+                    !item.isAvailable && "opacity-55"
+                  )}
+                >
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="truncate text-[15px] font-semibold text-slate-900">
+                      {item.productName}
+                      {/* La variante por defecto ("Unidad") no aporta nada al nombre. */}
+                      {item.variantLabel &&
+                        item.variantLabel !== IMPORT_DEFAULT_VARIANT_LABEL &&
+                        ` · ${item.variantLabel}`}
+                    </span>
+                    <span className="flex flex-wrap items-center gap-2 text-sm">
+                      <span
+                        className={cn(
+                          "flex h-[22px] items-center rounded-full px-2 text-[11px] font-bold",
+                          STOCK_BADGE[kind]
+                        )}
+                      >
+                        {stockLabel(item)}
+                      </span>
+                      <span className="font-bold tabular-nums text-slate-900">
+                        {formatCurrency(item.effectivePrice)}
+                      </span>
+                      {hasOverride && (
+                        <span className="text-xs tabular-nums text-slate-400 line-through">
+                          {formatCurrency(item.basePrice)}
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 text-xs font-semibold",
+                      item.isAvailable ? "text-emerald-700" : "text-slate-500"
+                    )}
+                  >
+                    {item.isAvailable ? t("mobile.available") : t("mobile.unavailable")}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      <CatalogMobileNav />
+    </div>
+  );
+}

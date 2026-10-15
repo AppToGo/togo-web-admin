@@ -32,6 +32,8 @@ import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { UsersMobileView } from "@/features/users/components/UsersMobileView";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
@@ -52,6 +54,7 @@ export default function UsersPage() {
   const subscriptionPlan = user?.subscriptionPlan ?? 1;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserType | null>(null);
   const deleteUser = useDeleteUser();
@@ -111,8 +114,22 @@ export default function UsersPage() {
     }
   };
 
+  const limitText = `${
+    isUnlimited ? `${activeCount} ${t("limits.activeUsers")}` : `${activeCount} / ${maxUsers} ${t("limits.activeUsers")}`
+  } · ${limitLabel}${planEntry?.name ? ` · ${planEntry.name}` : ""}`;
+
   return (
     <DashboardLayout>
+      {isMobile ? (
+        <UsersMobileView
+          users={users}
+          isLoading={isLoading}
+          limitText={limitText}
+          isLimitReached={isLimitReached}
+          onUpgrade={() => setIsUpgradeOpen(true)}
+          onCreate={() => setIsCreateOpen(true)}
+        />
+      ) : (
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -279,6 +296,7 @@ export default function UsersPage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       <CreateUserDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
       <UpgradePlanModal open={isUpgradeOpen} onClose={() => setIsUpgradeOpen(false)} />

@@ -45,6 +45,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { BranchSingleSelector } from "@/features/branches/components";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { InventoryMobileView } from "./InventoryMobileView";
 
 interface BranchInventoryManagerProps {
   readOnly?: boolean;
@@ -246,6 +248,7 @@ export function BranchInventoryManager({
     return mainBranch?.id || branches[0]?.id || "";
   });
   const [globalFilter, setGlobalFilter] = useState("");
+  const isMobile = useIsMobile();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activatingProduct, setActivatingProduct] =
     useState<InventoryItem | null>(null);
@@ -468,6 +471,20 @@ export function BranchInventoryManager({
     },
     [setAvailabilityMutation]
   );
+
+  // Teléfono: lista propia (diseño móvil) con la misma sede y búsqueda.
+  if (isMobile) {
+    return (
+      <InventoryMobileView
+        items={items}
+        isLoading={isLoading}
+        branchId={selectedBranchId}
+        onBranchChange={setSelectedBranchId}
+        search={globalFilter}
+        onSearchChange={setGlobalFilter}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
