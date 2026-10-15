@@ -47,7 +47,13 @@ function product(id: string, name: string, price: number, isActive = true) {
   };
 }
 
-function inventoryItem(id: string, name: string, stock: number | null, isAvailable = true) {
+function inventoryItem(
+  id: string,
+  name: string,
+  stock: number | null,
+  isAvailable = true,
+  isActivated = true
+) {
   return {
     id,
     businessId: "e2e-test-business-id",
@@ -59,7 +65,7 @@ function inventoryItem(id: string, name: string, stock: number | null, isAvailab
     basePrice: 18000,
     stock,
     isAvailable,
-    isActivated: true,
+    isActivated,
     priceOverride: null,
     effectivePrice: 18000,
     createdAt: now,
@@ -137,12 +143,24 @@ async function mockCatalogAndSettings(page: Page, patches: unknown[] = []): Prom
         },
       ]);
     }
+    // Edición del inventario de la sede.
+    const inventoryWrite = path.match(/\/inventory\/([^/]+)(\/availability)?$/);
+    if (inventoryWrite && request.method() !== "GET") {
+      patches.push({
+        method: request.method(),
+        target: inventoryWrite[2] ? "availability" : "item",
+        productId: inventoryWrite[1],
+        body: request.postDataJSON(),
+      });
+      return json(inventoryItem("i-1", "Hamburguesa clásica", 0));
+    }
     if (path.endsWith("/inventory")) {
       const items = [
         inventoryItem("i-1", "Hamburguesa clásica", 0),
         inventoryItem("i-2", "Hamburguesa doble", 4),
         inventoryItem("i-3", "Limonada natural", null),
         inventoryItem("i-4", "Gaseosa", 30, false),
+        inventoryItem("i-5", "Malteada", null, false, false),
       ];
       // `total` mayor que lo cargado: la lista móvil avisa que es parcial.
       return json({ items, total: 140, page: 1, limit: 100 });
@@ -159,7 +177,11 @@ async function mockCatalogAndSettings(page: Page, patches: unknown[] = []): Prom
   });
 }
 
-async function login(page: Page, patches?: unknown[]): Promise<void> {
+async function login(
+  page: Page,
+  patches?: unknown[],
+  permissions: string[] = PERMISSIONS
+): Promise<void> {
   await page.context().clearCookies();
   await page.addInitScript(() => {
     localStorage.clear();
@@ -179,7 +201,7 @@ async function login(page: Page, patches?: unknown[]): Promise<void> {
   await mockBranches(page);
   await mockRefreshSuccess(page);
   await mockCatalogAndSettings(page, patches);
-  await mockBoardPermissions(page, PERMISSIONS);
+  await mockBoardPermissions(page, permissions);
   await openBoard(page);
 }
 
@@ -231,7 +253,7 @@ test.describe("Catálogo en el teléfono", () => {
     await expect(page).toHaveURL(/\/dashboard\/inventory/);
   });
 
-  test("inventario: stock por estado con sus contadores, de solo lectura", async ({ page }) => {
+  test("inventario: stock por estado con sus contadores", async ({ page }) => {
     await login(page);
     await page.goto("/es/dashboard/inventory");
 
@@ -245,8 +267,9 @@ test.describe("Catálogo en el teléfono", () => {
     await view.getByRole("button", { name: /No disponibles/ }).click();
     await expect(view.getByText("Gaseosa")).toBeVisible();
     await expect(view.getByText("Hamburguesa doble")).toHaveCount(0);
+    // Sin inventory.set_availability la disponibilidad solo se ve.
     await expect(view.getByRole("switch")).toHaveCount(0);
-    await expect(view.getByText("Se muestran 4 de 140", { exact: false })).toBeVisible();
+    await expect(view.getByText("Se muestran 5 de 140", { exact: false })).toBeVisible();
   });
 
   test("categorías: busca y crea desde el botón flotante", async ({ page }) => {
@@ -342,5 +365,77 @@ test.describe("Menú en la tablet", () => {
     await page.getByRole("button", { name: "Catálogo" }).click();
     await expect(page.getByRole("link", { name: /Inventario/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /Categor/ })).toBeVisible();
+  });
+});
+
+test.describe("Inventario editable", () => {
+  const EDITOR = [...PERMISSIONS, "inventory.set_availability"];
+
+  test("teléfono: apaga desde la fila y edita stock y precio en la hoja", async ({ page }) => {
+    const patches: unknown[] = [];
+    await login(page, patches, EDITOR);
+    await page.goto("/es/dashboard/inventory");
+    const view = page.getByTestId("inventory-mobile-view");
+
+    await view.getByRole("switch", { name: "Hamburguesa doble disponible" }).click();
+    await expect.poll(() => patches).toContainEqual({
+      method: "POST",
+      target: "availability",
+      productId: "var-i-2",
+      body: { isAvailable: false },
+    });
+
+    await view.getByText("Hamburguesa clásica").click();
+    const sheet = page.getByTestId("inventory-item-sheet");
+    await sheet.getByRole("checkbox").check();
+    await sheet.getByRole("spinbutton", { name: /Precio en esta sede/ }).fill("16500");
+    await sheet.getByRole("button", { name: "Guardar" }).click();
+    await expect.poll(() => patches).toContainEqual({
+      method: "PATCH",
+      target: "item",
+      productId: "var-i-1",
+      body: { stock: null, priceOverride: 16500 },
+    });
+    await expect(page.getByTestId("inventory-item-sheet")).toHaveCount(0);
+  });
+
+  test("teléfono: un producto sin activar se activa al guardar", async ({ page }) => {
+    const patches: unknown[] = [];
+    await login(page, patches, EDITOR);
+    await page.goto("/es/dashboard/inventory");
+
+    await page.getByTestId("inventory-mobile-view").getByText("Malteada").click();
+    const sheet = page.getByTestId("inventory-item-sheet");
+    await expect(sheet.getByText("Todavía no está activado", { exact: false })).toBeVisible();
+    await sheet.getByRole("button", { name: "Activar en la sede" }).click();
+    await expect.poll(() => patches).toContainEqual({
+      method: "POST",
+      target: "item",
+      productId: "var-i-5",
+      body: { isAvailable: true },
+    });
+  });
+
+  test.describe("escritorio", () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test("la tabla deja editar con permiso y bloquea la disponibilidad sin él", async ({
+      page,
+    }) => {
+      await login(page, [], EDITOR);
+      await page.goto("/es/dashboard/inventory");
+      const table = page.getByRole("table");
+      await expect(table.getByText("Hamburguesa doble")).toBeVisible();
+      await expect(table.getByRole("switch").first()).toBeEnabled();
+      await expect(table.getByRole("spinbutton").first()).toBeEnabled();
+    });
+
+    test("sin inventory.set_availability la disponibilidad queda bloqueada", async ({ page }) => {
+      await login(page);
+      await page.goto("/es/dashboard/inventory");
+      const table = page.getByRole("table");
+      await expect(table.getByText("Hamburguesa doble")).toBeVisible();
+      await expect(table.getByRole("switch").first()).toBeDisabled();
+    });
   });
 });

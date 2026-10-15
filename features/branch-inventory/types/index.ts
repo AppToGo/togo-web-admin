@@ -47,9 +47,11 @@ export interface CreateInventoryDto {
  * DTO for updating inventory
  */
 export interface UpdateInventoryDto {
-  stock?: number;
+  /** `null`: sin control de stock. */
+  stock?: number | null;
   isAvailable?: boolean;
-  priceOverride?: number;
+  /** `null`: usar el precio base del producto. */
+  priceOverride?: number | null;
 }
 
 /**

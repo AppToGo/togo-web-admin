@@ -3,13 +3,15 @@
 /**
  * Inventario por sede en el teléfono (< md), según el diseño móvil: sede,
  * buscador, filtros por estado del stock con su contador y filas con el
- * stock, el precio de la sede (y el base tachado si cambia) y si está
- * disponible. Solo lectura, como la tabla de escritorio en esta pantalla.
+ * stock, el precio de la sede (y el base tachado si cambia) y el
+ * interruptor de disponible. Tocar una fila abre la hoja para editar
+ * stock, precio y disponibilidad (`InventoryItemSheet`).
  */
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { PillGroup } from "@/components/ui/pill-group";
 import { BranchSingleSelector } from "@/features/branches/components";
 import { CatalogMobileNav } from "@/features/catalog/components/mobile/CatalogMobileNav";
@@ -17,6 +19,7 @@ import { SearchField } from "@/components/ui/search-field";
 import { cn, formatCurrency } from "@/lib/utils";
 import { IMPORT_DEFAULT_VARIANT_LABEL } from "@/features/products/import";
 import type { InventoryItem } from "../types";
+import { InventoryItemSheet, type InventoryItemValues } from "./InventoryItemSheet";
 
 /** Igual que el badge de la tabla de escritorio: menos de 10 es stock bajo. */
 const LOW_STOCK = 10;
@@ -53,6 +56,11 @@ interface InventoryMobileViewProps {
   onBranchChange: (branchId: string) => void;
   search: string;
   onSearchChange: (search: string) => void;
+  /** `inventory.set_availability`: sin él, la disponibilidad solo se ve. */
+  canSetAvailability: boolean;
+  onToggleAvailability: (item: InventoryItem, isAvailable: boolean) => void;
+  /** Guarda lo editado en la hoja; resuelve al terminar (o rechaza). */
+  onSave: (item: InventoryItem, values: InventoryItemValues) => Promise<void>;
 }
 
 export function InventoryMobileView({
@@ -63,9 +71,18 @@ export function InventoryMobileView({
   onBranchChange,
   search,
   onSearchChange,
+  canSetAvailability,
+  onToggleAvailability,
+  onSave,
 }: InventoryMobileViewProps) {
   const t = useTranslations("inventory");
   const [filter, setFilter] = useState<MobileFilter>("all");
+  const [editing, setEditing] = useState<InventoryItem | null>(null);
+  const [saving, setSaving] = useState(false);
+  const itemName = (item: InventoryItem) =>
+    item.variantLabel && item.variantLabel !== IMPORT_DEFAULT_VARIANT_LABEL
+      ? `${item.productName} · ${item.variantLabel}`
+      : item.productName;
   const visible = useMemo(() => items.filter(FILTERS[filter]), [items, filter]);
 
   const count = (id: MobileFilter) => items.filter(FILTERS[id]).length;
@@ -112,20 +129,17 @@ export function InventoryMobileView({
               const kind = stockKind(item);
               const hasOverride = item.effectivePrice !== item.basePrice;
               return (
-                <li
-                  key={item.id}
-                  className={cn(
-                    "flex min-h-16 items-center gap-3 px-3.5 py-2.5",
-                    !item.isAvailable && "opacity-55"
-                  )}
-                >
-                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <li key={item.id} className="flex min-h-16 items-center gap-3 px-3.5 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditing(item)}
+                    className={cn(
+                      "flex min-w-0 flex-1 flex-col gap-1 text-left",
+                      !item.isAvailable && "opacity-55"
+                    )}
+                  >
                     <span className="truncate text-[15px] font-semibold text-slate-900">
-                      {item.productName}
-                      {/* La variante por defecto ("Unidad") no aporta nada al nombre. */}
-                      {item.variantLabel &&
-                        item.variantLabel !== IMPORT_DEFAULT_VARIANT_LABEL &&
-                        ` · ${item.variantLabel}`}
+                      {itemName(item)}
                     </span>
                     <span className="flex flex-wrap items-center gap-2 text-sm">
                       <span
@@ -145,15 +159,23 @@ export function InventoryMobileView({
                         </span>
                       )}
                     </span>
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 text-xs font-semibold",
-                      item.isAvailable ? "text-emerald-700" : "text-slate-500"
-                    )}
-                  >
-                    {item.isAvailable ? t("mobile.available") : t("mobile.unavailable")}
-                  </span>
+                  </button>
+                  {canSetAvailability ? (
+                    <Switch
+                      checked={item.isAvailable}
+                      onCheckedChange={(checked) => onToggleAvailability(item, checked)}
+                      aria-label={t("mobile.availableFor", { name: itemName(item) })}
+                    />
+                  ) : (
+                    <span
+                      className={cn(
+                        "shrink-0 text-xs font-semibold",
+                        item.isAvailable ? "text-emerald-700" : "text-slate-500"
+                      )}
+                    >
+                      {item.isAvailable ? t("mobile.available") : t("mobile.unavailable")}
+                    </span>
+                  )}
                 </li>
               );
             })}
@@ -165,6 +187,24 @@ export function InventoryMobileView({
         <p className="px-4 pb-3 text-center text-xs text-slate-500">
           {t("mobile.partial", { shown: items.length, total })}
         </p>
+      )}
+
+      {editing && (
+        <InventoryItemSheet
+          key={editing.id}
+          item={editing}
+          title={itemName(editing)}
+          canSetAvailability={canSetAvailability}
+          isSaving={saving}
+          onClose={() => setEditing(null)}
+          onSave={(values) => {
+            setSaving(true);
+            onSave(editing, values)
+              .then(() => setEditing(null))
+              .catch(() => {})
+              .finally(() => setSaving(false));
+          }}
+        />
       )}
 
       <CatalogMobileNav />

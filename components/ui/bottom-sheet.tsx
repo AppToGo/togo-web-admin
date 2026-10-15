@@ -20,6 +20,8 @@ interface BottomSheetProps {
    * apertura del diálogo se pisan (foco, pointer-events del body).
    */
   onClosed?: () => void;
+  /** Lista de acciones (role="menu") o un formulario. */
+  variant?: "menu" | "form";
   children: React.ReactNode;
 }
 
@@ -28,6 +30,7 @@ export function BottomSheet({
   onOpenChange,
   title,
   onClosed,
+  variant = "menu",
   children,
 }: BottomSheetProps) {
   return (
@@ -55,9 +58,13 @@ export function BottomSheet({
             aria-hidden
             className="mx-auto mb-2 h-[5px] w-10 shrink-0 rounded-full bg-slate-300"
           />
-          <div role="menu" aria-label={title} className="flex flex-col">
-            {children}
-          </div>
+          {variant === "menu" ? (
+            <div role="menu" aria-label={title} className="flex flex-col">
+              {children}
+            </div>
+          ) : (
+            <div className="flex max-h-[85dvh] flex-col overflow-y-auto">{children}</div>
+          )}
         </DrawerPrimitive.Content>
       </DrawerPrimitive.Portal>
     </DrawerPrimitive.Root>
