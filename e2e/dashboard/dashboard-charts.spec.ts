@@ -43,7 +43,7 @@ test.describe("Dashboard — gráficos", () => {
     await openDashboard(page);
 
     await page
-      .getByRole("heading", { name: "Análisis" })
+      .getByRole("region", { name: "Análisis" })
       .scrollIntoViewIfNeeded();
 
     await expect(
@@ -55,9 +55,12 @@ test.describe("Dashboard — gráficos", () => {
     await expect(
       page.getByText("Embudo de Conversión", { exact: true })
     ).toBeVisible();
-    // Funnel stage labels render twice each: Y-axis tick + legend row.
+    // Una fila por etapa del embudo, con su barra de progreso.
     for (const stage of ["Nuevas", "Pagadas", "Completadas"]) {
-      await expect(page.getByText(stage, { exact: true })).toHaveCount(2);
+      await expect(page.getByText(stage, { exact: true })).toHaveCount(1);
+      await expect(
+        page.getByRole("progressbar", { name: stage })
+      ).toBeVisible();
     }
   });
 
@@ -70,7 +73,7 @@ test.describe("Dashboard — gráficos", () => {
     await openDashboard(page);
 
     await page
-      .getByRole("heading", { name: "Análisis" })
+      .getByRole("region", { name: "Métricas detalladas" })
       .scrollIntoViewIfNeeded();
 
     await expect(

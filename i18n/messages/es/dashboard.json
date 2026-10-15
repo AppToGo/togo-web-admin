@@ -5,6 +5,11 @@
     "withBusiness": "Bienvenido a {businessName}. Aquí podrás gestionar tus pedidos y productos.",
     "withoutBusiness": "Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos."
   },
+  "sections": {
+    "kpis": "Indicadores",
+    "detail": "Métricas detalladas",
+    "analysis": "Análisis"
+  },
   "stats": {
     "ordersToday": {
       "title": "Pedidos hoy",
@@ -73,20 +78,25 @@
       "confirmed": "Nuevas",
       "paid": "Pagadas",
       "completed": "Completadas",
-      "ofTotal": "% del total"
+      "ofTotal": "% del total",
+      "subtitle": "De pedido nuevo a completado"
     },
     "revenue": {
-      "title": "Ingresos últimos 30 días"
+      "title": "Ingresos últimos 30 días",
+      "current": "Período actual",
+      "previous": "Período anterior"
     },
     "peakHours": {
       "title": "Horas Pico",
       "peakLabel": "Hora pico:",
-      "orders": "órdenes"
+      "orders": "órdenes",
+      "subtitle": "Pedidos por hora del día"
     },
     "paymentMethods": {
       "title": "Métodos de Pago",
       "orders": "órdenes",
-      "noData": "No hay datos de métodos de pago disponibles"
+      "noData": "No hay datos de métodos de pago disponibles",
+      "subtitle": "Pedidos del período por método"
     }
   },
   "filters": {

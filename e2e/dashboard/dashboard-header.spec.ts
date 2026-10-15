@@ -39,8 +39,9 @@ test.describe("Dashboard — encabezado y filtros", () => {
     await openDashboard(page);
 
     await expect(
-      page.getByRole("heading", { name: "¡Hola, Test User!" })
+      page.getByRole("heading", { name: "Dashboard", level: 1, exact: true })
     ).toBeVisible();
+    await expect(page.getByText("¡Hola, Test User!")).toBeVisible();
     await expect(page.getByText("Bienvenido a Test Business.")).toBeVisible();
   });
 
@@ -78,9 +79,7 @@ test.describe("Dashboard — encabezado y filtros", () => {
     await mockBoardPermissions(page);
     await openDashboard(page);
 
-    await expect(
-      page.getByRole("heading", { name: "¡Hola, Test User!" })
-    ).toBeVisible();
+    await expect(page.getByText("¡Hola, Test User!")).toBeVisible();
     await expect(
       page.getByText("Bienvenido a tu dashboard.")
     ).toBeVisible();

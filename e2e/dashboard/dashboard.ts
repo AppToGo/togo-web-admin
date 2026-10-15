@@ -162,9 +162,9 @@ export async function openDashboard(page: Page): Promise<void> {
   await loginPage.waitForDashboardRedirect();
   await page.goto("/es/dashboard");
 
-  // Sync point: the greeting means the dashboard hydrated.
+  // Sync point: the page title means the dashboard hydrated.
   await expect(
-    page.getByRole("heading", { name: "¡Hola, Test User!" })
+    page.getByRole("heading", { name: "Dashboard", level: 1, exact: true })
   ).toBeVisible();
 
   // Full-screen onboarding spotlight — dismiss when present.

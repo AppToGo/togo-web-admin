@@ -5,6 +5,11 @@
     "withBusiness": "Welcome to {businessName}. Here you can manage your orders and products.",
     "withoutBusiness": "Welcome to your dashboard. Here you can manage your orders and products."
   },
+  "sections": {
+    "kpis": "Key metrics",
+    "detail": "Detailed metrics",
+    "analysis": "Analysis"
+  },
   "stats": {
     "ordersToday": {
       "title": "Orders today",
@@ -73,20 +78,25 @@
       "confirmed": "New",
       "paid": "Paid",
       "completed": "Completed",
-      "ofTotal": "% of total"
+      "ofTotal": "% of total",
+      "subtitle": "From new order to completed"
     },
     "revenue": {
-      "title": "Revenue last 30 days"
+      "title": "Revenue last 30 days",
+      "current": "Current period",
+      "previous": "Previous period"
     },
     "peakHours": {
       "title": "Peak Hours",
       "peakLabel": "Peak hour:",
-      "orders": "orders"
+      "orders": "orders",
+      "subtitle": "Orders by hour of day"
     },
     "paymentMethods": {
       "title": "Payment Methods",
       "orders": "orders",
-      "noData": "No payment methods data available"
+      "noData": "No payment methods data available",
+      "subtitle": "Period orders by method"
     }
   },
   "filters": {

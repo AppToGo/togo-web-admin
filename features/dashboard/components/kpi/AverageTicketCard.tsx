@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { TrendingUp } from "lucide-react";
 import { useKpiMetrics } from "../../hooks/useKpiMetrics";
+import { Skeleton } from "@/components/ui/skeleton";
 import { KpiCard } from "./KpiCard";
 
 function formatCurrency(amount: number): string {
@@ -17,7 +18,7 @@ export const AverageTicketCard = memo(function AverageTicketCard() {
   const { data, isLoading } = useKpiMetrics();
 
   if (isLoading) {
-    return <div className="h-32 bg-slate-100 animate-pulse rounded-lg" />;
+    return <Skeleton className="h-36 rounded-card-xl" />;
   }
 
   const avgTicket =
@@ -28,7 +29,7 @@ export const AverageTicketCard = memo(function AverageTicketCard() {
       title="Ticket Promedio"
       value={formatCurrency(avgTicket)}
       description="Valor promedio por orden"
-      icon={<TrendingUp className="w-5 h-5 text-amber-500" />}
+      icon={<TrendingUp className="w-5 h-5 text-amber-600" />}
       trend="neutral"
       variant="amber"
     />

@@ -4,3 +4,4 @@ export { RevenueTodayCard } from './RevenueTodayCard';
 export { TotalOrdersCard } from './TotalOrdersCard';
 export { AverageTicketCard } from './AverageTicketCard';
 export { KpiSection } from './KpiSection';
+export { TrendBadge } from './TrendBadge';
