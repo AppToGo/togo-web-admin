@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Filter, Lock, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import {
@@ -117,6 +118,7 @@ export default function ConversationFunnelPage() {
           params={{ dateFrom: range.from, dateTo: range.to }}
         />
       </div>
+      <ConversationsMobileNav />
     </DashboardLayout>
   );
 }

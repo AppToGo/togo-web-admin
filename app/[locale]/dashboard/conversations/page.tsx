@@ -31,6 +31,13 @@ import {
   ConversationThread,
 } from "@/features/conversations";
 import type { ConversationOutcome } from "@/features/conversations";
+import {
+  ConversationMobileReadonly,
+  ConversationsMobileList,
+} from "@/features/conversations/components/conversations-mobile";
+import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
+import { useIsBelowDesktop } from "@/hooks/useIsMobile";
+import { useUrlParamState } from "@/hooks/useUrlParamState";
 
 /**
  * Outcomes que califican como "sin pedido" (§1.1 del plan Fase B, backend
@@ -131,6 +138,15 @@ export default function ConversationsWithoutOrderPage() {
       : { outcome: [outcomeFilter] }),
   });
 
+  // Teléfono y tablet vertical (< lg): lista de tarjetas y el hilo a
+  // pantalla completa en vez de la tabla y el diálogo (diseño móvil).
+  const isBelowDesktop = useIsBelowDesktop();
+  // En el teléfono la conversación abierta vive en `?conversation=<id>`:
+  // abrirla agrega una entrada al historial y el atrás del sistema vuelve a
+  // la lista. En escritorio es el diálogo, con estado local.
+  const [conversationParam, openConversation, closeConversation] =
+    useUrlParamState("conversation");
+
   if (!hasBusiness && !isSuperAdmin) {
     return (
       <DashboardLayout>
@@ -178,6 +194,36 @@ export default function ConversationsWithoutOrderPage() {
             {t("page.selectBusinessDescription")}
           </p>
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isBelowDesktop) {
+    const selected = conversations.find((item) => item.id === conversationParam);
+    return (
+      <DashboardLayout>
+        <ConversationsMobileList
+          outcomes={WITHOUT_ORDER_OUTCOMES}
+          outcomeFilter={outcomeFilter}
+          onOutcomeChange={(value) => {
+            setOutcomeFilter(value);
+            setPage(1);
+          }}
+          conversations={conversations}
+          isLoading={isLoading}
+          isError={isError}
+          pagination={pagination}
+          onPageChange={setPage}
+          onSelect={(id) => openConversation(id, { push: true })}
+        />
+        <ConversationsMobileNav />
+        {selected && (
+          <ConversationMobileReadonly
+            key={selected.id}
+            conversation={selected}
+            onBack={closeConversation}
+          />
+        )}
       </DashboardLayout>
     );
   }

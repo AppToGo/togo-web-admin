@@ -234,5 +234,23 @@
       "CANCELLING": "Cancelling",
       "ERROR_RECOVERY": "Recovering from an error"
     }
+  },
+  "mobile": {
+    "today": "today {time}",
+    "withoutOrder": "No order",
+    "back": "Back to conversations",
+    "messages": "{count, plural, one {# message} other {# messages}}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "pageOf": "Page {page} of {total}",
+    "viewCustomer": "View customer",
+    "reopenInInbox": "Reopen in Inbox",
+    "outcomeShort": {
+      "ABANDONED": "Abandoned",
+      "SUPPORT": "Support",
+      "NO_INTENT": "No intent",
+      "SPAM": "Spam",
+      "ORDER_PLACED": "With order"
+    }
   }
 }

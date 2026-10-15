@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useCustomerColumns } from "./columns";
 import { SelectionBar } from "./selection-bar";
+import { CustomersMobileList } from "./customers-mobile-list";
 import {
   useCustomerSelectionStore,
   useSelectedCustomerCount,
@@ -164,16 +165,21 @@ export function CustomersTable({
 
   return (
     <div className="space-y-4">
-      {/* Barra de selección */}
-      <SelectionBar
-        selectedCount={selectedCount}
-        totalCount={pagination.total}
-        onClearSelection={clearSelection}
-        onSelectAllPages={handleSelectAllPages}
-      />
+      {/* Barra de selección (la selección es de pantallas grandes) */}
+      <div className="hidden md:block">
+        <SelectionBar
+          selectedCount={selectedCount}
+          totalCount={pagination.total}
+          onClearSelection={clearSelection}
+          onSelectAllPages={handleSelectAllPages}
+        />
+      </div>
+
+      {/* Teléfono: lista de tarjetas */}
+      <CustomersMobileList data={data} />
 
       {/* Tabla */}
-      <Card variant="glass">
+      <Card variant="glass" className="hidden md:block">
         <div className="rounded-lg hoverflow-hidden">
           <div className="overflow-x-auto">
             <Table>

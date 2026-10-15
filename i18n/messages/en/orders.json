@@ -403,7 +403,9 @@
       "table": "Select the table",
       "cashSession": "Select the shift receiving the cash",
       "cashReceived": "The cash received doesn't cover the total"
-    }
+    },
+    "mobileContinue": "Continue",
+    "mobileBack": "Products ({count})"
   },
   "orderFlow": {
     "title": "Business flow",

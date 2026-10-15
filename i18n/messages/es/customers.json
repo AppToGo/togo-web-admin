@@ -82,6 +82,21 @@
     "showMore": "Ver {count} más",
     "customer": "Cliente",
     "customerInfo": "Información del cliente",
+    "mobile": {
+      "tabs": {
+        "summary": "Resumen",
+        "orders": "Pedidos"
+      },
+      "back": "Volver a clientes",
+      "since": "cliente desde {date}",
+      "call": "Llamar",
+      "noConversation": "Sin conversación con la ventana de 24 h abierta",
+      "sections": "Secciones del cliente",
+      "saving": "Guardando…",
+      "ordersEvery": "Pide cada",
+      "days": "{count, plural, one {# día} other {# días}}",
+      "times": "{count, plural, one {# vez} other {# veces}}"
+    },
     "fields": {
       "name": "Nombre",
       "phone": "Teléfono",
@@ -152,5 +167,12 @@
     "yesterday": "Ayer",
     "daysAgo": "Hace {count} días",
     "weeksAgo": "Hace {count} semanas"
+  },
+
+  "mobileSort": {
+    "label": "Ordenar clientes",
+    "recent": "Recientes",
+    "orders": "Más pedidos",
+    "spent": "Más gastaron"
   }
 }

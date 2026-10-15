@@ -102,5 +102,21 @@
   "notifications": {
     "humanRequested": "A customer asked to talk to an agent",
     "view": "View"
+  },
+  "mobile": {
+    "heldByOther": "{name} is handling it.",
+    "loadError": "Couldn't load the conversations.",
+    "retry": "Retry",
+    "notePlaceholder": "Internal note (not sent to the customer)…",
+    "back": "Back to inbox",
+    "actions": "Conversation actions",
+    "trays": "Trays",
+    "unassigned": "unassigned",
+    "assignedToYou": "assigned to you",
+    "assignedTo": "assigned to {name}",
+    "assignOther": "Assign to another operator",
+    "releaseToBot": "Release (back to the bot)",
+    "viewCustomer": "View customer",
+    "closeConversation": "Close conversation"
   }
 }
