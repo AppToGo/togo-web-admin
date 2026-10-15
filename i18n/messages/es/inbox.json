@@ -15,7 +15,21 @@
     "empty": "No hay conversaciones en esta pestaña",
     "searchPlaceholder": "Buscar por nombre o teléfono",
     "anonymous": "Anónimo",
-    "noSelection": "Seleccioná una conversación para ver el hilo"
+    "noSelection": "Elegí una conversación de la lista para ver el hilo y responder.",
+    "noSelectionTitle": "Ninguna conversación abierta",
+    "status": {
+      "waiting": "Pidió un asesor",
+      "mine": "La estás atendiendo",
+      "heldBy": "La atiende {name}",
+      "unassigned": "Atendida, sin asignar",
+      "bot": "La atiende el bot",
+      "closed": "Cerrada"
+    },
+    "time": {
+      "now": "ahora",
+      "minutes": "{count} min",
+      "yesterday": "Ayer"
+    }
   },
   "control": {
     "BOT": "Bot",
@@ -25,7 +39,8 @@
   "thread": {
     "assignedTo": "Asignada a {name}",
     "unassigned": "Sin asignar",
-    "callbackRequested": "Pidió que lo contacten"
+    "callbackRequested": "Pidió que lo contacten",
+    "closed": "Cerrada"
   },
   "reopenNotice": {
     "title": "Esta conversación está cerrada",
@@ -41,7 +56,11 @@
     "closedSuccess": "Conversación cerrada",
     "reopen": "Reabrir conversación",
     "reopenedSuccess": "Conversación reabierta",
-    "note": "Nota interna"
+    "note": "Nota interna",
+    "more": "Más acciones",
+    "releaseToBot": "Devolver al bot",
+    "closeConversation": "Cerrar conversación",
+    "takeAndReply": "Tomar y responder"
   },
   "composer": {
     "placeholder": "Escribí un mensaje...",
@@ -53,7 +72,12 @@
     "notePlaceholder": "Escribí una nota interna (no se envía al cliente)...",
     "addNote": "Agregar nota",
     "noteToggleOn": "Escribiendo nota interna",
-    "noteToggleOff": "Nota interna"
+    "noteToggleOff": "Nota interna",
+    "modes": "Tipo de mensaje",
+    "reply": "Responder",
+    "noteHint": "Solo la ve tu equipo, no le llega al cliente",
+    "takeoverPrompt": "Para responder, tomá la conversación. El bot deja de contestar mientras la atendés.",
+    "sendHint": "Enter para enviar · Shift + Enter para otra línea"
   },
   "assignDialog": {
     "title": "Asignar conversación",
@@ -78,7 +102,8 @@
     "connected": "Actualización en vivo",
     "connecting": "Conectando actualización en vivo...",
     "disconnected": "Sin actualización en vivo — actualizando cada 15s",
-    "tooltip": "Indica si esta pantalla recibe mensajes nuevos en vivo o los actualiza cada 15 segundos. No indica si tu WhatsApp está conectado — eso se configura en Configuración → Datos del Negocio."
+    "tooltip": "Indica si esta pantalla recibe mensajes nuevos en vivo o los actualiza cada 15 segundos. No indica si tu WhatsApp está conectado — eso se configura en Configuración → Datos del Negocio.",
+    "live": "En vivo"
   },
   "events": {
     "HANDOFF_REQUESTED": "El cliente pidió hablar con un humano",
@@ -118,5 +143,24 @@
     "releaseToBot": "Liberar (vuelve al bot)",
     "viewCustomer": "Ver cliente",
     "closeConversation": "Cerrar conversación"
+  },
+  "context": {
+    "title": "Datos del cliente",
+    "customer": "Cliente",
+    "noName": "Sin nombre",
+    "viewCustomer": "Ver perfil del cliente",
+    "window": "Ventana de WhatsApp",
+    "windowRemaining": "Podés escribirle por",
+    "windowTime": "{hours} h {minutes} min",
+    "windowHint": "Se reinicia con cada mensaje del cliente.",
+    "windowClosed": "Cerrada: pasaron más de 24 h desde el último mensaje del cliente.",
+    "conversation": "Esta conversación",
+    "startedAt": "Empezó",
+    "messages": "Mensajes",
+    "orders": "Pedidos",
+    "ordersCount": "{count, plural, one {# pedido} other {# pedidos}}",
+    "noOrders": "Ninguno todavía",
+    "assignedTo": "Asignada a",
+    "nobody": "Nadie"
   }
 }

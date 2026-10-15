@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { RotateCcw } from "lucide-react";
+import { Bot, MoreHorizontal, RotateCcw, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Can } from "@/components/auth/Can";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   useTakeoverConversation,
   useReleaseConversation,
@@ -17,7 +24,11 @@ import { isWindowOpen } from "../../utils/conversation-window";
 import { InboxAssignDialog } from "./inbox-assign-dialog";
 import { InboxCloseDialog } from "./inbox-close-dialog";
 import { CONTROL_BADGE } from "./control-badge";
+import { initials } from "./inbox-list-item";
 import type { ConversationDetail, ConversationOutcome } from "../../types";
+
+/** Botones del encabezado: más altos y redondeados que el `Button` base. */
+const ACTION_BUTTON = "h-10 rounded-xl px-4";
 
 interface InboxThreadHeaderProps {
   conversation: ConversationDetail;
@@ -38,6 +49,10 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
   const isBotOrWaiting = conversation.control !== "HUMAN";
   const isClosed = conversation.status !== "OPEN";
 
+  const { hasPermission } = useMyPermissions();
+  const canRelease = !isBotOrWaiting && hasPermission("conversation.takeover");
+  const canClose = hasPermission("conversation.close");
+
   const handleAssign = (userId: string | null) => {
     assign.mutate(userId, { onSuccess: () => setAssignOpen(false) });
   };
@@ -47,23 +62,36 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-slate-900">{name}</p>
-        <div className="mt-1 flex items-center gap-2">
-          <span
-            className={cn(
-              "rounded-full px-2 py-0.5 text-[11px] font-medium",
-              CONTROL_BADGE[conversation.control]
-            )}
-          >
-            {t(`control.${conversation.control}`)}
-          </span>
-          <span className="text-xs text-slate-500">
-            {conversation.assignedTo
-              ? t("thread.assignedTo", { name: conversation.assignedTo.name ?? "" })
-              : t("thread.unassigned")}
-          </span>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/80 px-5 py-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
+          {initials(conversation.customer?.name ?? null)}
+        </div>
+        <div className="min-w-0">
+          <h2 className="truncate text-lg font-semibold text-slate-900">
+            {name}
+          </h2>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                isClosed
+                  ? "bg-slate-200 text-slate-700"
+                  : CONTROL_BADGE[conversation.control]
+              )}
+            >
+              {isClosed
+                ? t("thread.closed")
+                : t(`control.${conversation.control}`)}
+            </span>
+            <span className="text-[13px] text-slate-500">
+              {conversation.assignedTo
+                ? t("thread.assignedTo", {
+                    name: conversation.assignedTo.name ?? "",
+                  })
+                : t("thread.unassigned")}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -76,55 +104,78 @@ export function InboxThreadHeader({ conversation }: InboxThreadHeaderProps) {
           isWindowOpen(conversation.windowExpiresAt) ? (
             <Can permission="conversation.reopen">
               <Button
-                size="sm"
-                variant="outline"
+                variant="slate-outline"
+                className={ACTION_BUTTON}
                 disabled={reopen.isPending}
                 onClick={() => reopen.mutate()}
               >
-                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                <RotateCcw />
                 {t("actions.reopen")}
               </Button>
             </Can>
           ) : (
-            <span className="text-xs text-slate-400">
+            <span className="max-w-xs text-xs text-slate-500">
               {t("reopenNotice.windowExpiredDescription")}
             </span>
           )
         ) : (
           <>
-            <Can permission="conversation.takeover">
-              {isBotOrWaiting ? (
+            {isBotOrWaiting && (
+              <Can permission="conversation.takeover">
                 <Button
-                  size="sm"
-                  variant="default"
+                  className={ACTION_BUTTON}
                   disabled={takeover.isPending}
                   onClick={() => takeover.mutate()}
                 >
                   {t("actions.take")}
                 </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={release.isPending}
-                  onClick={() => release.mutate(undefined)}
-                >
-                  {t("actions.release")}
-                </Button>
-              )}
-            </Can>
+              </Can>
+            )}
 
             <Can permission="conversation.assign">
-              <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
+              <Button
+                variant="slate-outline"
+                className={ACTION_BUTTON}
+                onClick={() => setAssignOpen(true)}
+              >
                 {t("actions.assign")}
               </Button>
             </Can>
 
-            <Can permission="conversation.close">
-              <Button size="sm" variant="outline" onClick={() => setCloseOpen(true)}>
-                {t("actions.close")}
-              </Button>
-            </Can>
+            {/* Liberar y Cerrar: menos frecuentes, van al menú "⋯". */}
+            {(canRelease || canClose) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="slate-outline"
+                    className={cn(ACTION_BUTTON, "w-10 px-0")}
+                    aria-label={t("actions.more")}
+                  >
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {canRelease && (
+                    <DropdownMenuItem
+                      disabled={release.isPending}
+                      onSelect={() => release.mutate(undefined)}
+                    >
+                      <Bot className="h-4 w-4" />
+                      {t("actions.releaseToBot")}
+                    </DropdownMenuItem>
+                  )}
+                  {canClose && (
+                    <DropdownMenuItem
+                      className="text-red-600 focus:text-red-600"
+                      onSelect={() => setCloseOpen(true)}
+                    >
+                      <XCircle className="h-4 w-4" />
+                      {t("actions.closeConversation")}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </>
         )}
       </div>

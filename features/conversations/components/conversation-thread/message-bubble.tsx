@@ -28,8 +28,10 @@ function bubbleStyles(senderType: MessageSenderType): string {
   switch (senderType) {
     case "CUSTOMER":
       return "bg-white border border-slate-200 text-slate-900";
+    // El bot va en índigo suave para que lo que escribe una persona
+    // (operador, en verde) se distinga de un vistazo.
     case "BOT":
-      return "bg-indigo-600 text-white";
+      return "bg-indigo-50 border border-indigo-100 text-indigo-950";
     case "OPERATOR":
       return "bg-emerald-600 text-white";
     case "SYSTEM":
@@ -91,7 +93,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const preview = buildInteractivePreview(message);
   // Sólo las burbujas CUSTOMER tienen fondo claro (`bubbleStyles`); BOT/OPERATOR/SYSTEM
   // son sólidas y oscuras, así que la superficie secundaria del preview necesita más contraste ahí.
-  const tone = message.senderType === "CUSTOMER" ? "onLight" : "onDark";
+  // Solo el operador va sobre fondo oscuro.
+  const tone = message.senderType === "OPERATOR" ? "onDark" : "onLight";
   // El aviso genérico queda sólo para lo que el normalizador no supo interpretar.
   const showUnsupportedNotice =
     !preview && !isMediaHandled && message.contentType !== "TEXT" && !message.text;

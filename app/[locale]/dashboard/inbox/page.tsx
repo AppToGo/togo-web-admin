@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Lock, Store, Wifi, WifiOff } from "lucide-react";
+import { Inbox, Lock, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useHasBusiness, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -175,15 +175,18 @@ export default function InboxPage() {
   return (
     <DashboardLayout>
       <div className="flex h-[calc(100vh-140px)] flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
-            <p className="text-sm text-slate-500">{t("subtitle")}</p>
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <Inbox className="h-6 w-6 text-indigo-600" />
+              {t("title")}
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
-          <div
+          <span
             className={cn(
-              "flex items-center gap-1.5 text-xs font-medium",
-              isConnected ? "text-emerald-600" : "text-amber-600"
+              "inline-flex h-9 items-center gap-2 rounded-badge bg-white/80 px-3.5 text-sm font-medium",
+              isConnected ? "text-emerald-700" : "text-amber-700"
             )}
             // Este indicador es sobre el socket del navegador con el
             // backend de TOGO (para que los mensajes/estados nuevos
@@ -194,13 +197,17 @@ export default function InboxPage() {
             // refiere a su WhatsApp.
             title={t("connection.tooltip")}
           >
-            {isConnected ? (
-              <Wifi className="h-3.5 w-3.5" />
-            ) : (
-              <WifiOff className="h-3.5 w-3.5" />
-            )}
-            {isConnected ? t("connection.connected") : t("connection.disconnected")}
-          </div>
+            <span
+              aria-hidden="true"
+              className={cn(
+                "h-2 w-2 rounded-full",
+                isConnected
+                  ? "bg-emerald-500 ring-3 ring-emerald-500/20"
+                  : "bg-amber-500 ring-3 ring-amber-500/20"
+              )}
+            />
+            {isConnected ? t("connection.live") : t("connection.disconnected")}
+          </span>
         </div>
 
         <InboxLayout

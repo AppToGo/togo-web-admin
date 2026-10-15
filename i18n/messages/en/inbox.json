@@ -15,7 +15,21 @@
     "empty": "No conversations in this tab",
     "searchPlaceholder": "Search by name or phone",
     "anonymous": "Anonymous",
-    "noSelection": "Select a conversation to view the thread"
+    "noSelection": "Pick a conversation from the list to see the thread and reply.",
+    "noSelectionTitle": "No conversation open",
+    "status": {
+      "waiting": "Asked for an agent",
+      "mine": "You're handling it",
+      "heldBy": "{name} is handling it",
+      "unassigned": "Handled, unassigned",
+      "bot": "The bot is handling it",
+      "closed": "Closed"
+    },
+    "time": {
+      "now": "now",
+      "minutes": "{count} min",
+      "yesterday": "Yesterday"
+    }
   },
   "control": {
     "BOT": "Bot",
@@ -25,7 +39,8 @@
   "thread": {
     "assignedTo": "Assigned to {name}",
     "unassigned": "Unassigned",
-    "callbackRequested": "Asked to be contacted"
+    "callbackRequested": "Asked to be contacted",
+    "closed": "Closed"
   },
   "reopenNotice": {
     "title": "This conversation is closed",
@@ -41,7 +56,11 @@
     "closedSuccess": "Conversation closed",
     "reopen": "Reopen conversation",
     "reopenedSuccess": "Conversation reopened",
-    "note": "Internal note"
+    "note": "Internal note",
+    "more": "More actions",
+    "releaseToBot": "Hand back to the bot",
+    "closeConversation": "Close conversation",
+    "takeAndReply": "Take and reply"
   },
   "composer": {
     "placeholder": "Type a message...",
@@ -53,7 +72,12 @@
     "notePlaceholder": "Write an internal note (not sent to the customer)...",
     "addNote": "Add note",
     "noteToggleOn": "Writing internal note",
-    "noteToggleOff": "Internal note"
+    "noteToggleOff": "Internal note",
+    "modes": "Message type",
+    "reply": "Reply",
+    "noteHint": "Only your team sees it; it is not sent to the customer",
+    "takeoverPrompt": "To reply, take the conversation. The bot stops answering while you handle it.",
+    "sendHint": "Enter to send · Shift + Enter for a new line"
   },
   "assignDialog": {
     "title": "Assign conversation",
@@ -78,7 +102,8 @@
     "connected": "Live updates on",
     "connecting": "Connecting live updates...",
     "disconnected": "Live updates off — refreshing every 15s",
-    "tooltip": "Shows whether this screen gets new messages live or refreshes every 15 seconds. It does not show whether your WhatsApp is connected — that's set up in Settings → Business Details."
+    "tooltip": "Shows whether this screen gets new messages live or refreshes every 15 seconds. It does not show whether your WhatsApp is connected — that's set up in Settings → Business Details.",
+    "live": "Live"
   },
   "events": {
     "HANDOFF_REQUESTED": "The customer asked to talk to a human",
@@ -118,5 +143,24 @@
     "releaseToBot": "Release (back to the bot)",
     "viewCustomer": "View customer",
     "closeConversation": "Close conversation"
+  },
+  "context": {
+    "title": "Customer details",
+    "customer": "Customer",
+    "noName": "No name",
+    "viewCustomer": "View customer profile",
+    "window": "WhatsApp window",
+    "windowRemaining": "You can message them for",
+    "windowTime": "{hours} h {minutes} min",
+    "windowHint": "It restarts with every customer message.",
+    "windowClosed": "Closed: more than 24 h since the customer's last message.",
+    "conversation": "This conversation",
+    "startedAt": "Started",
+    "messages": "Messages",
+    "orders": "Orders",
+    "ordersCount": "{count, plural, one {# order} other {# orders}}",
+    "noOrders": "None yet",
+    "assignedTo": "Assigned to",
+    "nobody": "Nobody"
   }
 }

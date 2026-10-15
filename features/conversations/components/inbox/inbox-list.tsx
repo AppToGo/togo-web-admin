@@ -41,29 +41,29 @@ export function InboxList({
   }, [debouncedSearch]);
 
   return (
-    <div className="flex h-full flex-col">
-      <InboxTabs active={activeTab} onChange={onTabChange} summary={summary} />
-
-      <div className="p-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder={t("list.searchPlaceholder")}
-            className="pl-8 h-9"
-          />
-        </div>
+    <div className="flex h-full flex-col gap-3 p-4">
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Input
+          type="search"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder={t("list.searchPlaceholder")}
+          aria-label={t("list.searchPlaceholder")}
+          className="h-11 rounded-card border-0 bg-white pl-10 shadow-none"
+        />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2 space-y-0.5">
+      <InboxTabs active={activeTab} onChange={onTabChange} summary={summary} />
+
+      <div className="-mx-1 flex-1 min-h-0 overflow-y-auto px-1 space-y-1">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-              <Skeleton className="h-9 w-9 rounded-full" />
+            <div key={i} className="flex items-center gap-3 px-3 py-3">
+              <Skeleton className="h-10 w-10 rounded-full bg-white/70" />
               <div className="flex-1 space-y-1.5">
-                <Skeleton className="h-3 w-2/3" />
-                <Skeleton className="h-2.5 w-1/2" />
+                <Skeleton className="h-3 w-2/3 bg-white/70" />
+                <Skeleton className="h-2.5 w-1/2 bg-white/70" />
               </div>
             </div>
           ))
