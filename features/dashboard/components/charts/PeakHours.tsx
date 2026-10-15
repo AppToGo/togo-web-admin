@@ -31,9 +31,12 @@ export function PeakHours() {
     orders: hour.count,
   }));
 
-  // Encontrar el valor máximo para resaltar la hora pico
+  // Resaltar la hora pico; si hay empate, el texto nombra todas las resaltadas
   const maxCount = Math.max(...data.peakHours.map((h) => h.count));
-  const peakHour = chartData.find((d) => d.orders === maxCount)?.hour;
+  const peakHours = chartData
+    .filter((d) => d.orders === maxCount)
+    .map((d) => d.hour)
+    .join(', ');
 
   return (
     <Card variant="glass" className="h-full">
@@ -93,7 +96,7 @@ export function PeakHours() {
             <Clock className="h-4 w-4 shrink-0" />
             <p>
               <span className="font-semibold">{t('peakLabel')}</span>{' '}
-              {peakHour} · {maxCount} {t('orders')}
+              {peakHours} · {maxCount} {t('orders')}
             </p>
           </div>
         )}

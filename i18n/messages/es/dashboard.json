@@ -24,46 +24,6 @@
       "description": "{count} completados",
       "none": "Sin pedidos"
     },
-    "ordersYesterday": {
-      "title": "Pedidos ayer",
-      "description": "{count} completados",
-      "none": "Sin pedidos"
-    },
-    "ordersWeek": {
-      "title": "Pedidos (7 días)",
-      "description": "{count} completados",
-      "none": "Sin pedidos"
-    },
-    "ordersMonth": {
-      "title": "Pedidos (mes)",
-      "description": "{count} completados",
-      "none": "Sin pedidos"
-    },
-    "revenueToday": {
-      "title": "Ingresos hoy",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "revenueYesterday": {
-      "title": "Ingresos ayer",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "revenueWeek": {
-      "title": "Ingresos (7 días)",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "revenueMonth": {
-      "title": "Ingresos (mes)",
-      "description": "{percentage}% vs período anterior",
-      "none": "Sin ventas"
-    },
-    "totalOrders": {
-      "title": "Total órdenes",
-      "description": "{paid} pagadas · {pending} pendientes",
-      "none": "Sin órdenes"
-    },
     "averageTicket": {
       "title": "Ticket promedio",
       "description": "Por pedido pagado"
@@ -113,6 +73,7 @@
       "handoff": "Piden un asesor: {rate}",
       "allBranches": "Incluye todas las sedes",
       "viewMore": "Ver embudo del bot",
+      "noBusiness": "Selecciona un negocio para ver sus conversaciones.",
       "empty": "Sin conversaciones en el período.",
       "error": "No se pudieron cargar las conversaciones."
     },

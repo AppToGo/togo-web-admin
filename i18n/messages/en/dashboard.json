@@ -24,46 +24,6 @@
       "description": "{count} completed",
       "none": "No orders"
     },
-    "ordersYesterday": {
-      "title": "Orders yesterday",
-      "description": "{count} completed",
-      "none": "No orders"
-    },
-    "ordersWeek": {
-      "title": "Orders (7 days)",
-      "description": "{count} completed",
-      "none": "No orders"
-    },
-    "ordersMonth": {
-      "title": "Orders (month)",
-      "description": "{count} completed",
-      "none": "No orders"
-    },
-    "revenueToday": {
-      "title": "Revenue today",
-      "description": "{percentage}% vs previous period",
-      "none": "No sales"
-    },
-    "revenueYesterday": {
-      "title": "Revenue yesterday",
-      "description": "{percentage}% vs previous period",
-      "none": "No sales"
-    },
-    "revenueWeek": {
-      "title": "Revenue (7 days)",
-      "description": "{percentage}% vs previous period",
-      "none": "No sales"
-    },
-    "revenueMonth": {
-      "title": "Revenue (month)",
-      "description": "{percentage}% vs previous period",
-      "none": "No sales"
-    },
-    "totalOrders": {
-      "title": "Total orders",
-      "description": "{paid} paid · {pending} pending",
-      "none": "No orders"
-    },
     "averageTicket": {
       "title": "Average ticket",
       "description": "Per paid order"
@@ -113,6 +73,7 @@
       "handoff": "Ask for an agent: {rate}",
       "allBranches": "Includes all branches",
       "viewMore": "View bot funnel",
+      "noBusiness": "Select a business to see its conversations.",
       "empty": "No conversations in the period.",
       "error": "Conversations could not be loaded."
     },
