@@ -9,7 +9,7 @@
  * sube desde abajo.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
   MoreVertical,
@@ -154,26 +154,64 @@ function ThreadFooter({ conversation }: { conversation: ConversationDetail }) {
   const user = useCurrentUser();
   const { hasPermission } = useMyPermissions();
   const takeover = useTakeoverConversation(conversation.id);
+  // Nota interna desde cualquier estado (cerrada, ventana vencida, sin
+  // tomar, en manos de otro), como el botón de nota del escritorio.
+  const [writingNote, setWritingNote] = useState(false);
+  const canNote = hasPermission("conversation.note");
+
+  const isOpen = conversation.status === "OPEN";
+  const windowOpen = isWindowOpen(conversation.windowExpiresAt);
+  const heldByMe =
+    conversation.control === "HUMAN" && conversation.assignedUserId === user?.userId;
+
+  if (isOpen && windowOpen && heldByMe) {
+    return <MobileComposer conversation={conversation} canNote={canNote} />;
+  }
+  if (writingNote) {
+    return (
+      <MobileComposer
+        conversation={conversation}
+        canNote
+        noteOnly
+        onCancelNote={() => setWritingNote(false)}
+      />
+    );
+  }
+
+  const noteButton = canNote && (
+    <button
+      type="button"
+      onClick={() => setWritingNote(true)}
+      className="flex h-[30px] items-center gap-1.5 self-start rounded-full border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-600"
+    >
+      <StickyNote className="h-3.5 w-3.5" />
+      {t("composer.noteToggleOff")}
+    </button>
+  );
 
   // Mismo orden que el composer de escritorio: cerrada → ventana vencida →
-  // sin tomar → responder.
-  if (conversation.status !== "OPEN") {
-    return (
+  // en manos de otro → sin tomar.
+  let state: ReactNode;
+  if (!isOpen) {
+    state = (
       <ReopenConversationNotice
         sessionId={conversation.id}
         windowExpiresAt={conversation.windowExpiresAt}
       />
     );
-  }
-  if (!isWindowOpen(conversation.windowExpiresAt)) {
-    return <InboxWindowNotice />;
-  }
-
-  const heldByMe =
-    conversation.control === "HUMAN" && conversation.assignedUserId === user?.userId;
-  if (!heldByMe) {
-    return (
-      <div className="flex flex-col gap-2 px-3 pb-2 pt-3">
+  } else if (!windowOpen) {
+    state = <InboxWindowNotice />;
+  } else if (conversation.control === "HUMAN") {
+    // La atiende otro operador: el escritorio no ofrece tomarla (solo
+    // liberar o reasignar, que viven en la hoja de acciones).
+    state = (
+      <p className="px-3 pt-3 text-center text-[13px] text-slate-500">
+        {t("mobile.heldByOther", { name: conversation.assignedTo?.name ?? "—" })}
+      </p>
+    );
+  } else {
+    state = (
+      <div className="flex flex-col gap-2 px-3 pt-3">
         <p className="text-center text-[13px] text-slate-500">
           {t("composer.takeoverRequired")}
         </p>
@@ -191,17 +229,29 @@ function ThreadFooter({ conversation }: { conversation: ConversationDetail }) {
     );
   }
 
-  return <MobileComposer conversation={conversation} />;
+  return (
+    <div className="flex flex-col gap-2 pb-2">
+      {state}
+      {noteButton && <div className="px-3">{noteButton}</div>}
+    </div>
+  );
 }
 
-function MobileComposer({ conversation }: { conversation: ConversationDetail }) {
+interface MobileComposerProps {
+  conversation: ConversationDetail;
+  canNote: boolean;
+  /** Solo nota interna (la conversación no está en mis manos). */
+  noteOnly?: boolean;
+  onCancelNote?: () => void;
+}
+
+function MobileComposer({ conversation, canNote, noteOnly, onCancelNote }: MobileComposerProps) {
   const t = useTranslations("inbox");
-  const { hasPermission } = useMyPermissions();
-  const [noteMode, setNoteMode] = useState(false);
+  const [noteToggle, setNoteToggle] = useState(false);
+  const noteMode = noteOnly || noteToggle;
   const [text, setText] = useState("");
   const sendMessage = useSendConversationMessage(conversation.id);
   const addNote = useAddConversationNote(conversation.id);
-  const canNote = hasPermission("conversation.note");
   const pending = noteMode ? addNote.isPending : sendMessage.isPending;
   const placeholder = noteMode ? t("mobile.notePlaceholder") : t("composer.placeholder");
 
@@ -209,7 +259,15 @@ function MobileComposer({ conversation }: { conversation: ConversationDetail }) 
     const trimmed = text.trim();
     if (!trimmed || pending) return;
     if (noteMode) {
-      addNote.mutate({ text: trimmed }, { onSuccess: () => setText("") });
+      addNote.mutate(
+        { text: trimmed },
+        {
+          onSuccess: () => {
+            setText("");
+            onCancelNote?.();
+          },
+        }
+      );
     } else {
       sendMessage.mutate({ text: trimmed });
       setText("");
@@ -227,7 +285,7 @@ function MobileComposer({ conversation }: { conversation: ConversationDetail }) 
         <button
           type="button"
           aria-pressed={noteMode}
-          onClick={() => setNoteMode(!noteMode)}
+          onClick={() => (noteOnly ? onCancelNote?.() : setNoteToggle(!noteToggle))}
           className={cn(
             "flex h-[30px] items-center gap-1.5 self-start rounded-full border bg-white px-2.5 text-xs font-semibold",
             noteMode ? "border-amber-500 text-amber-800" : "border-slate-200 text-slate-600"
@@ -281,16 +339,35 @@ function ThreadActions({ conversation, open, onOpenChange }: ThreadActionsProps)
   const close = useCloseConversation(conversation.id);
 
   const isOpen = conversation.status === "OPEN";
+  // Las acciones que abren un diálogo esperan a que la hoja termine de
+  // cerrarse (`onClosed`), con un respaldo por si la animación no avisa
+  // (movimiento reducido); corren una sola vez. Las demás, al toque.
+  const afterCloseRef = useRef<(() => void) | null>(null);
+  const runAfterClose = () => {
+    const action = afterCloseRef.current;
+    afterCloseRef.current = null;
+    action?.();
+  };
   const pick = (action: () => void) => () => {
     onOpenChange(false);
     action();
   };
+  const pickThenOpen = (open: () => void) => () => {
+    afterCloseRef.current = open;
+    onOpenChange(false);
+    window.setTimeout(runAfterClose, 500);
+  };
 
   return (
     <>
-      <BottomSheet open={open} onOpenChange={onOpenChange} title={t("mobile.actions")}>
+      <BottomSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title={t("mobile.actions")}
+        onClosed={runAfterClose}
+      >
         {isOpen && hasPermission("conversation.assign") && (
-          <BottomSheetItem icon={UserPlus} onSelect={pick(() => setAssignOpen(true))}>
+          <BottomSheetItem icon={UserPlus} onSelect={pickThenOpen(() => setAssignOpen(true))}>
             {t("mobile.assignOther")}
           </BottomSheetItem>
         )}
@@ -325,7 +402,7 @@ function ThreadActions({ conversation, open, onOpenChange }: ThreadActionsProps)
           </BottomSheetItem>
         )}
         {isOpen && hasPermission("conversation.close") && (
-          <BottomSheetItem icon={XCircle} destructive onSelect={pick(() => setCloseOpen(true))}>
+          <BottomSheetItem icon={XCircle} destructive onSelect={pickThenOpen(() => setCloseOpen(true))}>
             {t("mobile.closeConversation")}
           </BottomSheetItem>
         )}

@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 /** Orden rápido de la lista en el teléfono (la tabla ordena por columnas). */
 const MOBILE_SORTS = {
@@ -72,6 +73,9 @@ export default function CustomersPage() {
   const limit = 10;
 
   const [mobileSort, setMobileSort] = useState<MobileSort | null>(null);
+  // El orden rápido solo existe en el teléfono: al pasar a la tabla (girar
+  // la tablet) deja de aplicarse, porque ahí no hay control para quitarlo.
+  const isMobile = useIsMobile();
 
   // Estado para sede seleccionada
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
@@ -92,7 +96,7 @@ export default function CustomersPage() {
   } = useCustomers({
     page,
     limit,
-    ...(mobileSort ? MOBILE_SORTS[mobileSort] : {}),
+    ...(isMobile && mobileSort ? MOBILE_SORTS[mobileSort] : {}),
     businessId: selectedBusinessId || undefined,
     branchId: effectiveBranchId || undefined,
   });

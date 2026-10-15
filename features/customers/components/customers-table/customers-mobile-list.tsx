@@ -30,7 +30,7 @@ export function CustomersMobileList({ data }: { data: CustomerWithMetrics[] }) {
             <InitialsAvatar name={customer.name} seed={customer.id} />
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="truncate text-[15px] font-semibold text-slate-900">
-                {customer.name ?? t("table.noName")}
+                {customer.name?.trim() || t("table.noName")}
               </span>
               <span className="truncate text-xs text-slate-500">
                 {customer.phoneNumber} · {formatRelativeDate(customer.lastOrderAt, t)}

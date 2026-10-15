@@ -22,6 +22,7 @@ import { InboxMobileList } from "@/features/conversations/components/inbox/inbox
 import { InboxMobileThread } from "@/features/conversations/components/inbox/inbox-mobile-thread";
 import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
 import { useIsBelowDesktop } from "@/hooks/useIsMobile";
+import { useUrlParamState } from "@/hooks/useUrlParamState";
 import type { InboxTab } from "@/features/conversations/components/inbox/inbox-tabs";
 import type { GetConversationsParams } from "@/features/conversations/types";
 
@@ -50,15 +51,17 @@ export default function InboxPage() {
 
   const [activeTab, setActiveTab] = useState<InboxTab>("waiting");
   const [search, setSearch] = useState("");
-  // Deep-link `?session=<id>` (ej. "Abrir conversación" desde el detalle del
-  // cliente), leído en el inicializador. No hay riesgo de hidratación: el
-  // dashboard no se renderiza en el servidor (AuthProvider muestra el spinner
-  // hasta restaurar la sesión).
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(() =>
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("session")
-      : null
-  );
+  // Teléfono y tablet vertical (< lg): una pantalla a la vez — la lista, o
+  // el hilo a pantalla completa (diseño móvil).
+  const isBelowDesktop = useIsBelowDesktop();
+
+  // El hilo abierto vive en `?session=<id>`: sirve de deep-link ("Abrir
+  // conversación" desde el detalle del cliente) y, en el teléfono, abrirlo
+  // agrega una entrada al historial para que el atrás del sistema vuelva a
+  // la lista en vez de salir del Inbox.
+  const [sessionParam, openSession, closeSession] = useUrlParamState("session");
+  const selectSession = (sessionId: string) =>
+    openSession(sessionId, { push: isBelowDesktop });
 
   // Ajuste de estado durante el render (no un useEffect, mismo patrón que
   // la página de "sin pedido" de Fase B): sin esto, un SUPER_ADMIN que
@@ -66,19 +69,23 @@ export default function InboxPage() {
   // abierto se queda con un sessionId de OTRO negocio pasado al panel.
   const effectiveBusinessId = useEffectiveBusinessId();
   const [prevBusinessId, setPrevBusinessId] = useState(effectiveBusinessId);
+  const [staleSessionId, setStaleSessionId] = useState<string | null>(null);
   if (effectiveBusinessId !== prevBusinessId) {
     setPrevBusinessId(effectiveBusinessId);
-    setSelectedSessionId(null);
+    setStaleSessionId(sessionParam);
   }
-
-  // Teléfono y tablet vertical (< lg): una pantalla a la vez — la lista, o
-  // el hilo a pantalla completa (diseño móvil).
-  const isBelowDesktop = useIsBelowDesktop();
+  const selectedSessionId = sessionParam !== staleSessionId ? sessionParam : null;
 
   // El socket lo abre DashboardRealtime (layout del dashboard).
   const isConnected = useConversationsConnected();
   const { data: summary } = useInboxSummary(canViewInbox);
-  const { data: conversations, isLoading, isAllBusinessesSelected } =
+  const {
+    data: conversations,
+    isLoading,
+    isError,
+    refetch,
+    isAllBusinessesSelected,
+  } =
     useInboxConversations(
       { ...tabFilters(activeTab), q: search || undefined },
       isConnected,
@@ -147,8 +154,10 @@ export default function InboxPage() {
           summary={summary}
           conversations={conversations}
           isLoading={isLoading}
+          isError={isError}
+          onRetry={() => refetch()}
           isConnected={isConnected}
-          onSelect={setSelectedSessionId}
+          onSelect={selectSession}
           onSearch={setSearch}
         />
         <ConversationsMobileNav />
@@ -156,7 +165,7 @@ export default function InboxPage() {
           <InboxMobileThread
             key={selectedSessionId}
             sessionId={selectedSessionId}
-            onBack={() => setSelectedSessionId(null)}
+            onBack={closeSession}
           />
         )}
       </DashboardLayout>
@@ -203,7 +212,7 @@ export default function InboxPage() {
               conversations={conversations}
               isLoading={isLoading}
               selectedSessionId={selectedSessionId}
-              onSelect={setSelectedSessionId}
+              onSelect={selectSession}
               onSearch={setSearch}
             />
           }

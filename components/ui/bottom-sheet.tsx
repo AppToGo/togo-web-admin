@@ -14,6 +14,12 @@ interface BottomSheetProps {
   onOpenChange: (open: boolean) => void;
   /** Nombre accesible de la hoja (no se muestra). */
   title: string;
+  /**
+   * Al terminar de cerrarse. Para abrir un diálogo desde una opción: si se
+   * abre mientras la hoja todavía se cierra, el cierre de vaul y la
+   * apertura del diálogo se pisan (foco, pointer-events del body).
+   */
+  onClosed?: () => void;
   children: React.ReactNode;
 }
 
@@ -21,12 +27,16 @@ export function BottomSheet({
   open,
   onOpenChange,
   title,
+  onClosed,
   children,
 }: BottomSheetProps) {
   return (
     <DrawerPrimitive.Root
       open={open}
       onOpenChange={onOpenChange}
+      onAnimationEnd={(isOpen) => {
+        if (!isOpen) onClosed?.();
+      }}
       direction="bottom"
     >
       <DrawerPrimitive.Portal>

@@ -37,6 +37,7 @@ import {
 } from "@/features/conversations/components/conversations-mobile";
 import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
 import { useIsBelowDesktop } from "@/hooks/useIsMobile";
+import { useUrlParamState } from "@/hooks/useUrlParamState";
 
 /**
  * Outcomes que califican como "sin pedido" (§1.1 del plan Fase B, backend
@@ -140,6 +141,11 @@ export default function ConversationsWithoutOrderPage() {
   // Teléfono y tablet vertical (< lg): lista de tarjetas y el hilo a
   // pantalla completa en vez de la tabla y el diálogo (diseño móvil).
   const isBelowDesktop = useIsBelowDesktop();
+  // En el teléfono la conversación abierta vive en `?conversation=<id>`:
+  // abrirla agrega una entrada al historial y el atrás del sistema vuelve a
+  // la lista. En escritorio es el diálogo, con estado local.
+  const [conversationParam, openConversation, closeConversation] =
+    useUrlParamState("conversation");
 
   if (!hasBusiness && !isSuperAdmin) {
     return (
@@ -193,7 +199,7 @@ export default function ConversationsWithoutOrderPage() {
   }
 
   if (isBelowDesktop) {
-    const selected = conversations.find((item) => item.id === selectedSessionId);
+    const selected = conversations.find((item) => item.id === conversationParam);
     return (
       <DashboardLayout>
         <ConversationsMobileList
@@ -208,14 +214,14 @@ export default function ConversationsWithoutOrderPage() {
           isError={isError}
           pagination={pagination}
           onPageChange={setPage}
-          onSelect={setSelectedSessionId}
+          onSelect={(id) => openConversation(id, { push: true })}
         />
         <ConversationsMobileNav />
         {selected && (
           <ConversationMobileReadonly
             key={selected.id}
             conversation={selected}
-            onBack={handleCloseDialog}
+            onBack={closeConversation}
           />
         )}
       </DashboardLayout>

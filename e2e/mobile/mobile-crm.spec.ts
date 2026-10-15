@@ -1,7 +1,10 @@
 import { test, expect, type Page } from "playwright/test";
 import { mockLoginSuccess } from "../helpers/mock-api";
 import { mockOrdersDashboard } from "../helpers/mock-orders-api";
-import { mockConversationsApi } from "../helpers/mock-conversations-api";
+import {
+  conversationDetail,
+  mockConversationsApi,
+} from "../helpers/mock-conversations-api";
 import { mockBranches } from "../dashboard/dashboard";
 import {
   customer,
@@ -205,6 +208,71 @@ test.describe("Inbox en el teléfono", () => {
     expect((await note).postDataJSON()).toMatchObject({ text: "Cliente frecuente" });
   });
 
+  test("atendida por otro operador: no ofrece tomarla, sí la nota interna", async ({
+    page,
+  }) => {
+    await login(page);
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (route.request().method() === "GET" && url.pathname.endsWith("/conversations/sess-a")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ...conversationDetail("sess-a"),
+            control: "HUMAN",
+            assignedUserId: "other-operator",
+            assignedTo: { id: "other-operator", name: "Operadora Dos" },
+          }),
+        });
+      }
+      return route.fallback();
+    });
+    await page.goto("/es/dashboard/inbox");
+    await page.getByTestId("inbox-mobile-list").getByText("Camila Torres").click();
+
+    const thread = page.getByTestId("inbox-mobile-thread");
+    await expect(thread.getByText("La está atendiendo Operadora Dos.")).toBeVisible();
+    await expect(thread.getByRole("button", { name: "Tomar conversación" })).toHaveCount(0);
+
+    const note = page.waitForRequest(
+      (request) => request.method() === "POST" && request.url().includes("/sess-a/notes")
+    );
+    await thread.getByRole("button", { name: "Nota interna" }).click();
+    await thread.getByRole("textbox").fill("Avisar a la operadora");
+    await thread.getByRole("button", { name: "Agregar nota" }).click();
+    expect((await note).postDataJSON()).toMatchObject({ text: "Avisar a la operadora" });
+  });
+
+  test("el atrás del navegador cierra el hilo y vuelve a la lista", async ({ page }) => {
+    await login(page);
+    await page.goto("/es/dashboard/inbox");
+    await page.getByTestId("inbox-mobile-list").getByText("Camila Torres").click();
+    await expect(page.getByTestId("inbox-mobile-thread")).toBeVisible();
+    await expect(page).toHaveURL(/session=sess-a/);
+
+    await page.goBack();
+    await expect(page.getByTestId("inbox-mobile-thread")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/dashboard\/inbox\/?$/);
+    await expect(page.getByTestId("inbox-mobile-list")).toBeVisible();
+  });
+
+  test("si la lista no carga, muestra el error y no 'sin conversaciones'", async ({ page }) => {
+    await login(page);
+    await page.route("**/v1/**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname.endsWith("/conversations")) {
+        return route.fulfill({ status: 500, contentType: "application/json", body: "{}" });
+      }
+      return route.fallback();
+    });
+    await page.goto("/es/dashboard/inbox");
+
+    const list = page.getByTestId("inbox-mobile-list");
+    await expect(list.getByRole("alert")).toContainText("No se pudieron cargar", { timeout: 20_000 });
+    await expect(list.getByText("No hay conversaciones en esta pestaña")).toHaveCount(0);
+  });
+
   test("la barra inferior lleva a Sin pedido y al embudo", async ({ page }) => {
     await login(page);
     await page.goto("/es/dashboard/inbox");
@@ -242,5 +310,27 @@ test.describe("Sin pedido en el teléfono", () => {
     );
     // Solo lectura: no hay redactor.
     await expect(screen.getByRole("textbox")).toHaveCount(0);
+
+    // El atrás del navegador vuelve a la lista.
+    await page.goBack();
+    await expect(page.getByTestId("conversation-mobile-readonly")).toHaveCount(0);
+    await expect(list).toBeVisible();
+  });
+});
+
+test.describe("Inbox en escritorio", () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test("elegir una conversación abre el panel sin sumar historial", async ({ page }) => {
+    await login(page);
+    await page.goto("/es/dashboard/inbox");
+    const before = await page.evaluate(() => window.history.length);
+
+    await page.getByText("Julián Mora").first().click();
+    await expect(page).toHaveURL(/session=sess-b/);
+    await expect(page.getByPlaceholder("Escribí un mensaje...")).toBeVisible();
+    await page.getByText("Camila Torres").first().click();
+    await expect(page).toHaveURL(/session=sess-a/);
+    expect(await page.evaluate(() => window.history.length)).toBe(before);
   });
 });
