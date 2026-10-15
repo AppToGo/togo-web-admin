@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowRight, Headset, MessagesSquare } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
+import { useCurrentUser } from '@/features/auth/stores/auth.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
 import { useConversationFunnel } from '@/features/conversations/hooks/useConversationFunnel';
 import { formatRate } from '@/features/conversations/components/conversation-funnel/funnel-format';
@@ -11,9 +12,6 @@ import { useDashboardBranchId } from '../../stores/branch-filter.store';
 import { CardSkeleton } from '../loading/CardSkeleton';
 import { DashboardCardHeader } from '../DashboardCardHeader';
 import { SegmentedBreakdown } from './SegmentedBreakdown';
-
-/** Resultados que no son pedido, abandono ni conversación abierta. */
-const OTHER_OUTCOMES = ['SUPPORT', 'NO_INTENT', 'SPAM', 'UNSET'];
 
 /**
  * Resumen del embudo del bot (conversación → pedido) con el mismo período
@@ -24,15 +22,19 @@ export function BotConversationsCard() {
   const t = useTranslations('dashboard.charts.botConversations');
   const range = useDateFilterRange();
   const branchId = useDashboardBranchId();
-  const { data, isLoading, isError } = useConversationFunnel({
-    dateFrom: range.from,
-    dateTo: range.to,
-  });
+  // Mismo negocio que los KPIs y las demás tarjetas, no el del selector de
+  // SUPER_ADMIN: si no, la tarjeta podría mostrar otro negocio.
+  const businessId = useCurrentUser()?.businessId ?? undefined;
+  const { data, isLoading, isError } = useConversationFunnel(
+    { dateFrom: range.from, dateTo: range.to },
+    { businessId },
+  );
 
   if (isLoading) return <CardSkeleton className="h-80" />;
 
   const sessions = data?.sessions;
   const outcome = (key: string) => sessions?.byOutcome[key] ?? 0;
+  const known = outcome('ORDER_PLACED') + outcome('OPEN') + outcome('ABANDONED');
   const segments = [
     {
       key: 'ORDER_PLACED',
@@ -53,9 +55,11 @@ export function BotConversationsCard() {
       colorClass: 'bg-amber-400',
     },
     {
+      // Todo lo demás (soporte, sin intención, spam y cualquier resultado
+      // nuevo del backend), para que la barra siempre sume el total.
       key: 'OTHER',
       label: t('other'),
-      count: OTHER_OUTCOMES.reduce((sum, key) => sum + outcome(key), 0),
+      count: Math.max((sessions?.total ?? 0) - known, 0),
       colorClass: 'bg-slate-300',
     },
   ];
@@ -70,7 +74,9 @@ export function BotConversationsCard() {
         }
       />
       <CardContent className="flex flex-1 flex-col gap-4">
-        {isError || !sessions ? (
+        {!businessId ? (
+          <p className="text-sm text-slate-500">{t('noBusiness')}</p>
+        ) : isError || !sessions ? (
           <p className="text-sm text-slate-500">{t('error')}</p>
         ) : sessions.total === 0 ? (
           <p className="text-sm text-slate-500">{t('empty')}</p>

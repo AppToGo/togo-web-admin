@@ -11,7 +11,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
 import {
   Table,
   TableBody,
@@ -21,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ConversationFunnel } from "../../types";
-import { formatRate, ratio, useFunnelStateLabel } from "./funnel-format";
+import { FUNNEL_TILE, formatRate, ratio, useFunnelStateLabel } from "./funnel-format";
 
 /** Colores de las series; los mismos tonos que los badges de resultado. */
 const SERIES = {
@@ -69,13 +71,12 @@ export function FunnelUnderstandingCard({
   }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <p className="text-sm text-slate-500">
-          {t("subtitle", { turns: totals.turns })}
-        </p>
-      </CardHeader>
+    <Card variant="glass">
+      <DashboardCardHeader
+        icon={Brain}
+        title={t("title")}
+        subtitle={t("subtitle", { turns: totals.turns })}
+      />
       <CardContent className="space-y-6">
         {totals.turns === 0 ? (
           <p className="text-sm text-slate-500">{t("empty")}</p>
@@ -85,7 +86,7 @@ export function FunnelUnderstandingCard({
               {tiles.map((tile) => (
                 <div
                   key={tile.key}
-                  className="rounded-lg border border-slate-200 p-4"
+                  className={FUNNEL_TILE}
                 >
                   <p className="text-sm text-slate-500">
                     {t(`tiles.${tile.key}.title`)}
@@ -93,7 +94,7 @@ export function FunnelUnderstandingCard({
                   <p className="text-2xl font-bold text-slate-900 mt-1">
                     {formatRate(tile.value)}
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {t(`tiles.${tile.key}.description`, { count: tile.count })}
                   </p>
                 </div>
@@ -107,11 +108,16 @@ export function FunnelUnderstandingCard({
                     data={chartData}
                     margin={{ top: 5, right: 16, left: 0, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e2e8f0"
+                      vertical={false}
+                    />
                     <XAxis
                       dataKey="date"
                       tick={{ fontSize: 12, fill: "#64748b" }}
                       tickLine={false}
+                      axisLine={{ stroke: "#e2e8f0" }}
                     />
                     <YAxis
                       unit="%"
@@ -120,7 +126,15 @@ export function FunnelUnderstandingCard({
                       axisLine={false}
                       width={40}
                     />
-                    <Tooltip formatter={(value) => `${value}%`} />
+                    <Tooltip
+                      formatter={(value) => `${value}%`}
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid #e2e8f0",
+                        boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                        fontSize: 13,
+                      }}
+                    />
                     <Legend
                       iconSize={10}
                       wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
@@ -143,7 +157,7 @@ export function FunnelUnderstandingCard({
               </div>
             )}
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-card bg-white/60">
               <Table>
                 <TableHeader>
                   <TableRow>

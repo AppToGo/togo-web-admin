@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { useLinkStatus } from "next/link";
-import { Filter, Inbox, MessageCircle, Banknote } from "lucide-react";
+import { Filter, History, Inbox, MessageCircle, Banknote } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -196,6 +196,57 @@ export function Sidebar({
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
+    // Las pantallas de conversaciones van juntas, después de Pedidos (y
+    // Caja): el Inbox es tan operativo como el tablero.
+    const conversationScreens: NavigationItem[] = [
+      ...(canViewInbox
+        ? [
+            {
+              name: t("sidebar.inbox"),
+              href: INBOX_HREF,
+              icon: Inbox,
+              badge: inboxAttentionCount,
+            },
+          ]
+        : []),
+      ...(canViewConversations
+        ? [
+            {
+              // En el escritorio va dentro del grupo "Conversaciones":
+              // ahí se llama "Historial" para no repetir el nombre.
+              name: isBelowDesktop
+                ? t("sidebar.conversations")
+                : t("sidebar.conversationHistory"),
+              href: "/dashboard/conversations",
+              icon: isBelowDesktop ? MessageCircle : History,
+            },
+          ]
+        : []),
+      ...(canViewConversationFunnel
+        ? [
+            {
+              name: t("sidebar.conversationFunnel"),
+              href: "/dashboard/conversation-funnel",
+              icon: Filter,
+            },
+          ]
+        : []),
+    ];
+    // Escritorio: un grupo "Conversaciones" con submenú. Teléfono y tablet
+    // las reciben sueltas: flattenForPhone ya las junta en una sola entrada.
+    const conversationItems: NavigationItem[] =
+      !isBelowDesktop && conversationScreens.length > 1
+        ? [
+            {
+              name: t("sidebar.conversations"),
+              href: conversationScreens[0].href,
+              icon: MessageCircle,
+              badge: inboxAttentionCount,
+              children: conversationScreens,
+            },
+          ]
+        : conversationScreens;
+
     const items: NavigationItem[] = [
       {
         name: t("sidebar.orders"),
@@ -215,6 +266,7 @@ export function Sidebar({
             },
           ]
         : []),
+      ...conversationItems,
       {
         name: t("sidebar.dashboard"),
         href: "/dashboard",
@@ -225,34 +277,6 @@ export function Sidebar({
         href: "/dashboard/customers",
         icon: UsersIcon,
       },
-      ...(canViewInbox
-        ? [
-            {
-              name: t("sidebar.inbox"),
-              href: "/dashboard/inbox",
-              icon: Inbox,
-              badge: inboxAttentionCount,
-            },
-          ]
-        : []),
-      ...(canViewConversations
-        ? [
-            {
-              name: t("sidebar.conversations"),
-              href: "/dashboard/conversations",
-              icon: MessageCircle,
-            },
-          ]
-        : []),
-      ...(canViewConversationFunnel
-        ? [
-            {
-              name: t("sidebar.conversationFunnel"),
-              href: "/dashboard/conversation-funnel",
-              icon: Filter,
-            },
-          ]
-        : []),
       {
         name: t("sidebar.catalog"),
         href: "/dashboard/catalog",
@@ -624,6 +648,15 @@ function CollapsibleNavItem({
     linkChildren.some(
       (child) => normalizedPathname === normalizePath(child.href)
     ) || actionChildren.some((child) => child.active);
+  // Colapsado solo se ve el ícono del grupo: debe marcarse en cualquiera de
+  // sus pantallas, no solo en la del `href` del padre (en "Conversaciones"
+  // el padre apunta al Inbox, hermano de Historial y Embudo, no prefijo).
+  const isGroupActive =
+    isParentActive ||
+    isAnyChildActive ||
+    linkChildren.some((child) =>
+      normalizedPathname.startsWith(`${normalizePath(child.href)}/`)
+    );
 
   // If no children, render as simple Link
   if (!hasChildren) {
@@ -679,7 +712,7 @@ function CollapsibleNavItem({
             className={cn(
               "relative flex w-full items-center rounded-card text-sm font-medium transition-all duration-200",
               "justify-center px-3 py-3",
-              isParentActive
+              isGroupActive
                 ? isAdmin
                   ? "bg-purple-50 text-purple-600"
                   : "bg-indigo-50 text-indigo-600"
@@ -691,7 +724,7 @@ function CollapsibleNavItem({
             <item.icon
               className={cn(
                 "w-5 h-5 shrink-0",
-                isParentActive
+                isGroupActive
                   ? isAdmin
                     ? "text-purple-600"
                     : "text-indigo-600"
@@ -739,7 +772,7 @@ function CollapsibleNavItem({
         className={cn(
           "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
           "justify-center px-3 py-3",
-          isParentActive
+          isGroupActive
             ? isAdmin
               ? "bg-purple-50 text-purple-600"
               : "bg-indigo-50 text-indigo-600"
@@ -750,7 +783,7 @@ function CollapsibleNavItem({
         <item.icon
           className={cn(
             "w-5 h-5 shrink-0",
-            isParentActive
+            isGroupActive
               ? isAdmin
                 ? "text-purple-600"
                 : "text-indigo-600"
@@ -790,6 +823,8 @@ function CollapsibleNavItem({
           )}
         />
         <span className="flex-1 text-left">{item.name}</span>
+        {/* Abierto, el contador lo muestra el hijo (Inbox). */}
+        {!isExpanded && <CountBadge count={item.badge} />}
         <ChevronDownIcon
           className={cn(
             "w-4 h-4 shrink-0 transition-transform duration-200",
@@ -835,6 +870,7 @@ function CollapsibleNavItem({
                   )}
                 />
                 <span>{child.name}</span>
+                <NavBadge count={child.badge} />
                 <NavLinkPending />
               </Link>
             );
@@ -879,6 +915,22 @@ function CollapsibleNavItem({
   );
 }
 
+// Contador del encabezado de un grupo (un <button>, fuera de un <Link>, así
+// que sin el estado de carga de NavBadge).
+function CountBadge({ count }: { count?: number }) {
+  if (!count || count <= 0) return null;
+  return (
+    <span className="min-w-5 h-5 flex items-center justify-center bg-destructive text-destructive-foreground text-xs font-bold px-1.5 rounded-badge">
+      {badgeLabel(count)}
+    </span>
+  );
+}
+
+// Mismo tope en el encabezado del grupo y en sus hijos.
+function badgeLabel(count: number): string {
+  return count > 9 ? "9+" : String(count);
+}
+
 // Contador rojo del item (pedidos nuevos, inbox, alertas de pago). Expandido
 // va al final de la fila; colapsado, en la esquina del ícono. Se oculta
 // mientras carga la ruta: el spinner de NavLinkPending ocupa el mismo lugar.
@@ -899,7 +951,7 @@ function NavBadge({
         isCollapsed ? "absolute top-1 right-1" : "ml-auto"
       )}
     >
-      {count > 9 ? "9+" : count}
+      {badgeLabel(count)}
     </span>
   );
 }

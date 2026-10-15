@@ -2,21 +2,15 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useListTime } from "../../hooks/useListTime";
 import type { ConversationListItem } from "../../types";
 
 interface InboxListItemProps {
   conversation: ConversationListItem;
   isSelected: boolean;
   onClick: () => void;
-}
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
 }
 
 function controlDotColor(control: ConversationListItem["control"]): string {
@@ -26,7 +20,37 @@ function controlDotColor(control: ConversationListItem["control"]): string {
     case "PENDING_HUMAN":
       return "bg-amber-500";
     default:
-      return "bg-slate-300";
+      return "bg-slate-400";
+  }
+}
+
+/**
+ * Quién la atiende, en palabras (el punto de color solo no se entiende):
+ * "Pidió un asesor", "La estás atendiendo", "La atiende Juan", "La atiende
+ * el bot" o "Cerrada".
+ */
+function useStatusLine(conversation: ConversationListItem) {
+  const t = useTranslations("inbox.list.status");
+  const user = useCurrentUser();
+
+  if (conversation.status !== "OPEN") {
+    return { text: t("closed"), className: "text-slate-500" };
+  }
+  switch (conversation.control) {
+    case "PENDING_HUMAN":
+      return { text: t("waiting"), className: "font-medium text-amber-700" };
+    case "HUMAN":
+      if (conversation.assignedUserId && conversation.assignedUserId === user?.userId) {
+        return { text: t("mine"), className: "text-emerald-700" };
+      }
+      return conversation.assignedTo?.name
+        ? {
+            text: t("heldBy", { name: conversation.assignedTo.name }),
+            className: "text-slate-500",
+          }
+        : { text: t("unassigned"), className: "text-slate-500" };
+    default:
+      return { text: t("bot"), className: "text-slate-500" };
   }
 }
 
@@ -37,47 +61,48 @@ export function InboxListItem({
 }: InboxListItemProps) {
   const t = useTranslations("inbox");
   const name = conversation.customer?.name ?? null;
-  const preview = conversation.outcome
-    ? t(`control.${conversation.control}`)
-    : conversation.phoneNumber;
+  const status = useStatusLine(conversation);
+  const listTime = useListTime();
+  const time = listTime(conversation.lastMessageAt);
 
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-current={isSelected ? "true" : undefined}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-        isSelected ? "bg-indigo-50" : "hover:bg-slate-50"
+        "flex w-full items-center gap-3 rounded-[20px] border px-3 py-3 text-left transition-colors",
+        isSelected
+          ? "border-indigo-200 bg-white shadow-card"
+          : "border-transparent hover:bg-white/70"
       )}
     >
       <div className="relative shrink-0">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-bold text-white">
-          {initials(name)}
-        </div>
+        <InitialsAvatar
+          name={name}
+          seed={conversation.customer?.id ?? conversation.phoneNumber}
+        />
         <span
           className={cn(
-            "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white",
+            "absolute -bottom-px -right-px h-3 w-3 rounded-full border-2 border-white",
             controlDotColor(conversation.control)
           )}
         />
       </div>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-medium text-slate-900">
-            {name ?? t("list.anonymous")}
+          <span className="truncate text-sm font-semibold text-slate-900">
+            {name ?? conversation.phoneNumber ?? t("list.anonymous")}
           </span>
-          <span className="shrink-0 text-[10px] text-slate-400">
-            {new Date(conversation.lastMessageAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
+          <span className="shrink-0 text-xs text-slate-500">{time}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-xs text-slate-500">{preview}</span>
+          <span className={cn("truncate text-[13px]", status.className)}>
+            {status.text}
+          </span>
           {conversation.unreadCount > 0 && (
-            <span className="shrink-0 rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-badge bg-indigo-600 px-1.5 text-[11px] font-bold text-white">
               {conversation.unreadCount}
             </span>
           )}

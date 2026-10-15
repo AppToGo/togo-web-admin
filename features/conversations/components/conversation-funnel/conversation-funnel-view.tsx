@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { AlertCircle, Info } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CardSkeleton } from "@/features/dashboard/components/loading/CardSkeleton";
 import { useConversationFunnel } from "../../hooks/useConversationFunnel";
 import type { GetConversationFunnelParams } from "../../types";
 import { FunnelKpis } from "./funnel-kpis";
@@ -49,7 +49,7 @@ export function ConversationFunnelView({
       </div>
 
       {noTurnHistory && (
-        <div className="flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-700">
+        <div className="flex items-start gap-2 rounded-card border border-blue-100 bg-blue-50/80 p-4 text-sm text-blue-700">
           <Info className="w-4 h-4 mt-0.5 shrink-0" />
           <p>{t("noTurnHistory")}</p>
         </div>
@@ -74,14 +74,14 @@ export function ConversationFunnelSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-32" />
+          <CardSkeleton key={i} className="h-32" />
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Skeleton className="h-64" />
-        <Skeleton className="h-64" />
+        <CardSkeleton className="h-64" />
+        <CardSkeleton className="h-64" />
       </div>
-      <Skeleton className="h-96" />
+      <CardSkeleton className="h-96" />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { TrendingUp } from 'lucide-react';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import { TrendBadge } from '../kpi/TrendBadge';
 
 export function RevenueChart() {
   const t = useTranslations('dashboard.charts.revenue');
+  const locale = useLocale();
   const { data, isLoading } = useDetailedMetrics();
 
   if (isLoading) return <CardSkeleton className="h-96" />;
@@ -27,10 +28,13 @@ export function RevenueChart() {
 
   const { trendComparison } = data;
 
+  // El backend manda el día a medianoche UTC (`2026-10-15T00:00:00.000Z`):
+  // se formatea en UTC para que en Colombia no se corra al día anterior.
   const chartData = data.revenueChart.map((point) => ({
-    date: new Date(point.date).toLocaleDateString('es-ES', {
+    date: new Date(point.date).toLocaleDateString(locale, {
       day: '2-digit',
       month: 'short',
+      timeZone: 'UTC',
     }),
     amount: point.amount,
   }));
@@ -52,7 +56,11 @@ export function RevenueChart() {
               {formatCurrency(trendComparison.previous)}
             </p>
           </div>
-          <TrendBadge value={trendComparison.growth} />
+          {/* Sin ingresos en el período anterior el backend manda 0 de
+              crecimiento: el badge diría "sin cambio" cuando sí lo hubo. */}
+          {trendComparison.previous > 0 && (
+            <TrendBadge value={trendComparison.growth} />
+          )}
         </div>
       </DashboardCardHeader>
       <CardContent>

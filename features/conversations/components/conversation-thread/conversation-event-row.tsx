@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 import type { ConversationEvent } from "../../types";
 
 interface ConversationEventRowProps {
@@ -19,6 +20,9 @@ const EVENTS_WITH_ACTOR = new Set([
   "RELAY_STARTED",
 ]);
 
+/** Eventos que piden acción o contexto del equipo: van resaltados en ámbar. */
+const HIGHLIGHTED_EVENTS = new Set(["HANDOFF_REQUESTED", "NOTE_ADDED"]);
+
 export function ConversationEventRow({ event }: ConversationEventRowProps) {
   const t = useTranslations("inbox");
   const actorName = event.actor?.name ?? "";
@@ -34,9 +38,16 @@ export function ConversationEventRow({ event }: ConversationEventRowProps) {
 
   return (
     <div className="flex justify-center">
-      <div className="max-w-[90%] rounded-full bg-slate-100 px-3 py-1 text-center text-xs text-slate-500">
+      <div
+        className={cn(
+          "max-w-[90%] rounded-full px-3 py-1 text-center text-xs",
+          HIGHLIGHTED_EVENTS.has(event.type)
+            ? "bg-amber-100/85 font-medium text-amber-800"
+            : "bg-white/70 text-slate-600"
+        )}
+      >
         {label}
-        {noteText && <span className="ml-1 italic text-slate-600">— {noteText}</span>}
+        {noteText && <span className="ml-1 font-normal italic">— {noteText}</span>}
       </div>
     </div>
   );

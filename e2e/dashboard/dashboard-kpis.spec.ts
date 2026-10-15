@@ -38,9 +38,10 @@ test.describe("Dashboard — KPIs", () => {
   test("las cuatro tarjetas muestran valores y tendencias", async ({
     page,
   }) => {
-    // Distinct comparativa values so the KPI revenue ("$ 1.250.000") can't
-    // be confused with the revenue chart's current period ("$ 2.000.000") —
-    // both read the same endpoint but different fields.
+    // The KPI revenue reads `comparativa.recaudoTotal.valor` — the same
+    // base as its growth and as the revenue chart — not
+    // `recaudos.pagadas.total` (1.250.000 in the mock), which adds the
+    // delivery fee and has no previous-period counterpart.
     const body = defaultMetricsBody();
     body.comparativa.recaudoTotal = {
       valor: 2000000,
@@ -61,23 +62,24 @@ test.describe("Dashboard — KPIs", () => {
       await expect(kpis.getByText(title, { exact: true })).toBeVisible();
     }
 
-    // Values from the default mock (12 hoy / 8 completadas,
-    // 1.250.000 COP, 340 totales, ticket 1.250.000 / 300).
+    // Values from the mock (12 hoy / 8 completadas, 2.000.000 COP,
+    // 340 totales, ticket 2.000.000 / 300).
     // Bare numbers are scoped to paragraphs: chart SVG ticks (e.g. peak
     // hour "12") would otherwise match the same text.
     await expect(
       kpis.getByRole("paragraph").filter({ hasText: /^12$/ })
     ).toBeVisible();
     await expect(kpis.getByText("8 completados")).toBeVisible();
-    await expect(kpis.getByText("1.250.000")).toBeVisible();
+    await expect(kpis.getByText("2.000.000")).toBeVisible();
+    await expect(kpis.getByText("1.250.000")).toHaveCount(0);
     await expect(
       kpis.getByRole("paragraph").filter({ hasText: /^340$/ })
     ).toBeVisible();
     await expect(
       kpis.getByText("300 pagados · 40 pendientes")
     ).toBeVisible();
-    // COP has no minor unit so Intl renders zero decimals (4.167).
-    await expect(kpis.getByText("4.167")).toBeVisible();
+    // COP has no minor unit so Intl renders zero decimals (6.667).
+    await expect(kpis.getByText("6.667")).toBeVisible();
 
     // Positive growth renders up-trends with one decimal.
     await expect(kpis.getByText("↑ 25.0%")).toBeVisible();

@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sparkles } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
 import type { ConversationFunnel } from "../../types";
-import { formatRate } from "./funnel-format";
+import { FUNNEL_TILE, formatRate } from "./funnel-format";
 
 interface FunnelParaphraseCardProps {
   paraphrase: NonNullable<ConversationFunnel["paraphrase"]>;
@@ -28,22 +30,21 @@ export function FunnelParaphraseCard({
     t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <p className="text-sm text-slate-500">
-          {t("rate", {
-            rate: formatRate(paraphrase.rates.applied),
-            requested: paraphrase.requested,
-          })}
-        </p>
-      </CardHeader>
+    <Card variant="glass">
+      <DashboardCardHeader
+        icon={Sparkles}
+        title={t("title")}
+        subtitle={t("rate", {
+          rate: formatRate(paraphrase.rates.applied),
+          requested: paraphrase.requested,
+        })}
+      />
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {tiles.map((tile) => (
             <div
               key={tile.key}
-              className="rounded-lg border border-slate-200 p-4"
+              className={FUNNEL_TILE}
             >
               <p className="text-sm text-slate-500">{t(tile.key)}</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">
@@ -87,7 +88,7 @@ function BreakdownList({
   return (
     <div>
       <p className="text-sm font-medium text-slate-700 mb-2">{title}</p>
-      <dl className="divide-y divide-slate-100">
+      <dl className="divide-y divide-white/90">
         {rows.map((row) => (
           <div
             key={row.key}

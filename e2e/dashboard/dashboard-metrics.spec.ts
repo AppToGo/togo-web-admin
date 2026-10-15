@@ -103,6 +103,8 @@ test.describe("Dashboard — métricas detalladas", () => {
     ).toBeVisible();
     await expect(detail.getByText("CASH", { exact: true })).toHaveCount(0);
     await expect(detail.getByText("Período actual")).toBeVisible();
-    await expect(detail.getByText("0.0%", { exact: true })).toBeVisible();
+    // Sin ingresos en el período anterior no hay badge: el 0% de crecimiento
+    // que manda el backend se leería como "sin cambio".
+    await expect(detail.getByText("0.0%", { exact: true })).toHaveCount(0);
   });
 });
