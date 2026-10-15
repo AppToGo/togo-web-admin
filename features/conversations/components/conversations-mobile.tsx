@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { MobileScreen } from "@/components/layout/MobileScreen";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PillGroup } from "@/components/ui/pill-group";
 import { cn } from "@/lib/utils";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { ConversationOutcomeBadge } from "./conversation-outcome-badge";
@@ -71,29 +72,13 @@ export function ConversationsMobileList({
     <div className="-mx-4 -mt-4 flex flex-col sm:-mx-6 sm:-mt-6" data-testid="conversations-mobile-list">
       <div className="flex flex-col gap-2.5 border-b border-slate-200/70 bg-white px-4 pb-3 pt-1 sm:px-6">
         <span className="text-xs text-slate-500">{t("page.subtitle")}</span>
-        <div
-          role="group"
-          aria-label={t("filters.outcome")}
-          className="-mx-4 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6"
-        >
-          {filters.map((filter) => {
-            const on = filter.id === outcomeFilter;
-            return (
-              <button
-                key={filter.id}
-                type="button"
-                aria-pressed={on}
-                onClick={() => onOutcomeChange(filter.id)}
-                className={cn(
-                  "flex h-9 shrink-0 items-center rounded-full px-3 text-[13px] font-semibold transition-colors",
-                  on ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"
-                )}
-              >
-                {filter.label}
-              </button>
-            );
-          })}
-        </div>
+        <PillGroup
+          label={t("filters.outcome")}
+          value={outcomeFilter}
+          onChange={onOutcomeChange}
+          options={filters}
+          className="-mx-4 px-4 sm:-mx-6 sm:px-6"
+        />
       </div>
 
       <div className="flex flex-col gap-2 p-3 sm:px-6">

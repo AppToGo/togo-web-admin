@@ -22,6 +22,7 @@ import {
   useDebouncedInventoryUpdate,
   useUpdateStock,
   useSetAvailability,
+  useUpdateInventory,
 } from "../hooks/useBranchInventory";
 import { BranchInventoryTable } from "./BranchInventoryTable";
 import { BulkInventoryActions } from "./BulkInventoryActions";
@@ -45,6 +46,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { BranchSingleSelector } from "@/features/branches/components";
+import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { InventoryMobileView } from "./InventoryMobileView";
+import type { InventoryItemValues } from "./InventoryItemSheet";
 
 interface BranchInventoryManagerProps {
   readOnly?: boolean;
@@ -246,6 +252,11 @@ export function BranchInventoryManager({
     return mainBranch?.id || branches[0]?.id || "";
   });
   const [globalFilter, setGlobalFilter] = useState("");
+  const isMobile = useIsMobile();
+  // Mismo permiso que el endpoint de disponibilidad; stock y precio de la
+  // sede no tienen permiso propio en la API.
+  const { hasPermission } = useMyPermissions();
+  const canSetAvailability = hasPermission("inventory.set_availability");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activatingProduct, setActivatingProduct] =
     useState<InventoryItem | null>(null);
@@ -296,6 +307,10 @@ export function BranchInventoryManager({
   }, []);
 
   const inventoryFilters: InventoryFiltersType = useMemo(() => {
+    // Teléfono: solo la búsqueda. Los filtros de escritorio no tienen control
+    // ahí y, si quedaron puestos, recortarían la lista sin que se vea.
+    if (isMobile) return { search: globalFilter || undefined, limit: 100 };
+
     // Traduce el par de switches a un booleano tri-state, mismo patrón que
     // sourceFilter -> isFromTemplate en catalog/products/page.tsx
     const isAvailable =
@@ -313,7 +328,7 @@ export function BranchInventoryManager({
       stockStatus: stockFilterToStatuses(stockFilter),
       limit: 100,
     };
-  }, [globalFilter, selectedCategory, selectedSubcategory, availabilityFilter, stockFilter]);
+  }, [isMobile, globalFilter, selectedCategory, selectedSubcategory, availabilityFilter, stockFilter]);
 
   // Queries
   const {
@@ -326,6 +341,7 @@ export function BranchInventoryManager({
   const deactivateMutation = useDeactivateProduct(businessId, selectedBranchId);
   const bulkActivateMutation = useBulkActivate(businessId, selectedBranchId);
   const updateStockMutation = useUpdateStock(businessId, selectedBranchId);
+  const updateInventoryMutation = useUpdateInventory(businessId, selectedBranchId);
   const setAvailabilityMutation = useSetAvailability(
     businessId,
     selectedBranchId
@@ -469,6 +485,70 @@ export function BranchInventoryManager({
     [setAvailabilityMutation]
   );
 
+  // Teléfono: lista propia (diseño móvil) con la misma sede y búsqueda.
+  if (isMobile) {
+    // Sin activar en la sede: se activa con lo editado. Activado: stock y
+    // precio por PATCH y la disponibilidad por su endpoint (con permiso).
+    const saveFromPhone = async (item: InventoryItem, values: InventoryItemValues) => {
+      const productId = item.productVariantId;
+      try {
+        if (!item.isActivated) {
+          await activateMutation.mutateAsync({
+            productId,
+            data: {
+              isAvailable: values.isAvailable,
+              stock: values.stock ?? undefined,
+              priceOverride: values.priceOverride ?? undefined,
+            },
+          });
+          return;
+        }
+        await updateInventoryMutation.mutateAsync({
+          productId,
+          data: { stock: values.stock, priceOverride: values.priceOverride },
+        });
+        if (canSetAvailability && values.isAvailable !== item.isAvailable) {
+          await setAvailabilityMutation.mutateAsync({
+            productId,
+            isAvailable: values.isAvailable,
+          });
+        }
+        toast.success(t("mobile.saved"));
+      } catch (error) {
+        // La activación ya avisa el error con su propio toast.
+        if (item.isActivated) {
+          toast.error(t("mobile.saveError", { error: (error as Error).message }));
+        }
+        throw error;
+      }
+    };
+    const toggleFromPhone = (item: InventoryItem, isAvailable: boolean) => {
+      // Sin activar en la sede, prenderlo es activarlo.
+      if (!item.isActivated) {
+        if (isAvailable) {
+          activateMutation.mutate({ productId: item.productVariantId, data: { isAvailable } });
+        }
+        return;
+      }
+      handleToggleAvailability(item.productVariantId, isAvailable);
+    };
+
+    return (
+      <InventoryMobileView
+        items={items}
+        total={inventoryData?.total ?? items.length}
+        isLoading={isLoading}
+        branchId={selectedBranchId}
+        onBranchChange={setSelectedBranchId}
+        search={globalFilter}
+        onSearchChange={setGlobalFilter}
+        canSetAvailability={canSetAvailability}
+        onToggleAvailability={toggleFromPhone}
+        onSave={saveFromPhone}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -571,6 +651,7 @@ export function BranchInventoryManager({
           onToggleAvailability={handleToggleAvailability}
           debouncedUpdate={queueUpdate}
           readOnly={readOnly}
+          canSetAvailability={canSetAvailability}
           showProductImages={showProductImages}
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}

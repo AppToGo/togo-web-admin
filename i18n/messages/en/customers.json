@@ -58,7 +58,7 @@
     "favoriteProducts": "Favorite products",
     "noOrders": "No orders",
     "noOrdersDescription": "This customer has not placed any orders yet.",
-    "orders": {
+    "ordersTable": {
       "orderId": "Order #",
       "date": "Date",
       "status": "Status",

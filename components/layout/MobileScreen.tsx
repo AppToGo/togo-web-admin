@@ -11,15 +11,11 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HIDDEN_FROM, type HiddenFrom } from "./hidden-from";
 
-/** Desde qué ancho se oculta (y se usa el layout de escritorio). */
-const HIDDEN_FROM = {
-  md: "md:hidden",
-  lg: "lg:hidden",
-} as const;
 
 interface MobileScreenProps {
-  hiddenFrom: keyof typeof HIDDEN_FROM;
+  hiddenFrom: HiddenFrom;
   onBack: () => void;
   backLabel: string;
   /** Centro de la cabecera (nombre, estado…). */

@@ -134,5 +134,36 @@
   "readOnlyDescription": "This page shows the current inventory status by branch. To activate/deactivate products or make catalog changes, go to",
   "manageAvailability": "to manage availability.",
   "productsLink": "Products",
-  "operatorsNote": "Operators can make basic stock adjustments from here."
+  "operatorsNote": "Operators can make basic stock adjustments from here.",
+  "mobile": {
+    "notActivated": "Not activated in this branch yet: saving activates it.",
+    "availableHere": "Available in this branch",
+    "availableHint": "If you turn it off, it is not offered on the branch menu",
+    "availableNoPermission": "You don't have permission to change availability",
+    "availableFor": "{name} available",
+    "stockMinus": "Remove one unit",
+    "stockPlus": "Add one unit",
+    "untrackedOption": "Don't track stock (always available)",
+    "priceHere": "Price in this branch",
+    "priceHint": "Product base price: {price}. Leave it empty to use the base price.",
+    "saving": "Saving…",
+    "save": "Save",
+    "activateAndSave": "Activate in the branch",
+    "saved": "Changes saved",
+    "saveError": "Couldn't save: {error}",
+    "partial": "Showing {shown} of {total}: search for a product to find the rest.",
+    "untracked": "Not tracked",
+    "units": "{count} u.",
+    "unitsLow": "{count} u. · low",
+    "stockFilter": "Filter by status",
+    "filters": {
+      "all": "All",
+      "out": "Out of stock",
+      "low": "Low stock",
+      "off": "Unavailable"
+    },
+    "empty": "No product matches the filter.",
+    "available": "Available",
+    "unavailable": "Unavailable"
+  }
 }
