@@ -1,7 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LogOut } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
 import { Progress } from "@/components/ui/progress";
 import type { ConversationFunnel } from "../../types";
 import { formatRate, ratio, useFunnelStateLabel } from "./funnel-format";
@@ -22,11 +24,12 @@ export function FunnelAbandonmentCard({
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
-      </CardHeader>
+    <Card variant="glass" className="h-full">
+      <DashboardCardHeader
+        icon={LogOut}
+        title={t("title")}
+        subtitle={t("subtitle")}
+      />
       <CardContent>
         {total === 0 ? (
           <p className="text-sm text-slate-500">{t("empty")}</p>
@@ -47,7 +50,7 @@ export function FunnelAbandonmentCard({
                   </div>
                   <Progress
                     value={share * 100}
-                    className="mt-1 [&>div]:bg-amber-400"
+                    className="mt-1.5 h-2.5 bg-white/70 [&>div]:bg-amber-400"
                     aria-label={stateLabel(row.state)}
                   />
                 </li>

@@ -100,18 +100,20 @@ export default function ConversationFunnelPage() {
             </h1>
             <p className="text-slate-500 mt-1 text-sm">{t("page.subtitle")}</p>
           </div>
-          <DateRangeFilter
-            variant="default"
-            showPresets={true}
-            availablePresets={[
-              "today",
-              "yesterday",
-              "week",
-              "last7days",
-              "month",
-              "custom",
-            ]}
-          />
+          <div className="shrink-0">
+            <DateRangeFilter
+              variant="default"
+              showPresets={true}
+              availablePresets={[
+                "today",
+                "yesterday",
+                "week",
+                "last7days",
+                "month",
+                "custom",
+              ]}
+            />
+          </div>
         </div>
 
         <ConversationFunnelView
