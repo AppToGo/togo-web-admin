@@ -142,8 +142,6 @@
   },
   "mobile": {
     "heldByOther": "{name} is handling it.",
-    "loadError": "Couldn't load the conversations.",
-    "retry": "Retry",
     "notePlaceholder": "Internal note (not sent to the customer)…",
     "back": "Back to inbox",
     "actions": "Conversation actions",

@@ -30,6 +30,8 @@ interface InboxMobileListProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   isFetchNextPageError: boolean;
+  /** Cualquier fetch en curso (ver `useLoadMoreOnScroll`). */
+  isFetching: boolean;
   onLoadMore: () => void;
   /** La carga falló: se muestra el error, no "no hay conversaciones". */
   isError: boolean;
@@ -48,6 +50,7 @@ export function InboxMobileList({
   hasNextPage,
   isFetchingNextPage,
   isFetchNextPageError,
+  isFetching,
   onLoadMore,
   isError,
   onRetry,
@@ -66,9 +69,9 @@ export function InboxMobileList({
   }, [debouncedSearch]);
 
   // En el teléfono la lista scrollea con la página: el root es el viewport.
-  const sentinelRef = useLoadMoreOnScroll({
+  const loadMore = useLoadMoreOnScroll({
     hasNextPage,
-    isFetchingNextPage,
+    isFetching,
     hasError: isFetchNextPageError,
     onLoadMore,
     itemCount: conversations.length,
@@ -128,13 +131,15 @@ export function InboxMobileList({
         </div>
       ) : isError ? (
         <div className="mx-6 mt-12 flex flex-col items-center gap-3 text-center" role="alert">
-          <p className="text-[15px] font-medium text-slate-900">{t("mobile.loadError")}</p>
+          <p className="text-[15px] font-medium text-slate-900">{t("list.loadError")}</p>
           <button
             type="button"
             onClick={onRetry}
-            className="h-10 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm"
+            disabled={isFetching}
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm disabled:opacity-60"
           >
-            {t("mobile.retry")}
+            {isFetching && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t("list.retry")}
           </button>
         </div>
       ) : conversations.length === 0 ? (
@@ -201,21 +206,21 @@ export function InboxMobileList({
               </li>
             );
           })}
-          <li ref={sentinelRef} aria-hidden className="h-px" />
+          <li ref={loadMore.sentinelRef} aria-hidden className="h-px" />
           {isFetchingNextPage && (
             <li className="flex justify-center py-3" role="status" aria-label={t("list.loadingMore")}>
               <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
             </li>
           )}
-          {isFetchNextPageError && !isFetchingNextPage && (
+          {loadMore.isStuck && !isFetchingNextPage && (
             <li className="flex flex-col items-center gap-2 py-4 text-center" role="alert">
               <p className="text-sm text-slate-500">{t("list.loadMoreError")}</p>
               <button
                 type="button"
-                onClick={onLoadMore}
+                onClick={loadMore.retry}
                 className="h-9 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm"
               >
-                {t("mobile.retry")}
+                {t("list.retry")}
               </button>
             </li>
           )}

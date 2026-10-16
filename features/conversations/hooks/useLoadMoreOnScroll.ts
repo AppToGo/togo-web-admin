@@ -7,17 +7,18 @@ const LOAD_MORE_ROOT_MARGIN = "200px";
 
 interface UseLoadMoreOnScrollOptions {
   hasNextPage: boolean;
-  isFetchingNextPage: boolean;
   /**
-   * Falló la página siguiente: se deja de observar. Sin esto, al terminar el
-   * fetch fallido el sentinel sigue visible y se re-pide en loop; el
-   * reintento queda en manos del usuario (botón al pie de la lista).
+   * Cualquier fetch de la query en curso (página siguiente o refetch de
+   * todas). No se observa mientras tanto: `fetchNextPage` cancela por
+   * defecto un refetch en curso y se perderían los datos nuevos.
    */
+  isFetching: boolean;
+  /** Falló la página siguiente (`isFetchNextPageError`). */
   hasError: boolean;
   onLoadMore: () => void;
   /** Contenedor que scrollea; sin él se usa el viewport (lista que scrollea con la página). */
   rootRef?: RefObject<HTMLElement | null>;
-  /** Cambia al llegar una página: re-observa por si el sentinel sigue visible. */
+  /** Cambia al llegar datos: re-observa por si el sentinel sigue visible. */
   itemCount: number;
 }
 
@@ -27,19 +28,34 @@ interface UseLoadMoreOnScrollOptions {
  * zona visible se pide la página siguiente. Se re-observa al cambiar la
  * cantidad de items: si la página recién cargada no llena el alto, el
  * sentinel sigue visible y pide otra.
+ *
+ * Si falla la página siguiente queda "trabado" hasta que el usuario toque
+ * Reintentar (`retry`) o cambien los datos (otro filtro, una conversación
+ * nueva). `isFetchNextPageError` solo no alcanza: TanStack lo apaga apenas
+ * empieza cualquier refetch (socket, intervalo sin socket), y con el
+ * sentinel a la vista se volvería a pedir la página rota en cada uno.
  */
 export function useLoadMoreOnScroll({
   hasNextPage,
-  isFetchingNextPage,
+  isFetching,
   hasError,
   onLoadMore,
   rootRef,
   itemCount,
 }: UseLoadMoreOnScrollOptions) {
   const [sentinel, setSentinel] = useState<HTMLElement | null>(null);
+  const [isStuck, setIsStuck] = useState(false);
+  const [prevItemCount, setPrevItemCount] = useState(itemCount);
+
+  // Ajuste de estado durante el render (no un useEffect).
+  if (hasError && !isStuck) setIsStuck(true);
+  if (itemCount !== prevItemCount) {
+    setPrevItemCount(itemCount);
+    if (isStuck && !hasError) setIsStuck(false);
+  }
 
   useEffect(() => {
-    if (!sentinel || !hasNextPage || isFetchingNextPage || hasError) return;
+    if (!sentinel || !hasNextPage || isFetching || isStuck) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) onLoadMore();
@@ -48,7 +64,12 @@ export function useLoadMoreOnScroll({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [sentinel, hasNextPage, isFetchingNextPage, hasError, onLoadMore, rootRef, itemCount]);
+  }, [sentinel, hasNextPage, isFetching, isStuck, onLoadMore, rootRef, itemCount]);
 
-  return setSentinel;
+  const retry = () => {
+    setIsStuck(false);
+    onLoadMore();
+  };
+
+  return { sentinelRef: setSentinel, isStuck, retry };
 }

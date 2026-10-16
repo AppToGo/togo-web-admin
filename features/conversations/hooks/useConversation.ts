@@ -7,7 +7,7 @@ import {
   getConversationById,
   getConversationByOrderId,
 } from "../services/conversation.service";
-import { CONVERSATIONS_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
+import { CONVERSATIONS_KEYS, STALE_TIME, GC_TIME, retryUnlessAuthError } from "./query-keys";
 import type { ConversationDetail } from "../types";
 
 /**
@@ -60,13 +60,7 @@ export function useConversationByOrder(
     enabled: !!orderId && enabled,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
-    retry: (failureCount, error) => {
-      if (isAxiosError(error)) {
-        const status = error.response?.status;
-        if (status === 401 || status === 403) return false;
-      }
-      return failureCount < 3;
-    },
+    retry: retryUnlessAuthError,
   });
 
   return {

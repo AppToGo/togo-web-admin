@@ -142,8 +142,6 @@
   },
   "mobile": {
     "heldByOther": "La está atendiendo {name}.",
-    "loadError": "No se pudieron cargar las conversaciones.",
-    "retry": "Reintentar",
     "notePlaceholder": "Nota interna (no se envía al cliente)…",
     "back": "Volver al inbox",
     "actions": "Acciones de la conversación",

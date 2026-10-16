@@ -40,8 +40,8 @@ export const CONVERSATIONS_KEYS = {
 export const STALE_TIME = 30 * 1000;
 export const GC_TIME = 5 * 60 * 1000;
 
-/** Reintentos máximos de las listas ante errores que no son de auth. */
-const MAX_LIST_RETRIES = 3;
+/** Reintentos máximos de las queries de conversaciones ante errores que no son de auth. */
+const MAX_QUERY_RETRIES = 3;
 
 /** No reintenta 401/403 (sesión o permiso): reintentar no los arregla. */
 export function retryUnlessAuthError(failureCount: number, error: Error): boolean {
@@ -49,5 +49,5 @@ export function retryUnlessAuthError(failureCount: number, error: Error): boolea
     const status = error.response?.status;
     if (status === 401 || status === 403) return false;
   }
-  return failureCount < MAX_LIST_RETRIES;
+  return failureCount < MAX_QUERY_RETRIES;
 }
