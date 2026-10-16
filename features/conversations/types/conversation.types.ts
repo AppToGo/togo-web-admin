@@ -1,3 +1,5 @@
+import type { DateFilterValue } from "@/features/filters/stores";
+
 /**
  * Conversations Feature Types
  *
@@ -219,4 +221,15 @@ export interface GetConversationsParams {
   hasUnread?: boolean;
   /** Búsqueda por nombre de cliente o teléfono. */
   q?: string;
+}
+
+// ─── Filtros del inbox ─────────────────────────────────────────────────
+
+/** Vista del listado del inbox (antes, las pestañas). Selección única. */
+export type InboxView = "all" | "waiting" | "mine" | "unassigned";
+
+export interface InboxFiltersValue {
+  view: InboxView;
+  /** `null` = todas las fechas. */
+  date: DateFilterValue | null;
 }

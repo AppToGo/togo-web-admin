@@ -11,8 +11,14 @@
     "unassigned": "Unassigned",
     "all": "All"
   },
+  "filters": {
+    "title": "Filters",
+    "dateRange": "Period",
+    "view": "Conversations",
+    "allDates": "All dates"
+  },
   "list": {
-    "empty": "No conversations in this tab",
+    "empty": "No conversations match these filters",
     "searchPlaceholder": "Search by name or phone",
     "anonymous": "Anonymous",
     "noSelection": "Pick a conversation from the list to see the thread and reply.",
@@ -29,7 +35,8 @@
       "now": "now",
       "minutes": "{count} min",
       "yesterday": "Yesterday"
-    }
+    },
+    "loadingMore": "Loading more conversations"
   },
   "control": {
     "BOT": "Bot",

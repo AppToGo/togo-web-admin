@@ -3,11 +3,13 @@
 /**
  * Inbox en el teléfono (< lg), según el diseño móvil: buscador, bandejas
  * en pastillas con su contador y filas grandes (avatar, tiempo, estado y no
- * leídos). Tocar una abre el hilo a pantalla completa.
+ * leídos). Tocar una abre el hilo a pantalla completa. Scroll infinito:
+ * llegan de a 20 y el resto se pide al acercarse al final.
  */
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useDebounce } from "@/hooks/shared/useDebounce";
@@ -15,16 +17,19 @@ import { SearchField } from "@/components/ui/search-field";
 import { PillGroup } from "@/components/ui/pill-group";
 import { cn } from "@/lib/utils";
 import { CONTROL_BADGE } from "./control-badge";
-import type { InboxTab } from "./inbox-tabs";
 import { useListTime } from "../../hooks/useListTime";
-import type { ConversationListItem, ConversationSummary } from "../../types";
+import { useLoadMoreOnScroll } from "../../hooks/useLoadMoreOnScroll";
+import type { ConversationListItem, ConversationSummary, InboxView } from "../../types";
 
 interface InboxMobileListProps {
-  activeTab: InboxTab;
-  onTabChange: (tab: InboxTab) => void;
+  view: InboxView;
+  onViewChange: (view: InboxView) => void;
   summary: ConversationSummary | undefined;
   conversations: ConversationListItem[];
   isLoading: boolean;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
   /** La carga falló: se muestra el error, no "no hay conversaciones". */
   isError: boolean;
   onRetry: () => void;
@@ -34,11 +39,14 @@ interface InboxMobileListProps {
 }
 
 export function InboxMobileList({
-  activeTab,
-  onTabChange,
+  view,
+  onViewChange,
   summary,
   conversations,
   isLoading,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
   isError,
   onRetry,
   isConnected,
@@ -55,11 +63,19 @@ export function InboxMobileList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
-  const tabs: Array<{ id: InboxTab; label: string; count?: number }> = [
+  // En el teléfono la lista scrollea con la página: el root es el viewport.
+  const sentinelRef = useLoadMoreOnScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    onLoadMore,
+    itemCount: conversations.length,
+  });
+
+  const tabs: Array<{ id: InboxView; label: string; count?: number }> = [
+    { id: "all", label: t("tabs.all") },
     { id: "waiting", label: t("tabs.waiting"), count: summary?.pendingHuman },
     { id: "mine", label: t("tabs.mine"), count: summary?.mine },
     { id: "unassigned", label: t("tabs.unassigned"), count: summary?.unassigned },
-    { id: "all", label: t("tabs.all") },
   ];
 
   return (
@@ -88,8 +104,8 @@ export function InboxMobileList({
         <PillGroup
           label={t("mobile.trays")}
           variant="tabs"
-          value={activeTab}
-          onChange={onTabChange}
+          value={view}
+          onChange={onViewChange}
           options={tabs}
           className="-mx-4 px-4 sm:-mx-6 sm:px-6"
         />
@@ -169,7 +185,8 @@ export function InboxMobileList({
                       >
                         {t(`control.${conversation.control}`)}
                       </span>
-                      {unread && (
+                      {/* Solo en abiertas: en una cerrada ya no hay nada que responder. */}
+                      {unread && conversation.status === "OPEN" && (
                         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-xs font-bold text-white tabular-nums">
                           {conversation.unreadCount}
                         </span>
@@ -180,6 +197,12 @@ export function InboxMobileList({
               </li>
             );
           })}
+          <li ref={sentinelRef} aria-hidden className="h-px" />
+          {isFetchingNextPage && (
+            <li className="flex justify-center py-3" role="status" aria-label={t("list.loadingMore")}>
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            </li>
+          )}
         </ul>
       )}
     </div>

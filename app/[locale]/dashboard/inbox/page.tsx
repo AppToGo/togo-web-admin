@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Inbox, Lock, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -23,21 +23,45 @@ import { InboxMobileThread } from "@/features/conversations/components/inbox/inb
 import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
 import { useIsBelowDesktop } from "@/hooks/useIsMobile";
 import { useUrlParamState } from "@/hooks/useUrlParamState";
-import type { InboxTab } from "@/features/conversations/components/inbox/inbox-tabs";
-import type { GetConversationsParams } from "@/features/conversations/types";
+import {
+  DEFAULT_INBOX_FILTERS,
+  inboxFiltersToParams,
+} from "@/features/conversations/utils/inbox-filters";
+import type { InboxFiltersValue } from "@/features/conversations/types";
 
-function tabFilters(tab: InboxTab): GetConversationsParams {
-  switch (tab) {
-    case "waiting":
-      return { control: ["PENDING_HUMAN"] };
-    case "mine":
-      return { assignedTo: "me" };
-    case "unassigned":
-      return { control: ["HUMAN"], assignedTo: "unassigned" };
-    case "all":
-    default:
-      return {};
-  }
+/** Aire entre el borde inferior de las cajas del inbox y el de la pantalla. */
+const INBOX_BOTTOM_GAP_PX = 20;
+const INBOX_MIN_HEIGHT_PX = 320;
+
+/**
+ * Alto para que el inbox llegue hasta abajo dejando `INBOX_BOTTOM_GAP_PX`.
+ * Se mide la posición real en vez de restar una constante a `100vh`: arriba
+ * puede haber banners de alto variable (ej. TrialBanner, que se envuelve en
+ * pantallas angostas). Se recalcula al cambiar el tamaño de la ventana o del
+ * documento.
+ */
+function useFillViewportHeight(element: HTMLElement | null): number | undefined {
+  const [height, setHeight] = useState<number>();
+
+  useEffect(() => {
+    if (!element) return;
+    const update = () => {
+      const top = element.getBoundingClientRect().top + window.scrollY;
+      setHeight(
+        Math.max(window.innerHeight - top - INBOX_BOTTOM_GAP_PX, INBOX_MIN_HEIGHT_PX)
+      );
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(document.body);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [element]);
+
+  return height;
 }
 
 export default function InboxPage() {
@@ -49,7 +73,9 @@ export default function InboxPage() {
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
   const canViewInbox = !permissionsLoading && hasPermission("conversation.view");
 
-  const [activeTab, setActiveTab] = useState<InboxTab>("waiting");
+  const [filters, setFilters] = useState<InboxFiltersValue>(DEFAULT_INBOX_FILTERS);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const containerHeight = useFillViewportHeight(container);
   const [search, setSearch] = useState("");
   // Teléfono y tablet vertical (< lg): una pantalla a la vez — la lista, o
   // el hilo a pantalla completa (diseño móvil).
@@ -80,17 +106,19 @@ export default function InboxPage() {
   const isConnected = useConversationsConnected();
   const { data: summary } = useInboxSummary(canViewInbox);
   const {
-    data: conversations,
+    conversations,
     isLoading,
     isError,
     refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
     isAllBusinessesSelected,
-  } =
-    useInboxConversations(
-      { ...tabFilters(activeTab), q: search || undefined },
-      isConnected,
-      canViewInbox
-    );
+  } = useInboxConversations(
+    { ...inboxFiltersToParams(filters), q: search || undefined },
+    isConnected,
+    canViewInbox
+  );
 
   if (!hasBusiness && !isSuperAdmin) {
     return (
@@ -149,11 +177,14 @@ export default function InboxPage() {
     return (
       <DashboardLayout>
         <InboxMobileList
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
+          view={filters.view}
+          onViewChange={(view) => setFilters((prev) => ({ ...prev, view }))}
           summary={summary}
           conversations={conversations}
           isLoading={isLoading}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onLoadMore={fetchNextPage}
           isError={isError}
           onRetry={() => refetch()}
           isConnected={isConnected}
@@ -174,7 +205,13 @@ export default function InboxPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-[calc(100vh-140px)] flex-col gap-4">
+      {/* El -mb anula el padding inferior del <main> (p-4 / sm:p-6): el aire
+          de abajo lo define solo `useFillViewportHeight`. */}
+      <div
+        ref={setContainer}
+        style={{ height: containerHeight }}
+        className="flex h-[calc(100dvh-140px)] flex-col gap-4 -mb-4 sm:-mb-6"
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -213,11 +250,14 @@ export default function InboxPage() {
         <InboxLayout
           list={
             <InboxList
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
+              filters={filters}
+              onFiltersChange={setFilters}
               summary={summary}
               conversations={conversations}
               isLoading={isLoading}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              onLoadMore={fetchNextPage}
               selectedSessionId={selectedSessionId}
               onSelect={selectSession}
               onSearch={setSearch}

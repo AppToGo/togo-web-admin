@@ -11,8 +11,14 @@
     "unassigned": "Sin asignar",
     "all": "Todos"
   },
+  "filters": {
+    "title": "Filtros",
+    "dateRange": "Período",
+    "view": "Conversaciones",
+    "allDates": "Todas las fechas"
+  },
   "list": {
-    "empty": "No hay conversaciones en esta pestaña",
+    "empty": "No hay conversaciones con estos filtros",
     "searchPlaceholder": "Buscar por nombre o teléfono",
     "anonymous": "Anónimo",
     "noSelection": "Elegí una conversación de la lista para ver el hilo y responder.",
@@ -29,7 +35,8 @@
       "now": "ahora",
       "minutes": "{count} min",
       "yesterday": "Ayer"
-    }
+    },
+    "loadingMore": "Cargando más conversaciones"
   },
   "control": {
     "BOT": "Bot",
