@@ -10,7 +10,7 @@ import { type Page } from "playwright/test";
 const now = Date.now();
 const minutesAgo = (m: number) => new Date(now - m * 60_000).toISOString();
 
-function session(
+export function session(
   id: string,
   overrides: Record<string, unknown> = {}
 ): Record<string, unknown> {

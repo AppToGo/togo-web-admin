@@ -3,11 +3,13 @@
 /**
  * Inbox en el teléfono (< lg), según el diseño móvil: buscador, bandejas
  * en pastillas con su contador y filas grandes (avatar, tiempo, estado y no
- * leídos). Tocar una abre el hilo a pantalla completa.
+ * leídos). Tocar una abre el hilo a pantalla completa. Scroll infinito:
+ * llegan de a 20 y el resto se pide al acercarse al final.
  */
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useDebounce } from "@/hooks/shared/useDebounce";
@@ -15,16 +17,22 @@ import { SearchField } from "@/components/ui/search-field";
 import { PillGroup } from "@/components/ui/pill-group";
 import { cn } from "@/lib/utils";
 import { CONTROL_BADGE } from "./control-badge";
-import type { InboxTab } from "./inbox-tabs";
 import { useListTime } from "../../hooks/useListTime";
-import type { ConversationListItem, ConversationSummary } from "../../types";
+import { useLoadMoreOnScroll } from "../../hooks/useLoadMoreOnScroll";
+import type { ConversationListItem, ConversationSummary, InboxView } from "../../types";
 
 interface InboxMobileListProps {
-  activeTab: InboxTab;
-  onTabChange: (tab: InboxTab) => void;
+  view: InboxView;
+  onViewChange: (view: InboxView) => void;
   summary: ConversationSummary | undefined;
   conversations: ConversationListItem[];
   isLoading: boolean;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  isFetchNextPageError: boolean;
+  /** Cualquier fetch en curso (ver `useLoadMoreOnScroll`). */
+  isFetching: boolean;
+  onLoadMore: () => void;
   /** La carga falló: se muestra el error, no "no hay conversaciones". */
   isError: boolean;
   onRetry: () => void;
@@ -34,11 +42,16 @@ interface InboxMobileListProps {
 }
 
 export function InboxMobileList({
-  activeTab,
-  onTabChange,
+  view,
+  onViewChange,
   summary,
   conversations,
   isLoading,
+  hasNextPage,
+  isFetchingNextPage,
+  isFetchNextPageError,
+  isFetching,
+  onLoadMore,
   isError,
   onRetry,
   isConnected,
@@ -55,11 +68,20 @@ export function InboxMobileList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
-  const tabs: Array<{ id: InboxTab; label: string; count?: number }> = [
+  // En el teléfono la lista scrollea con la página: el root es el viewport.
+  const loadMore = useLoadMoreOnScroll({
+    hasNextPage,
+    isFetching,
+    hasError: isFetchNextPageError,
+    onLoadMore,
+    itemCount: conversations.length,
+  });
+
+  const tabs: Array<{ id: InboxView; label: string; count?: number }> = [
+    { id: "all", label: t("tabs.all") },
     { id: "waiting", label: t("tabs.waiting"), count: summary?.pendingHuman },
     { id: "mine", label: t("tabs.mine"), count: summary?.mine },
     { id: "unassigned", label: t("tabs.unassigned"), count: summary?.unassigned },
-    { id: "all", label: t("tabs.all") },
   ];
 
   return (
@@ -88,8 +110,8 @@ export function InboxMobileList({
         <PillGroup
           label={t("mobile.trays")}
           variant="tabs"
-          value={activeTab}
-          onChange={onTabChange}
+          value={view}
+          onChange={onViewChange}
           options={tabs}
           className="-mx-4 px-4 sm:-mx-6 sm:px-6"
         />
@@ -109,13 +131,15 @@ export function InboxMobileList({
         </div>
       ) : isError ? (
         <div className="mx-6 mt-12 flex flex-col items-center gap-3 text-center" role="alert">
-          <p className="text-[15px] font-medium text-slate-900">{t("mobile.loadError")}</p>
+          <p className="text-[15px] font-medium text-slate-900">{t("list.loadError")}</p>
           <button
             type="button"
             onClick={onRetry}
-            className="h-10 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm"
+            disabled={isFetching}
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm disabled:opacity-60"
           >
-            {t("mobile.retry")}
+            {isFetching && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t("list.retry")}
           </button>
         </div>
       ) : conversations.length === 0 ? (
@@ -124,7 +148,9 @@ export function InboxMobileList({
         <ul>
           {conversations.map((conversation) => {
             const name = conversation.customer?.name ?? null;
-            const unread = conversation.unreadCount > 0;
+            // No leída solo si sigue abierta: en una cerrada ya no hay nada
+            // que responder (mismo criterio para el fondo, la hora y el badge).
+            const unread = conversation.status === "OPEN" && conversation.unreadCount > 0;
             const badge = CONTROL_BADGE[conversation.control];
             return (
               <li key={conversation.id}>
@@ -180,6 +206,24 @@ export function InboxMobileList({
               </li>
             );
           })}
+          <li ref={loadMore.sentinelRef} aria-hidden className="h-px" />
+          {isFetchingNextPage && (
+            <li className="flex justify-center py-3" role="status" aria-label={t("list.loadingMore")}>
+              <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            </li>
+          )}
+          {loadMore.isStuck && !isFetchingNextPage && (
+            <li className="flex flex-col items-center gap-2 py-4 text-center" role="alert">
+              <p className="text-sm text-slate-500">{t("list.loadMoreError")}</p>
+              <button
+                type="button"
+                onClick={loadMore.retry}
+                className="h-9 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm"
+              >
+                {t("list.retry")}
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>

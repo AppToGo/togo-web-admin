@@ -31,6 +31,12 @@ export interface DateFilterState {
   range: DateRange;
 }
 
+/**
+ * Valor de un filtro de fecha local (no el store global), ej. el del inbox.
+ * Misma forma que el estado del store. `null` en el consumidor = sin filtro.
+ */
+export type DateFilterValue = DateFilterState;
+
 export interface DateFilterActions {
   setPreset: (preset: DateFilterPreset) => void;
   setCustomRange: (range: DateRange) => void;
@@ -59,7 +65,7 @@ function getToday(): Date {
 /**
  * Helper: Calcular rango desde preset
  */
-function getRangeFromPreset(preset: DateFilterPreset): DateRange {
+export function getRangeFromPreset(preset: DateFilterPreset): DateRange {
   const today = getToday();
 
   switch (preset) {
