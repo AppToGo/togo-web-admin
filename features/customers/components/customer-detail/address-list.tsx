@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Building, MapPin, ChevronUp, ChevronDown } from "lucide-react";
+import { MapPin, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
 import type { CustomerAddress } from "../../types";
 import { useTranslations } from "next-intl";
 
@@ -31,40 +32,28 @@ export function AddressList({
 
   return (
     <Card variant="glass" className={className}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <Building className="h-4 w-4 text-slate-400" aria-hidden="true" />
-          {t("detail.addresses")}
-          <span className="text-xs text-slate-400">
-            ({addresses?.length ?? 0})
-          </span>
-        </CardTitle>
-      </CardHeader>
+      <DashboardCardHeader icon={MapPin} title={t("detail.addresses")} />
       <CardContent>
         <div className="space-y-2" id="address-list-container">
-          {visibleAddresses.map((address, index) => (
+          {visibleAddresses.map((address) => (
             <div
               key={address.id}
-              className={`p-2.5 ${index === 0 ? "" : "pt-4.5 border-t-2 border-slate-100"}`}
+              className="rounded-card bg-white/65 px-3.5 py-3"
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-900 text-sm">
+                <span className="text-sm font-semibold text-slate-900">
                   {address.label}
                 </span>
                 {address.isDefault && (
                   <Badge
                     variant="outline"
-                    className="text-xs bg-indigo-50 text-indigo-700 border-indigo-200"
+                    className="rounded-full border-0 bg-indigo-100 text-xs text-indigo-800"
                   >
                     {t("detail.default")}
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-slate-600 mt-1 flex items-start gap-1">
-                <MapPin
-                  className="h-3 w-3 mt-0.5 shrink-0"
-                  aria-hidden="true"
-                />
+              <p className="mt-1 text-[13px] text-slate-600">
                 {address.addressText}
               </p>
             </div>

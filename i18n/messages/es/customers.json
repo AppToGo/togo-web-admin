@@ -1,7 +1,6 @@
 {
   "title": "Gestión de Clientes",
   "subtitle": "Administra y conoce a tus clientes",
-
   "table": {
     "name": "Nombre",
     "phone": "Teléfono",
@@ -20,7 +19,6 @@
       "phone": "Teléfono"
     }
   },
-
   "metrics": {
     "totalCustomers": "Total clientes",
     "newCustomers": "Nuevos clientes",
@@ -36,14 +34,17 @@
     "lastOrderDate": "Última compra",
     "customerSince": "Cliente desde"
   },
-
   "topCustomers": {
-    "byFrequency": "Top 10 - Más frecuentes",
-    "bySpending": "Top 10 - Más gastaron",
+    "byFrequency": "Clientes más frecuentes",
+    "bySpending": "Clientes que más gastaron",
     "orders": "pedidos",
     "spent": "gastado",
     "noData": "No hay datos",
-    "noDataDescription": "No encontramos datos para este periodo."
+    "noDataDescription": "No encontramos datos para este periodo.",
+    "noFrequencyData": "Sin pedidos en el período",
+    "noSpendingData": "Sin ventas en el período",
+    "showAll": "Ver top 10",
+    "showLess": "Ver menos"
   },
   "detail": {
     "title": "Detalle del Cliente",
@@ -103,9 +104,16 @@
       "email": "Correo",
       "registered": "Registrado",
       "addresses": "Dirección"
-    }
+    },
+    "backToList": "Clientes",
+    "notesHint": "Solo la ve tu equipo. Se guarda sola.",
+    "orderEvery": "{count, plural, one {Uno por día} other {Uno cada # días}}",
+    "perOrder": "Por pedido",
+    "lastOrderAt": "Último: {date}",
+    "conversationMessages": "{count, plural, one {# mensaje} other {# mensajes}}",
+    "conversationWithOrder": "terminó en un pedido",
+    "conversationsShowing": "Mostrando {shown} de {total} conversaciones"
   },
-
   "customerMetrics": {
     "totalSpent": "Total gastado",
     "totalOrders": "Total pedidos",
@@ -114,22 +122,12 @@
     "days": "días",
     "ordersPerMonth": "pedidos/mes"
   },
-
-  "selection": {
-    "selected": "{count} cliente(s) seleccionado(s)",
-    "selectAll": "Seleccionar todos",
-    "clearSelection": "Limpiar selección",
-    "selectAllPages": "Seleccionar todos los {count} clientes",
-    "allSelected": "Seleccionaste todos los cliente."
-  },
-
   "filters": {
     "searchPlaceholder": "Buscar por nombre o teléfono...",
     "dateRange": "Rango de fechas",
     "hasOrders": "Con pedidos",
     "noOrders": "Sin pedidos"
   },
-
   "segments": {
     "NEW": "Nuevo",
     "ACTIVE": "Activo",
@@ -137,42 +135,44 @@
     "AT_RISK": "En riesgo",
     "LOST": "Perdido"
   },
-
   "empty": {
     "title": "No hay clientes",
     "description": "Los clientes aparecerán aquí cuando realicen su primera compra"
   },
-
   "notifications": {
     "loadError": "Error al cargar clientes",
     "updateSuccess": "Cliente actualizado",
     "updateError": "Error al actualizar cliente"
   },
-
   "status": {
     "active": "Activo",
     "inactive": "Inactivo"
   },
-
   "pagination": {
-    "showing": "Mostrando {from} a {to} de {total} clientes"
+    "showing": "Mostrando {from} a {to} de {total} clientes",
+    "label": "Paginación de clientes"
   },
-
   "noBusiness": {
     "title": "No hay clientes"
   },
-
   "dates": {
     "today": "Hoy",
     "yesterday": "Ayer",
-    "daysAgo": "Hace {count} días",
-    "weeksAgo": "Hace {count} semanas"
+    "daysAgo": "Hace {count, plural, one {# día} other {# días}}",
+    "weeksAgo": "Hace {count, plural, one {# semana} other {# semanas}}"
   },
-
   "mobileSort": {
     "label": "Ordenar clientes",
     "recent": "Recientes",
     "orders": "Más pedidos",
     "spent": "Más gastaron"
+  },
+  "count": "{count, plural, one {# cliente} other {# clientes}}",
+  "card": {
+    "orders": "{count, plural, one {# pedido} other {# pedidos}}",
+    "lastOrderShort": "Última: {date}",
+    "ordersLabel": "Pedidos",
+    "spentLabel": "Gastado",
+    "lastOrderLabel": "Última compra"
   }
 }

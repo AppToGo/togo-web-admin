@@ -81,7 +81,7 @@ test.describe("Clientes en el teléfono", () => {
     await login(page);
     await page.goto("/es/dashboard/customers");
 
-    const list = page.getByTestId("customers-mobile-list");
+    const list = page.getByTestId("customers-grid");
     await expect(list.getByText("Camila Torres")).toBeVisible();
     await list.getByText("Camila Torres").click();
 

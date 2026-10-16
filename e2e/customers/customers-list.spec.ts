@@ -43,12 +43,16 @@ test.describe("Clientes — lista y tabla", () => {
     ).toBeVisible();
 
     // Row texts also appear in the top-charts links — scope to the table.
-    const table = page.getByRole("table");
-    await expect(table.getByText("Cliente 1")).toBeVisible();
-    await expect(table.getByText("+573001000001")).toBeVisible();
-    await expect(table.getByText("Cliente 2")).toBeVisible();
+    const grid = page.getByTestId("customers-grid");
+    await expect(grid.getByText("Cliente 1")).toBeVisible();
+    await expect(grid.getByText("+573001000001")).toBeVisible();
+    await expect(grid.getByText("Cliente 2")).toBeVisible();
     // totalSpent 250.000 COP renders twice (one row each).
-    await expect(table.getByText("250.000")).toHaveCount(2);
+    // Cada tarjeta muestra el total una vez (la versión del teléfono queda
+    // oculta en escritorio).
+    await expect(
+      grid.getByText("250.000").filter({ visible: true })
+    ).toHaveCount(2);
   });
 
   test("la última compra se muestra relativa", async ({ page }) => {
@@ -63,9 +67,9 @@ test.describe("Clientes — lista y tabla", () => {
     });
     await openCustomers(page);
 
-    const table = page.getByRole("table");
-    await expect(table.getByText("Hoy", { exact: true })).toBeVisible();
-    await expect(table.getByText("Ayer", { exact: true })).toBeVisible();
+    const grid = page.getByTestId("customers-grid");
+    await expect(grid.getByText("Hoy", { exact: true })).toBeVisible();
+    await expect(grid.getByText("Ayer", { exact: true })).toBeVisible();
   });
 
   test("paginar pide la página siguiente", async ({ page }) => {
@@ -77,15 +81,15 @@ test.describe("Clientes — lista y tabla", () => {
     });
     await openCustomers(page);
 
-    const table = page.getByRole("table");
-    await expect(table.getByText("Cliente 1")).toBeVisible();
+    const grid = page.getByTestId("customers-grid");
+    await expect(grid.getByText("Cliente 1")).toBeVisible();
     await page.getByRole("button", { name: "Siguiente" }).click();
 
     await expect
       .poll(() => seenPages.length, { timeout: 10_000 })
       .toBeGreaterThan(1);
     expect(seenPages.at(-1)).toBe("2");
-    await expect(table.getByText("Cliente 2")).toBeVisible();
+    await expect(grid.getByText("Cliente 2")).toBeVisible();
   });
 
   test("sin clientes muestra el vacío", async ({ page }) => {
@@ -108,7 +112,7 @@ test.describe("Clientes — lista y tabla", () => {
     // Regression: the column used the missing `table.anonymous` key and
     // painted it raw; the table owns `table.noName` ("Sin nombre").
     await expect(
-      page.getByRole("table").getByText("Sin nombre")
+      page.getByTestId("customers-grid").getByText("Sin nombre").first()
     ).toBeVisible();
   });
 });

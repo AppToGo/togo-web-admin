@@ -56,15 +56,12 @@ test.describe("Clientes — detalle", () => {
     await mockBoardPermissions(page);
   });
 
-  test("se abre desde la acción de la fila", async ({ page }) => {
+  test("se abre al tocar la tarjeta del cliente", async ({ page }) => {
     await openCustomers(page);
 
-    const table = page.getByRole("table");
-    await expect(table.getByText("Cliente 1")).toBeVisible();
-    await table
-      .getByRole("button", { name: "Ver detalle" })
-      .first()
-      .click();
+    const grid = page.getByTestId("customers-grid");
+    await expect(grid.getByText("Cliente 1")).toBeVisible();
+    await grid.getByRole("link", { name: /Cliente 1/ }).first().click();
 
     await expect(page).toHaveURL(/\/dashboard\/customers\/.+/);
     await expect(
@@ -85,9 +82,8 @@ test.describe("Clientes — detalle", () => {
     await expect(page.getByText("detalle@e2e.com")).toBeVisible();
 
     // The metric/order/favorite sections lazy-load on scroll (their titles
-    // only exist once data arrives), so drive the inner scroller to the
-    // bottom first and assert afterwards (two nested <main> exist; hover
-    // the heading inside the scrollable one before wheeling).
+    // only exist once data arrives), so scroll to the bottom first and
+    // assert afterwards.
     await page.getByRole("heading", { name: "Cliente Detalle" }).hover();
     await page.mouse.wheel(0, 4000);
 
