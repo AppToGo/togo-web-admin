@@ -192,7 +192,19 @@
     "noResultsDescription": "Try adjusting your filters or clear them to see all categories",
     "result": "result",
     "results": "results",
-    "slugDisabled": "Slug cannot be edited after creation"
+    "slugDisabled": "Slug cannot be edited after creation",
+    "pageTitle": "My categories",
+    "pageSubtitle": "How your catalog is grouped and how the bot finds what your customers ask for.",
+    "statusFilter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "card": {
+      "edit": "Edit",
+      "toggle": "Activate or deactivate {name}",
+      "generateKeywords": "Generate with AI"
+    }
   },
   "globalCatalog": {
     "error": {

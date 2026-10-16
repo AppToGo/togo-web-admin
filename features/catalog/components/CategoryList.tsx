@@ -4,21 +4,11 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { CategoriesMobileList } from "./mobile/CategoriesMobileList";
 import { useTranslations } from "next-intl";
-import { Plus, Folder, Tag, AlertCircle, Search, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Plus, Folder, Tags, AlertCircle, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { PillGroup } from "@/components/ui/pill-group";
 import {
   Select,
   SelectContent,
@@ -43,11 +33,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CategoryActions } from "./CategoryActions";
+import { CategoryCard } from "./CategoryCard";
 import { CategoryFilters } from "./CategoryFilters";
 import { KeywordsInput } from "@/components/ui/keywords-input";
 import { EDITABLE_KEYWORD_SOURCES } from "../types/catalog.types";
 import type { BusinessCategory, CategoryFilters as CategoryFiltersType, KeywordEntry } from "../types/catalog.types";
+
+const STATUS_FILTERS = ["all", "active", "inactive"] as const;
+type StatusFilter = (typeof STATUS_FILTERS)[number];
+const STATUS_FILTER_VALUE: Record<StatusFilter, boolean | null> = {
+  all: null,
+  active: true,
+  inactive: false,
+};
 
 // Industry category option type
 interface IndustryCategoryOption {
@@ -160,6 +158,16 @@ export function CategoryList({
     (filters.name ? 1 : 0) +
     (filters.isActive !== null ? 1 : 0) +
     (filters.industryCategoryId ? 1 : 0);
+
+  // Pastillas de estado: misma fuente que el switch del popover de filtros.
+  const statusFilter: StatusFilter =
+    filters.isActive === true ? "active" : filters.isActive === false ? "inactive" : "all";
+  const activeCount = categories.filter((c) => c.isActive).length;
+  const statusCounts: Record<StatusFilter, number> = {
+    all: categories.length,
+    active: activeCount,
+    inactive: categories.length - activeCount,
+  };
 
   // Clear all filters
   const clearFilters = () => {
@@ -296,164 +304,103 @@ export function CategoryList({
     <div className="space-y-6">
       {list}
       {!isMobile && (<>
-      {/* Header con título a la izquierda y filtros/botón a la derecha */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-        {/* Izquierda: Título */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">
-            {t("categories.title")}
-          </h3>
-          <p className="text-sm text-slate-500">{t("categories.subtitle")}</p>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+            <Tags className="h-6 w-6 text-indigo-600" />
+            {t("categories.pageTitle")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">{t("categories.pageSubtitle")}</p>
         </div>
-
-        {/* Derecha: Filtros y botón Nueva */}
-        <div className="flex flex-wrap items-center gap-2">
-          <CategoryFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            industryCategories={industryCategories}
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={clearFilters}
-          />
-          <Button onClick={handleOpenCreate} disabled={isLoading}>
-            <Plus className="w-4 h-4 mr-2" />
-            {t("categories.new")}
-          </Button>
-        </div>
+        <Button onClick={handleOpenCreate} disabled={isLoading} className="h-11 rounded-card px-5">
+          <Plus className="h-4 w-4" />
+          {t("categories.new")}
+        </Button>
       </div>
 
-      {/* 3. Empty State */}
+      <div className="flex flex-wrap items-center gap-3">
+        <CategoryFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          industryCategories={industryCategories}
+          activeFiltersCount={activeFiltersCount}
+          onClearFilters={clearFilters}
+        />
+        <PillGroup
+          label={tCommon("fields.status")}
+          value={statusFilter}
+          onChange={(status) =>
+            setFilters({ ...filters, isActive: STATUS_FILTER_VALUE[status] })
+          }
+          appearance="glass"
+          className="sm:order-first"
+          options={STATUS_FILTERS.map((status) => ({
+            id: status,
+            label: t(`categories.statusFilter.${status}`),
+            count: statusCounts[status],
+          }))}
+        />
+      </div>
+
       {categories.length === 0 && (
-        <div className="text-center py-12 bg-slate-50 rounded-card-lg">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-            <Folder className="w-8 h-8 text-slate-400" />
+        <div className="flex flex-col items-center rounded-card-xl border border-white/80 bg-white/45 px-4 py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50">
+            <Folder className="h-8 w-8 text-indigo-500" />
           </div>
-          <h4 className="text-lg font-medium text-slate-900 mb-2">
+          <h2 className="mb-1 text-lg font-semibold text-slate-900">
             {t("categories.noCategories")}
-          </h4>
-          <p className="text-sm text-slate-500 mb-4 max-w-sm mx-auto">
+          </h2>
+          <p className="mb-4 max-w-sm text-sm text-slate-500">
             {t("categories.emptyDescription")}
           </p>
-          <Button onClick={handleOpenCreate} variant="outline">
-            <Plus className="w-4 h-4 mr-2" />
+          <Button onClick={handleOpenCreate} variant="slate-outline">
+            <Plus className="h-4 w-4" />
             {t("categories.createFirst")}
           </Button>
         </div>
       )}
 
-      {/* 4. No results after filtering */}
       {categories.length > 0 && filteredCategories.length === 0 && (
-        <div className="text-center py-12 bg-slate-50 rounded-card-lg">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-            <Search className="w-8 h-8 text-slate-400" />
+        <div className="flex flex-col items-center rounded-card-xl border border-white/80 bg-white/45 px-4 py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50">
+            <Search className="h-8 w-8 text-indigo-500" />
           </div>
-          <h4 className="text-lg font-medium text-slate-900 mb-2">
+          <h2 className="mb-1 text-lg font-semibold text-slate-900">
             {t("categories.noResults")}
-          </h4>
-          <p className="text-sm text-slate-500 mb-4">
+          </h2>
+          <p className="mb-4 text-sm text-slate-500">
             {t("categories.noResultsDescription")}
           </p>
-          <Button onClick={clearFilters} variant="outline">
-            <X className="w-4 h-4 mr-2" />
+          <Button onClick={clearFilters} variant="slate-outline">
+            <X className="h-4 w-4" />
             {tCommon("filters.clear")}
           </Button>
         </div>
       )}
 
-      {/* 5. Categories Table */}
       {filteredCategories.length > 0 && (
-        <Card variant="glass">
-          <div className="rounded-lg  overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-white hover:bg-white">
-                  <TableHead className="text-slate-500">
-                    {tCommon("fields.name")}
-                  </TableHead>
-                  <TableHead className="text-slate-500">Slug</TableHead>
-                  <TableHead className="text-slate-500">
-                    {t("categories.industryCategory")}
-                  </TableHead>
-                  <TableHead className="text-center text-slate-500">
-                    {tCommon("fields.status")}
-                  </TableHead>
-                  <TableHead className="text-right text-slate-500">
-                    {tCommon("fields.actions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCategories.map((category) => (
-                  <TableRow
-                    key={category.id}
-                    className="hover:bg-white transition-colors"
-                  >
-                    {/* Name */}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-slate-400" />
-                        <span className="font-medium text-slate-900">
-                          {category.name}
-                        </span>
-                      </div>
-                      {category.description && (
-                        <p className="text-xs text-slate-500 mt-0.5 ml-6">
-                          {category.description}
-                        </p>
-                      )}
-                    </TableCell>
-
-                    {/* Slug */}
-                    <TableCell>
-                      <code className="text-xs bg-slate-100 px-2 py-1 rounded">
-                        {category.slug}
-                      </code>
-                    </TableCell>
-
-                    {/* Industry Category */}
-                    <TableCell>
-                      <span className="text-slate-600">
-                        {category.industryCategoryName ||
-                          industryCategories.find(
-                            (ic) => ic.id === category.industryCategoryId
-                          )?.name ||
-                          category.industryCategoryId}
-                      </span>
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell className="text-center">
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          category.isActive
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-100"
-                        )}
-                      >
-                        {category.isActive
-                          ? tCommon("status.active")
-                          : tCommon("status.inactive")}
-                      </Badge>
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell className="text-right">
-                      <CategoryActions
-                        category={category}
-                        onEdit={handleOpenEdit}
-                        onDelete={setDeletingCategory}
-                        onToggleStatus={handleToggleStatus}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
+        <ul
+          className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+          data-testid="categories-grid"
+        >
+          {filteredCategories.map((category) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              industryCategoryName={
+                category.industryCategoryName ||
+                industryCategories.find((ic) => ic.id === category.industryCategoryId)
+                  ?.name
+              }
+              onEdit={handleOpenEdit}
+              onDelete={setDeletingCategory}
+              onToggleStatus={handleToggleStatus}
+              onRegenerateKeywords={onRegenerateKeywords}
+              isRegeneratingKeywords={isRegeneratingKeywords}
+            />
+          ))}
+        </ul>
       )}
-
       </>)}
 
       {/* Create/Edit Dialog */}

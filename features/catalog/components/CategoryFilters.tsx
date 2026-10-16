@@ -58,11 +58,12 @@ export function CategoryFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Buscador estilo órdenes */}
-      <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64 border border-slate-200">
+      <div className="flex h-11 w-full items-center rounded-card bg-white px-3.5 focus-within:ring-2 focus-within:ring-indigo-200 sm:w-auto sm:min-w-72">
         <Search className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
         <input
           type="text"
-          placeholder={tc("search.placeholder")}
+          placeholder={t("mobile.searchCategories")}
+          aria-label={t("mobile.searchCategories")}
           value={filters.name}
           onChange={(e) =>
             onFiltersChange({ ...filters, name: e.target.value })
@@ -84,10 +85,10 @@ export function CategoryFilters({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "relative flex items-center justify-center w-10 h-10 rounded-card transition-all duration-200",
+              "relative flex h-11 w-11 items-center justify-center rounded-card transition-all duration-200",
               hasAnyFilter
                 ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
-                : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-slate-200"
+                : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             )}
             title={tc("buttons.filter")}
           >
