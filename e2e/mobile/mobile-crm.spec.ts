@@ -136,7 +136,8 @@ test.describe("Inbox en el teléfono", () => {
     await page.goto("/es/dashboard/inbox");
 
     const list = page.getByTestId("inbox-mobile-list");
-    await expect(list.getByRole("tab", { name: /Esperando/ })).toHaveAttribute(
+    // "Todos" es la bandeja por defecto (antes era "Esperando").
+    await expect(list.getByRole("tab", { name: /Todos/ })).toHaveAttribute(
       "aria-selected",
       "true"
     );
@@ -270,7 +271,7 @@ test.describe("Inbox en el teléfono", () => {
 
     const list = page.getByTestId("inbox-mobile-list");
     await expect(list.getByRole("alert")).toContainText("No se pudieron cargar", { timeout: 20_000 });
-    await expect(list.getByText("No hay conversaciones en esta pestaña")).toHaveCount(0);
+    await expect(list.getByText("No hay conversaciones con estos filtros")).toHaveCount(0);
   });
 
   test("la barra inferior lleva a Sin pedido y al embudo", async ({ page }) => {
