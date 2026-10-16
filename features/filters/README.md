@@ -33,6 +33,24 @@ Los hooks conectan el store con TanStack Query:
 />
 ```
 
+Sin `onChange` lee y escribe el **store global** (compartido entre Dashboard y
+Órdenes). Para un filtro **local** que no debe tocar ese período, usá el modo
+controlado; `allDatesLabel` agrega la opción "sin filtro de fecha" (`null`):
+
+```tsx
+const [date, setDate] = useState<DateFilterValue | null>(null);
+
+<DateRangeFilter
+  variant="compact"
+  value={date}
+  onChange={setDate}
+  allDatesLabel={t("filters.allDates")}
+/>
+```
+
+Lo usa el Inbox, que arranca en "Todas las fechas" en vez de heredar el "Hoy"
+de Órdenes.
+
 ## Uso
 
 ### En Dashboard

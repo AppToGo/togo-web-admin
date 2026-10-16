@@ -11,8 +11,14 @@
     "unassigned": "Sin asignar",
     "all": "Todos"
   },
+  "filters": {
+    "title": "Filtros",
+    "dateRange": "Período",
+    "view": "Conversaciones",
+    "allDates": "Todas las fechas"
+  },
   "list": {
-    "empty": "No hay conversaciones en esta pestaña",
+    "empty": "No hay conversaciones con estos filtros",
     "searchPlaceholder": "Buscar por nombre o teléfono",
     "anonymous": "Anónimo",
     "noSelection": "Elegí una conversación de la lista para ver el hilo y responder.",
@@ -29,7 +35,11 @@
       "now": "ahora",
       "minutes": "{count} min",
       "yesterday": "Ayer"
-    }
+    },
+    "loadingMore": "Cargando más conversaciones",
+    "loadError": "No se pudieron cargar las conversaciones.",
+    "loadMoreError": "No se pudieron cargar más conversaciones.",
+    "retry": "Reintentar"
   },
   "control": {
     "BOT": "Bot",
@@ -132,8 +142,6 @@
   },
   "mobile": {
     "heldByOther": "La está atendiendo {name}.",
-    "loadError": "No se pudieron cargar las conversaciones.",
-    "retry": "Reintentar",
     "notePlaceholder": "Nota interna (no se envía al cliente)…",
     "back": "Volver al inbox",
     "actions": "Acciones de la conversación",

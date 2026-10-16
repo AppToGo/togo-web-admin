@@ -205,8 +205,6 @@ export async function deleteOrder(
 
 export interface UnseenOrdersFilters {
   branchIds?: string[];
-  dateFrom?: string;
-  dateTo?: string;
 }
 
 /** Usuario del negocio que puede llevar un pedido a domicilio. */
@@ -249,20 +247,17 @@ export async function updateOrderFlow(
 
 /**
  * Pedidos CONFIRMED que nadie del negocio ha abierto (badge de Pedidos del
- * sidebar), con los mismos filtros que el tablero. Sin `branchIds` cuenta
- * todas las sucursales.
+ * sidebar), de cualquier fecha. Sin `branchIds` cuenta todas las sucursales.
  */
 export async function getUnseenOrdersCount(
   businessId: string,
-  { branchIds, dateFrom, dateTo }: UnseenOrdersFilters = {}
+  { branchIds }: UnseenOrdersFilters = {}
 ): Promise<number> {
   const { data } = await apiClient.get<{ count: number }>(
     `${getBaseUrl(businessId)}/unseen-count`,
     {
       params: {
         ...(branchIds?.length && { branchIds }),
-        ...(dateFrom && { dateFrom }),
-        ...(dateTo && { dateTo }),
       },
     }
   );

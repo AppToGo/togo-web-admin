@@ -101,7 +101,9 @@ export function InboxListItem({
           <span className={cn("truncate text-[13px]", status.className)}>
             {status.text}
           </span>
-          {conversation.unreadCount > 0 && (
+          {/* Solo en conversaciones abiertas: en una cerrada/expirada ya no
+              hay nada que responder, el contador solo mete ruido. */}
+          {conversation.status === "OPEN" && conversation.unreadCount > 0 && (
             <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-badge bg-indigo-600 px-1.5 text-[11px] font-bold text-white">
               {conversation.unreadCount}
             </span>
