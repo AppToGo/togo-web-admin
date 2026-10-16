@@ -36,7 +36,10 @@
       "minutes": "{count} min",
       "yesterday": "Ayer"
     },
-    "loadingMore": "Cargando más conversaciones"
+    "loadingMore": "Cargando más conversaciones",
+    "loadError": "No se pudieron cargar las conversaciones.",
+    "loadMoreError": "No se pudieron cargar más conversaciones.",
+    "retry": "Reintentar"
   },
   "control": {
     "BOT": "Bot",

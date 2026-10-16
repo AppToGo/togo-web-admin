@@ -1,5 +1,3 @@
-import type { DateFilterValue } from "@/features/filters/stores";
-
 /**
  * Conversations Feature Types
  *
@@ -7,6 +5,8 @@ import type { DateFilterValue } from "@/features/filters/stores";
  * (Fase B) — no hay codegen de tipos en este repo, se escriben por feature
  * (mismo criterio que `features/customers/types`).
  */
+
+import type { DateFilterValue } from "@/features/filters/stores";
 
 export type ConversationStatus = "OPEN" | "CLOSED" | "EXPIRED";
 

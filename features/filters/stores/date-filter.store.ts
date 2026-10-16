@@ -33,12 +33,9 @@ export interface DateFilterState {
 
 /**
  * Valor de un filtro de fecha local (no el store global), ej. el del inbox.
- * `null` en el consumidor = sin filtro de fecha.
+ * Misma forma que el estado del store. `null` en el consumidor = sin filtro.
  */
-export interface DateFilterValue {
-  preset: DateFilterPreset;
-  range: DateRange;
-}
+export type DateFilterValue = DateFilterState;
 
 export interface DateFilterActions {
   setPreset: (preset: DateFilterPreset) => void;

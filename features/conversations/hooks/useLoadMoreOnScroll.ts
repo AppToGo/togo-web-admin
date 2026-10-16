@@ -8,6 +8,12 @@ const LOAD_MORE_ROOT_MARGIN = "200px";
 interface UseLoadMoreOnScrollOptions {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  /**
+   * Falló la página siguiente: se deja de observar. Sin esto, al terminar el
+   * fetch fallido el sentinel sigue visible y se re-pide en loop; el
+   * reintento queda en manos del usuario (botón al pie de la lista).
+   */
+  hasError: boolean;
   onLoadMore: () => void;
   /** Contenedor que scrollea; sin él se usa el viewport (lista que scrollea con la página). */
   rootRef?: RefObject<HTMLElement | null>;
@@ -25,6 +31,7 @@ interface UseLoadMoreOnScrollOptions {
 export function useLoadMoreOnScroll({
   hasNextPage,
   isFetchingNextPage,
+  hasError,
   onLoadMore,
   rootRef,
   itemCount,
@@ -32,7 +39,7 @@ export function useLoadMoreOnScroll({
   const [sentinel, setSentinel] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!sentinel || !hasNextPage || isFetchingNextPage) return;
+    if (!sentinel || !hasNextPage || isFetchingNextPage || hasError) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) onLoadMore();
@@ -41,7 +48,7 @@ export function useLoadMoreOnScroll({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [sentinel, hasNextPage, isFetchingNextPage, onLoadMore, rootRef, itemCount]);
+  }, [sentinel, hasNextPage, isFetchingNextPage, hasError, onLoadMore, rootRef, itemCount]);
 
   return setSentinel;
 }

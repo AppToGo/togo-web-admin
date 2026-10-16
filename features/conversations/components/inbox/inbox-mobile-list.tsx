@@ -29,6 +29,7 @@ interface InboxMobileListProps {
   isLoading: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  isFetchNextPageError: boolean;
   onLoadMore: () => void;
   /** La carga falló: se muestra el error, no "no hay conversaciones". */
   isError: boolean;
@@ -46,6 +47,7 @@ export function InboxMobileList({
   isLoading,
   hasNextPage,
   isFetchingNextPage,
+  isFetchNextPageError,
   onLoadMore,
   isError,
   onRetry,
@@ -67,6 +69,7 @@ export function InboxMobileList({
   const sentinelRef = useLoadMoreOnScroll({
     hasNextPage,
     isFetchingNextPage,
+    hasError: isFetchNextPageError,
     onLoadMore,
     itemCount: conversations.length,
   });
@@ -140,7 +143,9 @@ export function InboxMobileList({
         <ul>
           {conversations.map((conversation) => {
             const name = conversation.customer?.name ?? null;
-            const unread = conversation.unreadCount > 0;
+            // No leída solo si sigue abierta: en una cerrada ya no hay nada
+            // que responder (mismo criterio para el fondo, la hora y el badge).
+            const unread = conversation.status === "OPEN" && conversation.unreadCount > 0;
             const badge = CONTROL_BADGE[conversation.control];
             return (
               <li key={conversation.id}>
@@ -185,8 +190,7 @@ export function InboxMobileList({
                       >
                         {t(`control.${conversation.control}`)}
                       </span>
-                      {/* Solo en abiertas: en una cerrada ya no hay nada que responder. */}
-                      {unread && conversation.status === "OPEN" && (
+                      {unread && (
                         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-xs font-bold text-white tabular-nums">
                           {conversation.unreadCount}
                         </span>
@@ -201,6 +205,18 @@ export function InboxMobileList({
           {isFetchingNextPage && (
             <li className="flex justify-center py-3" role="status" aria-label={t("list.loadingMore")}>
               <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            </li>
+          )}
+          {isFetchNextPageError && !isFetchingNextPage && (
+            <li className="flex flex-col items-center gap-2 py-4 text-center" role="alert">
+              <p className="text-sm text-slate-500">{t("list.loadMoreError")}</p>
+              <button
+                type="button"
+                onClick={onLoadMore}
+                className="h-9 rounded-full bg-white px-4 text-sm font-semibold text-indigo-700 shadow-card-sm"
+              >
+                {t("mobile.retry")}
+              </button>
             </li>
           )}
         </ul>

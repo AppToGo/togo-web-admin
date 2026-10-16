@@ -36,7 +36,10 @@
       "minutes": "{count} min",
       "yesterday": "Yesterday"
     },
-    "loadingMore": "Loading more conversations"
+    "loadingMore": "Loading more conversations",
+    "loadError": "Couldn't load the conversations.",
+    "loadMoreError": "Couldn't load more conversations.",
+    "retry": "Retry"
   },
   "control": {
     "BOT": "Bot",

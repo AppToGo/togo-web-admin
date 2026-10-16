@@ -112,6 +112,7 @@ export default function InboxPage() {
     refetch,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     fetchNextPage,
     isAllBusinessesSelected,
   } = useInboxConversations(
@@ -184,6 +185,7 @@ export default function InboxPage() {
           isLoading={isLoading}
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
+          isFetchNextPageError={isFetchNextPageError}
           onLoadMore={fetchNextPage}
           isError={isError}
           onRetry={() => refetch()}
@@ -255,8 +257,11 @@ export default function InboxPage() {
               summary={summary}
               conversations={conversations}
               isLoading={isLoading}
+              isError={isError}
+              onRetry={() => refetch()}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
+              isFetchNextPageError={isFetchNextPageError}
               onLoadMore={fetchNextPage}
               selectedSessionId={selectedSessionId}
               onSelect={selectSession}

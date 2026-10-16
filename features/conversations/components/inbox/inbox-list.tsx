@@ -21,8 +21,12 @@ interface InboxListProps {
   summary: ConversationSummary | undefined;
   conversations: ConversationListItem[];
   isLoading: boolean;
+  /** La primera carga falló: se muestra el error, no "no hay conversaciones". */
+  isError: boolean;
+  onRetry: () => void;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  isFetchNextPageError: boolean;
   onLoadMore: () => void;
   selectedSessionId: string | null;
   onSelect: (sessionId: string) => void;
@@ -35,8 +39,11 @@ export function InboxList({
   summary,
   conversations,
   isLoading,
+  isError,
+  onRetry,
   hasNextPage,
   isFetchingNextPage,
+  isFetchNextPageError,
   onLoadMore,
   selectedSessionId,
   onSelect,
@@ -55,6 +62,7 @@ export function InboxList({
   const sentinelRef = useLoadMoreOnScroll({
     hasNextPage,
     isFetchingNextPage,
+    hasError: isFetchNextPageError,
     onLoadMore,
     rootRef: scrollRef,
     itemCount: conversations.length,
@@ -88,6 +96,17 @@ export function InboxList({
               </div>
             </div>
           ))
+        ) : isError ? (
+          <div className="flex flex-col items-center gap-3 px-3 py-6 text-center" role="alert">
+            <p className="text-sm font-medium text-slate-900">{t("list.loadError")}</p>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="h-9 rounded-badge bg-white px-4 text-sm font-semibold text-indigo-700 hover:bg-slate-50"
+            >
+              {t("list.retry")}
+            </button>
+          </div>
         ) : conversations.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-slate-500">
             {t("list.empty")}
@@ -106,6 +125,18 @@ export function InboxList({
             {isFetchingNextPage && (
               <div className="flex justify-center py-3" role="status" aria-label={t("list.loadingMore")}>
                 <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              </div>
+            )}
+            {isFetchNextPageError && !isFetchingNextPage && (
+              <div className="flex flex-col items-center gap-2 py-3 text-center" role="alert">
+                <p className="text-xs text-slate-500">{t("list.loadMoreError")}</p>
+                <button
+                  type="button"
+                  onClick={onLoadMore}
+                  className="text-xs font-semibold text-indigo-700 hover:text-indigo-800"
+                >
+                  {t("list.retry")}
+                </button>
               </div>
             )}
           </>

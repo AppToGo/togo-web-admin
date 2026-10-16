@@ -1,4 +1,4 @@
-import type { DateFilterValue } from "@/features/filters/stores";
+import { getRangeFromPreset, type DateFilterValue } from "@/features/filters/stores";
 import type { GetConversationsParams, InboxFiltersValue, InboxView } from "../types";
 
 /** Al entrar al inbox: todas las conversaciones, sin filtro de fecha. */
@@ -23,11 +23,16 @@ function viewParams(view: InboxView): GetConversationsParams {
  * con "YYYY-MM-DD" a secas `dateTo` sería la medianoche UTC del inicio del
  * día y dejaría afuera ese día entero. Se mandan los bordes del día local
  * completo como ISO.
+ *
+ * Los presets ("Hoy", "Esta semana"…) se recalculan acá y no se toma el
+ * rango guardado al elegirlos: con el inbox abierto de un día para el otro,
+ * "Hoy" tiene que seguir siendo hoy.
  */
 function dateParams(date: DateFilterValue | null): GetConversationsParams {
   if (!date) return {};
-  const [fromY, fromM, fromD] = date.range.from.split("-").map(Number);
-  const [toY, toM, toD] = date.range.to.split("-").map(Number);
+  const range = date.preset === "custom" ? date.range : getRangeFromPreset(date.preset);
+  const [fromY, fromM, fromD] = range.from.split("-").map(Number);
+  const [toY, toM, toD] = range.to.split("-").map(Number);
   return {
     dateFrom: new Date(fromY, fromM - 1, fromD, 0, 0, 0, 0).toISOString(),
     dateTo: new Date(toY, toM - 1, toD, 23, 59, 59, 999).toISOString(),
