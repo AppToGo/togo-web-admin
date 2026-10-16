@@ -24,6 +24,11 @@ interface PillGroupProps<T extends string> {
   onChange: (value: T) => void;
   /** `tabs`: role="tablist" + aria-selected; `filter`: aria-pressed. */
   variant?: "tabs" | "filter";
+  /**
+   * `solid`: la del teléfono (activa en slate). `glass`: sobre el fondo
+   * degradado del escritorio (activa en índigo, el resto translúcidas).
+   */
+  appearance?: "solid" | "glass";
   className?: string;
 }
 
@@ -33,6 +38,7 @@ export function PillGroup<T extends string>({
   value,
   onChange,
   variant = "filter",
+  appearance = "solid",
   className,
 }: PillGroupProps<T>) {
   const isTabs = variant === "tabs";
@@ -55,7 +61,13 @@ export function PillGroup<T extends string>({
             onClick={() => onChange(option.id)}
             className={cn(
               "flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors",
-              on ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"
+              appearance === "glass"
+                ? on
+                  ? "bg-indigo-600 text-white"
+                  : "bg-white/75 text-slate-600 hover:bg-white hover:text-slate-900"
+                : on
+                  ? "bg-slate-900 text-white"
+                  : "bg-slate-100 text-slate-700"
             )}
           >
             {option.dotClassName && (

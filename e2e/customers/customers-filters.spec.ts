@@ -5,7 +5,6 @@ import {
   openCustomers,
   mockCustomers,
   mockGlobalCustomerMetrics,
-  customer,
   type CustomersRequest,
 } from "./customers";
 import {
@@ -82,22 +81,28 @@ test.describe("Clientes — filtros y orden", () => {
       .toBe("branch-norte");
   });
 
-  test("ordenar por nombre reordena las filas", async ({ page }) => {
-    await mockCustomers(page, {
-      byPage: {
-        "1": [customer(3, { name: "Cliente C" }), customer(1, { name: "Cliente A" })],
-      },
-    });
+  test("las pastillas de orden piden la lista ordenada al servidor", async ({
+    page,
+  }) => {
+    const seen: CustomersRequest[] = [];
+    await mockCustomers(page, { onRequest: (req) => seen.push(req) });
     await openCustomers(page);
 
-    const table = page.getByRole("table");
-    const firstRow = () => table.getByRole("row").nth(1);
-    await expect(firstRow()).toContainText("Cliente C");
+    const sorts = page.getByRole("group", { name: "Ordenar clientes" });
+    await sorts.getByRole("button", { name: "Más pedidos" }).click();
+    await expect
+      .poll(() => seen.at(-1)?.sortBy, { timeout: 10_000 })
+      .toBe("totalOrders");
 
-    await table.getByRole("button", { name: "Nombre" }).click();
-    await expect(firstRow()).toContainText("Cliente A");
+    await sorts.getByRole("button", { name: "Más gastaron" }).click();
+    await expect
+      .poll(() => seen.at(-1)?.sortBy, { timeout: 10_000 })
+      .toBe("totalSpent");
 
-    await table.getByRole("button", { name: "Nombre" }).click();
-    await expect(firstRow()).toContainText("Cliente C");
+    // Tocar la elegida la quita: vuelve el orden por defecto (esa página
+    // ya está en caché, así que no hace falta otra request).
+    const spent = sorts.getByRole("button", { name: "Más gastaron" });
+    await spent.click();
+    await expect(spent).toHaveAttribute("aria-pressed", "false");
   });
 });

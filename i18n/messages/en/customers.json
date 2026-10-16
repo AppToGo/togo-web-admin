@@ -1,26 +1,9 @@
 {
   "title": "Customer Management",
   "subtitle": "Manage and get to know your customers",
-
   "table": {
-    "name": "Name",
-    "phone": "Phone",
-    "email": "Email",
-    "totalOrders": "Orders",
-    "totalSpent": "Total spent",
-    "lastOrder": "Last purchase",
-    "actions": "Actions",
-    "noName": "No name",
-    "selectAll": "Select all",
-    "spent": "spent",
-    "viewDetails": "View details",
-    "selectRow": "Select row",
-    "columns": {
-      "orders": "Orders",
-      "phone": "Phone"
-    }
+    "noName": "No name"
   },
-
   "metrics": {
     "totalCustomers": "Total customers",
     "newCustomers": "New customers",
@@ -36,16 +19,18 @@
     "lastOrderDate": "Last order date",
     "customerSince": "Customer since"
   },
-
   "topCustomers": {
-    "byFrequency": "Top 10 - Most frequent",
-    "bySpending": "Top 10 - Highest spenders",
+    "byFrequency": "Most frequent customers",
+    "bySpending": "Customers who spent the most",
     "orders": "orders",
     "spent": "spent",
     "noData": "No data",
-    "noDataDescription": "We couldn't find data for this period. Try a different date range."
+    "noDataDescription": "We couldn't find data for this period. Try a different date range.",
+    "noFrequencyData": "No orders in the period",
+    "noSpendingData": "No sales in the period",
+    "showAll": "See top 10",
+    "showLess": "See less"
   },
-
   "detail": {
     "title": "Customer Details",
     "information": "Information",
@@ -72,7 +57,6 @@
     "noFavoritesDescription": "This customer doesn't have any favorite products yet.",
     "openConversation": "Open conversation",
     "noAddresses": "No Addresses",
-    "orders": "Orders",
     "basicInfo": "Basic Info",
     "addresses": "Addresses",
     "notFound": "Customer not found",
@@ -104,9 +88,17 @@
       "email": "Email",
       "registered": "Registered",
       "addresses": "Addresses"
-    }
+    },
+    "backToList": "Customers",
+    "notesHint": "Only your team sees it. It saves automatically.",
+    "orderEvery": "{count, plural, one {One a day} other {One every # days}}",
+    "perOrder": "Per order",
+    "lastOrderAt": "Last: {date}",
+    "conversationMessages": "{count, plural, one {# message} other {# messages}}",
+    "conversationWithOrder": "ended in an order",
+    "conversationsShowing": "Showing {shown} of {total} conversations",
+    "addressesCount": "{count, plural, one {# address} other {# addresses}}"
   },
-
   "customerMetrics": {
     "totalSpent": "Total spent",
     "totalOrders": "Total orders",
@@ -115,21 +107,12 @@
     "days": "days",
     "ordersPerMonth": "orders/month"
   },
-
-  "selection": {
-    "selected": "{count} customer(s) selected",
-    "selectAll": "Select all",
-    "clearSelection": "Clear selection",
-    "selectAllPages": "Select all {count} customers"
-  },
-
   "filters": {
     "searchPlaceholder": "Search by name or phone...",
     "dateRange": "Date range",
     "hasOrders": "With orders",
     "noOrders": "Without orders"
   },
-
   "segments": {
     "NEW": "New",
     "ACTIVE": "Active",
@@ -137,42 +120,44 @@
     "AT_RISK": "At risk",
     "LOST": "Lost"
   },
-
   "empty": {
     "title": "No customers",
     "description": "Customers will appear here when they make their first purchase"
   },
-
   "notifications": {
     "loadError": "Error loading customers",
     "updateSuccess": "Customer updated",
     "updateError": "Error updating customer"
   },
-
   "status": {
     "active": "Active",
     "inactive": "Inactive"
   },
-
   "pagination": {
-    "showing": "Showing {from} to {to} of {total} customers"
+    "showing": "Showing {from} to {to} of {total} customers",
+    "label": "Customers pagination"
   },
-
   "noBusiness": {
     "title": "No customers"
   },
-
   "dates": {
     "today": "Today",
     "yesterday": "Yesterday",
-    "daysAgo": "{count} days ago",
-    "weeksAgo": "{count} weeks ago"
+    "daysAgo": "{count, plural, one {# day} other {# days}} ago",
+    "weeksAgo": "{count, plural, one {# week} other {# weeks}} ago"
   },
-
   "mobileSort": {
     "label": "Sort customers",
     "recent": "Recent",
     "orders": "Most orders",
     "spent": "Top spenders"
+  },
+  "count": "{count, plural, one {# customer} other {# customers}}",
+  "card": {
+    "orders": "{count, plural, one {# order} other {# orders}}",
+    "lastOrderShort": "Last: {date}",
+    "ordersLabel": "Orders",
+    "spentLabel": "Spent",
+    "lastOrderLabel": "Last order"
   }
 }

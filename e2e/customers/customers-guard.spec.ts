@@ -47,14 +47,15 @@ test.describe("Clientes — tops, guard y errores", () => {
     await openCustomers(page);
 
     await expect(
-      page.getByText("Top 10 - Más frecuentes", { exact: true })
+      page.getByText("Clientes más frecuentes", { exact: true })
     ).toBeVisible();
     await expect(
-      page.getByText("Top 10 - Más gastaron", { exact: true })
+      page.getByText("Clientes que más gastaron", { exact: true })
     ).toBeVisible();
 
     await page
-      .getByRole("link", { name: "Cliente 1 +573001000001" })
+      // Fila del ranking: puesto, nombre y pedidos.
+      .getByRole("link", { name: /^1 Cliente 1/ })
       .first()
       .click();
     await expect(page).toHaveURL(/\/dashboard\/customers\/.+/);
