@@ -89,7 +89,8 @@ async function mockPagedList(page: Page, total: number): Promise<void> {
 test.describe("Inbox: filtros y scroll infinito", () => {
   test("arranca en Todos, sin fecha y pidiendo de a 20", async ({ page }) => {
     await login(page);
-    const first = page.waitForRequest(isListRequest);
+    // Margen para la primera compilación de la ruta en `next dev`.
+    const first = page.waitForRequest(isListRequest, { timeout: 30_000 });
     await page.goto("/es/dashboard/inbox");
 
     const params = new URL((await first).url()).searchParams;
@@ -152,6 +153,42 @@ test.describe("Inbox: filtros y scroll infinito", () => {
     await page.getByText("Cliente 20", { exact: true }).scrollIntoViewIfNeeded();
     await second;
     await expect(page.getByText("Cliente 21", { exact: true })).toBeAttached();
+  });
+
+  test("si falla la página siguiente no reintenta en loop y ofrece reintentar", async ({ page }) => {
+    await login(page);
+    await mockPagedList(page, 45);
+    let failSecondPage = true;
+    let secondPageRequests = 0;
+    await page.route("**/v1/**", (route) => {
+      const url = new URL(route.request().url());
+      if (!url.pathname.endsWith("/conversations") || url.searchParams.get("page") !== "2") {
+        return route.fallback();
+      }
+      secondPageRequests += 1;
+      if (failSecondPage) {
+        return route.fulfill({ status: 500, contentType: "application/json", body: "{}" });
+      }
+      return route.fallback();
+    });
+    await page.goto("/es/dashboard/inbox");
+
+    await page.getByText("Cliente 20", { exact: true }).scrollIntoViewIfNeeded();
+    // TanStack reintenta 3 veces con backoff antes de dar el error.
+    const footer = page.getByRole("alert").filter({ hasText: "No se pudieron cargar más" });
+    await expect(footer).toBeVisible({ timeout: 20_000 });
+    // La lista ya cargada sigue a la vista.
+    await expect(page.getByText("Cliente 1", { exact: true })).toBeAttached();
+
+    // Con el sentinel todavía visible no se vuelve a pedir solo.
+    const afterError = secondPageRequests;
+    await page.waitForTimeout(2_000);
+    expect(secondPageRequests).toBe(afterError);
+
+    failSecondPage = false;
+    await footer.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByText("Cliente 21", { exact: true })).toBeAttached();
+    await expect(footer).toHaveCount(0);
   });
 
   test("el badge de no leídos solo aparece en conversaciones abiertas", async ({ page }) => {
