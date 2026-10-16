@@ -196,8 +196,8 @@ export function Sidebar({
 
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
-    // Las pantallas de conversaciones van juntas, después de Pedidos (y
-    // Caja): el Inbox es tan operativo como el tablero.
+    // Las pantallas de conversaciones van juntas, después de Pedidos y
+    // Caja: el Inbox es tan operativo como el tablero.
     const conversationScreens: NavigationItem[] = [
       ...(canViewInbox
         ? [
@@ -247,7 +247,14 @@ export function Sidebar({
           ]
         : conversationScreens;
 
+    // Orden: Dashboard, Pedidos, Caja, Conversaciones, Clientes, Catálogo y
+    // Configuración.
     const items: NavigationItem[] = [
+      {
+        name: t("sidebar.dashboard"),
+        href: "/dashboard",
+        icon: LayoutDashboardIcon,
+      },
       {
         name: t("sidebar.orders"),
         href: "/dashboard/orders",
@@ -267,11 +274,6 @@ export function Sidebar({
           ]
         : []),
       ...conversationItems,
-      {
-        name: t("sidebar.dashboard"),
-        href: "/dashboard",
-        icon: LayoutDashboardIcon,
-      },
       {
         name: t("sidebar.customers"),
         href: "/dashboard/customers",
