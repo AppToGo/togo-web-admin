@@ -9,11 +9,9 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { Store, Package, AlertTriangle, CheckCircle, XCircle, Search, Warehouse } from "lucide-react";
 import { PillGroup } from "@/components/ui/pill-group";
 import { KpiCard } from "@/features/dashboard/components/kpi/KpiCard";
-import { formatCurrency } from "@/lib/utils";
 import {
   useBranchInventory,
   useActivateProduct,
@@ -25,6 +23,7 @@ import {
   useUpdateInventory,
 } from "../hooks/useBranchInventory";
 import { BranchInventoryGrid } from "./BranchInventoryGrid";
+import { LOW_STOCK_THRESHOLD } from "./InventoryCard";
 import { BulkInventoryActions } from "./BulkInventoryActions";
 import {
   InventoryFilters,
@@ -34,17 +33,6 @@ import {
 } from "./InventoryFilters";
 import type { InventoryItem, BranchSummary, InventoryFilters as InventoryFiltersType } from "../types";
 import { useCategories } from "@/features/catalog/hooks";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { BranchSingleSelector } from "@/features/branches/components";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -69,126 +57,6 @@ interface BranchInventoryManagerProps {
   branches: BranchSummary[];
 }
 
-// Stats card component
-function ActivateProductDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  product,
-  isLoading,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (data: {
-    stock?: number;
-    isAvailable: boolean;
-    priceOverride?: number;
-  }) => void;
-  product: InventoryItem | null;
-  isLoading: boolean;
-}) {
-  const t = useTranslations("inventory");
-  const [stock, setStock] = useState<string>("");
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [priceOverride, setPriceOverride] = useState<string>("");
-
-  const handleConfirm = useCallback(() => {
-    onConfirm({
-      stock: stock ? parseInt(stock, 10) : undefined,
-      isAvailable,
-      priceOverride: priceOverride ? parseFloat(priceOverride) : undefined,
-    });
-    setStock("");
-    setIsAvailable(true);
-    setPriceOverride("");
-  }, [stock, isAvailable, priceOverride, onConfirm]);
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t("activate.title")}</DialogTitle>
-          <DialogDescription>
-            {product &&
-              t("activate.description", { name: product.productName })}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 p-4">
-          {/* Price override */}
-          <div className="space-y-2">
-            <Label htmlFor="activate-price">
-              {t("activate.priceOverride")}
-            </Label>
-            <div className="relative">
-              <Input
-                id="activate-price"
-                type="number"
-                min={0.01}
-                step={0.01}
-                placeholder={product?.basePrice.toString()}
-                value={priceOverride}
-                onChange={(e) => setPriceOverride(e.target.value)}
-              />
-              {product && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                  {t("activate.basePrice", {
-                    price: formatCurrency(product.basePrice),
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Stock */}
-          <div className="space-y-2">
-            <Label htmlFor="activate-stock">{t("activate.stock")}</Label>
-            <Input
-              id="activate-stock"
-              type="number"
-              min={0}
-              placeholder={t("activate.stockPlaceholder")}
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-            />
-          </div>
-
-          {/* Availability */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="activate-available">
-              {t("activate.available")}
-            </Label>
-            <Switch
-              id="activate-available"
-              checked={isAvailable}
-              onCheckedChange={setIsAvailable}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {t("activate.cancel")}
-          </Button>
-          <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                {t("activate.processing")}
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {t("activate.confirm")}
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function BranchInventoryManager({
   businessId,
   branches,
@@ -209,8 +77,6 @@ export function BranchInventoryManager({
   const { hasPermission } = useMyPermissions();
   const canSetAvailability = hasPermission("inventory.set_availability");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [activatingProduct, setActivatingProduct] =
-    useState<InventoryItem | null>(null);
 
   // Filter state
   const [selectedCategory, setSelectedCategory] = useState("all"); // industryCategoryId
@@ -308,13 +174,14 @@ export function BranchInventoryManager({
   );
 
   // Derived data
-  const items = inventoryData?.items || [];
+  const items = useMemo(() => inventoryData?.items ?? [], [inventoryData]);
 
   const stats = useMemo(() => {
     const total = items.length;
     const available = items.filter((i) => i.isAvailable).length;
     const lowStock = items.filter(
-      (i) => i.isAvailable && i.stock !== null && i.stock < 10
+      (i) =>
+        i.isAvailable && i.stock !== null && i.stock < LOW_STOCK_THRESHOLD
     ).length;
     const outOfStock = items.filter(
       (i) => i.isAvailable && i.stock === 0
@@ -343,30 +210,6 @@ export function BranchInventoryManager({
   const handleClearSelection = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
-
-  // Activation handlers
-  const handleConfirmActivate = useCallback(
-    (data: {
-      stock?: number;
-      isAvailable: boolean;
-      priceOverride?: number;
-    }) => {
-      if (!activatingProduct) return;
-
-      activateMutation.mutate(
-        {
-          productId: activatingProduct.productVariantId,
-          data,
-        },
-        {
-          onSuccess: () => {
-            setActivatingProduct(null);
-          },
-        }
-      );
-    },
-    [activatingProduct, activateMutation]
-  );
 
   // Bulk action handlers
   const handleBulkActivate = useCallback(
@@ -650,15 +493,6 @@ export function BranchInventoryManager({
           deactivateMutation.isPending ||
           updateStockMutation.isPending
         }
-      />
-
-      {/* Activation Dialog */}
-      <ActivateProductDialog
-        isOpen={!!activatingProduct}
-        onClose={() => setActivatingProduct(null)}
-        onConfirm={handleConfirmActivate}
-        product={activatingProduct}
-        isLoading={activateMutation.isPending}
       />
     </div>
   );

@@ -86,18 +86,6 @@
     "deselectAll": "Deselect all",
     "inStock": "{count} units"
   },
-  "activate": {
-    "title": "Activate Product in Branch",
-    "description": "Configure stock and price for \"{name}\"",
-    "priceOverride": "Specific price for this branch",
-    "basePrice": "Base price: {price}",
-    "stock": "Initial stock",
-    "stockPlaceholder": "Leave empty for no control",
-    "available": "Available for sale",
-    "cancel": "Cancel",
-    "confirm": "Activate Product",
-    "processing": "Activating..."
-  },
   "notifications": {
     "activated": "Product activated in branch",
     "activateError": "Error activating: {error}",

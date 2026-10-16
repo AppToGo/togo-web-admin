@@ -86,18 +86,6 @@
     "deselectAll": "Deseleccionar todas",
     "inStock": "{count} unidades"
   },
-  "activate": {
-    "title": "Activar Producto en Sede",
-    "description": "Configura el stock y precio para \"{name}\"",
-    "priceOverride": "Precio específico para esta sede",
-    "basePrice": "Precio base: {price}",
-    "stock": "Stock inicial",
-    "stockPlaceholder": "Dejar vacío para sin control",
-    "available": "Disponible para venta",
-    "cancel": "Cancelar",
-    "confirm": "Activar Producto",
-    "processing": "Activando..."
-  },
   "notifications": {
     "activated": "Producto activado en la sede",
     "activateError": "Error al activar: {error}",
