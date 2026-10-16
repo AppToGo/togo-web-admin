@@ -88,8 +88,9 @@ async function mockPagedList(page: Page, total: number): Promise<void> {
 
 test.describe("Inbox: filtros y scroll infinito", () => {
   test("arranca en Todos, sin fecha y pidiendo de a 20", async ({ page }) => {
-    await login(page);
     // Margen para la primera compilación de la ruta en `next dev`.
+    test.setTimeout(60_000);
+    await login(page);
     const first = page.waitForRequest(isListRequest, { timeout: 30_000 });
     await page.goto("/es/dashboard/inbox");
 
@@ -156,6 +157,8 @@ test.describe("Inbox: filtros y scroll infinito", () => {
   });
 
   test("si falla la página siguiente no reintenta en loop y ofrece reintentar", async ({ page }) => {
+    // Backoff de TanStack (~7s por tanda) + un ciclo del refetch sin socket (15s).
+    test.setTimeout(90_000);
     await login(page);
     await mockPagedList(page, 45);
     let failSecondPage = true;
@@ -180,10 +183,16 @@ test.describe("Inbox: filtros y scroll infinito", () => {
     // La lista ya cargada sigue a la vista.
     await expect(page.getByText("Cliente 1", { exact: true })).toBeAttached();
 
-    // Con el sentinel todavía visible no se vuelve a pedir solo.
+    // Con el sentinel todavía visible no se vuelve a pedir solo, ni siquiera
+    // cuando el refetch de respaldo (socket bloqueado en e2e) recarga la lista.
     const afterError = secondPageRequests;
+    await page.waitForRequest(
+      (r) => isListRequest(r) && new URL(r.url()).searchParams.get("page") === "1",
+      { timeout: 25_000 }
+    );
     await page.waitForTimeout(2_000);
     expect(secondPageRequests).toBe(afterError);
+    await expect(footer).toBeVisible();
 
     failSecondPage = false;
     await footer.getByRole("button", { name: "Reintentar" }).click();
