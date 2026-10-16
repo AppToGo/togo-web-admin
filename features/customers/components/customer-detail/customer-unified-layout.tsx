@@ -1,17 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeft,
-  MessageCircle,
-  ChevronDown,
-  ChevronUp,
-  Phone,
-  Mail,
-  Calendar,
-} from "lucide-react";
+import { ArrowLeft, MessageCircle, Phone, Mail, Calendar } from "lucide-react";
+import { Link } from "@/i18n/routing";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useRouter } from "next/navigation";
 import type { Customer, CustomerAddress } from "../../types";
 import { MetricsSection } from "./sections/metrics-section";
@@ -19,9 +12,13 @@ import { OrdersSection } from "./sections/orders-section";
 import { FavoritesSection } from "./sections/favorites-section";
 import { ConversationsSection } from "./sections/conversations-section";
 import { AddressList } from "./address-list";
+import { CustomerNotesCard } from "./customer-notes-card";
 import { useFormatDate } from "@/hooks/useFormatDate";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { CustomerMobileDetail } from "./customer-mobile-detail";
+
+/** Botones del encabezado: altos y redondeados como los del Inbox. */
+const HEADER_BUTTON = "h-11 rounded-[14px] px-4";
 
 interface CustomerUnifiedLayoutProps {
   customer: Customer | null;
@@ -45,7 +42,6 @@ export function CustomerUnifiedLayout({
   const t = useTranslations("customers");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   // Teléfono: pantalla propia con pestañas (diseño móvil). Se elige una sola
   // versión para no montar las dos ni pedir sus datos dos veces.
   const isMobile = useIsMobile();
@@ -93,121 +89,99 @@ export function CustomerUnifiedLayout({
   const addresses: CustomerAddress[] = customer.addresses || [];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col">
-      {/* Header */}
-      <header className="px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center">
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => router.push("/dashboard/customers")}
-              className="shrink-0 cursor-pointer pl-0"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
-                  {customer.name || t("detail.anonymous")}
-                </h1>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1 text-slate-500 text-sm mt-1">
-                    <Phone className="h-3.5 w-3.5" />
-                    {customer.phoneNumber}
-                  </div>
-                  {customer.email && (
-                    <div className="flex items-center justify-center gap-1 text-slate-500 text-sm mt-0.5">
-                      <Mail className="h-3.5 w-3.5" />
-                      {customer.email}
-                    </div>
-                  )}
-                  {customerSince && (
-                    <div className="flex items-center justify-center gap-1 text-slate-500 text-sm mt-0.5">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {t("detail.customerSince")} :{" "}
-                      <span className="capitalize">{customerSince || "-"}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+    <div className="space-y-5">
+      <Link
+        href="/dashboard/customers"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t("detail.backToList")}
+      </Link>
+
+      {/* Encabezado del cliente */}
+      <section
+        aria-label={t("detail.customer")}
+        className="flex flex-wrap items-center justify-between gap-5 rounded-card-xl border border-white/80 bg-white/45 p-6 backdrop-blur-xl"
+      >
+        <div className="flex min-w-0 items-center gap-4">
+          <InitialsAvatar
+            name={customer.name}
+            seed={customer.id}
+            size="lg"
+            className="h-16 w-16 text-[22px]"
+          />
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-bold text-slate-900">
+              {customer.name || t("detail.anonymous")}
+            </h1>
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+              <span className="inline-flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-slate-400" />
+                {customer.phoneNumber}
+              </span>
+              {customer.email && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-slate-400" />
+                  {customer.email}
+                </span>
+              )}
+              {customerSince && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                  {t("detail.customerSince")}{" "}
+                  <span className="capitalize">{customerSince}</span>
+                </span>
+              )}
             </div>
           </div>
+        </div>
 
-          {conversationHref && (
+        <div className="flex flex-wrap gap-2.5">
+          <Button asChild variant="slate-outline" className={HEADER_BUTTON}>
+            <a href={`tel:${customer.phoneNumber}`}>
+              <Phone />
+              {t("detail.mobile.call")}
+            </a>
+          </Button>
+          {conversationHref ? (
+            <Button asChild className={HEADER_BUTTON}>
+              <Link href={conversationHref}>
+                <MessageCircle />
+                {t("detail.openConversation")}
+              </Link>
+            </Button>
+          ) : (
+            // Sin ventana de 24 h abierta WhatsApp no deja escribir texto
+            // libre: el acceso se muestra apagado (con el motivo) en vez de
+            // desaparecer.
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(conversationHref)}
-              className="shrink-0"
-              title={t("detail.openConversation")}
+              disabled
+              className={HEADER_BUTTON}
+              title={t("detail.mobile.noConversation")}
             >
-              <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
-              <span className="hidden sm:inline">{t("detail.openConversation")}</span>
+              <MessageCircle />
+              {t("detail.openConversation")}
             </Button>
           )}
         </div>
-      </header>
+      </section>
 
-      {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-            {/* Mobile Sidebar Toggle */}
-            <div className="lg:hidden">
-              <Button
-                variant="outline"
-                className="w-full justify-between"
-                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                    {customer.name?.charAt(0).toUpperCase() ||
-                      customer.phoneNumber.charAt(0)}
-                  </span>
-                  {t("detail.customerInfo")}
-                </span>
-                {isMobileSidebarOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+      <MetricsSection customerId={customerId} />
 
-            {/* Metrics Grid - Full width */}
-            <section>
-              <MetricsSection customerId={customerId} />
-            </section>
-
-            {/* Split layout: Orders (2/3) | Favorites (1/3) */}
-            <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Orders - Takes 2 columns */}
-              <div className="xl:col-span-2">
-                <OrdersSection customerId={customerId} />
-              </div>
-
-              {/* Favorites - Takes 1 column */}
-              <div className="xl:col-span-1">
-                <FavoritesSection customerId={customerId} />
-                {addresses.length > 0 && (
-                  <div className="pt-4 border-t border-slate-100">
-                    <AddressList addresses={addresses} />
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Conversations - Full width */}
-            <section>
-              <ConversationsSection customerId={customerId} />
-            </section>
-
-            {/* Bottom spacing for mobile scroll */}
-            <div className="h-8 lg:h-0" />
-          </div>
-        </main>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div className="space-y-5 xl:col-span-2">
+          <OrdersSection customerId={customerId} />
+          <ConversationsSection customerId={customerId} />
+        </div>
+        <div className="space-y-5">
+          <CustomerNotesCard
+            notes={notes}
+            onNotesChange={onNotesChange}
+            isSavingNotes={isSavingNotes}
+          />
+          <FavoritesSection customerId={customerId} />
+          {addresses.length > 0 && <AddressList addresses={addresses} />}
+        </div>
       </div>
     </div>
   );

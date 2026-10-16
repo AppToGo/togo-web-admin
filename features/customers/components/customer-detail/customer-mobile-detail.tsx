@@ -19,22 +19,10 @@ import { useFormatDate } from "@/hooks/useFormatDate";
 import { OrderDetailDialog } from "@/features/orders/components/OrderDetailDialog";
 import { useCustomerMetrics, useCustomerOrders } from "../../hooks/useCustomer";
 import { MAX_NOTES_LENGTH } from "../../constants";
-import type { Customer, CustomerMetrics } from "../../types";
+import type { Customer } from "../../types";
+import { daysBetweenOrders } from "../../utils/order-frequency";
 
 type Tab = "summary" | "orders" | "notes";
-
-const DAY_MS = 86_400_000;
-
-/** Días promedio entre pedidos; null con menos de dos pedidos. */
-function daysBetweenOrders(metrics: CustomerMetrics): number | null {
-  if (metrics.totalOrders < 2 || !metrics.firstOrderDate || !metrics.lastOrderDate) {
-    return null;
-  }
-  const span =
-    new Date(metrics.lastOrderDate).getTime() -
-    new Date(metrics.firstOrderDate).getTime();
-  return Math.max(1, Math.round(span / DAY_MS / (metrics.totalOrders - 1)));
-}
 
 interface CustomerMobileDetailProps {
   customer: Customer;
@@ -174,9 +162,25 @@ export function CustomerMobileDetail({
   );
 }
 
-function Tile({ label, value }: { label: string; value: string }) {
+/** Mismos tonos que las métricas del detalle en escritorio. */
+const TILE_TONES = {
+  emerald: "bg-gradient-to-br from-emerald-400/15 via-white/60 to-emerald-500/20",
+  blue: "bg-gradient-to-br from-blue-400/15 via-white/60 to-blue-500/20",
+  purple: "bg-gradient-to-br from-purple-400/15 via-white/60 to-purple-500/20",
+  amber: "bg-gradient-to-br from-amber-400/15 via-white/60 to-amber-500/20",
+} as const;
+
+function Tile({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: keyof typeof TILE_TONES;
+}) {
   return (
-    <div className="rounded-2xl bg-white p-3">
+    <div className={`rounded-2xl border border-white/90 p-3 ${TILE_TONES[tone]}`}>
       <span className="block text-xs text-slate-500">{label}</span>
       <span className="text-[19px] font-bold tabular-nums text-slate-900">{value}</span>
     </div>
@@ -204,10 +208,11 @@ function SummaryTab({ customer, customerId }: { customer: Customer; customerId: 
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2">
-        <Tile label={t("metrics.totalSpent")} value={formatCurrency(metrics.totalSpent)} />
-        <Tile label={t("detail.mobile.tabs.orders")} value={String(metrics.totalOrders)} />
-        <Tile label={t("metrics.averageOrder")} value={formatCurrency(metrics.avgOrderValue)} />
+        <Tile tone="emerald" label={t("metrics.totalSpent")} value={formatCurrency(metrics.totalSpent)} />
+        <Tile tone="blue" label={t("detail.mobile.tabs.orders")} value={String(metrics.totalOrders)} />
+        <Tile tone="purple" label={t("metrics.averageOrder")} value={formatCurrency(metrics.avgOrderValue)} />
         <Tile
+          tone="amber"
           label={t("detail.mobile.ordersEvery")}
           value={every === null ? "—" : t("detail.mobile.days", { count: every })}
         />

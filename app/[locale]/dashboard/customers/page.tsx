@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
-import { CustomersTable, TopCustomersCharts } from "@/features/customers";
+import { CustomersGrid, TopCustomersCharts } from "@/features/customers";
 import { useCustomers } from "@/features/customers";
 import {
   useHasBusiness,
@@ -16,16 +16,15 @@ import { useEffectiveBranches } from "@/features/branches/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { PillGroup } from "@/components/ui/pill-group";
 
-/** Orden rápido de la lista en el teléfono (la tabla ordena por columnas). */
-const MOBILE_SORTS = {
+/** Orden de la lista (el servidor ordena; tocar el elegido lo quita). */
+const SORTS = {
   recent: { sortBy: "lastOrderDate", sortOrder: "desc" },
   orders: { sortBy: "totalOrders", sortOrder: "desc" },
   spent: { sortBy: "totalSpent", sortOrder: "desc" },
 } as const;
-type MobileSort = keyof typeof MOBILE_SORTS;
+type CustomerSort = keyof typeof SORTS;
 
 function CustomersLoading() {
   return (
@@ -45,15 +44,10 @@ function CustomersLoading() {
         <Skeleton className="h-80" />
       </div>
 
-      {/* Table skeleton */}
-      <div className="rounded-lg border border-slate-200">
-        <div className="p-4">
-          <Skeleton className="h-8 w-full" />
-        </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="p-4 border-t border-slate-100">
-            <Skeleton className="h-12 w-full" />
-          </div>
+      {/* Cards skeleton */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-36 rounded-3xl bg-white/60" />
         ))}
       </div>
     </div>
@@ -70,12 +64,10 @@ export default function CustomersPage() {
 
   // Estado local de paginación
   const [page, setPage] = useState(1);
-  const limit = 10;
+  // Múltiplo de 2 y de 3: las columnas de tarjetas quedan completas.
+  const limit = 12;
 
-  const [mobileSort, setMobileSort] = useState<MobileSort | null>(null);
-  // El orden rápido solo existe en el teléfono: al pasar a la tabla (girar
-  // la tablet) deja de aplicarse, porque ahí no hay control para quitarlo.
-  const isMobile = useIsMobile();
+  const [sort, setSort] = useState<CustomerSort | null>(null);
 
   // Estado para sede seleccionada
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
@@ -96,7 +88,7 @@ export default function CustomersPage() {
   } = useCustomers({
     page,
     limit,
-    ...(isMobile && mobileSort ? MOBILE_SORTS[mobileSort] : {}),
+    ...(sort ? SORTS[sort] : {}),
     businessId: selectedBusinessId || undefined,
     branchId: effectiveBranchId || undefined,
   });
@@ -155,26 +147,34 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Teléfono: orden rápido de la lista (tocar el elegido lo quita) */}
-        <PillGroup
-          label={t("mobileSort.label")}
-          value={mobileSort}
-          onChange={(key) => {
-            setMobileSort(mobileSort === key ? null : key);
-            setPage(1);
-          }}
-          options={(Object.keys(MOBILE_SORTS) as MobileSort[]).map((key) => ({
-            id: key,
-            label: t(`mobileSort.${key}`),
-          }))}
-          className="md:hidden"
-        />
+        {/* Orden de la lista (tocar el elegido lo quita) y total */}
+        <div className="flex items-center gap-3">
+          <PillGroup
+            label={t("mobileSort.label")}
+            value={sort}
+            onChange={(key) => {
+              setSort(sort === key ? null : key);
+              setPage(1);
+            }}
+            options={(Object.keys(SORTS) as CustomerSort[]).map((key) => ({
+              id: key,
+              label: t(`mobileSort.${key}`),
+            }))}
+            appearance="glass"
+            className="min-w-0"
+          />
+          {!isLoading && (
+            <span className="ml-auto hidden shrink-0 text-sm text-slate-500 sm:inline">
+              {t("count", { count: pagination.total })}
+            </span>
+          )}
+        </div>
 
-        <div className="grid grid-cols-6 gap-4">
-          {/* Customers Table */}
+        <div className="grid grid-cols-6 gap-5">
+          {/* Tarjetas de clientes */}
           <div className="col-span-6 lg:col-span-4">
             <Suspense fallback={<CustomersLoading />}>
-              <CustomersTable
+              <CustomersGrid
                 data={customers}
                 isLoading={isLoading}
                 pagination={pagination}
