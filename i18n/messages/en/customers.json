@@ -2,22 +2,7 @@
   "title": "Customer Management",
   "subtitle": "Manage and get to know your customers",
   "table": {
-    "name": "Name",
-    "phone": "Phone",
-    "email": "Email",
-    "totalOrders": "Orders",
-    "totalSpent": "Total spent",
-    "lastOrder": "Last purchase",
-    "actions": "Actions",
-    "noName": "No name",
-    "selectAll": "Select all",
-    "spent": "spent",
-    "viewDetails": "View details",
-    "selectRow": "Select row",
-    "columns": {
-      "orders": "Orders",
-      "phone": "Phone"
-    }
+    "noName": "No name"
   },
   "metrics": {
     "totalCustomers": "Total customers",
@@ -72,7 +57,6 @@
     "noFavoritesDescription": "This customer doesn't have any favorite products yet.",
     "openConversation": "Open conversation",
     "noAddresses": "No Addresses",
-    "orders": "Orders",
     "basicInfo": "Basic Info",
     "addresses": "Addresses",
     "notFound": "Customer not found",
@@ -112,7 +96,8 @@
     "lastOrderAt": "Last: {date}",
     "conversationMessages": "{count, plural, one {# message} other {# messages}}",
     "conversationWithOrder": "ended in an order",
-    "conversationsShowing": "Showing {shown} of {total} conversations"
+    "conversationsShowing": "Showing {shown} of {total} conversations",
+    "addressesCount": "{count, plural, one {# address} other {# addresses}}"
   },
   "customerMetrics": {
     "totalSpent": "Total spent",

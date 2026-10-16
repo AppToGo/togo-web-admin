@@ -2,22 +2,7 @@
   "title": "Gestión de Clientes",
   "subtitle": "Administra y conoce a tus clientes",
   "table": {
-    "name": "Nombre",
-    "phone": "Teléfono",
-    "email": "Correo",
-    "totalOrders": "Pedidos",
-    "totalSpent": "Total gastado",
-    "lastOrder": "Última compra",
-    "actions": "Acciones",
-    "noName": "Sin nombre",
-    "selectAll": "Seleccionar todos",
-    "spent": "gastado",
-    "viewDetails": "Ver detalle",
-    "selectRow": "Seleccionar fila",
-    "columns": {
-      "orders": "pedidos",
-      "phone": "Teléfono"
-    }
+    "noName": "Sin nombre"
   },
   "metrics": {
     "totalCustomers": "Total clientes",
@@ -72,7 +57,6 @@
     "noFavoritesDescription": "Este cliente aún no tiene productos favoritos.",
     "openConversation": "Abrir conversación",
     "noAddresses": "Sin dirección",
-    "orders": "pedidos",
     "basicInfo": "Información basica",
     "addresses": "Dirección",
     "notFound": "Cliente no encontrado",
@@ -112,7 +96,8 @@
     "lastOrderAt": "Último: {date}",
     "conversationMessages": "{count, plural, one {# mensaje} other {# mensajes}}",
     "conversationWithOrder": "terminó en un pedido",
-    "conversationsShowing": "Mostrando {shown} de {total} conversaciones"
+    "conversationsShowing": "Mostrando {shown} de {total} conversaciones",
+    "addressesCount": "{count, plural, one {# dirección} other {# direcciones}}"
   },
   "customerMetrics": {
     "totalSpent": "Total gastado",

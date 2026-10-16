@@ -32,7 +32,14 @@ export function AddressList({
 
   return (
     <Card variant="glass" className={className}>
-      <DashboardCardHeader icon={MapPin} title={t("detail.addresses")} />
+      <DashboardCardHeader icon={MapPin} title={t("detail.addresses")}>
+        <span
+          className="rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-slate-600"
+          aria-label={t("detail.addressesCount", { count: addresses.length })}
+        >
+          {addresses.length}
+        </span>
+      </DashboardCardHeader>
       <CardContent>
         <div className="space-y-2" id="address-list-container">
           {visibleAddresses.map((address) => (
