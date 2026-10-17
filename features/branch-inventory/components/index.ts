@@ -3,7 +3,8 @@
  */
 
 export { BranchInventorySelector } from "./BranchInventorySelector";
-export { BranchInventoryTable } from "./BranchInventoryTable";
+export { BranchInventoryGrid } from "./BranchInventoryGrid";
+export { InventoryCard } from "./InventoryCard";
 export { BulkInventoryActions } from "./BulkInventoryActions";
 export { BranchInventoryManager } from "./BranchInventoryManager";
 export { BranchAvailabilityTab } from "./BranchAvailabilityTab";

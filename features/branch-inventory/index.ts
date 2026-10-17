@@ -29,7 +29,7 @@ export { BRANCH_INVENTORY_KEYS } from "./hooks/query-keys";
 // Components
 export {
   BranchInventorySelector,
-  BranchInventoryTable,
+  BranchInventoryGrid,
   BulkInventoryActions,
   BranchInventoryManager,
 } from "./components";

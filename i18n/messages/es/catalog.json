@@ -192,7 +192,19 @@
     "noResultsDescription": "Intenta ajustar tus filtros o límpialos para ver todas las categorías",
     "result": "resultado",
     "results": "resultados",
-    "slugDisabled": "El slug no se puede editar después de la creación"
+    "slugDisabled": "El slug no se puede editar después de la creación",
+    "pageTitle": "Mis categorías",
+    "pageSubtitle": "Así agrupas tu catálogo y así el bot encuentra lo que piden tus clientes.",
+    "statusFilter": {
+      "all": "Todas",
+      "active": "Activas",
+      "inactive": "Inactivas"
+    },
+    "card": {
+      "edit": "Editar",
+      "toggle": "Activar o desactivar {name}",
+      "generateKeywords": "Generar con IA"
+    }
   },
   "globalCatalog": {
     "error": {

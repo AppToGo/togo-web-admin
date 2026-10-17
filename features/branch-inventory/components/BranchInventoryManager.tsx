@@ -9,11 +9,9 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Store, Package, AlertTriangle, CheckCircle, XCircle, X, Search } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { Store, Package, AlertTriangle, CheckCircle, XCircle, Search, Warehouse } from "lucide-react";
+import { PillGroup } from "@/components/ui/pill-group";
+import { KpiCard } from "@/features/dashboard/components/kpi/KpiCard";
 import {
   useBranchInventory,
   useActivateProduct,
@@ -24,7 +22,8 @@ import {
   useSetAvailability,
   useUpdateInventory,
 } from "../hooks/useBranchInventory";
-import { BranchInventoryTable } from "./BranchInventoryTable";
+import { BranchInventoryGrid } from "./BranchInventoryGrid";
+import { LOW_STOCK_THRESHOLD } from "./InventoryCard";
 import { BulkInventoryActions } from "./BulkInventoryActions";
 import {
   InventoryFilters,
@@ -34,17 +33,6 @@ import {
 } from "./InventoryFilters";
 import type { InventoryItem, BranchSummary, InventoryFilters as InventoryFiltersType } from "../types";
 import { useCategories } from "@/features/catalog/hooks";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { BranchSingleSelector } from "@/features/branches/components";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -52,190 +40,21 @@ import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { InventoryMobileView } from "./InventoryMobileView";
 import type { InventoryItemValues } from "./InventoryItemSheet";
 
+/** Atajos de stock (los mismos que en el teléfono). */
+const QUICK_FILTERS = ["all", "out", "low", "off"] as const;
+type QuickFilter = (typeof QUICK_FILTERS)[number];
+const QUICK_FILTER_DOT: Record<QuickFilter, string> = {
+  all: "bg-slate-400",
+  out: "bg-red-600",
+  low: "bg-amber-600",
+  off: "bg-slate-500",
+};
+
 interface BranchInventoryManagerProps {
   readOnly?: boolean;
   showProductImages?: boolean;
   businessId: string;
   branches: BranchSummary[];
-}
-
-// Stats card component
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  variant = "default",
-  isLoading,
-}: {
-  title: string;
-  value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-  variant?: "default" | "emerald" | "blue" | "purple" | "amber";
-  isLoading?: boolean;
-}) {
-  return (
-    <Card variant={`metrics-${variant}`}>
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs sm:text-sm font-medium text-card-foreground/80">
-              {title}
-            </p>
-            {isLoading ? (
-              <Skeleton className="h-6 w-16 mt-1" />
-            ) : (
-              <p className="text-lg sm:text-2xl font-bold text-card-foreground mt-1 sm:mt-2">
-                {value}
-              </p>
-            )}
-          </div>
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
-            <Icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${variant}-600`} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-
-    // <Card key={card.title} variant={`metrics-${card.variant}`}>
-    //           <CardContent className="p-4 sm:p-6">
-    //             <div className="flex items-center justify-between">
-    //               <div>
-    //                 <p className="text-xs sm:text-sm font-medium text-card-foreground/80">
-    //                   {card.title}
-    //                 </p>
-    //                 <p className="text-lg sm:text-2xl font-bold text-card-foreground mt-1 sm:mt-2">
-    //                   {card.value}
-    //                 </p>
-    //               </div>
-    //               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
-    //                 <card.icon
-    //                   className={`h-5 w-5 sm:h-6 sm:w-6 text-${card.variant}-600`}
-    //                 />
-    //               </div>
-    //             </div>
-    //           </CardContent>
-    //         </Card>
-  );
-}
-
-// Activation dialog for new products
-function ActivateProductDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  product,
-  isLoading,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (data: {
-    stock?: number;
-    isAvailable: boolean;
-    priceOverride?: number;
-  }) => void;
-  product: InventoryItem | null;
-  isLoading: boolean;
-}) {
-  const t = useTranslations("inventory");
-  const [stock, setStock] = useState<string>("");
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [priceOverride, setPriceOverride] = useState<string>("");
-
-  const handleConfirm = useCallback(() => {
-    onConfirm({
-      stock: stock ? parseInt(stock, 10) : undefined,
-      isAvailable,
-      priceOverride: priceOverride ? parseFloat(priceOverride) : undefined,
-    });
-    setStock("");
-    setIsAvailable(true);
-    setPriceOverride("");
-  }, [stock, isAvailable, priceOverride, onConfirm]);
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t("activate.title")}</DialogTitle>
-          <DialogDescription>
-            {product &&
-              t("activate.description", { name: product.productName })}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 p-4">
-          {/* Price override */}
-          <div className="space-y-2">
-            <Label htmlFor="activate-price">
-              {t("activate.priceOverride")}
-            </Label>
-            <div className="relative">
-              <Input
-                id="activate-price"
-                type="number"
-                min={0.01}
-                step={0.01}
-                placeholder={product?.basePrice.toString()}
-                value={priceOverride}
-                onChange={(e) => setPriceOverride(e.target.value)}
-              />
-              {product && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                  {t("activate.basePrice", {
-                    price: formatCurrency(product.basePrice),
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Stock */}
-          <div className="space-y-2">
-            <Label htmlFor="activate-stock">{t("activate.stock")}</Label>
-            <Input
-              id="activate-stock"
-              type="number"
-              min={0}
-              placeholder={t("activate.stockPlaceholder")}
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-            />
-          </div>
-
-          {/* Availability */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="activate-available">
-              {t("activate.available")}
-            </Label>
-            <Switch
-              id="activate-available"
-              checked={isAvailable}
-              onCheckedChange={setIsAvailable}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {t("activate.cancel")}
-          </Button>
-          <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                {t("activate.processing")}
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {t("activate.confirm")}
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 }
 
 export function BranchInventoryManager({
@@ -258,8 +77,6 @@ export function BranchInventoryManager({
   const { hasPermission } = useMyPermissions();
   const canSetAvailability = hasPermission("inventory.set_availability");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [activatingProduct, setActivatingProduct] =
-    useState<InventoryItem | null>(null);
 
   // Filter state
   const [selectedCategory, setSelectedCategory] = useState("all"); // industryCategoryId
@@ -357,13 +174,14 @@ export function BranchInventoryManager({
   );
 
   // Derived data
-  const items = inventoryData?.items || [];
+  const items = useMemo(() => inventoryData?.items ?? [], [inventoryData]);
 
   const stats = useMemo(() => {
     const total = items.length;
     const available = items.filter((i) => i.isAvailable).length;
     const lowStock = items.filter(
-      (i) => i.isAvailable && i.stock !== null && i.stock < 10
+      (i) =>
+        i.isAvailable && i.stock !== null && i.stock < LOW_STOCK_THRESHOLD
     ).length;
     const outOfStock = items.filter(
       (i) => i.isAvailable && i.stock === 0
@@ -392,42 +210,6 @@ export function BranchInventoryManager({
   const handleClearSelection = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
-
-  // Activation handlers
-  const handleActivate = useCallback((product: InventoryItem) => {
-    if (readOnly) return;
-    setActivatingProduct(product);
-  }, [readOnly]);
-
-  const handleConfirmActivate = useCallback(
-    (data: {
-      stock?: number;
-      isAvailable: boolean;
-      priceOverride?: number;
-    }) => {
-      if (!activatingProduct) return;
-
-      activateMutation.mutate(
-        {
-          productId: activatingProduct.productVariantId,
-          data,
-        },
-        {
-          onSuccess: () => {
-            setActivatingProduct(null);
-          },
-        }
-      );
-    },
-    [activatingProduct, activateMutation]
-  );
-
-  const handleDeactivate = useCallback(
-    (productId: string) => {
-      deactivateMutation.mutate(productId);
-    },
-    [deactivateMutation]
-  );
 
   // Bulk action handlers
   const handleBulkActivate = useCallback(
@@ -485,6 +267,49 @@ export function BranchInventoryManager({
     [setAvailabilityMutation]
   );
 
+  // Sin activar en la sede, prenderlo es activarlo (teléfono y escritorio).
+  const toggleAvailability = (item: InventoryItem, isAvailable: boolean) => {
+    if (!item.isActivated) {
+      if (isAvailable) {
+        activateMutation.mutate({ productId: item.productVariantId, data: { isAvailable } });
+      }
+      return;
+    }
+    handleToggleAvailability(item.productVariantId, isAvailable);
+  };
+
+  // Atajos de stock: cada pastilla fija los filtros de stock y
+  // disponibilidad; el popover de filtros sigue sirviendo para combinarlos.
+  const allStock: StockFilterState = { out: true, in: true, low: true, untracked: true };
+  const noStock: StockFilterState = { out: false, in: false, low: false, untracked: false };
+  const isAllStock =
+    stockFilter.out && stockFilter.in && stockFilter.low && stockFilter.untracked;
+  const isAllAvailability = availabilityFilter.available && availabilityFilter.unavailable;
+  const quickFilter: QuickFilter | null =
+    isAllStock && isAllAvailability
+      ? "all"
+      : isAllAvailability && stockFilter.out && !stockFilter.in && !stockFilter.low && !stockFilter.untracked
+        ? "out"
+        : isAllAvailability && stockFilter.low && !stockFilter.in && !stockFilter.out && !stockFilter.untracked
+          ? "low"
+          : isAllStock && !availabilityFilter.available && availabilityFilter.unavailable
+            ? "off"
+            : null;
+  const applyQuickFilter = (key: QuickFilter) => {
+    setAvailabilityFilter(
+      key === "off"
+        ? { available: false, unavailable: true }
+        : { available: true, unavailable: true }
+    );
+    setStockFilter(
+      key === "out"
+        ? { ...noStock, out: true }
+        : key === "low"
+          ? { ...noStock, low: true }
+          : allStock
+    );
+  };
+
   // Teléfono: lista propia (diseño móvil) con la misma sede y búsqueda.
   if (isMobile) {
     // Sin activar en la sede: se activa con lo editado. Activado: stock y
@@ -522,16 +347,6 @@ export function BranchInventoryManager({
         throw error;
       }
     };
-    const toggleFromPhone = (item: InventoryItem, isAvailable: boolean) => {
-      // Sin activar en la sede, prenderlo es activarlo.
-      if (!item.isActivated) {
-        if (isAvailable) {
-          activateMutation.mutate({ productId: item.productVariantId, data: { isAvailable } });
-        }
-        return;
-      }
-      handleToggleAvailability(item.productVariantId, isAvailable);
-    };
 
     return (
       <InventoryMobileView
@@ -543,43 +358,90 @@ export function BranchInventoryManager({
         search={globalFilter}
         onSearchChange={setGlobalFilter}
         canSetAvailability={canSetAvailability}
-        onToggleAvailability={toggleFromPhone}
+        onToggleAvailability={toggleAvailability}
         onSave={saveFromPhone}
       />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-5 pb-24">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
-          <p className="text-slate-500 mt-1">{t("subtitle")}</p>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+            <Warehouse className="h-6 w-6 text-indigo-600" />
+            {t("title")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
         </div>
+        {setSelectedBranchId && (
+          <BranchSingleSelector
+            value={selectedBranchId || null}
+            onChange={(val) => setSelectedBranchId(val as string)}
+          />
+        )}
+      </div>
 
-        <div className="flex items-center gap-2">
-          {/* Search */}
-          <div className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64 border border-slate-200">
-            <Search className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
-            <input
-              type="text"
-              placeholder={t("table.search")}
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none w-full"
-            />
-            {globalFilter && (
-              <button
-                onClick={() => setGlobalFilter("")}
-                className="ml-2 p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+      {selectedBranchId && (
+        <section
+          aria-label={t("stats.label")}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        >
+          <KpiCard
+            title={t("stats.total")}
+            value={isLoading ? "—" : String(stats.total)}
+            description={t("stats.totalHint")}
+            icon={<Package className="h-5 w-5 text-blue-600" />}
+            variant="blue"
+          />
+          <KpiCard
+            title={t("stats.available")}
+            value={isLoading ? "—" : String(stats.available)}
+            description={t("stats.availableHint")}
+            icon={<CheckCircle className="h-5 w-5 text-emerald-600" />}
+            variant="emerald"
+          />
+          <KpiCard
+            title={t("stats.lowStock")}
+            value={isLoading ? "—" : String(stats.lowStock)}
+            description={t("stats.lowStockHint")}
+            icon={<AlertTriangle className="h-5 w-5 text-amber-600" />}
+            variant="amber"
+          />
+          <KpiCard
+            title={t("stats.outOfStock")}
+            value={isLoading ? "—" : String(stats.outOfStock)}
+            description={t("stats.outOfStockHint")}
+            icon={<XCircle className="h-5 w-5 text-purple-600" />}
+            variant="purple"
+          />
+        </section>
+      )}
 
-          {/* Filter button */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:w-auto sm:min-w-72">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="search"
+            placeholder={t("table.search")}
+            aria-label={t("table.search")}
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="h-11 w-full rounded-card border-0 bg-white pl-10 pr-4 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-200"
+          />
+        </div>
+        <PillGroup
+          label={t("mobile.stockFilter")}
+          value={quickFilter}
+          onChange={applyQuickFilter}
+          appearance="glass"
+          options={QUICK_FILTERS.map((key) => ({
+            id: key,
+            label: t(`mobile.filters.${key}`),
+            dotClassName: QUICK_FILTER_DOT[key],
+          }))}
+        />
+        <div className="sm:ml-auto">
           <InventoryFilters
             categories={categories}
             selectedCategory={selectedCategory}
@@ -593,77 +455,30 @@ export function BranchInventoryManager({
             activeFiltersCount={activeFiltersCount}
             onClearFilters={clearAllFilters}
           />
-
-          {/* Branch Single Selector - siempre visible */}
-          {setSelectedBranchId && (
-            <BranchSingleSelector
-              value={selectedBranchId || null}
-              onChange={(val) => setSelectedBranchId(val as string)}
-            />
-          )}
         </div>
       </div>
 
-      {/* Stats */}
-      {selectedBranchId && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard
-            title={t("stats.total")}
-            value={stats.total}
-            icon={Package}
-            isLoading={isLoading}
-            variant="emerald"
-          />
-          <StatCard
-            title={t("stats.available")}
-            value={stats.available}
-            icon={CheckCircle}
-            variant="blue"
-            isLoading={isLoading}
-          />
-          <StatCard
-            title={t("stats.lowStock")}
-            value={stats.lowStock}
-            icon={AlertTriangle}
-            variant={stats.lowStock > 0 ? "amber" : "purple"}
-            isLoading={isLoading}
-          />
-          <StatCard
-            title={t("stats.outOfStock")}
-            value={stats.outOfStock}
-            icon={XCircle}
-            variant={stats.outOfStock > 0 ? "amber" : "default"}
-            isLoading={isLoading}
-          />
-        </div>
-      )}
-
-      {/* Inventory Table */}
       {selectedBranchId ? (
-        <BranchInventoryTable
+        <BranchInventoryGrid
           data={items}
           isLoading={isLoading}
           selectedIds={selectedIds}
           onToggleSelection={handleToggleSelection}
           onSelectAll={handleSelectAll}
-          onActivate={handleActivate}
-          onDeactivate={handleDeactivate}
-          onToggleAvailability={handleToggleAvailability}
+          onToggleAvailability={toggleAvailability}
           debouncedUpdate={queueUpdate}
           readOnly={readOnly}
           canSetAvailability={canSetAvailability}
           showProductImages={showProductImages}
-          globalFilter={globalFilter}
-          setGlobalFilter={setGlobalFilter}
         />
       ) : (
-        <Card className="p-12 text-center">
-          <Store className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-slate-900 mb-1">
+        <div className="rounded-card-xl border border-white/80 bg-white/45 p-12 text-center">
+          <Store className="mx-auto mb-3 h-12 w-12 text-slate-300" />
+          <h3 className="mb-1 text-lg font-medium text-slate-900">
             {t("noBranch.title")}
           </h3>
           <p className="text-slate-500">{t("noBranch.message")}</p>
-        </Card>
+        </div>
       )}
 
       {/* Bulk Actions */}
@@ -678,15 +493,6 @@ export function BranchInventoryManager({
           deactivateMutation.isPending ||
           updateStockMutation.isPending
         }
-      />
-
-      {/* Activation Dialog */}
-      <ActivateProductDialog
-        isOpen={!!activatingProduct}
-        onClose={() => setActivatingProduct(null)}
-        onConfirm={handleConfirmActivate}
-        product={activatingProduct}
-        isLoading={activateMutation.isPending}
       />
     </div>
   );

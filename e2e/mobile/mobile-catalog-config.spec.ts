@@ -419,23 +419,52 @@ test.describe("Inventario editable", () => {
   test.describe("escritorio", () => {
     test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-    test("la tabla deja editar con permiso y bloquea la disponibilidad sin él", async ({
+    test("las tarjetas dejan editar con permiso y apagar la disponibilidad", async ({
       page,
     }) => {
-      await login(page, [], EDITOR);
+      const patches: unknown[] = [];
+      await login(page, patches, EDITOR);
       await page.goto("/es/dashboard/inventory");
-      const table = page.getByRole("table");
-      await expect(table.getByText("Hamburguesa doble")).toBeVisible();
-      await expect(table.getByRole("switch").first()).toBeEnabled();
-      await expect(table.getByRole("spinbutton").first()).toBeEnabled();
+      const grid = page.getByTestId("inventory-grid");
+      await expect(grid.getByText("Hamburguesa doble · Unidad")).toBeVisible();
+      await expect(grid.getByText("Quedan 4")).toBeVisible();
+      await expect(grid.getByRole("spinbutton").first()).toBeEnabled();
+
+      await grid.getByRole("switch", { name: "Hamburguesa doble · Unidad disponible" }).click();
+      await expect.poll(() => patches).toContainEqual({
+        method: "POST",
+        target: "availability",
+        productId: "var-i-2",
+        body: { isAvailable: false },
+      });
+
+      // Seleccionar abre la barra de acciones masivas.
+      await grid.getByRole("checkbox", { name: "Seleccionar Gaseosa · Unidad" }).check();
+      await expect(page.getByRole("region", { name: "Acciones con la selección" })).toBeVisible();
     });
 
     test("sin inventory.set_availability la disponibilidad queda bloqueada", async ({ page }) => {
       await login(page);
       await page.goto("/es/dashboard/inventory");
-      const table = page.getByRole("table");
-      await expect(table.getByText("Hamburguesa doble")).toBeVisible();
-      await expect(table.getByRole("switch").first()).toBeDisabled();
+      const grid = page.getByTestId("inventory-grid");
+      await expect(grid.getByText("Hamburguesa doble · Unidad")).toBeVisible();
+      await expect(grid.getByRole("switch").first()).toBeDisabled();
+    });
+
+    test("categorías en tarjetas: filtra por estado y edita", async ({ page }) => {
+      await login(page);
+      await page.goto("/es/dashboard/catalog/categories");
+      const grid = page.getByTestId("categories-grid");
+      await expect(grid.getByRole("listitem")).toHaveCount(2);
+      await expect(grid.getByText("burger")).toBeVisible();
+      await expect(grid.getByText("Sin palabras clave")).toBeVisible();
+
+      await page.getByRole("button", { name: /Inactivas/ }).click();
+      await expect(page.getByText("No se encontraron resultados")).toBeVisible();
+      await page.getByRole("button", { name: /Todas/ }).click();
+
+      await grid.getByRole("button", { name: "Editar" }).first().click();
+      await expect(page.getByRole("heading", { name: "Editar categoría" })).toBeVisible();
     });
   });
 });

@@ -1,15 +1,20 @@
 {
-  "title": "Branch Inventory Management",
-  "subtitle": "Manage product availability, stock, and prices by branch",
+  "title": "Inventory by branch",
+  "subtitle": "Availability, stock and price of each product at the branch",
   "selectBranch": "Select Branch",
   "branchPlaceholder": "Choose a branch to manage its inventory",
   "mainBranch": "Main",
   "stats": {
-    "total": "Total Products",
+    "total": "Products at branch",
     "available": "Available",
     "activated": "Activated",
-    "lowStock": "Low Stock",
-    "outOfStock": "Out of Stock"
+    "lowStock": "Low stock",
+    "outOfStock": "Out of Stock",
+    "label": "Branch summary",
+    "totalHint": "At this branch",
+    "availableHint": "Can be ordered",
+    "lowStockHint": "Fewer than 10 units",
+    "outOfStockHint": "No units left"
   },
   "noBranch": {
     "title": "Select a branch",
@@ -29,7 +34,6 @@
     "subcategory": "Subcategory",
     "available": "Available",
     "activated": "Activated",
-    "available": "Available",
     "stock": "Stock",
     "basePrice": "Base Price",
     "branchPrice": "Branch Price",
@@ -82,18 +86,6 @@
     "deselectAll": "Deselect all",
     "inStock": "{count} units"
   },
-  "activate": {
-    "title": "Activate Product in Branch",
-    "description": "Configure stock and price for \"{name}\"",
-    "priceOverride": "Specific price for this branch",
-    "basePrice": "Base price: {price}",
-    "stock": "Initial stock",
-    "stockPlaceholder": "Leave empty for no control",
-    "available": "Available for sale",
-    "cancel": "Cancel",
-    "confirm": "Activate Product",
-    "processing": "Activating..."
-  },
   "notifications": {
     "activated": "Product activated in branch",
     "activateError": "Error activating: {error}",
@@ -127,7 +119,9 @@
     "quantity": "Quantity",
     "quantityPlaceholder": "Amount to adjust",
     "confirmAdjustStock": "Apply Adjustment",
-    "stockAdjustmentHint": "Stock will be increased or decreased by the specified amount"
+    "stockAdjustmentHint": "Stock will be increased or decreased by the specified amount",
+    "label": "Actions on the selection",
+    "clear": "Clear selection"
   },
   "readOnlyTitle": "Read-Only View",
   "readOnlySubtitle": "Read-only view of inventory. Go to",
@@ -165,5 +159,20 @@
     "empty": "No product matches the filter.",
     "available": "Available",
     "unavailable": "Unavailable"
+  },
+  "card": {
+    "select": "Select {name}",
+    "selectAll": "Select all ({count})",
+    "availableFor": "{name} available",
+    "unavailable": "Unavailable",
+    "untracked": "Stock not tracked",
+    "lowStock": "{count} left",
+    "inStock": "In stock",
+    "untrackedPlaceholder": "Not tracked",
+    "branchPrice": "Branch price",
+    "basePricePlaceholder": "{price} (base)",
+    "basePrice": "Base: {price}",
+    "usesBasePrice": "Uses the base price",
+    "pagination": "Inventory pagination"
   }
 }
