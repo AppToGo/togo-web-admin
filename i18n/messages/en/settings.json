@@ -23,7 +23,7 @@
   },
   "business": {
     "title": "Business Details",
-    "subtitle": "General information and branding for your business",
+    "subtitle": "How customers see you in the catalog and on WhatsApp",
     "name": "Business name",
     "description": "Description",
     "address": "Address",
@@ -41,7 +41,9 @@
       "description": "Description",
       "descriptionPlaceholder": "Describe your business...",
       "message": "Welcome message",
-      "messagePlaceholder": "Message that customers will see when entering the catalog..."
+      "messagePlaceholder": "Message that customers will see when entering the catalog...",
+      "lead": "Business name and general contact",
+      "catalogAddress": "Catalog address"
     },
     "slug": {
       "label": "Custom URL",
@@ -82,12 +84,17 @@
         "uploadSuccess": "Logo updated successfully",
         "uploadError": "Error uploading logo",
         "invalidType": "Invalid format. Use PNG, JPG or WebP",
-        "tooLarge": "File is too large. Maximum 2MB"
+        "tooLarge": "File is too large. Maximum 2MB",
+        "change": "Change logo",
+        "help": "PNG, JPG or WebP · 2 MB max"
       },
       "colors": {
         "primary": "Primary color",
-        "accent": "Accent color"
-      }
+        "accent": "Accent color",
+        "primaryHelp": "Header, «+» button and order button",
+        "accentHelp": "Selected category"
+      },
+      "lead": "Logo and colors of your catalog"
     },
     "welcomeMessage": {
       "label": "Welcome message",
@@ -150,6 +157,38 @@
       },
       "saveSuccess": "Assistant voice saved",
       "saveError": "Couldn't save the assistant voice"
+    },
+    "unsavedChanges": "You have unsaved changes",
+    "discard": "Discard",
+    "whatsapp": {
+      "notConfigured": "No shared number: each branch answers with its own WhatsApp."
+    },
+    "preview": {
+      "title": "Catalog preview",
+      "subtitle": "Updates as you edit",
+      "unsaved": "Unsaved",
+      "label": "Catalog preview for {name}",
+      "namePlaceholder": "Business name",
+      "descriptionFallback": "Catalog available",
+      "category1": "Featured",
+      "category2": "Combos",
+      "category3": "Drinks",
+      "productCount": "{count} products",
+      "viewOrder": "View order",
+      "products": {
+        "p1": {
+          "name": "Sample product",
+          "desc": "This is how descriptions look"
+        },
+        "p2": {
+          "name": "Combo of the day",
+          "desc": "Drink included"
+        },
+        "p3": {
+          "name": "House special",
+          "desc": "Available today"
+        }
+      }
     }
   },
   "notifications": {

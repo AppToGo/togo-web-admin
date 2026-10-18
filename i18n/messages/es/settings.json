@@ -23,7 +23,7 @@
   },
   "business": {
     "title": "Datos del Negocio",
-    "subtitle": "Información general y branding de tu negocio",
+    "subtitle": "Así te ven tus clientes en el catálogo y en WhatsApp",
     "name": "Nombre del negocio",
     "description": "Descripción",
     "address": "Dirección",
@@ -41,7 +41,9 @@
       "description": "Descripción",
       "descriptionPlaceholder": "Describe tu negocio...",
       "message": "Mensaje de bienvenida",
-      "messagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo..."
+      "messagePlaceholder": "Mensaje que verán tus clientes al entrar al catálogo...",
+      "lead": "Nombre y contacto general del negocio",
+      "catalogAddress": "Dirección del catálogo"
     },
     "config": {
       "title": "Configuración del Catálogo",
@@ -82,12 +84,17 @@
         "uploadSuccess": "Logo actualizado correctamente",
         "uploadError": "Error al subir el logo",
         "invalidType": "Formato inválido. Usa PNG, JPG o WebP",
-        "tooLarge": "El archivo es demasiado grande. Máximo 2MB"
+        "tooLarge": "El archivo es demasiado grande. Máximo 2MB",
+        "change": "Cambiar logo",
+        "help": "PNG, JPG o WebP · máximo 2 MB"
       },
       "colors": {
         "primary": "Color principal",
-        "accent": "Color de acento"
-      }
+        "accent": "Color de acento",
+        "primaryHelp": "Encabezado, botón «+» y botón del pedido",
+        "accentHelp": "Categoría seleccionada"
+      },
+      "lead": "Logo y colores de tu catálogo"
     },
     "welcomeMessage": {
       "label": "Mensaje de bienvenida",
@@ -150,6 +157,38 @@
       },
       "saveSuccess": "Voz del asistente guardada",
       "saveError": "No se pudo guardar la voz del asistente"
+    },
+    "unsavedChanges": "Tienes cambios sin guardar",
+    "discard": "Descartar",
+    "whatsapp": {
+      "notConfigured": "Sin número compartido: cada sede atiende con su propio WhatsApp."
+    },
+    "preview": {
+      "title": "Vista previa del catálogo",
+      "subtitle": "Se actualiza mientras editas",
+      "unsaved": "Sin guardar",
+      "label": "Vista previa del catálogo de {name}",
+      "namePlaceholder": "Nombre del negocio",
+      "descriptionFallback": "Catálogo disponible",
+      "category1": "Destacados",
+      "category2": "Combos",
+      "category3": "Bebidas",
+      "productCount": "{count} productos",
+      "viewOrder": "Ver pedido",
+      "products": {
+        "p1": {
+          "name": "Producto de ejemplo",
+          "desc": "Así se ve la descripción"
+        },
+        "p2": {
+          "name": "Combo del día",
+          "desc": "Incluye bebida"
+        },
+        "p3": {
+          "name": "Especial de la casa",
+          "desc": "Disponible hoy"
+        }
+      }
     }
   },
   "notifications": {
