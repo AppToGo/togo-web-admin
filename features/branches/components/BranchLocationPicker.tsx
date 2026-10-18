@@ -36,7 +36,11 @@ export interface BranchLocationPickerProps {
   address?: string;
   city?: string;
   department?: string;
-  onChange: (lat: number | null, lng: number | null) => void;
+  /**
+   * `source`: "manual" cuando el usuario mueve el pin, "geocode" cuando el
+   * pin se ubica solo a partir de la dirección.
+   */
+  onChange: (lat: number | null, lng: number | null, source: "manual" | "geocode") => void;
 }
 
 export function BranchLocationPicker({
@@ -88,7 +92,7 @@ export function BranchLocationPicker({
     (lat: number, lng: number) => {
       pinManuallyPlaced.current = true;
       setMapCenter([lat, lng]);
-      onChange(lat, lng);
+      onChange(lat, lng, "manual");
     },
     [onChange]
   );
@@ -115,7 +119,7 @@ export function BranchLocationPicker({
 
       if (coords) {
         setMapCenter(coords);
-        onChange(coords[0], coords[1]);
+        onChange(coords[0], coords[1], "geocode");
       } else {
         setGeocodeError(true);
       }

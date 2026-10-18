@@ -2,8 +2,8 @@
   "branch": "Branch",
   "branches": "Branches",
   "title": "Branches",
-  "subtitle": "Manage your business branches",
-  "createBranch": "New Branch",
+  "subtitle": "Where you serve, your opening hours and which WhatsApp number answers",
+  "createBranch": "New branch",
   "mainBranch": "Main",
   "timezone": "Timezone",
   "currency": "Currency",
@@ -109,7 +109,8 @@
     "usage": "{current} of {max} branches",
     "remaining": "{count} available",
     "upgrade": "Upgrade plan",
-    "upgradeDescription": "Your current plan only allows one branch. Upgrade to manage multiple locations."
+    "upgradeDescription": "Your current plan only allows one branch. Upgrade to manage multiple locations.",
+    "usageRich": "<b>{current} of {max}</b> branches in your plan"
   },
   "routingMode": "Routing mode",
   "card": {
@@ -122,6 +123,25 @@
       "noSchedule": "No schedule",
       "closedManually": "Closed manually",
       "noScheduleTitle": "No schedule set: accepts orders at any time"
+    },
+    "moreActions": "More actions for {name}",
+    "makeMainLong": "Make main branch",
+    "editWhatsApp": "Edit WhatsApp",
+    "connectWhatsApp": "Connect WhatsApp",
+    "noWhatsApp": "No own WhatsApp",
+    "connect": "Connect",
+    "view": "View branch",
+    "status": {
+      "open": "Open",
+      "closed": "Closed",
+      "closedManually": "Closed manually",
+      "always": "No schedule",
+      "off": "Inactive",
+      "offDetail": "does not take orders",
+      "alwaysDetail": "takes orders any time",
+      "until": "until {time}",
+      "opensAt": "opens today at {time}",
+      "untilDate": "until {date}"
     }
   },
   "metrics": {
@@ -195,7 +215,11 @@
       "slugInvalid": "Slug can only contain lowercase letters, numbers and hyphens",
       "codeRequired": "Code is required",
       "phoneInvalid": "Invalid number. Use E.164 format, e.g. +13001234567"
-    }
+    },
+    "unsavedChanges": "You have unsaved changes",
+    "noChanges": "Everything is saved",
+    "createHint": "Fill in the details and create the branch",
+    "discard": "Discard"
   },
   "settings": {
     "title": "{branchName} Settings",
@@ -295,6 +319,28 @@
       "description": "For in-store sales: the customer orders, pays and takes the product right away",
       "enable": "Enable counter sales",
       "enableDescription": "Adds the \"Counter\" type to \"New order\" at this branch. The order is charged and marked delivered in one step; cash requires an open register."
+    }
+  },
+  "filters": {
+    "label": "Filter branches",
+    "all": "All",
+    "open": "Open now",
+    "closed": "Closed",
+    "off": "Inactive",
+    "empty": "No branch matches the filter."
+  },
+  "detail": {
+    "sectionsLabel": "Branch sections",
+    "sectionsTitle": "In this branch",
+    "meta": "Created on {created} · Last updated on {updated}",
+    "sections": {
+      "general": "General",
+      "location": "Location",
+      "hours": "Opening hours",
+      "delivery": "Home delivery",
+      "channels": "Sales channels",
+      "payments": "Bank transfer payments",
+      "tables": "Tables and QR"
     }
   }
 }

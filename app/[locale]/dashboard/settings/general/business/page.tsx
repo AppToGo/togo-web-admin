@@ -6,24 +6,21 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Store,
-  ArrowLeft,
   Loader2,
   Upload,
-  Palette,
-  Globe,
-  ShoppingBag,
   MessageCircle,
   Edit2,
+  ExternalLink,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "@/i18n/routing";
+import { cn, HEX_COLOR } from "@/lib/utils";
+import { APP_CONFIG } from "@/config/app.config";
+import { CatalogPreview } from "@/features/business/components/CatalogPreview";
 import {
   BotVoiceCard,
   botVoiceKey,
@@ -40,6 +37,11 @@ import {
   useWhatsAppRoutings,
   WhatsAppConnectDialog,
 } from "@/features/whatsapp";
+
+const SECTION =
+  "flex flex-col gap-4 rounded-3xl border border-white/90 bg-white/65 p-6";
+const FIELD = "h-11 rounded-[14px] border-0 bg-white";
+const FORM_ID = "business-settings-form";
 
 interface FormData {
   name: string;
@@ -151,14 +153,14 @@ export default function BusinessSettingsPage() {
 
     if (
       formData.primaryColor &&
-      !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.primaryColor)
+      !HEX_COLOR.test(formData.primaryColor)
     ) {
       newErrors.primaryColor = tb("validation.colorFormat");
     }
 
     if (
       formData.accentColor &&
-      !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.accentColor)
+      !HEX_COLOR.test(formData.accentColor)
     ) {
       newErrors.accentColor = tb("validation.colorFormat");
     }
@@ -217,6 +219,11 @@ export default function BusinessSettingsPage() {
   const isDirty =
     formSource !== null && JSON.stringify(formData) !== formSource;
 
+  const handleDiscard = useCallback(() => {
+    if (formSource) setFormData(JSON.parse(formSource) as FormData);
+    setErrors({});
+  }, [formSource]);
+
   const handleLogoUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -270,323 +277,275 @@ export default function BusinessSettingsPage() {
     );
   }
 
+  const logoUrl = (business.settings as Record<string, unknown>)?.logo as
+    | string
+    | undefined;
+  const catalogUrl = `${APP_CONFIG.webCatalog.baseUrl}/${formData.slug}`;
+  const catalogLabel = catalogUrl.replace(/^https?:\/\//, "");
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header (< md el título y volver están en la barra superior) */}
-        <div className="hidden md:flex items-center gap-4 mb-6">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Store className="h-6 w-6 text-indigo-600" />
-              {tb("title")}
-            </h1>
-            <p className="text-slate-500">{tb("subtitle")}</p>
-          </div>
-        </div>
+      <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5">
+        {/* Header (< md el título está en la barra superior) */}
+        <header className="hidden md:block">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+            <Store className="h-6 w-6 text-indigo-600" />
+            {tb("title")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">{tb("subtitle")}</p>
+        </header>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* General Information */}
-          <Card variant="glass">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Globe className="h-5 w-5 text-indigo-600" />
-                {tb("information.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+          {/* Vista previa: fija mientras se recorre el formulario */}
+          <aside
+            aria-label={tb("preview.title")}
+            className="flex shrink-0 flex-col gap-3.5 rounded-3xl border border-white/90 bg-white/70 p-5 lg:sticky lg:top-6 lg:w-[340px]"
+          >
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  {tb("preview.title")}
+                </h2>
+                <p className="mt-1 text-[13px] text-slate-500">{tb("preview.subtitle")}</p>
+              </div>
+              {isDirty && (
+                <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                  {tb("preview.unsaved")}
+                </span>
+              )}
+            </div>
+            <CatalogPreview
+              name={formData.name}
+              description={formData.description}
+              logoUrl={logoUrl}
+              primaryColor={formData.primaryColor}
+              accentColor={formData.accentColor}
+              useProductImages={formData.useProductImages}
+            />
+            {formData.slug && (
+              <a
+                href={catalogUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 self-center break-all text-sm font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                {catalogLabel}
+                <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+              </a>
+            )}
+          </aside>
+
+          <div className="min-w-0 flex-1 space-y-4">
+            <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-4">
+              <section className={SECTION}>
+                <div>
+                  <h2 className="text-[17px] font-semibold text-slate-900">{tb("information.title")}</h2>
+                  <p className="mt-1 text-[13px] text-slate-500">{tb("information.lead")}</p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">
+                      {tb("information.name")} <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => handleChange("name", e.target.value)}
+                      placeholder={tb("placeholders.name")}
+                      className={FIELD}
+                    />
+                    {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                  </div>
+                  <PhoneInput
+                    label={tb("information.phone")}
+                    value={formData.phone}
+                    onChange={(v) => handleChange("phone", v)}
+                    helperText={tb("information.phoneDescription")}
+                    id="phone"
+                  />
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name">
-                    {tb("information.name")}{" "}
-                    <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    placeholder={tb("placeholders.name")}
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-500">{errors.name}</p>
-                  )}
-                </div>
-
-                <PhoneInput
-                  label={tb("information.phone")}
-                  value={formData.phone}
-                  onChange={(v) => handleChange("phone", v)}
-                  helperText={tb("information.phoneDescription")}
-                  id="phone"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="slug">
-                  {tb("information.slug")}{" "}
-                  <span className="text-red-500">*</span>
-                  <span className="text-xs text-slate-500 ml-4">
-                    {tb("information.slugDescription")}
-                  </span>
-                </Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-500">togo.com/</span>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    readOnly
-                    disabled
-                    onChange={(e) =>
-                      handleChange(
-                        "slug",
-                        e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")
-                      )
-                    }
-                    placeholder={tb("placeholders.slug")}
-                    className="flex-1"
+                  <Label htmlFor="description">{tb("information.description")}</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleChange("description", e.target.value)}
+                    placeholder={tb("information.descriptionPlaceholder")}
+                    rows={3}
+                    className="rounded-[14px] border-0 bg-white"
                   />
                 </div>
-                {errors.slug && (
-                  <p className="text-sm text-red-500">{errors.slug}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">
-                  {tb("information.description")}
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  placeholder={tb("information.descriptionPlaceholder")}
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Catalog Configuration */}
-          <Card variant="glass">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-indigo-600" />
-                {tb("config.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
-                <div className="space-y-0.5">
-                  <Label htmlFor="useProductImages" className="text-base">
-                    {tb("config.useProductImages.label")}
-                  </Label>
-                  <p className="text-sm text-slate-500">
-                    {tb("config.useProductImages.description")}
-                  </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-white/80 px-4 py-3 text-sm">
+                  <span className="text-slate-500">{tb("information.catalogAddress")}</span>
+                  <span className="break-all font-medium text-slate-800">{catalogLabel}</span>
+                  {errors.slug && <p className="w-full text-sm text-red-500">{errors.slug}</p>}
                 </div>
-                <Switch
-                  id="useProductImages"
-                  checked={formData.useProductImages}
-                  onCheckedChange={(checked) =>
-                    handleBooleanChange("useProductImages", checked)
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
+              </section>
 
-          {/* Branding */}
-          <Card variant="glass">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Palette className="h-5 w-5 text-indigo-600" />
-                {tb("branding.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-3 ">
-                {/* Logo */}
-                <div className="space-y-2 col-span-1">
-                  <Label>{tb("branding.logo.label")}</Label>
-                  <div className="flex gap-4 ">
-                    {(() => {
-                      const logoUrl = (
-                        business?.settings as Record<string, unknown>
-                      )?.logo as string | undefined;
-                      return logoUrl ? (
-                        <img
-                          src={logoUrl}
-                          alt="Logo"
-                          className="w-10 h-10 rounded-lg object-cover border border-slate-200 bg-white"
-                        />
-                      ) : (
-                        <div className="w-20 h-10 rounded-lg bg-slate-100 flex items-center justify-center border border-slate-200">
-                          <Store className="h-8 w-8 text-slate-400" />
-                        </div>
-                      );
-                    })()}
-                    <div className="flex flex-col gap-2 w-full">
-                      <input
-                        ref={logoInputRef}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        className="hidden"
-                        onChange={handleLogoUpload}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={uploadLogo.isPending}
-                        isLoading={uploadLogo.isPending}
-                        onClick={() => logoInputRef.current?.click()}
-                        className="w-full h-10"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {uploadLogo.isPending
-                          ? tb("branding.logo.uploading")
-                          : tb("branding.logo.upload")}
-                      </Button>
+              <section className={SECTION}>
+                <div>
+                  <h2 className="text-[17px] font-semibold text-slate-900">{tb("branding.title")}</h2>
+                  <p className="mt-1 text-[13px] text-slate-500">{tb("branding.lead")}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logoUrl}
+                      alt={tb("branding.logo.label")}
+                      className="h-[72px] w-[72px] rounded-[18px] bg-white object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-[72px] w-[72px] items-center justify-center rounded-[18px] bg-white">
+                      <Store className="h-8 w-8 text-slate-400" />
                     </div>
-                  </div>
-                </div>
-                {/* Colors */}
-                <div className="space-y-2">
-                  <Label htmlFor="primaryColor">
-                    {tb("branding.colors.primary")}
-                  </Label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={formData.primaryColor}
-                      onChange={(e) =>
-                        handleChange("primaryColor", e.target.value)
-                      }
-                      className="w-10 h-10 rounded cursor-pointer border-0 p-0"
-                    />
-                    <Input
-                      value={formData.primaryColor}
-                      onChange={(e) =>
-                        handleChange("primaryColor", e.target.value)
-                      }
-                      className="flex-1 uppercase"
-                    />
-                  </div>
-                  {errors.primaryColor && (
-                    <p className="text-sm text-red-500">
-                      {errors.primaryColor}
-                    </p>
                   )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="accentColor">
-                    {tb("branding.colors.accent")}
-                  </Label>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-1">
                     <input
-                      type="color"
-                      value={formData.accentColor}
-                      onChange={(e) =>
-                        handleChange("accentColor", e.target.value)
-                      }
-                      className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleLogoUpload}
                     />
-                    <Input
-                      value={formData.accentColor}
-                      onChange={(e) =>
-                        handleChange("accentColor", e.target.value)
-                      }
-                      className="flex-1 uppercase"
-                    />
+                    <Button
+                      type="button"
+                      variant="slate-outline"
+                      disabled={uploadLogo.isPending}
+                      isLoading={uploadLogo.isPending}
+                      onClick={() => logoInputRef.current?.click()}
+                      className="h-11 rounded-[14px] px-4 font-semibold text-slate-700"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {uploadLogo.isPending
+                        ? tb("branding.logo.uploading")
+                        : logoUrl
+                          ? tb("branding.logo.change")
+                          : tb("branding.logo.upload")}
+                    </Button>
+                    <span className="text-xs text-slate-500">{tb("branding.logo.help")}</span>
                   </div>
-                  {errors.accentColor && (
-                    <p className="text-sm text-red-500">{errors.accentColor}</p>
-                  )}
                 </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {(["primaryColor", "accentColor"] as const).map((field) => (
+                    <div key={field} className="space-y-1.5">
+                      <Label htmlFor={field}>
+                        {tb(field === "primaryColor" ? "branding.colors.primary" : "branding.colors.accent")}
+                      </Label>
+                      <p className="text-xs text-slate-500">
+                        {tb(field === "primaryColor" ? "branding.colors.primaryHelp" : "branding.colors.accentHelp")}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={formData[field]}
+                          onChange={(e) => handleChange(field, e.target.value)}
+                          aria-label={tb(field === "primaryColor" ? "branding.colors.primary" : "branding.colors.accent")}
+                          className="h-11 w-11 shrink-0 cursor-pointer rounded-xl border-0 p-0"
+                        />
+                        <Input
+                          id={field}
+                          value={formData[field]}
+                          onChange={(e) => handleChange(field, e.target.value)}
+                          className={cn(FIELD, "uppercase")}
+                        />
+                      </div>
+                      {errors[field] && <p className="text-sm text-red-500">{errors[field]}</p>}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className={SECTION}>
+                <h2 className="text-[17px] font-semibold text-slate-900">{tb("config.title")}</h2>
+                <div className="flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
+                  <div className="min-w-0 flex-1">
+                    <Label htmlFor="useProductImages" className="text-sm font-semibold">
+                      {tb("config.useProductImages.label")}
+                    </Label>
+                    <p className="text-xs text-slate-500">{tb("config.useProductImages.description")}</p>
+                  </div>
+                  <Switch
+                    id="useProductImages"
+                    checked={formData.useProductImages}
+                    onCheckedChange={(checked) => handleBooleanChange("useProductImages", checked)}
+                  />
+                </div>
+              </section>
+
+            </form>
+
+            {/* Voz del asistente de WhatsApp (plan bot natural, T18) */}
+            <BotVoiceCard key={botVoiceKey(business)} business={business} />
+
+            {/* WhatsApp Compartido (AUTO_ASSIGN) */}
+            <section className={SECTION}>
+              <div>
+                <h2 className="flex items-center gap-2 text-[17px] font-semibold text-slate-900">
+                  <MessageCircle className="h-5 w-5 text-green-600" />
+                  {tWa("business.sectionTitle")}
+                </h2>
+                <p className="mt-1 text-[13px] text-slate-500">{tWa("business.sectionDescription")}</p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Actions — < md: "Guardar" fijo abajo a todo el ancho (volver
-              ya está en la barra superior). */}
-          <div className="sticky bottom-0 z-10 -mx-4 flex justify-end gap-4 border-t border-slate-200/70 bg-white px-4 py-3 sm:-mx-6 sm:px-6 md:static md:mx-0 md:border-0 md:bg-transparent md:p-0">
-            <Link href="/dashboard" className="hidden md:block">
-              <Button type="button" variant="outline">
-                {tb("buttons.cancel")}
-              </Button>
-            </Link>
-            <Button
-              type="submit"
-              className="h-12 flex-1 text-base md:h-10 md:flex-none md:text-sm"
-              disabled={!isDirty || updateBusiness.isPending}
-              isLoading={updateBusiness.isPending}
-            >
-              {tc("buttons.save")}
-            </Button>
-          </div>
-        </form>
-
-        {/* Voz del asistente de WhatsApp (plan bot natural, T18) */}
-        {business && (
-          <BotVoiceCard key={botVoiceKey(business)} business={business} />
-        )}
-
-        {/* WhatsApp Compartido (AUTO_ASSIGN) */}
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-green-600" />
-              {tWa("business.sectionTitle")}
-            </CardTitle>
-            <p className="text-sm text-slate-500 mt-1">
-              {tWa("business.sectionDescription")}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {autoAssignAccount && autoAssignRouting ? (
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-green-100 text-green-700 border-green-200">
-                    <MessageCircle className="w-3 h-3 mr-1" />
-                    {tWa("business.configured")}
-                  </Badge>
-                  <span className="text-sm font-mono text-slate-700">
-                    {autoAssignAccount.displayName ??
-                      autoAssignAccount.phoneNumber}
-                  </span>
-                  {autoAssignAccount.displayName && (
-                    <span className="text-xs text-slate-500">
-                      ({autoAssignAccount.phoneNumber})
-                    </span>
-                  )}
-                </div>
+              <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
+                {autoAssignAccount && autoAssignRouting ? (
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {autoAssignAccount.displayName ?? autoAssignAccount.phoneNumber}
+                    </p>
+                    {autoAssignAccount.displayName && (
+                      <p className="text-xs text-slate-500">{autoAssignAccount.phoneNumber}</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="min-w-0 flex-1 text-sm text-slate-500">{tb("whatsapp.notConfigured")}</p>
+                )}
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="slate-outline"
                   onClick={() => setWaDialogOpen(true)}
-                  className="ml-auto"
+                  className="h-11 rounded-[14px] px-4 font-semibold text-slate-700"
                 >
-                  <Edit2 className="w-4 h-4 mr-1.5" />
-                  {tWa("accounts.edit")}
+                  {autoAssignAccount && autoAssignRouting ? (
+                    <>
+                      <Edit2 className="h-4 w-4" />
+                      {tWa("accounts.edit")}
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="h-4 w-4" />
+                      {tWa("business.configure")}
+                    </>
+                  )}
                 </Button>
               </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setWaDialogOpen(true)}
-                className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                {tWa("business.configure")}
-              </Button>
+            </section>
+
+            {/* Guardar: barra fija abajo mientras haya cambios */}
+            {(isDirty || updateBusiness.isPending) && (
+              <div className="sticky bottom-4 z-20 flex flex-wrap items-center gap-3 rounded-[20px] bg-indigo-950 py-3 pl-5 pr-3 text-white shadow-[0_10px_30px_rgba(30,27,75,0.25)]">
+                <span className="min-w-48 flex-1 text-sm">{tb("unsavedChanges")}</span>
+                <Button
+                  type="button"
+                  onClick={handleDiscard}
+                  disabled={updateBusiness.isPending}
+                  className="h-11 rounded-[14px] border-0 bg-white/15 px-4 text-white shadow-none hover:bg-white/25"
+                >
+                  {tb("discard")}
+                </Button>
+                <Button
+                  type="submit"
+                  form={FORM_ID}
+                  disabled={!isDirty || updateBusiness.isPending}
+                  isLoading={updateBusiness.isPending}
+                  className="h-11 rounded-[14px] bg-white px-5 font-semibold text-indigo-950 shadow-none hover:bg-white/90"
+                >
+                  {tc("buttons.save")}
+                </Button>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* WhatsApp Dialog — branchId=null means AUTO_ASSIGN */}
