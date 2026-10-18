@@ -6,7 +6,7 @@
  * scroll. Las secciones son elementos con `id` y `scroll-mt-*`.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface SectionNavItem {
@@ -23,22 +23,30 @@ interface SectionNavProps {
 
 /** Una sección cuenta como "actual" cuando su borde superior pasa esta línea. */
 const ACTIVE_LINE_PX = 140;
+/** Tras un clic, el scroll suave no cambia la sección marcada durante este tiempo. */
+const CLICK_LOCK_MS = 900;
 
 export function SectionNav({ label, title, items, className }: SectionNavProps) {
   const [active, setActive] = useState(items[0]?.id ?? "");
+  const lockUntil = useRef(0);
+  // Las ids como dependencia: el padre suele pasar un arreglo nuevo en cada
+  // render y no queremos volver a suscribir los listeners por eso.
+  const ids = items.map((item) => item.id).join("|");
 
   const update = useCallback(() => {
-    let current = items[0]?.id ?? "";
-    for (const item of items) {
-      const el = document.getElementById(item.id);
-      if (el && el.getBoundingClientRect().top <= ACTIVE_LINE_PX) current = item.id;
+    if (Date.now() < lockUntil.current) return;
+    const list = ids ? ids.split("|") : [];
+    let current = list[0] ?? "";
+    for (const id of list) {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= ACTIVE_LINE_PX) current = id;
     }
     // Al final de la página la última sección puede no llegar a la línea.
     const atBottom =
       window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-    if (atBottom && items.length > 0) current = items[items.length - 1].id;
+    if (atBottom && list.length > 0) current = list[list.length - 1];
     setActive(current);
-  }, [items]);
+  }, [ids]);
 
   useEffect(() => {
     // Primera medición cuando el contenido ya está pintado.
@@ -76,6 +84,7 @@ export function SectionNav({ label, title, items, className }: SectionNavProps) 
               const el = document.getElementById(item.id);
               if (!el) return;
               event.preventDefault();
+              lockUntil.current = Date.now() + CLICK_LOCK_MS;
               el.scrollIntoView({ behavior: "smooth", block: "start" });
               setActive(item.id);
             }}

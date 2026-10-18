@@ -140,7 +140,8 @@
       "offDetail": "does not take orders",
       "alwaysDetail": "takes orders any time",
       "until": "until {time}",
-      "opensAt": "opens today at {time}"
+      "opensAt": "opens today at {time}",
+      "untilDate": "until {date}"
     }
   },
   "metrics": {

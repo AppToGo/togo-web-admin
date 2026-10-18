@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { MapPin, MessageCircle, MoreHorizontal, Star, Trash2 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,21 +55,36 @@ const STATUS_TONE: Record<BranchStatus["kind"], { dot: string; text: string }> =
  */
 export function BranchStatusLine({
   status,
+  timezone,
   className,
 }: {
   status: BranchStatus;
+  /** Zona de la sede, para mostrar la fecha del fin de un cierre manual. */
+  timezone?: string;
   className?: string;
 }) {
   const t = useTranslations("branches.card.status");
+  const format = useFormatter();
   const tone = STATUS_TONE[status.kind];
   const detail =
     status.kind === "off"
       ? t("offDetail")
       : status.kind === "always"
         ? t("alwaysDetail")
-        : status.time
-          ? t(status.timeKind === "opensAt" ? "opensAt" : "until", { time: status.time })
-          : null;
+        : status.timeKind === "untilDate" && status.untilIso
+          ? t("untilDate", {
+              date: format.dateTime(new Date(status.untilIso), {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: timezone,
+              }),
+            })
+          : status.time
+            ? t(status.timeKind === "opensAt" ? "opensAt" : "until", { time: status.time })
+            : null;
 
   return (
     <p className={cn("flex min-w-0 items-center gap-2 text-sm", className)}>
@@ -134,7 +149,9 @@ export const BranchCard = memo(function BranchCard({
             {branch.isMainBranch && <MainBranchBadge />}
           </div>
         </div>
-        <DropdownMenu>
+        {/* No modal: "Eliminar" abre un AlertDialog y dos capas modales de
+            Radix pueden dejar el body con pointer-events: none al cerrar. */}
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -170,7 +187,7 @@ export const BranchCard = memo(function BranchCard({
         </DropdownMenu>
       </div>
 
-      <BranchStatusLine status={status} />
+      <BranchStatusLine status={status} timezone={branch.timezone} />
 
       {branch.address && (
         <p className="flex min-w-0 items-center gap-2 text-[13px] text-slate-600">

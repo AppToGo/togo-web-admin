@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, HEX_COLOR } from "@/lib/utils";
+import { initialsOf } from "@/components/ui/initials-avatar";
 
 /** Productos de ejemplo: solo para ver colores y tipografía, no son datos reales. */
 const SAMPLE_PRODUCTS = [
@@ -10,8 +11,6 @@ const SAMPLE_PRODUCTS = [
   { key: "p2", initials: "DQ", tone: "bg-orange-200", price: "$ 32.000" },
   { key: "p3", initials: "PC", tone: "bg-rose-200", price: "$ 24.000" },
 ] as const;
-
-const HEX = /^#([0-9a-f]{6}|[0-9a-f]{3})$/i;
 
 interface CatalogPreviewProps {
   name: string;
@@ -37,17 +36,9 @@ export function CatalogPreview({
   useProductImages,
 }: CatalogPreviewProps) {
   const t = useTranslations("settings.business.preview");
-  const primary = HEX.test(primaryColor) ? primaryColor : "#4F46E5";
-  const accent = HEX.test(accentColor) ? accentColor : "#10B981";
-  const initials =
-    name
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase() || "?";
+  const primary = HEX_COLOR.test(primaryColor) ? primaryColor : "#4F46E5";
+  const accent = HEX_COLOR.test(accentColor) ? accentColor : "#10B981";
+  const initials = initialsOf(name);
 
   return (
     <div

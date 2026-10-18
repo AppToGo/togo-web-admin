@@ -118,8 +118,10 @@ export default function BranchesPage() {
       ) as Record<BranchFilter, number>,
     [withStatus]
   );
+  // Con una sola sede no hay pastillas: un filtro que quedó elegido no aplica.
+  const activeFilter: BranchFilter = withStatus.length > 1 ? filter : "all";
   const visibleBranches = withStatus
-    .filter((b) => matchesBranchFilter(b.status, filter))
+    .filter((b) => matchesBranchFilter(b.status, activeFilter))
     .map((b) => b.branch);
 
   const handleCreateBranch = () => {
@@ -252,7 +254,7 @@ export default function BranchesPage() {
                 {branches.length > 1 && (
                   <PillGroup
                     label={t("filters.label")}
-                    value={filter}
+                    value={activeFilter}
                     onChange={setFilter}
                     appearance="glass"
                     options={FILTERS.map((f) => ({

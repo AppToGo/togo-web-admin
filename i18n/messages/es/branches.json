@@ -140,7 +140,8 @@
       "offDetail": "no recibe pedidos",
       "alwaysDetail": "acepta pedidos a toda hora",
       "until": "hasta las {time}",
-      "opensAt": "abre hoy a las {time}"
+      "opensAt": "abre hoy a las {time}",
+      "untilDate": "hasta el {date}"
     }
   },
   "metrics": {

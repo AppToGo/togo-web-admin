@@ -169,7 +169,7 @@ export default function EditBranchPage() {
               {branch.isMainBranch && <MainBranchBadge />}
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-              <BranchStatusLine status={status} />
+              <BranchStatusLine status={status} timezone={branch.timezone} />
               <span className="font-mono text-[13px]">{branch.code}</span>
               {branch.address && <span className="truncate">{branch.address}</span>}
             </div>

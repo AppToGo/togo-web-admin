@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn, HEX_COLOR } from "@/lib/utils";
 import { APP_CONFIG } from "@/config/app.config";
 import { CatalogPreview } from "@/features/business/components/CatalogPreview";
 import {
@@ -153,14 +153,14 @@ export default function BusinessSettingsPage() {
 
     if (
       formData.primaryColor &&
-      !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.primaryColor)
+      !HEX_COLOR.test(formData.primaryColor)
     ) {
       newErrors.primaryColor = tb("validation.colorFormat");
     }
 
     if (
       formData.accentColor &&
-      !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.accentColor)
+      !HEX_COLOR.test(formData.accentColor)
     ) {
       newErrors.accentColor = tb("validation.colorFormat");
     }

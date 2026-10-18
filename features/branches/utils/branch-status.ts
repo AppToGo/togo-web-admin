@@ -16,16 +16,24 @@ export interface BranchStatus {
   kind: BranchStatusKind;
   /** Hora "HH:mm" para el detalle ("hasta 22:00", "abre a las 11:00"). */
   time?: string;
-  /** Qué significa `time`: hasta cuándo sigue así o a qué hora abre hoy. */
-  timeKind?: "until" | "opensAt";
+  /**
+   * Qué significa `time`: hasta cuándo sigue así hoy, a qué hora abre hoy, o
+   * (`untilDate`) que el cierre manual termina otro día: ver `untilIso`.
+   */
+  timeKind?: "until" | "opensAt" | "untilDate";
+  /** Instante en que termina el cierre/apertura manual, si no es hoy. */
+  untilIso?: string;
 }
 
-/** Día de la semana y hora "HH:mm" actuales en la zona horaria de la sede. */
-function nowIn(timezone: string, now: Date): { day: string; time: string } {
+/** Día de la semana, fecha y hora "HH:mm" de un instante en la zona de la sede. */
+function nowIn(timezone: string, now: Date): { day: string; date: string; time: string } {
   try {
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: timezone,
       weekday: "long",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hourCycle: "h23",
@@ -33,26 +41,30 @@ function nowIn(timezone: string, now: Date): { day: string; time: string } {
     const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
     return {
       day: get("weekday").toLowerCase(),
+      date: `${get("year")}-${get("month")}-${get("day")}`,
       time: `${get("hour")}:${get("minute")}`,
     };
   } catch {
-    return { day: "", time: "" };
+    return { day: "", date: "", time: "" };
   }
 }
 
-function todaySchedule(branch: Branch, now: Date): { schedule: DaySchedule | null; time: string } {
+/** Horario de hoy y de ayer (el turno nocturno de ayer puede seguir abierto). */
+function schedulesNow(
+  branch: Branch,
+  now: Date
+): { today: DaySchedule | null; yesterday: DaySchedule | null; time: string } {
   const hours = parseBusinessHours(branch.businessHours, branch.timezone);
-  if (!hours) return { schedule: null, time: "" };
+  if (!hours) return { today: null, yesterday: null, time: "" };
   const { day, time } = nowIn(hours.timezone, now);
-  const key = BUSINESS_HOURS_DAYS.find((d) => d === day);
-  return { schedule: key ? hours.schedule[key] : null, time };
-}
-
-/** Hora local "HH:mm" de un instante ISO en la zona de la sede. */
-function timeOf(iso: string, timezone: string): string | undefined {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return undefined;
-  return nowIn(timezone, date).time || undefined;
+  const index = BUSINESS_HOURS_DAYS.findIndex((d) => d === day);
+  if (index < 0) return { today: null, yesterday: null, time };
+  const yesterdayKey = BUSINESS_HOURS_DAYS[(index + 6) % 7];
+  return {
+    today: hours.schedule[BUSINESS_HOURS_DAYS[index]],
+    yesterday: hours.schedule[yesterdayKey],
+    time,
+  };
 }
 
 export function getBranchStatus(branch: Branch, now: Date = new Date()): BranchStatus {
@@ -61,21 +73,34 @@ export function getBranchStatus(branch: Branch, now: Date = new Date()): BranchS
   if (!status || status.motivo === "SIN_CONFIGURAR") return { kind: "always" };
 
   if (status.motivo === "OVERRIDE") {
-    const time = status.hasta ? timeOf(status.hasta, branch.timezone) : undefined;
-    return {
-      kind: status.aceptando ? "open" : "closedManually",
-      ...(time ? { time, timeKind: "until" as const } : {}),
-    };
+    const kind = status.aceptando ? "open" : "closedManually";
+    const until = status.hasta ? new Date(status.hasta) : null;
+    if (!until || Number.isNaN(until.getTime())) return { kind };
+    const end = nowIn(branch.timezone, until);
+    // Si termina otro día, la hora sola engaña ("hasta las 10:00" ¿de hoy?).
+    return end.date === nowIn(branch.timezone, now).date
+      ? { kind, time: end.time, timeKind: "until" }
+      : { kind, untilIso: status.hasta ?? undefined, timeKind: "untilDate" };
   }
 
-  const { schedule, time: nowTime } = todaySchedule(branch, now);
+  const { today, yesterday, time: nowTime } = schedulesNow(branch, now);
   if (status.aceptando) {
-    return schedule?.isOpen && schedule.close
-      ? { kind: "open", time: schedule.close, timeKind: "until" }
+    // Turno nocturno de ayer todavía abierto (ej. viernes 17:00–02:00 y es
+    // sábado 01:00): cierra a la hora de ayer, no a la de hoy.
+    const overnight =
+      yesterday?.isOpen &&
+      yesterday.open &&
+      yesterday.close &&
+      yesterday.close < yesterday.open &&
+      nowTime &&
+      nowTime < yesterday.close;
+    if (overnight) return { kind: "open", time: yesterday.close, timeKind: "until" };
+    return today?.isOpen && today.close
+      ? { kind: "open", time: today.close, timeKind: "until" }
       : { kind: "open" };
   }
-  if (schedule?.isOpen && schedule.open && nowTime && nowTime < schedule.open) {
-    return { kind: "closed", time: schedule.open, timeKind: "opensAt" };
+  if (today?.isOpen && today.open && nowTime && nowTime < today.open) {
+    return { kind: "closed", time: today.open, timeKind: "opensAt" };
   }
   return { kind: "closed" };
 }

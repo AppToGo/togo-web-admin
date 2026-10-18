@@ -209,6 +209,9 @@ export function BranchForm({
   const [businessHoursTouched, setBusinessHoursTouched] = useState(false);
   const [businessHoursErrors, setBusinessHoursErrors] =
     useState<BusinessHoursErrors | null>(null);
+  // Tocar el horario cuenta aunque quede igual: guardar envía `businessHours`
+  // y así se puede limpiar un horario vacío que el API guardó.
+  const canSave = isDirty || businessHoursTouched;
 
   // Sync form when branch prop changes (e.g. after React Query background
   // refetch). Se ajusta durante el render, no en un efecto: así no hay un
@@ -704,9 +707,24 @@ export function BranchForm({
           address={formData.address}
           city={formData.city}
           department={formData.department}
-          onChange={(lat, lng) =>
-            setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
-          }
+          onChange={(lat, lng, source) => {
+            setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+            // Ubicar el pin solo a partir de la dirección ya guardada (sede
+            // sin coordenadas) no es un cambio del usuario: se absorbe en lo
+            // guardado y viaja con el próximo guardado.
+            if (source === "geocode") {
+              setSavedSnapshot((prev) => {
+                const saved = JSON.parse(prev) as typeof formData;
+                const sameAddress =
+                  saved.address === formData.address &&
+                  saved.city === formData.city &&
+                  saved.department === formData.department;
+                return sameAddress
+                  ? JSON.stringify({ ...saved, latitude: lat, longitude: lng })
+                  : prev;
+              });
+            }
+          }}
         />
       </div>
 
@@ -768,22 +786,22 @@ export function BranchForm({
       <div className="sticky bottom-4 z-20 flex flex-wrap items-center gap-3 rounded-[20px] bg-indigo-950 py-3 pl-5 pr-3 text-white shadow-[0_10px_30px_rgba(30,27,75,0.25)]">
         <span className="min-w-48 flex-1 text-sm">
           {isEditing
-            ? isDirty
+            ? canSave
               ? t("form.unsavedChanges")
               : t("form.noChanges")
             : t("form.createHint")}
         </span>
         <Button
           type="button"
-          onClick={isEditing && isDirty ? handleDiscard : onCancel}
+          onClick={isEditing && canSave ? handleDiscard : onCancel}
           disabled={isLoading}
           className="h-11 rounded-[14px] border-0 bg-white/15 px-4 text-white shadow-none hover:bg-white/25"
         >
-          {isEditing && isDirty ? t("form.discard") : tCommon("buttons.cancel")}
+          {isEditing && canSave ? t("form.discard") : tCommon("buttons.cancel")}
         </Button>
         <Button
           type="submit"
-          disabled={isLoading || !isFormValid || (isEditing && !isDirty)}
+          disabled={isLoading || !isFormValid || (isEditing && !canSave)}
           isLoading={isLoading}
           className="h-11 rounded-[14px] bg-white px-5 font-semibold text-indigo-950 shadow-none hover:bg-white/90"
         >
