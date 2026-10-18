@@ -1,9 +1,9 @@
 {
   "branch": "Sucursal",
   "branches": "Sucursales",
-  "title": "Sucursales",
-  "subtitle": "Gestiona las sucursales de tu negocio",
-  "createBranch": "Nueva Sucursal",
+  "title": "Sedes",
+  "subtitle": "Dónde atiendes, en qué horario y por qué número de WhatsApp",
+  "createBranch": "Nueva sede",
   "mainBranch": "Principal",
   "timezone": "Zona horaria",
   "currency": "Moneda",
@@ -109,7 +109,8 @@
     "usage": "{current} de {max} sucursales",
     "remaining": "{count} disponible(s)",
     "upgrade": "Actualizar plan",
-    "upgradeDescription": "Tu plan actual solo permite una sucursal. Actualiza para gestionar múltiples ubicaciones."
+    "upgradeDescription": "Tu plan actual solo permite una sucursal. Actualiza para gestionar múltiples ubicaciones.",
+    "usageRich": "<b>{current} de {max}</b> sedes de tu plan"
   },
   "routingMode": "Modo de enrutamiento",
   "card": {
@@ -122,6 +123,24 @@
       "noSchedule": "Sin horario",
       "closedManually": "Cerrado a mano",
       "noScheduleTitle": "Sin horario cargado: acepta pedidos a toda hora"
+    },
+    "moreActions": "Más acciones de {name}",
+    "makeMainLong": "Hacer sede principal",
+    "editWhatsApp": "Editar WhatsApp",
+    "connectWhatsApp": "Conectar WhatsApp",
+    "noWhatsApp": "Sin WhatsApp propio",
+    "connect": "Conectar",
+    "view": "Ver sede",
+    "status": {
+      "open": "Abierta",
+      "closed": "Cerrada",
+      "closedManually": "Cerrada a mano",
+      "always": "Sin horario",
+      "off": "Inactiva",
+      "offDetail": "no recibe pedidos",
+      "alwaysDetail": "acepta pedidos a toda hora",
+      "until": "hasta las {time}",
+      "opensAt": "abre hoy a las {time}"
     }
   },
   "metrics": {
@@ -195,7 +214,11 @@
       "slugInvalid": "El slug solo puede contener letras minúsculas, números y guiones",
       "codeRequired": "El código es obligatorio",
       "phoneInvalid": "Número inválido. Usa formato E.164, ej: +573001234567"
-    }
+    },
+    "unsavedChanges": "Tienes cambios sin guardar",
+    "noChanges": "Todo está guardado",
+    "createHint": "Completa los datos y crea la sede",
+    "discard": "Descartar"
   },
   "settings": {
     "title": "Configuración de {branchName}",
@@ -295,6 +318,28 @@
       "description": "Para ventas en el local: el cliente pide, paga y se lleva el producto en el momento",
       "enable": "Activar venta de mostrador",
       "enableDescription": "Agrega el tipo \"Mostrador\" a \"Nuevo pedido\" en esta sede. El pedido se cobra y queda entregado en un solo paso; en efectivo exige una caja abierta."
+    }
+  },
+  "filters": {
+    "label": "Filtrar sedes",
+    "all": "Todas",
+    "open": "Abiertas ahora",
+    "closed": "Cerradas",
+    "off": "Inactivas",
+    "empty": "Ninguna sede coincide con el filtro."
+  },
+  "detail": {
+    "sectionsLabel": "Secciones de la sede",
+    "sectionsTitle": "En esta sede",
+    "meta": "Creada el {created} · Última actualización el {updated}",
+    "sections": {
+      "general": "General",
+      "location": "Ubicación",
+      "hours": "Horario de atención",
+      "delivery": "Envío a domicilio",
+      "channels": "Canales de venta",
+      "payments": "Pagos por transferencia",
+      "tables": "Mesas y QR"
     }
   }
 }
