@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCurrentUser } from "@/features/auth/stores/auth.store";
-import { useSendConversationMessage } from "../../hooks/useSendConversationMessage";
-import { isWindowOpen } from "../../utils/conversation-window";
+import {
+  submitOnEnter,
+  useComposerGate,
+  useMessageDraft,
+} from "../../hooks/useComposerDraft";
 import { InboxWindowNotice } from "./inbox-window-notice";
 import { ReopenConversationNotice } from "./reopen-conversation-notice";
 import type { ConversationDetail } from "../../types";
@@ -18,21 +19,17 @@ interface InboxComposerProps {
   initialText?: string;
 }
 
+/**
+ * Composer compacto del panel de conversación del pedido. Comparte con el
+ * Inbox (`InboxReplyBox`) las reglas de cuándo se puede escribir y el
+ * borrador (`useComposerDraft`).
+ */
 export function InboxComposer({ conversation, initialText }: InboxComposerProps) {
   const t = useTranslations("inbox");
-  const user = useCurrentUser();
-  const [text, setText] = useState(initialText ?? "");
-  const sendMessage = useSendConversationMessage(conversation.id);
+  const gate = useComposerGate(conversation);
+  const draft = useMessageDraft(conversation.id, initialText);
 
-  const heldByMe =
-    conversation.control === "HUMAN" && conversation.assignedUserId === user?.userId;
-  const windowOpen = isWindowOpen(conversation.windowExpiresAt);
-
-  // El backend rechaza takeover/mensajes con SESSION_CLOSED para cualquier
-  // `status` que no sea OPEN, independiente de la ventana de 24h (que solo
-  // mide el último mensaje del cliente) — una conversación cerrada puede
-  // seguir teniendo la ventana abierta.
-  if (conversation.status !== "OPEN") {
+  if (gate === "closed") {
     return (
       <ReopenConversationNotice
         sessionId={conversation.id}
@@ -41,11 +38,11 @@ export function InboxComposer({ conversation, initialText }: InboxComposerProps)
     );
   }
 
-  if (!windowOpen) {
+  if (gate === "windowExpired") {
     return <InboxWindowNotice />;
   }
 
-  if (!heldByMe) {
+  if (gate !== "ready") {
     return (
       <div className="border-t border-slate-200 px-4 py-3">
         <p className="text-sm text-slate-500">{t("composer.takeoverRequired")}</p>
@@ -53,34 +50,20 @@ export function InboxComposer({ conversation, initialText }: InboxComposerProps)
     );
   }
 
-  const handleSend = () => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    sendMessage.mutate({ text: trimmed });
-    setText("");
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSend();
-    }
-  };
-
   return (
     <div className="flex items-end gap-2 border-t border-slate-200 px-4 py-3">
       <Textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={handleKeyDown}
+        value={draft.text}
+        onChange={(e) => draft.setText(e.target.value)}
+        onKeyDown={submitOnEnter(draft.send)}
         placeholder={t("composer.placeholder")}
         className="min-h-[40px] flex-1 resize-none"
         rows={1}
       />
       <Button
         size="icon"
-        disabled={!text.trim() || sendMessage.isPending}
-        onClick={handleSend}
+        disabled={!draft.canSend}
+        onClick={draft.send}
         aria-label={t("composer.send")}
       >
         <Send className="h-4 w-4" />

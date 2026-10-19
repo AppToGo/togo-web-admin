@@ -9,13 +9,7 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import type {
@@ -77,6 +71,7 @@ export default function CreateBranchPage() {
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <Button
+              className="hidden md:inline-flex"
               variant="ghost"
               size="icon"
               onClick={() => router.push("/dashboard/branches")}
@@ -123,6 +118,7 @@ export default function CreateBranchPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
+            className="hidden md:inline-flex"
             variant="ghost"
             size="icon"
             onClick={() => router.push("/dashboard/branches")}

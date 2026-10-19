@@ -26,12 +26,6 @@ export const ORDERS_TOUR_STEPS: TourStep[] = [
     preferredSide: "bottom",
   },
   {
-    id: "column-visibility",
-    titleKey: "orders.tour.steps.columnVisibility.title",
-    descriptionKey: "orders.tour.steps.columnVisibility.description",
-    preferredSide: "top",
-  },
-  {
     id: "kanban-board",
     titleKey: "orders.tour.steps.kanbanBoard.title",
     descriptionKey: "orders.tour.steps.kanbanBoard.description",

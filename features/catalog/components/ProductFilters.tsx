@@ -10,7 +10,7 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Search, Filter, Package, Store, Building2, FolderOpen, X, Tag } from "lucide-react";
+import { Search, Filter, Store, Building2, FolderOpen, X, Tag } from "lucide-react";
 import { ViewToggle } from "@/components/ui/view-toggle";
 import { Switch } from "@/components/ui/switch";
 

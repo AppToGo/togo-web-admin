@@ -1,9 +1,26 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ListChecks } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
+import { SegmentedBreakdown } from "@/features/dashboard/components/charts/SegmentedBreakdown";
 import type { ConversationFunnel } from "../../types";
-import { formatRate, ratio } from "./funnel-format";
+
+/**
+ * Color de cada resultado, el mismo que en "Conversaciones del bot" del
+ * dashboard: verde lo que termina en pedido, índigo lo abierto, ámbar lo
+ * abandonado y grises el resto.
+ */
+const OUTCOME_COLOR: Record<string, string> = {
+  ORDER_PLACED: "bg-emerald-500",
+  ABANDONED: "bg-amber-400",
+  SUPPORT: "bg-sky-400",
+  NO_INTENT: "bg-slate-400",
+  SPAM: "bg-red-400",
+  UNSET: "bg-slate-300",
+  OPEN: "bg-indigo-400",
+};
 
 /** Orden fijo: primero lo que cierra bien, al final lo que sigue abierto. */
 const OUTCOME_ORDER = [
@@ -27,36 +44,31 @@ export function FunnelOutcomesCard({ sessions }: FunnelOutcomesCardProps) {
     ([a], [b]) => rank(a) - rank(b)
   );
 
+  const segments = rows.map(([outcome, count]) => ({
+    key: outcome,
+    label: t.has(`labels.${outcome}`) ? t(`labels.${outcome}`) : outcome,
+    count,
+    colorClass: OUTCOME_COLOR[outcome] ?? "bg-slate-300",
+  }));
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <p className="text-sm text-slate-500">
-          {t("subtitle", { total: sessions.total })}
-        </p>
-      </CardHeader>
+    <Card variant="glass" className="h-full">
+      <DashboardCardHeader
+        icon={ListChecks}
+        title={t("title")}
+        subtitle={t("subtitle", { total: sessions.total })}
+      />
       <CardContent>
         {rows.length === 0 ? (
           <p className="text-sm text-slate-500">{t("empty")}</p>
         ) : (
-          <dl className="divide-y divide-slate-100">
-            {rows.map(([outcome, count]) => (
-              <div
-                key={outcome}
-                className="flex items-center justify-between py-2 text-sm"
-              >
-                <dt className="text-slate-700">
-                  {t.has(`labels.${outcome}`)
-                    ? t(`labels.${outcome}`)
-                    : outcome}
-                </dt>
-                <dd className="text-slate-500">
-                  <span className="font-semibold text-slate-900">{count}</span>{" "}
-                  · {formatRate(ratio(count, sessions.total))}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <SegmentedBreakdown
+            segments={segments}
+            total={sessions.total}
+            ariaLabel={segments
+              .map((segment) => `${segment.label}: ${segment.count}`)
+              .join(", ")}
+          />
         )}
       </CardContent>
     </Card>

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Filter, Lock, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import {
@@ -99,24 +100,27 @@ export default function ConversationFunnelPage() {
             </h1>
             <p className="text-slate-500 mt-1 text-sm">{t("page.subtitle")}</p>
           </div>
-          <DateRangeFilter
-            variant="default"
-            showPresets={true}
-            availablePresets={[
-              "today",
-              "yesterday",
-              "week",
-              "last7days",
-              "month",
-              "custom",
-            ]}
-          />
+          <div className="shrink-0">
+            <DateRangeFilter
+              variant="default"
+              showPresets={true}
+              availablePresets={[
+                "today",
+                "yesterday",
+                "week",
+                "last7days",
+                "month",
+                "custom",
+              ]}
+            />
+          </div>
         </div>
 
         <ConversationFunnelView
           params={{ dateFrom: range.from, dateTo: range.to }}
         />
       </div>
+      <ConversationsMobileNav />
     </DashboardLayout>
   );
 }

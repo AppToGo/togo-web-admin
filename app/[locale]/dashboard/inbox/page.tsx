@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Lock, Store, Wifi, WifiOff } from "lucide-react";
+import { Inbox, Lock, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useHasBusiness, useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -12,27 +12,56 @@ import { cn } from "@/lib/utils";
 import {
   useInboxConversations,
   useInboxSummary,
-  useConversationsRealtime,
 } from "@/features/conversations/hooks";
+import { useConversationsConnected } from "@/stores/realtime-status.store";
 import { InboxLayout } from "@/features/conversations/components/inbox/inbox-layout";
 import { InboxList } from "@/features/conversations/components/inbox/inbox-list";
 import { InboxThreadPanel } from "@/features/conversations/components/inbox/inbox-thread-panel";
 import { InboxEmptyState } from "@/features/conversations/components/inbox/inbox-empty-state";
-import type { InboxTab } from "@/features/conversations/components/inbox/inbox-tabs";
-import type { GetConversationsParams } from "@/features/conversations/types";
+import { InboxMobileList } from "@/features/conversations/components/inbox/inbox-mobile-list";
+import { InboxMobileThread } from "@/features/conversations/components/inbox/inbox-mobile-thread";
+import { ConversationsMobileNav } from "@/features/conversations/components/conversations-mobile-nav";
+import { useIsBelowDesktop } from "@/hooks/useIsMobile";
+import { useUrlParamState } from "@/hooks/useUrlParamState";
+import {
+  DEFAULT_INBOX_FILTERS,
+  inboxFiltersToParams,
+} from "@/features/conversations/utils/inbox-filters";
+import type { InboxFiltersValue } from "@/features/conversations/types";
 
-function tabFilters(tab: InboxTab): GetConversationsParams {
-  switch (tab) {
-    case "waiting":
-      return { control: ["PENDING_HUMAN"] };
-    case "mine":
-      return { assignedTo: "me" };
-    case "unassigned":
-      return { control: ["HUMAN"], assignedTo: "unassigned" };
-    case "all":
-    default:
-      return {};
-  }
+/** Aire entre el borde inferior de las cajas del inbox y el de la pantalla. */
+const INBOX_BOTTOM_GAP_PX = 20;
+const INBOX_MIN_HEIGHT_PX = 320;
+
+/**
+ * Alto para que el inbox llegue hasta abajo dejando `INBOX_BOTTOM_GAP_PX`.
+ * Se mide la posición real en vez de restar una constante a `100vh`: arriba
+ * puede haber banners de alto variable (ej. TrialBanner, que se envuelve en
+ * pantallas angostas). Se recalcula al cambiar el tamaño de la ventana o del
+ * documento.
+ */
+function useFillViewportHeight(element: HTMLElement | null): number | undefined {
+  const [height, setHeight] = useState<number>();
+
+  useEffect(() => {
+    if (!element) return;
+    const update = () => {
+      const top = element.getBoundingClientRect().top + window.scrollY;
+      setHeight(
+        Math.max(window.innerHeight - top - INBOX_BOTTOM_GAP_PX, INBOX_MIN_HEIGHT_PX)
+      );
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(document.body);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [element]);
+
+  return height;
 }
 
 export default function InboxPage() {
@@ -44,17 +73,21 @@ export default function InboxPage() {
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
   const canViewInbox = !permissionsLoading && hasPermission("conversation.view");
 
-  const [activeTab, setActiveTab] = useState<InboxTab>("waiting");
+  const [filters, setFilters] = useState<InboxFiltersValue>(DEFAULT_INBOX_FILTERS);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const containerHeight = useFillViewportHeight(container);
   const [search, setSearch] = useState("");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  // Teléfono y tablet vertical (< lg): una pantalla a la vez — la lista, o
+  // el hilo a pantalla completa (diseño móvil).
+  const isBelowDesktop = useIsBelowDesktop();
 
-  // Deep-link `?session=<id>` (ej. "Abrir conversación" desde el detalle del
-  // cliente). Se lee tras montar, no en el initializer de useState: en SSR no
-  // hay `window` y un valor distinto en el primer render rompería la hidratación.
-  useEffect(() => {
-    const session = new URLSearchParams(window.location.search).get("session");
-    if (session) setSelectedSessionId(session);
-  }, []);
+  // El hilo abierto vive en `?session=<id>`: sirve de deep-link ("Abrir
+  // conversación" desde el detalle del cliente) y, en el teléfono, abrirlo
+  // agrega una entrada al historial para que el atrás del sistema vuelva a
+  // la lista en vez de salir del Inbox.
+  const [sessionParam, openSession, closeSession] = useUrlParamState("session");
+  const selectSession = (sessionId: string) =>
+    openSession(sessionId, { push: isBelowDesktop });
 
   // Ajuste de estado durante el render (no un useEffect, mismo patrón que
   // la página de "sin pedido" de Fase B): sin esto, un SUPER_ADMIN que
@@ -62,19 +95,32 @@ export default function InboxPage() {
   // abierto se queda con un sessionId de OTRO negocio pasado al panel.
   const effectiveBusinessId = useEffectiveBusinessId();
   const [prevBusinessId, setPrevBusinessId] = useState(effectiveBusinessId);
+  const [staleSessionId, setStaleSessionId] = useState<string | null>(null);
   if (effectiveBusinessId !== prevBusinessId) {
     setPrevBusinessId(effectiveBusinessId);
-    setSelectedSessionId(null);
+    setStaleSessionId(sessionParam);
   }
+  const selectedSessionId = sessionParam !== staleSessionId ? sessionParam : null;
 
-  const { isConnected } = useConversationsRealtime(canViewInbox);
+  // El socket lo abre DashboardRealtime (layout del dashboard).
+  const isConnected = useConversationsConnected();
   const { data: summary } = useInboxSummary(canViewInbox);
-  const { data: conversations, isLoading, isAllBusinessesSelected } =
-    useInboxConversations(
-      { ...tabFilters(activeTab), q: search || undefined },
-      isConnected,
-      canViewInbox
-    );
+  const {
+    conversations,
+    isLoading,
+    isError,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    isFetching,
+    fetchNextPage,
+    isAllBusinessesSelected,
+  } = useInboxConversations(
+    { ...inboxFiltersToParams(filters), q: search || undefined },
+    isConnected,
+    canViewInbox
+  );
 
   if (!hasBusiness && !isSuperAdmin) {
     return (
@@ -129,18 +175,59 @@ export default function InboxPage() {
     );
   }
 
+  if (isBelowDesktop) {
+    return (
+      <DashboardLayout>
+        <InboxMobileList
+          view={filters.view}
+          onViewChange={(view) => setFilters((prev) => ({ ...prev, view }))}
+          summary={summary}
+          conversations={conversations}
+          isLoading={isLoading}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          isFetchNextPageError={isFetchNextPageError}
+          isFetching={isFetching}
+          onLoadMore={fetchNextPage}
+          isError={isError}
+          onRetry={() => refetch()}
+          isConnected={isConnected}
+          onSelect={selectSession}
+          onSearch={setSearch}
+        />
+        <ConversationsMobileNav />
+        {selectedSessionId && (
+          <InboxMobileThread
+            key={selectedSessionId}
+            sessionId={selectedSessionId}
+            onBack={closeSession}
+          />
+        )}
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
-      <div className="flex h-[calc(100vh-140px)] flex-col gap-4">
-        <div className="flex items-center justify-between">
+      {/* El -mb anula el padding inferior del <main> (p-4 / sm:p-6): el aire
+          de abajo lo define solo `useFillViewportHeight`. */}
+      <div
+        ref={setContainer}
+        style={{ height: containerHeight }}
+        className="flex h-[calc(100dvh-140px)] flex-col gap-4 -mb-4 sm:-mb-6"
+      >
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
-            <p className="text-sm text-slate-500">{t("subtitle")}</p>
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <Inbox className="h-6 w-6 text-indigo-600" />
+              {t("title")}
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
-          <div
+          <span
             className={cn(
-              "flex items-center gap-1.5 text-xs font-medium",
-              isConnected ? "text-emerald-600" : "text-amber-600"
+              "inline-flex h-9 items-center gap-2 rounded-badge bg-white/80 px-3.5 text-sm font-medium",
+              isConnected ? "text-emerald-700" : "text-amber-700"
             )}
             // Este indicador es sobre el socket del navegador con el
             // backend de TOGO (para que los mensajes/estados nuevos
@@ -151,25 +238,36 @@ export default function InboxPage() {
             // refiere a su WhatsApp.
             title={t("connection.tooltip")}
           >
-            {isConnected ? (
-              <Wifi className="h-3.5 w-3.5" />
-            ) : (
-              <WifiOff className="h-3.5 w-3.5" />
-            )}
-            {isConnected ? t("connection.connected") : t("connection.disconnected")}
-          </div>
+            <span
+              aria-hidden="true"
+              className={cn(
+                "h-2 w-2 rounded-full",
+                isConnected
+                  ? "bg-emerald-500 ring-3 ring-emerald-500/20"
+                  : "bg-amber-500 ring-3 ring-amber-500/20"
+              )}
+            />
+            {isConnected ? t("connection.live") : t("connection.disconnected")}
+          </span>
         </div>
 
         <InboxLayout
           list={
             <InboxList
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
+              filters={filters}
+              onFiltersChange={setFilters}
               summary={summary}
               conversations={conversations}
               isLoading={isLoading}
+              isError={isError}
+              onRetry={() => refetch()}
+              isFetching={isFetching}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              isFetchNextPageError={isFetchNextPageError}
+              onLoadMore={fetchNextPage}
               selectedSessionId={selectedSessionId}
-              onSelect={setSelectedSessionId}
+              onSelect={selectSession}
               onSearch={setSearch}
             />
           }

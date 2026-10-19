@@ -13,14 +13,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { ADMIN_BUSINESS_KEYS } from "./query-keys";
 import * as adminBusinessService from "../services/admin-business.service";
-import type {
-  BusinessWithSubscription,
-  BusinessFilters,
-  PaginatedBusinesses,
-  UpdateBranchesLimitDto,
-  RecordPaymentDto,
-  SendNotificationDto,
-} from "../types/business-subscription.types";
+import type { BusinessFilters, PaginatedBusinesses, UpdateBranchesLimitDto, UpdateProofQuotaDto, RecordPaymentDto, SendNotificationDto } from "../types/business-subscription.types";
 
 // ============================================================================
 // QUERY HOOKS
@@ -91,6 +84,38 @@ export function useUpdateBranchesLimit() {
 }
 
 /**
+ * Hook to update receipt-analysis quota for a business
+ */
+export function useUpdateProofQuota() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-businesses");
+
+  return useMutation({
+    mutationFn: async ({
+      businessId,
+      data,
+    }: {
+      businessId: string;
+      data: UpdateProofQuotaDto;
+    }) => {
+      return adminBusinessService.updateProofQuota(businessId, data);
+    },
+    onSuccess: (data) => {
+      toast.success(t("notifications.proofQuotaUpdated"));
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_BUSINESS_KEYS.businesses(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_BUSINESS_KEYS.business(data.id),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t("errors.updateProofQuota"));
+    },
+  });
+}
+
+/**
  * Hook to record a payment for a business
  */
 export function useRecordPayment() {
@@ -126,7 +151,6 @@ export function useRecordPayment() {
  * Hook to send notification to a business
  */
 export function useSendNotification() {
-  const queryClient = useQueryClient();
   const t = useTranslations("admin-businesses");
 
   return useMutation({

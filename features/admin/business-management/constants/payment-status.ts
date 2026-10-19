@@ -49,10 +49,10 @@ export const PAYMENT_STATUS_CONFIG = {
 // real cuando está disponible. Los nombres (label) sí son estáticos, ya que
 // cambian con mucha menos frecuencia que los límites numéricos.
 export const PLAN_OPTIONS = [
-  { value: 1, label: 'Free', maxBranches: 1 },
-  { value: 2, label: 'Basic', maxBranches: 1 },
-  { value: 3, label: 'Pro', maxBranches: 3 },
-  { value: 4, label: 'Enterprise', maxBranches: UNLIMITED_PLAN_LIMIT },
+  { value: 1, label: 'Free', maxBranches: 1, maxProofs: 0 },
+  { value: 2, label: 'Basic', maxBranches: 1, maxProofs: 0 },
+  { value: 3, label: 'Pro', maxBranches: 3, maxProofs: 2000 },
+  { value: 4, label: 'Enterprise', maxBranches: UNLIMITED_PLAN_LIMIT, maxProofs: UNLIMITED_PLAN_LIMIT },
 ] as const;
 
 export const PAYMENT_METHODS = [
@@ -123,4 +123,20 @@ export function getPlanMaxBranches(plan: number, catalog?: PlanCatalogEntry[]): 
 
   const planOption = PLAN_OPTIONS.find(p => p.value === plan);
   return planOption?.maxBranches || 1;
+}
+
+/**
+ * Cupo mensual de análisis de comprobantes del plan.
+ *
+ * Igual que getPlanMaxBranches: prioriza el catálogo en vivo y cae al
+ * fallback estático solo mientras carga.
+ */
+export function getPlanMaxProofs(plan: number, catalog?: PlanCatalogEntry[]): number {
+  // El catálogo puede venir de un backend anterior sin este campo: en ese
+  // caso se cae al fallback estático en vez de devolver undefined.
+  const liveValue = catalog?.find((p) => p.plan === plan)?.maxProofsPerMonth;
+  if (typeof liveValue === 'number') return liveValue;
+
+  const planOption = PLAN_OPTIONS.find(p => p.value === plan);
+  return planOption?.maxProofs ?? 0;
 }

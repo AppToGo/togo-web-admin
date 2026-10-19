@@ -24,7 +24,6 @@ export function CategoryActions({
   onDelete,
   onToggleStatus,
 }: CategoryActionsProps) {
-  const t = useTranslations("catalog");
   const tCommon = useTranslations("common");
 
   return (

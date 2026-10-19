@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useState, useMemo, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   OrdersKanbanBoard,
   BranchMultiSelector,
   OrderBoardToolbar,
+  OrderFlowSettings,
   HoverTooltip,
   type BoardViewMode,
   type CardDensity,
@@ -18,18 +19,7 @@ import {
 } from "@/features/filters/stores";
 import { useDateFilterParams } from "@/features/filters/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import {
-  SearchIcon,
-  X,
-  Filter,
-  Check,
-  Clock,
-  Home,
-  Store,
-  HelpCircle,
-  Utensils,
-} from "lucide-react";
+import { SearchIcon, Filter, Check, Clock, Home, Store, HelpCircle, Utensils, Banknote } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -45,9 +35,8 @@ import {
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
-import { useOrdersRealtime } from "@/features/orders/hooks";
-import { useConversationsRealtime } from "@/features/conversations/hooks";
 import { TourProvider, useTourContext } from "@/components/tour";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
 
 const BOARD_VIEW_STORAGE_KEY = "togo-orders-board-view";
@@ -56,6 +45,9 @@ const DENSITY_STORAGE_KEY = "togo-orders-card-density";
 function TourHelpButton() {
   const { startTour } = useTourContext();
   const t = useTranslations("orders.tour");
+  const isMobile = useIsMobile();
+  // The tour is not available on mobile
+  if (isMobile) return null;
   return (
     <HoverTooltip content={t("startButton")} side="bottom">
       <button
@@ -121,42 +113,30 @@ function OrdersPageInner() {
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
 
-  // Initialize WebSocket connection for realtime order updates
-  useOrdersRealtime();
-  // Conexión al namespace `/conversations` (no solo `/orders`): el tab
-  // "Conversación" del detalle de pedido (OrderConversationPanel) lee del
-  // mismo cache (`CONVERSATIONS_KEYS.detail`) que actualiza este socket. Sin
-  // esto, un mensaje del cliente respondiendo desde acá no llegaba hasta que
-  // algo más refrescara esa query — el operador no veía la respuesta sin
-  // recargar. Mismo hook que usa la página de Inbox (`useConversationsRealtime`),
-  // sin gate de permiso: el tab de conversación del pedido se muestra a
-  // cualquiera que vea el pedido, no sólo a quien tiene `conversation.view`.
-  useConversationsRealtime();
+  // Los sockets de `/orders` y `/conversations` (este último alimenta el tab
+  // "Conversación" del detalle) los abre DashboardRealtime en el layout del
+  // dashboard, para que el sonido y los badges funcionen en cualquier pantalla.
 
   // Filtros globales de fecha
   const dateParams = useDateFilterParams();
   const datePreset = useDateFilterPreset();
-  const { range: dateRange } = useDateFilterStore();
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Board view (Board / By status / Grouped list) and card density. They
-  // start with the defaults and are hydrated from localStorage in an effect
-  // to avoid an SSR/client hydration mismatch (same pattern as
-  // ColumnVisibilityBar with cookies).
-  const [boardView, setBoardView] = useState<BoardViewMode>("board");
-  const [density, setDensity] = useState<CardDensity>("regular");
-
-  useEffect(() => {
-    const savedView = localStorage.getItem(BOARD_VIEW_STORAGE_KEY);
-    if (savedView === "board" || savedView === "focus" || savedView === "list") {
-      setBoardView(savedView);
-    }
-    const savedDensity = localStorage.getItem(DENSITY_STORAGE_KEY);
-    if (savedDensity === "compact" || savedDensity === "regular") {
-      setDensity(savedDensity);
-    }
-  }, []);
+  // Board view (Board / By status / Grouped list) and card density.
+  // Preferencias guardadas leídas en el inicializador, sin efecto: el
+  // dashboard no se renderiza en el servidor (AuthProvider muestra el spinner
+  // hasta restaurar la sesión), así que no hay riesgo de hidratación.
+  const [boardView, setBoardView] = useState<BoardViewMode>(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(BOARD_VIEW_STORAGE_KEY) : null;
+    return saved === "board" || saved === "focus" || saved === "list" ? saved : "board";
+  });
+  const [density, setDensity] = useState<CardDensity>(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(DENSITY_STORAGE_KEY) : null;
+    return saved === "compact" || saved === "regular" ? saved : "regular";
+  });
 
   const handleBoardViewChange = (view: BoardViewMode) => {
     setBoardView(view);
@@ -178,7 +158,8 @@ function OrdersPageInner() {
     delivery: boolean;
     pickup: boolean;
     dineIn: boolean;
-  }>({ delivery: true, pickup: true, dineIn: true });
+    counter: boolean;
+  }>({ delivery: true, pickup: true, dineIn: true, counter: true });
 
   // Verificar si hay filtros activos
   const isCustomDate = datePreset === "custom";
@@ -187,13 +168,14 @@ function OrdersPageInner() {
   const hasDeliveryFilter =
     !deliveryTypeFilter.delivery ||
     !deliveryTypeFilter.pickup ||
-    !deliveryTypeFilter.dineIn;
+    !deliveryTypeFilter.dineIn ||
+    !deliveryTypeFilter.counter;
   const hasAnyFilter = isCustomDate || hasPaymentFilter || hasDeliveryFilter;
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
     setPaymentStatusFilter({ paid: true, pending: true });
-    setDeliveryTypeFilter({ delivery: true, pickup: true, dineIn: true });
+    setDeliveryTypeFilter({ delivery: true, pickup: true, dineIn: true, counter: true });
     // Resetear a "today" si está en custom
     if (datePreset === "custom") {
       useDateFilterStore.getState().setPreset("today");
@@ -259,7 +241,8 @@ function OrdersPageInner() {
       <div className="flex flex-col gap-6 flex-1 min-h-0">
         {/* Header con título, buscador, filtro de fecha y toggle de vista */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
-          <div>
+          {/* En móvil el nombre de la sección ya está en la barra superior. */}
+          <div className="hidden lg:block">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
               <TourHelpButton />
@@ -272,7 +255,7 @@ function OrdersPageInner() {
             <div className="flex items-center gap-2">
 
               {/* Buscador */}
-              <div data-tour-step="search" className="flex items-center bg-white rounded-card px-4 py-2.5 w-full sm:w-auto sm:min-w-64">
+              <div data-tour-step="search" className="flex flex-1 sm:flex-none items-center bg-white rounded-card px-4 py-2.5 min-h-11 w-full sm:w-auto sm:min-w-64">
                 <SearchIcon className="w-4 h-4 text-slate-400 mr-3" />
                 <input
                   type="text"
@@ -327,6 +310,7 @@ function OrdersPageInner() {
                             delivery: true,
                             pickup: true,
                             dineIn: true,
+                            counter: true,
                           });
                           if (datePreset === "custom") {
                             useDateFilterStore.getState().setPreset("today");
@@ -475,14 +459,40 @@ function OrdersPageInner() {
                             }
                           />
                         </label>
+                        <label className="flex items-center justify-between cursor-pointer group">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                              <Banknote className="w-4 h-4 text-amber-600" />
+                            </div>
+                            <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                              {t("filters.deliveryType.counter")}
+                            </span>
+                          </div>
+                          <Switch
+                            checked={deliveryTypeFilter.counter}
+                            onCheckedChange={(checked) =>
+                              setDeliveryTypeFilter((prev) => ({
+                                ...prev,
+                                counter: checked,
+                              }))
+                            }
+                          />
+                        </label>
                       </div>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
 
-              {/* Board view (Board / By status / List) + card density */}
-              <div data-tour-step="view-toggle">
+              {/* Flujo del negocio (solo OWNER/ADMIN): qué estados usa el tablero.
+                  En el teléfono se configura desde una pantalla grande. */}
+              <div className="hidden md:contents">
+                <OrderFlowSettings />
+              </div>
+
+              {/* Board view (Board / By status / List) + card density. En el
+                  teléfono la vista es siempre "por estado". */}
+              <div data-tour-step="view-toggle" className="hidden md:block">
                 <OrderBoardToolbar
                   view={boardView}
                   onViewChange={handleBoardViewChange}

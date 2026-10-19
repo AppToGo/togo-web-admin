@@ -22,17 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Package,
-  Power,
-  PowerOff,
-  Plus,
-  Minus,
-  X,
-  Check,
-  AlertTriangle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Package, Power, PowerOff, Plus, Minus, X, AlertTriangle } from "lucide-react";
 
 interface BulkInventoryActionsProps {
   selectedCount: number;
@@ -47,6 +37,10 @@ interface BulkInventoryActionsProps {
 }
 
 type BulkAction = "activate" | "deactivate" | "adjustStock" | null;
+
+/** Botones de la barra flotante: translúcidos sobre el índigo oscuro. */
+const BAR_BUTTON =
+  "h-10 rounded-xl border-0 bg-white/15 px-3.5 text-sm font-medium text-white shadow-none hover:bg-white/25 hover:text-white";
 
 export function BulkInventoryActions({
   selectedCount,
@@ -105,26 +99,21 @@ export function BulkInventoryActions({
           exit={{ opacity: 0, y: 20 }}
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
         >
-          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 px-4 py-2 flex items-center gap-4">
-            {/* Selection count */}
-            <div className="flex items-center gap-2 px-3 py-1.5 border-r border-slate-200 text-slate-900">
-              <span className="text-sm font-medium text-slate-900">
-                {t("bulk.selected", { count: selectedCount })}
-              </span>
-              <button
-                onClick={onClearSelection}
-                className="text-slate-400 hover:text-black transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+          <div
+            role="region"
+            aria-label={t("bulk.label")}
+            className="flex flex-wrap items-center gap-2 rounded-[20px] bg-indigo-950 py-2.5 pl-5 pr-2.5 text-white shadow-[0_12px_32px_rgba(49,46,129,0.3)]"
+          >
+            <span className="mr-1.5 text-sm font-semibold">
+              {t("bulk.selected", { count: selectedCount })}
+            </span>
 
             {/* Actions */}
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant="outline"
-                className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                className={BAR_BUTTON}
                 onClick={() => setActiveAction("activate")}
                 disabled={isLoading}
               >
@@ -135,7 +124,7 @@ export function BulkInventoryActions({
               <Button
                 size="sm"
                 variant="outline"
-                className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                className={BAR_BUTTON}
                 onClick={() => setActiveAction("deactivate")}
                 disabled={isLoading}
               >
@@ -146,6 +135,7 @@ export function BulkInventoryActions({
               <Button
                 size="sm"
                 variant="outline"
+                className={BAR_BUTTON}
                 onClick={() => setActiveAction("adjustStock")}
                 disabled={isLoading}
               >
@@ -153,6 +143,14 @@ export function BulkInventoryActions({
                 {t("bulk.adjustStock")}
               </Button>
             </div>
+            <button
+              type="button"
+              onClick={onClearSelection}
+              aria-label={t("bulk.clear")}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-indigo-200 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-[18px] w-[18px]" />
+            </button>
           </div>
         </motion.div>
       </AnimatePresence>

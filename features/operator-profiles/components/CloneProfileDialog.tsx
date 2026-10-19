@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useId } from "react";
+import { useState, useId } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +39,18 @@ export function CloneProfileDialog({
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill with "{originalName} (Copia)" when dialog opens
-  useEffect(() => {
-    if (isOpen && profile) {
-      setName(t("clone.defaultName", { name: profile.name }));
+  // Precarga "{nombre original} (Copia)" al abrir el diálogo (o si cambia el
+  // perfil con el diálogo abierto). Ajuste de estado durante el render en
+  // vez de un efecto.
+  const openedFor = isOpen ? profile : null;
+  const [prefilledFor, setPrefilledFor] = useState<typeof openedFor>(null);
+  if (openedFor !== prefilledFor) {
+    setPrefilledFor(openedFor);
+    if (openedFor) {
+      setName(t("clone.defaultName", { name: openedFor.name }));
       setError(null);
     }
-  }, [isOpen, profile, t]);
+  }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

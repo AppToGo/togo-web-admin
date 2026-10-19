@@ -5,3 +5,4 @@
  */
 
 export { useOrderNotification } from './useOrderNotification';
+export { useInboxNotification } from './useInboxNotification';

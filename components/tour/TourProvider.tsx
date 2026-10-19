@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import { useTour } from "@/hooks/useTour";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { TourSpotlight } from "./TourSpotlight";
 import type { TourContextValue, TourStep } from "./tour.types";
 
@@ -16,11 +17,14 @@ interface TourProviderProps {
 
 export function TourProvider({ tourId, steps, children, readyToStart = true }: TourProviderProps) {
   const value = useTour(tourId, steps, readyToStart);
+  // The tour is desktop-only: on mobile it never auto-starts (see useTour)
+  // and the spotlight isn't rendered.
+  const isMobile = useIsMobile();
 
   return (
     <TourContext.Provider value={value}>
       {children}
-      {value.isActive && value.currentStep && (
+      {!isMobile && value.isActive && value.currentStep && (
         <TourSpotlight
           step={value.currentStep}
           currentIndex={value.currentStepIndex}

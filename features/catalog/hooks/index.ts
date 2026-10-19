@@ -56,3 +56,4 @@ export {
   useIndustryCategoryVariantTemplates,
   useIndustryCategoriesByIndustry,
 } from "./useCatalog";
+export { useShowGlobalCatalog } from "./useShowGlobalCatalog";

@@ -6,27 +6,16 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  CreditCard,
   Store,
   Home,
   Utensils,
   Banknote,
-  ArrowLeftRight,
-  Wallet,
-  MoreHorizontal,
   PencilLine,
+  Wallet,
 } from "lucide-react";
-import type { Order, OrderItem, OrderStatus, PaymentStatus } from "../types";
+import type { Order, OrderItem } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
-import {
-  formatCurrency,
-  getTimeElapsed,
-  canCompleteOrder,
-  getPaymentStatusLabel,
-  FINAL_STATUSES,
-  BLOCKED_WHILE_CUSTOMER_EDITING,
-  isCustomerEditing,
-} from "../utils/order-status.utils";
+import { formatCurrency, getTimeElapsed, isCustomerEditing } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
 import {
   kanbanCardVariants,
@@ -34,23 +23,15 @@ import {
   type CategoryBadgeVariantProps,
 } from "../styles";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useUpdateOrderPaymentStatus } from "../hooks/useOrders";
-import { toast } from "sonner";
-import { extractErrorMessage } from "@/lib/error.utils";
-import { DEFAULT_KANBAN_STATUSES } from "../config/kanban-columns.config";
-import { dotVariants } from "../theme";
+import { PaymentProofIndicator } from "./PaymentProofDialog";
+import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import {
   getElapsedMinutes,
   getLatenessLevel,
   type LatenessLevel,
 } from "../utils/order-lateness.utils";
 import { HoverTooltip } from "./HoverTooltip";
+import { NextStatusButton } from "./NextStatusButton";
 
 export type { CardDensity };
 
@@ -62,139 +43,6 @@ interface OrderCardProps {
   currentStatus?: string;
   dragColor?: string;
   density?: CardDensity;
-}
-
-// Icono de método de pago con tooltip
-function PaymentMethodIcon({ method }: { method?: string }) {
-  const t = useTranslations("orders");
-  const getIconAndLabel = () => {
-    if (!method) return { icon: CreditCard, label: t("paymentMethods.NOT_SPECIFIED") };
-    const lower = method.toLowerCase();
-    if (lower === "cash") return { icon: Banknote, label: t("paymentMethods.CASH") };
-    if (lower.includes("card") || lower === "dataphone")
-      return { icon: CreditCard, label: t("paymentMethods.CREDIT_CARD") };
-    if (lower === "transfer")
-      return { icon: ArrowLeftRight, label: t("paymentMethods.TRANSFER") };
-    if (lower === "wallet") return { icon: Wallet, label: t("paymentMethods.OTHER") };
-    return { icon: CreditCard, label: method };
-  };
-
-  const { icon: Icon, label } = getIconAndLabel();
-
-  return (
-    <div className="group relative">
-      <Icon className="w-3.5 h-3.5 text-current" />
-      {/* Tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-// Componente para editar el estado de pago con DropdownMenu de shadcn
-// NOTA: El backend no permite transición de PAID a PENDING, solo PENDING a PAID
-export function PaymentStatusEditor({
-  orderId,
-  currentStatus,
-  paymentMethod,
-}: {
-  orderId: string;
-  currentStatus: PaymentStatus;
-  paymentMethod?: string;
-}) {
-  const t = useTranslations("orders");
-  const [isOpen, setIsOpen] = useState(false);
-  const updatePaymentStatus = useUpdateOrderPaymentStatus();
-
-  const handleSelect = useCallback(
-    (newStatus: PaymentStatus) => {
-      if (newStatus !== currentStatus) {
-        updatePaymentStatus.mutate({
-          orderId,
-          data: {
-            paymentStatus: newStatus,
-            changeNotes: t("paymentNotes.confirmedFromAdmin"),
-          },
-        });
-      }
-      setIsOpen(false);
-    },
-    [currentStatus, orderId, updatePaymentStatus, t]
-  );
-
-  // Badge base con icono de método de pago
-  const badgeContent = (
-    <>
-      <PaymentMethodIcon method={paymentMethod} />
-      <span>{getPaymentStatusLabel(currentStatus)}</span>
-    </>
-  );
-
-  // Si ya está pagado, mostrar badge estático (no editable)
-  if (currentStatus === "PAID") {
-    return (
-      <span
-        className={cn(
-          categoryBadgeVariants({ variant: "green" }),
-          "flex items-center gap-1"
-        )}
-      >
-        {badgeContent}
-      </span>
-    );
-  }
-
-  // Si está pendiente, mostrar dropdown para marcar como pagado
-  // Wrapper con stopPropagation para evitar que se abra el modal de detalle
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              categoryBadgeVariants({ variant: "amber" }),
-              "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
-            )}
-          >
-            {badgeContent}
-            <ChevronDown className="w-3 h-3 opacity-60" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[140px] z-[9999]"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DropdownMenuItem
-            onSelect={() => handleSelect("PAID")}
-            className="flex items-center gap-2 text-xs cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-slate-700">{t("actions.confirmPayment")}</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
-// Función para formatear el método de pago - uses translations
-function formatPaymentMethod(method?: string, t?: ReturnType<typeof useTranslations>): string {
-  if (!method) return t?.("paymentMethods.NOT_SPECIFIED") || "NOT_SPECIFIED";
-  const key = method.toUpperCase();
-  return t?.(`paymentMethods.${key}`) || key;
-}
-
-// Función para formatear el estado de pago - uses translations
-function formatPaymentStatus(status?: string, t?: ReturnType<typeof useTranslations>): string {
-  if (!status) return t?.("paymentStatus.UNKNOWN") || "UNKNOWN";
-  const key = status.toUpperCase();
-  return t?.(`paymentStatus.${key}`) || key;
 }
 
 // Tipo de orden basado en deliveryType (docs/architecture/pedidos-en-mesa.md)
@@ -215,6 +63,17 @@ function getOrderTypeInfo(order: Order, t?: ReturnType<typeof useTranslations>):
       icon: <Home className="w-3 h-3" />,
       variant: "blue",
       isDelivery: true,
+    };
+  }
+
+  // Venta de mostrador (docs/caja-pedidos.md): se cobra y entrega en el
+  // acto, no pasa por reparto ni mesa.
+  if (order.deliveryType === "COUNTER") {
+    return {
+      label: t?.("deliveryTypes.COUNTER") || "COUNTER",
+      icon: <Banknote className="w-3 h-3" />,
+      variant: "amber",
+      isDelivery: false,
     };
   }
 
@@ -293,79 +152,6 @@ export function TimeBadge({ order, currentStatus }: { order: Order; currentStatu
       <Clock className="w-3 h-3" />
       {timeElapsed}
     </span>
-  );
-}
-
-// "Move to" menu — an alternative to drag & drop. Offers the same target
-// statuses the board columns already accept on drop; it adds no new
-// transition rules.
-function OrderMoveMenu({
-  order,
-  currentStatus,
-  onStatusChange,
-}: {
-  order: Order;
-  currentStatus?: string;
-  onStatusChange?: (orderId: string, newStatus: string) => void;
-}) {
-  const t = useTranslations("orders");
-  const tStatus = useTranslations("orders.status");
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Final orders (Delivered/Cancelled) can't leave that status, so the menu
-  // would only offer transitions the API rejects.
-  if (!onStatusChange || FINAL_STATUSES.includes(currentStatus as OrderStatus)) return null;
-
-  const targets = DEFAULT_KANBAN_STATUSES.filter((s) => s !== currentStatus);
-  if (targets.length === 0) return null;
-  const editing = isCustomerEditing(order);
-
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-        <HoverTooltip content={t("actions.moveOrder")}>
-          <DropdownMenuTrigger asChild>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              aria-label={t("actions.moveOrder")}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </DropdownMenuTrigger>
-        </HoverTooltip>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[160px] z-[9999]"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <div className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-            {t("actions.moveTo")}
-          </div>
-          {targets.map((status: OrderStatus) => (
-            <DropdownMenuItem
-              key={status}
-              disabled={
-                editing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status)
-              }
-              onSelect={() => {
-                onStatusChange(order.id, status);
-                setIsOpen(false);
-              }}
-              className="flex items-center gap-2 text-xs cursor-pointer"
-            >
-              <span
-                className={cn("w-2 h-2 rounded-full shrink-0", dotVariants({ status }))}
-              />
-              <span className="text-slate-700">{tStatus(status)}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
   );
 }
 
@@ -496,7 +282,6 @@ export const OrderCard = memo(function OrderCard({
   order,
   onStatusChange,
   onClick,
-  badgeVariant = "slate",
   currentStatus,
   dragColor = "indigo",
   density = "regular",
@@ -510,18 +295,7 @@ export const OrderCard = memo(function OrderCard({
   // columna: el backend rechaza mandarlo a producción.
   const customerEditing = isCustomerEditing(order);
 
-  const handleCompleteClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const validation = canCompleteOrder(order);
-      if (!validation.valid) {
-        toast.error(validation.message ? t(`errors.${validation.message}`) : t("errors.cannotComplete"));
-        return;
-      }
-      onStatusChange?.(order.id, "COMPLETED");
-    },
-    [order, onStatusChange, t]
-  );
+  const cashToSettle = order.cashCollection?.status === "PENDING_SETTLEMENT";
 
   const handleCardClick = useCallback(() => {
     onClick?.();
@@ -588,6 +362,14 @@ export const OrderCard = memo(function OrderCard({
               {orderType.icon}
               {orderType.label}
             </span>
+            {cashToSettle && (
+              <HoverTooltip content={t("cashPaidHint")}>
+                <Banknote
+                  className="w-4 h-4 text-emerald-600"
+                  aria-label={t("cashPaidHint")}
+                />
+              </HoverTooltip>
+            )}
             <span className="flex-1" />
             <TimeBadge order={order} currentStatus={currentStatus} />
           </div>
@@ -619,18 +401,37 @@ export const OrderCard = memo(function OrderCard({
           />
         </div>
 
-        {/* Footer: payment status (original styles) + quick "move to" menu */}
+        {/* Footer: payment status (original styles) + next-step button */}
         <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400 pt-3 border-t border-slate-100/80">
           {/* Payment method (icon) + Editable payment status */}
-          <PaymentStatusEditor
-            orderId={order.id}
-            paymentMethod={order.paymentMethod}
-            currentStatus={order.paymentStatus}
-          />
+          {cashToSettle ? (
+            // El cliente ya pagó (billete verde arriba); este chip pasa a
+            // decir dónde está el dinero. Al liquidar vuelve a "Pagado".
+            <span
+              className={cn(
+                categoryBadgeVariants({ variant: "orange" }),
+                "flex items-center gap-1"
+              )}
+              title={order.cashCollection?.holderName ?? undefined}
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              <span>{t("cashPendingSettlement")}</span>
+            </span>
+          ) : (
+            <PaymentStatusEditor
+              orderId={order.id}
+              total={order.total}
+              branchId={order.branchId}
+              paymentMethod={order.paymentMethod}
+              currentStatus={order.paymentStatus}
+              chargeLabel={`${orderNumber} · ${orderType.label}`}
+            />
+          )}
+          <PaymentProofIndicator order={order} />
           <span className="flex-1" />
-          <OrderMoveMenu
+          <NextStatusButton
             order={order}
-            currentStatus={currentStatus}
+            status={currentStatus}
             onStatusChange={onStatusChange}
           />
         </div>

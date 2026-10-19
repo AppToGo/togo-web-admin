@@ -7,6 +7,7 @@ export {
   useDateFilterRange,
   useDateFilterPreset,
   useDateFilterActions,
+  getRangeFromPreset,
 } from "./date-filter.store";
 
 export type {
@@ -14,4 +15,5 @@ export type {
   DateRange,
   DateFilterState,
   DateFilterActions,
+  DateFilterValue,
 } from "./date-filter.store";

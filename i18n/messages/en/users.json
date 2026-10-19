@@ -124,5 +124,14 @@
     "createFailed": "Error creating user",
     "activateFailed": "Error activating user"
   },
-  "activateSuccess": "User activated successfully"
+  "activateSuccess": "User activated successfully",
+  "mobile": {
+    "actionsFor": "Actions for {name}",
+    "roleFilter": "Filter by role",
+    "roles": {
+      "all": "All",
+      "operators": "Operators"
+    },
+    "newUser": "New user"
+  }
 }

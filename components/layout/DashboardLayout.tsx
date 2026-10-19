@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useTranslations } from "next-intl";
 import { Sidebar } from "./Sidebar";
+import { MobileTopBar } from "./MobileTopBar";
 import { cn } from "@/lib/utils";
 import { useSingleBranchInit } from "@/features/branches/hooks";
 import { UpgradePlanModal, useUpgradePlanModal, TrialBanner } from "@/features/subscription";
@@ -13,8 +13,9 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const t = useTranslations("navigation");
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  // Only drives the mobile drawer (< lg): starts closed and opens with the
+  // hamburger button. On desktop the sidebar is always visible.
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
   // Seed branch store for users with exactly one branch.
@@ -31,23 +32,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         isCollapsed={sidebarCollapsed}
         onClose={() => setSidebarOpen(false)}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onMenuClick={() => setSidebarOpen(false)}
       />
-
-      {/* Mobile menu button - shown when sidebar is closed */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className={cn(
-          "fixed top-4 left-4 z-30 lg:hidden",
-          "w-10 h-10 rounded-card glass",
-          "flex items-center justify-center",
-          "text-slate-600 hover:text-slate-900",
-          "transition-all duration-300",
-          sidebarOpen && "opacity-0 pointer-events-none"
-        )}
-        aria-label={t("sidebar.openMenu")}
-      >
-        <MenuIcon className="w-5 h-5" />
-      </button>
 
       {/* Main content area */}
       <div
@@ -57,6 +43,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
         )}
       >
+        {/* Móvil y tablet: menú + nombre de la sección */}
+        <MobileTopBar
+          onMenuClick={() => setSidebarOpen(true)}
+          menuOpen={sidebarOpen}
+        />
+
         {/* Trial banner — global, visible on every dashboard page while Free trial is active */}
         <TrialBanner />
 
@@ -73,20 +65,3 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   );
 }
 
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4 6h16M4 12h16M4 18h16"
-      />
-    </svg>
-  );
-}

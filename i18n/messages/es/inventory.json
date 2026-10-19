@@ -1,15 +1,20 @@
 {
-  "title": "Gestión de Inventario por Sede",
-  "subtitle": "Administra la disponibilidad, stock y precios de tus productos por sucursal",
+  "title": "Inventario por sede",
+  "subtitle": "Disponibilidad, stock y precio de cada producto en la sede",
   "selectBranch": "Seleccionar Sede",
   "branchPlaceholder": "Elige una sede para gestionar su inventario",
   "mainBranch": "Principal",
   "stats": {
-    "total": "Total Productos",
+    "total": "Productos en la sede",
     "available": "Disponibles",
     "activated": "Activados",
-    "lowStock": "Stock Bajo",
-    "outOfStock": "Agotados"
+    "lowStock": "Stock bajo",
+    "outOfStock": "Agotados",
+    "label": "Resumen de la sede",
+    "totalHint": "En esta sede",
+    "availableHint": "Se pueden pedir",
+    "lowStockHint": "Menos de 10 unidades",
+    "outOfStockHint": "Sin unidades"
   },
   "noBranch": {
     "title": "Selecciona una sede",
@@ -81,18 +86,6 @@
     "deselectAll": "Deseleccionar todas",
     "inStock": "{count} unidades"
   },
-  "activate": {
-    "title": "Activar Producto en Sede",
-    "description": "Configura el stock y precio para \"{name}\"",
-    "priceOverride": "Precio específico para esta sede",
-    "basePrice": "Precio base: {price}",
-    "stock": "Stock inicial",
-    "stockPlaceholder": "Dejar vacío para sin control",
-    "available": "Disponible para venta",
-    "cancel": "Cancelar",
-    "confirm": "Activar Producto",
-    "processing": "Activando..."
-  },
   "notifications": {
     "activated": "Producto activado en la sede",
     "activateError": "Error al activar: {error}",
@@ -126,12 +119,60 @@
     "quantity": "Cantidad",
     "quantityPlaceholder": "Cantidad a ajustar",
     "confirmAdjustStock": "Aplicar Ajuste",
-    "stockAdjustmentHint": "El stock se incrementará o decrementará según la cantidad especificada"
+    "stockAdjustmentHint": "El stock se incrementará o decrementará según la cantidad especificada",
+    "label": "Acciones con la selección",
+    "clear": "Limpiar selección"
   },
   "readOnlyTitle": "Vista de Solo Lectura",
   "readOnlySubtitle": "Vista de solo lectura del inventario. Usa la página de",
   "manageAvailability": "para gestionar disponibilidad.",
   "readOnlyDescription": "Esta página muestra el estado actual del inventario por sede. Para activar/desactivar productos o realizar cambios en el catálogo, dirígete a la página de",
   "productsLink": "Productos",
-  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí."
+  "operatorsNote": "Los operadores pueden realizar ajustes básicos de stock desde aquí.",
+  "mobile": {
+    "notActivated": "Todavía no está activado en esta sede: al guardar se activa.",
+    "availableHere": "Disponible en esta sede",
+    "availableHint": "Si lo apagas, no se ofrece en el menú de la sede",
+    "availableNoPermission": "No tienes permiso para cambiar la disponibilidad",
+    "availableFor": "{name} disponible",
+    "stockMinus": "Quitar una unidad",
+    "stockPlus": "Agregar una unidad",
+    "untrackedOption": "Sin control de stock (siempre disponible)",
+    "priceHere": "Precio en esta sede",
+    "priceHint": "Precio base del producto: {price}. Déjalo vacío para usar el precio base.",
+    "saving": "Guardando…",
+    "save": "Guardar",
+    "activateAndSave": "Activar en la sede",
+    "saved": "Cambios guardados",
+    "saveError": "No se pudo guardar: {error}",
+    "partial": "Se muestran {shown} de {total}: busca un producto para encontrar el resto.",
+    "untracked": "Sin control",
+    "units": "{count} u.",
+    "unitsLow": "{count} u. · bajo",
+    "stockFilter": "Filtrar por estado",
+    "filters": {
+      "all": "Todos",
+      "out": "Agotados",
+      "low": "Stock bajo",
+      "off": "No disponibles"
+    },
+    "empty": "Ningún producto coincide con el filtro.",
+    "available": "Disponible",
+    "unavailable": "No disponible"
+  },
+  "card": {
+    "select": "Seleccionar {name}",
+    "selectAll": "Seleccionar todos ({count})",
+    "availableFor": "{name} disponible",
+    "unavailable": "No disponible",
+    "untracked": "Sin control de stock",
+    "lowStock": "Quedan {count}",
+    "inStock": "En stock",
+    "untrackedPlaceholder": "Sin control",
+    "branchPrice": "Precio en la sede",
+    "basePricePlaceholder": "{price} (base)",
+    "basePrice": "Base: {price}",
+    "usesBasePrice": "Usa el precio base",
+    "pagination": "Paginación del inventario"
+  }
 }

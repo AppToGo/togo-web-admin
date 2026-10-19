@@ -20,7 +20,6 @@ import {
 
 export default function NotificationSettingsPage() {
   const t = useTranslations("settings");
-  const tc = useTranslations("common");
   const {
     enableSounds,
     enableNotifications,
@@ -36,8 +35,8 @@ export default function NotificationSettingsPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div>
+        {/* Header (< md el título está en la barra superior) */}
+        <div className="hidden md:block">
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Bell className="h-6 w-6 text-indigo-600" />
             {t("notifications.title")}

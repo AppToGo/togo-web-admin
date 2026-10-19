@@ -1,20 +1,16 @@
 "use client";
 
 import { memo, useState } from "react";
-import { useTranslations } from "next-intl";
-import {
-  Edit2,
-  Trash2,
-  Star,
-  Building2,
-  MapPin,
-  Hash,
-  MessageCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useFormatter, useTranslations } from "next-intl";
+import { MapPin, MessageCircle, MoreHorizontal, Star, Trash2 } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +23,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Branch } from "../types";
 import { useBranchMetrics } from "../hooks/useBranches";
+import { getBranchStatus } from "../utils/branch-status";
+import type { BranchStatus } from "../utils/branch-status";
 import type {
   WhatsAppAccount,
   WhatsAppRouting,
@@ -35,7 +33,6 @@ import type {
 interface BranchCardProps {
   branch: Branch;
   onEdit?: (branch: Branch) => void;
-  onConfigure?: (branch: Branch) => void;
   onDelete?: (branch: Branch) => void;
   onMakeMain?: (branch: Branch) => void;
   onConnectWhatsApp?: (branch: Branch) => void;
@@ -44,10 +41,78 @@ interface BranchCardProps {
   isLoading?: boolean;
 }
 
+const STATUS_TONE: Record<BranchStatus["kind"], { dot: string; text: string }> = {
+  open: { dot: "bg-emerald-500", text: "text-emerald-700" },
+  always: { dot: "bg-emerald-500", text: "text-emerald-700" },
+  closed: { dot: "bg-red-500", text: "text-red-700" },
+  closedManually: { dot: "bg-red-500", text: "text-red-700" },
+  off: { dot: "bg-slate-400", text: "text-slate-600" },
+};
+
+/**
+ * Un solo estado legible para la sede: si recibe pedidos ahora y hasta
+ * cuándo. Lo calcula el backend (cierre manual + horario); acá se pinta.
+ */
+export function BranchStatusLine({
+  status,
+  timezone,
+  className,
+}: {
+  status: BranchStatus;
+  /** Zona de la sede, para mostrar la fecha del fin de un cierre manual. */
+  timezone?: string;
+  className?: string;
+}) {
+  const t = useTranslations("branches.card.status");
+  const format = useFormatter();
+  const tone = STATUS_TONE[status.kind];
+  const detail =
+    status.kind === "off"
+      ? t("offDetail")
+      : status.kind === "always"
+        ? t("alwaysDetail")
+        : status.timeKind === "untilDate" && status.untilIso
+          ? t("untilDate", {
+              date: format.dateTime(new Date(status.untilIso), {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: timezone,
+              }),
+            })
+          : status.time
+            ? t(status.timeKind === "opensAt" ? "opensAt" : "until", { time: status.time })
+            : null;
+
+  return (
+    <p className={cn("flex min-w-0 items-center gap-2 text-sm", className)}>
+      <span aria-hidden className={cn("h-2.5 w-2.5 shrink-0 rounded-full", tone.dot)} />
+      <span className={cn("font-semibold", tone.text)}>{t(status.kind)}</span>
+      {detail && <span className="truncate text-slate-500">{detail}</span>}
+    </p>
+  );
+}
+
+export function MainBranchBadge() {
+  const t = useTranslations("branches");
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+      <Star aria-hidden className="h-3 w-3 fill-amber-600 text-amber-600" />
+      {t("card.mainBranch")}
+    </span>
+  );
+}
+
+/**
+ * Sede en el listado: nombre y estado arriba, la dirección en una línea,
+ * lo de hoy en una banda y el WhatsApp. Las acciones poco frecuentes
+ * (hacer principal, eliminar) viven en el menú ⋯.
+ */
 export const BranchCard = memo(function BranchCard({
   branch,
   onEdit,
-  onConfigure,
   onDelete,
   onMakeMain,
   onConnectWhatsApp,
@@ -57,186 +122,141 @@ export const BranchCard = memo(function BranchCard({
 }: BranchCardProps) {
   const t = useTranslations("branches");
   const tCommon = useTranslations("common");
-  const tWa = useTranslations("whatsapp");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { data: metrics } = useBranchMetrics(
-    branch.isActive ? branch.id : null
-  );
+  const { data: metrics } = useBranchMetrics(branch.isActive ? branch.id : null);
 
+  const status = getBranchStatus(branch);
   const isWhatsAppConnected = !!whatsappRouting?.isActive && !!whatsappAccount;
+  const whatsappLabel = whatsappAccount?.displayName
+    ? `${whatsappAccount.phoneNumber} · ${whatsappAccount.displayName}`
+    : whatsappAccount?.phoneNumber;
 
   return (
-    <Card
-      variant="glass"
+    <li
       className={cn(
-        "group transition-all duration-200",
-        !branch.isActive && "opacity-60 grayscale-[0.3]",
-        branch.isMainBranch && "ring-2 ring-amber-400/50"
+        "flex min-w-0 flex-col gap-3.5 rounded-3xl border border-white/90 bg-white/65 p-5",
+        branch.isMainBranch && "ring-2 ring-amber-300/60",
+        !branch.isActive && "opacity-80"
       )}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-slate-900 truncate">
-                {branch.name}
-              </h3>
-              {branch.isMainBranch && (
-                <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">
-                  <Star className="w-3 h-3 mr-1 fill-amber-600" />
-                  {t("card.mainBranch")}
-                </Badge>
-              )}
-              {isWhatsAppConnected && (
-                <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
-                  <MessageCircle className="w-3 h-3 mr-1" />
-                  {whatsappAccount?.displayName ?? whatsappAccount?.phoneNumber}
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500">
-              <Hash className="w-3.5 h-3.5" />
-              <span className="font-mono">{branch.code}</span>
-            </div>
-          </div>
-
-          {/* Status Indicator */}
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full",
-              branch.isActive
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-slate-200 text-slate-600"
-            )}
-          >
-            <span
-              className={cn(
-                "w-1.5 h-1.5 rounded-full",
-                branch.isActive ? "bg-emerald-500" : "bg-slate-400"
-              )}
-            />
-            {branch.isActive
-              ? tCommon("status.active")
-              : tCommon("status.inactive")}
-          </span>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-3">
-        {/* Address */}
-        {branch.address && (
-          <div className="flex items-start gap-2 text-sm text-slate-600">
-            <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-            <span className="line-clamp-2">{branch.address}</span>
-          </div>
-        )}
-
-        {/* Meta Info */}
-        <div className="flex items-center gap-4 pt-2 border-t border-slate-100/60 text-xs text-slate-500">
-          <div className="flex items-center gap-1">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>{branch.timezone}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="font-medium">{branch.currency}</span>
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-[17px] font-semibold text-slate-900">
+            {branch.name}
+          </h2>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <span className="font-mono">{branch.code}</span>
+            {branch.isMainBranch && <MainBranchBadge />}
           </div>
         </div>
-
-        {/* Metrics */}
-        {metrics && (
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100/60">
-            <div className="text-center">
-              <p className="text-lg font-bold text-slate-900">
-                {metrics.ordersToday}
-              </p>
-              <p className="text-xs text-slate-500">
-                {t("metrics.ordersToday")}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-amber-600">
-                {metrics.pendingOrders}
-              </p>
-              <p className="text-xs text-slate-500">{t("metrics.pending")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-emerald-600">
-                {metrics.revenueToday.toLocaleString()}
-              </p>
-              <p className="text-xs text-slate-500">
-                {t("metrics.revenueToday")}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center gap-1 pt-3 border-t border-slate-100 flex-wrap">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-slate-600 hover:text-slate-900"
-            onClick={() => onEdit?.(branch)}
-            disabled={isLoading}
-          >
-            <Edit2 className="w-4 h-4 mr-1.5" />
-            {tCommon("buttons.edit")}
-          </Button>
-
-          {/* WhatsApp Connect / Edit button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
-            onClick={() => onConnectWhatsApp?.(branch)}
-            disabled={isLoading}
-          >
-            <MessageCircle className="w-4 h-4 mr-1.5" />
-            {isWhatsAppConnected
-              ? tWa("accounts.edit")
-              : tWa("accounts.connect")}
-          </Button>
-
-          <div className="flex-1" />
-
-          {!branch.isMainBranch && (
+        {/* No modal: "Eliminar" abre un AlertDialog y dos capas modales de
+            Radix pueden dejar el body con pointer-events: none al cerrar. */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-              onClick={() => onMakeMain?.(branch)}
+              size="icon"
+              className="h-10 w-10 shrink-0 rounded-xl text-slate-500"
+              aria-label={t("card.moreActions", { name: branch.name })}
               disabled={isLoading}
             >
-              <Star className="w-4 h-4 mr-1.5" />
-              {t("card.makeMain")}
+              <MoreHorizontal className="h-5 w-5" />
             </Button>
-          )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            {!branch.isMainBranch && (
+              <DropdownMenuItem onClick={() => onMakeMain?.(branch)} className="cursor-pointer">
+                <Star className="mr-2 h-4 w-4" />
+                {t("card.makeMainLong")}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => onConnectWhatsApp?.(branch)} className="cursor-pointer">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              {isWhatsAppConnected ? t("card.editWhatsApp") : t("card.connectWhatsApp")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={branch.isMainBranch}
+              title={branch.isMainBranch ? t("card.cannotDeleteMain") : undefined}
+              className="cursor-pointer text-red-600 focus:text-red-700"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {tCommon("buttons.delete")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={isLoading || branch.isMainBranch}
-            title={
-              branch.isMainBranch
-                ? t("card.cannotDeleteMain")
-                : tCommon("buttons.delete")
-            }
-          >
-            <Trash2 className="w-4 h-4 mr-1.5" />
-            {tCommon("buttons.delete")}
-          </Button>
+      <BranchStatusLine status={status} timezone={branch.timezone} />
+
+      {branch.address && (
+        <p className="flex min-w-0 items-center gap-2 text-[13px] text-slate-600">
+          <MapPin aria-hidden className="h-4 w-4 shrink-0 text-slate-400" />
+          <span className="truncate" title={branch.address}>
+            {branch.address}
+          </span>
+        </p>
+      )}
+
+      <dl className="grid grid-cols-3 gap-2 rounded-2xl bg-white/80 px-3.5 py-3">
+        <div className="min-w-0">
+          <dt className="text-xs text-slate-500">{t("metrics.ordersToday")}</dt>
+          <dd className="text-lg font-bold tabular-nums text-slate-900">
+            {metrics ? metrics.ordersToday : "—"}
+          </dd>
         </div>
-      </CardContent>
+        <div className="min-w-0">
+          <dt className="text-xs text-slate-500">{t("metrics.pending")}</dt>
+          <dd className="text-lg font-bold tabular-nums text-amber-700">
+            {metrics ? metrics.pendingOrders : "—"}
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-xs text-slate-500">{t("metrics.revenueToday")}</dt>
+          <dd className="truncate text-lg font-bold tabular-nums text-emerald-700">
+            {metrics ? formatCurrency(metrics.revenueToday, branch.currency) : "—"}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="flex min-h-6 items-center gap-2 text-[13px]">
+        <MessageCircle
+          aria-hidden
+          className={cn("h-4 w-4 shrink-0", isWhatsAppConnected ? "text-green-600" : "text-slate-400")}
+        />
+        {isWhatsAppConnected ? (
+          <span className="truncate text-slate-700">{whatsappLabel}</span>
+        ) : (
+          <>
+            <span className="text-slate-500">{t("card.noWhatsApp")}</span>
+            <button
+              type="button"
+              onClick={() => onConnectWhatsApp?.(branch)}
+              disabled={isLoading}
+              className="ml-auto font-semibold text-indigo-600 hover:text-indigo-700"
+            >
+              {t("card.connect")}
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="border-t border-slate-200/80 pt-3.5">
+        <Button
+          variant="slate-outline"
+          className="h-11 w-full rounded-[14px] font-semibold text-slate-700"
+          onClick={() => onEdit?.(branch)}
+          disabled={isLoading}
+        >
+          {t("card.view")}
+        </Button>
+      </div>
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("delete.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("delete.description")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("delete.description")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tCommon("buttons.cancel")}</AlertDialogCancel>
@@ -252,6 +272,6 @@ export const BranchCard = memo(function BranchCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </li>
   );
 });

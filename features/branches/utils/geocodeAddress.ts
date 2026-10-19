@@ -1,3 +1,5 @@
+import { useAuthStore } from "@/features/auth/stores/auth.store";
+
 interface GoogleGeocodeResponse {
   status: string;
   results: Array<{
@@ -25,7 +27,12 @@ export async function geocodeAddress(
 ): Promise<[number, number] | null> {
   try {
     const params = new URLSearchParams({ address: query });
-    const res = await fetch(`/api/geocode?${params.toString()}`);
+    // La ruta exige sesión: se manda el mismo access token que usa el API.
+    const accessToken = useAuthStore.getState().accessToken;
+    if (!accessToken) return null;
+    const res = await fetch(`/api/geocode?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
 
     if (!res.ok) {
       return null;

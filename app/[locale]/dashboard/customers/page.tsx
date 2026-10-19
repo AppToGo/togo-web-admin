@@ -1,15 +1,10 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { DateRangeFilter } from "@/features/filters/components";
-import {
-  useDateFilterStore,
-  useDateFilterPreset,
-} from "@/features/filters/stores";
-import { useDateFilterParams } from "@/features/filters/hooks";
-import { CustomersTable, TopCustomersCharts } from "@/features/customers";
+import { CustomersGrid, TopCustomersCharts } from "@/features/customers";
 import { useCustomers } from "@/features/customers";
 import {
   useHasBusiness,
@@ -21,6 +16,15 @@ import { useEffectiveBranches } from "@/features/branches/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { PillGroup } from "@/components/ui/pill-group";
+
+/** Orden de la lista (el servidor ordena; tocar el elegido lo quita). */
+const SORTS = {
+  recent: { sortBy: "lastOrderDate", sortOrder: "desc" },
+  orders: { sortBy: "totalOrders", sortOrder: "desc" },
+  spent: { sortBy: "totalSpent", sortOrder: "desc" },
+} as const;
+type CustomerSort = keyof typeof SORTS;
 
 function CustomersLoading() {
   return (
@@ -40,15 +44,10 @@ function CustomersLoading() {
         <Skeleton className="h-80" />
       </div>
 
-      {/* Table skeleton */}
-      <div className="rounded-lg border border-slate-200">
-        <div className="p-4">
-          <Skeleton className="h-8 w-full" />
-        </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="p-4 border-t border-slate-100">
-            <Skeleton className="h-12 w-full" />
-          </div>
+      {/* Cards skeleton */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-36 rounded-3xl bg-white/60" />
         ))}
       </div>
     </div>
@@ -57,20 +56,18 @@ function CustomersLoading() {
 
 export default function CustomersPage() {
   const t = useTranslations("customers");
-  const tc = useTranslations("common");
 
   useAuthGuard();
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const selectedBusinessId = useEffectiveBusinessId();
 
-  // Filtros globales de fecha
-  const dateParams = useDateFilterParams();
-  const datePreset = useDateFilterPreset();
-
   // Estado local de paginación
   const [page, setPage] = useState(1);
-  const limit = 10;
+  // Múltiplo de 2 y de 3: las columnas de tarjetas quedan completas.
+  const limit = 12;
+
+  const [sort, setSort] = useState<CustomerSort | null>(null);
 
   // Estado para sede seleccionada
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
@@ -78,12 +75,10 @@ export default function CustomersPage() {
   // Hook de branches
   const { showBranchSelector, defaultBranchId } = useEffectiveBranches();
 
-  // Efecto para auto-seleccionar sede cuando no hay selector
-  useEffect(() => {
-    if (!showBranchSelector && defaultBranchId) {
-      setSelectedBranchId(defaultBranchId);
-    }
-  }, [showBranchSelector, defaultBranchId]);
+  // Sin selector visible se usa la sede por defecto (valor derivado, no un
+  // efecto que copia el default al estado).
+  const effectiveBranchId =
+    !showBranchSelector && defaultBranchId ? defaultBranchId : selectedBranchId;
 
   // Query de clientes
   const {
@@ -93,8 +88,9 @@ export default function CustomersPage() {
   } = useCustomers({
     page,
     limit,
+    ...(sort ? SORTS[sort] : {}),
     businessId: selectedBusinessId || undefined,
-    branchId: selectedBranchId || undefined,
+    branchId: effectiveBranchId || undefined,
   });
 
   // Para usuarios normales sin negocio, mostrar error
@@ -118,10 +114,11 @@ export default function CustomersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Header con título y filtro de fecha */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-          <div>
+          {/* < lg el nombre de la sección ya está en la barra superior. */}
+          <div className="hidden lg:block">
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Users className="h-6 w-6 text-indigo-600" />
               {t("title")}
@@ -129,10 +126,10 @@ export default function CustomersPage() {
             <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
 
-          <div className="flex flex-row items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row sm:items-center">
             {showBranchSelector && (
               <BranchSingleSelector
-                value={selectedBranchId}
+                value={effectiveBranchId}
                 onChange={setSelectedBranchId}
               />
             )}
@@ -150,11 +147,34 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-6 gap-4">
-          {/* Customers Table */}
-          <div className="col-span-4">
+        {/* Orden de la lista (tocar el elegido lo quita) y total */}
+        <div className="flex items-center gap-3">
+          <PillGroup
+            label={t("mobileSort.label")}
+            value={sort}
+            onChange={(key) => {
+              setSort(sort === key ? null : key);
+              setPage(1);
+            }}
+            options={(Object.keys(SORTS) as CustomerSort[]).map((key) => ({
+              id: key,
+              label: t(`mobileSort.${key}`),
+            }))}
+            appearance="glass"
+            className="min-w-0"
+          />
+          {!isLoading && (
+            <span className="ml-auto hidden shrink-0 text-sm text-slate-500 sm:inline">
+              {t("count", { count: pagination.total })}
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-6 gap-5">
+          {/* Tarjetas de clientes */}
+          <div className="col-span-6 lg:col-span-4">
             <Suspense fallback={<CustomersLoading />}>
-              <CustomersTable
+              <CustomersGrid
                 data={customers}
                 isLoading={isLoading}
                 pagination={pagination}
@@ -162,12 +182,12 @@ export default function CustomersPage() {
               />
             </Suspense>
           </div>
-          {/* Top Customers Charts */}
-          <div className="col-span-2">
+          {/* Top Customers Charts (pantallas grandes) */}
+          <div className="hidden lg:col-span-2 lg:block">
             <Suspense fallback={<Skeleton className="h-80" />}>
               <TopCustomersCharts
                 businessId={selectedBusinessId || undefined}
-                branchId={selectedBranchId || undefined}
+                branchId={effectiveBranchId || undefined}
               />
             </Suspense>
           </div>

@@ -20,6 +20,7 @@ import {
   updateOrderStatus,
   getOrderStatusHistory,
   updateOrderPaymentStatus,
+  rejectOrderPaymentProof,
   getBusinesses,
   getLiveOrders,
   createOrder,
@@ -466,6 +467,40 @@ export function useUpdateOrderPaymentStatus() {
       });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: ORDERS_KEYS.detail(orderId) });
+    },
+  });
+}
+
+/**
+ * Hook to reject an order's payment proof.
+ *
+ * No hay cambio de estado que anticipar (el pago sigue PENDING): solo avisa
+ * el error con toast y revalida el detalle (el historial suma la fila del
+ * rechazo). El resultado dice si el cliente recibe el aviso
+ * (`customerNotified`); el visor se lo muestra al negocio.
+ */
+export function useRejectPaymentProof() {
+  const queryClient = useQueryClient();
+  const { selectedBusinessId } = useBusinessStore();
+  const { user } = useAuthStore();
+  const t = useTranslations("orders");
+
+  const effectiveBusinessId =
+    selectedBusinessId || user?.businessId || undefined;
+
+  return useMutation({
+    mutationFn: ({ orderId }: { orderId: string }) =>
+      rejectOrderPaymentProof(orderId, effectiveBusinessId),
+
+    onError: (err) => {
+      const errorMessage = getHumanizedErrorMessage(err);
+      toast.error(errorMessage || t("errors.rejectProofFailed"));
+    },
+
+    onSettled: (_data, _error, { orderId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ORDERS_KEYS.detail(orderId),
+      });
     },
   });
 }

@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import type {
   GetConversationFunnelParams,
   GetConversationsParams,
@@ -9,6 +10,12 @@ export const CONVERSATIONS_KEYS = {
   lists: () => [...CONVERSATIONS_KEYS.all, "list"] as const,
   list: (filters: GetConversationsParams & { businessId?: string }) =>
     [...CONVERSATIONS_KEYS.lists(), JSON.stringify(filters)] as const,
+  /**
+   * Lista infinita del inbox. Cuelga de `lists()` a propósito: las
+   * invalidaciones del socket y de las mutaciones (`lists()`) la alcanzan.
+   */
+  inbox: (filters: GetConversationsParams & { businessId?: string }) =>
+    [...CONVERSATIONS_KEYS.lists(), "inbox", JSON.stringify(filters)] as const,
   details: () => [...CONVERSATIONS_KEYS.all, "detail"] as const,
   // businessId como parte de la key (no agregado por separado por cada
   // caller): antes useConversation armaba
@@ -32,3 +39,15 @@ export const CONVERSATIONS_KEYS = {
 
 export const STALE_TIME = 30 * 1000;
 export const GC_TIME = 5 * 60 * 1000;
+
+/** Reintentos máximos de las queries de conversaciones ante errores que no son de auth. */
+const MAX_QUERY_RETRIES = 3;
+
+/** No reintenta 401/403 (sesión o permiso): reintentar no los arregla. */
+export function retryUnlessAuthError(failureCount: number, error: Error): boolean {
+  if (isAxiosError(error)) {
+    const status = error.response?.status;
+    if (status === 401 || status === 403) return false;
+  }
+  return failureCount < MAX_QUERY_RETRIES;
+}

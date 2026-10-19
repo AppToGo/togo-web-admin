@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
 import { Star, Package } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useLazySection } from "../../../hooks/useLazySection";
@@ -23,17 +24,10 @@ export function FavoritesSection({ customerId }: FavoritesSectionProps) {
 
   const favoriteProducts = metrics?.favoriteProducts?.slice(0, 5) || [];
 
-  console.log("FavoritesSection render", { favoriteProducts });
-
   return (
     <div ref={ref}>
       <Card variant="glass">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
-            {t("metrics.favoriteProducts")}
-          </CardTitle>
-        </CardHeader>
+        <DashboardCardHeader icon={Star} title={t("metrics.favoriteProducts")} />
         <CardContent>
           {isLoading || !metrics ? (
             <FavoritesSectionSkeleton />
@@ -42,14 +36,14 @@ export function FavoritesSection({ customerId }: FavoritesSectionProps) {
               {t("detail.noFavorites")}
             </p>
           ) : (
-            <div className="space-y-3  pr-1">
+            <div className="space-y-1">
               {favoriteProducts.map((product, index) => (
                 <div
                   key={product.productId}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-white transition-colors"
+                  className="flex items-center justify-between gap-3 rounded-card px-3 py-2.5 transition-colors hover:bg-white/70"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-xs sm:text-sm">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
                       {index + 1}
                     </div>
                     <div>

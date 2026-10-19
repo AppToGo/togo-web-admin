@@ -32,7 +32,7 @@ export default function CreateGlobalProductPage() {
 
   // Data fetching
   const { data: industries = [], isLoading: isLoadingIndustries } = useIndustries();
-  const { data: industryCategories = [], isLoading: isLoadingCategories } =
+  const { data: industryCategories = [] } =
     useIndustryCategories({ industryIds: selectedIndustryId ? [selectedIndustryId] : undefined });
 
   // Mutation

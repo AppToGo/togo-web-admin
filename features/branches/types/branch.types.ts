@@ -5,7 +5,7 @@
  * Basado en los DTOs del backend.
  */
 
-import type { DeliveryConfig, BusinessHours, TransferOptions, DineInConfig } from './branch-config.types';
+import type { DeliveryConfig, BusinessHours, TransferOptions, DineInConfig, CounterConfig } from './branch-config.types';
 
 /**
  * Información de una sucursal
@@ -34,12 +34,26 @@ export interface Branch {
   longitude?: number | null;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
-  /** Horarios de atención */
-  businessHours?: BusinessHours;
+  /**
+   * Horarios de atención tal como los guarda el API: `{}` = sin horario
+   * (acepta pedidos siempre). Leer siempre con `parseBusinessHours`.
+   */
+  businessHours?: BusinessHours | Record<string, never> | null;
+  /**
+   * Estado calculado por el backend (`findAll`/`findOne`): compone el cierre
+   * manual con el horario. Ausente en create/update.
+   */
+  acceptingOrdersStatus?: {
+    aceptando: boolean;
+    motivo: "OVERRIDE" | "HORARIO" | "SIN_CONFIGURAR";
+    hasta?: string | null;
+  };
   /** Opciones de pago por transferencia */
   transferOptions?: TransferOptions;
   /** Servicio a mesa */
   dineInConfig?: DineInConfig;
+  /** Venta de mostrador (docs/caja-pedidos.md) */
+  counterConfig?: CounterConfig;
 }
 
 /**
@@ -80,6 +94,8 @@ export interface CreateBranchRequest {
   transferOptions?: TransferOptions;
   /** Servicio a mesa */
   dineInConfig?: DineInConfig;
+  /** Venta de mostrador (docs/caja-pedidos.md) */
+  counterConfig?: CounterConfig;
 }
 
 /**
@@ -104,10 +120,12 @@ export interface UpdateBranchRequest {
   longitude?: number;
   /** Configuración de envío */
   deliveryConfig?: DeliveryConfig;
-  /** Horarios de atención */
-  businessHours?: BusinessHours;
+  /** Horarios de atención (`null` = sin horario, acepta pedidos siempre) */
+  businessHours?: BusinessHours | null;
   /** Opciones de pago por transferencia */
   transferOptions?: TransferOptions;
   /** Servicio a mesa */
   dineInConfig?: DineInConfig;
+  /** Venta de mostrador (docs/caja-pedidos.md) */
+  counterConfig?: CounterConfig;
 }

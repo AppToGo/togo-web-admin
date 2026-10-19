@@ -19,6 +19,7 @@ export const LIVE_STATUSES: OrderStatus[] = [
   "PAID",
   "IN_PROGRESS",
   "READY",
+  "ON_THE_WAY",
   "CANCELLED",
   "ABANDONED",
 ];

@@ -6,6 +6,8 @@
  * (mismo criterio que `features/customers/types`).
  */
 
+import type { DateFilterValue } from "@/features/filters/stores";
+
 export type ConversationStatus = "OPEN" | "CLOSED" | "EXPIRED";
 
 export type ConversationOutcome =
@@ -177,6 +179,8 @@ export interface ConversationSummary {
   mine: number;
   unassigned: number;
   unreadInHandoff: number;
+  /** Badge de Inbox del sidebar: solicitudes de asesor sin asignar + asignadas a mí con mensajes sin leer. */
+  needsAttention: number;
 }
 
 export interface PaginationMeta {
@@ -217,4 +221,15 @@ export interface GetConversationsParams {
   hasUnread?: boolean;
   /** Búsqueda por nombre de cliente o teléfono. */
   q?: string;
+}
+
+// ─── Filtros del inbox ─────────────────────────────────────────────────
+
+/** Vista del listado del inbox (antes, las pestañas). Selección única. */
+export type InboxView = "all" | "waiting" | "mine" | "unassigned";
+
+export interface InboxFiltersValue {
+  view: InboxView;
+  /** `null` = todas las fechas. */
+  date: DateFilterValue | null;
 }

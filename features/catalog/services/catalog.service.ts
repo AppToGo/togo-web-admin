@@ -23,32 +23,8 @@
  */
 
 import apiClient from "@/services/api.service";
-import type {
-  PaginatedGlobalCatalog,
-  PaginatedBusinessProducts,
-  GlobalProduct,
-  BusinessProduct,
-  BusinessCategory,
-  CreateCustomProductDto,
-  CreateSimpleProductDto,
-  ActivateGlobalProductDto,
-  UpdateProductDto,
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  ProductFilters,
-  GlobalCatalogFilters,
-  PaginatedProducts,
-  CatalogProduct,
-  ProductVariant,
-  CreateProductDto,
-  ActivateCatalogProductDto,
-  UpdateCatalogProductDto,
-  CreateVariantDto,
-  UpdateVariantDto,
-  CatalogProductsFilters,
-} from "../types/catalog.types";
+import type { PaginatedGlobalCatalog, PaginatedBusinessProducts, BusinessProduct, BusinessCategory, CreateCustomProductDto, CreateSimpleProductDto, ActivateGlobalProductDto, UpdateProductDto, CreateCategoryDto, UpdateCategoryDto, ProductFilters, GlobalCatalogFilters, PaginatedProducts, CatalogProduct, ProductVariant, CreateProductDto, ActivateCatalogProductDto, UpdateCatalogProductDto, CreateVariantDto, UpdateVariantDto, CatalogProductsFilters } from "../types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
-import type { PaginatedResponse } from "@/types";
 import type { VariantTemplate } from "../types/catalog.types";
 
 // ============================================================================
@@ -557,12 +533,7 @@ export async function deleteVariant(
 // HYBRID INVENTORY API (Branch-specific product management)
 // ============================================================================
 
-import type {
-  ProductWithBranchFilters,
-  PaginatedProductsWithBranchStatus,
-  BusinessProductWithAvailability,
-  BulkBranchUpdateDto,
-} from "../types/hybrid-catalog.types";
+import type { PaginatedProductsWithBranchStatus, BusinessProductWithAvailability, BulkBranchUpdateDto } from "../types/hybrid-catalog.types";
 
 /**
  * Get products with branch filter (HYBRID approach)

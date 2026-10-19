@@ -8,12 +8,11 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Store, Check, X, Package } from "lucide-react";
+import { Store } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { BranchAvailability } from "@/features/catalog/types/hybrid-catalog.types";
 
@@ -38,7 +37,6 @@ interface BranchAvailabilityTabProps {
 }
 
 export function BranchAvailabilityTab({
-  productId,
   branches,
   branchAvailability,
   basePrice,

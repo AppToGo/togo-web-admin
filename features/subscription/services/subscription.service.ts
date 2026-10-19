@@ -28,6 +28,8 @@ export interface PlanCatalogEntry {
   name: string;
   maxBranches: number;
   maxUsers: number;
+  /** Análisis de comprobantes incluidos por mes (999999 = ilimitado). */
+  maxProofsPerMonth: number;
   priceMonthly: number;
 }
 

@@ -5,7 +5,7 @@
  * Super Admin page for managing business subscriptions
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
@@ -20,6 +20,7 @@ import {
   useBusinesses,
   usePaymentAlerts,
   useUpdateBranchesLimit,
+  useUpdateProofQuota,
   useRecordPayment,
   useSendNotification,
   useToggleBusinessStatus,
@@ -29,6 +30,7 @@ import {
   FilterPopover,
   RecordPaymentModal,
   EditBranchesLimitModal,
+  EditProofQuotaModal,
   SendNotificationModal,
 } from "@/features/admin/business-management/components";
 import type {
@@ -36,6 +38,7 @@ import type {
   BusinessWithSubscription,
   RecordPaymentDto,
   UpdateBranchesLimitDto,
+  UpdateProofQuotaDto,
   SendNotificationDto,
 } from "@/features/admin/business-management/types/business-subscription.types";
 
@@ -48,7 +51,6 @@ const DEFAULT_FILTERS: BusinessFiltersType = {
 
 export default function BusinessManagementPage() {
   const t = useTranslations("settings");
-  const tc = useTranslations("common");
   const { isLoading: isAuthLoading } = useAuthGuard();
   const isSuperAdmin = useIsSuperAdmin();
 
@@ -59,16 +61,21 @@ export default function BusinessManagementPage() {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithSubscription | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isBranchesModalOpen, setIsBranchesModalOpen] = useState(false);
+  const [isProofQuotaModalOpen, setIsProofQuotaModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
-  // Update filters when debounced search changes
-  useEffect(() => {
+  // Al cambiar la búsqueda (debounced) se actualiza el filtro y se vuelve a
+  // la página 1. Ajuste de estado durante el render en vez de un efecto: se
+  // aplica en el mismo render, sin una pasada intermedia con filtros viejos.
+  const [prevDebouncedSearch, setPrevDebouncedSearch] = useState(debouncedSearch);
+  if (debouncedSearch !== prevDebouncedSearch) {
+    setPrevDebouncedSearch(debouncedSearch);
     setFilters((prev) => ({
       ...prev,
       search: debouncedSearch || undefined,
       page: 1,
     }));
-  }, [debouncedSearch]);
+  }
 
   // Queries
   const { data: businessesData, isLoading: isBusinessesLoading } = useBusinesses(filters);
@@ -76,6 +83,7 @@ export default function BusinessManagementPage() {
 
   // Mutations
   const updateBranchesLimit = useUpdateBranchesLimit();
+  const updateProofQuota = useUpdateProofQuota();
   const recordPayment = useRecordPayment();
   const sendNotification = useSendNotification();
   const toggleStatus = useToggleBusinessStatus();
@@ -93,6 +101,11 @@ export default function BusinessManagementPage() {
   const handleEditBranches = useCallback((business: BusinessWithSubscription) => {
     setSelectedBusiness(business);
     setIsBranchesModalOpen(true);
+  }, []);
+
+  const handleEditProofQuota = useCallback((business: BusinessWithSubscription) => {
+    setSelectedBusiness(business);
+    setIsProofQuotaModalOpen(true);
   }, []);
 
   const handleSendNotification = useCallback((business: BusinessWithSubscription) => {
@@ -137,6 +150,22 @@ export default function BusinessManagementPage() {
       );
     },
     [updateBranchesLimit, selectedBusiness]
+  );
+
+  const handleSubmitProofQuota = useCallback(
+    (data: UpdateProofQuotaDto) => {
+      if (!selectedBusiness) return;
+      updateProofQuota.mutate(
+        { businessId: selectedBusiness.id, data },
+        {
+          onSuccess: () => {
+            setIsProofQuotaModalOpen(false);
+            setSelectedBusiness(null);
+          },
+        }
+      );
+    },
+    [updateProofQuota, selectedBusiness]
   );
 
   const handleSubmitNotification = useCallback(
@@ -327,6 +356,7 @@ export default function BusinessManagementPage() {
             businesses={businessesData?.data || []}
             onRecordPayment={handleRecordPayment}
             onEditBranches={handleEditBranches}
+            onEditProofQuota={handleEditProofQuota}
             onSendNotification={handleSendNotification}
             onToggleStatus={handleToggleStatus}
             isLoading={isBusinessesLoading}
@@ -394,6 +424,17 @@ export default function BusinessManagementPage() {
           }}
           onSubmit={handleSubmitBranchesLimit}
           isSubmitting={updateBranchesLimit.isPending}
+        />
+
+        <EditProofQuotaModal
+          business={selectedBusiness}
+          isOpen={isProofQuotaModalOpen}
+          onClose={() => {
+            setIsProofQuotaModalOpen(false);
+            setSelectedBusiness(null);
+          }}
+          onSubmit={handleSubmitProofQuota}
+          isSubmitting={updateProofQuota.isPending}
         />
 
         <SendNotificationModal

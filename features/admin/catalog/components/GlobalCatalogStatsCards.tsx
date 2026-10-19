@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Package, TrendingUp, Building2, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GlobalCatalogStats } from "../types/admin-catalog.types";
 

@@ -14,7 +14,7 @@ import { DeliveryConfigSection } from './DeliveryConfigSection';
 import { BusinessHoursSection } from './BusinessHoursSection';
 import { TransferOptionsSection } from './TransferOptionsSection';
 import type { Branch, DeliveryConfig, BusinessHours, TransferOptions } from '../types';
-import { DEFAULT_TRANSFER_OPTIONS } from '../types';
+import { DEFAULT_TRANSFER_OPTIONS, parseBusinessHours } from '../types';
 
 interface BranchSettingsFormProps {
   /** Sede a configurar */
@@ -36,7 +36,7 @@ export interface BranchSettingsFormData {
   contactPhone: string;
   address: string;
   deliveryConfig?: DeliveryConfig;
-  businessHours?: BusinessHours;
+  businessHours: BusinessHours | null;
   transferOptions?: TransferOptions;
 }
 
@@ -57,19 +57,7 @@ export function BranchSettingsForm({
     address: branch.address ?? '',
     deliveryConfig: branch.deliveryConfig ?? { type: 'FREE' },
     transferOptions: branch.transferOptions ?? DEFAULT_TRANSFER_OPTIONS,
-    businessHours: branch.businessHours ?? {
-      timezone: 'America/Bogota',
-      schedule: {
-        monday: { isOpen: true, open: '09:00', close: '18:00' },
-        tuesday: { isOpen: true, open: '09:00', close: '18:00' },
-        wednesday: { isOpen: true, open: '09:00', close: '18:00' },
-        thursday: { isOpen: true, open: '09:00', close: '18:00' },
-        friday: { isOpen: true, open: '09:00', close: '18:00' },
-        saturday: { isOpen: false, open: '09:00', close: '18:00' },
-        sunday: { isOpen: false, open: '09:00', close: '18:00' },
-      },
-      holidays: [],
-    },
+    businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
   });
 
   const handleSubmit = useCallback(
@@ -186,6 +174,7 @@ export function BranchSettingsForm({
       <BusinessHoursSection
         value={formData.businessHours}
         onChange={(hours) => updateField('businessHours', hours)}
+        timezone={branch.timezone}
       />
 
       {/* Botones de acción al final */}

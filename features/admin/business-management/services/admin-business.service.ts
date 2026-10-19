@@ -17,6 +17,7 @@ import type {
   BusinessFilters,
   PaginatedBusinesses,
   UpdateBranchesLimitDto,
+  UpdateProofQuotaDto,
   RecordPaymentDto,
   SendNotificationDto,
   PaymentRecord,
@@ -70,6 +71,21 @@ export async function updateBranchesLimit(
 ): Promise<BusinessWithSubscription> {
   const response = await apiClient.patch<BusinessWithSubscription>(
     `/admin/businesses/${businessId}/branches-limit`,
+    data
+  );
+  return response.data;
+}
+
+/**
+ * Update receipt-analysis quota for a business
+ * PATCH /admin/businesses/:id/proof-quota
+ */
+export async function updateProofQuota(
+  businessId: string,
+  data: UpdateProofQuotaDto
+): Promise<BusinessWithSubscription> {
+  const response = await apiClient.patch<BusinessWithSubscription>(
+    `/admin/businesses/${businessId}/proof-quota`,
     data
   );
   return response.data;
