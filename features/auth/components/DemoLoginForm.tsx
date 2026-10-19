@@ -6,9 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDemoLogin } from "@/features/auth/hooks/useAuth";
-
-const DEMO_WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_DEMO_WHATSAPP_NUMBER ?? "+573001112233";
+import { DEMO_WHATSAPP_NUMBER } from "@/features/auth/demo.constants";
 
 /**
  * Entrada al modo demo desde el login.

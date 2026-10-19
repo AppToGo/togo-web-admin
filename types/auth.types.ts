@@ -28,6 +28,8 @@ export interface AuthenticatedUser {
   demoPhone?: string | null;
   /** Nombre registrado en el login demo. Solo presente si isDemo. */
   demoName?: string | null;
+  /** Código a enviar por WhatsApp para verificar el número. Solo si isDemo. */
+  demoVerificationCode?: string | null;
 }
 
 // Demo login request (sin credenciales: nombre + WhatsApp del visitante)
@@ -150,6 +152,10 @@ export interface SessionBusiness {
 export interface DemoContact {
   name: string;
   phone: string;
+  /** Código a enviar por WhatsApp a la demo para verificar el número. */
+  verificationCode: string | null;
+  /** Hasta verificar, el inbox demo está vacío y no se gestionan pedidos. */
+  verified: boolean;
 }
 
 export interface SessionResponse {
