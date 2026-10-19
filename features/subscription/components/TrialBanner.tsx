@@ -22,6 +22,7 @@ export function TrialBanner() {
   const t = useTranslations("dashboard.trialBanner");
   const user = useCurrentUser();
   const openUpgradeModal = useOpenUpgradePlanModal();
+  const [now] = React.useState(() => Date.now());
 
   // Solo aplica a negocios reales en plan Free con trialEndsAt conocido (no en modo demo)
   if (user?.isDemo || user?.subscriptionPlan !== 1 || !user?.trialEndsAt) return null;
@@ -29,7 +30,7 @@ export function TrialBanner() {
   const trialEndsAtMs = new Date(user.trialEndsAt).getTime();
   if (Number.isNaN(trialEndsAtMs)) return null; // fecha inválida — no mostrar basura al usuario
 
-  const msRemaining = trialEndsAtMs - Date.now();
+  const msRemaining = trialEndsAtMs - now;
   // isExpired se calcula directo de los ms, no del daysRemaining redondeado:
   // Math.ceil(-0.4) da 0 (no -1), lo que haría creer que el trial "termina hoy"
   // hasta 24h después de haber vencido de verdad.

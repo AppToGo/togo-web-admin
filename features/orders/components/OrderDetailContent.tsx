@@ -111,7 +111,7 @@ function getOrderTypeInfo(
 
 // Component to change order status (similar to PaymentStatusEditor)
 function OrderStatusEditor({
-  orderId,
+  orderId: _orderId,
   currentStatus,
   onStatusChange,
   customerEditing = false,
@@ -684,7 +684,7 @@ export function OrderDetailContent({
 function PaymentStatusEditor({
   orderId,
   currentStatus,
-  paymentMethod,
+  paymentMethod: _paymentMethod,
 }: {
   orderId: string;
   currentStatus: import("../types").PaymentStatus;
