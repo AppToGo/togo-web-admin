@@ -244,9 +244,21 @@ export function OrderDetailContent({
     activeTab === "conversation"
   );
 
+  // Sesión demo: sin pestaña Conversación — el backend la deniega (solo
+  // inbox propio) y el 403 se vería como error en vez de estado vacío.
+  const isDemo = user?.isDemo === true;
+
   const tabs = [
     { value: "general", icon: ClipboardList, label: t("tabs.general") },
-    { value: "conversation", icon: MessageCircle, label: t("tabs.conversation") },
+    ...(!isDemo
+      ? [
+          {
+            value: "conversation",
+            icon: MessageCircle,
+            label: t("tabs.conversation"),
+          },
+        ]
+      : []),
     ...(canViewHistory
       ? [{ value: "history", icon: Clock, label: t("tabs.history") }]
       : []),

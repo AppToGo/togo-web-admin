@@ -16,10 +16,13 @@ import {
   SessionResponse,
   RegisterRequest,
   RegistrationResponse,
+  DemoLoginRequest,
+  DemoLead,
 } from "@/types/auth.types";
 
 const AUTH_ENDPOINTS = {
   LOGIN: "/auth/login",
+  DEMO_LOGIN: "/auth/demo-login",
   REFRESH: "/auth/refresh",
   LOGOUT: "/auth/logout",
   LOGOUT_ALL: "/auth/logout-all",
@@ -42,6 +45,48 @@ export async function login(credentials: LoginCredentials): Promise<LoginRespons
     credentials
   );
   return response.data;
+}
+
+/**
+ * Entrada al modo demo (sin credenciales).
+ *
+ * Registra al visitante como posible cliente y devuelve los tokens del
+ * usuario demo. Usa fetch directo igual que register(): es un endpoint
+ * público y el interceptor no debe adjuntar tokens.
+ */
+export async function demoLogin(
+  data: DemoLoginRequest
+): Promise<LoginResponse> {
+  const response = await fetch(`${API_BASE_URL}${AUTH_ENDPOINTS.DEMO_LOGIN}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    const message =
+      (error as { message?: string | string[] }).message ??
+      "No se pudo entrar a la demo";
+    throw new Error(Array.isArray(message) ? message.join(", ") : message);
+  }
+
+  return response.json() as Promise<LoginResponse>;
+}
+
+/**
+ * Posibles clientes de la demo (solo SUPER_ADMIN).
+ */
+export async function getDemoLeads(): Promise<DemoLead[]> {
+  const response = await apiClient.get<DemoLead[]>("/admin/demo-leads");
+  return response.data;
+}
+
+/**
+ * Eliminar un lead de la demo (solo SUPER_ADMIN).
+ */
+export async function deleteDemoLead(id: string): Promise<void> {
+  await apiClient.delete(`/admin/demo-leads/${id}`);
 }
 
 /**

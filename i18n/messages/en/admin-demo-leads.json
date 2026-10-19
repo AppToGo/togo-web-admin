@@ -1,0 +1,16 @@
+{
+  "title": "Potential customers",
+  "subtitle": "People who tried demo mode. Reach out before they go cold.",
+  "empty": "Nobody has tried the demo yet.",
+  "columns": {
+    "name": "Name",
+    "phone": "Phone",
+    "business": "Demo business",
+    "lastDemo": "Last tried",
+    "count": "Tries",
+    "actions": "Actions"
+  },
+  "delete": "Delete",
+  "deleteConfirm": "Delete this lead?",
+  "accessDenied": "You need to be Super Admin to view this page."
+}

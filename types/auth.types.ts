@@ -20,6 +20,20 @@ export interface AuthenticatedUser {
   trialEndsAt?: string | null;
   /** Plan solicitado (UpgradePlanModal) pendiente de verificación por un SUPER_ADMIN. */
   requestedPlan?: number | null;
+  /** Sesión del modo demo. Solo presente si el token es demo. */
+  isDemo?: boolean;
+  /** Lead capturado en el login demo. Solo presente si isDemo. */
+  demoLeadId?: string | null;
+  /** Teléfono WhatsApp registrado en el login demo. Solo presente si isDemo. */
+  demoPhone?: string | null;
+  /** Nombre registrado en el login demo. Solo presente si isDemo. */
+  demoName?: string | null;
+}
+
+// Demo login request (sin credenciales: nombre + WhatsApp del visitante)
+export interface DemoLoginRequest {
+  name: string;
+  phone: string;
 }
 
 // Login Request
@@ -133,9 +147,28 @@ export interface SessionBusiness {
  * Session Response
  * Complete session data returned from /auth/session endpoint
  */
+export interface DemoContact {
+  name: string;
+  phone: string;
+}
+
 export interface SessionResponse {
+  isDemo: boolean;
+  demoContact: DemoContact | null;
   defaultBranchId: string | null;
   branches: UserBranch[];
   business: SessionBusiness;
   userPreferences: UserPreferences;
+}
+
+// Posible cliente capturado en el login demo (solo SUPER_ADMIN)
+export interface DemoLead {
+  id: string;
+  businessId: string | null;
+  businessName?: string | null;
+  name: string;
+  phone: string;
+  createdAt: string;
+  lastDemoAt: string;
+  demoCount: number;
 }

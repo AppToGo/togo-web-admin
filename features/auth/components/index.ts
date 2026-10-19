@@ -1,4 +1,6 @@
 export { LoginForm } from "./LoginForm";
+export { DemoLoginForm } from "./DemoLoginForm";
+export { DemoBanner } from "./DemoBanner";
 export { RegisterForm } from "./RegisterForm";
 export { ForgotPasswordForm } from "./ForgotPasswordForm";
 export { ResetPasswordForm } from "./ResetPasswordForm";

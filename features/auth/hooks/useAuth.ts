@@ -21,6 +21,7 @@ import {
 } from "@/types/auth.types";
 import {
   login as loginApi,
+  demoLogin as demoLoginApi,
   register as registerApi,
   forgotPassword as forgotPasswordApi,
   resetPassword as resetPasswordApi,
@@ -88,6 +89,43 @@ export function useLogin() {
     onError: (error) => {
       console.error("[useLogin] Login error:", error);
       toast.error(extractErrorMessage(error, "Error al iniciar sesión"));
+    },
+  });
+}
+
+/**
+ * Hook for demo login mutation (sin credenciales).
+ *
+ * Flow: igual que useLogin pero contra /auth/demo-login con { name, phone }.
+ * El backend registra al visitante como DemoLead y devuelve tokens del
+ * usuario demo acotados a su propio número.
+ */
+export function useDemoLogin() {
+  const router = useRouter();
+  const { setAuthData } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (data: { name: string; phone: string }) => {
+      const response = await demoLoginApi(data);
+      const setCookieResponse = await fetch("/api/auth/set-cookie", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: response.refresh_token }),
+        credentials: "include",
+      });
+
+      if (!setCookieResponse.ok) {
+        throw new Error("Failed to set session cookie");
+      }
+      return response;
+    },
+    onSuccess: (data) => {
+      setAuthData(data);
+      router.push("/dashboard/orders");
+    },
+    onError: (error) => {
+      console.error("[useDemoLogin] Demo login error:", error);
+      toast.error(extractErrorMessage(error, "No se pudo entrar a la demo"));
     },
   });
 }

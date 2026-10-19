@@ -6,6 +6,7 @@ import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
 import { useSingleBranchInit } from "@/features/branches/hooks";
 import { UpgradePlanModal, useUpgradePlanModal, TrialBanner } from "@/features/subscription";
+import { DemoBanner } from "@/features/auth/components/DemoBanner";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -58,6 +59,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {/* Trial banner — global, visible on every dashboard page while Free trial is active */}
         <TrialBanner />
+
+        {/* Demo banner — global, visible on every dashboard page during demo sessions */}
+        <DemoBanner />
 
         {/* Page content */}
         <main className="flex-1 flex flex-col p-4 sm:p-6">

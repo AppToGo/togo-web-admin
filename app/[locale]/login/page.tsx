@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { LoginForm } from "@/features/auth/components/LoginForm";
+import { DemoLoginForm } from "@/features/auth/components/DemoLoginForm";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function LoginPage() {
@@ -39,6 +40,14 @@ export default function LoginPage() {
           </div>
 
           <LoginForm />
+
+          <div className="flex items-center gap-3 my-6">
+            <span className="flex-1 border-t border-slate-200" />
+            <span className="text-xs text-slate-400">{t("demo.divider")}</span>
+            <span className="flex-1 border-t border-slate-200" />
+          </div>
+
+          <DemoLoginForm />
         </div>
 
         {/* Register link */}
