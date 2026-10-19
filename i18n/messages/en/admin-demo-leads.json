@@ -87,5 +87,7 @@
     "noteError": "Could not add the note",
     "deleted": "Lead deleted",
     "deleteError": "Could not delete the lead"
-  }
+  },
+  "loadError": "Could not load potential customers.",
+  "retry": "Retry"
 }

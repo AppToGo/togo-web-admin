@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { MessageCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useLazySection } from "../../../hooks/useLazySection";
 import { useConversations } from "@/features/conversations/hooks/useConversations";
-import { ConversationsTable } from "@/features/conversations/components/conversations-table";
+import { ConversationOutcomeBadge } from "@/features/conversations/components/conversation-outcome-badge";
 import { ConversationThread } from "@/features/conversations/components/conversation-thread";
 import { ConversationsSectionSkeleton } from "../skeletons/sections/conversations-section-skeleton";
 
@@ -22,6 +23,8 @@ interface ConversationsSectionProps {
 
 export function ConversationsSection({ customerId }: ConversationsSectionProps) {
   const t = useTranslations("conversations");
+  const tc = useTranslations("customers");
+  const format = useFormatter();
   const { ref, shouldLoad } = useLazySection(customerId, "conversations");
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null
@@ -50,25 +53,61 @@ export function ConversationsSection({ customerId }: ConversationsSectionProps) 
   }, []);
 
   return (
-    <div ref={ref} className="h-full">
-      <Card variant="glass" className="h-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500" />
-            {t("detail.title")}
-          </CardTitle>
-        </CardHeader>
+    <div ref={ref}>
+      <Card variant="glass">
+        <DashboardCardHeader icon={MessageCircle} title={t("detail.title")} />
         <CardContent>
           {showSkeleton ? (
             <ConversationsSectionSkeleton />
+          ) : isError ? (
+            <p className="py-6 text-center text-sm text-slate-500">{t("error.title")}</p>
+          ) : conversations.length === 0 ? (
+            <p className="py-6 text-center text-sm text-slate-500">{t("empty.title")}</p>
           ) : (
-            <ConversationsTable
-              data={conversations}
-              isLoading={false}
-              isError={isError}
-              onSelectConversation={handleSelectConversation}
-              pagination={meta}
-            />
+            <div className="space-y-3">
+              <ul className="space-y-2.5">
+                {conversations.map((conversation) => (
+                  <li key={conversation.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectConversation(conversation.id)}
+                      className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 rounded-[20px] border border-white/90 bg-white/65 px-4 py-3.5 text-left transition-colors hover:border-indigo-200 hover:bg-white"
+                    >
+                      <span className="flex min-w-40 flex-1 flex-col">
+                        <span className="text-[15px] font-semibold text-slate-900">
+                          {format.dateTime(new Date(conversation.startedAt), {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <span className="text-[13px] text-slate-500">
+                          {tc("detail.conversationMessages", {
+                            count: conversation.messageCount,
+                          })}
+                          {conversation.orderIds.length > 0 &&
+                            ` · ${tc("detail.conversationWithOrder")}`}
+                        </span>
+                      </span>
+                      <ConversationOutcomeBadge
+                        outcome={conversation.outcome}
+                        status={conversation.status}
+                        className="rounded-full"
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {meta && meta.total > conversations.length && (
+                <p className="text-center text-sm text-slate-500">
+                  {tc("detail.conversationsShowing", {
+                    shown: conversations.length,
+                    total: meta.total,
+                  })}
+                </p>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>

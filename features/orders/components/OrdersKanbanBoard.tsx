@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Minimize2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { KanbanColumn, RAIL_WIDTH } from "./KanbanColumn";
 import { OrderDetailDialog } from "./OrderDetailDialog";
 import { OrderMetrics, OrderMetricsSkeleton } from "./OrderMetrics";
@@ -13,21 +14,19 @@ import { GroupedListView } from "./GroupedListView";
 import { HoverTooltip } from "./HoverTooltip";
 import { StatsTickerRail } from "./StatsTickerRail";
 import { NewOrderDrawer } from "./NewOrderDrawer";
+import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
 import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
 
-import {
-  ColumnVisibilityBar,
-  type ColumnVisibilityConfig,
-} from "./ColumnVisibilityBar";
 
 import {
   useOrdersByStatus,
   useUpdateOrderStatus,
   useCompletedOrdersInfinite,
   useOrderMetrics,
+  useMarkOrderViewed,
 } from "../hooks";
-import { useHydrateNotificationPreferences } from "@/features/notifications/stores";
+import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import type { Order, OrderStatus } from "../types";
 import {
   getKanbanColumns,
@@ -37,6 +36,8 @@ import {
   canCompleteOrder,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
+import { checkStatusMove } from "../utils/order-flow.utils";
+import { useOrderFlow } from "../hooks/useOrderFlow";
 import type { CardDensity } from "./OrderCard";
 
 // Gap between board columns — must match the container's `gap-3` (12px)
@@ -64,6 +65,7 @@ interface OrdersKanbanBoardProps {
     delivery: boolean;
     pickup: boolean;
     dineIn: boolean;
+    counter: boolean;
   };
 }
 
@@ -112,6 +114,28 @@ function filterOrdersBySearch(
   });
 }
 
+const COLLAPSED_COLUMNS_STORAGE_KEY = "togo-kanban-collapsed-columns";
+const DEFAULT_COLLAPSED_COLUMNS: Partial<Record<OrderStatus, boolean>> = {
+  COMPLETED: true,
+  CANCELLED: true,
+};
+
+/**
+ * Columnas colapsadas guardadas en este navegador. Se lee en el
+ * inicializador: el dashboard no se renderiza en el servidor (AuthProvider
+ * muestra el spinner hasta restaurar la sesión).
+ */
+function readCollapsedColumns(): Partial<Record<OrderStatus, boolean>> {
+  try {
+    const saved = typeof window !== "undefined"
+      ? localStorage.getItem(COLLAPSED_COLUMNS_STORAGE_KEY)
+      : null;
+    return saved ? { ...DEFAULT_COLLAPSED_COLUMNS, ...JSON.parse(saved) } : DEFAULT_COLLAPSED_COLUMNS;
+  } catch {
+    return DEFAULT_COLLAPSED_COLUMNS;
+  }
+}
+
 export function OrdersKanbanBoard({
   searchQuery = "",
   boardView = "board",
@@ -121,30 +145,42 @@ export function OrdersKanbanBoard({
   businessId,
   branchIds,
   paymentStatusFilter = { paid: true, pending: true },
-  deliveryTypeFilter = { delivery: true, pickup: true, dineIn: true },
+  deliveryTypeFilter = { delivery: true, pickup: true, dineIn: true, counter: true },
 }: OrdersKanbanBoardProps) {
   const t = useTranslations("orders");
-
-  // Hydrate notification preferences when the orders page mounts
-  useHydrateNotificationPreferences();
 
   // Get metrics for total counts per status
   const { data: metrics } = useOrderMetrics();
 
-  // Estado local del sidebar de estadísticas
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  // Stats panel collapsed to a narrow rail (inside the already open sidebar)
-  // — independent from the isSidebarOpen/ColumnVisibilityBar cookie.
-  const [statsRailCollapsed, setStatsRailCollapsed] = useState(false);
+  // Stats panel collapsed to a narrow rail.
+  // null = the user hasn't toggled it yet: starts collapsed on mobile (so the
+  // board gets the width) and expanded on desktop.
+  const isMobile = useIsMobile();
+  const [statsRailCollapsedChoice, setStatsRailCollapsed] = useState<boolean | null>(null);
+  const statsRailCollapsed = statsRailCollapsedChoice ?? isMobile;
+  // En el teléfono el tablero de columnas no cabe: siempre la vista por
+  // estado (pestañas + una columna). La preferencia guardada no se toca y
+  // vuelve a aplicar en pantallas grandes.
+  const view: BoardViewMode = isMobile ? "focus" : boardView;
 
   // Columns collapsed to a rail in the Board view — Delivered and Cancelled
-  // start collapsed (the least checked during day-to-day operation).
+  // start collapsed (the least checked during day-to-day operation). Which
+  // ones the user keeps collapsed or expanded is a per-browser preference
+  // (localStorage); which columns exist is the business flow (backend).
   const [collapsedColumns, setCollapsedColumns] = useState<
     Partial<Record<OrderStatus, boolean>>
-  >({ COMPLETED: true, CANCELLED: true });
+  >(readCollapsedColumns);
   const handleColumnCollapsedChange = useCallback(
     (status: OrderStatus, collapsed: boolean) => {
-      setCollapsedColumns((prev) => ({ ...prev, [status]: collapsed }));
+      setCollapsedColumns((prev) => {
+        const next = { ...prev, [status]: collapsed };
+        try {
+          localStorage.setItem(COLLAPSED_COLUMNS_STORAGE_KEY, JSON.stringify(next));
+        } catch {
+          // Sin localStorage (modo privado): la preferencia dura la sesión.
+        }
+        return next;
+      });
     },
     []
   );
@@ -152,14 +188,6 @@ export function OrdersKanbanBoard({
   // Active status in the "By status" (Focus) view
   const [focusStatusOverride, setFocusStatusOverride] = useState<OrderStatus | null>(null);
 
-  const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibilityConfig>({
-      CONFIRMED: true,
-      IN_PROGRESS: true,
-      READY: true,
-      COMPLETED: true,
-      CANCELLED: false,
-    });
   // Estado para el dialog de detalle (un solo dialog para todas las órdenes)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const isDetailOpen = !!selectedOrderId;
@@ -195,19 +223,20 @@ export function OrdersKanbanBoard({
   });
 
   const updateStatus = useUpdateOrderStatus();
+  const markOrderViewed = useMarkOrderViewed();
 
   // Combine errors
   const error = errorLive || errorCompleted;
 
   const allColumns = useMemo(() => getKanbanColumns(), []);
 
-  // Filter columns based on visibility
-  const columns = useMemo(() => {
-    return allColumns.filter((column) => {
-      const key = column.id as keyof ColumnVisibilityConfig;
-      return columnVisibility[key] ?? true;
-    });
-  }, [allColumns, columnVisibility]);
+  // Columnas del flujo del negocio (OWNER/ADMIN eligen qué estados usa;
+  // los que no usa no se muestran y el pedido los salta).
+  const { visible: flowStatuses, canRevert } = useOrderFlow();
+  const columns = useMemo(
+    () => allColumns.filter((column) => flowStatuses?.has(column.id) ?? true),
+    [allColumns, flowStatuses]
+  );
 
   const visibleColumnCount = columns.length;
 
@@ -264,10 +293,12 @@ export function OrdersKanbanBoard({
       if (
         !deliveryTypeFilter.delivery ||
         !deliveryTypeFilter.pickup ||
-        !deliveryTypeFilter.dineIn
+        !deliveryTypeFilter.dineIn ||
+        !deliveryTypeFilter.counter
       ) {
         result = result.filter((order) => {
           if (order.deliveryType === "DINE_IN") return deliveryTypeFilter.dineIn;
+          if (order.deliveryType === "COUNTER") return deliveryTypeFilter.counter;
           // Usar deliveryType si está disponible, sino usar addressId como fallback
           const isDelivery = order.deliveryType
             ? order.deliveryType === "DELIVERY"
@@ -297,21 +328,41 @@ export function OrdersKanbanBoard({
     [filteredOrdersByStatus]
   );
 
+  // Pedido que espera repartidor para pasar a "En camino".
+  const [deliveryPickerOrder, setDeliveryPickerOrder] = useState<Order | null>(null);
+
   // Single entry point for every status change on this screen (drag & drop,
-  // "Move to" menu, next-step button, "By status" tab drops). Moving to
-  // Delivered runs the same canCompleteOrder check as the detail status
-  // editor, so no view can complete an unpaid or not-ready order.
+  // "Move to" menu, next-step button, "By status" tab drops). Checks the move
+  // against the visible columns (only the next visible one is mandatory;
+  // going back needs order.revert_status), and moving to Delivered runs the
+  // same canCompleteOrder check as the detail status editor, so no view can
+  // complete an unpaid order.
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
+      const order = Object.values(filteredOrdersByStatus)
+        .flat()
+        .find((o) => o.id === orderId);
+      // Fail closed: a card can only be dragged while it's rendered, so a
+      // missing order means stale state — don't move it unchecked.
+      if (!order) {
+        toast.error(t("errors.updateStatusFailed"));
+        return;
+      }
+      const move = checkStatusMove(order.status, newStatus as OrderStatus, {
+        visible: flowStatuses,
+        canRevert,
+        deliveryType: order.deliveryType,
+      });
+      if (!move.ok) {
+        toast.error(
+          move.reason === "mustPassThrough"
+            ? t("errors.mustPassThrough", { status: t(`status.${move.next}`) })
+            : t(`errors.${move.reason}`)
+        );
+        return;
+      }
       if (newStatus === "COMPLETED") {
-        const order = Object.values(filteredOrdersByStatus)
-          .flat()
-          .find((o) => o.id === orderId);
-        // Fail closed: a card can only be dragged while it's rendered, so a
-        // missing order means stale state — don't complete it unchecked.
-        const validation: { valid: boolean; message?: string } = order
-          ? canCompleteOrder(order)
-          : { valid: false };
+        const validation = canCompleteOrder(order);
         if (!validation.valid) {
           toast.error(
             validation.message
@@ -321,12 +372,32 @@ export function OrdersKanbanBoard({
           return;
         }
       }
+      // "En camino" exige repartidor: si el pedido no tiene, se pide antes
+      // de mover la card.
+      if (newStatus === "ON_THE_WAY" && !order.assignedDeliveryId) {
+        setDeliveryPickerOrder(order);
+        return;
+      }
       updateStatus.mutate({
         orderId,
         data: { status: newStatus as OrderStatus },
       });
     },
-    [updateStatus, filteredOrdersByStatus, t]
+    [updateStatus, filteredOrdersByStatus, flowStatuses, canRevert, t]
+  );
+
+  const handleDeliveryConfirm = useCallback(
+    (assignedDeliveryId: string) => {
+      if (!deliveryPickerOrder) return;
+      updateStatus.mutate(
+        {
+          orderId: deliveryPickerOrder.id,
+          data: { status: "ON_THE_WAY", assignedDeliveryId },
+        },
+        { onSettled: () => setDeliveryPickerOrder(null) }
+      );
+    },
+    [deliveryPickerOrder, updateStatus]
   );
 
   // Delivered orders come from a separate paginated query; every view uses
@@ -347,9 +418,24 @@ export function OrdersKanbanBoard({
     [hasNextPage, isFetchingNextPage, fetchNextPage]
   );
 
-  const handleOrderClick = useCallback((orderId: string) => {
-    setSelectedOrderId(orderId);
-  }, []);
+  // Abrir un pedido nuevo lo descuenta del badge de Pedidos del sidebar
+  // para todo el negocio. Solo los CONFIRMED: los demás ya no cuentan. Un
+  // SUPER_ADMIN mirando el tablero de un cliente no es alguien del negocio
+  // (el backend también lo ignora).
+  const isSuperAdmin = useIsSuperAdmin();
+  const { mutate: markViewed } = markOrderViewed;
+  const handleOrderClick = useCallback(
+    (orderId: string) => {
+      setSelectedOrderId(orderId);
+      if (
+        !isSuperAdmin &&
+        ordersByStatus.CONFIRMED?.some((order) => order.id === orderId)
+      ) {
+        markViewed(orderId);
+      }
+    },
+    [isSuperAdmin, ordersByStatus, markViewed]
+  );
 
   const handleCloseDetail = useCallback(() => {
     setSelectedOrderId(null);
@@ -393,12 +479,13 @@ export function OrdersKanbanBoard({
           data-tour-step="kanban-board"
           className={cn(
             "relative rounded-card-xl flex flex-col min-h-0 overflow-hidden",
-            "bg-white/30 backdrop-blur-xl border border-white/40",
+            // Teléfono: sin marco, las tarjetas van directo sobre el fondo.
+            "md:bg-white/30 md:backdrop-blur-xl md:border md:border-white/40",
             "transition-all duration-300 ease-in-out",
             "flex-1"
           )}
         >
-          {boardView === "board" && (
+          {view === "board" && (
             /* Horizontal scroll only here */
             <div className="flex-1 min-w-0 py-3 px-3 overflow-x-auto overflow-y-hidden scrollbar-thin">
               <div
@@ -407,8 +494,11 @@ export function OrdersKanbanBoard({
                   // With few EXPANDED columns use the full width; otherwise
                   // scroll horizontally. Rails barely take space
                   // (RAIL_WIDTH), so they don't count as a full 320px column.
-                  minWidth:
-                    expandedColumnCount <= 4
+                  // On mobile every expanded column is as wide as the visible
+                  // area, so the first one is seen whole without scrolling.
+                  minWidth: isMobile
+                    ? `calc(${expandedColumnCount * 100}% + ${(visibleColumnCount - 1) * COLUMN_GAP_PX + collapsedVisibleCount * RAIL_WIDTH}px)`
+                    : expandedColumnCount <= 4
                       ? "100%"
                       : `${expandedColumnCount * 320 + collapsedVisibleCount * RAIL_WIDTH}px`,
                 }}
@@ -437,7 +527,7 @@ export function OrdersKanbanBoard({
                       // subtracting the rails' fixed space (rails ignore
                       // flexBasis and use their own fixed width).
                       flexBasis={`calc((100% - ${(visibleColumnCount - 1) * COLUMN_GAP_PX}px - ${collapsedVisibleCount * RAIL_WIDTH}px) / ${expandedColumnCount})`}
-                      minWidth={320}
+                      minWidth={isMobile ? 0 : 320}
                       // Infinite scroll props for COMPLETED column
                       isArchive={isCompletedColumn}
                       hasMore={isCompletedColumn ? hasNextPage : false}
@@ -469,8 +559,8 @@ export function OrdersKanbanBoard({
             </div>
           )}
 
-          {boardView === "focus" && activeFocusStatus && (
-            <div className="flex-1 min-h-0 p-3">
+          {view === "focus" && activeFocusStatus && (
+            <div className="flex-1 min-h-0 pb-20 md:p-3">
               <FocusView
                 statuses={columns.map((c) => c.id)}
                 ordersByStatus={filteredOrdersByStatus}
@@ -487,7 +577,7 @@ export function OrdersKanbanBoard({
             </div>
           )}
 
-          {boardView === "list" && (
+          {view === "list" && (
             <div className="flex-1 min-h-0 p-3">
               <GroupedListView
                 statuses={columns.map((c) => c.id)}
@@ -503,15 +593,14 @@ export function OrdersKanbanBoard({
         </div>
 
         {/* Right Sidebar - Statistics - fuera del kanban */}
+        {/* Teléfono: sin riel de estadísticas (el ancho es para los pedidos). */}
         <aside
           className={cn(
-            "shrink-0 ml-0 transition-all duration-300 ease-in-out",
-            "rounded-card-xl overflow-hidden flex flex-col",
-            !isSidebarOpen && "w-0 opacity-0 border-0 ml-0",
-            isSidebarOpen &&
-              !statsRailCollapsed &&
+            "hidden md:flex shrink-0 ml-0 transition-all duration-300 ease-in-out",
+            "rounded-card-xl overflow-hidden flex-col",
+            !statsRailCollapsed &&
               "w-72 opacity-100 ml-3 bg-white/30 backdrop-blur-xl border border-white/40",
-            isSidebarOpen && statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
+            statsRailCollapsed && cn(STATS_RAIL_WIDTH, "opacity-100 ml-3")
           )}
         >
           {statsRailCollapsed ? (
@@ -555,18 +644,34 @@ export function OrdersKanbanBoard({
         </aside>
       </div>
 
-      {/* Column Visibility Floating Bar */}
-      <div data-tour-step="column-visibility">
-        <ColumnVisibilityBar
-          onVisibilityChange={setColumnVisibility}
-          isSidebarOpen={isSidebarOpen}
-          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-      </div>
+      {/* Teléfono: el botón de la columna "Nueva" no existe en la vista por
+          estado, así que "Nuevo pedido" flota abajo a la derecha. */}
+      <Can permission="order.create">
+        <button
+          type="button"
+          onClick={() => setIsNewOrderOpen(true)}
+          className="md:hidden fixed right-4 bottom-6 z-30 h-14 pl-4 pr-5 rounded-full bg-slate-900 text-white shadow-lg flex items-center gap-2 text-sm font-semibold"
+        >
+          <Plus className="w-5 h-5" />
+          {t("createOrder.button")}
+        </button>
+      </Can>
 
       <NewOrderDrawer
         isOpen={isNewOrderOpen}
         onClose={() => setIsNewOrderOpen(false)}
+      />
+
+      <DeliveryPickerDialog
+        isOpen={!!deliveryPickerOrder}
+        orderLabel={
+          deliveryPickerOrder
+            ? formatOrderNumber(deliveryPickerOrder.id, deliveryPickerOrder.orderNumber)
+            : undefined
+        }
+        isSubmitting={updateStatus.isPending}
+        onClose={() => setDeliveryPickerOrder(null)}
+        onConfirm={handleDeliveryConfirm}
       />
 
       {/* Order detail as a side panel - only rendered when an order is selected */}

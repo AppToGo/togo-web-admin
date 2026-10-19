@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useTourStore } from "@/stores/tour.store";
+import { isMobileViewport } from "@/hooks/useIsMobile";
 import type { TourContextValue, TourStep } from "@/components/tour/tour.types";
 
 const TOUR_START_DELAY_MS = 600;
@@ -32,6 +33,8 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
   // run (sync storage completes in a microtask prior to the effects flush).
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // The tour is not shown on mobile, so it never counts as running there.
+    if (isMobileViewport()) return;
     const alreadyDone = useTourStore.getState().completedTours[tourKey] === true;
     if (!alreadyDone) {
       useTourStore.getState().setTourRunning(true);
@@ -48,6 +51,7 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
     if (!hydrated) return; // Wait for hydration — avoids SSR key mismatch
     if (!readyToStart) return; // Wait until caller signals data is ready
     if (typeof window === "undefined") return;
+    if (isMobileViewport()) return; // No tour on mobile
 
     const alreadyDone = isTourCompleted(tourKey);
     if (alreadyDone) return;

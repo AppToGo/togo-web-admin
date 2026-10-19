@@ -28,6 +28,7 @@ export {
   formatDaysUntilDue,
   getPlanLabel,
   getPlanMaxBranches,
+  getPlanMaxProofs,
 } from "./constants/payment-status";
 
 // Services
@@ -35,6 +36,7 @@ export {
   getBusinesses,
   getPaymentAlerts,
   updateBranchesLimit,
+  updateProofQuota,
   recordPayment,
   sendNotification,
   toggleBusinessStatus,
@@ -49,6 +51,7 @@ export {
   useBusinesses,
   usePaymentAlerts,
   useUpdateBranchesLimit,
+  useUpdateProofQuota,
   useRecordPayment,
   useSendNotification,
   useToggleBusinessStatus,
@@ -62,4 +65,5 @@ export { FilterPopover } from "./components/FilterPopover";
 export { BusinessTable } from "./components/BusinessTable";
 export { RecordPaymentModal } from "./components/RecordPaymentModal";
 export { EditBranchesLimitModal } from "./components/EditBranchesLimitModal";
+export { EditProofQuotaModal } from "./components/EditProofQuotaModal";
 export { SendNotificationModal } from "./components/SendNotificationModal";

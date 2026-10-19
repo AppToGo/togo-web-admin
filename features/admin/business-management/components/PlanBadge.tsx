@@ -6,7 +6,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { PLAN_OPTIONS, getPlanLabel } from "../constants/payment-status";
+import { getPlanLabel } from "../constants/payment-status";
 
 interface PlanBadgeProps {
   plan: number | null | undefined;

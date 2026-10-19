@@ -2,6 +2,12 @@ import { test, expect } from "playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 import { mockLoginSuccess } from "../helpers/mock-api";
 import { mockOrdersDashboard, MOCK_ORDER_NUMBERS } from "../helpers/mock-orders-api";
+import {
+  blockUnmockedApiCalls,
+  blockRealtimeSockets,
+  mockRefreshSuccess,
+  boardOrderNumber,
+} from "./board";
 
 /**
  * Regression test for docs/architecture/pedidos-en-mesa.md, Fase 1.
@@ -26,8 +32,13 @@ test.describe("Orders — filtro de tipo de entrega (dine-in)", () => {
     // **/v1/** en bloque y hace fallback() a este handler para lo que no
     // reconoce (Playwright ejecuta el route registrado más recientemente
     // primero).
+    // Hardening: con el backend real levantado, lo no mockeado responde
+    // 401 al token falso (rebote de sesión) y el socket invalida en loop.
+    await blockUnmockedApiCalls(page);
+    await blockRealtimeSockets(page);
     await mockLoginSuccess(page);
     await mockOrdersDashboard(page);
+    await mockRefreshSuccess(page);
   });
 
   test("dineIn y pickup se filtran de forma independiente", async ({ page }) => {
@@ -37,8 +48,8 @@ test.describe("Orders — filtro de tipo de entrega (dine-in)", () => {
     await loginPage.submit();
     await loginPage.waitForDashboardRedirect();
 
-    const dineInOrder = page.getByText(`#${MOCK_ORDER_NUMBERS.dineIn}`, { exact: true });
-    const pickupOrder = page.getByText(`#${MOCK_ORDER_NUMBERS.pickup}`, { exact: true });
+    const dineInOrder = boardOrderNumber(page, `#${MOCK_ORDER_NUMBERS.dineIn}`);
+    const pickupOrder = boardOrderNumber(page, `#${MOCK_ORDER_NUMBERS.pickup}`);
 
     // Estado inicial: los 3 pedidos (delivery/pickup/dine-in) visibles.
     // Sirve además de punto de sincronización: recién acá el Kanban terminó

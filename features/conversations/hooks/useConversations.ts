@@ -1,15 +1,10 @@
 "use client";
 
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
+import { useQuery } from "@tanstack/react-query";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { getConversations } from "../services/conversation.service";
-import { CONVERSATIONS_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
+import { CONVERSATIONS_KEYS, STALE_TIME, GC_TIME, retryUnlessAuthError } from "./query-keys";
 import type { GetConversationsParams, PaginatedConversationsResponse } from "../types";
-
-type ExtraQueryOptions = Partial<
-  Pick<UseQueryOptions<PaginatedConversationsResponse, Error>, "refetchInterval">
->;
 
 /**
  * Lista paginada de conversaciones del negocio. Mismo patrón de
@@ -19,14 +14,10 @@ type ExtraQueryOptions = Partial<
  *
  * @param enabled - Compuerta adicional (ej. `shouldLoad` de
  * `useLazySection`); se combina con el enabled calculado por negocio/rol.
- * @param extraOptions - Opciones adicionales de TanStack Query (ej.
- * `refetchInterval` para el fallback del inbox cuando el socket está
- * caído — ver `useInboxConversations`).
  */
 export function useConversations(
   params?: GetConversationsParams & { businessId?: string },
-  enabled: boolean = true,
-  extraOptions?: ExtraQueryOptions
+  enabled: boolean = true
 ) {
   const effectiveBusinessIdFromStore = useEffectiveBusinessId();
   // "" es el sentinel explícito de "Todos los negocios" (SUPER_ADMIN) — a
@@ -55,14 +46,7 @@ export function useConversations(
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: isEnabled,
-    retry: (failureCount, error) => {
-      if (isAxiosError(error)) {
-        const status = error.response?.status;
-        if (status === 401 || status === 403) return false;
-      }
-      return failureCount < 3;
-    },
-    ...extraOptions,
+    retry: retryUnlessAuthError,
   });
 
   const pagination = {

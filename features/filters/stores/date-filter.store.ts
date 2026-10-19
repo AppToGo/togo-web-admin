@@ -31,6 +31,12 @@ export interface DateFilterState {
   range: DateRange;
 }
 
+/**
+ * Valor de un filtro de fecha local (no el store global), ej. el del inbox.
+ * Misma forma que el estado del store. `null` en el consumidor = sin filtro.
+ */
+export type DateFilterValue = DateFilterState;
+
 export interface DateFilterActions {
   setPreset: (preset: DateFilterPreset) => void;
   setCustomRange: (range: DateRange) => void;
@@ -59,7 +65,7 @@ function getToday(): Date {
 /**
  * Helper: Calcular rango desde preset
  */
-function getRangeFromPreset(preset: DateFilterPreset): DateRange {
+export function getRangeFromPreset(preset: DateFilterPreset): DateRange {
   const today = getToday();
 
   switch (preset) {
@@ -138,13 +144,18 @@ export const useDateFilterStore = create<DateFilterStore>()(
       },
 
       /**
-       * Recalcular fechas basado en el preset actual
-       * Útil al rehidratar para que "today" sea hoy real
+       * Recalcular fechas basado en el preset actual, para que "today" sea
+       * hoy real. Solo escribe si el rango cambió (cambio de día): así no
+       * dispara un refetch en cada llamada. Lo llama `useKeepDateRangeFresh`
+       * con la pestaña abierta; sin esto, una pestaña abierta desde ayer
+       * seguía pidiendo los pedidos de ayer y los nuevos no aparecían.
        */
       recalculateRange: () => {
-        const { preset } = get();
-        if (preset !== "custom") {
-          set({ range: getRangeFromPreset(preset) });
+        const { preset, range } = get();
+        if (preset === "custom") return;
+        const next = getRangeFromPreset(preset);
+        if (next.from !== range.from || next.to !== range.to) {
+          set({ range: next });
         }
       },
     }),

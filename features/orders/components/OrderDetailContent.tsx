@@ -7,11 +7,13 @@ import {
   MapPin,
   Clock,
   CreditCard,
+  Wallet,
   Package,
   StickyNote,
   Store,
   Home,
   Utensils,
+  Banknote,
   AlertTriangle,
   ChevronDown,
   Check,
@@ -24,7 +26,6 @@ import {
   useOrder,
   useOrderHistory,
   useUpdateOrderStatus,
-  useUpdateOrderPaymentStatus,
 } from "../hooks/useOrders";
 import type { OrderStatus, OrderItem } from "../types";
 import {
@@ -52,6 +53,12 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
+import { checkStatusMove, isStatusApplicable } from "../utils/order-flow.utils";
+import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
+import { useOrderFlow } from "../hooks/useOrderFlow";
+import { PaymentProofIndicator } from "./PaymentProofDialog";
+import { PaymentStatusEditor } from "./PaymentStatusEditor";
+import { MoneyTrailBlock } from "./MoneyTrailBlock";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -84,6 +91,16 @@ function getOrderTypeInfo(
     };
   }
 
+  // Venta de mostrador (docs/caja-pedidos.md): cobrada y entregada en el
+  // acto desde caja.
+  if (order.deliveryType === "COUNTER") {
+    return {
+      label: t("deliveryTypes.COUNTER"),
+      icon: <Banknote className="w-3 h-3" />,
+      variant: "amber",
+    };
+  }
+
   // Pedidos en mesa (docs/architecture/pedidos-en-mesa.md): antes se
   // inferían por `order.source === "OPERATOR"`, un valor que el enum real
   // OrderSource nunca produce (siempre era código muerto). deliveryType
@@ -111,13 +128,14 @@ function getOrderTypeInfo(
 
 // Component to change order status (similar to PaymentStatusEditor)
 function OrderStatusEditor({
-  orderId,
   currentStatus,
+  deliveryType,
   onStatusChange,
   customerEditing = false,
 }: {
   orderId: string;
   currentStatus: OrderStatus;
+  deliveryType?: string;
   onStatusChange: (status: OrderStatus) => void;
   /** El cliente lo está editando: no se puede mandar a producción. */
   customerEditing?: boolean;
@@ -125,6 +143,9 @@ function OrderStatusEditor({
   const [isOpen, setIsOpen] = useState(false);
   const variant = getColumnVariant(currentStatus);
   const tStatus = useTranslations("orders.status");
+  // Mismas reglas que el tablero: solo la siguiente columna visible, cancelar,
+  // o retroceder con permiso. Las demás opciones quedan deshabilitadas.
+  const flow = useOrderFlow();
 
   const handleSelect = useCallback(
     (newStatus: OrderStatus) => {
@@ -139,13 +160,15 @@ function OrderStatusEditor({
   // Available statuses (including current to show it in its position)
   // Logical flow: CONFIRMED → IN_PROGRESS → READY → ON_THE_WAY → COMPLETED
   // CANCELLED is shown at the end as an exception option
-  const availableStatuses: OrderStatus[] = [
-    "CONFIRMED",
-    "IN_PROGRESS",
-    "READY",
-    "COMPLETED",
-    "CANCELLED",
-  ];
+  // Solo los estados del flujo del negocio (más el actual, por si quedó en
+  // uno que el negocio dejó de usar); "En camino" solo para domicilio.
+  const availableStatuses = (
+    ["CONFIRMED", "IN_PROGRESS", "READY", "ON_THE_WAY", "COMPLETED", "CANCELLED"] as OrderStatus[]
+  ).filter(
+    (status) =>
+      status === currentStatus ||
+      ((flow.visible?.has(status) ?? true) && isStatusApplicable(status, deliveryType))
+  );
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
@@ -169,7 +192,9 @@ function OrderStatusEditor({
         {availableStatuses.map((status) => {
           const isCurrent = status === currentStatus;
           const isBlocked =
-            customerEditing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status);
+            (customerEditing && BLOCKED_WHILE_CUSTOMER_EDITING.includes(status)) ||
+            (!isCurrent &&
+              !checkStatusMove(currentStatus, status, { ...flow, deliveryType }).ok);
           return (
             <DropdownMenuItem
               key={status}
@@ -234,6 +259,10 @@ export function OrderDetailContent({
     user?.role === "ADMIN" ||
     user?.role === "SUPER_ADMIN";
 
+  // Sesión demo: sin pestaña Conversación — el backend la deniega (solo
+  // inbox propio) y el 403 se vería como error en vez de estado vacío.
+  const isDemo = user?.isDemo === true;
+
   // Tab "Conversación" se muestra de forma optimista (§4 del plan Fase B):
   // en vez de agregar conversationSessionId a Order, se resuelve perezosamente
   // vía GET .../orders/:id/conversation sólo cuando el tab está activo. Un
@@ -241,12 +270,8 @@ export function OrderDetailContent({
   // no se oculta el tab — evita reordenar la lista de tabs a media sesión.
   const conversationQuery = useConversationByOrder(
     orderId,
-    activeTab === "conversation"
+    !isDemo && activeTab === "conversation"
   );
-
-  // Sesión demo: sin pestaña Conversación — el backend la deniega (solo
-  // inbox propio) y el 403 se vería como error en vez de estado vacío.
-  const isDemo = user?.isDemo === true;
 
   const tabs = [
     { value: "general", icon: ClipboardList, label: t("tabs.general") },
@@ -264,9 +289,20 @@ export function OrderDetailContent({
       : []),
   ] as const;
 
+  const flow = useOrderFlow();
+  // Selector de repartidor al pasar el pedido a "En camino".
+  const [isDeliveryPickerOpen, setIsDeliveryPickerOpen] = useState(false);
   const handleStatusChange = useCallback(
     (newStatus: OrderStatus) => {
       if (!order || newStatus === order.status) return;
+      if (
+        !checkStatusMove(order.status, newStatus, {
+          ...flow,
+          deliveryType: order.deliveryType,
+        }).ok
+      ) {
+        return;
+      }
 
       if (newStatus === "COMPLETED") {
         const validation = canCompleteOrder(order);
@@ -274,6 +310,12 @@ export function OrderDetailContent({
           toast.error(t("errors.cannotComplete"));
           return;
         }
+      }
+
+      // "En camino" exige repartidor: si el pedido no tiene, se pide antes.
+      if (newStatus === "ON_THE_WAY" && !order.assignedDeliveryId) {
+        setIsDeliveryPickerOpen(true);
+        return;
       }
 
       updateStatus.mutate(
@@ -285,7 +327,22 @@ export function OrderDetailContent({
         }
       );
     },
-    [order, orderId, updateStatus, onClose, t]
+    [order, orderId, updateStatus, onClose, t, flow]
+  );
+
+  const handleDeliveryConfirm = useCallback(
+    (assignedDeliveryId: string) => {
+      updateStatus.mutate(
+        { orderId, data: { status: "ON_THE_WAY", assignedDeliveryId } },
+        {
+          onSuccess: () => {
+            setIsDeliveryPickerOpen(false);
+            onClose?.();
+          },
+        }
+      );
+    },
+    [orderId, updateStatus, onClose]
   );
 
   // El borrador solo vale para la visita a la pestaña que dispara el ⚠: al
@@ -300,10 +357,11 @@ export function OrderDetailContent({
   // (tomando la conversación si la ventana de 24 h está abierta).
   const handleItemIssue = useCallback(
     (item: OrderItem) => {
+      if (isDemo) return;
       setActiveTabState("conversation");
       setConversationDraft(t("itemIssue.draft", { productName: item.productName }));
     },
-    [t]
+    [isDemo, t]
   );
 
   // Calcular totales incluyendo domicilio
@@ -375,8 +433,16 @@ export function OrderDetailContent({
             <OrderStatusEditor
               orderId={order.id ?? ""}
               currentStatus={order.status}
+              deliveryType={order.deliveryType}
               onStatusChange={handleStatusChange}
               customerEditing={customerEditing}
+            />
+            <DeliveryPickerDialog
+              isOpen={isDeliveryPickerOpen}
+              orderLabel={formatOrderNumber(order.id, order.orderNumber)}
+              isSubmitting={updateStatus.isPending}
+              onClose={() => setIsDeliveryPickerOpen(false)}
+              onConfirm={handleDeliveryConfirm}
             />
 
             {customerEditing && (
@@ -538,7 +604,7 @@ export function OrderDetailContent({
                         {formatCurrency(item.unitPrice * item.quantity)}
                       </p>
                       {/* Subtle icon to indicate out of stock */}
-                      {!isReadOnly && (
+                      {!isReadOnly && !isDemo && (
                         <button
                           onClick={() => handleItemIssue(item)}
                           className="text-slate-300 hover:text-amber-500 transition-colors"
@@ -606,27 +672,48 @@ export function OrderDetailContent({
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
             >
-              <PaymentStatusEditor
-                orderId={order.id ?? ""}
-                paymentMethod={order.paymentMethod}
-                currentStatus={order.paymentStatus}
-              />
+              {order.cashCollection?.status === "PENDING_SETTLEMENT" ? (
+                <span
+                  className={cn(
+                    categoryBadgeVariants({ variant: "orange" }),
+                    "flex items-center gap-1"
+                  )}
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  <span>{t("cashPendingSettlement")}</span>
+                </span>
+              ) : (
+                <PaymentStatusEditor
+                  orderId={order.id ?? ""}
+                  total={order.total}
+                  branchId={order.branchId}
+                  paymentMethod={order.paymentMethod}
+                  currentStatus={order.paymentStatus}
+                  chargeLabel={
+                    order.id ? formatOrderNumber(order.id, order.orderNumber) : undefined
+                  }
+                />
+              )}
+              <PaymentProofIndicator order={order} variant="labeled" />
               {order.paymentMethod && (
                 <span className="text-sm text-slate-600">
                   {t("paymentMethod", { method: order.paymentMethod })}
                 </span>
               )}
             </div>
+            <MoneyTrailBlock order={order} />
           </div>
         </TabsContent>
 
         {/* Conversación Tab */}
-        <TabsContent value="conversation" className="space-y-4">
-          <OrderConversationPanel
-            conversationQuery={conversationQuery}
-            draft={conversationDraft}
-          />
-        </TabsContent>
+        {!isDemo && (
+          <TabsContent value="conversation" className="space-y-4">
+            <OrderConversationPanel
+              conversationQuery={conversationQuery}
+              draft={conversationDraft}
+            />
+          </TabsContent>
+        )}
 
         {/* Historial Tab */}
         {canViewHistory && (
@@ -673,94 +760,6 @@ export function OrderDetailContent({
           </TabsContent>
         )}
       </Tabs>
-    </div>
-  );
-}
-
-// PaymentStatusEditor component
-function PaymentStatusEditor({
-  orderId,
-  currentStatus,
-  paymentMethod,
-}: {
-  orderId: string;
-  currentStatus: import("../types").PaymentStatus;
-  paymentMethod?: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const updatePaymentStatus = useUpdateOrderPaymentStatus();
-  const t = useTranslations("orders");
-
-  const handleSelect = useCallback(
-    (newStatus: import("../types").PaymentStatus) => {
-      if (newStatus !== currentStatus) {
-        updatePaymentStatus.mutate({
-          orderId,
-          data: {
-            paymentStatus: newStatus,
-            changeNotes: "Confirmed from admin panel",
-          },
-        });
-      }
-      setIsOpen(false);
-    },
-    [currentStatus, orderId, updatePaymentStatus]
-  );
-
-  // Badge base con icono de método de pago
-  const badgeContent = (
-    <>
-      <span>{t(`paymentStatus.${currentStatus}`)}</span>
-    </>
-  );
-
-  // Si ya está pagado, mostrar badge estático (no editable)
-  if (currentStatus === "PAID") {
-    return (
-      <span
-        className={cn(
-          categoryBadgeVariants({ variant: "green" }),
-          "flex items-center gap-1"
-        )}
-      >
-        {badgeContent}
-      </span>
-    );
-  }
-
-  // Si está pendiente, mostrar dropdown para marcar como pagado
-  return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              categoryBadgeVariants({ variant: "amber" }),
-              "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
-            )}
-          >
-            {badgeContent}
-            <ChevronDown className="w-3 h-3 opacity-60" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-35 z-9999"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DropdownMenuItem
-            onSelect={() => handleSelect("PAID")}
-            className="flex items-center gap-2 text-xs cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-slate-700">{t("paymentStatus.PAID")}</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
     </div>
   );
 }

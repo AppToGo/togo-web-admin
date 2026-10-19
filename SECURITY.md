@@ -330,55 +330,13 @@ function useAuthGuard() {
 
 ### CSRF Protection
 
-**Implementado:**
-- Cookies usan `SameSite=Lax` (permite navegación entre subdominios)
-- Endpoint `/api/csrf` genera tokens **firmados y vinculados a sesión**
-- Hook `useCsrf()` para obtener tokens en componentes
+No usamos tokens CSRF: con este modelo no aportan.
 
-**Estructura del CSRF Token (Firmado):**
-```
-Formato: base64(userId:timestamp:signature)
+- **Llamadas al API:** llevan el access token en `Authorization: Bearer`, guardado en memoria. El navegador no adjunta esa cabecera por su cuenta, así que un sitio externo no puede forjar una petición autenticada.
+- **Rutas que dependen de cookie:** son solo `/api/auth/refresh` y `/api/auth/logout`. La cookie `togo_refresh_token` es `httpOnly` y `SameSite=Lax`, así que no viaja en POST cross-site.
+- **XSS:** un token CSRF tampoco protegería contra XSS, porque el script inyectado puede pedirlo igual. La defensa contra XSS es la de la sección anterior.
 
-Ejemplo:
-eyJ1c2VySWQiOiIxMjM... // { userId: "123", timestamp: 1234567890, signature: "abc..." }
-```
-
-**Seguridad del token:**
-1. **Vinculado a sesión:** El token se genera solo si hay una sesión válida (refresh token cookie)
-2. **User-bound:** Contiene el `userId` del JWT
-3. **Firmado:** HMAC-SHA256 con secret del servidor
-4. **Expiración:** 1 hora de validez
-5. **Validación:** El backend verifica firma + userId + expiración
-
-**Uso en operaciones críticas:**
-```typescript
-const { getCsrfToken } = useCsrf();
-
-// Antes de operación sensible
-const csrfToken = await getCsrfToken();
-await fetch("/api/critical-action", {
-  method: "POST",
-  headers: { 
-    "Authorization": "Bearer <access_token>",
-    "X-CSRF-Token": csrfToken  // Requerido para operaciones críticas
-  },
-  // ...
-});
-```
-
-**Operaciones que DEBEN usar CSRF:**
-- Cambio de email/contraseña
-- Eliminación de negocio/cuenta
-- Modificación de roles/permisos
-- Procesamiento de pagos
-- Transferencias de fondos
-
-**¿Por qué no basta con SameSite=Lax?**
-- SameSite=Lax protege contra POST cross-site desde otros sitios
-- Pero no protege contra:
-  - Subdominios compartidos (same-site)
-  - XSS que hace requests desde tu propio dominio
-- CSRF token añade capa adicional para operaciones críticas
+> Historia: hubo un endpoint `/api/csrf` con un hook `useCsrf()`, pero ninguna pantalla lo usaba, el backend nunca validó `X-CSRF-Token` y el endpoint dependía de `POST /auth/validate-session`, que no existe en el API. Se eliminó en octubre de 2026.
 
 ### Recomendaciones para Producción
 
@@ -413,7 +371,6 @@ export async function POST() {
   } finally {
     // SIEMPRE limpiar cookies (incluso si backend falló)
     cookieStore.delete("togo_refresh_token");
-    cookieStore.delete("togo_csrf_token");
   }
   
   return NextResponse.json({ success: true });
@@ -445,7 +402,7 @@ export async function POST() {
 |---------|--------------|------------------|
 | XSS | ❌ Vulnerable | ✅ Protegido |
 | SSR | ❌ No disponible | ✅ Middleware puede leer |
-| CSRF | ✅ Inmune | ✅ Protegido (SameSite+Lax + CSRF tokens) |
+| CSRF | ✅ Inmune | ✅ Protegido (Bearer en memoria + SameSite=Lax) |
 | Subdominios | ✅ Funciona | ✅ SameSite=Lax permite navegación |
 | Complejidad | Simple | Requiere API routes |
 | Escalabilidad | ❌ No enterprise | ✅ Enterprise-ready |
@@ -458,7 +415,6 @@ El modelo actual **Access Token en memoria + Refresh Token en httpOnly cookie** 
 - ✅ SSR-compatible (middleware lee cookie)
 - ✅ Rotación de tokens con queue system (sin race conditions)
 - ✅ Revocación server-side
-- ✅ CSRF tokens para operaciones críticas
 - ✅ SameSite=Lax (compatible con subdominios)
 - ✅ Base sólida para escalar a enterprise
 
@@ -475,7 +431,7 @@ El modelo actual **Access Token en memoria + Refresh Token en httpOnly cookie** 
 - [ ] **Device fingerprinting** - Vincular tokens a dispositivo/browser
 - [ ] **2FA** - Para roles OWNER/ADMIN
 - [ ] **Session management UI** - Ver/revocar sesiones activas
-- [ ] **Rate limiting agresivo** - Login, refresh, CSRF endpoints
+- [ ] **Rate limiting agresivo** - Login, refresh
 - [ ] **Audit logging** - Todos los eventos de auth
 - [ ] **Security headers** - CSP, HSTS, X-Frame-Options
 - [ ] **Dependency scanning** - npm audit en CI/CD

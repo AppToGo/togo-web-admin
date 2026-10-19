@@ -3,6 +3,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { mockLoginSuccess } from "../helpers/mock-api";
 import { mockOrdersDashboard } from "../helpers/mock-orders-api";
 import { mockConversationFunnel } from "../helpers/mock-conversation-funnel-api";
+import { blockRealtimeSockets, mockRefreshSuccess } from "../orders/board";
 
 /**
  * Embudo del bot (plan bot natural, T20) en el admin: entrada del menú
@@ -10,6 +11,9 @@ import { mockConversationFunnel } from "../helpers/mock-conversation-funnel-api"
  * endpoint `metrics/conversation-funnel` mockeado.
  */
 test.describe("Embudo del bot", () => {
+  // El login completo contra el servidor de desarrollo pasa de 30 s.
+  test.describe.configure({ timeout: 60_000 });
+
   async function login(
     page: Page,
     permissions: string[],
@@ -21,8 +25,37 @@ test.describe("Embudo del bot", () => {
       localStorage.clear();
       sessionStorage.clear();
     });
+    await blockRealtimeSockets(page);
     await mockLoginSuccess(page, userOverrides);
     await mockOrdersDashboard(page);
+    // Sin esto el AuthProvider no restaura la sesión y el login vuelve a
+    // la pantalla de inicio. Con overrides (SUPER_ADMIN) el refresh tiene
+    // que devolver el mismo usuario.
+    await mockRefreshSuccess(page);
+    if (Object.keys(userOverrides).length > 0) {
+      await page.route("**/api/auth/refresh", (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            access_token: "e2e-fake-access-token",
+            refresh_token: "e2e-fake-refresh-token",
+            expires_in: 3600,
+            user: {
+              userId: "e2e-test-user-id",
+              email: "test@togo.com",
+              name: "Test User",
+              role: "ADMIN",
+              businessId: "e2e-test-business-id",
+              businessName: "Test Business",
+              operatorProfileId: null,
+              subscriptionPlan: 1,
+              ...userOverrides,
+            },
+          }),
+        })
+      );
+    }
     await mockConversationFunnel(page, { permissions, onFunnelRequest });
 
     const loginPage = new LoginPage(page);
@@ -42,13 +75,27 @@ test.describe("Embudo del bot", () => {
       .catch(() => undefined);
   }
 
+  /** En escritorio el Embudo del bot vive dentro del grupo "Conversaciones". */
+  async function openFunnelFromMenu(page: Page) {
+    const link = page.getByRole("link", { name: "Embudo del bot" });
+    // La hidratación puede comerse el primer click del grupo: se reintenta
+    // hasta que el link quede a la vista.
+    await expect(async () => {
+      if (!(await link.isVisible())) {
+        await page.getByRole("button", { name: "Conversaciones" }).click();
+      }
+      await expect(link).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
+    await link.click();
+  }
+
   test("muestra el embudo del negocio desde el menú", async ({ page }) => {
     const funnelRequests: URL[] = [];
     await login(page, ["metrics.view"], (request) =>
       funnelRequests.push(new URL(request.url()))
     );
 
-    await page.getByRole("link", { name: "Embudo del bot" }).click();
+    await openFunnelFromMenu(page);
     await page.waitForURL(/\/es\/dashboard\/conversation-funnel/);
 
     await expect(
@@ -112,7 +159,7 @@ test.describe("Embudo del bot", () => {
       { role: "SUPER_ADMIN", businessId: null, businessName: null }
     );
 
-    await page.getByRole("link", { name: "Embudo del bot" }).click();
+    await openFunnelFromMenu(page);
     await page.waitForURL(/\/es\/dashboard\/conversation-funnel/);
 
     await expect(

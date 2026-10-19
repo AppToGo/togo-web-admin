@@ -1,7 +1,10 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
+import { TrendingUp } from 'lucide-react';
 import { useDetailedMetrics } from '../../hooks/useDetailedMetrics';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { CardSkeleton } from '../loading/CardSkeleton';
 import {
   AreaChart,
   Area,
@@ -12,26 +15,54 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
+import { DashboardCardHeader } from '../DashboardCardHeader';
+import { TrendBadge } from '../kpi/TrendBadge';
 
 export function RevenueChart() {
+  const t = useTranslations('dashboard.charts.revenue');
+  const locale = useLocale();
   const { data, isLoading } = useDetailedMetrics();
 
-  if (isLoading) return <div className="h-80 bg-slate-100 animate-pulse rounded-lg" />;
+  if (isLoading) return <CardSkeleton className="h-96" />;
   if (!data) return null;
 
+  const { trendComparison } = data;
+
+  // El backend manda el día a medianoche UTC (`2026-10-15T00:00:00.000Z`):
+  // se formatea en UTC para que en Colombia no se corra al día anterior.
   const chartData = data.revenueChart.map((point) => ({
-    date: new Date(point.date).toLocaleDateString('es-ES', {
+    date: new Date(point.date).toLocaleDateString(locale, {
       day: '2-digit',
       month: 'short',
+      timeZone: 'UTC',
     }),
     amount: point.amount,
   }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Ingresos últimos 30 días</CardTitle>
-      </CardHeader>
+    <Card variant="glass" className="h-full">
+      <DashboardCardHeader icon={TrendingUp} title={t('title')}>
+        {/* Comparativa del período filtrado contra el anterior */}
+        <div className="flex flex-wrap items-end gap-6 sm:text-right">
+          <div>
+            <p className="text-xs text-slate-500">{t('current')}</p>
+            <p className="text-xl font-bold text-slate-900 tabular-nums">
+              {formatCurrency(trendComparison.current)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">{t('previous')}</p>
+            <p className="text-xl font-semibold text-slate-500 tabular-nums">
+              {formatCurrency(trendComparison.previous)}
+            </p>
+          </div>
+          {/* Sin ingresos en el período anterior el backend manda 0 de
+              crecimiento: el badge diría "sin cambio" cuando sí lo hubo. */}
+          {trendComparison.previous > 0 && (
+            <TrendBadge value={trendComparison.growth} />
+          )}
+        </div>
+      </DashboardCardHeader>
       <CardContent>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">

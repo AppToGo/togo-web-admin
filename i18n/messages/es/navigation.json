@@ -1,10 +1,14 @@
 {
   "sidebar": {
+    "back": "Volver",
+    "botMessages": "Mensajes del bot",
     "dashboard": "Dashboard",
     "orders": "Pedidos",
+    "cash": "Caja",
     "catalog": "Catálogo",
     "customers": "Clientes",
     "conversations": "Conversaciones",
+    "conversationHistory": "Historial",
     "conversationFunnel": "Embudo del bot",
     "inbox": "Inbox",
     "settings": "Configuración",
@@ -33,6 +37,7 @@
     "home": "Inicio",
     "dashboard": "Dashboard",
     "orders": "Pedidos",
+    "cash": "Caja",
     "catalog": "Catálogo",
     "customers": "Clientes",
     "branches": "Sedes",
@@ -60,5 +65,20 @@
     "es": "Español",
     "en": "English",
     "pt": "Português"
+  },
+  "settingsHub": {
+    "groups": {
+      "business": "Negocio",
+      "team": "Equipo",
+      "account": "Cuenta"
+    },
+    "business": "Nombre, URL del catálogo y bienvenida",
+    "branches": "Direcciones, horarios, envío y pagos",
+    "botMessagesTitle": "Mensajes del bot",
+    "botMessages": "Textos y voz con los que responde",
+    "users": "Quién entra al admin y con qué rol",
+    "operatorProfiles": "Perfiles con sus permisos",
+    "notifications": "Sonido y avisos de pedidos nuevos",
+    "billing": "Plan, pagos y avisos de cobranza"
   }
 }

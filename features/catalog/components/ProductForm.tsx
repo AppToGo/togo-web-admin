@@ -133,7 +133,6 @@ interface BranchActivationSectionProps {
 function BranchActivationSection({
   businessId,
   branchId,
-  productId,
   productName,
   branchName,
   isMainBranch,

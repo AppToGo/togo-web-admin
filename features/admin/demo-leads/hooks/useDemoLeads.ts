@@ -1,6 +1,5 @@
 /**
- * Demo Leads Hooks
- * TanStack Query hooks for Super Admin demo-leads Mini CRM
+ * Hooks de TanStack Query para la gestión de posibles clientes de la demo (Mini CRM Super Admin).
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +12,7 @@ import {
   updateDemoLead,
   addDemoLeadNote,
   deleteDemoLead,
-} from "@/features/auth/services/auth.service";
+} from "../services/demo-leads.service";
 import type {
   DemoLeadFilters,
   UpdateDemoLeadRequest,
@@ -39,7 +38,7 @@ function stableFilters(filters: DemoLeadFilters): DemoLeadFilters {
 }
 
 /**
- * Hook to fetch demo leads with commercial filters
+ * Hook para obtener posibles clientes de la demo con filtros comerciales
  * (solo SUPER_ADMIN, el backend lo exige).
  */
 export function useDemoLeads(
@@ -55,7 +54,7 @@ export function useDemoLeads(
 }
 
 /**
- * Hook to fetch pipeline counts per stage.
+ * Hook para obtener conteo del pipeline por etapa.
  */
 export function useDemoLeadsPipeline(enabled: boolean = true) {
   return useQuery({
@@ -66,7 +65,7 @@ export function useDemoLeadsPipeline(enabled: boolean = true) {
 }
 
 /**
- * Hook to fetch a lead's commercial detail.
+ * Hook para obtener el detalle comercial de un lead.
  */
 export function useDemoLeadDetail(id: string | null, enabled: boolean = true) {
   return useQuery({
@@ -77,7 +76,7 @@ export function useDemoLeadDetail(id: string | null, enabled: boolean = true) {
 }
 
 /**
- * Hook to update a lead's commercial profile.
+ * Hook para actualizar la ficha comercial de un lead.
  */
 export function useUpdateDemoLead() {
   const queryClient = useQueryClient();
@@ -100,7 +99,7 @@ export function useUpdateDemoLead() {
 }
 
 /**
- * Hook to add a note to a lead.
+ * Hook para agregar una nota a un lead.
  */
 export function useAddDemoLeadNote() {
   const queryClient = useQueryClient();
@@ -122,7 +121,7 @@ export function useAddDemoLeadNote() {
 }
 
 /**
- * Hook to delete a demo lead.
+ * Hook para eliminar un posible cliente de la demo.
  */
 export function useDeleteDemoLead() {
   const queryClient = useQueryClient();

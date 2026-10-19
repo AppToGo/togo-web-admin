@@ -5,3 +5,4 @@ export * from './loading';
 export * from './lazy';
 export { BranchSelector } from './BranchSelector';
 export type { BranchSelectorProps } from './BranchSelector';
+export { DashboardCardHeader } from './DashboardCardHeader';

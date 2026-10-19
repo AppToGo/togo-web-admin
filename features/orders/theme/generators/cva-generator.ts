@@ -10,7 +10,7 @@ import type { OrderStatus } from "../../types";
 import { STATUS_THEME, COLOR_PALETTE, getStatusTokens } from "../order-status.theme";
 
 /** Helper para generar variantes por estado */
-function generateStatusVariants<T>(
+function generateStatusVariants(
   generator: (status: OrderStatus, tokens: ReturnType<typeof getStatusTokens>) => string
 ): Record<OrderStatus, string> {
   const statuses = Object.keys(STATUS_THEME) as OrderStatus[];

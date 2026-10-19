@@ -53,7 +53,11 @@ const Dialog = ({
 
   return createPortal(
     <DialogContext.Provider value={{ onClose: handleClose }}>
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      {/* `pointer-events-auto`: el drawer de vaul (Radix DismissableLayer)
+          pone `body { pointer-events: none }` mientras está abierto — sin
+          esto, un Dialog anidado sobre el drawer se ve pero no recibe
+          ningún click (ej: el visor del comprobante de pago). */}
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 pointer-events-auto">
         {/* Backdrop con blur */}
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"

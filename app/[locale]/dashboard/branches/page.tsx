@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { MobileFab } from "@/components/ui/mobile-fab";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useHasBusiness,
@@ -11,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Store, Plus } from "lucide-react";
+import { PillGroup } from "@/components/ui/pill-group";
 import { useTranslations } from "next-intl";
 import {
   useBranches,
@@ -26,6 +28,19 @@ import {
   WhatsAppConnectDialog,
 } from "@/features/whatsapp";
 import type { Branch } from "@/features/branches";
+import {
+  getBranchStatus,
+  matchesBranchFilter,
+} from "@/features/branches/utils/branch-status";
+import type { BranchFilter } from "@/features/branches/utils/branch-status";
+
+const FILTERS: BranchFilter[] = ["all", "open", "closed", "off"];
+const FILTER_DOT: Record<BranchFilter, string | undefined> = {
+  all: undefined,
+  open: "bg-emerald-500",
+  closed: "bg-red-500",
+  off: "bg-slate-400",
+};
 
 function BranchesLoading() {
   return (
@@ -90,6 +105,24 @@ export default function BranchesPage() {
   const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
   const [whatsappDialogBranch, setWhatsappDialogBranch] =
     useState<Branch | null>(null);
+  const [filter, setFilter] = useState<BranchFilter>("all");
+
+  const withStatus = useMemo(
+    () => (branches ?? []).map((branch) => ({ branch, status: getBranchStatus(branch) })),
+    [branches]
+  );
+  const counts = useMemo(
+    () =>
+      Object.fromEntries(
+        FILTERS.map((f) => [f, withStatus.filter((b) => matchesBranchFilter(b.status, f)).length])
+      ) as Record<BranchFilter, number>,
+    [withStatus]
+  );
+  // Con una sola sede no hay pastillas: un filtro que quedó elegido no aplica.
+  const activeFilter: BranchFilter = withStatus.length > 1 ? filter : "all";
+  const visibleBranches = withStatus
+    .filter((b) => matchesBranchFilter(b.status, activeFilter))
+    .map((b) => b.branch);
 
   const handleCreateBranch = () => {
     router.push("/dashboard/branches/new");
@@ -97,10 +130,6 @@ export default function BranchesPage() {
 
   const handleEditBranch = (branchId: string) => {
     router.push(`/dashboard/branches/${branchId}`);
-  };
-
-  const handleConfigureBranch = (branchId: string) => {
-    router.push(`/dashboard/branches/${branchId}/edit`);
   };
 
   const handleDeleteBranch = (branchId: string) => {
@@ -159,32 +188,58 @@ export default function BranchesPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-6 flex-1 min-h-0">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-5 flex-1 min-h-0">
+        {/* Header (< md: título en la barra superior y crear en el botón flotante) */}
+        <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Store className="h-6 w-6 text-indigo-600" />
               {t("title")}
             </h1>
-            <p className="text-slate-500 mt-1 text-sm">{t("subtitle")}</p>
+            <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
           </div>
-          <Button
-            onClick={handleCreateBranch}
-            className="self-start"
-            disabled={limitData ? !limitData.allowed : false}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t("createBranch")}
-          </Button>
+          <div className="flex flex-wrap items-center gap-4">
+            {limitData && limitData.max > 1 && (
+              <div className="flex min-w-44 flex-col gap-1.5">
+                <span className="text-[13px] text-slate-600">
+                  {t.rich("limits.usageRich", {
+                    current: limitData.current,
+                    max: limitData.max,
+                    b: (chunks) => <b className="text-slate-900">{chunks}</b>,
+                  })}
+                </span>
+                <div
+                  className="h-1.5 overflow-hidden rounded-full bg-slate-200/90"
+                  role="progressbar"
+                  aria-label={t("limits.title")}
+                  aria-valuenow={limitData.current}
+                  aria-valuemin={0}
+                  aria-valuemax={limitData.max}
+                >
+                  <div
+                    className="h-full rounded-full bg-indigo-500"
+                    style={{ width: `${Math.min(100, (limitData.current / limitData.max) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            <Button
+              onClick={handleCreateBranch}
+              className="h-11 rounded-card px-5"
+              disabled={limitData ? !limitData.allowed : false}
+            >
+              <Plus className="h-4 w-4" />
+              {t("createBranch")}
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
           <BranchesLoading />
         ) : (
           <>
-            {/* Branch Limit Indicator */}
-            {limitData && (
+            {/* Al tope del plan: el aviso con la opción de mejorar */}
+            {limitData && !limitData.allowed && (
               <BranchLimitIndicator
                 limitData={limitData}
                 isLoading={isLoadingLimit}
@@ -192,34 +247,53 @@ export default function BranchesPage() {
               />
             )}
 
-            {/* Branches Grid */}
             {!branches || branches.length === 0 ? (
               <EmptyBranchesState onCreate={handleCreateBranch} />
             ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {branches.map((branch) => {
-                  const routing = getRoutingForBranch(branch.id);
-                  const account = getAccountForRouting(
-                    routing?.whatsappAccountId
-                  );
-                  return (
-                    <BranchCard
-                      key={branch.id}
-                      branch={branch}
-                      onEdit={(b) => handleEditBranch(b.id)}
-                      onConfigure={(b) => handleConfigureBranch(b.id)}
-                      onDelete={(b) => handleDeleteBranch(b.id)}
-                      onMakeMain={(b) => handleSetMainBranch(b.id)}
-                      onConnectWhatsApp={handleConnectWhatsApp}
-                      whatsappRouting={routing}
-                      whatsappAccount={account}
-                      isLoading={
-                        deleteBranch.isPending || setMainBranch.isPending
-                      }
-                    />
-                  );
-                })}
-              </div>
+              <>
+                {branches.length > 1 && (
+                  <PillGroup
+                    label={t("filters.label")}
+                    value={activeFilter}
+                    onChange={setFilter}
+                    appearance="glass"
+                    options={FILTERS.map((f) => ({
+                      id: f,
+                      label: t(`filters.${f}`),
+                      count: counts[f],
+                      dotClassName: FILTER_DOT[f],
+                    }))}
+                  />
+                )}
+                {visibleBranches.length === 0 ? (
+                  <p className="rounded-card-xl border border-white/80 bg-white/45 px-4 py-12 text-center text-sm text-slate-500">
+                    {t("filters.empty")}
+                  </p>
+                ) : (
+                  <ul
+                    className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,340px),1fr))] gap-4"
+                    data-testid="branches-grid"
+                  >
+                    {visibleBranches.map((branch) => {
+                      const routing = getRoutingForBranch(branch.id);
+                      const account = getAccountForRouting(routing?.whatsappAccountId);
+                      return (
+                        <BranchCard
+                          key={branch.id}
+                          branch={branch}
+                          onEdit={(b) => handleEditBranch(b.id)}
+                          onDelete={(b) => handleDeleteBranch(b.id)}
+                          onMakeMain={(b) => handleSetMainBranch(b.id)}
+                          onConnectWhatsApp={handleConnectWhatsApp}
+                          whatsappRouting={routing}
+                          whatsappAccount={account}
+                          isLoading={deleteBranch.isPending || setMainBranch.isPending}
+                        />
+                      );
+                    })}
+                  </ul>
+                )}
+              </>
             )}
           </>
         )}
@@ -238,6 +312,9 @@ export default function BranchesPage() {
           account={dialogAccount}
           existingRouting={dialogRouting}
         />
+      )}
+      {(!limitData || limitData.allowed) && (
+        <MobileFab label={t("createBranch")} onClick={handleCreateBranch} />
       )}
     </DashboardLayout>
   );

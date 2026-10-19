@@ -21,10 +21,7 @@ import {
   LoginResponse,
   AuthenticatedUser,
 } from "@/types/auth.types";
-import {
-  login as loginApi,
-  refreshTokens,
-} from "@/features/auth/services/auth.service";
+import { login as loginApi } from "@/features/auth/services/auth.service";
 import { APP_CONFIG } from "@/config/app.config";
 
 // Extended state with actions

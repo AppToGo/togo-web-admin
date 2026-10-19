@@ -87,5 +87,7 @@
     "noteError": "No se pudo agregar la nota",
     "deleted": "Lead eliminado",
     "deleteError": "No se pudo eliminar el lead"
-  }
+  },
+  "loadError": "No se pudieron cargar los posibles clientes.",
+  "retry": "Reintentar"
 }

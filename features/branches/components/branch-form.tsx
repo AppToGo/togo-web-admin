@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useId } from "react";
+import { useState, useCallback, useId } from "react";
 import { useTranslations } from "next-intl";
 import {
   Building2,
@@ -39,14 +39,23 @@ import type {
   DeliveryFeeType,
   DeliveryConfig,
   BusinessHours,
+  BusinessHoursErrors,
   TransferOptions,
   DineInConfig,
+  CounterConfig,
 } from "../types";
-import { DEFAULT_TRANSFER_OPTIONS, DEFAULT_DINE_IN_CONFIG } from "../types";
+import {
+  DEFAULT_TRANSFER_OPTIONS,
+  DEFAULT_DINE_IN_CONFIG,
+  DEFAULT_COUNTER_CONFIG,
+  parseBusinessHours,
+  validateBusinessHours,
+} from "../types";
 import { DeliveryConfigSection } from "./DeliveryConfigSection";
 import { BusinessHoursSection } from "./BusinessHoursSection";
 import { TransferOptionsSection } from "./TransferOptionsSection";
 import { DineInConfigSection } from "./DineInConfigSection";
+import { CounterConfigSection } from "./CounterConfigSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
@@ -93,6 +102,19 @@ const DEFAULT_CURRENCIES = [
   { code: "CRC", name: "Colón Costarricense" },
 ];
 
+/**
+ * Anclas de las secciones del formulario: el detalle de la sede las usa
+ * para su índice fijo (navegación rápida y sección activa al hacer scroll).
+ */
+export const BRANCH_FORM_SECTION_IDS = {
+  general: "sede-general",
+  location: "sede-ubicacion",
+  hours: "sede-horario",
+  delivery: "sede-envio",
+  channels: "sede-canales",
+  payments: "sede-pagos",
+} as const;
+
 // Slug generation from name
 const generateSlug = (name: string): string => {
   return name
@@ -120,21 +142,6 @@ export function BranchForm({
   const isEditing = !!branch;
   const isMainBranch = branch?.isMainBranch ?? false;
 
-  // Default business hours — defined before useState so it can be used in lazy initializer
-  const DEFAULT_BUSINESS_HOURS: BusinessHours = {
-    timezone: "America/Bogota",
-    schedule: {
-      monday: { isOpen: true, open: "09:00", close: "18:00" },
-      tuesday: { isOpen: true, open: "09:00", close: "18:00" },
-      wednesday: { isOpen: true, open: "09:00", close: "18:00" },
-      thursday: { isOpen: true, open: "09:00", close: "18:00" },
-      friday: { isOpen: true, open: "09:00", close: "18:00" },
-      saturday: { isOpen: false, open: "09:00", close: "18:00" },
-      sunday: { isOpen: false, open: "09:00", close: "18:00" },
-    },
-    holidays: [],
-  };
-
   // Form state — lazy initializer reads from branch prop on first render
   const [formData, setFormData] = useState(() => {
     if (!branch) {
@@ -152,14 +159,15 @@ export function BranchForm({
         latitude: null as number | null,
         longitude: null as number | null,
         deliveryConfig: { type: "FREE" as DeliveryFeeType },
-        businessHours: DEFAULT_BUSINESS_HOURS,
+        businessHours: null as BusinessHours | null,
         transferOptions: DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: DEFAULT_DINE_IN_CONFIG,
+        counterConfig: DEFAULT_COUNTER_CONFIG,
       };
     }
-    const bh = branch.businessHours as BusinessHours | null;
     const to = branch.transferOptions as TransferOptions | null;
     const di = branch.dineInConfig as DineInConfig | null;
+    const co = branch.counterConfig as CounterConfig | null;
     return {
       name: branch.name,
       slug: branch.slug,
@@ -176,11 +184,16 @@ export function BranchForm({
       deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
         ? (branch.deliveryConfig as DeliveryConfig)
         : { type: "FREE" as DeliveryFeeType },
-      businessHours: bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+      businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
       transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
       dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
+      counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
     };
   });
+
+  // Lo último guardado, para saber si hay cambios y poder descartarlos.
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(formData));
+  const isDirty = JSON.stringify(formData) !== savedSnapshot;
 
   // Cities available for the selected department
   const availableCities =
@@ -191,14 +204,26 @@ export function BranchForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(!!branch);
+  // Al editar, el horario solo se envía si el usuario tocó la sección — así
+  // guardar la sede por otro motivo nunca cambia su horario.
+  const [businessHoursTouched, setBusinessHoursTouched] = useState(false);
+  const [businessHoursErrors, setBusinessHoursErrors] =
+    useState<BusinessHoursErrors | null>(null);
+  // Tocar el horario cuenta aunque quede igual: guardar envía `businessHours`
+  // y así se puede limpiar un horario vacío que el API guardó.
+  const canSave = isDirty || businessHoursTouched;
 
-  // Sync form when branch prop changes (e.g. after React Query background refetch)
-  useEffect(() => {
+  // Sync form when branch prop changes (e.g. after React Query background
+  // refetch). Se ajusta durante el render, no en un efecto: así no hay un
+  // render intermedio con los datos viejos.
+  const [syncedBranch, setSyncedBranch] = useState(branch);
+  if (branch !== syncedBranch) {
+    setSyncedBranch(branch);
     if (branch) {
-      const bh = branch.businessHours as BusinessHours | null;
       const to = branch.transferOptions as TransferOptions | null;
       const di = branch.dineInConfig as DineInConfig | null;
-      setFormData({
+      const co = branch.counterConfig as CounterConfig | null;
+      const next = {
         name: branch.name,
         slug: branch.slug,
         code: branch.code,
@@ -214,23 +239,20 @@ export function BranchForm({
         deliveryConfig: (branch.deliveryConfig as DeliveryConfig)?.type
           ? (branch.deliveryConfig as DeliveryConfig)
           : { type: "FREE" as DeliveryFeeType },
-        businessHours:
-          bh?.timezone && bh?.schedule ? bh : DEFAULT_BUSINESS_HOURS,
+        businessHours: parseBusinessHours(branch.businessHours, branch.timezone),
         transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
-      });
+        counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
+      };
+      setFormData(next);
+      setSavedSnapshot(JSON.stringify(next));
       setErrors({});
       setTouched({});
       setSlugManuallyEdited(true);
+      setBusinessHoursTouched(false);
+      setBusinessHoursErrors(null);
     }
-  }, [branch]);
-
-  // Auto-generate slug from name
-  useEffect(() => {
-    if (!slugManuallyEdited && !isEditing && formData.name) {
-      setFormData((prev) => ({ ...prev, slug: generateSlug(prev.name) }));
-    }
-  }, [formData.name, slugManuallyEdited, isEditing]);
+  }
 
   // Validate field
   const validateField = useCallback(
@@ -256,7 +278,12 @@ export function BranchForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Al crear, el slug sigue al nombre hasta que el usuario lo edita a mano.
+    const autoSlug =
+      name === "name" && !slugManuallyEdited && !isEditing && value
+        ? { slug: generateSlug(value) }
+        : {};
+    setFormData((prev) => ({ ...prev, [name]: value, ...autoSlug }));
 
     if (touched[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
@@ -309,7 +336,12 @@ export function BranchForm({
       fieldsToValidate.reduce((acc, field) => ({ ...acc, [field]: true }), {})
     );
 
-    return Object.keys(newErrors).length === 0;
+    const hoursErrors = formData.businessHours
+      ? validateBusinessHours(formData.businessHours)
+      : null;
+    setBusinessHoursErrors(hoursErrors);
+
+    return Object.keys(newErrors).length === 0 && !hoursErrors;
   };
 
   // Normalize JSON config fields before submit — guards against empty {} from Prisma defaults
@@ -317,11 +349,6 @@ export function BranchForm({
     (cfg as DeliveryConfig)?.type
       ? (cfg as DeliveryConfig)
       : { type: "FREE" as DeliveryFeeType };
-
-  const normalizeBusinessHours = (bh: unknown): BusinessHours => {
-    const typed = bh as BusinessHours | null;
-    return typed?.timezone && typed?.schedule ? typed : DEFAULT_BUSINESS_HOURS;
-  };
 
   const normalizeTransferOptions = (to: unknown): TransferOptions => {
     const typed = to as TransferOptions | null;
@@ -331,6 +358,14 @@ export function BranchForm({
   const normalizeDineInConfig = (di: unknown): DineInConfig => {
     const typed = di as DineInConfig | null;
     return typed?.enabled !== undefined ? typed : DEFAULT_DINE_IN_CONFIG;
+  };
+
+  const handleDiscard = () => {
+    setFormData(JSON.parse(savedSnapshot) as typeof formData);
+    setErrors({});
+    setTouched({});
+    setBusinessHoursTouched(false);
+    setBusinessHoursErrors(null);
   };
 
   // Handle form submission
@@ -354,9 +389,13 @@ export function BranchForm({
           latitude: formData.latitude ?? undefined,
           longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
-          businessHours: normalizeBusinessHours(formData.businessHours),
+          // `null` = quitar el horario (el API guarda `{}`, sin horario)
+          ...(businessHoursTouched && {
+            businessHours: formData.businessHours,
+          }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
+          counterConfig: { enabled: formData.counterConfig?.enabled === true },
         }
       : {
           name: formData.name,
@@ -371,9 +410,12 @@ export function BranchForm({
           latitude: formData.latitude ?? undefined,
           longitude: formData.longitude ?? undefined,
           deliveryConfig: normalizeDeliveryConfig(formData.deliveryConfig),
-          businessHours: normalizeBusinessHours(formData.businessHours),
+          ...(formData.businessHours && {
+            businessHours: formData.businessHours,
+          }),
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
+          counterConfig: { enabled: formData.counterConfig?.enabled === true },
         };
 
     onSubmit(data);
@@ -384,335 +426,384 @@ export function BranchForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
-      <Card variant="glass">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-indigo-500" />
-            {t("form.sections.basic")}
-          </CardTitle>
-          <CardDescription>{t("form.descriptions.basic")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-name`}>
-                {t("form.fields.name")} <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id={`${formId}-name`}
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder={t("form.placeholders.name")}
-                disabled={isLoading}
-                error={errors.name}
-              />
-            </div>
-
-            {/* Slug */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-slug`}>
-                {t("form.fields.slug")} <span className="text-red-500">*</span>{" "}
-                <span className="text-xs text-slate-500">
-                  {t("form.help.slug")}
-                </span>
-              </Label>
-              <div className="relative">
-                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  id={`${formId}-slug`}
-                  name="slug"
-                  value={formData.slug}
-                  onChange={handleSlugChange}
-                  onBlur={handleBlur}
-                  placeholder={t("form.placeholders.slug")}
-                  disabled={isLoading || (isEditing && isMainBranch)}
-                  readOnly={isEditing && isMainBranch}
-                  error={errors.slug}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Code */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-code`}>
-              {t("form.fields.code")} <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                id={`${formId}-code`}
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder={t("form.placeholders.code")}
-                disabled={isLoading || (isEditing && isMainBranch)}
-                error={errors.code}
-                className="pl-9"
-                readOnly={isEditing && isMainBranch}
-              />
-            </div>
-            {isEditing && isMainBranch && (
-              <p className="text-xs text-amber-600">
-                {t("form.help.codeLocked")}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Location & Settings */}
-      <Card variant="glass">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-blue-500" />
-            {t("form.sections.location")}
-          </CardTitle>
-          <CardDescription>{t("form.descriptions.location")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            {/* Timezone */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-timezone`}>
-                {t("form.fields.timezone")}
-              </Label>
-              <Select
-                value={formData.timezone}
-                onValueChange={(value) => handleSelectChange("timezone", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger id={`${formId}-timezone`} className="h-11">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTimezones.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
-                      {tz}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Currency */}
-            <div className="space-y-2">
-              <Label htmlFor={`${formId}-currency`}>
-                {t("form.fields.currency")}
-              </Label>
-              <Select
-                value={formData.currency}
-                onValueChange={(value) => handleSelectChange("currency", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger id={`${formId}-currency`} className="h-11">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-slate-400" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {availableCurrencies.map((curr) => (
-                    <SelectItem key={curr.code} value={curr.code}>
-                      {curr.code} - {curr.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Department & City */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Department */}
-            <AutocompleteSelect
-              label={t("form.fields.department")}
-              options={COLOMBIA_DEPARTMENTS.map((dept) => ({
-                value: dept.name,
-                label: dept.name,
-              }))}
-              value={formData.department}
-              onChange={handleDepartmentChange}
-              placeholder={t("form.placeholders.department")}
-              searchPlaceholder="Buscar departamento..."
-              emptyMessage="No se encontraron departamentos"
-              disabled={isLoading}
-            />
-
-            {/* City */}
-            <AutocompleteSelect
-              label={t("form.fields.city")}
-              options={availableCities.map((city) => ({
-                value: city,
-                label: city,
-              }))}
-              value={formData.city}
-              onChange={(v) => handleSelectChange("city", v)}
-              placeholder={
-                formData.department
-                  ? t("form.placeholders.city")
-                  : t("form.placeholders.citySelectDepartmentFirst")
-              }
-              searchPlaceholder="Buscar ciudad..."
-              emptyMessage="No se encontraron ciudades"
-              disabled={!formData.department || isLoading}
-            />
-          </div>
-
-          {/* Address */}
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-address`}>
-              {t("form.fields.address")}
-            </Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <Input
-                id={`${formId}-address`}
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder={t("form.placeholders.address")}
-                disabled={isLoading}
-                className="pl-9 resize-none"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Map location picker */}
-      <BranchLocationPicker
-        latitude={formData.latitude}
-        longitude={formData.longitude}
-        address={formData.address}
-        city={formData.city}
-        department={formData.department}
-        onChange={(lat, lng) =>
-          setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
-        }
-      />
-
-      {/* Status (only when editing) */}
-      {isEditing && (
+      <div id={BRANCH_FORM_SECTION_IDS.general} className="scroll-mt-4 space-y-4">
+        {/* Basic Information */}
         <Card variant="glass">
           <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
-              <Info className="w-4 h-4 text-slate-500" />
-              {t("form.sections.status")}
+              <Building2 className="w-4 h-4 text-indigo-500" />
+              {t("form.sections.basic")}
+            </CardTitle>
+            <CardDescription>{t("form.descriptions.basic")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor={`${formId}-name`}>
+                  {t("form.fields.name")} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id={`${formId}-name`}
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder={t("form.placeholders.name")}
+                  disabled={isLoading}
+                  error={errors.name}
+                />
+              </div>
+
+              {/* Slug */}
+              <div className="space-y-2">
+                <Label htmlFor={`${formId}-slug`}>
+                  {t("form.fields.slug")} <span className="text-red-500">*</span>{" "}
+                  <span className="text-xs text-slate-500">
+                    {t("form.help.slug")}
+                  </span>
+                </Label>
+                <div className="relative">
+                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    id={`${formId}-slug`}
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleSlugChange}
+                    onBlur={handleBlur}
+                    placeholder={t("form.placeholders.slug")}
+                    disabled={isLoading || (isEditing && isMainBranch)}
+                    readOnly={isEditing && isMainBranch}
+                    error={errors.slug}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Code */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-code`}>
+                {t("form.fields.code")} <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id={`${formId}-code`}
+                  name="code"
+                  value={formData.code}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder={t("form.placeholders.code")}
+                  disabled={isLoading || (isEditing && isMainBranch)}
+                  error={errors.code}
+                  className="pl-9"
+                  readOnly={isEditing && isMainBranch}
+                />
+              </div>
+              {isEditing && isMainBranch && (
+                <p className="text-xs text-amber-600">
+                  {t("form.help.codeLocked")}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Phone */}
+        <Card variant="glass">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Phone className="w-4 h-4 text-purple-500" />
+              {t("form.sections.contact")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-              <div>
-                <Label htmlFor={`${formId}-isActive`} className="font-medium">
-                  {t("form.fields.isActive")}
-                </Label>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {t("form.help.isActive")}
-                </p>
-              </div>
-              <Switch
-                id={`${formId}-isActive`}
-                checked={formData.isActive}
-                onCheckedChange={(checked) =>
-                  handleSwitchChange("isActive", checked)
-                }
-                disabled={isLoading || isMainBranch}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-contactPhone`}>
+                {t("form.fields.contactPhone")}
+              </Label>
+              <Input
+                id={`${formId}-contactPhone`}
+                name="contactPhone"
+                type="tel"
+                value={formData.contactPhone}
+                onChange={handleChange}
+                placeholder={t("form.placeholders.contactPhone")}
+                disabled={isLoading}
               />
-            </div>
-            {isMainBranch && (
-              <p className="text-xs text-amber-600 mt-2">
-                {t("form.help.mainBranchAlwaysActive")}
+              <p className="text-xs text-slate-500">
+                {t("form.help.contactPhone")}
               </p>
-            )}
+            </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Contact Phone */}
-      <Card variant="glass">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Phone className="w-4 h-4 text-purple-500" />
-            {t("form.sections.contact")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor={`${formId}-contactPhone`}>
-              {t("form.fields.contactPhone")}
-            </Label>
-            <Input
-              id={`${formId}-contactPhone`}
-              name="contactPhone"
-              type="tel"
-              value={formData.contactPhone}
-              onChange={handleChange}
-              placeholder={t("form.placeholders.contactPhone")}
-              disabled={isLoading}
-            />
-            <p className="text-xs text-slate-500">
-              {t("form.help.contactPhone")}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Status (only when editing) */}
+        {isEditing && (
+          <Card variant="glass">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Info className="w-4 h-4 text-slate-500" />
+                {t("form.sections.status")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                <div>
+                  <Label htmlFor={`${formId}-isActive`} className="font-medium">
+                    {t("form.fields.isActive")}
+                  </Label>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {t("form.help.isActive")}
+                  </p>
+                </div>
+                <Switch
+                  id={`${formId}-isActive`}
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) =>
+                    handleSwitchChange("isActive", checked)
+                  }
+                  disabled={isLoading || isMainBranch}
+                />
+              </div>
+              {isMainBranch && (
+                <p className="text-xs text-amber-600 mt-2">
+                  {t("form.help.mainBranchAlwaysActive")}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-      {/* Delivery Config */}
-      <DeliveryConfigSection
-        value={formData.deliveryConfig}
-        onChange={(config) =>
-          setFormData((prev) => ({ ...prev, deliveryConfig: config }))
-        }
-      />
+      <div id={BRANCH_FORM_SECTION_IDS.location} className="scroll-mt-4 space-y-4">
+        {/* Location & Settings */}
+        <Card variant="glass">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-blue-500" />
+              {t("form.sections.location")}
+            </CardTitle>
+            <CardDescription>{t("form.descriptions.location")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {/* Timezone */}
+              <div className="space-y-2">
+                <Label htmlFor={`${formId}-timezone`}>
+                  {t("form.fields.timezone")}
+                </Label>
+                <Select
+                  value={formData.timezone}
+                  onValueChange={(value) => handleSelectChange("timezone", value)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger id={`${formId}-timezone`} className="h-11">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-slate-400" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTimezones.map((tz) => (
+                      <SelectItem key={tz} value={tz}>
+                        {tz}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-      {/* Business Hours */}
-      <BusinessHoursSection
-        value={formData.businessHours}
-        onChange={(hours) =>
-          setFormData((prev) => ({ ...prev, businessHours: hours }))
-        }
-      />
+              {/* Currency */}
+              <div className="space-y-2">
+                <Label htmlFor={`${formId}-currency`}>
+                  {t("form.fields.currency")}
+                </Label>
+                <Select
+                  value={formData.currency}
+                  onValueChange={(value) => handleSelectChange("currency", value)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger id={`${formId}-currency`} className="h-11">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-slate-400" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableCurrencies.map((curr) => (
+                      <SelectItem key={curr.code} value={curr.code}>
+                        {curr.code} - {curr.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-      {/* Transfer Payment */}
-      <TransferOptionsSection
-        value={formData.transferOptions}
-        onChange={(opts) =>
-          setFormData((prev) => ({ ...prev, transferOptions: opts }))
-        }
-      />
+            {/* Department & City */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {/* Department */}
+              <AutocompleteSelect
+                label={t("form.fields.department")}
+                options={COLOMBIA_DEPARTMENTS.map((dept) => ({
+                  value: dept.name,
+                  label: dept.name,
+                }))}
+                value={formData.department}
+                onChange={handleDepartmentChange}
+                placeholder={t("form.placeholders.department")}
+                searchPlaceholder="Buscar departamento..."
+                emptyMessage="No se encontraron departamentos"
+                disabled={isLoading}
+              />
 
-      {/* Dine-in service (docs/architecture/pedidos-en-mesa.md) */}
-      <DineInConfigSection
-        value={formData.dineInConfig}
-        onChange={(config) =>
-          setFormData((prev) => ({ ...prev, dineInConfig: config }))
-        }
-      />
+              {/* City */}
+              <AutocompleteSelect
+                label={t("form.fields.city")}
+                options={availableCities.map((city) => ({
+                  value: city,
+                  label: city,
+                }))}
+                value={formData.city}
+                onChange={(v) => handleSelectChange("city", v)}
+                placeholder={
+                  formData.department
+                    ? t("form.placeholders.city")
+                    : t("form.placeholders.citySelectDepartmentFirst")
+                }
+                searchPlaceholder="Buscar ciudad..."
+                emptyMessage="No se encontraron ciudades"
+                disabled={!formData.department || isLoading}
+              />
+            </div>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4">
+            {/* Address */}
+            <div className="space-y-2">
+              <Label htmlFor={`${formId}-address`}>
+                {t("form.fields.address")}
+              </Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Input
+                  id={`${formId}-address`}
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder={t("form.placeholders.address")}
+                  disabled={isLoading}
+                  className="pl-9 resize-none"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Map location picker */}
+        <BranchLocationPicker
+          latitude={formData.latitude}
+          longitude={formData.longitude}
+          address={formData.address}
+          city={formData.city}
+          department={formData.department}
+          onChange={(lat, lng, source) => {
+            setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+            // Ubicar el pin solo a partir de la dirección ya guardada (sede
+            // sin coordenadas) no es un cambio del usuario: se absorbe en lo
+            // guardado y viaja con el próximo guardado.
+            if (source === "geocode") {
+              setSavedSnapshot((prev) => {
+                const saved = JSON.parse(prev) as typeof formData;
+                const sameAddress =
+                  saved.address === formData.address &&
+                  saved.city === formData.city &&
+                  saved.department === formData.department;
+                return sameAddress
+                  ? JSON.stringify({ ...saved, latitude: lat, longitude: lng })
+                  : prev;
+              });
+            }
+          }}
+        />
+      </div>
+
+      <div id={BRANCH_FORM_SECTION_IDS.hours} className="scroll-mt-4 space-y-4">
+        {/* Business Hours */}
+        <BusinessHoursSection
+          value={formData.businessHours}
+          onChange={(hours) => {
+            setFormData((prev) => ({ ...prev, businessHours: hours }));
+            setBusinessHoursTouched(true);
+            if (businessHoursErrors) {
+              setBusinessHoursErrors(hours ? validateBusinessHours(hours) : null);
+            }
+          }}
+          timezone={formData.timezone}
+          errors={businessHoursErrors}
+        />
+      </div>
+
+      <div id={BRANCH_FORM_SECTION_IDS.delivery} className="scroll-mt-4 space-y-4">
+        {/* Delivery Config */}
+        <DeliveryConfigSection
+          value={formData.deliveryConfig}
+          onChange={(config) =>
+            setFormData((prev) => ({ ...prev, deliveryConfig: config }))
+          }
+        />
+      </div>
+
+      <div id={BRANCH_FORM_SECTION_IDS.channels} className="scroll-mt-4 space-y-4">
+        {/* Dine-in service (docs/architecture/pedidos-en-mesa.md) */}
+        <DineInConfigSection
+          value={formData.dineInConfig}
+          onChange={(config) =>
+            setFormData((prev) => ({ ...prev, dineInConfig: config }))
+          }
+        />
+
+        {/* Venta de mostrador (docs/caja-pedidos.md) */}
+        <CounterConfigSection
+          value={formData.counterConfig}
+          onChange={(config) =>
+            setFormData((prev) => ({ ...prev, counterConfig: config }))
+          }
+        />
+      </div>
+
+      <div id={BRANCH_FORM_SECTION_IDS.payments} className="scroll-mt-4 space-y-4">
+        {/* Transfer Payment */}
+        <TransferOptionsSection
+          value={formData.transferOptions}
+          onChange={(opts) =>
+            setFormData((prev) => ({ ...prev, transferOptions: opts }))
+          }
+        />
+      </div>
+
+      {/* Guardar: barra fija abajo, visible mientras se recorre el formulario */}
+      <div className="sticky bottom-4 z-20 flex flex-wrap items-center gap-3 rounded-[20px] bg-indigo-950 py-3 pl-5 pr-3 text-white shadow-[0_10px_30px_rgba(30,27,75,0.25)]">
+        <span className="min-w-48 flex-1 text-sm">
+          {isEditing
+            ? canSave
+              ? t("form.unsavedChanges")
+              : t("form.noChanges")
+            : t("form.createHint")}
+        </span>
         <Button
           type="button"
-          variant="outline"
-          onClick={onCancel}
+          onClick={isEditing && canSave ? handleDiscard : onCancel}
           disabled={isLoading}
+          className="h-11 rounded-[14px] border-0 bg-white/15 px-4 text-white shadow-none hover:bg-white/25"
         >
-          {tCommon("buttons.cancel")}
+          {isEditing && canSave ? t("form.discard") : tCommon("buttons.cancel")}
         </Button>
         <Button
           type="submit"
-          disabled={isLoading || !isFormValid}
+          disabled={isLoading || !isFormValid || (isEditing && !canSave)}
           isLoading={isLoading}
+          className="h-11 rounded-[14px] bg-white px-5 font-semibold text-indigo-950 shadow-none hover:bg-white/90"
         >
           {isEditing ? tCommon("buttons.saveChanges") : t("form.createBranch")}
         </Button>

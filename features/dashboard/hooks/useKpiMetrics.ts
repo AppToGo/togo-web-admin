@@ -30,6 +30,7 @@ interface KpiMetricsResponse {
   };
   comparativa: {
     recaudoTotal: {
+      valor: number;
       crecimiento: number;
     };
     ordenesTotales: {
@@ -64,7 +65,10 @@ async function fetchKpiMetrics(
   return {
     ordersToday: data.conteos.hoy,
     ordersCompletedToday: data.conteos.completadasHoy,
-    revenueToday: data.recaudos.pagadas.total,
+    // Misma base que `revenueGrowth` y que la tarjeta de ingresos (pagado, sin
+    // la tarifa de domicilio): el backend solo compara contra el período
+    // anterior en esa base, y `recaudos.pagadas.total` suma además el envío.
+    periodRevenue: data.comparativa.recaudoTotal.valor,
     revenueGrowth: data.comparativa.recaudoTotal.crecimiento,
     ordersGrowth: data.comparativa.ordenesTotales.crecimiento,
     totalOrders: data.conteos.total,

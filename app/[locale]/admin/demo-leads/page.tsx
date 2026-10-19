@@ -12,7 +12,14 @@ import { useTranslations, useLocale } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -49,7 +56,14 @@ function formatDateTime(iso: string, locale: string): string {
   }).format(date);
 }
 
-function priorityVariant(priority: string): "default" | "secondary" | "destructive" | "outline" {
+function formatPhone(phone: string): string {
+  if (!phone) return "—";
+  return phone.startsWith("+") ? phone : `+${phone}`;
+}
+
+function priorityVariant(
+  priority: string,
+): "default" | "secondary" | "destructive" | "outline" {
   if (priority === "HIGH") return "destructive";
   if (priority === "LOW") return "outline";
   return "secondary";
@@ -79,7 +93,12 @@ export default function DemoLeadsPage() {
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { data: leads, isLoading: isLeadsLoading } = useDemoLeads(
+  const {
+    data: leads,
+    isLoading: isLeadsLoading,
+    isError: isLeadsError,
+    refetch,
+  } = useDemoLeads(
     {
       q: search.trim() || undefined,
       priority: priority || undefined,
@@ -161,6 +180,18 @@ export default function DemoLeadsPage() {
 
           {isLeadsLoading ? (
             <p className="text-sm text-slate-500">…</p>
+          ) : isLeadsError ? (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-red-600">{t("loadError")}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+              >
+                {t("retry")}
+              </Button>
+            </div>
           ) : !leads || leads.length === 0 ? (
             <p className="text-sm text-slate-500">{t("empty")}</p>
           ) : (
@@ -192,7 +223,9 @@ export default function DemoLeadsPage() {
                           <p className="text-sm font-medium text-slate-900">
                             {lead.name}
                           </p>
-                          <p className="text-xs text-slate-500">+{lead.phone}</p>
+                          <p className="text-xs text-slate-500">
+                            {formatPhone(lead.phone)}
+                          </p>
                           {(lead.establishmentName ?? lead.businessName) && (
                             <p className="text-xs text-slate-500 truncate">
                               {lead.establishmentName ?? lead.businessName}

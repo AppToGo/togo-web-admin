@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Store, MapPin } from "lucide-react";
+import { ChevronLeft, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
@@ -9,16 +9,9 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { SectionNav } from "@/components/ui/section-nav";
+import { formatCurrency } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { UpdateBranchRequest } from "@/features/branches/types";
 import {
@@ -27,6 +20,16 @@ import {
   useUpdateBranch,
   useBranchesByBusiness,
 } from "@/features/branches";
+import { useBranchMetrics } from "@/features/branches/hooks/useBranches";
+import { BRANCH_FORM_SECTION_IDS } from "@/features/branches/components/branch-form";
+import {
+  BranchStatusLine,
+  MainBranchBadge,
+} from "@/features/branches/components/branch-card";
+import { getBranchStatus } from "@/features/branches/utils/branch-status";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+
+const TABLES_SECTION_ID = "sede-mesas";
 import { useBusiness } from "@/features/business";
 import { TablesManager } from "@/features/tables";
 import { Can } from "@/components/auth/Can";
@@ -45,6 +48,9 @@ export default function EditBranchPage() {
   const locale = params.locale as string;
 
   const { data: branch, isLoading: isLoadingBranch } = useBranch(id);
+  const { data: metrics } = useBranchMetrics(branch?.isActive ? id : null);
+  const { hasPermission } = useMyPermissions();
+  const canViewTables = hasPermission("table.view");
   const updateBranch = useUpdateBranch();
 
   // QR imprimible por mesa (Fase 2, docs/architecture/pedidos-en-mesa.md):
@@ -127,106 +133,104 @@ export default function EditBranchPage() {
     );
   }
 
+  const status = getBranchStatus(branch);
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(locale, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  const sections = [
+    { id: BRANCH_FORM_SECTION_IDS.general, label: t("detail.sections.general") },
+    { id: BRANCH_FORM_SECTION_IDS.location, label: t("detail.sections.location") },
+    { id: BRANCH_FORM_SECTION_IDS.hours, label: t("detail.sections.hours") },
+    { id: BRANCH_FORM_SECTION_IDS.delivery, label: t("detail.sections.delivery") },
+    { id: BRANCH_FORM_SECTION_IDS.channels, label: t("detail.sections.channels") },
+    { id: BRANCH_FORM_SECTION_IDS.payments, label: t("detail.sections.payments") },
+    ...(canViewTables ? [{ id: TABLES_SECTION_ID, label: t("detail.sections.tables") }] : []),
+  ];
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/dashboard/branches")}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-900">
-                {t("edit.title")}
-              </h1>
-              <Badge
-                variant={branch.isActive ? "default" : "secondary"}
-                className={cn(
-                  branch.isActive
-                    ? "bg-green-100 text-green-700 hover:bg-green-100"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-100"
-                )}
-              >
-                {branch.isActive ? tc("status.active") : tc("status.inactive")}
-              </Badge>
-              {branch.isMainBranch && (
-                <Badge
-                  variant="outline"
-                  className="bg-amber-50 text-amber-700 border-amber-200"
-                >
-                  {t("mainBranch")}
-                </Badge>
-              )}
+      <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/branches")}
+          className="hidden items-center gap-1.5 self-start text-sm font-medium text-slate-600 hover:text-slate-900 md:inline-flex"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          {t("title")}
+        </button>
+
+        <header className="flex flex-wrap items-center gap-4 rounded-3xl border border-white/90 bg-white/65 px-6 py-5">
+          <div className="min-w-0 flex-[1_1_320px]">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-bold text-slate-900">{branch.name}</h1>
+              {branch.isMainBranch && <MainBranchBadge />}
             </div>
-            <p className="text-slate-500 font-mono text-sm">{branch.code}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+              <BranchStatusLine status={status} timezone={branch.timezone} />
+              <span className="font-mono text-[13px]">{branch.code}</span>
+              {branch.address && <span className="truncate">{branch.address}</span>}
+            </div>
+          </div>
+          {metrics && (
+            <dl className="grid grid-cols-3 gap-6 rounded-2xl bg-white/80 px-5 py-3">
+              <div>
+                <dt className="text-xs text-slate-500">{t("metrics.ordersToday")}</dt>
+                <dd className="text-lg font-bold tabular-nums text-slate-900">{metrics.ordersToday}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-slate-500">{t("metrics.pending")}</dt>
+                <dd className="text-lg font-bold tabular-nums text-amber-700">{metrics.pendingOrders}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-slate-500">{t("metrics.revenueToday")}</dt>
+                <dd className="text-lg font-bold tabular-nums text-emerald-700">
+                  {formatCurrency(metrics.revenueToday, branch.currency)}
+                </dd>
+              </div>
+            </dl>
+          )}
+        </header>
+
+        <div className="flex items-start gap-5">
+          <SectionNav
+            label={t("detail.sectionsLabel")}
+            title={t("detail.sectionsTitle")}
+            items={sections}
+            className="hidden w-56 shrink-0 lg:flex"
+          />
+
+          <div className="min-w-0 flex-1 space-y-6">
+            <BranchForm
+              branch={branch}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              isLoading={updateBranch.isPending}
+            />
+
+            {/* Mesas (docs/architecture/pedidos-en-mesa.md, Fase 1) */}
+            <Can permission="table.view">
+              <div id={TABLES_SECTION_ID} className="scroll-mt-4">
+                <TablesManager
+                  businessId={branch.businessId}
+                  branchId={id}
+                  businessSlug={business?.slug}
+                  branchSlug={branch.slug}
+                  isMultiBranch={isMultiBranch}
+                />
+              </div>
+            </Can>
+
+            <p className="text-xs text-slate-500">
+              {t("detail.meta", {
+                created: formatDate(branch.createdAt),
+                updated: formatDate(branch.updatedAt),
+              })}
+            </p>
           </div>
         </div>
-
-        {/* Form Card */}
-        <BranchForm
-          branch={branch}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isLoading={updateBranch.isPending}
-        />
-
-        {/* Mesas (docs/architecture/pedidos-en-mesa.md, Fase 1) */}
-        <Can permission="table.view">
-          <TablesManager
-            businessId={branch.businessId}
-            branchId={id}
-            businessSlug={business?.slug}
-            branchSlug={branch.slug}
-            isMultiBranch={isMultiBranch}
-          />
-        </Can>
-
-        {/* Branch Info Card */}
-        <Card className="bg-slate-50 border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              {t("info.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-500">{tc("fields.created")}:</span>
-              <span className="text-slate-700">
-                {new Date(branch.createdAt).toLocaleDateString(locale, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">
-                {tc("fields.lastUpdated")}:
-              </span>
-              <span className="text-slate-700">
-                {new Date(branch.updatedAt).toLocaleDateString(locale, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">{t("timezone")}:</span>
-              <span className="text-slate-700">{branch.timezone}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">{t("currency")}:</span>
-              <span className="text-slate-700">{branch.currency}</span>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

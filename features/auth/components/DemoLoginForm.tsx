@@ -6,9 +6,9 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDemoLogin } from "@/features/auth/hooks/useAuth";
+import { DEMO_WHATSAPP_NUMBER } from "@/features/auth/demo.constants";
 
-const DEMO_WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_DEMO_WHATSAPP_NUMBER ?? "+573001112233";
+const PHONE_REGEX = /^\+?[1-9]\d{9,14}$/;
 
 /**
  * Entrada al modo demo desde el login.
@@ -26,6 +26,7 @@ export function DemoLoginForm() {
   const [businessType, setBusinessType] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [consent, setConsent] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | undefined>();
   const demoLogin = useDemoLogin();
 
   if (!open) {
@@ -43,9 +44,18 @@ export function DemoLoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedName = name.trim();
+    const cleanedPhone = phone.replace(/[\s()-]/g, "").trim();
+
+    if (!PHONE_REGEX.test(cleanedPhone)) {
+      setPhoneError(t("phone.invalid"));
+      return;
+    }
+
+    setPhoneError(undefined);
     demoLogin.mutate({
-      name: name.trim(),
-      phone: phone.trim(),
+      name: trimmedName,
+      phone: cleanedPhone,
       businessType: businessType.trim() || undefined,
       businessName: businessName.trim() || undefined,
       consentAccepted: consent,
@@ -67,16 +77,21 @@ export function DemoLoginForm() {
           minLength={2}
           maxLength={80}
           autoComplete="name"
-          error={demoLogin.error?.message}
         />
         <Input
           label={t("phone.label")}
           type="tel"
           placeholder={t("phone.placeholder")}
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            if (phoneError) setPhoneError(undefined);
+          }}
           required
+          minLength={10}
+          maxLength={16}
           autoComplete="tel"
+          error={phoneError ?? demoLogin.error?.message}
         />
         <Input
           label={t("businessType.label")}

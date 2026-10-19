@@ -11,6 +11,7 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { Business } from "@/types";
 import type {
   Order,
+  OrderStatus,
   OrderStatusHistory,
   GetOrdersParams,
   UpdateOrderStatusRequest,
@@ -202,12 +203,95 @@ export async function deleteOrder(
   await apiClient.delete(`${getBaseUrl(businessId)}/${orderId}`);
 }
 
+export interface UnseenOrdersFilters {
+  branchIds?: string[];
+}
+
+/** Usuario del negocio que puede llevar un pedido a domicilio. */
+export interface DeliveryCandidate {
+  id: string;
+  name: string;
+}
+
+/**
+ * Repartidores posibles al pasar un pedido a "En camino". Endpoint propio de
+ * pedidos (permiso de cambiar estado), no el listado de usuarios del admin.
+ */
+export async function getDeliveryCandidates(businessId: string): Promise<DeliveryCandidate[]> {
+  const { data } = await apiClient.get<DeliveryCandidate[]>(
+    `${getBaseUrl(businessId)}/delivery-candidates`
+  );
+  return data;
+}
+
+/** Estados del flujo del tablero que el negocio no usa (IN_PROGRESS / READY / ON_THE_WAY). */
+export interface BusinessOrderFlow {
+  skippedStatuses: OrderStatus[];
+}
+
+export async function getOrderFlow(businessId: string): Promise<BusinessOrderFlow> {
+  const { data } = await apiClient.get<BusinessOrderFlow>(`${getBaseUrl(businessId)}/flow`);
+  return data;
+}
+
+/** Solo OWNER/ADMIN: el backend responde 403 a los demás. */
+export async function updateOrderFlow(
+  businessId: string,
+  skippedStatuses: OrderStatus[]
+): Promise<BusinessOrderFlow> {
+  const { data } = await apiClient.put<BusinessOrderFlow>(`${getBaseUrl(businessId)}/flow`, {
+    skippedStatuses,
+  });
+  return data;
+}
+
+/**
+ * Pedidos CONFIRMED que nadie del negocio ha abierto (badge de Pedidos del
+ * sidebar), de cualquier fecha. Sin `branchIds` cuenta todas las sucursales.
+ */
+export async function getUnseenOrdersCount(
+  businessId: string,
+  { branchIds }: UnseenOrdersFilters = {}
+): Promise<number> {
+  const { data } = await apiClient.get<{ count: number }>(
+    `${getBaseUrl(businessId)}/unseen-count`,
+    {
+      params: {
+        ...(branchIds?.length && { branchIds }),
+      },
+    }
+  );
+  return data.count;
+}
+
+/**
+ * Marca el pedido como visto para todo el negocio. Idempotente: el backend
+ * solo registra la primera apertura.
+ */
+export async function markOrderViewed(
+  orderId: string,
+  businessId: string
+): Promise<void> {
+  await apiClient.post(`${getBaseUrl(businessId)}/${orderId}/view`);
+}
+
 /**
  * Actualizar el estado de pago de una orden
  */
 export interface UpdatePaymentStatusRequest {
-  paymentStatus: "PENDING" | "PAID";
+  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "FAILED";
   changeNotes?: string;
+  /** Método con el que finalmente pagó, si cambió al cobrar. */
+  paymentMethod?: string;
+  /**
+   * Datos del cobro en efectivo (espeja `CashPaymentDto` del backend).
+   * Con `sessionId` el efectivo entra liquidado al turno; sin él queda
+   * por liquidar en manos del portador (resuelto en el servidor).
+   */
+  cash?: {
+    sessionId?: string;
+    receivedAmount?: number;
+  };
 }
 
 export async function updateOrderPaymentStatus(
@@ -218,6 +302,144 @@ export async function updateOrderPaymentStatus(
   const { data } = await apiClient.patch<Order>(
     `${getBaseUrl(businessId)}/${orderId}/payment-status`,
     request
+  );
+  return data;
+}
+
+/**
+ * Comprobante de pago de un pedido, ya resuelto a una URL abrible.
+ *
+ * El backend guarda una key de almacenamiento, no una URL, y la firma en cada
+ * lectura (TTL 15 min). Los comprobantes viejos guardaron el media id de
+ * WhatsApp, que expira: esos llegan con `url: null` y un `unavailableReason`
+ * para poder explicar por qué no hay nada que mostrar.
+ */
+export type PaymentProofUnavailableReason =
+  | "WHATSAPP_MEDIA_NOT_ARCHIVED"
+  | "UNRECOGNIZED_REF"
+  | "PRESIGN_FAILED";
+
+export interface ResolvedProofMedia {
+  kind: "STORAGE_KEY" | "EXTERNAL_URL" | "WHATSAPP_MEDIA_ID" | "UNKNOWN";
+  url: string | null;
+  mimeType: string | null;
+  filename: string | null;
+  unavailableReason?: PaymentProofUnavailableReason;
+}
+
+export interface PaymentProofItem {
+  receivedAt: string | null;
+  /** "image" | "document": con qué tipo llegó por WhatsApp. */
+  proofType: string | null;
+  media: ResolvedProofMedia;
+}
+
+export interface PaymentProof {
+  orderId: string;
+  receivedAt: string | null;
+  proofType: string | null;
+  /** El más reciente; es también `proofs[0]`. */
+  media: ResolvedProofMedia;
+  /**
+   * Todos los recibidos, del más nuevo al más viejo. El cliente puede mandar
+   * varios (una captura más clara, otra cuenta) y el operador los mira todos
+   * antes de marcar el pago.
+   *
+   * Opcional porque el endpoint lo agregó después: una API vieja no lo manda y
+   * el visor cae al único de `media`.
+   */
+  proofs?: PaymentProofItem[];
+}
+
+/**
+ * Obtener el comprobante de pago de un pedido
+ * Endpoint: GET /businesses/:businessId/orders/:id/payment-proof
+ *
+ * 404 cuando el pedido no tiene comprobante — el llamador lo usa para no
+ * mostrar el visor.
+ */
+export async function getOrderPaymentProof(
+  orderId: string,
+  businessId?: string
+): Promise<PaymentProof> {
+  const { data } = await apiClient.get<PaymentProof>(
+    `${getBaseUrl(businessId)}/${orderId}/payment-proof`
+  );
+  return data;
+}
+
+export interface VerificationSignal {
+  code: string;
+  status: "PASS" | "WARNING" | "FAIL" | "SKIPPED";
+  description: string;
+}
+
+/** Una fila de la tabla "pedido vs comprobante" del visor. */
+export interface ProofComparisonRow {
+  key: "amount" | "date" | "sender" | "beneficiary" | "currency";
+  expected: string | number | null;
+  received: string | number | null;
+  status: "PASS" | "WARNING" | "FAIL" | "SKIPPED";
+  note: string | null;
+}
+
+export interface PaymentVerification {
+  id: string;
+  orderId: string;
+  analysisStatus: "PENDING" | "ANALYZED" | "INCONCLUSIVE" | "QUOTA_EXCEEDED" | "FAILED";
+  confidenceScore: number | null;
+  documentAuthenticityScore: number | null;
+  paymentMatchScore: number | null;
+  riskLevel: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+  signals: VerificationSignal[];
+  /** Vacío cuando el análisis no guardó extraídos: el visor esconde la tabla. */
+  comparison: ProofComparisonRow[];
+  modelVersion: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Último análisis del comprobante de un pedido.
+ * Endpoint: GET /businesses/:businessId/orders/:orderId/payment-verification
+ *
+ * 404 cuando todavía no hay análisis — el llamador no muestra la tarjeta.
+ */
+export async function getOrderPaymentVerification(
+  orderId: string,
+  businessId?: string
+): Promise<PaymentVerification> {
+  const { data } = await apiClient.get<PaymentVerification>(
+    `${getBaseUrl(businessId)}/${orderId}/payment-verification`
+  );
+  return data;
+}
+
+/** Resultado del rechazo: si el cliente recibe el aviso por WhatsApp. */
+export interface RejectPaymentProofResult {
+  customerNotified: boolean;
+  /**
+   * WINDOW_CLOSED: pasaron más de 24 h desde el último mensaje del cliente
+   * y WhatsApp no deja escribirle. NO_PHONE: no hay teléfono.
+   */
+  reason: "SENT" | "WINDOW_CLOSED" | "NO_PHONE";
+}
+
+/**
+ * Rechazar el comprobante de pago de un pedido.
+ * Endpoint: POST /businesses/:businessId/orders/:id/payment-proof/reject
+ *
+ * No cambia el estado del pago (sigue PENDING): la conversación vuelve a
+ * esperar un comprobante y, si la ventana de 24 h está abierta, el cliente
+ * recibe el aviso por WhatsApp con botón a un asesor. Si no, la respuesta
+ * lo dice para que el negocio lo contacte por otro medio.
+ */
+export async function rejectOrderPaymentProof(
+  orderId: string,
+  businessId?: string
+): Promise<RejectPaymentProofResult> {
+  const { data } = await apiClient.post<RejectPaymentProofResult>(
+    `${getBaseUrl(businessId)}/${orderId}/payment-proof/reject`
   );
   return data;
 }

@@ -26,6 +26,8 @@ export interface InventoryItem {
   productImage?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;
+  /** Orden de la subcategoría del negocio (BusinessCategory.order). */
+  categoryOrder?: number | null;
   industryCategoryId?: string | null;
   industryCategoryName?: string | null;
   createdAt: string;
@@ -45,9 +47,11 @@ export interface CreateInventoryDto {
  * DTO for updating inventory
  */
 export interface UpdateInventoryDto {
-  stock?: number;
+  /** `null`: sin control de stock. */
+  stock?: number | null;
   isAvailable?: boolean;
-  priceOverride?: number;
+  /** `null`: usar el precio base del producto. */
+  priceOverride?: number | null;
 }
 
 /**

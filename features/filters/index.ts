@@ -17,6 +17,7 @@ export type {
   DateRange,
   DateFilterState,
   DateFilterActions,
+  DateFilterValue,
 } from "./stores";
 
 // Hooks

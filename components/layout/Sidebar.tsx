@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
-import { Filter, Inbox, MessageCircle } from "lucide-react";
+import { useLinkStatus } from "next/link";
+import { Filter, History, Inbox, MessageCircle, Banknote } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -15,6 +16,7 @@ import {
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useLocaleStore } from "@/stores/localeStore";
+import { usePosPageStore, type PosMenuEntry } from "@/stores/pos-menu.store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,9 +27,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BusinessSelector } from "@/features/business/components/BusinessSelector";
 import { usePaymentAlerts } from "@/features/admin/business-management/hooks/useAdminBusinesses";
-import { useHasGlobalCatalogProducts } from "@/features/catalog/hooks";
-import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useShowGlobalCatalog } from "@/features/catalog/hooks";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { useUnseenOrdersCount } from "@/features/orders/hooks/useUnseenOrders";
+import { useInboxSummary } from "@/features/conversations/hooks/useInboxSummary";
+import { useIsBelowDesktop, useIsMobile } from "@/hooks/useIsMobile";
 
 
 interface SidebarProps {
@@ -38,12 +42,78 @@ interface SidebarProps {
   onMenuClick?: () => void;
 }
 
+/** Referencia estable: sin Caja montada el selector no cambia. */
+const NO_POS_ENTRIES: PosMenuEntry[] = [];
+
 type NavigationItem = {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: NavigationItem[];
+  /**
+   * Hijos de acción (sin ruta): los registra la página activa (hoy Caja)
+   * para pintarse como submenú. Se limpian al salir de la página.
+   */
+  actionChildren?: PosMenuEntry[];
+  /** Contador rojo junto al item; no se muestra si es 0. */
+  badge?: number;
+  /**
+   * Otras rutas en las que el item (sin hijos) se marca activo: en el
+   * teléfono, "Catálogo" sigue activo en Inventario y Categorías.
+   */
+  activePaths?: string[];
 };
+
+const INBOX_HREF = "/dashboard/inbox";
+const CONVERSATION_HREFS = [
+  INBOX_HREF,
+  "/dashboard/conversations",
+  "/dashboard/conversation-funnel",
+];
+
+/**
+ * Menú del teléfono (diseño móvil): los items con submenú pasan a ser un
+ * link a su primera pantalla — sus hermanas se alcanzan desde la barra
+ * inferior de la sección (Catálogo) o su lista (Configuración) — y las
+ * pantallas de conversaciones se agrupan bajo una sola entrada que abre el
+ * Inbox, si se tiene acceso a él.
+ */
+function flattenForPhone(
+  items: NavigationItem[],
+  { canViewInbox, flattenCatalog }: { canViewInbox: boolean; flattenCatalog: boolean }
+): NavigationItem[] {
+  const flat = items.map((item): NavigationItem => {
+    if (!item.children?.length) return item;
+    const children = item.children.map((child) => child.href);
+    const isSettings = item.href === "/dashboard/settings";
+    // La barra inferior de Catálogo solo existe < md: en la tablet el
+    // submenú se mantiene, o no habría cómo llegar a Inventario.
+    if (!isSettings && !flattenCatalog) return item;
+    return {
+      ...item,
+      children: undefined,
+      // Configuración abre su lista; Catálogo, su primera pantalla.
+      href: isSettings ? item.href : item.children[0].href,
+      activePaths: [item.href, ...children],
+    };
+  });
+  if (!canViewInbox) return flat;
+
+  const inbox = flat.find((item) => item.href === INBOX_HREF);
+  const conversations = flat.find((item) => item.href === "/dashboard/conversations");
+  return flat
+    .filter((item) => !CONVERSATION_HREFS.includes(item.href) || item.href === INBOX_HREF)
+    .map((item) =>
+      item.href === INBOX_HREF && inbox
+        ? {
+            ...inbox,
+            name: conversations?.name ?? inbox.name,
+            icon: conversations?.icon ?? inbox.icon,
+            activePaths: CONVERSATION_HREFS,
+          }
+        : item
+    );
+}
 
 export function Sidebar({
   isOpen,
@@ -58,7 +128,6 @@ export function Sidebar({
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const logout = useLogout();
-  const effectiveBusinessId = useEffectiveBusinessId();
 
   // Menú de usuario colapsable (idioma + cerrar sesión) — mismo patrón que
   // LanguageSwitcher, inline acá para compartir un solo DropdownMenu con
@@ -77,10 +146,7 @@ export function Sidebar({
 
   // El catálogo global solo se muestra si el negocio tiene productos
   // disponibles para su industria, o si el usuario es super admin
-  const { hasProducts: hasGlobalProducts } = useHasGlobalCatalogProducts(
-    isSuperAdmin ? null : effectiveBusinessId
-  );
-  const showGlobalCatalog = isSuperAdmin || hasGlobalProducts;
+  const showGlobalCatalog = useShowGlobalCatalog();
 
   // Gating por rol en cliente, sólo UX — el permiso real (conversation.view)
   // lo aplica el backend (403). Mismo patrón que `canViewHistory` en
@@ -105,39 +171,54 @@ export function Sidebar({
   // Embudo del bot (plan bot natural, T20): mismo permiso que su endpoint.
   const canViewConversationFunnel = hasPermission("metrics.view");
 
+  // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
+  const canViewCash = hasPermission("cash.view");
+  // Submenú de Caja: lo registra CashPosPage mientras está montada.
+  const posMenuEntries = usePosPageStore(
+    (state) => state.page?.entries ?? NO_POS_ENTRIES
+  );
+
+  // Badges: pedidos nuevos sin ver (por negocio, sucursales seleccionadas) y
+  // conversaciones que esperan asesor. Los refrescan los sockets globales de
+  // DashboardRealtime. SUPER_ADMIN no tiene negocio propio ni socket.
+  const unseenOrdersCount = useUnseenOrdersCount(
+    !isSuperAdmin && hasPermission("order.view")
+  );
+  const { data: inboxSummary } = useInboxSummary(!isSuperAdmin && canViewInbox);
+  const inboxAttentionCount = inboxSummary?.needsAttention ?? 0;
+
+  // Teléfono y tablet (< lg, el Sidebar es un cajón): Configuración va
+  // directo a su lista y las tres de conversaciones se agrupan en una (sus
+  // pantallas existen hasta lg). Catálogo solo en el teléfono (< md), donde
+  // está su barra inferior.
+  const isBelowDesktop = useIsBelowDesktop();
+  const isMobile = useIsMobile();
+
   // Navigation items with translation keys
   const navigation: NavigationItem[] = React.useMemo(() => {
-    const items: NavigationItem[] = [
-      {
-        name: t("sidebar.orders"),
-        href: "/dashboard/orders",
-        icon: ShoppingBagIcon,
-      },
-      {
-        name: t("sidebar.dashboard"),
-        href: "/dashboard",
-        icon: LayoutDashboardIcon,
-      },
-      {
-        name: t("sidebar.customers"),
-        href: "/dashboard/customers",
-        icon: UsersIcon,
-      },
+    // Las pantallas de conversaciones van juntas, después de Pedidos y
+    // Caja: el Inbox es tan operativo como el tablero.
+    const conversationScreens: NavigationItem[] = [
       ...(canViewInbox
         ? [
             {
               name: t("sidebar.inbox"),
-              href: "/dashboard/inbox",
+              href: INBOX_HREF,
               icon: Inbox,
+              badge: inboxAttentionCount,
             },
           ]
         : []),
       ...(canViewConversations
         ? [
             {
-              name: t("sidebar.conversations"),
+              // En el escritorio va dentro del grupo "Conversaciones":
+              // ahí se llama "Historial" para no repetir el nombre.
+              name: isBelowDesktop
+                ? t("sidebar.conversations")
+                : t("sidebar.conversationHistory"),
               href: "/dashboard/conversations",
-              icon: MessageCircle,
+              icon: isBelowDesktop ? MessageCircle : History,
             },
           ]
         : []),
@@ -150,6 +231,54 @@ export function Sidebar({
             },
           ]
         : []),
+    ];
+    // Escritorio: un grupo "Conversaciones" con submenú. Teléfono y tablet
+    // las reciben sueltas: flattenForPhone ya las junta en una sola entrada.
+    const conversationItems: NavigationItem[] =
+      !isBelowDesktop && conversationScreens.length > 1
+        ? [
+            {
+              name: t("sidebar.conversations"),
+              href: conversationScreens[0].href,
+              icon: MessageCircle,
+              badge: inboxAttentionCount,
+              children: conversationScreens,
+            },
+          ]
+        : conversationScreens;
+
+    // Orden: Dashboard, Pedidos, Caja, Conversaciones, Clientes, Catálogo y
+    // Configuración.
+    const items: NavigationItem[] = [
+      {
+        name: t("sidebar.dashboard"),
+        href: "/dashboard",
+        icon: LayoutDashboardIcon,
+      },
+      {
+        name: t("sidebar.orders"),
+        href: "/dashboard/orders",
+        icon: ShoppingBagIcon,
+        badge: unseenOrdersCount,
+      },
+      ...(canViewCash
+        ? [
+            {
+              name: t("sidebar.cash"),
+              href: "/dashboard/cash",
+              icon: Banknote,
+              ...(posMenuEntries.length > 0
+                ? { actionChildren: posMenuEntries }
+                : {}),
+            },
+          ]
+        : []),
+      ...conversationItems,
+      {
+        name: t("sidebar.customers"),
+        href: "/dashboard/customers",
+        icon: UsersIcon,
+      },
       {
         name: t("sidebar.catalog"),
         href: "/dashboard/catalog",
@@ -224,14 +353,22 @@ export function Sidebar({
       },
     ];
 
-    return items;
+    return isBelowDesktop
+      ? flattenForPhone(items, { canViewInbox, flattenCatalog: isMobile })
+      : items;
   }, [
+    isBelowDesktop,
+    isMobile,
     t,
     showGlobalCatalog,
     canViewConversations,
     canViewConversationFunnel,
     canViewInbox,
     canViewBilling,
+    canViewCash,
+    unseenOrdersCount,
+    inboxAttentionCount,
+    posMenuEntries,
   ]);
 
   // Admin navigation (Super Admin only)
@@ -240,6 +377,7 @@ export function Sidebar({
       name: t("sidebar.businesses"),
       href: "/admin/businesses",
       icon: BuildingStoreIcon,
+      badge: alertCount,
     },
     {
       name: t("sidebar.globalCatalog"),
@@ -277,13 +415,17 @@ export function Sidebar({
           "glass-strong border-r border-white/50",
           "transition-all duration-300 ease-in-out",
           "lg:translate-x-0",
-          !isOpen && "-translate-x-full lg:hidden",
+          !isOpen && "-translate-x-full",
           isCollapsed ? "w-20" : "w-64"
         )}
       >
         {/* Logo */}
         <div className="h-16 shrink-0 flex items-center justify-center border-b border-slate-100/50">
-          <Link href="/dashboard/orders" className="flex items-center gap-3">
+          <Link
+            href="/dashboard/orders"
+            onClick={onMenuClick}
+            className="flex items-center gap-3"
+          >
             <Image
               src="/logo.png"
               alt="Togo"
@@ -336,21 +478,14 @@ export function Sidebar({
               )}
               <nav className="px-3 pb-3 space-y-1">
                 {adminNavigation.map((item) => (
-                  <div key={item.name} className="relative">
-                    <CollapsibleNavItem
-                      item={item}
-                      pathname={pathname}
-                      isCollapsed={isCollapsed}
-                      isAdmin
-                      onMenuClick={onMenuClick}
-                    />
-                    {/* Alert badge for Businesses link */}
-                    {item.href === "/admin/businesses" && alertCount > 0 && !isCollapsed && (
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold px-1.5 rounded-full">
-                        {alertCount > 9 ? "9+" : alertCount}
-                      </span>
-                    )}
-                  </div>
+                  <CollapsibleNavItem
+                    key={item.name}
+                    item={item}
+                    pathname={pathname}
+                    isCollapsed={isCollapsed}
+                    isAdmin
+                    onMenuClick={onMenuClick}
+                  />
                 ))}
               </nav>
             </>
@@ -495,43 +630,57 @@ function CollapsibleNavItem({
   onMenuClick,
 }: CollapsibleNavItemProps) {
   const normalizedPathname = normalizePath(pathname);
+  const linkChildren = item.children ?? [];
+  const actionChildren = item.actionChildren ?? [];
 
-  const [isExpanded, setIsExpanded] = useState(() => {
-    // Auto-expand if a child is active
-    if (item.children) {
-      return item.children.some((child) =>
-        normalizedPathname.startsWith(normalizePath(child.href))
-      );
-    }
-    return false;
-  });
+  // Abierto si un hijo está activo, salvo que el usuario lo pliegue o
+  // despliegue a mano. Derivado (no estado inicial): los hijos de acción
+  // de Caja se registran después de montar la página, y con un estado
+  // inicial el submenú arrancaba plegado.
+  const [manualExpanded, setIsExpanded] = useState<boolean | null>(null);
+  const autoExpanded =
+    linkChildren.some((child) =>
+      normalizedPathname.startsWith(normalizePath(child.href))
+    ) || actionChildren.some((child) => child.active);
+  const isExpanded = manualExpanded ?? autoExpanded;
 
-  const hasChildren = item.children && item.children.length > 0;
+  const hasChildren = linkChildren.length > 0 || actionChildren.length > 0;
 
   // Determine active states
   const normalizedItemHref = normalizePath(item.href);
   const isParentActive =
     normalizedPathname === normalizedItemHref ||
     normalizedPathname.startsWith(`${normalizedItemHref}/`);
-  const isAnyChildActive = hasChildren
-    ? item.children!.some(
-        (child) => normalizedPathname === normalizePath(child.href)
-      )
-    : false;
+  const isAnyChildActive =
+    linkChildren.some(
+      (child) => normalizedPathname === normalizePath(child.href)
+    ) || actionChildren.some((child) => child.active);
+  // Colapsado solo se ve el ícono del grupo: debe marcarse en cualquiera de
+  // sus pantallas, no solo en la del `href` del padre (en "Conversaciones"
+  // el padre apunta al Inbox, hermano de Historial y Embudo, no prefijo).
+  const isGroupActive =
+    isParentActive ||
+    isAnyChildActive ||
+    linkChildren.some((child) =>
+      normalizedPathname.startsWith(`${normalizePath(child.href)}/`)
+    );
 
   // If no children, render as simple Link
   if (!hasChildren) {
+    const matches = (href: string) => {
+      const path = normalizePath(href);
+      return normalizedPathname === path || normalizedPathname.startsWith(`${path}/`);
+    };
     const isActive =
       normalizedItemHref === "/dashboard"
         ? normalizedPathname === "/dashboard"
-        : normalizedPathname === normalizedItemHref ||
-          normalizedPathname.startsWith(`${normalizedItemHref}/`);
+        : matches(item.href) || (item.activePaths ?? []).some(matches);
     return (
       <Link
         href={item.href}
         onClick={onMenuClick}
         className={cn(
-          "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
           isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3",
           isActive
             ? isAdmin
@@ -552,21 +701,85 @@ function CollapsibleNavItem({
           )}
         />
         {!isCollapsed && <span>{item.name}</span>}
+        <NavBadge count={item.badge} isCollapsed={isCollapsed} />
+        <NavLinkPending isCollapsed={isCollapsed} />
       </Link>
     );
   }
 
-  // If collapsed and has children, navigate to first child on click
+  // Colapsado con hijos de acción (pestañas de Caja): el ícono abre un menú
+  // con ellas; sin esto no habría cómo cambiar de pestaña sin desplegar la
+  // barra.
+  if (isCollapsed && actionChildren.length > 0) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "relative flex w-full items-center rounded-card text-sm font-medium transition-all duration-200",
+              "justify-center px-3 py-3",
+              isGroupActive
+                ? isAdmin
+                  ? "bg-purple-50 text-purple-600"
+                  : "bg-indigo-50 text-indigo-600"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            )}
+            title={item.name}
+            aria-label={item.name}
+          >
+            <item.icon
+              className={cn(
+                "w-5 h-5 shrink-0",
+                isGroupActive
+                  ? isAdmin
+                    ? "text-purple-600"
+                    : "text-indigo-600"
+                  : "text-slate-400"
+              )}
+            />
+            <NavBadge count={item.badge} isCollapsed />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start" className="w-56">
+          <DropdownMenuLabel>{item.name}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {actionChildren.map((child) => (
+            <DropdownMenuItem
+              key={child.id}
+              aria-current={child.active ? "page" : undefined}
+              onSelect={() => {
+                child.onSelect();
+                onMenuClick?.();
+              }}
+              className={cn(
+                child.active && "bg-indigo-50 font-medium text-indigo-700"
+              )}
+            >
+              <span className="flex-1">{child.label}</span>
+              {child.count !== undefined && child.count > 0 && (
+                <span className="rounded-full bg-slate-200 px-1.5 text-xs font-semibold tabular-nums text-slate-700">
+                  {child.count}
+                </span>
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  // If collapsed and has children, navigate to first child on click.
   if (isCollapsed) {
-    const firstChild = item.children![0];
+    const firstChild = linkChildren[0];
     return (
       <Link
         href={firstChild.href}
         onClick={onMenuClick}
         className={cn(
-          "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+          "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
           "justify-center px-3 py-3",
-          isParentActive
+          isGroupActive
             ? isAdmin
               ? "bg-purple-50 text-purple-600"
               : "bg-indigo-50 text-indigo-600"
@@ -577,13 +790,15 @@ function CollapsibleNavItem({
         <item.icon
           className={cn(
             "w-5 h-5 shrink-0",
-            isParentActive
+            isGroupActive
               ? isAdmin
                 ? "text-purple-600"
                 : "text-indigo-600"
               : "text-slate-400"
           )}
         />
+        <NavBadge count={item.badge} isCollapsed />
+        <NavLinkPending isCollapsed />
       </Link>
     );
   }
@@ -615,6 +830,8 @@ function CollapsibleNavItem({
           )}
         />
         <span className="flex-1 text-left">{item.name}</span>
+        {/* Abierto, el contador lo muestra el hijo (Inbox). */}
+        {!isExpanded && <CountBadge count={item.badge} />}
         <ChevronDownIcon
           className={cn(
             "w-4 h-4 shrink-0 transition-transform duration-200",
@@ -631,7 +848,7 @@ function CollapsibleNavItem({
       {/* Children items */}
       {isExpanded && (
         <div className="space-y-1 pl-4">
-          {item.children!.map((child) => {
+          {linkChildren.map((child) => {
             const isThisChildActive =
               normalizedPathname === normalizePath(child.href);
             return (
@@ -640,7 +857,7 @@ function CollapsibleNavItem({
                 href={child.href}
                 onClick={onMenuClick}
                 className={cn(
-                  "flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                  "relative flex items-center rounded-card text-sm font-medium transition-all duration-200",
                   "gap-3 px-4 py-2.5",
                   isThisChildActive
                     ? isAdmin
@@ -660,12 +877,110 @@ function CollapsibleNavItem({
                   )}
                 />
                 <span>{child.name}</span>
+                <NavBadge count={child.badge} />
+                <NavLinkPending />
               </Link>
             );
           })}
+          {actionChildren.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              aria-current={child.active ? "page" : undefined}
+              onClick={() => {
+                child.onSelect();
+                onMenuClick?.();
+              }}
+              className={cn(
+                "w-full flex items-center rounded-card text-sm font-medium transition-all duration-200",
+                "gap-2 px-4 py-2.5",
+                child.active
+                  ? isAdmin
+                    ? "bg-purple-50/50 text-purple-600"
+                    : "bg-indigo-50/50 text-indigo-600"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              )}
+            >
+              <span className="flex-1 text-left">{child.label}</span>
+              {child.count !== undefined && child.count > 0 && (
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 text-xs font-semibold tabular-nums",
+                    child.active
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-200 text-slate-700"
+                  )}
+                >
+                  {child.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>
+  );
+}
+
+// Contador del encabezado de un grupo (un <button>, fuera de un <Link>, así
+// que sin el estado de carga de NavBadge).
+function CountBadge({ count }: { count?: number }) {
+  if (!count || count <= 0) return null;
+  return (
+    <span className="min-w-5 h-5 flex items-center justify-center bg-destructive text-destructive-foreground text-xs font-bold px-1.5 rounded-badge">
+      {badgeLabel(count)}
+    </span>
+  );
+}
+
+// Mismo tope en el encabezado del grupo y en sus hijos.
+function badgeLabel(count: number): string {
+  return count > 9 ? "9+" : String(count);
+}
+
+// Contador rojo del item (pedidos nuevos, inbox, alertas de pago). Expandido
+// va al final de la fila; colapsado, en la esquina del ícono. Se oculta
+// mientras carga la ruta: el spinner de NavLinkPending ocupa el mismo lugar.
+// Debe renderizarse dentro del <Link>.
+function NavBadge({
+  count,
+  isCollapsed = false,
+}: {
+  count?: number;
+  isCollapsed?: boolean;
+}) {
+  const { pending } = useLinkStatus();
+  if (!count || count <= 0 || pending) return null;
+  return (
+    <span
+      className={cn(
+        "min-w-5 h-5 flex items-center justify-center bg-destructive text-destructive-foreground text-xs font-bold px-1.5 rounded-badge",
+        isCollapsed ? "absolute top-1 right-1" : "ml-auto"
+      )}
+    >
+      {badgeLabel(count)}
+    </span>
+  );
+}
+
+/**
+ * Spinner shown on the clicked menu item while its route loads, so the click
+ * gets instant feedback even before the next page (or its loading state)
+ * renders. Must be rendered inside the <Link>.
+ */
+function NavLinkPending({ isCollapsed = false }: { isCollapsed?: boolean }) {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "absolute rounded-full border-2 border-current border-t-transparent animate-spin",
+        isCollapsed
+          ? "top-1 right-1 w-3 h-3"
+          : "right-3 top-1/2 -translate-y-1/2 w-4 h-4"
+      )}
+    />
   );
 }
 

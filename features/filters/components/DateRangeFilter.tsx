@@ -21,13 +21,28 @@ import {
 } from "@/components/ui/dialog";
 import {
   useDateFilterStore,
+  getRangeFromPreset,
   DateFilterPreset,
+  type DateRange as DateFilterRange,
+  type DateFilterValue,
 } from "../stores/date-filter.store";
 
 interface DateRangeFilterProps {
   variant?: "default" | "compact" | "minimal";
   showPresets?: boolean;
   availablePresets?: DateFilterPreset[];
+  /**
+   * Modo controlado: con `onChange`, el filtro no lee ni escribe el store
+   * global (Dashboard/Pedidos). Lo usa el inbox, que arranca sin fecha en
+   * vez de heredar el "Hoy" de los pedidos.
+   */
+  value?: DateFilterValue | null;
+  onChange?: (value: DateFilterValue | null) => void;
+  /**
+   * Con un texto, agrega la opción "sin filtro de fecha" (`null`) con esa
+   * etiqueta, ya traducida por quien llama. Solo en modo controlado.
+   */
+  allDatesLabel?: string;
 }
 
 const PRESET_LABELS: Record<DateFilterPreset, string> = {
@@ -52,17 +67,41 @@ export function DateRangeFilter({
   variant = "default",
   showPresets = true,
   availablePresets = ["today", "week", "month", "custom"],
+  value,
+  onChange,
+  allDatesLabel,
 }: DateRangeFilterProps) {
-  const { preset, range, setPreset, setCustomRange } = useDateFilterStore();
+  const store = useDateFilterStore();
+  const isControlled = onChange !== undefined;
+  const preset: DateFilterPreset | null = isControlled
+    ? (value?.preset ?? null)
+    : store.preset;
+  const range: DateFilterRange | null = isControlled
+    ? (value?.range ?? null)
+    : store.range;
+  const setPreset = (next: DateFilterPreset) =>
+    isControlled
+      ? onChange({ preset: next, range: getRangeFromPreset(next) })
+      : store.setPreset(next);
+  const setCustomRange = (next: DateFilterRange) =>
+    isControlled
+      ? onChange({ preset: "custom", range: next })
+      : store.setCustomRange(next);
+
   const [showCalendarDialog, setShowCalendarDialog] = useState(false);
   const [open, setOpen] = useState(false);
-  const [tempRange, setTempRange] = useState<DateRange | undefined>({
-    from: parseISO(range.from),
-    to: parseISO(range.to),
-  });
+  const [tempRange, setTempRange] = useState<DateRange | undefined>(() =>
+    range
+      ? { from: parseISO(range.from), to: parseISO(range.to) }
+      : undefined
+  );
 
   // Formatear rango para mostrar
   const formatRangeDisplay = () => {
+    if (!preset || !range) {
+      return allDatesLabel ?? "";
+    }
+
     if (preset !== "custom") {
       return PRESET_LABELS[preset];
     }
@@ -85,10 +124,11 @@ export function DateRangeFilter({
 
   // Abrir diálogo de calendario para rango personalizado
   const handleCustomClick = () => {
-    setTempRange({
-      from: parseISO(range.from),
-      to: parseISO(range.to),
-    });
+    setTempRange(
+      range
+        ? { from: parseISO(range.from), to: parseISO(range.to) }
+        : undefined
+    );
     setShowCalendarDialog(true);
   };
 
@@ -132,6 +172,26 @@ export function DateRangeFilter({
         <PopoverContent className="w-56 p-2" align="end">
           {showPresets && (
             <div className="space-y-1">
+              {isControlled && allDatesLabel && (
+                <button
+                  onClick={() => {
+                    onChange(null);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                    preset === null
+                      ? "bg-indigo-50 text-indigo-700 font-medium"
+                      : "text-slate-700 hover:bg-slate-100"
+                  )}
+                >
+                  <span>🗂️</span>
+                  <span>{allDatesLabel}</span>
+                  {preset === null && (
+                    <span className="ml-auto text-indigo-600">✓</span>
+                  )}
+                </button>
+              )}
               {availablePresets.map((presetKey) => (
                 <button
                   key={presetKey}

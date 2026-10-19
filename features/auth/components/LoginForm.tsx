@@ -10,7 +10,6 @@ import { useLogin } from "@/features/auth/hooks/useAuth";
 
 export function LoginForm() {
   const t = useTranslations("auth.login");
-  const tv = useTranslations("auth.validation");
   
   const login = useLogin();
   const [email, setEmail] = useState("");
