@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronDown, MessageCircle } from "lucide-react";
-import { Link } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/routing";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { getUserSession } from "@/features/auth/services/auth.service";
@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 export function DemoGuide() {
   const t = useTranslations("auth.login.demo.guide");
   const tb = useTranslations("auth.login.demo.banner");
+  const pathname = usePathname();
   const user = useCurrentUser();
   const isDemo = user?.isDemo === true;
   const logout = useLogout({ redirectTo: "/register", silent: true });
@@ -49,6 +50,7 @@ export function DemoGuide() {
   const isDone = (step: DemoGuideStep) => completed.includes(step);
   const current = DEMO_GUIDE_STEPS.find((step) => !isDone(step));
   const doneCount = DEMO_GUIDE_STEPS.filter(isDone).length;
+  const isOnOrdersPage = pathname.startsWith("/dashboard/orders");
 
   const rawPhone = session?.demoContact?.phone ?? user.demoPhone ?? "";
   const phone = rawPhone && !rawPhone.startsWith("+") ? `+${rawPhone}` : rawPhone;
@@ -91,35 +93,6 @@ export function DemoGuide() {
       <ChevronDown className="w-4 h-4" />
     </button>
   );
-
-  if (!current) {
-    return (
-      <aside
-        aria-label={t("pill")}
-        className={cn(
-          position,
-          "w-[340px] max-w-[calc(100vw-2rem)] rounded-3xl p-5 flex flex-col gap-3 text-white shadow-card-lg",
-          "bg-gradient-to-br from-indigo-900 via-indigo-600 to-violet-600"
-        )}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-xl font-bold leading-tight tracking-tight">
-            {t("doneTitle")}
-          </p>
-          {minimizeButton(true)}
-        </div>
-        <button
-          type="button"
-          onClick={() => logout.mutate()}
-          disabled={logout.isPending}
-          className="h-11 rounded-xl bg-white text-sm font-semibold text-indigo-900 hover:bg-indigo-50 disabled:opacity-60"
-        >
-          {logout.isPending ? tb("leaving") : tb("createAccount")}
-        </button>
-        <span className="text-center text-xs text-indigo-100">{tb("trialNote")}</span>
-      </aside>
-    );
-  }
 
   const steps: { id: DemoGuideStep; label: string; body?: ReactNode }[] = [
     {
@@ -167,12 +140,25 @@ export function DemoGuide() {
       body: (
         <>
           <span className="text-[13px] text-slate-600">{t("steps.statusHint")}</span>
-          <Link
-            href="/dashboard/orders"
-            className="inline-flex items-center justify-center h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
-          >
-            {t("steps.statusCta")}
-          </Link>
+          {isOnOrdersPage ? (
+            <button
+              type="button"
+              onClick={() => {
+                complete(user.userId, "status");
+                window.setTimeout(() => setMinimized(true), 400);
+              }}
+              className="h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
+            >
+              {t("steps.statusConfirmCta")}
+            </button>
+          ) : (
+            <Link
+              href="/dashboard/orders"
+              className="inline-flex items-center justify-center h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
+            >
+              {t("steps.statusCta")}
+            </Link>
+          )}
         </>
       ),
     },
@@ -189,7 +175,9 @@ export function DemoGuide() {
     >
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-[15px] font-bold tracking-tight text-slate-900">{t("title")}</p>
+          <p className="text-[15px] font-bold tracking-tight text-slate-900">
+            {current ? t("title") : t("doneTitle")}
+          </p>
           <div className="mt-1.5 flex gap-1" aria-hidden="true">
             {DEMO_GUIDE_STEPS.map((step) => (
               <span
@@ -243,6 +231,20 @@ export function DemoGuide() {
           );
         })}
       </ol>
+
+      {!current && (
+        <div className="flex flex-col gap-1.5 pt-1">
+          <button
+            type="button"
+            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+            className="h-11 rounded-xl bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+          >
+            {logout.isPending ? tb("leaving") : tb("createAccount")}
+          </button>
+          <span className="text-center text-xs text-slate-500">{tb("trialNote")}</span>
+        </div>
+      )}
     </aside>
   );
 }
