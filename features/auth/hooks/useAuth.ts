@@ -11,16 +11,19 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useRegistrationStore } from "@/features/auth/stores/registration.store";
 import {
+  DemoLoginRequest,
   LoginCredentials,
   RegisterRequest,
 } from "@/types/auth.types";
 import {
   login as loginApi,
+  demoLogin as demoLoginApi,
   register as registerApi,
   forgotPassword as forgotPasswordApi,
   resetPassword as resetPasswordApi,
@@ -93,13 +96,61 @@ export function useLogin() {
 }
 
 /**
+ * Hook para la mutación de entrada al modo demo (sin credenciales).
+ *
+ * Flujo: igual que useLogin pero contra /auth/demo-login con { name, phone }.
+ * El backend registra al visitante como DemoLead y devuelve tokens del
+ * usuario demo acotados a su propio número.
+ */
+export function useDemoLogin() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { setAuthData } = useAuthStore();
+  const t = useTranslations("auth.login.demo");
+
+  return useMutation({
+    mutationFn: async (data: DemoLoginRequest) => {
+      const response = await demoLoginApi(data);
+      const setCookieResponse = await fetch("/api/auth/set-cookie", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: response.refresh_token }),
+        credentials: "include",
+      });
+
+      if (!setCookieResponse.ok) {
+        throw new Error("Failed to set session cookie");
+      }
+      return response;
+    },
+    onSuccess: (data) => {
+      queryClient.clear();
+      setAuthData(data);
+      router.push("/dashboard/orders");
+    },
+    onError: (error) => {
+      console.error("[useDemoLogin] Demo login error:", error);
+      toast.error(extractErrorMessage(error, t("error")));
+    },
+  });
+}
+
+export interface LogoutOptions {
+  /** Ruta de destino tras limpiar la sesión (por defecto "/login"). */
+  redirectTo?: string;
+  /** Si es true, omite los toasts de confirmación (útil al salir de la demo hacia registro). */
+  silent?: boolean;
+}
+
+/**
  * Hook for logout mutation
  * 
  * Flow:
  * 1. POST /api/auth/logout — atomically revokes token AND clears cookie
- * 2. onSettled: clear in-memory state and navigate to login
+ * 2. onSettled: clear in-memory state and navigate to target route
  */
-export function useLogout() {
+export function useLogout(options: LogoutOptions = {}) {
+  const { redirectTo = "/login", silent = false } = options;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { clearAuth } = useAuthStore();
@@ -113,10 +164,14 @@ export function useLogout() {
       });
     },
     onSuccess: () => {
-      toast.success("Sesión cerrada correctamente");
+      if (!silent) {
+        toast.success("Sesión cerrada correctamente");
+      }
     },
     onError: (error) => {
-      toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
+      if (!silent) {
+        toast.error(extractErrorMessage(error, "Error al cerrar sesión"));
+      }
     },
     onSettled: () => {
       // Always clean up regardless of success or failure:
@@ -127,7 +182,7 @@ export function useLogout() {
       // Clear persisted branch selection so the next user starts with a clean state
       useBranchStore.getState().deselectAllBranches();
       // router.push() from @/i18n/routing automatically prepends the active locale
-      router.push("/login");
+      router.push(redirectTo);
     },
   });
 }

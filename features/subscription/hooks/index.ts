@@ -1,6 +1,6 @@
 export { useUpgradePlan } from "./useUpgradePlan";
 export { useUpgradePlanModal, useOpenUpgradePlanModal } from "./useUpgradePlanModal";
-export { usePlanCatalog } from "./usePlanCatalog";
+export { usePlanCatalog, useTrialDays } from "./usePlanCatalog";
 export { useSubscriptionStatus } from "./useSubscriptionStatus";
 export { usePaymentHistory } from "./usePaymentHistory";
 export { usePaymentNotifications } from "./usePaymentNotifications";

@@ -26,6 +26,7 @@ import {
 } from '@/services/auth-sync.service';
 import { forceLogout } from '@/services/session.service';
 import { createReconnectScheduler } from '@/lib/socket-reconnect';
+import { completeDemoGuideStep } from '@/features/auth/stores/demo-guide.store';
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -315,6 +316,7 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
         queryKey: [...ORDERS_KEYS.all, businessId, 'live'],
       });
       refreshUnseenCount();
+      completeDemoGuideStep('arrived');
 
       // Solo suena si el pedido cuenta en el badge: de una sucursal
       // seleccionada o, sin selección, de una sede asignada al usuario

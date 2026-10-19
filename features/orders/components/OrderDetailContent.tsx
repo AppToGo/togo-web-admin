@@ -259,6 +259,10 @@ export function OrderDetailContent({
     user?.role === "ADMIN" ||
     user?.role === "SUPER_ADMIN";
 
+  // Sesión demo: sin pestaña Conversación — el backend la deniega (solo
+  // inbox propio) y el 403 se vería como error en vez de estado vacío.
+  const isDemo = user?.isDemo === true;
+
   // Tab "Conversación" se muestra de forma optimista (§4 del plan Fase B):
   // en vez de agregar conversationSessionId a Order, se resuelve perezosamente
   // vía GET .../orders/:id/conversation sólo cuando el tab está activo. Un
@@ -266,12 +270,20 @@ export function OrderDetailContent({
   // no se oculta el tab — evita reordenar la lista de tabs a media sesión.
   const conversationQuery = useConversationByOrder(
     orderId,
-    activeTab === "conversation"
+    !isDemo && activeTab === "conversation"
   );
 
   const tabs = [
     { value: "general", icon: ClipboardList, label: t("tabs.general") },
-    { value: "conversation", icon: MessageCircle, label: t("tabs.conversation") },
+    ...(!isDemo
+      ? [
+          {
+            value: "conversation",
+            icon: MessageCircle,
+            label: t("tabs.conversation"),
+          },
+        ]
+      : []),
     ...(canViewHistory
       ? [{ value: "history", icon: Clock, label: t("tabs.history") }]
       : []),
@@ -345,10 +357,11 @@ export function OrderDetailContent({
   // (tomando la conversación si la ventana de 24 h está abierta).
   const handleItemIssue = useCallback(
     (item: OrderItem) => {
+      if (isDemo) return;
       setActiveTabState("conversation");
       setConversationDraft(t("itemIssue.draft", { productName: item.productName }));
     },
-    [t]
+    [isDemo, t]
   );
 
   // Calcular totales incluyendo domicilio
@@ -591,7 +604,7 @@ export function OrderDetailContent({
                         {formatCurrency(item.unitPrice * item.quantity)}
                       </p>
                       {/* Subtle icon to indicate out of stock */}
-                      {!isReadOnly && (
+                      {!isReadOnly && !isDemo && (
                         <button
                           onClick={() => handleItemIssue(item)}
                           className="text-slate-300 hover:text-amber-500 transition-colors"
@@ -693,12 +706,14 @@ export function OrderDetailContent({
         </TabsContent>
 
         {/* Conversación Tab */}
-        <TabsContent value="conversation" className="space-y-4">
-          <OrderConversationPanel
-            conversationQuery={conversationQuery}
-            draft={conversationDraft}
-          />
-        </TabsContent>
+        {!isDemo && (
+          <TabsContent value="conversation" className="space-y-4">
+            <OrderConversationPanel
+              conversationQuery={conversationQuery}
+              draft={conversationDraft}
+            />
+          </TabsContent>
+        )}
 
         {/* Historial Tab */}
         {canViewHistory && (

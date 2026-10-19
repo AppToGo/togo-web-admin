@@ -10,6 +10,11 @@ export async function mockBusinessSettings(
   options: {
     paraphraseAvailable: boolean;
     botVoice?: Record<string, unknown>;
+    /**
+     * Plan del negocio en `/businesses/me`. Por defecto Pro (3): la voz solo
+     * se edita en Pro/Enterprise y el login de e2e trae Basic (1).
+     */
+    subscriptionPlan?: number;
     /** Recibe el body de cada PATCH /businesses/:id. */
     onUpdate?: (body: Record<string, unknown>) => void;
   }
@@ -25,6 +30,7 @@ export async function mockBusinessSettings(
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     settings: {},
+    subscriptionPlan: options.subscriptionPlan ?? 3,
     botVoice: { address: "tu", emojis: true, ...options.botVoice },
   };
 

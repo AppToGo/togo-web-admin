@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { DEFAULT_TRIAL_DAYS } from "@/features/auth/demo.constants";
 import { getPlanCatalog } from "../services/subscription.service";
 
 /**
@@ -20,4 +21,14 @@ export function usePlanCatalog(enabled: boolean = true) {
     staleTime: 60 * 60 * 1000, // 1 hora — los planes casi no cambian
     enabled,
   });
+}
+
+/**
+ * Días de prueba gratis configurados en el sistema: prioriza `trialDays` del
+ * catálogo del backend (`TRIAL_DAYS` en `api-togo`) y usa `NEXT_PUBLIC_TRIAL_DAYS`
+ * como fallback inmediato mientras carga.
+ */
+export function useTrialDays(enabled: boolean = true): number {
+  const { data: catalog } = usePlanCatalog(enabled);
+  return catalog?.trialDays ?? DEFAULT_TRIAL_DAYS;
 }
