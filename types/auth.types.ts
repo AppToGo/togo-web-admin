@@ -32,10 +32,14 @@ export interface AuthenticatedUser {
   demoVerificationCode?: string | null;
 }
 
-// Demo login request (sin credenciales: nombre + WhatsApp del visitante)
+// Demo login request (sin credenciales: nombre + WhatsApp del visitante,
+// tipo/negocio opcionales y consentimiento de contacto comercial v1)
 export interface DemoLoginRequest {
   name: string;
   phone: string;
+  businessType?: string;
+  businessName?: string;
+  consentAccepted: boolean;
 }
 
 // Login Request
@@ -168,6 +172,17 @@ export interface SessionResponse {
 }
 
 // Posible cliente capturado en el login demo (solo SUPER_ADMIN)
+export type DemoLeadStage =
+  | "NEW"
+  | "ACTIVE_DEMO"
+  | "FOLLOW_UP"
+  | "CONTACTED"
+  | "NEGOTIATION"
+  | "CUSTOMER"
+  | "LOST";
+
+export type DemoLeadPriority = "HIGH" | "NORMAL" | "LOW";
+
 export interface DemoLead {
   id: string;
   businessId: string | null;
@@ -177,4 +192,84 @@ export interface DemoLead {
   createdAt: string;
   lastDemoAt: string;
   demoCount: number;
+  stage: DemoLeadStage;
+  businessType?: string | null;
+  establishmentName?: string | null;
+  ownerName?: string | null;
+  priority: DemoLeadPriority;
+  nextAction?: string | null;
+  nextActionAt?: string | null;
+  revoked: boolean;
+  orderCount: number;
+}
+
+export interface DemoLeadPipelineEntry {
+  stage: DemoLeadStage;
+  count: number;
+}
+
+export interface DemoLeadActivityEvent {
+  id: string;
+  type: string;
+  occurredAt: string;
+}
+
+export interface DemoLeadNote {
+  id: string;
+  body: string;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface DemoLeadSuggestion {
+  key: string;
+  reason: string;
+}
+
+export interface DemoLeadDetailLead extends DemoLead {
+  estimatedOrders?: number | null;
+  planInterest?: string | null;
+  mainNeed?: string | null;
+  consentAt?: string | null;
+  convertedAt?: string | null;
+  lostReason?: string | null;
+  lostAt?: string | null;
+}
+
+export interface DemoLeadDetail {
+  lead: DemoLeadDetailLead;
+  events: DemoLeadActivityEvent[];
+  notes: DemoLeadNote[];
+  summary: {
+    demoCount: number;
+    orderCount: number;
+    distinctActionTypes: number;
+    hasWhatsApp: boolean;
+    repliedInInbox: boolean;
+    lastActivityAt: string | null;
+  };
+  suggestion: DemoLeadSuggestion;
+}
+
+export interface DemoLeadFilters {
+  stage?: DemoLeadStage;
+  q?: string;
+  priority?: DemoLeadPriority;
+  overdueOnly?: boolean;
+  includeRevoked?: boolean;
+}
+
+export interface UpdateDemoLeadRequest {
+  stage?: DemoLeadStage;
+  businessType?: string | null;
+  businessName?: string | null;
+  estimatedOrders?: number | null;
+  planInterest?: string | null;
+  mainNeed?: string | null;
+  priority?: DemoLeadPriority;
+  ownerUserId?: string | null;
+  nextAction?: string | null;
+  nextActionAt?: string | null;
+  lostReason?: string | null;
+  revokedAt?: string | null;
 }

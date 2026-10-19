@@ -23,6 +23,9 @@ export function DemoLoginForm() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [consent, setConsent] = useState(false);
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const demoLogin = useDemoLogin();
 
@@ -50,7 +53,13 @@ export function DemoLoginForm() {
     }
 
     setPhoneError(undefined);
-    demoLogin.mutate({ name: trimmedName, phone: cleanedPhone });
+    demoLogin.mutate({
+      name: trimmedName,
+      phone: cleanedPhone,
+      businessType: businessType.trim() || undefined,
+      businessName: businessName.trim() || undefined,
+      consentAccepted: consent,
+    });
   };
 
   return (
@@ -84,7 +93,34 @@ export function DemoLoginForm() {
           autoComplete="tel"
           error={phoneError ?? demoLogin.error?.message}
         />
-        <p className="text-xs text-slate-500">{t("consent")}</p>
+        <Input
+          label={t("businessType.label")}
+          type="text"
+          placeholder={t("businessType.placeholder")}
+          value={businessType}
+          onChange={(e) => setBusinessType(e.target.value)}
+          maxLength={60}
+          autoComplete="organization-title"
+        />
+        <Input
+          label={t("businessName.label")}
+          type="text"
+          placeholder={t("businessName.placeholder")}
+          value={businessName}
+          onChange={(e) => setBusinessName(e.target.value)}
+          maxLength={120}
+          autoComplete="organization"
+        />
+        <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 accent-slate-900"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            required
+          />
+          <span>{t("consent")}</span>
+        </label>
         <p className="text-xs text-slate-500">
           {t("whatsappHint", { number: DEMO_WHATSAPP_NUMBER })}
         </p>

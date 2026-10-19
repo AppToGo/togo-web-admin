@@ -75,6 +75,10 @@ export async function demoLogin(
 
 export {
   getDemoLeads,
+  getDemoLeadsPipeline,
+  getDemoLeadDetail,
+  updateDemoLead,
+  addDemoLeadNote,
   deleteDemoLead,
 } from "@/features/admin/demo-leads/services/demo-leads.service";
 
