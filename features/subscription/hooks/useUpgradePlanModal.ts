@@ -55,9 +55,9 @@ export function useUpgradePlanModal() {
   // Subscribe to completedTours so the effect re-runs when a tour is marked done.
   const completedTours = useTourStore((state) => state.completedTours);
 
-  // Auto-open once per session for free-plan users, on any page.
+  // Auto-open once per session for free-plan users, on any page (except demo sessions).
   useEffect(() => {
-    if (!user?.userId) return;
+    if (!user?.userId || user.isDemo) return;
     if (user.subscriptionPlan === undefined) return;
     if (user.subscriptionPlan !== 1) return;
 
@@ -79,7 +79,7 @@ export function useUpgradePlanModal() {
       // sessionStorage unavailable (private mode, quota exceeded) — skip flag
     }
     openModal();
-  }, [user?.userId, user?.subscriptionPlan, user?.businessId, completedTours, openModal]);
+  }, [user?.userId, user?.isDemo, user?.subscriptionPlan, user?.businessId, completedTours, openModal]);
 
   // Reacciona al evento TRIAL_EXPIRED_EVENT (disparado por el interceptor de Axios
   // en services/api.service.ts al recibir un 402). El mismo patrón que

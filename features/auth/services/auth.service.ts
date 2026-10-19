@@ -17,7 +17,6 @@ import {
   RegisterRequest,
   RegistrationResponse,
   DemoLoginRequest,
-  DemoLead,
 } from "@/types/auth.types";
 
 const AUTH_ENDPOINTS = {
@@ -74,20 +73,10 @@ export async function demoLogin(
   return response.json() as Promise<LoginResponse>;
 }
 
-/**
- * Posibles clientes de la demo (solo SUPER_ADMIN).
- */
-export async function getDemoLeads(): Promise<DemoLead[]> {
-  const response = await apiClient.get<DemoLead[]>("/admin/demo-leads");
-  return response.data;
-}
-
-/**
- * Eliminar un lead de la demo (solo SUPER_ADMIN).
- */
-export async function deleteDemoLead(id: string): Promise<void> {
-  await apiClient.delete(`/admin/demo-leads/${id}`);
-}
+export {
+  getDemoLeads,
+  deleteDemoLead,
+} from "@/features/admin/demo-leads/services/demo-leads.service";
 
 /**
  * Refresh access token using refresh token

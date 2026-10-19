@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useDemoLogin } from "@/features/auth/hooks/useAuth";
 import { DEMO_WHATSAPP_NUMBER } from "@/features/auth/demo.constants";
 
+const PHONE_REGEX = /^\+?[1-9]\d{9,14}$/;
+
 /**
  * Entrada al modo demo desde el login.
  *
@@ -21,6 +23,7 @@ export function DemoLoginForm() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string | undefined>();
   const demoLogin = useDemoLogin();
 
   if (!open) {
@@ -38,7 +41,16 @@ export function DemoLoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    demoLogin.mutate({ name: name.trim(), phone: phone.trim() });
+    const trimmedName = name.trim();
+    const cleanedPhone = phone.replace(/[\s()-]/g, "").trim();
+
+    if (!PHONE_REGEX.test(cleanedPhone)) {
+      setPhoneError(t("phone.invalid"));
+      return;
+    }
+
+    setPhoneError(undefined);
+    demoLogin.mutate({ name: trimmedName, phone: cleanedPhone });
   };
 
   return (
@@ -56,16 +68,21 @@ export function DemoLoginForm() {
           minLength={2}
           maxLength={80}
           autoComplete="name"
-          error={demoLogin.error?.message}
         />
         <Input
           label={t("phone.label")}
           type="tel"
           placeholder={t("phone.placeholder")}
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            if (phoneError) setPhoneError(undefined);
+          }}
           required
+          minLength={10}
+          maxLength={16}
           autoComplete="tel"
+          error={phoneError ?? demoLogin.error?.message}
         />
         <p className="text-xs text-slate-500">{t("consent")}</p>
         <p className="text-xs text-slate-500">

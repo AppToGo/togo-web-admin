@@ -1,14 +1,14 @@
 /**
- * Demo Leads Hooks
- * TanStack Query hooks for Super Admin demo-leads management
+ * Hooks de TanStack Query para la gestión de posibles clientes de la demo (Super Admin).
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   getDemoLeads,
   deleteDemoLead,
-} from "@/features/auth/services/auth.service";
+} from "../services/demo-leads.service";
 import { extractErrorMessage } from "@/lib/error.utils";
 
 export const DEMO_LEADS_KEYS = {
@@ -17,7 +17,7 @@ export const DEMO_LEADS_KEYS = {
 };
 
 /**
- * Hook to fetch demo leads (solo SUPER_ADMIN, el backend lo exige).
+ * Hook para obtener posibles clientes de la demo (solo SUPER_ADMIN, el backend lo exige).
  */
 export function useDemoLeads(enabled: boolean = true) {
   return useQuery({
@@ -28,19 +28,20 @@ export function useDemoLeads(enabled: boolean = true) {
 }
 
 /**
- * Hook to delete a demo lead.
+ * Hook para eliminar un posible cliente de la demo.
  */
 export function useDeleteDemoLead() {
   const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
 
   return useMutation({
     mutationFn: (id: string) => deleteDemoLead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
-      toast.success("Lead eliminado");
+      toast.success(t("deleteSuccess"));
     },
     onError: (error) => {
-      toast.error(extractErrorMessage(error, "No se pudo eliminar el lead"));
+      toast.error(extractErrorMessage(error, t("deleteError")));
     },
   });
 }

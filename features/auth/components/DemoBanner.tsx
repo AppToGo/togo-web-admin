@@ -4,16 +4,12 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FlaskConical, MessageCircle, ShieldCheck } from "lucide-react";
-import { useRouter } from "@/i18n/routing";
-import {
-  useCurrentUser,
-  useAuthStore,
-} from "@/features/auth/stores/auth.store";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import { getUserSession } from "@/features/auth/services/auth.service";
 import { DEMO_WHATSAPP_NUMBER } from "@/features/auth/demo.constants";
 import { AUTH_SESSION_KEY } from "@/features/orders/hooks/useUserBranches";
 import { CONVERSATIONS_KEYS } from "@/features/conversations/hooks/query-keys";
-import { useBranchStore } from "@/stores/branch.store";
 import { cn } from "@/lib/utils";
 
 /** Mientras el número no esté verificado, se consulta la sesión cada 5 s. */
@@ -34,9 +30,8 @@ const VERIFICATION_POLL_MS = 5000;
 export function DemoBanner() {
   const t = useTranslations("auth.login.demo.banner");
   const user = useCurrentUser();
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const [leaving, setLeaving] = React.useState(false);
+  const logout = useLogout({ redirectTo: "/register", silent: true });
   const isDemo = user?.isDemo === true;
 
   const { data: session } = useQuery({
@@ -64,26 +59,17 @@ export function DemoBanner() {
   if (!isDemo) return null;
 
   const pendingCode = !verified && code ? code : null;
+  const rawPhone = contact?.phone ?? user?.demoPhone ?? "";
+  const formattedPhone = rawPhone
+    ? rawPhone.startsWith("+")
+      ? rawPhone
+      : `+${rawPhone}`
+    : "";
   const whatsappUrl = pendingCode
     ? `https://wa.me/${DEMO_WHATSAPP_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent(
         t("verify.message", { code: pendingCode })
       )}`
     : null;
-
-  const handleCreateAccount = async () => {
-    setLeaving(true);
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } finally {
-      queryClient.clear();
-      useAuthStore.getState().clearAuth();
-      useBranchStore.getState().deselectAllBranches();
-      router.push("/register");
-    }
-  };
 
   return (
     <div className="w-full bg-slate-900">
@@ -103,14 +89,14 @@ export function DemoBanner() {
         </div>
         <button
           type="button"
-          onClick={handleCreateAccount}
-          disabled={leaving}
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
           className={cn(
             "flex-shrink-0 text-xs font-semibold text-slate-900 bg-white px-3 py-1.5 rounded-lg transition-colors",
             "hover:bg-slate-100 disabled:opacity-60"
           )}
         >
-          {leaving ? t("leaving") : t("createAccount")}
+          {logout.isPending ? t("leaving") : t("createAccount")}
         </button>
       </div>
       {pendingCode && whatsappUrl && (
@@ -125,7 +111,7 @@ export function DemoBanner() {
                 </span>
               ),
               number: DEMO_WHATSAPP_NUMBER,
-              phone: contact?.phone ?? user?.demoPhone ?? "",
+              phone: formattedPhone,
             })}
           </p>
           <a

@@ -1,21 +1,39 @@
 "use client";
 
 /**
- * Demo Leads Page
- * Super Admin page for viewing potential customers captured in demo mode
+ * Página de posibles clientes (Super Admin).
+ * Lista las personas que probaron el modo demo y permite eliminarlas.
  */
 
+import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Trash2, Users } from "lucide-react";
 import {
   useDemoLeads,
   useDeleteDemoLead,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
+import type { DemoLead } from "@/types/auth.types";
 
 function formatDateTime(iso: string, locale: string): string {
   const date = new Date(iso);
@@ -26,19 +44,31 @@ function formatDateTime(iso: string, locale: string): string {
   }).format(date);
 }
 
+function formatPhone(phone: string): string {
+  if (!phone) return "—";
+  return phone.startsWith("+") ? phone : `+${phone}`;
+}
+
 export default function DemoLeadsPage() {
   const t = useTranslations("admin-demo-leads");
   const locale = useLocale();
   const { isLoading: isAuthLoading } = useAuthGuard();
   const isSuperAdmin = useIsSuperAdmin();
 
-  const { data: leads, isLoading: isLeadsLoading } = useDemoLeads(isSuperAdmin);
+  const [deletingLead, setDeletingLead] = useState<DemoLead | null>(null);
+  const {
+    data: leads,
+    isLoading: isLeadsLoading,
+    isError: isLeadsError,
+    refetch,
+  } = useDemoLeads(isSuperAdmin);
   const deleteLead = useDeleteDemoLead();
 
-  const handleDelete = (id: string) => {
-    if (window.confirm(t("deleteConfirm"))) {
-      deleteLead.mutate(id);
-    }
+  const confirmDelete = () => {
+    if (!deletingLead) return;
+    deleteLead.mutate(deletingLead.id, {
+      onSettled: () => setDeletingLead(null),
+    });
   };
 
   if (isAuthLoading) return null;
@@ -64,6 +94,18 @@ export default function DemoLeadsPage() {
         <CardContent>
           {isLeadsLoading ? (
             <p className="text-sm text-slate-500">…</p>
+          ) : isLeadsError ? (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-red-600">{t("loadError")}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+              >
+                {t("retry")}
+              </Button>
+            </div>
           ) : !leads || leads.length === 0 ? (
             <p className="text-sm text-slate-500">{t("empty")}</p>
           ) : (
@@ -80,46 +122,76 @@ export default function DemoLeadsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {leads.map((lead) => (
-                    <tr
-                      key={lead.id}
-                      className="border-b border-slate-100 last:border-0"
-                    >
-                      <td className="py-2 pr-4 font-medium text-slate-900">
-                        {lead.name}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-700">
-                        +{lead.phone}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-500">
-                        {lead.businessName ?? "—"}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-500">
-                        {formatDateTime(lead.lastDemoAt, locale)}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-700">
-                        {lead.demoCount}
-                      </td>
-                      <td className="py-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(lead.id)}
-                          disabled={deleteLead.isPending}
-                          aria-label={t("delete")}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {leads.map((lead) => {
+                    const isDeletingThisRow =
+                      deleteLead.isPending && deleteLead.variables === lead.id;
+                    return (
+                      <tr
+                        key={lead.id}
+                        className="border-b border-slate-100 last:border-0"
+                      >
+                        <td className="py-2 pr-4 font-medium text-slate-900">
+                          {lead.name}
+                        </td>
+                        <td className="py-2 pr-4 text-slate-700">
+                          {formatPhone(lead.phone)}
+                        </td>
+                        <td className="py-2 pr-4 text-slate-500">
+                          {lead.businessName ?? "—"}
+                        </td>
+                        <td className="py-2 pr-4 text-slate-500">
+                          {formatDateTime(lead.lastDemoAt, locale)}
+                        </td>
+                        <td className="py-2 pr-4 text-slate-700">
+                          {lead.demoCount}
+                        </td>
+                        <td className="py-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeletingLead(lead)}
+                            disabled={isDeletingThisRow}
+                            aria-label={t("delete")}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={!!deletingLead}
+        onOpenChange={(open) => !open && setDeletingLead(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteConfirm")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirmDescription", {
+                name: deletingLead?.name ?? "",
+                phone: deletingLead ? formatPhone(deletingLead.phone) : "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteLead.isPending ? t("deleting") : t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

@@ -23,8 +23,8 @@ export function TrialBanner() {
   const user = useCurrentUser();
   const openUpgradeModal = useOpenUpgradePlanModal();
 
-  // Solo aplica a negocios en plan Free con trialEndsAt conocido
-  if (user?.subscriptionPlan !== 1 || !user?.trialEndsAt) return null;
+  // Solo aplica a negocios reales en plan Free con trialEndsAt conocido (no en modo demo)
+  if (user?.isDemo || user?.subscriptionPlan !== 1 || !user?.trialEndsAt) return null;
 
   const trialEndsAtMs = new Date(user.trialEndsAt).getTime();
   if (Number.isNaN(trialEndsAtMs)) return null; // fecha inválida — no mostrar basura al usuario

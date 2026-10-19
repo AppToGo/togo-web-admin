@@ -11,6 +11,13 @@
     "actions": "Acciones"
   },
   "delete": "Eliminar",
+  "deleting": "Eliminando...",
+  "cancel": "Cancelar",
   "deleteConfirm": "¿Eliminar este lead?",
+  "deleteConfirmDescription": "Se eliminará a {name} ({phone}) de la lista de posibles clientes.",
+  "deleteSuccess": "Lead eliminado",
+  "deleteError": "No se pudo eliminar el lead",
+  "loadError": "No se pudieron cargar los posibles clientes.",
+  "retry": "Reintentar",
   "accessDenied": "Necesitas ser Super Admin para ver esta página."
 }
