@@ -181,6 +181,8 @@ export type DemoLeadStage =
   | "CUSTOMER"
   | "LOST";
 
+export type DemoLeadPriority = "HIGH" | "NORMAL" | "LOW";
+
 export interface DemoLead {
   id: string;
   businessId: string | null;
@@ -194,7 +196,7 @@ export interface DemoLead {
   businessType?: string | null;
   establishmentName?: string | null;
   ownerName?: string | null;
-  priority: string;
+  priority: DemoLeadPriority;
   nextAction?: string | null;
   nextActionAt?: string | null;
   revoked: boolean;
@@ -252,7 +254,7 @@ export interface DemoLeadDetail {
 export interface DemoLeadFilters {
   stage?: DemoLeadStage;
   q?: string;
-  priority?: string;
+  priority?: DemoLeadPriority;
   overdueOnly?: boolean;
   includeRevoked?: boolean;
 }
@@ -264,7 +266,7 @@ export interface UpdateDemoLeadRequest {
   estimatedOrders?: number | null;
   planInterest?: string | null;
   mainNeed?: string | null;
-  priority?: string;
+  priority?: DemoLeadPriority;
   ownerUserId?: string | null;
   nextAction?: string | null;
   nextActionAt?: string | null;

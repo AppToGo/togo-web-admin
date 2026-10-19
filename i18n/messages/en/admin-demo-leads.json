@@ -57,14 +57,18 @@
     "notePlaceholder": "Write a note…",
     "addNote": "Add note",
     "delete": "Delete",
+    "deleting": "Deleting…",
+    "cancel": "Cancel",
     "deleteConfirm": "Delete this lead?",
+    "deleteConfirmDescription": "{name} ({phone}) will be removed from the potential customers list.",
+    "loadError": "Could not load lead details.",
     "summaryWhatsApp": "Wrote via WhatsApp",
     "summaryInbox": "Replied to themselves in inbox"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
     "ORDER_CREATED": "Created an order",
-    "ORDER_STATUS_CHANGED": "Changed an order to {to}",
+    "ORDER_STATUS_CHANGED": "Changed an order status",
     "INBOX_TAKEOVER": "Took over their conversation",
     "INBOX_REPLY_SENT": "Replied to themselves in the inbox",
     "WHATSAPP_RECEIVED": "Wrote via WhatsApp"

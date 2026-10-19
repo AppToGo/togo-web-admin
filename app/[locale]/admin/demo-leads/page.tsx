@@ -30,56 +30,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Users } from "lucide-react";
-import type { DemoLeadStage } from "@/types/auth.types";
+import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   useDemoLeads,
   useDemoLeadsPipeline,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import { LeadDetailPanel } from "@/features/admin/demo-leads/components/LeadDetailPanel";
-
-const STAGES: DemoLeadStage[] = [
-  "NEW",
-  "ACTIVE_DEMO",
-  "FOLLOW_UP",
-  "CONTACTED",
-  "NEGOTIATION",
-  "CUSTOMER",
-  "LOST",
-];
-
-function formatDateTime(iso: string, locale: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
-function formatPhone(phone: string): string {
-  if (!phone) return "—";
-  return phone.startsWith("+") ? phone : `+${phone}`;
-}
-
-function priorityVariant(
-  priority: string,
-): "default" | "secondary" | "destructive" | "outline" {
-  if (priority === "HIGH") return "destructive";
-  if (priority === "LOW") return "outline";
-  return "secondary";
-}
-
-function safeLabel(
-  t: (key: string) => string,
-  key: string,
-  fallback: string,
-): string {
-  try {
-    return t(key);
-  } catch {
-    return fallback;
-  }
-}
+import {
+  DEMO_LEAD_STAGES,
+  formatDateTime,
+  formatPhone,
+  priorityVariant,
+  safeLabel,
+} from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
 export default function DemoLeadsPage() {
   const t = useTranslations("admin-demo-leads");
@@ -88,7 +52,8 @@ export default function DemoLeadsPage() {
   const isSuperAdmin = useIsSuperAdmin();
 
   const [search, setSearch] = useState("");
-  const [priority, setPriority] = useState<string>("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [priority, setPriority] = useState<DemoLeadPriority | "">("");
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -100,7 +65,7 @@ export default function DemoLeadsPage() {
     refetch,
   } = useDemoLeads(
     {
-      q: search.trim() || undefined,
+      q: debouncedSearch.trim() || undefined,
       priority: priority || undefined,
       overdueOnly: overdueOnly || undefined,
       includeRevoked: includeRevoked || undefined,
@@ -146,7 +111,9 @@ export default function DemoLeadsPage() {
             />
             <Select
               value={priority || "ALL"}
-              onValueChange={(v) => setPriority(v === "ALL" ? "" : v)}
+              onValueChange={(v) =>
+                setPriority(v === "ALL" ? "" : (v as DemoLeadPriority))
+              }
             >
               <SelectTrigger className="max-w-[200px]">
                 <SelectValue />
@@ -196,7 +163,7 @@ export default function DemoLeadsPage() {
             <p className="text-sm text-slate-500">{t("empty")}</p>
           ) : (
             <div className="grid grid-flow-col auto-cols-[260px] gap-3 overflow-x-auto pb-2">
-              {STAGES.map((stage) => {
+              {DEMO_LEAD_STAGES.map((stage) => {
                 const column = leads.filter((lead) => lead.stage === stage);
                 return (
                   <div
