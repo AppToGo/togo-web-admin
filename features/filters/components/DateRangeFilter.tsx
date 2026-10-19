@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
@@ -73,6 +73,18 @@ export function DateRangeFilter({
 }: DateRangeFilterProps) {
   const store = useDateFilterStore();
   const isControlled = onChange !== undefined;
+
+  // `value` sin `onChange` se ignora en silencio (se usa el store global):
+  // avisar en desarrollo para no esconder el error de integración.
+  const valueWithoutOnChange = value !== undefined && onChange === undefined;
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production" && valueWithoutOnChange) {
+      console.warn(
+        "[DateRangeFilter] `value` sin `onChange`: el valor se ignora y se usa el store global. " +
+          "Pasa `onChange` para el modo controlado o quita `value`."
+      );
+    }
+  }, [valueWithoutOnChange]);
   const preset: DateFilterPreset | null = isControlled
     ? (value?.preset ?? null)
     : store.preset;
