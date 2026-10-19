@@ -6,7 +6,8 @@ import { mockBusinessSettings } from "../helpers/mock-bot-voice-api";
 
 /**
  * Plan bot natural, T21: interruptor "Reescribir avisos con IA" en la voz
- * del asistente (Configuración → Datos del negocio).
+ * del asistente (Configuración → Datos del negocio). Solo se muestra si el
+ * servidor la tiene habilitada y la voz solo se edita en Pro/Enterprise.
  */
 test.describe("Voz del asistente — paráfrasis", () => {
   async function openBusinessSettings(
@@ -72,34 +73,54 @@ test.describe("Voz del asistente — paráfrasis", () => {
     });
   });
 
-  test("sin habilitar en el servidor, avisa y no deja prenderla", async ({
+  test("sin habilitar en el servidor, no muestra el interruptor", async ({
     page,
   }) => {
     await openBusinessSettings(page, { paraphraseAvailable: false });
 
-    const toggle = page.getByRole("switch", {
-      name: "Reescribir avisos con IA (beta)",
-    });
+    // Con la vista previa ya cargada (el interruptor depende de ella).
+    await expect(page.getByText("Hamburguesa clásica").first()).toBeVisible();
     await expect(
-      page.getByText("Todavía no está habilitado en ToGo", { exact: false })
-    ).toBeVisible();
-    await expect(toggle).toBeDisabled();
+      page.getByRole("switch", { name: "Reescribir avisos con IA (beta)" })
+    ).toHaveCount(0);
   });
 
-  test("si ya estaba prendida sin habilitar, se puede apagar", async ({
+  test("si ya estaba prendida sin habilitar, se conserva al guardar", async ({
     page,
   }) => {
+    const updates: Record<string, unknown>[] = [];
     await openBusinessSettings(page, {
       paraphraseAvailable: false,
       botVoice: { paraphrase: true },
+      onUpdate: (body) => updates.push(body),
     });
 
-    const toggle = page.getByRole("switch", {
-      name: "Reescribir avisos con IA (beta)",
+    await expect(page.getByText("Hamburguesa clásica").first()).toBeVisible();
+    await expect(
+      page.getByRole("switch", { name: "Reescribir avisos con IA (beta)" })
+    ).toHaveCount(0);
+
+    await page.getByRole("switch", { name: "Usar emojis" }).click();
+    const voiceCard = page.locator("div", {
+      has: page.getByText("Voz del asistente", { exact: true }),
     });
-    await expect(toggle).toBeChecked();
-    await expect(toggle).toBeEnabled();
-    await toggle.click();
-    await expect(toggle).not.toBeChecked();
+    await voiceCard.getByRole("button", { name: "Guardar" }).last().click();
+
+    await expect.poll(() => updates.length).toBeGreaterThan(0);
+    expect(updates.at(-1)).toMatchObject({
+      botVoice: { emojis: false, paraphrase: true },
+    });
+  });
+
+  test("con plan Basic, la voz queda bloqueada por plan", async ({ page }) => {
+    await openBusinessSettings(page, {
+      paraphraseAvailable: true,
+      subscriptionPlan: 1,
+    });
+
+    await expect(page.getByText("Pro / Enterprise")).toBeVisible();
+    await expect(
+      page.getByRole("switch", { name: "Reescribir avisos con IA (beta)" })
+    ).toBeDisabled();
   });
 });
