@@ -2,15 +2,90 @@
   "title": "Potential customers",
   "subtitle": "People who tried demo mode. Reach out before they go cold.",
   "empty": "Nobody has tried the demo yet.",
-  "columns": {
-    "name": "Name",
-    "phone": "Phone",
-    "business": "Demo business",
-    "lastDemo": "Last tried",
-    "count": "Tries",
-    "actions": "Actions"
+  "accessDenied": "You need to be Super Admin to view this page.",
+  "filters": {
+    "search": "Search by name, phone or business…",
+    "allPriorities": "All priorities",
+    "priority": {
+      "HIGH": "High",
+      "NORMAL": "Normal",
+      "LOW": "Low"
+    },
+    "overdueOnly": "Overdue only",
+    "includeRevoked": "Include without consent"
   },
-  "delete": "Delete",
-  "deleteConfirm": "Delete this lead?",
-  "accessDenied": "You need to be Super Admin to view this page."
+  "stages": {
+    "NEW": "New",
+    "ACTIVE_DEMO": "Active demo",
+    "FOLLOW_UP": "Follow-up pending",
+    "CONTACTED": "Contacted",
+    "NEGOTIATION": "Negotiation",
+    "CUSTOMER": "Customer",
+    "LOST": "Lost"
+  },
+  "card": {
+    "orders": "{count} orders",
+    "nextAction": "Next: {action}",
+    "overdue": "Overdue",
+    "revoked": "No consent"
+  },
+  "detail": {
+    "close": "Close",
+    "profile": "Sales profile",
+    "stage": "Stage",
+    "priority": "Priority",
+    "businessType": "Business type",
+    "businessName": "Business name",
+    "estimatedOrders": "Estimated orders / month",
+    "planInterest": "Plan of interest",
+    "mainNeed": "Main need",
+    "nextAction": "Next action",
+    "nextActionAt": "Next action date",
+    "lostReason": "Lost reason",
+    "revokeConsent": "Withdraw contact consent",
+    "revokeHint": "On save with the box checked, the lead leaves the contact lists.",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "suggestion": "Suggested action",
+    "summary": "Demo activity",
+    "summaryOrders": "Orders created",
+    "summaryTries": "Demo entries",
+    "summaryActions": "Action types",
+    "summaryLastEvent": "Last activity",
+    "timeline": "Timeline",
+    "notes": "Notes",
+    "notePlaceholder": "Write a note…",
+    "addNote": "Add note",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this lead?",
+    "summaryWhatsApp": "Wrote via WhatsApp",
+    "summaryInbox": "Replied to themselves in inbox"
+  },
+  "events": {
+    "DEMO_STARTED": "Entered the demo",
+    "ORDER_CREATED": "Created an order",
+    "ORDER_STATUS_CHANGED": "Changed an order to {to}",
+    "INBOX_TAKEOVER": "Took over their conversation",
+    "INBOX_REPLY_SENT": "Replied to themselves in the inbox",
+    "WHATSAPP_RECEIVED": "Wrote via WhatsApp"
+  },
+  "suggestions": {
+    "CLOSE_ONBOARD": "Close the sale and move to onboarding.",
+    "REVIEW_LOSS": "Document why they didn't continue.",
+    "NO_CONTACT": "Do not contact: consent withdrawn.",
+    "DO_PLANNED_ACTION": "Do the planned action that went overdue.",
+    "INVITE_CONTINUE": "Invite them to keep trying the demo.",
+    "NUDGE_FIRST_ORDER": "Nudge them to create their first test order.",
+    "PERSONAL_OUTREACH": "Personal outreach based on what they tried.",
+    "ASK_BLOCKER": "Ask what kept them from deciding.",
+    "MONITOR": "Just watch for now."
+  },
+  "toasts": {
+    "updated": "Lead updated",
+    "updateError": "Could not update the lead",
+    "noteAdded": "Note added",
+    "noteError": "Could not add the note",
+    "deleted": "Lead deleted",
+    "deleteError": "Could not delete the lead"
+  }
 }

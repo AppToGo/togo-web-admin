@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useRegistrationStore } from "@/features/auth/stores/registration.store";
 import {
+  DemoLoginRequest,
   LoginCredentials,
   RegisterRequest,
 } from "@/types/auth.types";
@@ -105,7 +106,7 @@ export function useDemoLogin() {
   const { setAuthData } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (data: { name: string; phone: string }) => {
+    mutationFn: async (data: DemoLoginRequest) => {
       const response = await demoLoginApi(data);
       const setCookieResponse = await fetch("/api/auth/set-cookie", {
         method: "POST",

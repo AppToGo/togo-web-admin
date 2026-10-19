@@ -2,15 +2,90 @@
   "title": "Posibles clientes",
   "subtitle": "Personas que probaron el modo demo. Contáctalas antes de que se enfríen.",
   "empty": "Todavía nadie probó la demo.",
-  "columns": {
-    "name": "Nombre",
-    "phone": "Teléfono",
-    "business": "Negocio demo",
-    "lastDemo": "Última prueba",
-    "count": "Pruebas",
-    "actions": "Acciones"
+  "accessDenied": "Necesitas ser Super Admin para ver esta página.",
+  "filters": {
+    "search": "Buscar por nombre, teléfono o negocio…",
+    "allPriorities": "Todas las prioridades",
+    "priority": {
+      "HIGH": "Alta",
+      "NORMAL": "Normal",
+      "LOW": "Baja"
+    },
+    "overdueOnly": "Solo vencidos",
+    "includeRevoked": "Incluir sin consentimiento"
   },
-  "delete": "Eliminar",
-  "deleteConfirm": "¿Eliminar este lead?",
-  "accessDenied": "Necesitas ser Super Admin para ver esta página."
+  "stages": {
+    "NEW": "Nuevo",
+    "ACTIVE_DEMO": "Demo activa",
+    "FOLLOW_UP": "Seguimiento pendiente",
+    "CONTACTED": "Contactado",
+    "NEGOTIATION": "Negociación",
+    "CUSTOMER": "Cliente",
+    "LOST": "Perdido"
+  },
+  "card": {
+    "orders": "{count} pedidos",
+    "nextAction": "Siguiente: {action}",
+    "overdue": "Vencido",
+    "revoked": "Sin consentimiento"
+  },
+  "detail": {
+    "close": "Cerrar",
+    "profile": "Ficha comercial",
+    "stage": "Etapa",
+    "priority": "Prioridad",
+    "businessType": "Tipo de negocio",
+    "businessName": "Nombre del negocio",
+    "estimatedOrders": "Pedidos estimados / mes",
+    "planInterest": "Plan de interés",
+    "mainNeed": "Necesidad principal",
+    "nextAction": "Próxima acción",
+    "nextActionAt": "Fecha de la próxima acción",
+    "lostReason": "Motivo de pérdida",
+    "revokeConsent": "Retirar consentimiento de contacto",
+    "revokeHint": "Al guardarlo con la casilla marcada, el lead sale de las listas de contacto.",
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "suggestion": "Acción sugerida",
+    "summary": "Actividad en la demo",
+    "summaryOrders": "Pedidos creados",
+    "summaryTries": "Entradas a la demo",
+    "summaryActions": "Tipos de acción",
+    "summaryLastEvent": "Última actividad",
+    "timeline": "Línea de tiempo",
+    "notes": "Notas",
+    "notePlaceholder": "Escribe una nota…",
+    "addNote": "Agregar nota",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar este lead?",
+    "summaryWhatsApp": "Escribió por WhatsApp",
+    "summaryInbox": "Se respondió en el inbox"
+  },
+  "events": {
+    "DEMO_STARTED": "Entró a la demo",
+    "ORDER_CREATED": "Creó un pedido",
+    "ORDER_STATUS_CHANGED": "Cambió un pedido a {to}",
+    "INBOX_TAKEOVER": "Tomó su conversación",
+    "INBOX_REPLY_SENT": "Se respondió en el inbox",
+    "WHATSAPP_RECEIVED": "Escribió por WhatsApp"
+  },
+  "suggestions": {
+    "CLOSE_ONBOARD": "Cerrar lo comercial y pasar a incorporación.",
+    "REVIEW_LOSS": "Documentar por qué no continuó.",
+    "NO_CONTACT": "No contactar: revocó la autorización.",
+    "DO_PLANNED_ACTION": "Hacer la acción planeada que venció.",
+    "INVITE_CONTINUE": "Invitar a seguir probando la demo.",
+    "NUDGE_FIRST_ORDER": "Animar a crear su primer pedido de prueba.",
+    "PERSONAL_OUTREACH": "Contacto personalizado según lo que probó.",
+    "ASK_BLOCKER": "Preguntar qué le faltó para decidir.",
+    "MONITOR": "Solo observar por ahora."
+  },
+  "toasts": {
+    "updated": "Lead actualizado",
+    "updateError": "No se pudo actualizar el lead",
+    "noteAdded": "Nota agregada",
+    "noteError": "No se pudo agregar la nota",
+    "deleted": "Lead eliminado",
+    "deleteError": "No se pudo eliminar el lead"
+  }
 }
