@@ -22,10 +22,10 @@ import { routing } from "./i18n/routing";
 import { locales } from "./i18n/config";
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password", "/legal"];
+const PUBLIC_ROUTES = ["/login", "/register", "/demo", "/forgot-password", "/reset-password", "/legal"];
 
 // Routes that should redirect to dashboard if already authenticated
-const AUTH_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/login", "/register", "/demo"];
 
 // Create i18n middleware
 const intlMiddleware = createMiddleware(routing);
