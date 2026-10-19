@@ -46,6 +46,9 @@ export function formatDate(
  * Format currency. Defaults to COP (the app's default) but accepts any
  * ISO 4217 code — e.g. the plan catalog's configurable currency.
  */
+/** Color hexadecimal "#RRGGBB" o "#RGB". */
+export const HEX_COLOR = /^#([0-9a-f]{6}|[0-9a-f]{3})$/i;
+
 export function formatCurrency(amount: number, currency: string = "COP"): string {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
