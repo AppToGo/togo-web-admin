@@ -15,6 +15,7 @@ import {
   useIsSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
+import { DemoSidebarCard } from "@/features/auth/components/DemoSidebarCard";
 import { useLocaleStore } from "@/stores/localeStore";
 import { usePosPageStore, type PosMenuEntry } from "@/stores/pos-menu.store";
 import {
@@ -511,6 +512,9 @@ export function Sidebar({
             />
           </button>
         </div>
+
+        {/* Modo demo: invitación a crear cuenta (reemplaza el banner superior) */}
+        <DemoSidebarCard isCollapsed={isCollapsed} />
 
         {/* Bottom section - Menú de usuario (idioma + cerrar sesión) */}
         <div
