@@ -30,6 +30,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     "admin-catalog": (await import(`./messages/${validLocale}/admin-catalog.json`)).default,
     "admin-businesses": (await import(`./messages/${validLocale}/admin-businesses.json`)).default,
     "admin-industry-categories": (await import(`./messages/${validLocale}/admin-industry-categories.json`)).default,
+    "admin-demo-leads": (await import(`./messages/${validLocale}/admin-demo-leads.json`)).default,
     settings: (await import(`./messages/${validLocale}/settings.json`)).default,
     navigation: (await import(`./messages/${validLocale}/navigation.json`)).default,
     validation: (await import(`./messages/${validLocale}/validation.json`)).default,

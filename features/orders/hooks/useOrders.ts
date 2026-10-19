@@ -38,6 +38,7 @@ import { useStatusLabels } from "../utils/order-status.utils";
 import { orderNumberValue } from "../utils/order-number.utils";
 import { LIVE_STATUSES } from "../constants/order-statuses";
 import { METRICS_KEYS } from "./useOrderMetrics";
+import { completeDemoGuideStep } from "@/features/auth/stores/demo-guide.store";
 import {
   ORDERS_KEYS,
   type LiveOrdersFilters,
@@ -337,6 +338,7 @@ export function useUpdateOrderStatus() {
     },
 
     onSuccess: (_data, { data }) => {
+      completeDemoGuideStep("status");
       const statusLabel = statusLabels[data.status];
       toast.success(t("statusUpdated", { status: statusLabel }));
     },
