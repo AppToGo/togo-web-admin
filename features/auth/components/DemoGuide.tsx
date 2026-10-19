@@ -15,6 +15,7 @@ import {
   type DemoGuideStep,
 } from "@/features/auth/stores/demo-guide.store";
 import { AUTH_SESSION_KEY } from "@/features/orders/hooks/useUserBranches";
+import { useTrialDays } from "@/features/subscription/hooks/usePlanCatalog";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,6 +32,7 @@ export function DemoGuide() {
   const pathname = usePathname();
   const user = useCurrentUser();
   const isDemo = user?.isDemo === true;
+  const trialDays = useTrialDays(isDemo);
   const logout = useLogout({ redirectTo: "/register", silent: true });
 
   const done = useDemoGuideStore((s) => (user ? s.progress[user.userId] : undefined));
@@ -67,7 +69,7 @@ export function DemoGuide() {
         onClick={() => setMinimized(false)}
         className={cn(
           position,
-          "inline-flex items-center gap-2.5 h-12 pl-2 pr-4 rounded-full glass-strong border border-white shadow-card-lg text-sm font-semibold text-slate-900"
+          "inline-flex items-center gap-2.5 h-12 pl-2 pr-4 rounded-full glass-strong border border-white shadow-card-lg text-sm font-semibold text-slate-900 cursor-pointer"
         )}
       >
         <span className="w-8 h-8 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">
@@ -84,7 +86,7 @@ export function DemoGuide() {
       onClick={() => setMinimized(true)}
       aria-label={t("minimize")}
       className={cn(
-        "w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors",
+        "w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors cursor-pointer",
         dark
           ? "bg-white/15 text-white hover:bg-white/25"
           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -105,7 +107,7 @@ export function DemoGuide() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => complete(user.userId, "whatsapp")}
-            className="inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-emerald-500 text-sm font-semibold text-emerald-950 hover:bg-emerald-400 transition-colors"
+            className="inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-emerald-500 text-sm font-semibold text-emerald-950 hover:bg-emerald-400 transition-colors cursor-pointer"
           >
             <MessageCircle className="w-4 h-4" />
             {t("steps.whatsappCta")}
@@ -127,7 +129,7 @@ export function DemoGuide() {
           <button
             type="button"
             onClick={() => complete(user.userId, "arrived")}
-            className="h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
+            className="h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors cursor-pointer"
           >
             {t("steps.arrivedCta")}
           </button>
@@ -147,14 +149,14 @@ export function DemoGuide() {
                 complete(user.userId, "status");
                 window.setTimeout(() => setMinimized(true), 400);
               }}
-              className="h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
+              className="h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors cursor-pointer"
             >
               {t("steps.statusConfirmCta")}
             </button>
           ) : (
             <Link
               href="/dashboard/orders"
-              className="inline-flex items-center justify-center h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors"
+              className="inline-flex items-center justify-center h-10 rounded-xl bg-white border border-indigo-200 text-[13.5px] font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors cursor-pointer"
             >
               {t("steps.statusCta")}
             </Link>
@@ -238,11 +240,13 @@ export function DemoGuide() {
             type="button"
             onClick={() => logout.mutate()}
             disabled={logout.isPending}
-            className="h-11 rounded-xl bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+            className="h-11 rounded-xl bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {logout.isPending ? tb("leaving") : tb("createAccount")}
           </button>
-          <span className="text-center text-xs text-slate-500">{tb("trialNote")}</span>
+          <span className="text-center text-xs text-slate-500">
+            {tb("trialNote", { days: trialDays })}
+          </span>
         </div>
       )}
     </aside>

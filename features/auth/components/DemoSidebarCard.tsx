@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
+import { useTrialDays } from "@/features/subscription/hooks/usePlanCatalog";
 import { cn } from "@/lib/utils";
 
 interface DemoSidebarCardProps {
@@ -20,9 +21,11 @@ interface DemoSidebarCardProps {
 export function DemoSidebarCard({ isCollapsed }: DemoSidebarCardProps) {
   const t = useTranslations("auth.login.demo.banner");
   const user = useCurrentUser();
+  const isDemo = user?.isDemo === true;
+  const trialDays = useTrialDays(isDemo);
   const logout = useLogout({ redirectTo: "/register", silent: true });
 
-  if (user?.isDemo !== true) return null;
+  if (!isDemo) return null;
 
   if (isCollapsed) {
     return (
@@ -33,7 +36,7 @@ export function DemoSidebarCard({ isCollapsed }: DemoSidebarCardProps) {
           disabled={logout.isPending}
           title={t("createAccount")}
           aria-label={t("createAccount")}
-          className="w-full h-11 rounded-card bg-gradient-to-br from-indigo-900 via-indigo-600 to-violet-600 text-white flex items-center justify-center disabled:opacity-60"
+          className="w-full h-11 rounded-card bg-gradient-to-br from-indigo-900 via-indigo-600 to-violet-600 text-white flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Sparkles className="w-5 h-5" />
         </button>
@@ -53,14 +56,14 @@ export function DemoSidebarCard({ isCollapsed }: DemoSidebarCardProps) {
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
           className={cn(
-            "h-11 rounded-xl bg-white text-sm font-semibold text-indigo-900 transition-colors",
-            "hover:bg-indigo-50 disabled:opacity-60"
+            "h-11 rounded-xl bg-white text-sm font-semibold text-indigo-900 transition-colors cursor-pointer",
+            "hover:bg-indigo-50 disabled:opacity-60 disabled:cursor-not-allowed"
           )}
         >
           {logout.isPending ? t("leaving") : t("createAccount")}
         </button>
         <span className="text-center text-xs text-indigo-100">
-          {t("trialNote")}
+          {t("trialNote", { days: trialDays })}
         </span>
       </div>
     </div>
