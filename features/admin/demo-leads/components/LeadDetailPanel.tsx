@@ -142,7 +142,7 @@ export function LeadDetailPanel({
   return (
     <>
       <Drawer open={!!leadId} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[92vh]">
+        <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>
               {detail
@@ -150,7 +150,7 @@ export function LeadDetailPanel({
                 : "…"}
             </DrawerTitle>
           </DrawerHeader>
-          <div className="overflow-y-auto px-4 pb-6 space-y-6">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
             {isLoading ? (
               <p className="text-sm text-slate-500">…</p>
             ) : isError || !detail ? (
