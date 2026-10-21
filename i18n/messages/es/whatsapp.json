@@ -95,5 +95,36 @@
     "cloudApi": "Solo API",
     "disconnected": "Desvinculado: reconecta desde Meta",
     "syncPending": "Importando contactos/historial…"
+  },
+  "attention": {
+    "title": "Modo de atención",
+    "modes": {
+      "BOT_ONLY": {
+        "label": "Solo bot",
+        "hint": "El bot responde todo, salvo handoff."
+      },
+      "HYBRID": {
+        "label": "Híbrido",
+        "hint": "El bot responde salvo fuera de horario u operador ocupado."
+      },
+      "ATTENTION_MANUAL": {
+        "label": "Solo humano",
+        "hint": "El bot no responde: deja borradores para el equipo."
+      }
+    },
+    "minutesLabel": "Liberar la conversación si el humano no responde (minutos)",
+    "minutesError": "Ingresa un valor entre 1 y 480.",
+    "scheduleLabel": "Horario de atención humana",
+    "scheduleHint": "Día sin marcar = cerrado (el bot se pausa). Hora del negocio.",
+    "save": "Guardar atención",
+    "days": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb"
+    }
   }
 }

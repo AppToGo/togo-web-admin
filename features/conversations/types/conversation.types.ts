@@ -30,6 +30,7 @@ export type ConversationEventType =
   | "HANDOFF_WAIT_EXPIRED"
   | "BOT_PAUSED"
   | "BOT_RESUMED"
+  | "BOT_DRAFT"
   | "SESSION_CLOSED"
   | "SESSION_REOPENED"
   | "NOTE_ADDED"

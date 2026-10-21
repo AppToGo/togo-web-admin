@@ -35,6 +35,7 @@ import { AlertCircle } from "lucide-react";
 import {
   useWhatsAppAccounts,
   useWhatsAppRoutings,
+  WhatsAppAttentionCard,
   WhatsAppConnectDialog,
   WhatsAppUsageCard,
 } from "@/features/whatsapp";
@@ -549,6 +550,12 @@ export default function BusinessSettingsPage() {
               <div className="mt-3">
                 <WhatsAppUsageCard />
               </div>
+              {/* Modo de atención en coexistencia (F2) */}
+              {business && (
+                <div className="mt-3">
+                  <WhatsAppAttentionCard business={business} />
+                </div>
+              )}
             </section>
 
             {/* Guardar: barra fija abajo mientras haya cambios */}

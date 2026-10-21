@@ -95,5 +95,36 @@
     "cloudApi": "API only",
     "disconnected": "Unlinked: reconnect from Meta",
     "syncPending": "Importing contacts/history…"
+  },
+  "attention": {
+    "title": "Attention mode",
+    "modes": {
+      "BOT_ONLY": {
+        "label": "Bot only",
+        "hint": "The bot answers everything, except handoff."
+      },
+      "HYBRID": {
+        "label": "Hybrid",
+        "hint": "The bot answers unless out of hours or operator busy."
+      },
+      "ATTENTION_MANUAL": {
+        "label": "Human only",
+        "hint": "The bot never replies: it leaves drafts for the team."
+      }
+    },
+    "minutesLabel": "Release the conversation if the human does not reply (minutes)",
+    "minutesError": "Enter a value between 1 and 480.",
+    "scheduleLabel": "Human attention schedule",
+    "scheduleHint": "Unchecked day = closed (the bot pauses). Business time.",
+    "save": "Save attention",
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    }
   }
 }
