@@ -5,8 +5,9 @@
  * - Número exclusivo (`dedicatedBranchIds`): la pausa y el operador ocupado
  *   se evalúan solo en esta sede; sin horario propio rige su horario
  *   comercial.
- * - Número compartido: rige la atención del negocio y la sede no tiene nada
- *   que configurar (la API ignora su config), así que solo se explica.
+ * - Número propio "solo API" o número compartido: rige la atención del
+ *   negocio y la sede no tiene nada que configurar (la API ignora su
+ *   config), así que solo se explica por qué.
  */
 
 "use client";
@@ -51,9 +52,12 @@ const MODE_LABEL: Record<Mode, string> = {
 export function WhatsAppBranchAttentionCard({
   branch,
   dedicated,
+  ownNumber = false,
 }: {
   branch: Branch;
   dedicated: boolean;
+  /** Tiene número propio aunque no sea de coexistencia. */
+  ownNumber?: boolean;
 }) {
   const t = useTranslations("whatsapp");
   const updateBranch = useUpdateBranch();
@@ -141,7 +145,9 @@ export function WhatsAppBranchAttentionCard({
           {t("branchAttention.title")}
         </p>
         <p className="text-xs text-slate-500">
-          {t("branchAttention.sharedHint")}
+          {ownNumber
+            ? t("branchAttention.cloudOnlyHint")
+            : t("branchAttention.sharedHint")}
         </p>
       </div>
     );

@@ -35,3 +35,21 @@ export function dedicatedBranchIds(
   }
   return result;
 }
+
+/**
+ * Sedes con número propio, sin importar cómo está conectado: routing
+ * DIRECT_TO_BRANCH activo. Solo sirve para explicar en el admin por qué una
+ * sede con número "solo API" no tiene atención propia (necesita
+ * coexistencia, ver `dedicatedBranchIds`).
+ */
+export function branchesWithOwnNumber(
+  routings: WhatsAppRouting[] | undefined
+): Set<string> {
+  return new Set(
+    (routings ?? [])
+      .filter(
+        (r) => r.isActive && r.strategy === "DIRECT_TO_BRANCH" && r.branchId
+      )
+      .map((r) => r.branchId as string)
+  );
+}

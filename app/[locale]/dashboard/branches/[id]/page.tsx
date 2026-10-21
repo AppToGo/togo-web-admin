@@ -36,6 +36,7 @@ import { TablesManager } from "@/features/tables";
 import { Can } from "@/components/auth/Can";
 import {
   WhatsAppBranchAttentionCard,
+  branchesWithOwnNumber,
   dedicatedBranchIds,
   useWhatsAppAccounts,
   useWhatsAppRoutings,
@@ -76,6 +77,7 @@ export default function EditBranchPage() {
     whatsappRoutings,
     whatsappAccounts
   ).has(id);
+  const hasOwnNumber = branchesWithOwnNumber(whatsappRoutings).has(id);
 
   const handleSubmit = (data: UpdateBranchRequest) => {
     updateBranch.mutate(
@@ -231,6 +233,7 @@ export default function EditBranchPage() {
               <WhatsAppBranchAttentionCard
                 branch={branch}
                 dedicated={hasDedicatedNumber}
+                ownNumber={hasOwnNumber}
               />
             </div>
 

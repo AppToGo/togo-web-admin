@@ -1,7 +1,8 @@
 /**
  * WhatsAppUsageCard
  * Consumo de mensajería Meta del mes: cupo gratis vs cobrado, con alerta
- * cuando se agota y enlace al Billing Hub. Fuente: Analytics de Meta.
+ * cuando se agota y enlace al Billing Hub. Conteo en vivo (webhooks de
+ * estado) conciliado cada hora con Analytics de Meta.
  */
 
 "use client";
@@ -77,6 +78,16 @@ export function WhatsAppUsageCard() {
                 billed: current.billableMessages,
                 percent: current.percent,
               })}
+            </p>
+            <p className="text-xs text-slate-400">
+              {current.syncedAt
+                ? t("usageChart.syncedAt", {
+                    time: new Date(current.syncedAt).toLocaleTimeString(
+                      undefined,
+                      { hour: "2-digit", minute: "2-digit" }
+                    ),
+                  })
+                : t("usageChart.notSynced")}
             </p>
             {current.costAvailable &&
               current.estimatedCost != null &&

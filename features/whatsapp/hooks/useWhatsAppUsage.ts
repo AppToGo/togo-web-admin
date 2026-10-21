@@ -33,5 +33,8 @@ export function useWhatsAppUsage() {
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: isEnabled,
+    // El consumo es en vivo (webhooks de estado de Meta): se refresca solo
+    // mientras la pantalla está abierta.
+    refetchInterval: 60_000,
   });
 }

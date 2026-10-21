@@ -92,7 +92,7 @@ export interface UpdateWhatsAppRoutingRequest {
   priority?: number;
 }
 
-/** Mes de consumo de una cuenta (fuente: Analytics de Meta). */
+/** Mes de consumo de una cuenta. */
 export interface WhatsAppUsageMonth {
   yearMonth: string;
   freeMessages: number;
@@ -105,12 +105,25 @@ export interface WhatsAppUsageMonth {
   syncedAt?: string | null;
 }
 
+/** Un día del mes en curso (hora de Colombia), conteo en vivo. */
+export interface WhatsAppUsageDay {
+  date: string;
+  free: number;
+  billed: number;
+}
+
 /** Consumo de una cuenta de WhatsApp del negocio. */
 export interface WhatsAppAccountUsage {
   accountId: string;
   phoneNumber: string;
   status: string;
+  /**
+   * Mes en curso: el mayor entre el conteo en vivo y Analytics de Meta.
+   * `syncedAt` = última confirmación con Meta (se concilia cada hora).
+   */
   current: WhatsAppUsageMonth;
+  /** Día por día del mes en curso hasta hoy. */
+  daily: WhatsAppUsageDay[];
   history: WhatsAppUsageMonth[];
 }
 

@@ -149,6 +149,22 @@
     "ownSchedule": "Branch's own schedule",
     "inheritScheduleDedicated": "Without its own schedule, the branch commercial hours apply.",
     "dedicatedOnlyHint": "Branches with their own number can have their own attention settings on each branch page.",
-    "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit."
+    "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit.",
+    "cloudOnlyHint": "This branch has its own number, but it's connected through the API only (without the WhatsApp Business app on the phone). Per-branch attention requires coexistence; until then the business attention settings apply."
+  },
+  "usageChart": {
+    "title": "WhatsApp messages",
+    "subtitle": "This month · free and billed per day",
+    "free": "Free used",
+    "billed": "Billed",
+    "quotaLine": "Free quota",
+    "tooltipFree": "Free: {count}",
+    "tooltipBilled": "Billed: {count}",
+    "tooltipAccumulated": "Free so far: {count} / {quota}",
+    "legendFree": "Free",
+    "legendBilled": "Billed",
+    "legendAccumulated": "Month to date",
+    "syncedAt": "Live · confirmed with Meta at {time}",
+    "notSynced": "Live · confirmed with Meta every hour"
   }
 }

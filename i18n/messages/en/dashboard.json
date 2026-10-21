@@ -9,7 +9,8 @@
     "kpis": "Key metrics",
     "detail": "Detailed metrics",
     "analysis": "Analysis",
-    "aiUsage": "AI usage"
+    "aiUsage": "AI usage",
+    "whatsappUsage": "WhatsApp usage"
   },
   "periods": {
     "today": "Today",
