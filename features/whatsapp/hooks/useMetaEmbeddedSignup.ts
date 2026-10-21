@@ -117,6 +117,10 @@ export function useMetaEmbeddedSignup() {
     wabaId?: string;
     phoneNumberId?: string;
     generation?: number;
+    // Coexistencia según el evento que Meta mandó, no según el modo pedido:
+    // en el popup el negocio puede terminar registrando un número nuevo
+    // (FINISH a secas) aunque se haya lanzado el flujo de coexistencia.
+    isCoexistence?: boolean;
     // CANCEL/ERROR del propio flujo de Embedded Signup (el negocio cerró el
     // diálogo, o Meta reportó un fallo en algún paso) — distinto de que
     // FB.login nunca devuelva un `code` (eso ya se maneja aparte, ver
@@ -148,6 +152,8 @@ export function useMetaEmbeddedSignup() {
             wabaId: data.data?.waba_id,
             phoneNumberId: data.data?.phone_number_id,
             generation: generationRef.current,
+            isCoexistence:
+              data.event === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING",
           };
         } else if (data?.event === "CANCEL" || data?.event === "ERROR") {
           sessionInfoRef.current = {
@@ -170,8 +176,7 @@ export function useMetaEmbeddedSignup() {
     (
       code: string,
       metaUserId: string | undefined,
-      generation: number,
-      isCoexistence: boolean
+      generation: number
     ): Promise<EmbeddedSignupResult> => {
       return new Promise((resolve, reject) => {
         const start = Date.now();
@@ -182,6 +187,7 @@ export function useMetaEmbeddedSignup() {
             generation: msgGeneration,
             outcomeEvent,
             currentStep,
+            isCoexistence = false,
           } = sessionInfoRef.current;
           if (msgGeneration !== generation) {
             if (Date.now() - start > SESSION_INFO_TIMEOUT_MS) {
@@ -229,7 +235,6 @@ export function useMetaEmbeddedSignup() {
     setIsLoading(true);
     const myGeneration = ++generationRef.current;
     sessionInfoRef.current = {};
-    const isCoexistence = mode === "coexistence";
 
     const { appId, configId, graphVersion } = APP_CONFIG.meta;
 
@@ -273,7 +278,7 @@ export function useMetaEmbeddedSignup() {
         );
       });
 
-      return waitForSessionInfo(code, metaUserId, myGeneration, isCoexistence);
+      return waitForSessionInfo(code, metaUserId, myGeneration);
     };
 
     return run()

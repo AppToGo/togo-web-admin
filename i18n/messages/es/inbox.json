@@ -135,7 +135,11 @@
     "RELAY_AMBIGUOUS": "El operador tiene más de una conversación activa por WhatsApp directo",
     "RELAY_WINDOW_EXPIRED": "Se venció la ventana de WhatsApp para responder",
     "OUTBOUND_BLOCKED_WINDOW": "No se pudo enviar: la ventana de WhatsApp ya venció",
-    "OWNER_PHONE_REPLY": "El dueño respondió desde su WhatsApp"
+    "OWNER_PHONE_REPLY": "El dueño respondió desde su WhatsApp",
+    "BOT_DRAFT": "Borrador del bot (no enviado)",
+    "BOT_DRAFT_REASON_MANUAL_MODE": "modo solo humano",
+    "BOT_DRAFT_REASON_OUT_OF_HOURS": "fuera de horario",
+    "BOT_DRAFT_REASON_OPERATOR_BUSY": "operador ocupado"
   },
   "notifications": {
     "humanRequested": "Un cliente pidió hablar con un asesor",

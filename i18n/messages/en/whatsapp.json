@@ -133,6 +133,10 @@
       "thu": "Thu",
       "fri": "Fri",
       "sat": "Sat"
-    }
+    },
+    "rangeError": "Check the hours: closing must be after opening. If a shift goes past midnight, split it across two days.",
+    "scheduleEmptyError": "In hybrid mode, check at least one day: with no days, the bot never pauses for hours.",
+    "saveSuccess": "Attention mode saved",
+    "saveError": "Couldn't save the attention mode"
   }
 }

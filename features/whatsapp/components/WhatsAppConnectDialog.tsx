@@ -36,6 +36,7 @@ import {
   useMetaEmbeddedSignup,
 } from "../hooks";
 import type { WhatsAppAccount, WhatsAppRouting } from "../types";
+import { BILLING_HUB_URL } from "../constants";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
@@ -259,8 +260,13 @@ export function WhatsAppConnectDialog({
       : t("accounts.createTitleBusiness");
 
   // En modo CREATE: SUPER_ADMIN puede elegir método; el resto solo ve Embedded Signup.
+  // El manual solo existe bajo "número nuevo": si se vuelve a coexistencia,
+  // el botón no debe ejecutar el alta manual con los campos ocultos.
   const isManualCreate =
-    !isEditMode && isSuperAdmin && connectionMethod === "manual";
+    !isEditMode &&
+    isSuperAdmin &&
+    signupMode === "cloud_api" &&
+    connectionMethod === "manual";
 
   const primaryAction =
     isEditMode || isManualCreate ? handleSubmit : handleEmbeddedConnect;
@@ -501,7 +507,10 @@ export function WhatsAppConnectDialog({
                   name="wa-signup-mode"
                   className="mt-0.5 h-4 w-4 accent-green-600"
                   checked={signupMode === "coexistence"}
-                  onChange={() => setSignupMode("coexistence")}
+                  onChange={() => {
+                    setSignupMode("coexistence");
+                    setConnectionMethod("embedded");
+                  }}
                 />
                 <span>
                   <span className="block text-sm font-medium text-slate-900">
@@ -573,7 +582,7 @@ export function WhatsAppConnectDialog({
                 <AlertDescription className="text-amber-700 text-xs">
                   {t("accounts.billing.hint")}{" "}
                   <a
-                    href="https://business.facebook.com/latest/billing_hub/"
+                    href={BILLING_HUB_URL}
                     target="_blank"
                     rel="noreferrer"
                     className="font-medium underline"

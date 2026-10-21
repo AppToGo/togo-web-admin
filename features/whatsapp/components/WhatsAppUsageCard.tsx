@@ -10,8 +10,7 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useWhatsAppUsage } from "../hooks/useWhatsAppUsage";
-
-const BILLING_HUB_URL = "https://business.facebook.com/latest/billing_hub/";
+import { BILLING_HUB_URL } from "../constants";
 
 function barColor(level: string): string {
   if (level === "EXHAUSTED") return "bg-red-500";

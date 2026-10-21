@@ -133,6 +133,10 @@
       "thu": "Jue",
       "fri": "Vie",
       "sat": "Sáb"
-    }
+    },
+    "rangeError": "Revisa las horas: el cierre debe ser después de la apertura. Si el turno pasa la medianoche, divídelo en dos días.",
+    "scheduleEmptyError": "En modo híbrido marca al menos un día: sin días, el bot nunca se pausa por horario.",
+    "saveSuccess": "Modo de atención guardado",
+    "saveError": "No se pudo guardar el modo de atención"
   }
 }

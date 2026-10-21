@@ -23,9 +23,12 @@ export function useWhatsAppUsage() {
   const hasSelectedBusiness = !!selectedBusinessId;
 
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
+  const businessId = isSuperAdmin
+    ? selectedBusinessId
+    : (user?.businessId ?? null);
 
   return useQuery<WhatsAppUsageSummary, Error>({
-    queryKey: [...WHATSAPP_ACCOUNTS_KEYS.lists(), "usage"],
+    queryKey: WHATSAPP_ACCOUNTS_KEYS.usage(businessId),
     queryFn: getWhatsAppUsage,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,

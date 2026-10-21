@@ -32,14 +32,14 @@ export function ConversationEventRow({ event }: ConversationEventRowProps) {
       event.payload && typeof event.payload === "object"
         ? (event.payload as { text?: string; reason?: string })
         : null;
-    let reasonLabel: string | null = null;
-    if (draft?.reason) {
-      try {
-        reasonLabel = t(`events.BOT_DRAFT_REASON_${draft.reason}`);
-      } catch {
-        reasonLabel = draft.reason;
-      }
-    }
+    // next-intl no lanza ante una clave faltante (devuelve la ruta): un
+    // motivo nuevo del backend sin traducir se muestra tal cual.
+    const reasonKey = `events.BOT_DRAFT_REASON_${draft?.reason}`;
+    const reasonLabel = draft?.reason
+      ? t.has(reasonKey)
+        ? t(reasonKey)
+        : draft.reason
+      : null;
     return (
       <div className="flex justify-start">
         <div className="max-w-[90%] rounded-2xl border border-dashed border-violet-300 bg-violet-50 px-3 py-2 text-xs text-slate-700">
