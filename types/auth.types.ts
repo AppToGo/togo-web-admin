@@ -257,10 +257,21 @@ export interface DemoLeadDetailLead extends DemoLead {
   lostAt?: string | null;
 }
 
+/** Acción de seguimiento de un lead (varias por lead). */
+export interface DemoLeadAction {
+  id: string;
+  title: string;
+  dueAt: string | null;
+  doneAt: string | null;
+  createdByName: string | null;
+  createdAt: string;
+}
+
 export interface DemoLeadDetail {
   lead: DemoLeadDetailLead;
   events: DemoLeadActivityEvent[];
   notes: DemoLeadNote[];
+  actions: DemoLeadAction[];
   summary: {
     demoCount: number;
     orderCount: number;

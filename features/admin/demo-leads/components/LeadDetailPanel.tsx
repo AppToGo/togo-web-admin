@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Lightbulb, MessageCircle, Trash2 } from "lucide-react";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
@@ -58,7 +58,6 @@ import {
   DEMO_LEAD_STAGES,
   formatDateTime,
   formatPhone,
-  parseOptionalIsoDateTime,
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
@@ -105,8 +104,6 @@ export function LeadDetailPanel({
           : null,
         planInterest: (form.get("planInterest") as string) || null,
         mainNeed: (form.get("mainNeed") as string) || null,
-        nextAction: (form.get("nextAction") as string) || null,
-        nextActionAt: parseOptionalIsoDateTime(form.get("nextActionAt")),
         lostReason:
           stage === "LOST" ? (form.get("lostReason") as string) || null : null,
         // Marcada: revoca con sello de ahora. Sin marcar: no toca el sello.
@@ -307,6 +304,13 @@ export function LeadDetailPanel({
                 />
 
                 {tab === "profile" && (
+                  <LeadActionsSection
+                    leadId={detail.lead.id}
+                    actions={detail.actions ?? []}
+                  />
+                )}
+
+                {tab === "profile" && (
                   <section>
                     <form
                       key={`${detail.lead.id}-${detail.lead.stage}-${detail.lead.priority}-${detail.lead.revoked}`}
@@ -383,20 +387,6 @@ export function LeadDetailPanel({
                         defaultValue={detail.lead.mainNeed ?? ""}
                         maxLength={255}
                       />
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          label={t("detail.nextAction")}
-                          name="nextAction"
-                          defaultValue={detail.lead.nextAction ?? ""}
-                          maxLength={255}
-                        />
-                        <DateTimePicker
-                          id="lead-detail-next-action-at"
-                          label={t("detail.nextActionAt")}
-                          name="nextActionAt"
-                          defaultValue={detail.lead.nextActionAt}
-                        />
-                      </div>
                       <Input
                         label={t("detail.lostReason")}
                         name="lostReason"

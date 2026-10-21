@@ -104,7 +104,8 @@
     "deleted": "Lead eliminado",
     "deleteError": "No se pudo eliminar el lead",
     "created": "Posible cliente creado",
-    "createError": "No se pudo crear el posible cliente"
+    "createError": "No se pudo crear el posible cliente",
+    "actionError": "No se pudo actualizar la acción"
   },
   "loadError": "No se pudieron cargar los posibles clientes.",
   "retry": "Reintentar",
@@ -142,5 +143,17 @@
     "duplicateHint": "Abre su ficha para seguir el proceso ahí.",
     "openExisting": "Ver ficha",
     "namePlaceholder": "Si no lo sabes, lo completa la demo"
+  },
+  "followUp": {
+    "title": "Acciones de seguimiento",
+    "pendingCount": "{count, plural, =0 {Todo al día} one {# pendiente} other {# pendientes}}",
+    "empty": "Sin acciones todavía. Agrega la próxima abajo.",
+    "markDone": "Marcar como resuelta",
+    "markPending": "Marcar como pendiente",
+    "doneAt": "Resuelta {date}",
+    "overdue": "Venció: {date}",
+    "delete": "Eliminar acción",
+    "placeholder": "Llamar, enviar propuesta…",
+    "add": "Agregar acción"
   }
 }

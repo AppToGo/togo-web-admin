@@ -11,6 +11,7 @@ import type {
   DemoLeadPipelineEntry,
   UpdateDemoLeadRequest,
   CreateDemoLeadRequest,
+  DemoLeadAction,
 } from "@/types/auth.types";
 
 /**
@@ -51,6 +52,38 @@ export async function getDemoLeadDetail(id: string): Promise<DemoLeadDetail> {
     `/admin/demo-leads/${id}`
   );
   return response.data;
+}
+
+/** Agregar una acción de seguimiento al lead. */
+export async function addDemoLeadAction(
+  id: string,
+  data: { title: string; dueAt?: string }
+): Promise<DemoLeadAction> {
+  const response = await apiClient.post<DemoLeadAction>(
+    `/admin/demo-leads/${id}/actions`,
+    data
+  );
+  return response.data;
+}
+
+/** Marcar una acción como resuelta (o pendiente otra vez). */
+export async function setDemoLeadActionDone(
+  id: string,
+  actionId: string,
+  done: boolean
+): Promise<DemoLeadAction> {
+  const response = await apiClient.patch<DemoLeadAction>(
+    `/admin/demo-leads/${id}/actions/${actionId}`,
+    { done }
+  );
+  return response.data;
+}
+
+export async function deleteDemoLeadAction(
+  id: string,
+  actionId: string
+): Promise<void> {
+  await apiClient.delete(`/admin/demo-leads/${id}/actions/${actionId}`);
 }
 
 /**

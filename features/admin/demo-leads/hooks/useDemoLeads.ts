@@ -11,6 +11,9 @@ import {
   getDemoLeadDetail,
   createDemoLead,
   updateDemoLead,
+  addDemoLeadAction,
+  setDemoLeadActionDone,
+  deleteDemoLeadAction,
   addDemoLeadNote,
   deleteDemoLead,
 } from "../services/demo-leads.service";
@@ -99,6 +102,41 @@ export function useUpdateDemoLead() {
       toast.error(extractErrorMessage(error, t("toasts.updateError")));
     },
   });
+}
+
+/**
+ * Acciones de seguimiento de un lead: agregar, resolver y eliminar. Cada
+ * cambio recalcula la próxima acción del lead, así que se invalida también
+ * el listado (la tarjeta del tablero la muestra).
+ */
+export function useDemoLeadActions(leadId: string) {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
+  // Devuelve la promesa: la mutación sigue pendiente hasta tener los datos
+  // nuevos, así la casilla no vuelve atrás un instante.
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+  const onError = (error: unknown) =>
+    toast.error(extractErrorMessage(error, t("toasts.actionError")));
+
+  const add = useMutation({
+    mutationFn: (data: { title: string; dueAt?: string }) =>
+      addDemoLeadAction(leadId, data),
+    onSuccess: refresh,
+    onError,
+  });
+  const setDone = useMutation({
+    mutationFn: ({ actionId, done }: { actionId: string; done: boolean }) =>
+      setDemoLeadActionDone(leadId, actionId, done),
+    onSuccess: refresh,
+    onError,
+  });
+  const remove = useMutation({
+    mutationFn: (actionId: string) => deleteDemoLeadAction(leadId, actionId),
+    onSuccess: refresh,
+    onError,
+  });
+  return { add, setDone, remove };
 }
 
 /** `leadId` del lead que ya tiene ese número, si la creación dio 409. */

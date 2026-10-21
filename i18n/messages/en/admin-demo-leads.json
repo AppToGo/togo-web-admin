@@ -104,7 +104,8 @@
     "deleted": "Lead deleted",
     "deleteError": "Could not delete the lead",
     "created": "Lead created",
-    "createError": "Could not create the lead"
+    "createError": "Could not create the lead",
+    "actionError": "Could not update the action"
   },
   "loadError": "Could not load potential customers.",
   "retry": "Retry",
@@ -142,5 +143,17 @@
     "duplicateHint": "Open their record to continue there.",
     "openExisting": "Open record",
     "namePlaceholder": "If unknown, the demo fills it in"
+  },
+  "followUp": {
+    "title": "Follow-up actions",
+    "pendingCount": "{count, plural, =0 {All caught up} one {# pending} other {# pending}}",
+    "empty": "No actions yet. Add the next one below.",
+    "markDone": "Mark as done",
+    "markPending": "Mark as pending",
+    "doneAt": "Done {date}",
+    "overdue": "Overdue: {date}",
+    "delete": "Delete action",
+    "placeholder": "Call, send proposal…",
+    "add": "Add action"
   }
 }
