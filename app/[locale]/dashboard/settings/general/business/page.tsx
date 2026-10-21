@@ -123,6 +123,9 @@ export default function BusinessSettingsPage() {
   const autoAssignRouting =
     whatsappRoutings?.find((r) => r.strategy === "AUTO_ASSIGN" && r.isActive) ??
     null;
+  // Algún número en coexistencia: solo entonces aplican los modos de atención.
+  const hasCoexistence =
+    whatsappAccounts?.some((a) => a.connectionType === "COEXISTENCE") ?? false;
   const autoAssignAccount = autoAssignRouting
     ? (whatsappAccounts?.find(
         (a) => a.id === autoAssignRouting.whatsappAccountId
@@ -578,20 +581,30 @@ export default function BusinessSettingsPage() {
               <div className="mt-3">
                 <WhatsAppUsageCard />
               </div>
-              {/* Modo de atención en coexistencia (F2/F5): siempre visible,
-                  porque es lo que heredan las sedes. Las sedes con número
-                  exclusivo pueden sobrescribirlo en su página. */}
-              {business && (
-                <div className="mt-3">
-                  <WhatsAppAttentionCard business={business} />
-                  {dedicatedBranchIds(whatsappRoutings, whatsappAccounts)
-                    .size > 0 && (
-                    <p className="mt-2 text-xs text-slate-500">
-                      {tWa("branchAttention.dedicatedOnlyHint")}
+              {/* Modo de atención (F2/F5): solo tiene sentido con algún
+                  número en coexistencia (el híbrido depende de los ecos del
+                  celular). Se muestra igual si ya hay un modo distinto de
+                  BOT_ONLY guardado, para poder volver atrás. Las sedes con
+                  número exclusivo pueden sobrescribirlo en su página. */}
+              {business &&
+                (hasCoexistence ||
+                (business.attentionMode ?? "BOT_ONLY") !== "BOT_ONLY" ? (
+                  <div className="mt-3">
+                    <WhatsAppAttentionCard business={business} />
+                    {dedicatedBranchIds(whatsappRoutings, whatsappAccounts)
+                      .size > 0 && (
+                      <p className="mt-2 text-xs text-slate-500">
+                        {tWa("branchAttention.dedicatedOnlyHint")}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  (whatsappAccounts?.length ?? 0) > 0 && (
+                    <p className="mt-3 text-xs text-slate-500">
+                      {tWa("attention.coexistenceOnlyHint")}
                     </p>
-                  )}
-                </div>
-              )}
+                  )
+                ))}
             </section>
 
             {/* Guardar: barra fija abajo mientras haya cambios */}
