@@ -46,11 +46,14 @@ interface FacebookLoginResponse {
   status?: string;
 }
 
+export type EmbeddedSignupMode = "coexistence" | "cloud_api";
+
 export interface EmbeddedSignupResult {
   code: string;
   wabaId: string;
   phoneNumberId: string;
   metaUserId?: string;
+  isCoexistence: boolean;
 }
 
 const SDK_SRC = "https://connect.facebook.net/en_US/sdk.js";
@@ -137,7 +140,10 @@ export function useMetaEmbeddedSignup() {
           typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (data?.type !== "WA_EMBEDDED_SIGNUP") return;
 
-        if (data?.event === "FINISH") {
+        if (
+          data?.event === "FINISH" ||
+          data?.event === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING"
+        ) {
           sessionInfoRef.current = {
             wabaId: data.data?.waba_id,
             phoneNumberId: data.data?.phone_number_id,
@@ -164,7 +170,8 @@ export function useMetaEmbeddedSignup() {
     (
       code: string,
       metaUserId: string | undefined,
-      generation: number
+      generation: number,
+      isCoexistence: boolean
     ): Promise<EmbeddedSignupResult> => {
       return new Promise((resolve, reject) => {
         const start = Date.now();
@@ -185,7 +192,7 @@ export function useMetaEmbeddedSignup() {
             return;
           }
           if (wabaId && phoneNumberId) {
-            resolve({ code, wabaId, phoneNumberId, metaUserId });
+            resolve({ code, wabaId, phoneNumberId, metaUserId, isCoexistence });
             return;
           }
           if (outcomeEvent === "CANCEL") {
@@ -214,11 +221,15 @@ export function useMetaEmbeddedSignup() {
     [t]
   );
 
-  const launch = useCallback((): Promise<EmbeddedSignupResult> => {
+  const launch = useCallback(
+    (
+      mode: EmbeddedSignupMode = "cloud_api"
+    ): Promise<EmbeddedSignupResult> => {
     setError(null);
     setIsLoading(true);
     const myGeneration = ++generationRef.current;
     sessionInfoRef.current = {};
+    const isCoexistence = mode === "coexistence";
 
     const { appId, configId, graphVersion } = APP_CONFIG.meta;
 
@@ -252,14 +263,17 @@ export function useMetaEmbeddedSignup() {
             override_default_response_type: true,
             extras: {
               setup: {},
-              featureType: "",
+              featureType:
+                mode === "coexistence"
+                  ? "whatsapp_business_app_onboarding"
+                  : "",
               sessionInfoVersion: "3",
             },
           }
         );
       });
 
-      return waitForSessionInfo(code, metaUserId, myGeneration);
+      return waitForSessionInfo(code, metaUserId, myGeneration, isCoexistence);
     };
 
     return run()
@@ -274,7 +288,9 @@ export function useMetaEmbeddedSignup() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [t, waitForSessionInfo]);
+    },
+    [t, waitForSessionInfo]
+  );
 
   return { launch, isLoading, error };
 }

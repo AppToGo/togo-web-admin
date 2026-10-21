@@ -60,6 +60,14 @@
     "billing": {
       "hint": "So the bot keeps replying after the 1,000 free monthly messages run out, your Meta account needs a card on file.",
       "link": "Open Meta Billing Hub"
+    },
+    "mode": {
+      "title": "Do you want to keep using WhatsApp on your phone?",
+      "coexistenceTitle": "Yes, use my current number (recommended)",
+      "coexistenceHint": "Connect the same number without losing your WhatsApp. Togo handles orders and you reply from your phone whenever you want.",
+      "cloudTitle": "No, use a new number just for Togo",
+      "cloudHint": "The number lives only in the cloud, with no app on the phone.",
+      "coexistenceNote": "You need the WhatsApp Business app updated (v2.24.17+). Connecting unlinks WhatsApp Web and desktop: they must be relinked. Via API there are no groups, calls or live location (in the app, yes)."
     }
   },
   "routing": {
@@ -81,5 +89,11 @@
     "exhaustedHint": "Without a card on file with Meta, the bot will stop replying once the quota runs out.",
     "billingHub": "Meta Billing Hub",
     "botMessagesPerOrder": "Bot average: {count} messages per order this month"
+  },
+  "connection": {
+    "coexistence": "Coexistence",
+    "cloudApi": "API only",
+    "disconnected": "Unlinked: reconnect from Meta",
+    "syncPending": "Importing contacts/history…"
   }
 }

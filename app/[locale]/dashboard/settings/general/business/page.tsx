@@ -497,6 +497,31 @@ export default function BusinessSettingsPage() {
                     {autoAssignAccount.displayName && (
                       <p className="text-xs text-slate-500">{autoAssignAccount.phoneNumber}</p>
                     )}
+                    <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                      <span
+                        className={`rounded-full px-2 py-0.5 font-medium ${
+                          autoAssignAccount.connectionType === "COEXISTENCE"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {autoAssignAccount.connectionType === "COEXISTENCE"
+                          ? tWa("connection.coexistence")
+                          : tWa("connection.cloudApi")}
+                      </span>
+                      {autoAssignAccount.status === "DISCONNECTED" && (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 font-medium text-red-700">
+                          {tWa("connection.disconnected")}
+                        </span>
+                      )}
+                      {autoAssignAccount.connectionType === "COEXISTENCE" &&
+                        (autoAssignAccount.contactsSyncStatus === "PENDING" ||
+                          autoAssignAccount.historySyncStatus === "PENDING") && (
+                          <span className="text-slate-500">
+                            {tWa("connection.syncPending")}
+                          </span>
+                        )}
+                    </p>
                   </div>
                 ) : (
                   <p className="min-w-0 flex-1 text-sm text-slate-500">{tb("whatsapp.notConfigured")}</p>

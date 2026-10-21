@@ -60,6 +60,14 @@
     "billing": {
       "hint": "Para que el bot siga respondiendo al agotar los 1.000 mensajes gratis del mes, tu cuenta de Meta necesita una tarjeta cargada.",
       "link": "Abrir el Billing Hub de Meta"
+    },
+    "mode": {
+      "title": "¿Quieres seguir usando WhatsApp en tu celular?",
+      "coexistenceTitle": "Sí, usar mi número actual (recomendado)",
+      "coexistenceHint": "Conectas el mismo número sin perder tu WhatsApp. Togo atiende los pedidos y respondes desde tu celular cuando quieras.",
+      "cloudTitle": "No, usar un número nuevo solo para Togo",
+      "cloudHint": "El número queda solo en la nube, sin app en el celular.",
+      "coexistenceNote": "Necesitas la app WhatsApp Business actualizada (v2.24.17+). Al conectar se desvinculan WhatsApp Web y escritorio: hay que revincularlos. Por API no hay grupos, llamadas ni ubicación en tiempo real (en la app sí)."
     }
   },
   "routing": {
@@ -81,5 +89,11 @@
     "exhaustedHint": "Sin tarjeta en Meta, el bot dejará de responder al agotar el cupo.",
     "billingHub": "Billing Hub de Meta",
     "botMessagesPerOrder": "Promedio del bot: {count} mensajes por pedido este mes"
+  },
+  "connection": {
+    "coexistence": "Coexistencia",
+    "cloudApi": "Solo API",
+    "disconnected": "Desvinculado: reconecta desde Meta",
+    "syncPending": "Importando contactos/historial…"
   }
 }

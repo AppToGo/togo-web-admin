@@ -11,9 +11,12 @@ export type WhatsAppAccountStatus =
   | "SUSPENDED"
   | "PENDING_SUBSCRIPTION"
   | "TOKEN_INVALID"
-  | "PAYMENT_REQUIRED";
+  | "PAYMENT_REQUIRED"
+  | "DISCONNECTED";
 export type RoutingStrategy =
   "DIRECT_TO_BRANCH" | "AUTO_ASSIGN" | "SHARED_INBOX";
+
+export type WhatsAppConnectionType = "CLOUD_API" | "COEXISTENCE";
 
 export interface WhatsAppAccount {
   id: string;
@@ -23,6 +26,9 @@ export interface WhatsAppAccount {
   phoneNumberId: string;
   displayName?: string;
   status: WhatsAppAccountStatus;
+  connectionType?: WhatsAppConnectionType;
+  contactsSyncStatus?: string;
+  historySyncStatus?: string;
   createdAt: string;
   updatedAt: string;
   // NOTE: accessToken is NEVER returned by the backend for security
@@ -75,6 +81,8 @@ export interface EmbeddedSignupRequest {
   metaUserId?: string;
   branchId?: string | null;
   displayName?: string;
+  /** Coexistencia con la app WhatsApp Business (mismo número en el celular). */
+  isCoexistence?: boolean;
 }
 
 export interface UpdateWhatsAppRoutingRequest {
