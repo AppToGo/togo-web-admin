@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
+import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import {
   Select,
   SelectContent,
@@ -180,10 +181,10 @@ export function CreateLeadDrawer({
                   name="businessName"
                   maxLength={120}
                 />
-                <Input
+                <IndustrySelect
+                  id="create-lead-business-type"
                   label={t("detail.businessType")}
                   name="businessType"
-                  maxLength={80}
                 />
               </div>
               <Input

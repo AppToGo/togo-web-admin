@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Lightbulb, MessageCircle, Trash2 } from "lucide-react";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
   DemoLeadDetailLead,
@@ -348,11 +349,11 @@ export function LeadDetailPanel({
                         </label>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <Input
+                        <IndustrySelect
+                          id="lead-detail-business-type"
                           label={t("detail.businessType")}
                           name="businessType"
                           defaultValue={detail.lead.businessType ?? ""}
-                          maxLength={60}
                         />
                         <Input
                           label={t("detail.businessName")}
