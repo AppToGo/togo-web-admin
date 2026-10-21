@@ -35,6 +35,7 @@ const SECTIONS: Array<[string, string]> = [
   ["/admin/global-products", "globalCatalog"],
   ["/admin/industry-categories", "industryCategories"],
   ["/admin/demo-leads", "demoLeads"],
+  ["/admin/ai-usage", "aiUsage"],
   ["/dashboard", "dashboard"],
 ];
 
