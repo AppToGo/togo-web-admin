@@ -36,6 +36,8 @@ import { TablesManager } from "@/features/tables";
 import { Can } from "@/components/auth/Can";
 import {
   WhatsAppBranchAttentionCard,
+  dedicatedBranchIds,
+  useWhatsAppAccounts,
   useWhatsAppRoutings,
 } from "@/features/whatsapp";
 
@@ -67,13 +69,13 @@ export default function EditBranchPage() {
   const { data: businessBranches } = useBranchesByBusiness(branch?.businessId ?? null);
   const isMultiBranch = (businessBranches?.filter((b) => b.isActive).length ?? 0) > 1;
 
-  // Número exclusivo de la sede: routing DIRECT_TO_BRANCH activo.
+  // Número exclusivo de la sede: misma regla que la API.
   const { data: whatsappRoutings } = useWhatsAppRoutings();
-  const hasDedicatedNumber =
-    whatsappRoutings?.some(
-      (r) =>
-        r.branchId === id && r.strategy === "DIRECT_TO_BRANCH" && r.isActive
-    ) ?? false;
+  const { data: whatsappAccounts } = useWhatsAppAccounts();
+  const hasDedicatedNumber = dedicatedBranchIds(
+    whatsappRoutings,
+    whatsappAccounts
+  ).has(id);
 
   const handleSubmit = (data: UpdateBranchRequest) => {
     updateBranch.mutate(

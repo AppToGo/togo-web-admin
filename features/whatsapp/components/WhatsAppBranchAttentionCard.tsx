@@ -2,10 +2,11 @@
  * WhatsAppBranchAttentionCard
  * Atención por sede (F5): modo, minutos de takeover y horario propios de la
  * sede, con herencia del negocio. `null` en el servidor = heredar.
- * - Número exclusivo (DIRECT_TO_BRANCH): la pausa y el operador ocupado se
- *   evalúan solo en esta sede; sin horario propio rige su horario comercial.
- * - Número compartido: el horario y el operador ocupado se evalúan a nivel
- *   del negocio.
+ * - Número exclusivo (`dedicatedBranchIds`): la pausa y el operador ocupado
+ *   se evalúan solo en esta sede; sin horario propio rige su horario
+ *   comercial.
+ * - Número compartido: rige la atención del negocio y la sede no tiene nada
+ *   que configurar (la API ignora su config), así que solo se explica.
  */
 
 "use client";
@@ -18,43 +19,18 @@ import { Input } from "@/components/ui/input";
 import { useBusiness } from "@/features/business";
 import { useUpdateBranch } from "@/features/branches";
 import type { Branch } from "@/features/branches/types";
+import {
+  AttentionScheduleEditor,
+  hasOwnSchedule,
+  rowValid,
+  schedulePayload,
+  scheduleRows,
+  type AttentionMode,
+  type DayRow,
+} from "./AttentionScheduleEditor";
 
-type Mode = "BOT_ONLY" | "ATTENTION_MANUAL" | "HYBRID";
+type Mode = AttentionMode;
 type ModeOrInherit = Mode | "INHERIT";
-
-const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
-
-interface DayRow {
-  enabled: boolean;
-  open: string;
-  close: string;
-}
-
-function scheduleFrom(
-  schedule: Branch["attentionSchedule"]
-): { own: boolean; rows: DayRow[] } {
-  const rows: DayRow[] = DAY_KEYS.map(() => ({
-    enabled: false,
-    open: "08:00",
-    close: "18:00",
-  }));
-  if (!Array.isArray(schedule)) return { own: false, rows };
-  for (const entry of schedule) {
-    if (
-      entry &&
-      typeof entry.day === "number" &&
-      entry.day >= 0 &&
-      entry.day < 7
-    ) {
-      rows[entry.day] = {
-        enabled: true,
-        open: typeof entry.open === "string" ? entry.open : "08:00",
-        close: typeof entry.close === "string" ? entry.close : "18:00",
-      };
-    }
-  }
-  return { own: true, rows };
-}
 
 /** Huella de lo que esta tarjeta edita, tal como está en el servidor. */
 function serverKey(branch: Branch): string {
@@ -64,16 +40,6 @@ function serverKey(branch: Branch): string {
     branch.humanTakeoverMinutes ?? null,
     branch.attentionSchedule ?? null,
   ]);
-}
-
-const HH_MM = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-/** Día marcado con horas válidas y cierre después de la apertura. */
-function rowValid(row: DayRow): boolean {
-  return (
-    !row.enabled ||
-    (HH_MM.test(row.open) && HH_MM.test(row.close) && row.open < row.close)
-  );
 }
 
 const MODE_LABEL: Record<Mode, string> = {
@@ -93,7 +59,6 @@ export function WhatsAppBranchAttentionCard({
   const updateBranch = useUpdateBranch();
   const { data: business } = useBusiness(branch.businessId);
 
-  const initial = scheduleFrom(branch.attentionSchedule);
   const [mode, setMode] = useState<ModeOrInherit>(
     branch.attentionMode ?? "INHERIT"
   );
@@ -102,8 +67,13 @@ export function WhatsAppBranchAttentionCard({
       ? String(branch.humanTakeoverMinutes)
       : ""
   );
-  const [ownSchedule, setOwnSchedule] = useState(initial.own);
-  const [days, setDays] = useState<DayRow[]>(initial.rows);
+  // Vacío o null = heredar, igual que en la API (`explicit()`).
+  const [ownSchedule, setOwnSchedule] = useState(() =>
+    hasOwnSchedule(branch.attentionSchedule)
+  );
+  const [days, setDays] = useState<DayRow[]>(() =>
+    scheduleRows(branch.attentionSchedule)
+  );
 
   // Sincronizar si cambian en el servidor los campos de esta tarjeta.
   // Ajustar estado durante el render, no en un efecto.
@@ -117,14 +87,11 @@ export function WhatsAppBranchAttentionCard({
         ? String(branch.humanTakeoverMinutes)
         : ""
     );
-    const next = scheduleFrom(branch.attentionSchedule);
-    setOwnSchedule(next.own);
-    setDays(next.rows);
+    setOwnSchedule(hasOwnSchedule(branch.attentionSchedule));
+    setDays(scheduleRows(branch.attentionSchedule));
   }
 
-  // Modo efectivo: propio o heredado (para validar el horario).
   const inheritedMode: Mode = business?.attentionMode ?? "BOT_ONLY";
-  const effectiveMode: Mode = mode === "INHERIT" ? inheritedMode : mode;
 
   const trimmedMinutes = minutes.trim();
   const parsedMinutes =
@@ -135,19 +102,12 @@ export function WhatsAppBranchAttentionCard({
       parsedMinutes >= 1 &&
       parsedMinutes <= 480);
 
-  const updateDay = (day: number, patch: Partial<DayRow>) =>
-    setDays((prev) =>
-      prev.map((row, i) => (i === day ? { ...row, ...patch } : row))
-    );
-
-  // Con horario propio en híbrido se exige al menos un día, igual que en el
-  // negocio: "día sin marcar = cerrado" debe ser cierto.
-  const scheduleEmpty =
-    effectiveMode === "HYBRID" &&
-    ownSchedule &&
-    !days.some((row) => row.enabled);
+  // Horario propio sin días se guardaría como [] y la API lo trata como
+  // heredar: se exige al menos un día, o desmarcar "horario propio".
+  const scheduleEmpty = ownSchedule && !days.some((row) => row.enabled);
   const rangesValid = days.every(rowValid);
-  const canSave = minutesValid && (!ownSchedule || rangesValid) && !scheduleEmpty;
+  const canSave =
+    minutesValid && (!ownSchedule || rangesValid) && !scheduleEmpty;
 
   const handleSave = () => {
     if (!canSave) return;
@@ -157,12 +117,7 @@ export function WhatsAppBranchAttentionCard({
         data: {
           attentionMode: mode === "INHERIT" ? null : mode,
           humanTakeoverMinutes: parsedMinutes,
-          attentionSchedule: !ownSchedule
-            ? null
-            : days
-                .map((row, day) => ({ day, ...row }))
-                .filter((row) => row.enabled)
-                .map(({ day, open, close }) => ({ day, open, close })),
+          attentionSchedule: ownSchedule ? schedulePayload(days) : null,
         },
       },
       {
@@ -179,13 +134,26 @@ export function WhatsAppBranchAttentionCard({
     "ATTENTION_MANUAL",
   ];
 
+  if (!dedicated) {
+    return (
+      <div className="space-y-1 rounded-[14px] bg-white p-4">
+        <p className="text-sm font-semibold text-slate-800">
+          {t("branchAttention.title")}
+        </p>
+        <p className="text-xs text-slate-500">
+          {t("branchAttention.sharedHint")}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 rounded-[14px] bg-white p-4">
       <p className="text-sm font-semibold text-slate-800">
         {t("branchAttention.title")}
       </p>
       <p className="text-xs text-slate-500">
-        {dedicated ? t("branchAttention.dedicatedHint") : t("branchAttention.sharedHint")}
+        {t("branchAttention.dedicatedHint")}
       </p>
       <div className="flex flex-col gap-2">
         {modes.map((m) => (
@@ -251,56 +219,17 @@ export function WhatsAppBranchAttentionCard({
         </label>
         {!ownSchedule ? (
           <p className="mt-1 text-xs text-slate-500">
-            {dedicated
-              ? t("branchAttention.inheritScheduleDedicated")
-              : t("branchAttention.inheritScheduleShared")}
+            {t("branchAttention.inheritScheduleDedicated")}
           </p>
         ) : (
           <>
             <p className="mt-1 text-xs text-slate-500">
               {t("attention.scheduleHint")}
             </p>
-            <div className="mt-2 space-y-1.5">
-              {DAY_KEYS.map((dayKey, day) => (
-                <div key={dayKey} className="flex items-center gap-2 text-sm">
-                  <label className="flex w-24 cursor-pointer items-center gap-1.5">
-                    <input
-                      type="checkbox"
-                      checked={days[day].enabled}
-                      onChange={(e) =>
-                        updateDay(day, { enabled: e.target.checked })
-                      }
-                    />
-                    <span className="text-slate-700">
-                      {t(`attention.days.${dayKey}`)}
-                    </span>
-                  </label>
-                  <Input
-                    type="time"
-                    value={days[day].open}
-                    disabled={!days[day].enabled}
-                    onChange={(e) => updateDay(day, { open: e.target.value })}
-                    className="h-9 w-28 rounded-lg border-0 bg-slate-100 disabled:opacity-40"
-                  />
-                  <span className="text-slate-400">–</span>
-                  <Input
-                    type="time"
-                    value={days[day].close}
-                    disabled={!days[day].enabled}
-                    onChange={(e) => updateDay(day, { close: e.target.value })}
-                    className="h-9 w-28 rounded-lg border-0 bg-slate-100 disabled:opacity-40"
-                  />
-                </div>
-              ))}
-            </div>
-            {ownSchedule && !rangesValid && (
-              <p className="mt-1.5 text-xs text-red-600">
-                {t("attention.rangeError")}
-              </p>
-            )}
+            <AttentionScheduleEditor days={days} onChange={setDays} />
             {scheduleEmpty && (
               <p className="mt-1.5 text-xs text-red-600">
-                {t("attention.scheduleEmptyError")}
+                {t("branchAttention.ownScheduleEmptyError")}
               </p>
             )}
           </>

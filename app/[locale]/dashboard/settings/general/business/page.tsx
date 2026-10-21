@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import {
+  dedicatedBranchIds,
   useWhatsAppAccounts,
   useWhatsAppRoutings,
   WhatsAppAttentionCard,
@@ -577,24 +578,20 @@ export default function BusinessSettingsPage() {
               <div className="mt-3">
                 <WhatsAppUsageCard />
               </div>
-              {/* Modo de atención en coexistencia (F2/F5): solo con número
-                  compartido. Con números por sede, cada sede configura su
-                  atención en su página. */}
-              {business && autoAssignAccount && autoAssignRouting && (
+              {/* Modo de atención en coexistencia (F2/F5): siempre visible,
+                  porque es lo que heredan las sedes. Las sedes con número
+                  exclusivo pueden sobrescribirlo en su página. */}
+              {business && (
                 <div className="mt-3">
                   <WhatsAppAttentionCard business={business} />
+                  {dedicatedBranchIds(whatsappRoutings, whatsappAccounts)
+                    .size > 0 && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      {tWa("branchAttention.dedicatedOnlyHint")}
+                    </p>
+                  )}
                 </div>
               )}
-              {business &&
-                !autoAssignAccount &&
-                (whatsappRoutings?.some(
-                  (r) => r.strategy === "DIRECT_TO_BRANCH" && r.isActive
-                ) ??
-                  false) && (
-                  <p className="mt-3 text-xs text-slate-500">
-                    {tWa("branchAttention.dedicatedOnlyHint")}
-                  </p>
-                )}
             </section>
 
             {/* Guardar: barra fija abajo mientras haya cambios */}

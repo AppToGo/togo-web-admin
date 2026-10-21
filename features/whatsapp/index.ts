@@ -16,3 +16,6 @@ export * from "./hooks";
 
 // Components
 export * from "./components";
+
+// Utils
+export * from "./utils/dedicated-number";

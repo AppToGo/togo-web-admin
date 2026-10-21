@@ -125,7 +125,7 @@
     "minutesLabel": "Liberar la conversación si el humano no responde (minutos)",
     "minutesError": "Ingresa un valor entre 1 y 480.",
     "scheduleLabel": "Horario de atención humana",
-    "scheduleHint": "Día sin marcar = cerrado (el bot se pausa). Hora del negocio.",
+    "scheduleHint": "Día sin marcar = cerrado (el bot se pausa). Sin ningún día marcado rige el horario comercial de las sedes. Hora del negocio.",
     "save": "Guardar atención",
     "days": {
       "sun": "Dom",
@@ -137,19 +137,18 @@
       "sat": "Sáb"
     },
     "rangeError": "Revisa las horas: el cierre debe ser después de la apertura. Si el turno pasa la medianoche, divídelo en dos días.",
-    "scheduleEmptyError": "En modo híbrido marca al menos un día: sin días, el bot nunca se pausa por horario.",
     "saveSuccess": "Modo de atención guardado",
     "saveError": "No se pudo guardar el modo de atención"
   },
   "branchAttention": {
     "title": "Atención por sede",
     "dedicatedHint": "Esta sede tiene número exclusivo: modo, horario y operador ocupado se evalúan solo aquí.",
-    "sharedHint": "Esta sede comparte número: el horario y el operador ocupado se evalúan a nivel del negocio.",
+    "sharedHint": "Esta sede comparte el número del negocio: rige la atención configurada en el negocio.",
     "inheritMode": "Heredar del negocio (actual: {mode})",
     "inheritMinutes": "Vacío = heredar del negocio.",
     "ownSchedule": "Horario propio de la sede",
     "inheritScheduleDedicated": "Sin horario propio rige el horario comercial de la sede.",
-    "inheritScheduleShared": "Sin horario propio rige el horario del negocio.",
-    "dedicatedOnlyHint": "Cada sede tiene su número: la atención se configura en la página de cada sede."
+    "dedicatedOnlyHint": "Las sedes con número exclusivo pueden tener su propia atención en la página de cada sede.",
+    "ownScheduleEmptyError": "Marca al menos un día, o desmarca «Horario propio de la sede» para heredar."
   }
 }
