@@ -46,7 +46,7 @@
     "planInterest": "Plan of interest",
     "mainNeed": "Main need",
     "nextAction": "Next action",
-    "nextActionAt": "Next action date",
+    "nextActionAt": "Action date",
     "lostReason": "Lost reason",
     "revokeConsent": "Withdraw contact consent",
     "revokeHint": "On save with the box checked, the lead leaves the contact lists.",
