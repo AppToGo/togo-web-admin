@@ -2,34 +2,23 @@
 
 /**
  * Demo Leads Page — Mini CRM de adquisición
- * Tablero kanban por etapa comercial con filtros, conteos reales
- * y panel de detalle (ficha, sugerencia, línea de tiempo, notas).
+ * Tablero por etapa comercial con el estilo del panel (vidrio sobre el
+ * degradado): métricas, filtros en pastillas, columnas colapsables como
+ * en Pedidos y panel de detalle. En el teléfono, una etapa a la vez.
  */
 
 import * as React from "react";
-import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Users } from "lucide-react";
+import { PillGroup } from "@/components/ui/pill-group";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CheckCircle2, Clock, Handshake, Search, UserPlus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
@@ -37,26 +26,46 @@ import {
   useDemoLeadsPipeline,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import { LeadDetailPanel } from "@/features/admin/demo-leads/components/LeadDetailPanel";
+import { LeadCard } from "@/features/admin/demo-leads/components/LeadCard";
+import { LeadsBoardColumn } from "@/features/admin/demo-leads/components/LeadsBoardColumn";
 import {
+  DEMO_LEAD_PRIORITIES,
   DEMO_LEAD_STAGES,
-  formatDateTime,
-  formatPhone,
-  priorityVariant,
-  safeLabel,
+  STAGE_DOT_CLASS,
+  isOverdue,
+  readCollapsedStages,
+  saveCollapsedStages,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
+
+type PriorityFilter = DemoLeadPriority | "ALL";
 
 export default function DemoLeadsPage() {
   const t = useTranslations("admin-demo-leads");
-  const locale = useLocale();
   const { isLoading: isAuthLoading } = useAuthGuard();
   const isSuperAdmin = useIsSuperAdmin();
+  const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
-  const [priority, setPriority] = useState<DemoLeadPriority | "">("");
+  const [priority, setPriority] = useState<PriorityFilter>("ALL");
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Teléfono: el tablero no cabe, se ve una etapa a la vez.
+  const [mobileStage, setMobileStage] = useState<DemoLeadStage>("NEW");
+
+  // Columnas colapsadas a un riel: preferencia por navegador, como Pedidos.
+  const [collapsedStages, setCollapsedStages] = useState(readCollapsedStages);
+  const handleCollapsedChange = useCallback(
+    (stage: DemoLeadStage, collapsed: boolean) => {
+      setCollapsedStages((prev) => {
+        const next = { ...prev, [stage]: collapsed };
+        saveCollapsedStages(next);
+        return next;
+      });
+    },
+    []
+  );
 
   const {
     data: leads,
@@ -66,11 +75,11 @@ export default function DemoLeadsPage() {
   } = useDemoLeads(
     {
       q: debouncedSearch.trim() || undefined,
-      priority: priority || undefined,
+      priority: priority === "ALL" ? undefined : priority,
       overdueOnly: overdueOnly || undefined,
       includeRevoked: includeRevoked || undefined,
     },
-    isSuperAdmin,
+    isSuperAdmin
   );
   const { data: pipeline } = useDemoLeadsPipeline(isSuperAdmin);
 
@@ -79,6 +88,18 @@ export default function DemoLeadsPage() {
     for (const entry of pipeline ?? []) map.set(entry.stage, entry.count);
     return map;
   }, [pipeline]);
+
+  const byStage = React.useMemo(() => {
+    const map = new Map<DemoLeadStage, NonNullable<typeof leads>>();
+    for (const stage of DEMO_LEAD_STAGES) map.set(stage, []);
+    for (const lead of leads ?? []) map.get(lead.stage)?.push(lead);
+    return map;
+  }, [leads]);
+
+  const overdueCount = React.useMemo(
+    () => (leads ?? []).filter((lead) => isOverdue(lead.nextActionAt)).length,
+    [leads]
+  );
 
   if (isAuthLoading) return null;
 
@@ -90,156 +111,224 @@ export default function DemoLeadsPage() {
     );
   }
 
+  const kpis = [
+    {
+      label: t("kpis.onBoard"),
+      value: leads?.length ?? 0,
+      icon: UserPlus,
+      tone: "bg-indigo-50 text-indigo-600",
+    },
+    {
+      label: t("kpis.overdue"),
+      value: overdueCount,
+      icon: Clock,
+      tone: "bg-amber-50 text-amber-700",
+    },
+    {
+      label: t("kpis.negotiation"),
+      value: counts.get("NEGOTIATION") ?? 0,
+      icon: Handshake,
+      tone: "bg-teal-50 text-teal-700",
+    },
+    {
+      label: t("kpis.customers"),
+      value: counts.get("CUSTOMER") ?? 0,
+      icon: CheckCircle2,
+      tone: "bg-emerald-50 text-emerald-700",
+    },
+  ];
+
+  const togglePill = (on: boolean) =>
+    cn(
+      "flex h-9 shrink-0 items-center gap-2 rounded-full border px-3.5 text-[13px] font-semibold transition-colors",
+      on
+        ? "border-indigo-600 bg-indigo-600 text-white"
+        : "border-white/90 bg-white/75 text-slate-600 hover:bg-white hover:text-slate-900"
+    );
+
   return (
     <DashboardLayout>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            {t("title")}
-          </CardTitle>
-          <CardDescription>{t("subtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Input
+      <div className="space-y-4 lg:space-y-5">
+        {/* Encabezado + búsqueda */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          {/* < lg el nombre de la sección ya está en la barra superior. */}
+          <div className="hidden lg:block">
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+              <UserPlus className="h-6 w-6 text-indigo-600" aria-hidden />
+              {t("title")}
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
+          </div>
+          <label className="flex h-11 w-full items-center gap-2.5 rounded-full border border-white/90 bg-white/75 px-4 shadow-glass lg:w-80">
+            <Search
+              className="h-[18px] w-[18px] shrink-0 text-slate-500"
+              aria-hidden
+            />
+            <span className="sr-only">{t("filters.search")}</span>
+            <input
+              type="search"
               placeholder={t("filters.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               maxLength={120}
-              className="max-w-xs"
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
             />
-            <Select
-              value={priority || "ALL"}
-              onValueChange={(v) =>
-                setPriority(v === "ALL" ? "" : (v as DemoLeadPriority))
-              }
-            >
-              <SelectTrigger className="max-w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t("filters.allPriorities")}</SelectItem>
-                <SelectItem value="HIGH">{t("filters.priority.HIGH")}</SelectItem>
-                <SelectItem value="NORMAL">{t("filters.priority.NORMAL")}</SelectItem>
-                <SelectItem value="LOW">{t("filters.priority.LOW")}</SelectItem>
-              </SelectContent>
-            </Select>
-            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-slate-900"
-                checked={overdueOnly}
-                onChange={(e) => setOverdueOnly(e.target.checked)}
-              />
-              {t("filters.overdueOnly")}
-            </label>
-            <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-slate-900"
-                checked={includeRevoked}
-                onChange={(e) => setIncludeRevoked(e.target.checked)}
-              />
-              {t("filters.includeRevoked")}
-            </label>
-          </div>
+          </label>
+        </div>
 
-          {isLeadsLoading ? (
-            <p className="text-sm text-slate-500">…</p>
-          ) : isLeadsError ? (
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-red-600">{t("loadError")}</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => refetch()}
+        {/* Métricas */}
+        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {kpis.map(({ label, value, icon: Icon, tone }, index) => (
+            <div
+              key={label}
+              className={cn(
+                "flex items-center gap-3.5 rounded-[20px] border border-white/90 bg-white/65 px-4 py-3.5 md:rounded-3xl md:px-5",
+                index > 1 && "hidden lg:flex"
+              )}
+            >
+              <span
+                className={cn(
+                  "hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl sm:flex",
+                  tone
+                )}
               >
-                {t("retry")}
-              </Button>
+                <Icon className="h-5 w-5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <dt className="truncate text-xs text-slate-500 md:text-[13px]">
+                  {label}
+                </dt>
+                <dd className="mt-0.5 text-xl font-bold tabular-nums text-slate-900 md:text-2xl">
+                  {isLeadsLoading ? "–" : value}
+                </dd>
+              </div>
             </div>
-          ) : !leads || leads.length === 0 ? (
-            <p className="text-sm text-slate-500">{t("empty")}</p>
-          ) : (
-            <div className="grid grid-flow-col auto-cols-[260px] gap-3 overflow-x-auto pb-2">
-              {DEMO_LEAD_STAGES.map((stage) => {
-                const column = leads.filter((lead) => lead.stage === stage);
-                return (
-                  <div
-                    key={stage}
-                    className="rounded-xl bg-slate-50 border border-slate-200 p-2 space-y-2"
-                  >
-                    <div className="flex items-center justify-between px-1">
-                      <h2 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                        {t(`stages.${stage}`)}
-                      </h2>
-                      <Badge variant="secondary">{counts.get(stage) ?? 0}</Badge>
-                    </div>
-                    {column.map((lead) => {
-                      const isOverdue =
-                        !!lead.nextActionAt &&
-                        new Date(lead.nextActionAt).getTime() < Date.now();
-                      return (
-                        <button
-                          key={lead.id}
-                          type="button"
-                          onClick={() => setSelectedId(lead.id)}
-                          className="w-full text-left rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:border-slate-300 transition-colors"
-                        >
-                          <p className="text-sm font-medium text-slate-900">
-                            {lead.name}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {formatPhone(lead.phone)}
-                          </p>
-                          {(lead.establishmentName ?? lead.businessName) && (
-                            <p className="text-xs text-slate-500 truncate">
-                              {lead.establishmentName ?? lead.businessName}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            <Badge variant={priorityVariant(lead.priority)}>
-                              {safeLabel(
-                                t as (key: string) => string,
-                                `filters.priority.${lead.priority}`,
-                                lead.priority,
-                              )}
-                            </Badge>
-                            {lead.orderCount > 0 && (
-                              <Badge variant="outline">
-                                {t("card.orders", { count: lead.orderCount })}
-                              </Badge>
-                            )}
-                            {isOverdue && (
-                              <Badge variant="destructive">
-                                {t("card.overdue")}
-                              </Badge>
-                            )}
-                            {lead.revoked && (
-                              <Badge variant="destructive">
-                                {t("card.revoked")}
-                              </Badge>
-                            )}
-                          </div>
-                          {lead.nextAction && (
-                            <p className="text-xs text-slate-600 mt-2 truncate">
-                              {t("card.nextAction", { action: lead.nextAction })}
-                            </p>
-                          )}
-                          <p className="text-[11px] text-slate-400 mt-1">
-                            {formatDateTime(lead.lastDemoAt, locale)}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+          ))}
+        </dl>
+
+        {/* Filtros */}
+        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          <PillGroup
+            label={t("filters.priorityLabel")}
+            value={priority}
+            onChange={setPriority}
+            options={[
+              {
+                id: "ALL" as PriorityFilter,
+                label: t("filters.allPriorities"),
+              },
+              ...DEMO_LEAD_PRIORITIES.map((p) => ({
+                id: p as PriorityFilter,
+                label: t(`filters.priority.${p}`),
+              })),
+            ]}
+            appearance="glass"
+            className="shrink-0 overflow-visible"
+          />
+          <button
+            type="button"
+            aria-pressed={overdueOnly}
+            onClick={() => setOverdueOnly((v) => !v)}
+            className={togglePill(overdueOnly)}
+          >
+            <Clock className="h-4 w-4" aria-hidden />
+            {t("filters.overdueOnly")}
+            {overdueCount > 0 && !overdueOnly && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-xs font-bold tabular-nums text-amber-900">
+                {overdueCount}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            aria-pressed={includeRevoked}
+            onClick={() => setIncludeRevoked((v) => !v)}
+            className={togglePill(includeRevoked)}
+          >
+            {t("filters.includeRevoked")}
+          </button>
+          {!isLeadsLoading && leads && (
+            <span className="ml-auto hidden text-sm text-slate-500 sm:inline">
+              {t("count", { count: leads.length })}
+            </span>
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Tablero */}
+        {isLeadsLoading ? (
+          <div className="flex gap-3.5 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className="h-96 w-[288px] shrink-0 rounded-3xl bg-white/60"
+              />
+            ))}
+          </div>
+        ) : isLeadsError ? (
+          <div className="flex items-center gap-3 rounded-3xl border border-white/90 bg-white/65 p-5">
+            <p className="text-sm text-red-700">{t("loadError")}</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+            >
+              {t("retry")}
+            </Button>
+          </div>
+        ) : !leads || leads.length === 0 ? (
+          <div className="rounded-3xl border border-white/90 bg-white/65 p-8 text-center">
+            <UserPlus
+              className="mx-auto mb-3 h-8 w-8 text-indigo-400"
+              aria-hidden
+            />
+            <p className="text-sm text-slate-600">{t("empty")}</p>
+          </div>
+        ) : isMobile ? (
+          <div className="space-y-3">
+            <PillGroup
+              label={t("detail.stage")}
+              variant="tabs"
+              value={mobileStage}
+              onChange={setMobileStage}
+              options={DEMO_LEAD_STAGES.map((stage) => ({
+                id: stage,
+                label: t(`stages.${stage}`),
+                count: byStage.get(stage)?.length ?? 0,
+                dotClassName: STAGE_DOT_CLASS[stage],
+              }))}
+              className="-mx-4 px-4"
+            />
+            {(byStage.get(mobileStage) ?? []).length === 0 ? (
+              <p className="rounded-[20px] bg-white/65 p-5 text-center text-sm text-slate-500">
+                {t("emptyStage")}
+              </p>
+            ) : (
+              (byStage.get(mobileStage) ?? []).map((lead) => (
+                <LeadCard key={lead.id} lead={lead} onOpen={setSelectedId} />
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
+            <div className="flex items-start gap-3.5">
+              {DEMO_LEAD_STAGES.map((stage) => (
+                <LeadsBoardColumn
+                  key={stage}
+                  stage={stage}
+                  leads={byStage.get(stage) ?? []}
+                  count={byStage.get(stage)?.length ?? 0}
+                  collapsed={!!collapsedStages[stage]}
+                  onCollapsedChange={(collapsed) =>
+                    handleCollapsedChange(stage, collapsed)
+                  }
+                  onOpenLead={setSelectedId}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <LeadDetailPanel
         leadId={selectedId}

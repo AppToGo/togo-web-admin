@@ -5,14 +5,15 @@
   "accessDenied": "Necesitas ser Super Admin para ver esta página.",
   "filters": {
     "search": "Buscar por nombre, teléfono o negocio…",
-    "allPriorities": "Todas las prioridades",
+    "allPriorities": "Todas",
     "priority": {
       "HIGH": "Alta",
       "NORMAL": "Normal",
       "LOW": "Baja"
     },
     "overdueOnly": "Solo vencidos",
-    "includeRevoked": "Incluir sin consentimiento"
+    "includeRevoked": "Incluir sin consentimiento",
+    "priorityLabel": "Prioridad"
   },
   "stages": {
     "NEW": "Nuevo",
@@ -24,10 +25,11 @@
     "LOST": "Perdido"
   },
   "card": {
-    "orders": "{count} pedidos",
+    "orders": "{count, plural, one {# pedido} other {# pedidos}}",
     "nextAction": "Siguiente: {action}",
     "overdue": "Vencido",
-    "revoked": "Sin consentimiento"
+    "revoked": "Sin consentimiento",
+    "tries": "{count, plural, one {# entrada} other {# entradas}}"
   },
   "detail": {
     "close": "Cerrar",
@@ -63,7 +65,9 @@
     "deleteConfirmDescription": "Se eliminará a {name} ({phone}) de la lista de posibles clientes.",
     "loadError": "No se pudo cargar el detalle del lead.",
     "summaryWhatsApp": "Escribió por WhatsApp",
-    "summaryInbox": "Se respondió en el inbox"
+    "summaryInbox": "Se respondió en el inbox",
+    "writeWhatsApp": "Escribir por WhatsApp",
+    "tabsLabel": "Detalle del lead"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -93,5 +97,17 @@
     "deleteError": "No se pudo eliminar el lead"
   },
   "loadError": "No se pudieron cargar los posibles clientes.",
-  "retry": "Reintentar"
+  "retry": "Reintentar",
+  "kpis": {
+    "onBoard": "En el tablero",
+    "overdue": "Acciones vencidas",
+    "negotiation": "En negociación",
+    "customers": "Ya son clientes"
+  },
+  "actions": {
+    "collapseColumn": "Contraer columna",
+    "expandColumn": "Expandir columna"
+  },
+  "count": "{count, plural, one {# posible cliente} other {# posibles clientes}}",
+  "emptyStage": "No hay posibles clientes en esta etapa."
 }
