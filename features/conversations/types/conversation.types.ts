@@ -31,6 +31,7 @@ export type ConversationEventType =
   | "BOT_PAUSED"
   | "BOT_RESUMED"
   | "BOT_DRAFT"
+  | "OWNER_PHONE_REPLY"
   | "SESSION_CLOSED"
   | "SESSION_REOPENED"
   | "NOTE_ADDED"
