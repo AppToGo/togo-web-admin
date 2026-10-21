@@ -140,5 +140,16 @@
     "scheduleEmptyError": "In hybrid mode, check at least one day: with no days, the bot never pauses for hours.",
     "saveSuccess": "Attention mode saved",
     "saveError": "Couldn't save the attention mode"
+  },
+  "branchAttention": {
+    "title": "Per-branch attention",
+    "dedicatedHint": "This branch has its own number: mode, schedule and operator busy are evaluated only here.",
+    "sharedHint": "This branch shares a number: schedule and operator busy are evaluated at business level.",
+    "inheritMode": "Inherit from business (current: {mode})",
+    "inheritMinutes": "Empty = inherit from business.",
+    "ownSchedule": "Branch's own schedule",
+    "inheritScheduleDedicated": "Without its own schedule, the branch commercial hours apply.",
+    "inheritScheduleShared": "Without its own schedule, the business schedule applies.",
+    "dedicatedOnlyHint": "Each branch has its own number: attention is configured on each branch page."
   }
 }

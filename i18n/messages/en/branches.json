@@ -340,7 +340,8 @@
       "delivery": "Home delivery",
       "channels": "Sales channels",
       "payments": "Bank transfer payments",
-      "tables": "Tables and QR"
+      "tables": "Tables and QR",
+      "attention": "WhatsApp attention"
     }
   }
 }

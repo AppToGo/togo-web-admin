@@ -140,5 +140,16 @@
     "scheduleEmptyError": "En modo híbrido marca al menos un día: sin días, el bot nunca se pausa por horario.",
     "saveSuccess": "Modo de atención guardado",
     "saveError": "No se pudo guardar el modo de atención"
+  },
+  "branchAttention": {
+    "title": "Atención por sede",
+    "dedicatedHint": "Esta sede tiene número exclusivo: modo, horario y operador ocupado se evalúan solo aquí.",
+    "sharedHint": "Esta sede comparte número: el horario y el operador ocupado se evalúan a nivel del negocio.",
+    "inheritMode": "Heredar del negocio (actual: {mode})",
+    "inheritMinutes": "Vacío = heredar del negocio.",
+    "ownSchedule": "Horario propio de la sede",
+    "inheritScheduleDedicated": "Sin horario propio rige el horario comercial de la sede.",
+    "inheritScheduleShared": "Sin horario propio rige el horario del negocio.",
+    "dedicatedOnlyHint": "Cada sede tiene su número: la atención se configura en la página de cada sede."
   }
 }

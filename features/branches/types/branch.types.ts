@@ -54,6 +54,18 @@ export interface Branch {
   dineInConfig?: DineInConfig;
   /** Venta de mostrador (docs/caja-pedidos.md) */
   counterConfig?: CounterConfig;
+  /**
+   * Modo de atención propio de la sede (`null`/ausente = hereda del negocio).
+   */
+  attentionMode?: "BOT_ONLY" | "ATTENTION_MANUAL" | "HYBRID" | null;
+  /** Minutos de takeover propios (`null`/ausente = hereda del negocio). */
+  humanTakeoverMinutes?: number | null;
+  /**
+   * Horario propio `[{day: 0-6, open/close "HH:MM"}]` (`null`/ausente =
+   * hereda: horario comercial de la sede si el número es exclusivo, horario
+   * del negocio si el número es compartido).
+   */
+  attentionSchedule?: Array<{ day: number; open: string; close: string }> | null;
 }
 
 /**
@@ -128,4 +140,10 @@ export interface UpdateBranchRequest {
   dineInConfig?: DineInConfig;
   /** Venta de mostrador (docs/caja-pedidos.md) */
   counterConfig?: CounterConfig;
+  /** Modo de atención propio (`null` = hereda del negocio). */
+  attentionMode?: "BOT_ONLY" | "ATTENTION_MANUAL" | "HYBRID" | null;
+  /** Minutos de takeover propios (`null` = hereda del negocio). */
+  humanTakeoverMinutes?: number | null;
+  /** Horario propio (`null` = hereda del negocio o de la sede). */
+  attentionSchedule?: Array<{ day: number; open: string; close: string }> | null;
 }
