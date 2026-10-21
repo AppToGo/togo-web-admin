@@ -125,7 +125,7 @@
     "minutesLabel": "Release the conversation if the human does not reply (minutes)",
     "minutesError": "Enter a value between 1 and 480.",
     "scheduleLabel": "Human attention schedule",
-    "scheduleHint": "Unchecked day = closed (the bot pauses). Business time.",
+    "scheduleHint": "Unchecked day = closed (the bot pauses). With no days checked, the branches' business hours apply. Business time zone.",
     "save": "Save attention",
     "days": {
       "sun": "Sun",
@@ -137,8 +137,18 @@
       "sat": "Sat"
     },
     "rangeError": "Check the hours: closing must be after opening. If a shift goes past midnight, split it across two days.",
-    "scheduleEmptyError": "In hybrid mode, check at least one day: with no days, the bot never pauses for hours.",
     "saveSuccess": "Attention mode saved",
     "saveError": "Couldn't save the attention mode"
+  },
+  "branchAttention": {
+    "title": "Per-branch attention",
+    "dedicatedHint": "This branch has its own number: mode, schedule and operator busy are evaluated only here.",
+    "sharedHint": "This branch shares the business number: the business attention settings apply.",
+    "inheritMode": "Inherit from business (current: {mode})",
+    "inheritMinutes": "Empty = inherit from business.",
+    "ownSchedule": "Branch's own schedule",
+    "inheritScheduleDedicated": "Without its own schedule, the branch commercial hours apply.",
+    "dedicatedOnlyHint": "Branches with their own number can have their own attention settings on each branch page.",
+    "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit."
   }
 }

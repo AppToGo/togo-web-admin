@@ -340,7 +340,8 @@
       "delivery": "Envío a domicilio",
       "channels": "Canales de venta",
       "payments": "Pagos por transferencia",
-      "tables": "Mesas y QR"
+      "tables": "Mesas y QR",
+      "attention": "Atención por WhatsApp"
     }
   }
 }
