@@ -149,6 +149,22 @@
     "ownSchedule": "Horario propio de la sede",
     "inheritScheduleDedicated": "Sin horario propio rige el horario comercial de la sede.",
     "dedicatedOnlyHint": "Las sedes con número exclusivo pueden tener su propia atención en la página de cada sede.",
-    "ownScheduleEmptyError": "Marca al menos un día, o desmarca «Horario propio de la sede» para heredar."
+    "ownScheduleEmptyError": "Marca al menos un día, o desmarca «Horario propio de la sede» para heredar.",
+    "cloudOnlyHint": "Esta sede tiene su propio número, pero conectado solo por API (sin la app WhatsApp Business en el celular). La atención por sede necesita coexistencia: mientras tanto rige la atención configurada en el negocio."
+  },
+  "usageChart": {
+    "title": "Mensajes de WhatsApp",
+    "subtitle": "Mes en curso · gratis y cobrados por día",
+    "free": "Gratis usados",
+    "billed": "Cobrados",
+    "quotaLine": "Cupo gratis",
+    "tooltipFree": "Gratis: {count}",
+    "tooltipBilled": "Cobrados: {count}",
+    "tooltipAccumulated": "Acumulado gratis: {count} / {quota}",
+    "legendFree": "Gratis",
+    "legendBilled": "Cobrados",
+    "legendAccumulated": "Acumulado del mes",
+    "syncedAt": "En vivo · confirmado con Meta a las {time}",
+    "notSynced": "En vivo · se confirma con Meta cada hora"
   }
 }

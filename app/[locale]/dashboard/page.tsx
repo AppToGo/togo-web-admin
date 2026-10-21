@@ -11,6 +11,7 @@ import {
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useBusinesses } from "@/features/orders/hooks/useOrders";
 import { AiUsageSection } from "@/features/admin/ai-usage/components/AiUsageSection";
+import { WhatsAppUsageChart } from "@/features/whatsapp";
 import { useTranslations } from "next-intl";
 import { DateRangeFilter } from "@/features/filters/components";
 import {
@@ -89,6 +90,11 @@ export default function DashboardPage() {
         {/* Embudo + horas pico - Lazy load */}
         <section aria-label={t("sections.analysis")}>
           <LazyChartsSection />
+        </section>
+
+        {/* Consumo de WhatsApp del mes (gratis vs cobrados), en vivo */}
+        <section aria-label={t("sections.whatsappUsage")}>
+          <WhatsAppUsageChart />
         </section>
 
         {isSuperAdmin && (
