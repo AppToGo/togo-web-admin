@@ -89,6 +89,11 @@ function MediaContent({ message }: { message: ConversationMessage }) {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const t = useTranslations("conversations");
+  // Marca de origen fino (F2/F3): historial importado y ecos del celular.
+  const sourceTag =
+    message.source === "HISTORY_IMPORT" || message.source === "OWNER_PHONE"
+      ? t(`source.${message.source}`)
+      : null;
   const isMediaHandled = MEDIA_CONTENT_TYPES.has(message.contentType);
   const preview = buildInteractivePreview(message);
   // Solo la burbuja del operador es oscura (`bubbleStyles`); cliente, bot y
@@ -112,6 +117,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       >
         <div className="text-[10px] uppercase tracking-wide opacity-60">
           {t(`sender.${message.senderType}`)}
+          {sourceTag && <span className="normal-case"> · {sourceTag}</span>}
         </div>
         {message.media && <MediaContent message={message} />}
         {preview ? (

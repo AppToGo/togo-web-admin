@@ -46,11 +46,14 @@ interface FacebookLoginResponse {
   status?: string;
 }
 
+export type EmbeddedSignupMode = "coexistence" | "cloud_api";
+
 export interface EmbeddedSignupResult {
   code: string;
   wabaId: string;
   phoneNumberId: string;
   metaUserId?: string;
+  isCoexistence: boolean;
 }
 
 const SDK_SRC = "https://connect.facebook.net/en_US/sdk.js";
@@ -114,6 +117,10 @@ export function useMetaEmbeddedSignup() {
     wabaId?: string;
     phoneNumberId?: string;
     generation?: number;
+    // Coexistencia según el evento que Meta mandó, no según el modo pedido:
+    // en el popup el negocio puede terminar registrando un número nuevo
+    // (FINISH a secas) aunque se haya lanzado el flujo de coexistencia.
+    isCoexistence?: boolean;
     // CANCEL/ERROR del propio flujo de Embedded Signup (el negocio cerró el
     // diálogo, o Meta reportó un fallo en algún paso) — distinto de que
     // FB.login nunca devuelva un `code` (eso ya se maneja aparte, ver
@@ -137,11 +144,16 @@ export function useMetaEmbeddedSignup() {
           typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (data?.type !== "WA_EMBEDDED_SIGNUP") return;
 
-        if (data?.event === "FINISH") {
+        if (
+          data?.event === "FINISH" ||
+          data?.event === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING"
+        ) {
           sessionInfoRef.current = {
             wabaId: data.data?.waba_id,
             phoneNumberId: data.data?.phone_number_id,
             generation: generationRef.current,
+            isCoexistence:
+              data.event === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING",
           };
         } else if (data?.event === "CANCEL" || data?.event === "ERROR") {
           sessionInfoRef.current = {
@@ -175,6 +187,7 @@ export function useMetaEmbeddedSignup() {
             generation: msgGeneration,
             outcomeEvent,
             currentStep,
+            isCoexistence = false,
           } = sessionInfoRef.current;
           if (msgGeneration !== generation) {
             if (Date.now() - start > SESSION_INFO_TIMEOUT_MS) {
@@ -185,7 +198,7 @@ export function useMetaEmbeddedSignup() {
             return;
           }
           if (wabaId && phoneNumberId) {
-            resolve({ code, wabaId, phoneNumberId, metaUserId });
+            resolve({ code, wabaId, phoneNumberId, metaUserId, isCoexistence });
             return;
           }
           if (outcomeEvent === "CANCEL") {
@@ -214,7 +227,10 @@ export function useMetaEmbeddedSignup() {
     [t]
   );
 
-  const launch = useCallback((): Promise<EmbeddedSignupResult> => {
+  const launch = useCallback(
+    (
+      mode: EmbeddedSignupMode = "cloud_api"
+    ): Promise<EmbeddedSignupResult> => {
     setError(null);
     setIsLoading(true);
     const myGeneration = ++generationRef.current;
@@ -252,7 +268,10 @@ export function useMetaEmbeddedSignup() {
             override_default_response_type: true,
             extras: {
               setup: {},
-              featureType: "",
+              featureType:
+                mode === "coexistence"
+                  ? "whatsapp_business_app_onboarding"
+                  : "",
               sessionInfoVersion: "3",
             },
           }
@@ -274,7 +293,9 @@ export function useMetaEmbeddedSignup() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [t, waitForSessionInfo]);
+    },
+    [t, waitForSessionInfo]
+  );
 
   return { launch, isLoading, error };
 }

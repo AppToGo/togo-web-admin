@@ -252,5 +252,9 @@
       "SPAM": "Spam",
       "ORDER_PLACED": "With order"
     }
+  },
+  "source": {
+    "HISTORY_IMPORT": "imported history",
+    "OWNER_PHONE": "from your WhatsApp"
   }
 }
