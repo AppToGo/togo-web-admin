@@ -9,7 +9,8 @@
     "kpis": "Indicadores",
     "detail": "Métricas detalladas",
     "analysis": "Análisis",
-    "aiUsage": "Consumo de IA"
+    "aiUsage": "Consumo de IA",
+    "whatsappUsage": "Consumo de WhatsApp"
   },
   "periods": {
     "today": "Hoy",

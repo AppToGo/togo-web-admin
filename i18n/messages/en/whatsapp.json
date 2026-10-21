@@ -90,8 +90,7 @@
     "billingHub": "Meta Billing Hub",
     "botMessagesPerOrder": "Bot average: {count} messages per order this month",
     "loadError": "Could not load usage. Check your connection and try again.",
-    "retry": "Retry",
-    "notSyncedYet": "No data for this month yet: usage syncs with Meta once a day."
+    "retry": "Retry"
   },
   "connection": {
     "coexistence": "Coexistence",
@@ -152,5 +151,20 @@
     "dedicatedOnlyHint": "Branches with their own number can have their own attention settings on each branch page.",
     "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit.",
     "cloudOnlyHint": "This branch has its own number, but it's connected through the API only (without the WhatsApp Business app on the phone). Per-branch attention requires coexistence; until then the business attention settings apply."
+  },
+  "usageChart": {
+    "title": "WhatsApp messages",
+    "subtitle": "This month · free and billed per day",
+    "free": "Free used",
+    "billed": "Billed",
+    "quotaLine": "Free quota",
+    "tooltipFree": "Free: {count}",
+    "tooltipBilled": "Billed: {count}",
+    "tooltipAccumulated": "Free so far: {count} / {quota}",
+    "legendFree": "Free",
+    "legendBilled": "Billed",
+    "legendAccumulated": "Month to date",
+    "syncedAt": "Live · confirmed with Meta at {time}",
+    "notSynced": "Live · confirmed with Meta every hour"
   }
 }
