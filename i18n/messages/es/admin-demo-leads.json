@@ -32,7 +32,8 @@
     "tries": "{count, plural, one {# entrada} other {# entradas}}",
     "manual": "Manual",
     "referred": "Referido",
-    "noDemo": "Sin demo"
+    "noDemo": "Sin demo",
+    "noName": "Sin nombre"
   },
   "detail": {
     "close": "Cerrar",
@@ -125,7 +126,7 @@
     "subtitle": "Para seguir a alguien que te contactó o te recomendaron. Si después prueba la demo con este número, todo queda en esta misma ficha.",
     "contactSection": "Contacto",
     "followUpSection": "Seguimiento",
-    "name": "Nombre",
+    "name": "Nombre (opcional)",
     "phone": "WhatsApp",
     "phoneHint": "El mismo número con el que entraría a la demo.",
     "phoneInvalid": "Ingresa un número válido con su indicativo (ej. +57 300 123 4567).",
@@ -139,6 +140,7 @@
     "saving": "Creando…",
     "duplicateTitle": "Ya existe un posible cliente con este número",
     "duplicateHint": "Abre su ficha para seguir el proceso ahí.",
-    "openExisting": "Ver ficha"
+    "openExisting": "Ver ficha",
+    "namePlaceholder": "Si no lo sabes, lo completa la demo"
   }
 }

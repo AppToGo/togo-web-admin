@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Lightbulb, MessageCircle, Trash2 } from "lucide-react";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
@@ -59,7 +60,6 @@ import {
   formatPhone,
   parseOptionalIsoDateTime,
   safeLabel,
-  toInputDateTime,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
 interface LeadDetailPanelProps {
@@ -154,7 +154,7 @@ export function LeadDetailPanel({
               )}
               <div className="min-w-0 flex-1">
                 <DrawerTitle className="truncate text-xl font-bold text-slate-900">
-                  {detail ? detail.lead.name : "…"}
+                  {detail ? detail.lead.name || t("card.noName") : "…"}
                 </DrawerTitle>
                 {detail &&
                   (detail.lead.establishmentName ||
@@ -390,13 +390,11 @@ export function LeadDetailPanel({
                           defaultValue={detail.lead.nextAction ?? ""}
                           maxLength={255}
                         />
-                        <Input
+                        <DateTimePicker
+                          id="lead-detail-next-action-at"
                           label={t("detail.nextActionAt")}
                           name="nextActionAt"
-                          type="datetime-local"
-                          defaultValue={toInputDateTime(
-                            detail.lead.nextActionAt
-                          )}
+                          defaultValue={detail.lead.nextActionAt}
                         />
                       </div>
                       <Input
@@ -537,7 +535,7 @@ export function LeadDetailPanel({
             <AlertDialogTitle>{t("detail.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("detail.deleteConfirmDescription", {
-                name: detail?.lead.name ?? "",
+                name: detail?.lead.name || t("card.noName"),
                 phone: formatPhone(detail?.lead.phone),
               })}
             </AlertDialogDescription>

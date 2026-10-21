@@ -210,7 +210,7 @@ export type DemoLeadSource = "DEMO" | "MANUAL";
 
 /** Lead creado a mano en el CRM (POST /admin/demo-leads). */
 export interface CreateDemoLeadRequest {
-  name: string;
+  name?: string;
   phone: string;
   businessName?: string;
   businessType?: string;

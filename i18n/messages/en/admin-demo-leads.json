@@ -32,7 +32,8 @@
     "tries": "{count, plural, one {# visit} other {# visits}}",
     "manual": "Manual",
     "referred": "Referred",
-    "noDemo": "No demo"
+    "noDemo": "No demo",
+    "noName": "No name"
   },
   "detail": {
     "close": "Close",
@@ -125,7 +126,7 @@
     "subtitle": "To follow up with someone who reached out or was referred. If they later try the demo with this number, everything stays in this same record.",
     "contactSection": "Contact",
     "followUpSection": "Follow-up",
-    "name": "Name",
+    "name": "Name (optional)",
     "phone": "WhatsApp",
     "phoneHint": "The same number they would use to enter the demo.",
     "phoneInvalid": "Enter a valid number with its country code (e.g. +57 300 123 4567).",
@@ -139,6 +140,7 @@
     "saving": "Creating…",
     "duplicateTitle": "A lead with this number already exists",
     "duplicateHint": "Open their record to continue there.",
-    "openExisting": "Open record"
+    "openExisting": "Open record",
+    "namePlaceholder": "If unknown, the demo fills it in"
   }
 }

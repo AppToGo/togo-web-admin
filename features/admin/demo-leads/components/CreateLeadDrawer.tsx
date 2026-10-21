@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import {
   Select,
@@ -79,7 +80,7 @@ export function CreateLeadDrawer({
     setExistingId(null);
     createLead.mutate(
       {
-        name: (form.get("name") as string).trim(),
+        name: text("name"),
         phone,
         businessName: text("businessName"),
         businessType: text("businessType"),
@@ -157,9 +158,9 @@ export function CreateLeadDrawer({
               <Input
                 label={t("create.name")}
                 name="name"
-                required
                 minLength={2}
                 maxLength={80}
+                placeholder={t("create.namePlaceholder")}
                 autoComplete="off"
               />
               <PhoneInput
@@ -237,10 +238,10 @@ export function CreateLeadDrawer({
                   name="nextAction"
                   maxLength={255}
                 />
-                <Input
+                <DateTimePicker
+                  id="create-lead-next-action-at"
                   label={t("detail.nextActionAt")}
                   name="nextActionAt"
-                  type="datetime-local"
                 />
               </div>
               <label className="block space-y-1.5">

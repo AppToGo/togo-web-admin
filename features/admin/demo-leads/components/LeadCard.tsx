@@ -44,8 +44,13 @@ export function LeadCard({
       <div className="flex items-center gap-3">
         <InitialsAvatar name={lead.name} seed={lead.id} size="md" />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[15px] font-semibold text-slate-900">
-            {lead.name}
+          <span
+            className={cn(
+              "truncate text-[15px] font-semibold",
+              lead.name ? "text-slate-900" : "text-slate-500"
+            )}
+          >
+            {lead.name || t("card.noName")}
           </span>
           {business && (
             <span className="truncate text-[13px] text-slate-500">
