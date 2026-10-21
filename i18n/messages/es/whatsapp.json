@@ -88,7 +88,9 @@
     "costLine": "Costo estimado: {cost} {currency}",
     "exhaustedHint": "Sin tarjeta en Meta, el bot dejará de responder al agotar el cupo.",
     "billingHub": "Billing Hub de Meta",
-    "botMessagesPerOrder": "Promedio del bot: {count} mensajes por pedido este mes"
+    "botMessagesPerOrder": "Promedio del bot: {count} mensajes por pedido este mes",
+    "loadError": "No se pudo cargar el consumo. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "connection": {
     "coexistence": "Coexistencia",

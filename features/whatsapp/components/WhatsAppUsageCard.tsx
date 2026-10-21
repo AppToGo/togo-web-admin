@@ -20,10 +20,26 @@ function barColor(level: string): string {
 
 export function WhatsAppUsageCard() {
   const t = useTranslations("whatsapp");
-  const { data, isLoading } = useWhatsAppUsage();
+  const { data, isLoading, isError, refetch } = useWhatsAppUsage();
 
   if (isLoading) {
     return <p className="text-sm text-slate-500">…</p>;
+  }
+  // Error visible con reintento: antes se retornaba null igual que sin
+  // cuentas y un fallo del endpoint pasaba desapercibido.
+  if (isError) {
+    return (
+      <div className="space-y-1">
+        <p className="text-xs text-red-600">{t("usage.loadError")}</p>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="text-xs font-semibold text-slate-700 underline"
+        >
+          {t("usage.retry")}
+        </button>
+      </div>
+    );
   }
   if (!data || data.accounts.length === 0) {
     return null;

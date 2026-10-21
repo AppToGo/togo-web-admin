@@ -88,7 +88,9 @@
     "costLine": "Estimated cost: {cost} {currency}",
     "exhaustedHint": "Without a card on file with Meta, the bot will stop replying once the quota runs out.",
     "billingHub": "Meta Billing Hub",
-    "botMessagesPerOrder": "Bot average: {count} messages per order this month"
+    "botMessagesPerOrder": "Bot average: {count} messages per order this month",
+    "loadError": "Could not load usage. Check your connection and try again.",
+    "retry": "Retry"
   },
   "connection": {
     "coexistence": "Coexistence",

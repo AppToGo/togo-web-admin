@@ -67,6 +67,20 @@ const defaultFormData: FormData = {
   useProductImages: false,
 };
 
+/**
+ * Etiqueta del estado de un sync con fallback al valor crudo si el backend
+ * envía un estado sin traducción (mismo patrón que el motivo de borrador
+ * en el hilo: nunca mostrar la ruta de la clave al usuario).
+ */
+function syncStateLabel(
+  t: ReturnType<typeof useTranslations>,
+  status?: string | null
+): string {
+  const normalized = status ?? "PENDING";
+  const key = `connection.syncState_${normalized}`;
+  return t.has(key) ? t(key) : normalized;
+}
+
 function formDataFrom(business: Business): FormData {
   const s = (business.settings as Record<string, unknown>) ?? {};
   return {
@@ -518,14 +532,16 @@ export default function BusinessSettingsPage() {
                       {autoAssignAccount.connectionType === "COEXISTENCE" && (
                           <span className="text-slate-500">
                             {tWa("connection.syncContacts", {
-                              state: tWa(
-                                `connection.syncState_${autoAssignAccount.contactsSyncStatus ?? "PENDING"}`
+                              state: syncStateLabel(
+                                tWa,
+                                autoAssignAccount.contactsSyncStatus
                               ),
                             })}
                             {" · "}
                             {tWa("connection.syncHistory", {
-                              state: tWa(
-                                `connection.syncState_${autoAssignAccount.historySyncStatus ?? "PENDING"}`
+                              state: syncStateLabel(
+                                tWa,
+                                autoAssignAccount.historySyncStatus
                               ),
                             })}
                             {(autoAssignAccount.contactsSyncStatus === "PENDING" ||
