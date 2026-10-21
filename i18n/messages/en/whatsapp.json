@@ -138,7 +138,8 @@
     },
     "rangeError": "Check the hours: closing must be after opening. If a shift goes past midnight, split it across two days.",
     "saveSuccess": "Attention mode saved",
-    "saveError": "Couldn't save the attention mode"
+    "saveError": "Couldn't save the attention mode",
+    "coexistenceOnlyHint": "Attention modes are available when you connect your number in coexistence (you keep using WhatsApp Business on your phone). With an API-only connection, the bot answers and you hand off to an agent from the inbox."
   },
   "branchAttention": {
     "title": "Per-branch attention",

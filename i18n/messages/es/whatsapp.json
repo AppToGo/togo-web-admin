@@ -138,7 +138,8 @@
     },
     "rangeError": "Revisa las horas: el cierre debe ser después de la apertura. Si el turno pasa la medianoche, divídelo en dos días.",
     "saveSuccess": "Modo de atención guardado",
-    "saveError": "No se pudo guardar el modo de atención"
+    "saveError": "No se pudo guardar el modo de atención",
+    "coexistenceOnlyHint": "Los modos de atención están disponibles cuando conectas tu número en coexistencia (sigues usando WhatsApp Business en el celular). Con conexión solo por API, el bot atiende y pasas a un asesor desde el inbox."
   },
   "branchAttention": {
     "title": "Atención por sede",
