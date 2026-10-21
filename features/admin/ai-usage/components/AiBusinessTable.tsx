@@ -57,8 +57,9 @@ export function AiBusinessTable({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rows.map((row) => {
+                  // Sin nombre = el negocio se borró; su consumo sigue siendo suyo.
                   const name = row.businessId
-                    ? (row.businessName ?? row.businessId)
+                    ? (row.businessName ?? t("businesses.deleted"))
                     : t("businesses.platform");
                   return (
                     <tr key={row.businessId ?? "platform"}>

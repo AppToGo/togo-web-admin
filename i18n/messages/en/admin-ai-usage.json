@@ -54,7 +54,8 @@
     "calls": "Calls",
     "orders": "Orders",
     "perOrder": "Per order",
-    "platform": "Platform (global catalog)"
+    "platform": "Platform (global catalog)",
+    "deleted": "Deleted business"
   },
   "models": {
     "title": "By model",

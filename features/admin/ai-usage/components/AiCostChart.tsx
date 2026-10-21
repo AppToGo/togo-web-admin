@@ -110,6 +110,13 @@ export function AiCostChart({
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorAiCost)"
+                // Con un solo día (rango "Hoy") el área no dibuja nada: el
+                // punto muestra el valor.
+                dot={
+                  data.length === 1
+                    ? { r: 5, fill: "#6366f1", stroke: "#fff", strokeWidth: 2 }
+                    : false
+                }
                 animationDuration={1000}
               />
             </AreaChart>

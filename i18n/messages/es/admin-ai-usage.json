@@ -54,7 +54,8 @@
     "calls": "Llamadas",
     "orders": "Pedidos",
     "perOrder": "Por pedido",
-    "platform": "Plataforma (catálogo global)"
+    "platform": "Plataforma (catálogo global)",
+    "deleted": "Negocio eliminado"
   },
   "models": {
     "title": "Por modelo",
