@@ -5,14 +5,15 @@
   "accessDenied": "You need to be Super Admin to view this page.",
   "filters": {
     "search": "Search by name, phone or business…",
-    "allPriorities": "All priorities",
+    "allPriorities": "All",
     "priority": {
       "HIGH": "High",
       "NORMAL": "Normal",
       "LOW": "Low"
     },
     "overdueOnly": "Overdue only",
-    "includeRevoked": "Include without consent"
+    "includeRevoked": "Include without consent",
+    "priorityLabel": "Priority"
   },
   "stages": {
     "NEW": "New",
@@ -24,10 +25,11 @@
     "LOST": "Lost"
   },
   "card": {
-    "orders": "{count} orders",
+    "orders": "{count, plural, one {# order} other {# orders}}",
     "nextAction": "Next: {action}",
     "overdue": "Overdue",
-    "revoked": "No consent"
+    "revoked": "No consent",
+    "tries": "{count, plural, one {# visit} other {# visits}}"
   },
   "detail": {
     "close": "Close",
@@ -63,7 +65,9 @@
     "deleteConfirmDescription": "{name} ({phone}) will be removed from the potential customers list.",
     "loadError": "Could not load lead details.",
     "summaryWhatsApp": "Wrote via WhatsApp",
-    "summaryInbox": "Replied to themselves in inbox"
+    "summaryInbox": "Replied to themselves in inbox",
+    "writeWhatsApp": "Message on WhatsApp",
+    "tabsLabel": "Lead details"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -93,5 +97,17 @@
     "deleteError": "Could not delete the lead"
   },
   "loadError": "Could not load potential customers.",
-  "retry": "Retry"
+  "retry": "Retry",
+  "kpis": {
+    "onBoard": "On the board",
+    "overdue": "Overdue actions",
+    "negotiation": "In negotiation",
+    "customers": "Already customers"
+  },
+  "actions": {
+    "collapseColumn": "Collapse column",
+    "expandColumn": "Expand column"
+  },
+  "count": "{count, plural, one {# lead} other {# leads}}",
+  "emptyStage": "No leads in this stage."
 }
