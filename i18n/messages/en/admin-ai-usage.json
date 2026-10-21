@@ -1,0 +1,64 @@
+{
+  "title": "AI usage",
+  "subtitle": "What OpenAI costs across all businesses, in dollars. Businesses can't see this data.",
+  "accessDenied": "Only the super admin can see AI usage.",
+  "error": "We couldn't load AI usage.",
+  "retry": "Retry",
+  "empty": "No AI usage in this period.",
+  "filteredBy": "Showing only:",
+  "clearBusiness": "Clear the {name} filter",
+  "section": {
+    "title": "AI usage",
+    "superAdminOnly": "Super admin only",
+    "allBusinesses": "All businesses",
+    "selectedBusiness": "Selected business"
+  },
+  "kpis": {
+    "total": "AI spend",
+    "calls": "{count} calls",
+    "perOrder": "Cost per order",
+    "orders": "{count, plural, =0 {No orders} one {# order} other {# orders}}",
+    "perConversation": "Cost per conversation",
+    "conversations": "{count, plural, =0 {No conversations} one {# conversation} other {# conversations}}",
+    "tokens": "Tokens",
+    "audio": "{minutes} min of audio"
+  },
+  "chart": {
+    "title": "Spend per day",
+    "subtitle": "In US dollars, what OpenAI bills",
+    "total": "Period total",
+    "calls": "{count, plural, one {# call} other {# calls}}"
+  },
+  "features": {
+    "title": "Where it goes",
+    "subtitle": "By bot and panel feature",
+    "share": "{share}% · {count, plural, one {# call} other {# calls}}",
+    "names": {
+      "INTENT": "Understanding the customer",
+      "CUSTOMER_AGENT": "Customer agent",
+      "OPERATOR_AGENT": "Operator over WhatsApp",
+      "PARAPHRASE": "Replies in the business's tone",
+      "TRANSCRIPTION": "Voice notes",
+      "PAYMENT_PROOF": "Payment receipts",
+      "CATALOG_VISION": "Catalog import (image or PDF)",
+      "CATALOG_CLASSIFIER": "Import categories",
+      "PRODUCT_KEYWORDS": "Product keywords",
+      "BOT_MESSAGES": "Edit messages with AI"
+    }
+  },
+  "businesses": {
+    "title": "By business",
+    "subtitle": "Tap a business to see only its usage",
+    "business": "Business",
+    "cost": "Spend",
+    "calls": "Calls",
+    "orders": "Orders",
+    "perOrder": "Per order",
+    "platform": "Platform (global catalog)",
+    "deleted": "Deleted business"
+  },
+  "models": {
+    "title": "By model",
+    "tokens": "{input} input · {output} output"
+  }
+}

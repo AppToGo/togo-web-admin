@@ -204,5 +204,9 @@
     "next": "Next",
     "finish": "Finish",
     "stepIndicator": "{current} of {total}"
+  },
+  "dateTime": {
+    "placeholder": "Pick date and time",
+    "time": "Time"
   }
 }

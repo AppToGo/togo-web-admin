@@ -34,6 +34,8 @@ const SECTIONS: Array<[string, string]> = [
   ["/admin/businesses", "businesses"],
   ["/admin/global-products", "globalCatalog"],
   ["/admin/industry-categories", "industryCategories"],
+  ["/admin/demo-leads", "demoLeads"],
+  ["/admin/ai-usage", "aiUsage"],
   ["/dashboard", "dashboard"],
 ];
 
@@ -43,16 +45,56 @@ const SECTIONS: Array<[string, string]> = [
  * de `navigation.sidebar`.
  */
 const BACK_ROUTES: Array<{ prefix: string; parent: string; key: string }> = [
-  { prefix: "/dashboard/settings/general/business", parent: "/dashboard/settings", key: "business" },
-  { prefix: "/dashboard/settings/general/bot-messages", parent: "/dashboard/settings", key: "botMessages" },
-  { prefix: "/dashboard/settings/users", parent: "/dashboard/settings", key: "users" },
-  { prefix: "/dashboard/users", parent: "/dashboard/settings/users", key: "users" },
-  { prefix: "/dashboard/settings/operator-profiles", parent: "/dashboard/settings", key: "operatorProfiles" },
-  { prefix: "/dashboard/settings/operator-profiles/", parent: "/dashboard/settings/operator-profiles", key: "operatorProfiles" },
-  { prefix: "/dashboard/settings/notifications", parent: "/dashboard/settings", key: "notifications" },
-  { prefix: "/dashboard/settings/billing", parent: "/dashboard/settings", key: "billing" },
-  { prefix: "/dashboard/branches", parent: "/dashboard/settings", key: "branches" },
-  { prefix: "/dashboard/branches/", parent: "/dashboard/branches", key: "branches" },
+  {
+    prefix: "/dashboard/settings/general/business",
+    parent: "/dashboard/settings",
+    key: "business",
+  },
+  {
+    prefix: "/dashboard/settings/general/bot-messages",
+    parent: "/dashboard/settings",
+    key: "botMessages",
+  },
+  {
+    prefix: "/dashboard/settings/users",
+    parent: "/dashboard/settings",
+    key: "users",
+  },
+  {
+    prefix: "/dashboard/users",
+    parent: "/dashboard/settings/users",
+    key: "users",
+  },
+  {
+    prefix: "/dashboard/settings/operator-profiles",
+    parent: "/dashboard/settings",
+    key: "operatorProfiles",
+  },
+  {
+    prefix: "/dashboard/settings/operator-profiles/",
+    parent: "/dashboard/settings/operator-profiles",
+    key: "operatorProfiles",
+  },
+  {
+    prefix: "/dashboard/settings/notifications",
+    parent: "/dashboard/settings",
+    key: "notifications",
+  },
+  {
+    prefix: "/dashboard/settings/billing",
+    parent: "/dashboard/settings",
+    key: "billing",
+  },
+  {
+    prefix: "/dashboard/branches",
+    parent: "/dashboard/settings",
+    key: "branches",
+  },
+  {
+    prefix: "/dashboard/branches/",
+    parent: "/dashboard/branches",
+    key: "branches",
+  },
 ];
 
 export function backRouteFor(pathname: string) {
@@ -115,7 +157,10 @@ export function MobileTopBar({ onMenuClick, menuOpen }: MobileTopBarProps) {
         </button>
       )}
       {key && (
-        <span className="text-lg font-bold text-slate-900 truncate" data-testid="mobile-section-title">
+        <span
+          className="text-lg font-bold text-slate-900 truncate"
+          data-testid="mobile-section-title"
+        >
           {t(key)}
         </span>
       )}

@@ -8,7 +8,8 @@
   "sections": {
     "kpis": "Indicadores",
     "detail": "Métricas detalladas",
-    "analysis": "Análisis"
+    "analysis": "Análisis",
+    "aiUsage": "Consumo de IA"
   },
   "periods": {
     "today": "Hoy",

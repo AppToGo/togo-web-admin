@@ -1,6 +1,6 @@
 /**
  * Authentication Type Definitions
- * 
+ *
  * Types related to authentication and user session
  */
 
@@ -81,7 +81,7 @@ export interface AuthActions {
 }
 
 // Registration status
-export type RegistrationStatus = 'INCOMPLETE' | 'PENDING_PAYMENT' | 'ACTIVE';
+export type RegistrationStatus = "INCOMPLETE" | "PENDING_PAYMENT" | "ACTIVE";
 
 // Registration API response
 export interface RegistrationResponse {
@@ -201,6 +201,26 @@ export interface DemoLead {
   nextActionAt?: string | null;
   revoked: boolean;
   orderCount: number;
+  /** DEMO: entró por el login demo. MANUAL: lo creó un super admin. */
+  source: DemoLeadSource;
+  referredBy?: string | null;
+}
+
+export type DemoLeadSource = "DEMO" | "MANUAL";
+
+/** Lead creado a mano en el CRM (POST /admin/demo-leads). */
+export interface CreateDemoLeadRequest {
+  name?: string;
+  phone: string;
+  businessName?: string;
+  businessType?: string;
+  referredBy?: string;
+  stage?: DemoLeadStage;
+  priority?: DemoLeadPriority;
+  nextAction?: string;
+  nextActionAt?: string;
+  note?: string;
+  consentGiven?: boolean;
 }
 
 export interface DemoLeadPipelineEntry {
@@ -212,6 +232,7 @@ export interface DemoLeadActivityEvent {
   id: string;
   type: string;
   occurredAt: string;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface DemoLeadNote {
@@ -236,10 +257,21 @@ export interface DemoLeadDetailLead extends DemoLead {
   lostAt?: string | null;
 }
 
+/** Acción de seguimiento de un lead (varias por lead). */
+export interface DemoLeadAction {
+  id: string;
+  title: string;
+  dueAt: string | null;
+  doneAt: string | null;
+  createdByName: string | null;
+  createdAt: string;
+}
+
 export interface DemoLeadDetail {
   lead: DemoLeadDetailLead;
   events: DemoLeadActivityEvent[];
   notes: DemoLeadNote[];
+  actions: DemoLeadAction[];
   summary: {
     demoCount: number;
     orderCount: number;
