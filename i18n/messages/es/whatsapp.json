@@ -94,7 +94,15 @@
     "coexistence": "Coexistencia",
     "cloudApi": "Solo API",
     "disconnected": "Desvinculado: reconecta desde Meta",
-    "syncPending": "Importando contactos/historial…"
+    "syncPending": "Importando contactos/historial…",
+    "syncContacts": "Contactos: {state}",
+    "syncHistory": "Historial: {state}",
+    "syncState_PENDING": "pendiente",
+    "syncState_REQUESTED": "solicitado",
+    "syncState_DONE": "listo",
+    "syncState_DECLINED": "no compartido",
+    "syncState_FAILED": "falló",
+    "syncState_EXPIRED": "ventana cerrada"
   },
   "attention": {
     "title": "Modo de atención",

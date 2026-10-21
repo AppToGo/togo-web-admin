@@ -92,6 +92,8 @@ export interface ConversationMessage {
   senderType: MessageSenderType;
   senderUserId: string | null;
   operatorSource: OperatorSource | null;
+  /** Origen fino (F2/F3): OWNER_PHONE, HISTORY_IMPORT, … */
+  source?: string | null;
   contentType: MessageContentType;
   text: string | null;
   media: ResolvedMedia | null;

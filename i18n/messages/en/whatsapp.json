@@ -94,7 +94,15 @@
     "coexistence": "Coexistence",
     "cloudApi": "API only",
     "disconnected": "Unlinked: reconnect from Meta",
-    "syncPending": "Importing contacts/history…"
+    "syncPending": "Importing contacts/history…",
+    "syncContacts": "Contacts: {state}",
+    "syncHistory": "History: {state}",
+    "syncState_PENDING": "pending",
+    "syncState_REQUESTED": "requested",
+    "syncState_DONE": "done",
+    "syncState_DECLINED": "not shared",
+    "syncState_FAILED": "failed",
+    "syncState_EXPIRED": "window closed"
   },
   "attention": {
     "title": "Attention mode",

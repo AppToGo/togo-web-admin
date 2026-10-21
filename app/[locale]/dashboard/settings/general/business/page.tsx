@@ -515,11 +515,22 @@ export default function BusinessSettingsPage() {
                           {tWa("connection.disconnected")}
                         </span>
                       )}
-                      {autoAssignAccount.connectionType === "COEXISTENCE" &&
-                        (autoAssignAccount.contactsSyncStatus === "PENDING" ||
-                          autoAssignAccount.historySyncStatus === "PENDING") && (
+                      {autoAssignAccount.connectionType === "COEXISTENCE" && (
                           <span className="text-slate-500">
-                            {tWa("connection.syncPending")}
+                            {tWa("connection.syncContacts", {
+                              state: tWa(
+                                `connection.syncState_${autoAssignAccount.contactsSyncStatus ?? "PENDING"}`
+                              ),
+                            })}
+                            {" · "}
+                            {tWa("connection.syncHistory", {
+                              state: tWa(
+                                `connection.syncState_${autoAssignAccount.historySyncStatus ?? "PENDING"}`
+                              ),
+                            })}
+                            {(autoAssignAccount.contactsSyncStatus === "PENDING" ||
+                              autoAssignAccount.historySyncStatus === "PENDING") &&
+                              ` — ${tWa("connection.syncPending")}`}
                           </span>
                         )}
                     </p>
