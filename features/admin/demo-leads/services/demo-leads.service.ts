@@ -10,13 +10,14 @@ import type {
   DemoLeadNote,
   DemoLeadPipelineEntry,
   UpdateDemoLeadRequest,
+  CreateDemoLeadRequest,
 } from "@/types/auth.types";
 
 /**
  * Posibles clientes de la demo (solo SUPER_ADMIN).
  */
 export async function getDemoLeads(
-  filters: DemoLeadFilters = {},
+  filters: DemoLeadFilters = {}
 ): Promise<DemoLead[]> {
   const params = new URLSearchParams();
   if (filters.stage) params.set("stage", filters.stage);
@@ -26,7 +27,7 @@ export async function getDemoLeads(
   if (filters.includeRevoked) params.set("includeRevoked", "true");
   const query = params.toString();
   const response = await apiClient.get<DemoLead[]>(
-    query ? `/admin/demo-leads?${query}` : "/admin/demo-leads",
+    query ? `/admin/demo-leads?${query}` : "/admin/demo-leads"
   );
   return response.data;
 }
@@ -36,7 +37,7 @@ export async function getDemoLeads(
  */
 export async function getDemoLeadsPipeline(): Promise<DemoLeadPipelineEntry[]> {
   const response = await apiClient.get<DemoLeadPipelineEntry[]>(
-    "/admin/demo-leads/pipeline",
+    "/admin/demo-leads/pipeline"
   );
   return response.data;
 }
@@ -47,8 +48,19 @@ export async function getDemoLeadsPipeline(): Promise<DemoLeadPipelineEntry[]> {
  */
 export async function getDemoLeadDetail(id: string): Promise<DemoLeadDetail> {
   const response = await apiClient.get<DemoLeadDetail>(
-    `/admin/demo-leads/${id}`,
+    `/admin/demo-leads/${id}`
   );
+  return response.data;
+}
+
+/**
+ * Crear un posible cliente a mano (solo SUPER_ADMIN). 409 con `leadId` si
+ * ya existe uno con ese número.
+ */
+export async function createDemoLead(
+  data: CreateDemoLeadRequest
+): Promise<DemoLead> {
+  const response = await apiClient.post<DemoLead>("/admin/demo-leads", data);
   return response.data;
 }
 
@@ -57,11 +69,11 @@ export async function getDemoLeadDetail(id: string): Promise<DemoLeadDetail> {
  */
 export async function updateDemoLead(
   id: string,
-  data: UpdateDemoLeadRequest,
+  data: UpdateDemoLeadRequest
 ): Promise<DemoLead> {
   const response = await apiClient.patch<DemoLead>(
     `/admin/demo-leads/${id}`,
-    data,
+    data
   );
   return response.data;
 }
@@ -71,11 +83,11 @@ export async function updateDemoLead(
  */
 export async function addDemoLeadNote(
   id: string,
-  body: string,
+  body: string
 ): Promise<DemoLeadNote> {
   const response = await apiClient.post<DemoLeadNote>(
     `/admin/demo-leads/${id}/notes`,
-    { body },
+    { body }
   );
   return response.data;
 }

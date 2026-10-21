@@ -29,7 +29,10 @@
     "nextAction": "Next: {action}",
     "overdue": "Overdue",
     "revoked": "No consent",
-    "tries": "{count, plural, one {# visit} other {# visits}}"
+    "tries": "{count, plural, one {# visit} other {# visits}}",
+    "manual": "Manual",
+    "referred": "Referred",
+    "noDemo": "No demo"
   },
   "detail": {
     "close": "Close",
@@ -67,7 +70,9 @@
     "summaryWhatsApp": "Wrote via WhatsApp",
     "summaryInbox": "Replied to themselves in inbox",
     "writeWhatsApp": "Message on WhatsApp",
-    "tabsLabel": "Lead details"
+    "tabsLabel": "Lead details",
+    "manual": "Created manually",
+    "manualReferred": "Created manually · Referred by {name}"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -75,7 +80,9 @@
     "ORDER_STATUS_CHANGED": "Changed an order status",
     "INBOX_TAKEOVER": "Took over their conversation",
     "INBOX_REPLY_SENT": "Replied to themselves in the inbox",
-    "WHATSAPP_RECEIVED": "Wrote via WhatsApp"
+    "WHATSAPP_RECEIVED": "Wrote via WhatsApp",
+    "LEAD_CREATED": "Created manually in the CRM",
+    "DEMO_STARTED_FIRST": "Tried the demo for the first time"
   },
   "suggestions": {
     "CLOSE_ONBOARD": "Close the sale and move to onboarding.",
@@ -94,7 +101,9 @@
     "noteAdded": "Note added",
     "noteError": "Could not add the note",
     "deleted": "Lead deleted",
-    "deleteError": "Could not delete the lead"
+    "deleteError": "Could not delete the lead",
+    "created": "Lead created",
+    "createError": "Could not create the lead"
   },
   "loadError": "Could not load potential customers.",
   "retry": "Retry",
@@ -109,5 +118,27 @@
     "expandColumn": "Expand column"
   },
   "count": "{count, plural, one {# lead} other {# leads}}",
-  "emptyStage": "No leads in this stage."
+  "emptyStage": "No leads in this stage.",
+  "create": {
+    "button": "New lead",
+    "title": "New lead",
+    "subtitle": "To follow up with someone who reached out or was referred. If they later try the demo with this number, everything stays in this same record.",
+    "contactSection": "Contact",
+    "followUpSection": "Follow-up",
+    "name": "Name",
+    "phone": "WhatsApp",
+    "phoneHint": "The same number they would use to enter the demo.",
+    "phoneInvalid": "Enter a valid number with its country code (e.g. +57 300 123 4567).",
+    "referredBy": "Referred by",
+    "referredByPlaceholder": "Who recommended them (optional)",
+    "note": "First note",
+    "notePlaceholder": "Context: what they need, how they found us…",
+    "consent": "This person agreed to be contacted",
+    "consentHint": "Without this consent the CRM suggests not contacting them until they accept in the demo.",
+    "submit": "Create lead",
+    "saving": "Creating…",
+    "duplicateTitle": "A lead with this number already exists",
+    "duplicateHint": "Open their record to continue there.",
+    "openExisting": "Open record"
+  }
 }

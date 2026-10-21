@@ -169,6 +169,15 @@ export function LeadDetailPanel({
                     {formatPhone(detail.lead.phone)}
                   </p>
                 )}
+                {detail?.lead.source === "MANUAL" && (
+                  <p className="mt-1.5 inline-flex rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
+                    {detail.lead.referredBy
+                      ? t("detail.manualReferred", {
+                          name: detail.lead.referredBy,
+                        })
+                      : t("detail.manual")}
+                  </p>
+                )}
               </div>
             </div>
             {detail && !detail.lead.revoked && (
@@ -443,11 +452,14 @@ export function LeadDetailPanel({
                             </span>
                             <span className="flex flex-1 flex-col pb-4">
                               <span className="text-sm font-medium text-slate-900">
-                                {safeLabel(
-                                  tt,
-                                  `events.${event.type}`,
-                                  event.type
-                                )}
+                                {event.type === "DEMO_STARTED" &&
+                                event.metadata?.firstDemo === true
+                                  ? t("events.DEMO_STARTED_FIRST")
+                                  : safeLabel(
+                                      tt,
+                                      `events.${event.type}`,
+                                      event.type
+                                    )}
                               </span>
                               <span className="mt-0.5 text-[13px] text-slate-500">
                                 {formatDateTime(event.occurredAt, locale)}

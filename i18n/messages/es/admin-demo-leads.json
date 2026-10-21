@@ -29,7 +29,10 @@
     "nextAction": "Siguiente: {action}",
     "overdue": "Vencido",
     "revoked": "Sin consentimiento",
-    "tries": "{count, plural, one {# entrada} other {# entradas}}"
+    "tries": "{count, plural, one {# entrada} other {# entradas}}",
+    "manual": "Manual",
+    "referred": "Referido",
+    "noDemo": "Sin demo"
   },
   "detail": {
     "close": "Cerrar",
@@ -67,7 +70,9 @@
     "summaryWhatsApp": "Escribió por WhatsApp",
     "summaryInbox": "Se respondió en el inbox",
     "writeWhatsApp": "Escribir por WhatsApp",
-    "tabsLabel": "Detalle del lead"
+    "tabsLabel": "Detalle del lead",
+    "manual": "Creado a mano",
+    "manualReferred": "Creado a mano · Referido por {name}"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -75,7 +80,9 @@
     "ORDER_STATUS_CHANGED": "Cambió el estado de un pedido",
     "INBOX_TAKEOVER": "Tomó su conversación",
     "INBOX_REPLY_SENT": "Se respondió en el inbox",
-    "WHATSAPP_RECEIVED": "Escribió por WhatsApp"
+    "WHATSAPP_RECEIVED": "Escribió por WhatsApp",
+    "LEAD_CREATED": "Creado a mano en el CRM",
+    "DEMO_STARTED_FIRST": "Probó la demo por primera vez"
   },
   "suggestions": {
     "CLOSE_ONBOARD": "Cerrar lo comercial y pasar a incorporación.",
@@ -94,7 +101,9 @@
     "noteAdded": "Nota agregada",
     "noteError": "No se pudo agregar la nota",
     "deleted": "Lead eliminado",
-    "deleteError": "No se pudo eliminar el lead"
+    "deleteError": "No se pudo eliminar el lead",
+    "created": "Posible cliente creado",
+    "createError": "No se pudo crear el posible cliente"
   },
   "loadError": "No se pudieron cargar los posibles clientes.",
   "retry": "Reintentar",
@@ -109,5 +118,27 @@
     "expandColumn": "Expandir columna"
   },
   "count": "{count, plural, one {# posible cliente} other {# posibles clientes}}",
-  "emptyStage": "No hay posibles clientes en esta etapa."
+  "emptyStage": "No hay posibles clientes en esta etapa.",
+  "create": {
+    "button": "Nuevo posible cliente",
+    "title": "Nuevo posible cliente",
+    "subtitle": "Para seguir a alguien que te contactó o te recomendaron. Si después prueba la demo con este número, todo queda en esta misma ficha.",
+    "contactSection": "Contacto",
+    "followUpSection": "Seguimiento",
+    "name": "Nombre",
+    "phone": "WhatsApp",
+    "phoneHint": "El mismo número con el que entraría a la demo.",
+    "phoneInvalid": "Ingresa un número válido con su indicativo (ej. +57 300 123 4567).",
+    "referredBy": "Referido por",
+    "referredByPlaceholder": "Quién lo recomendó (opcional)",
+    "note": "Nota inicial",
+    "notePlaceholder": "Contexto del contacto: qué necesita, cómo llegó…",
+    "consent": "La persona autorizó ser contactada",
+    "consentHint": "Sin esta autorización el CRM sugiere no contactarla hasta que acepte en la demo.",
+    "submit": "Crear posible cliente",
+    "saving": "Creando…",
+    "duplicateTitle": "Ya existe un posible cliente con este número",
+    "duplicateHint": "Abre su ficha para seguir el proceso ahí.",
+    "openExisting": "Ver ficha"
+  }
 }

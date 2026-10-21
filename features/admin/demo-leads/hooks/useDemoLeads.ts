@@ -9,11 +9,14 @@ import {
   getDemoLeads,
   getDemoLeadsPipeline,
   getDemoLeadDetail,
+  createDemoLead,
   updateDemoLead,
   addDemoLeadNote,
   deleteDemoLead,
 } from "../services/demo-leads.service";
 import type {
+  CreateDemoLeadRequest,
+  DemoLead,
   DemoLeadFilters,
   UpdateDemoLeadRequest,
 } from "@/types/auth.types";
@@ -43,7 +46,7 @@ function stableFilters(filters: DemoLeadFilters): DemoLeadFilters {
  */
 export function useDemoLeads(
   filters: DemoLeadFilters = {},
-  enabled: boolean = true,
+  enabled: boolean = true
 ) {
   const stable = stableFilters(filters);
   return useQuery({
@@ -94,6 +97,37 @@ export function useUpdateDemoLead() {
     },
     onError: (error) => {
       toast.error(extractErrorMessage(error, t("toasts.updateError")));
+    },
+  });
+}
+
+/** `leadId` del lead que ya tiene ese número, si la creación dio 409. */
+export function existingLeadIdOf(error: unknown): string | null {
+  const response = (
+    error as { response?: { status?: number; data?: { leadId?: unknown } } }
+  )?.response;
+  return response?.status === 409 && typeof response.data?.leadId === "string"
+    ? response.data.leadId
+    : null;
+}
+
+/**
+ * Hook para crear un posible cliente a mano. Un 409 (número repetido) no
+ * muestra toast: el formulario ofrece abrir la ficha existente.
+ */
+export function useCreateDemoLead() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
+
+  return useMutation<DemoLead, unknown, CreateDemoLeadRequest>({
+    mutationFn: (data) => createDemoLead(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+      toast.success(t("toasts.created"));
+    },
+    onError: (error) => {
+      if (existingLeadIdOf(error)) return;
+      toast.error(extractErrorMessage(error, t("toasts.createError")));
     },
   });
 }
