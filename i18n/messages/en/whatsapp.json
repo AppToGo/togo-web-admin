@@ -90,7 +90,8 @@
     "billingHub": "Meta Billing Hub",
     "botMessagesPerOrder": "Bot average: {count} messages per order this month",
     "loadError": "Could not load usage. Check your connection and try again.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "notSyncedYet": "No data for this month yet: usage syncs with Meta once a day."
   },
   "connection": {
     "coexistence": "Coexistence",
@@ -149,6 +150,7 @@
     "ownSchedule": "Branch's own schedule",
     "inheritScheduleDedicated": "Without its own schedule, the branch commercial hours apply.",
     "dedicatedOnlyHint": "Branches with their own number can have their own attention settings on each branch page.",
-    "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit."
+    "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit.",
+    "cloudOnlyHint": "This branch has its own number, but it's connected through the API only (without the WhatsApp Business app on the phone). Per-branch attention requires coexistence; until then the business attention settings apply."
   }
 }

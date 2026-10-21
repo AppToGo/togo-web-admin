@@ -65,19 +65,29 @@ export function WhatsAppUsageCard() {
                 </span>
               )}
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full ${barColor(current.level)}`}
-                style={{ width: `${Math.min(100, current.percent)}%` }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs text-slate-500">
-              {t("usage.quotaLine", {
-                free: current.freeMessages,
-                billed: current.billableMessages,
-                percent: current.percent,
-              })}
-            </p>
+            {/* Sin sincronización aún (corre una vez al día): sin datos no
+                es lo mismo que cero mensajes. */}
+            {!current.syncedAt ? (
+              <p className="mt-1.5 text-xs text-slate-500">
+                {t("usage.notSyncedYet")}
+              </p>
+            ) : (
+              <>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={`h-full rounded-full ${barColor(current.level)}`}
+                    style={{ width: `${Math.min(100, current.percent)}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-xs text-slate-500">
+                  {t("usage.quotaLine", {
+                    free: current.freeMessages,
+                    billed: current.billableMessages,
+                    percent: current.percent,
+                  })}
+                </p>
+              </>
+            )}
             {current.costAvailable &&
               current.estimatedCost != null &&
               current.currency && (

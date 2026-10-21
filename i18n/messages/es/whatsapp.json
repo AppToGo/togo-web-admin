@@ -90,7 +90,8 @@
     "billingHub": "Billing Hub de Meta",
     "botMessagesPerOrder": "Promedio del bot: {count} mensajes por pedido este mes",
     "loadError": "No se pudo cargar el consumo. Revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "notSyncedYet": "Todavía no hay datos de este mes: el consumo se sincroniza con Meta una vez al día."
   },
   "connection": {
     "coexistence": "Coexistencia",
@@ -149,6 +150,7 @@
     "ownSchedule": "Horario propio de la sede",
     "inheritScheduleDedicated": "Sin horario propio rige el horario comercial de la sede.",
     "dedicatedOnlyHint": "Las sedes con número exclusivo pueden tener su propia atención en la página de cada sede.",
-    "ownScheduleEmptyError": "Marca al menos un día, o desmarca «Horario propio de la sede» para heredar."
+    "ownScheduleEmptyError": "Marca al menos un día, o desmarca «Horario propio de la sede» para heredar.",
+    "cloudOnlyHint": "Esta sede tiene su propio número, pero conectado solo por API (sin la app WhatsApp Business en el celular). La atención por sede necesita coexistencia: mientras tanto rige la atención configurada en el negocio."
   }
 }
