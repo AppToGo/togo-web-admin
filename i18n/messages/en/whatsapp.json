@@ -56,6 +56,18 @@
         "sessionErrorGeneric": "Something went wrong connecting your WhatsApp Business. Please try again.",
         "generic": "Something went wrong connecting to Facebook. Please try again."
       }
+    },
+    "billing": {
+      "hint": "So the bot keeps replying after the 1,000 free monthly messages run out, your Meta account needs a card on file.",
+      "link": "Open Meta Billing Hub"
+    },
+    "mode": {
+      "title": "Do you want to keep using WhatsApp on your phone?",
+      "coexistenceTitle": "Yes, use my current number (recommended)",
+      "coexistenceHint": "Connect the same number without losing your WhatsApp. Togo handles orders and you reply from your phone whenever you want.",
+      "cloudTitle": "No, use a new number just for Togo",
+      "cloudHint": "The number lives only in the cloud, with no app on the phone.",
+      "coexistenceNote": "You need the WhatsApp Business app updated (v2.24.17+). Connecting unlinks WhatsApp Web and desktop: they must be relinked. Via API there are no groups, calls or live location (in the app, yes)."
     }
   },
   "routing": {
@@ -69,5 +81,74 @@
     "sectionDescription": "One number for all branches. Customers will choose their branch when placing an order.",
     "configure": "Configure shared number",
     "configured": "Number active"
+  },
+  "usage": {
+    "paymentRequired": "Quota used up: check your payment",
+    "quotaLine": "{free} free used ({percent}%) · {billed} billed",
+    "costLine": "Estimated cost: {cost} {currency}",
+    "exhaustedHint": "Without a card on file with Meta, the bot will stop replying once the quota runs out.",
+    "billingHub": "Meta Billing Hub",
+    "botMessagesPerOrder": "Bot average: {count} messages per order this month",
+    "loadError": "Could not load usage. Check your connection and try again.",
+    "retry": "Retry"
+  },
+  "connection": {
+    "coexistence": "Coexistence",
+    "cloudApi": "API only",
+    "disconnected": "Unlinked: reconnect from Meta",
+    "syncPending": "Importing contacts/history…",
+    "syncContacts": "Contacts: {state}",
+    "syncHistory": "History: {state}",
+    "syncState_PENDING": "pending",
+    "syncState_REQUESTED": "requested",
+    "syncState_DONE": "done",
+    "syncState_DECLINED": "not shared",
+    "syncState_FAILED": "failed",
+    "syncState_EXPIRED": "window closed"
+  },
+  "attention": {
+    "title": "Attention mode",
+    "modes": {
+      "BOT_ONLY": {
+        "label": "Bot only",
+        "hint": "The bot answers everything, except handoff."
+      },
+      "HYBRID": {
+        "label": "Hybrid",
+        "hint": "The bot answers unless out of hours or operator busy."
+      },
+      "ATTENTION_MANUAL": {
+        "label": "Human only",
+        "hint": "The bot never replies: it leaves drafts for the team."
+      }
+    },
+    "minutesLabel": "Release the conversation if the human does not reply (minutes)",
+    "minutesError": "Enter a value between 1 and 480.",
+    "scheduleLabel": "Human attention schedule",
+    "scheduleHint": "Unchecked day = closed (the bot pauses). With no days checked, the branches' business hours apply. Business time zone.",
+    "save": "Save attention",
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "rangeError": "Check the hours: closing must be after opening. If a shift goes past midnight, split it across two days.",
+    "saveSuccess": "Attention mode saved",
+    "saveError": "Couldn't save the attention mode"
+  },
+  "branchAttention": {
+    "title": "Per-branch attention",
+    "dedicatedHint": "This branch has its own number: mode, schedule and operator busy are evaluated only here.",
+    "sharedHint": "This branch shares the business number: the business attention settings apply.",
+    "inheritMode": "Inherit from business (current: {mode})",
+    "inheritMinutes": "Empty = inherit from business.",
+    "ownSchedule": "Branch's own schedule",
+    "inheritScheduleDedicated": "Without its own schedule, the branch commercial hours apply.",
+    "dedicatedOnlyHint": "Branches with their own number can have their own attention settings on each branch page.",
+    "ownScheduleEmptyError": "Check at least one day, or uncheck the branch's own schedule to inherit."
   }
 }

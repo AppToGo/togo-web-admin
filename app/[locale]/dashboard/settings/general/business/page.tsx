@@ -33,9 +33,12 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import {
+  dedicatedBranchIds,
   useWhatsAppAccounts,
   useWhatsAppRoutings,
+  WhatsAppAttentionCard,
   WhatsAppConnectDialog,
+  WhatsAppUsageCard,
 } from "@/features/whatsapp";
 
 const SECTION =
@@ -64,6 +67,20 @@ const defaultFormData: FormData = {
   description: "",
   useProductImages: false,
 };
+
+/**
+ * Etiqueta del estado de un sync con fallback al valor crudo si el backend
+ * envía un estado sin traducción (mismo patrón que el motivo de borrador
+ * en el hilo: nunca mostrar la ruta de la clave al usuario).
+ */
+function syncStateLabel(
+  t: ReturnType<typeof useTranslations>,
+  status?: string | null
+): string {
+  const normalized = status ?? "PENDING";
+  const key = `connection.syncState_${normalized}`;
+  return t.has(key) ? t(key) : normalized;
+}
 
 function formDataFrom(business: Business): FormData {
   const s = (business.settings as Record<string, unknown>) ?? {};
@@ -496,6 +513,44 @@ export default function BusinessSettingsPage() {
                     {autoAssignAccount.displayName && (
                       <p className="text-xs text-slate-500">{autoAssignAccount.phoneNumber}</p>
                     )}
+                    <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                      <span
+                        className={`rounded-full px-2 py-0.5 font-medium ${
+                          autoAssignAccount.connectionType === "COEXISTENCE"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {autoAssignAccount.connectionType === "COEXISTENCE"
+                          ? tWa("connection.coexistence")
+                          : tWa("connection.cloudApi")}
+                      </span>
+                      {autoAssignAccount.status === "DISCONNECTED" && (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 font-medium text-red-700">
+                          {tWa("connection.disconnected")}
+                        </span>
+                      )}
+                      {autoAssignAccount.connectionType === "COEXISTENCE" && (
+                          <span className="text-slate-500">
+                            {tWa("connection.syncContacts", {
+                              state: syncStateLabel(
+                                tWa,
+                                autoAssignAccount.contactsSyncStatus
+                              ),
+                            })}
+                            {" · "}
+                            {tWa("connection.syncHistory", {
+                              state: syncStateLabel(
+                                tWa,
+                                autoAssignAccount.historySyncStatus
+                              ),
+                            })}
+                            {(autoAssignAccount.contactsSyncStatus === "PENDING" ||
+                              autoAssignAccount.historySyncStatus === "PENDING") &&
+                              ` — ${tWa("connection.syncPending")}`}
+                          </span>
+                        )}
+                    </p>
                   </div>
                 ) : (
                   <p className="min-w-0 flex-1 text-sm text-slate-500">{tb("whatsapp.notConfigured")}</p>
@@ -519,6 +574,24 @@ export default function BusinessSettingsPage() {
                   )}
                 </Button>
               </div>
+              {/* Consumo de mensajería Meta del mes */}
+              <div className="mt-3">
+                <WhatsAppUsageCard />
+              </div>
+              {/* Modo de atención en coexistencia (F2/F5): siempre visible,
+                  porque es lo que heredan las sedes. Las sedes con número
+                  exclusivo pueden sobrescribirlo en su página. */}
+              {business && (
+                <div className="mt-3">
+                  <WhatsAppAttentionCard business={business} />
+                  {dedicatedBranchIds(whatsappRoutings, whatsappAccounts)
+                    .size > 0 && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      {tWa("branchAttention.dedicatedOnlyHint")}
+                    </p>
+                  )}
+                </div>
+              )}
             </section>
 
             {/* Guardar: barra fija abajo mientras haya cambios */}

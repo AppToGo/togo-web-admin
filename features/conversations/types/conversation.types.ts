@@ -30,6 +30,8 @@ export type ConversationEventType =
   | "HANDOFF_WAIT_EXPIRED"
   | "BOT_PAUSED"
   | "BOT_RESUMED"
+  | "BOT_DRAFT"
+  | "OWNER_PHONE_REPLY"
   | "SESSION_CLOSED"
   | "SESSION_REOPENED"
   | "NOTE_ADDED"
@@ -91,6 +93,8 @@ export interface ConversationMessage {
   senderType: MessageSenderType;
   senderUserId: string | null;
   operatorSource: OperatorSource | null;
+  /** Origen fino (F2/F3): OWNER_PHONE, HISTORY_IMPORT, … */
+  source?: string | null;
   contentType: MessageContentType;
   text: string | null;
   media: ResolvedMedia | null;

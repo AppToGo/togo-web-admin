@@ -21,6 +21,12 @@ export interface Business {
   subscriptionPlan?: number;
   settings?: Record<string, unknown>;
   botVoice?: Partial<BotVoice>;
+  /** Modo de atención en coexistencia (F2). */
+  attentionMode?: "BOT_ONLY" | "ATTENTION_MANUAL" | "HYBRID";
+  /** Minutos sin actividad del humano antes de liberar la sesión (F2). */
+  humanTakeoverMinutes?: number;
+  /** Horario de atención: [{day: 0-6, open/close "HH:MM"}] (F2). */
+  attentionSchedule?: Array<{ day: number; open: string; close: string }>;
 }
 
 /**
@@ -53,6 +59,9 @@ export interface UpdateBusinessRequest {
   catalogMode?: 'MANUAL' | 'AUTO_GENERATED' | 'HYBRID';
   settings?: Record<string, unknown>;
   botVoice?: Partial<BotVoice>;
+  attentionMode?: "BOT_ONLY" | "ATTENTION_MANUAL" | "HYBRID";
+  humanTakeoverMinutes?: number;
+  attentionSchedule?: Array<{ day: number; open: string; close: string }>;
 }
 
 export interface BusinessFormData {

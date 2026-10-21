@@ -30,9 +30,16 @@ import { getBranchStatus } from "@/features/branches/utils/branch-status";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 
 const TABLES_SECTION_ID = "sede-mesas";
+const ATTENTION_SECTION_ID = "sede-atencion";
 import { useBusiness } from "@/features/business";
 import { TablesManager } from "@/features/tables";
 import { Can } from "@/components/auth/Can";
+import {
+  WhatsAppBranchAttentionCard,
+  dedicatedBranchIds,
+  useWhatsAppAccounts,
+  useWhatsAppRoutings,
+} from "@/features/whatsapp";
 
 export default function EditBranchPage() {
   const t = useTranslations("branches");
@@ -61,6 +68,14 @@ export default function EditBranchPage() {
   });
   const { data: businessBranches } = useBranchesByBusiness(branch?.businessId ?? null);
   const isMultiBranch = (businessBranches?.filter((b) => b.isActive).length ?? 0) > 1;
+
+  // Número exclusivo de la sede: misma regla que la API.
+  const { data: whatsappRoutings } = useWhatsAppRoutings();
+  const { data: whatsappAccounts } = useWhatsAppAccounts();
+  const hasDedicatedNumber = dedicatedBranchIds(
+    whatsappRoutings,
+    whatsappAccounts
+  ).has(id);
 
   const handleSubmit = (data: UpdateBranchRequest) => {
     updateBranch.mutate(
@@ -148,6 +163,7 @@ export default function EditBranchPage() {
     { id: BRANCH_FORM_SECTION_IDS.channels, label: t("detail.sections.channels") },
     { id: BRANCH_FORM_SECTION_IDS.payments, label: t("detail.sections.payments") },
     ...(canViewTables ? [{ id: TABLES_SECTION_ID, label: t("detail.sections.tables") }] : []),
+    { id: ATTENTION_SECTION_ID, label: t("detail.sections.attention") },
   ];
 
   return (
@@ -209,6 +225,14 @@ export default function EditBranchPage() {
               onCancel={handleCancel}
               isLoading={updateBranch.isPending}
             />
+
+            {/* Atención por sede (F5): modo, minutos y horario propios con herencia */}
+            <div id={ATTENTION_SECTION_ID} className="scroll-mt-4">
+              <WhatsAppBranchAttentionCard
+                branch={branch}
+                dedicated={hasDedicatedNumber}
+              />
+            </div>
 
             {/* Mesas (docs/architecture/pedidos-en-mesa.md, Fase 1) */}
             <Can permission="table.view">
