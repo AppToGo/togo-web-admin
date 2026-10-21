@@ -1,0 +1,63 @@
+{
+  "title": "Consumo de IA",
+  "subtitle": "Lo que cuesta OpenAI en todos los negocios, en dólares. Los negocios no ven estos datos.",
+  "accessDenied": "Solo el super administrador puede ver el consumo de IA.",
+  "error": "No pudimos cargar el consumo de IA.",
+  "retry": "Reintentar",
+  "empty": "Sin consumo de IA en este periodo.",
+  "filteredBy": "Mostrando solo:",
+  "clearBusiness": "Quitar el filtro de {name}",
+  "section": {
+    "title": "Consumo de IA",
+    "superAdminOnly": "Solo super admin",
+    "allBusinesses": "Todos los negocios",
+    "selectedBusiness": "Negocio seleccionado"
+  },
+  "kpis": {
+    "total": "Gasto en IA",
+    "calls": "{count} llamadas",
+    "perOrder": "Costo por pedido",
+    "orders": "{count, plural, =0 {Sin pedidos} one {# pedido} other {# pedidos}}",
+    "perConversation": "Costo por conversación",
+    "conversations": "{count, plural, =0 {Sin conversaciones} one {# conversación} other {# conversaciones}}",
+    "tokens": "Tokens",
+    "audio": "{minutes} min de audio"
+  },
+  "chart": {
+    "title": "Gasto por día",
+    "subtitle": "En dólares (USD), lo que factura OpenAI",
+    "total": "Total del periodo",
+    "calls": "{count, plural, one {# llamada} other {# llamadas}}"
+  },
+  "features": {
+    "title": "En qué se gasta",
+    "subtitle": "Por función del bot y del panel",
+    "share": "{share}% · {count, plural, one {# llamada} other {# llamadas}}",
+    "names": {
+      "INTENT": "Entender al cliente",
+      "CUSTOMER_AGENT": "Agente del cliente",
+      "OPERATOR_AGENT": "Operador por WhatsApp",
+      "PARAPHRASE": "Respuestas con el tono del negocio",
+      "TRANSCRIPTION": "Notas de voz",
+      "PAYMENT_PROOF": "Comprobantes de pago",
+      "CATALOG_VISION": "Importar catálogo (imagen o PDF)",
+      "CATALOG_CLASSIFIER": "Categorías al importar",
+      "PRODUCT_KEYWORDS": "Palabras clave de productos",
+      "BOT_MESSAGES": "Editar mensajes con IA"
+    }
+  },
+  "businesses": {
+    "title": "Por negocio",
+    "subtitle": "Toca un negocio para ver solo su consumo",
+    "business": "Negocio",
+    "cost": "Gasto",
+    "calls": "Llamadas",
+    "orders": "Pedidos",
+    "perOrder": "Por pedido",
+    "platform": "Plataforma (catálogo global)"
+  },
+  "models": {
+    "title": "Por modelo",
+    "tokens": "{input} de entrada · {output} de salida"
+  }
+}
