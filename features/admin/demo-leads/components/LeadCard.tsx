@@ -44,8 +44,13 @@ export function LeadCard({
       <div className="flex items-center gap-3">
         <InitialsAvatar name={lead.name} seed={lead.id} size="md" />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[15px] font-semibold text-slate-900">
-            {lead.name}
+          <span
+            className={cn(
+              "truncate text-[15px] font-semibold",
+              lead.name ? "text-slate-900" : "text-slate-500"
+            )}
+          >
+            {lead.name || t("card.noName")}
           </span>
           {business && (
             <span className="truncate text-[13px] text-slate-500">
@@ -68,8 +73,15 @@ export function LeadCard({
           {t("card.orders", { count: lead.orderCount })}
         </span>
         <span className="rounded-full bg-slate-100/90 px-2.5 py-0.5">
-          {t("card.tries", { count: lead.demoCount })}
+          {lead.demoCount > 0
+            ? t("card.tries", { count: lead.demoCount })
+            : t("card.noDemo")}
         </span>
+        {lead.source === "MANUAL" && (
+          <span className="rounded-full bg-violet-50 px-2.5 py-0.5 font-semibold text-violet-700">
+            {lead.referredBy ? t("card.referred") : t("card.manual")}
+          </span>
+        )}
         {lead.revoked && (
           <span className="rounded-full bg-red-50 px-2.5 py-0.5 font-semibold text-red-700">
             {t("card.revoked")}

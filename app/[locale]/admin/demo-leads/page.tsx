@@ -16,7 +16,14 @@ import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { Button } from "@/components/ui/button";
 import { PillGroup } from "@/components/ui/pill-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, Clock, Handshake, Search, UserPlus } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Handshake,
+  Plus,
+  Search,
+  UserPlus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
@@ -26,6 +33,7 @@ import {
   useDemoLeadsPipeline,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import { LeadDetailPanel } from "@/features/admin/demo-leads/components/LeadDetailPanel";
+import { CreateLeadDrawer } from "@/features/admin/demo-leads/components/CreateLeadDrawer";
 import { LeadCard } from "@/features/admin/demo-leads/components/LeadCard";
 import { LeadsBoardColumn } from "@/features/admin/demo-leads/components/LeadsBoardColumn";
 import {
@@ -51,6 +59,7 @@ export default function DemoLeadsPage() {
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   // Teléfono: el tablero no cabe, se ve una etapa a la vez.
   const [mobileStage, setMobileStage] = useState<DemoLeadStage>("NEW");
 
@@ -159,21 +168,32 @@ export default function DemoLeadsPage() {
             </h1>
             <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
           </div>
-          <label className="flex h-11 w-full items-center gap-2.5 rounded-full border border-white/90 bg-white/75 px-4 shadow-glass lg:w-80">
-            <Search
-              className="h-[18px] w-[18px] shrink-0 text-slate-500"
-              aria-hidden
-            />
-            <span className="sr-only">{t("filters.search")}</span>
-            <input
-              type="search"
-              placeholder={t("filters.search")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              maxLength={120}
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
-            />
-          </label>
+          <div className="flex items-center gap-2">
+            <label className="flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-white/90 bg-white/75 px-4 shadow-glass lg:w-80 lg:flex-none">
+              <Search
+                className="h-[18px] w-[18px] shrink-0 text-slate-500"
+                aria-hidden
+              />
+              <span className="sr-only">{t("filters.search")}</span>
+              <input
+                type="search"
+                placeholder={t("filters.search")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                maxLength={120}
+                className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
+              />
+            </label>
+            <Button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              className="h-11 shrink-0 rounded-full px-4"
+              aria-label={t("create.title")}
+            >
+              <Plus className="h-[18px] w-[18px]" aria-hidden />
+              <span className="hidden sm:inline">{t("create.button")}</span>
+            </Button>
+          </div>
         </div>
 
         {/* Métricas */}
@@ -329,6 +349,12 @@ export default function DemoLeadsPage() {
           </div>
         )}
       </div>
+
+      <CreateLeadDrawer
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onOpenLead={setSelectedId}
+      />
 
       <LeadDetailPanel
         leadId={selectedId}

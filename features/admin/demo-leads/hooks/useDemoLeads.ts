@@ -9,11 +9,17 @@ import {
   getDemoLeads,
   getDemoLeadsPipeline,
   getDemoLeadDetail,
+  createDemoLead,
   updateDemoLead,
+  addDemoLeadAction,
+  setDemoLeadActionDone,
+  deleteDemoLeadAction,
   addDemoLeadNote,
   deleteDemoLead,
 } from "../services/demo-leads.service";
 import type {
+  CreateDemoLeadRequest,
+  DemoLead,
   DemoLeadFilters,
   UpdateDemoLeadRequest,
 } from "@/types/auth.types";
@@ -43,7 +49,7 @@ function stableFilters(filters: DemoLeadFilters): DemoLeadFilters {
  */
 export function useDemoLeads(
   filters: DemoLeadFilters = {},
-  enabled: boolean = true,
+  enabled: boolean = true
 ) {
   const stable = stableFilters(filters);
   return useQuery({
@@ -94,6 +100,72 @@ export function useUpdateDemoLead() {
     },
     onError: (error) => {
       toast.error(extractErrorMessage(error, t("toasts.updateError")));
+    },
+  });
+}
+
+/**
+ * Acciones de seguimiento de un lead: agregar, resolver y eliminar. Cada
+ * cambio recalcula la próxima acción del lead, así que se invalida también
+ * el listado (la tarjeta del tablero la muestra).
+ */
+export function useDemoLeadActions(leadId: string) {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
+  // Devuelve la promesa: la mutación sigue pendiente hasta tener los datos
+  // nuevos, así la casilla no vuelve atrás un instante.
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+  const onError = (error: unknown) =>
+    toast.error(extractErrorMessage(error, t("toasts.actionError")));
+
+  const add = useMutation({
+    mutationFn: (data: { title: string; dueAt?: string }) =>
+      addDemoLeadAction(leadId, data),
+    onSuccess: refresh,
+    onError,
+  });
+  const setDone = useMutation({
+    mutationFn: ({ actionId, done }: { actionId: string; done: boolean }) =>
+      setDemoLeadActionDone(leadId, actionId, done),
+    onSuccess: refresh,
+    onError,
+  });
+  const remove = useMutation({
+    mutationFn: (actionId: string) => deleteDemoLeadAction(leadId, actionId),
+    onSuccess: refresh,
+    onError,
+  });
+  return { add, setDone, remove };
+}
+
+/** `leadId` del lead que ya tiene ese número, si la creación dio 409. */
+export function existingLeadIdOf(error: unknown): string | null {
+  const response = (
+    error as { response?: { status?: number; data?: { leadId?: unknown } } }
+  )?.response;
+  return response?.status === 409 && typeof response.data?.leadId === "string"
+    ? response.data.leadId
+    : null;
+}
+
+/**
+ * Hook para crear un posible cliente a mano. Un 409 (número repetido) no
+ * muestra toast: el formulario ofrece abrir la ficha existente.
+ */
+export function useCreateDemoLead() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
+
+  return useMutation<DemoLead, unknown, CreateDemoLeadRequest>({
+    mutationFn: (data) => createDemoLead(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+      toast.success(t("toasts.created"));
+    },
+    onError: (error) => {
+      if (existingLeadIdOf(error)) return;
+      toast.error(extractErrorMessage(error, t("toasts.createError")));
     },
   });
 }

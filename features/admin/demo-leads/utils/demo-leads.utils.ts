@@ -45,17 +45,6 @@ export function formatPhone(phone: string | null | undefined): string {
 }
 
 /**
- * Convierte una fecha ISO al formato requerido por <input type="datetime-local" />.
- */
-export function toInputDateTime(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-/**
  * Convierte el valor de un input datetime-local a ISO string de forma segura.
  * Devuelve null si está vacío o si la fecha no es válida.
  */

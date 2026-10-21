@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Lightbulb, MessageCircle, Trash2 } from "lucide-react";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
+import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
   DemoLeadDetailLead,
@@ -56,9 +58,7 @@ import {
   DEMO_LEAD_STAGES,
   formatDateTime,
   formatPhone,
-  parseOptionalIsoDateTime,
   safeLabel,
-  toInputDateTime,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
 interface LeadDetailPanelProps {
@@ -104,8 +104,6 @@ export function LeadDetailPanel({
           : null,
         planInterest: (form.get("planInterest") as string) || null,
         mainNeed: (form.get("mainNeed") as string) || null,
-        nextAction: (form.get("nextAction") as string) || null,
-        nextActionAt: parseOptionalIsoDateTime(form.get("nextActionAt")),
         lostReason:
           stage === "LOST" ? (form.get("lostReason") as string) || null : null,
         // Marcada: revoca con sello de ahora. Sin marcar: no toca el sello.
@@ -153,7 +151,7 @@ export function LeadDetailPanel({
               )}
               <div className="min-w-0 flex-1">
                 <DrawerTitle className="truncate text-xl font-bold text-slate-900">
-                  {detail ? detail.lead.name : "…"}
+                  {detail ? detail.lead.name || t("card.noName") : "…"}
                 </DrawerTitle>
                 {detail &&
                   (detail.lead.establishmentName ||
@@ -167,6 +165,15 @@ export function LeadDetailPanel({
                 {detail && (
                   <p className="mt-0.5 text-sm tabular-nums text-slate-500">
                     {formatPhone(detail.lead.phone)}
+                  </p>
+                )}
+                {detail?.lead.source === "MANUAL" && (
+                  <p className="mt-1.5 inline-flex rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
+                    {detail.lead.referredBy
+                      ? t("detail.manualReferred", {
+                          name: detail.lead.referredBy,
+                        })
+                      : t("detail.manual")}
                   </p>
                 )}
               </div>
@@ -297,6 +304,13 @@ export function LeadDetailPanel({
                 />
 
                 {tab === "profile" && (
+                  <LeadActionsSection
+                    leadId={detail.lead.id}
+                    actions={detail.actions ?? []}
+                  />
+                )}
+
+                {tab === "profile" && (
                   <section>
                     <form
                       key={`${detail.lead.id}-${detail.lead.stage}-${detail.lead.priority}-${detail.lead.revoked}`}
@@ -339,11 +353,11 @@ export function LeadDetailPanel({
                         </label>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <Input
+                        <IndustrySelect
+                          id="lead-detail-business-type"
                           label={t("detail.businessType")}
                           name="businessType"
                           defaultValue={detail.lead.businessType ?? ""}
-                          maxLength={60}
                         />
                         <Input
                           label={t("detail.businessName")}
@@ -373,22 +387,6 @@ export function LeadDetailPanel({
                         defaultValue={detail.lead.mainNeed ?? ""}
                         maxLength={255}
                       />
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          label={t("detail.nextAction")}
-                          name="nextAction"
-                          defaultValue={detail.lead.nextAction ?? ""}
-                          maxLength={255}
-                        />
-                        <Input
-                          label={t("detail.nextActionAt")}
-                          name="nextActionAt"
-                          type="datetime-local"
-                          defaultValue={toInputDateTime(
-                            detail.lead.nextActionAt
-                          )}
-                        />
-                      </div>
                       <Input
                         label={t("detail.lostReason")}
                         name="lostReason"
@@ -443,11 +441,14 @@ export function LeadDetailPanel({
                             </span>
                             <span className="flex flex-1 flex-col pb-4">
                               <span className="text-sm font-medium text-slate-900">
-                                {safeLabel(
-                                  tt,
-                                  `events.${event.type}`,
-                                  event.type
-                                )}
+                                {event.type === "DEMO_STARTED" &&
+                                event.metadata?.firstDemo === true
+                                  ? t("events.DEMO_STARTED_FIRST")
+                                  : safeLabel(
+                                      tt,
+                                      `events.${event.type}`,
+                                      event.type
+                                    )}
                               </span>
                               <span className="mt-0.5 text-[13px] text-slate-500">
                                 {formatDateTime(event.occurredAt, locale)}
@@ -524,7 +525,7 @@ export function LeadDetailPanel({
             <AlertDialogTitle>{t("detail.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("detail.deleteConfirmDescription", {
-                name: detail?.lead.name ?? "",
+                name: detail?.lead.name || t("card.noName"),
                 phone: formatPhone(detail?.lead.phone),
               })}
             </AlertDialogDescription>

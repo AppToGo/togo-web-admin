@@ -1,20 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput, PHONE_REGEX } from "@/components/ui/phone-input";
 import { useDemoLogin } from "@/features/auth/hooks/useAuth";
-import {
-  fetchIndustries,
-  type IndustryOption,
-} from "@/features/auth/services/auth.service";
+import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { DEMO_WHATSAPP_NUMBER } from "@/features/auth/demo.constants";
-
-const SELECT_CLASS =
-  "w-full h-11 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed";
 
 /**
  * Formulario de entrada al modo demo.
@@ -33,12 +27,7 @@ export function DemoLoginForm() {
   const [consent, setConsent] = useState(false);
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const [consentError, setConsentError] = useState<string | undefined>();
-  const [industries, setIndustries] = useState<IndustryOption[]>([]);
   const demoLogin = useDemoLogin();
-
-  useEffect(() => {
-    void fetchIndustries().then(setIndustries);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,31 +83,14 @@ export function DemoLoginForm() {
         error={phoneError ?? demoLogin.error?.message}
       />
 
-      <div className="w-full">
-        <label
-          htmlFor="demo-business-type"
-          className="block text-sm font-medium text-slate-700 mb-1.5"
-        >
-          {t("businessType.label")}
-        </label>
-        <select
-          id="demo-business-type"
-          value={businessType}
-          onChange={(e) => setBusinessType(e.target.value)}
-          disabled={demoLogin.isPending}
-          className={SELECT_CLASS}
-        >
-          <option value="">{tRegister("industry.placeholder")}</option>
-          {industries.map((ind) => (
-            <option key={ind.id} value={ind.name}>
-              {ind.name}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-slate-400 mt-1">
-          {tRegister("industry.helper")}
-        </p>
-      </div>
+      <IndustrySelect
+        id="demo-business-type"
+        label={t("businessType.label")}
+        value={businessType}
+        onChange={setBusinessType}
+        disabled={demoLogin.isPending}
+        helperText={tRegister("industry.helper")}
+      />
 
       <Input
         label={t("businessName.label")}
@@ -148,9 +120,7 @@ export function DemoLoginForm() {
           />
           <span>{t("consent")}</span>
         </label>
-        {consentError && (
-          <p className="text-xs text-red-500">{consentError}</p>
-        )}
+        {consentError && <p className="text-xs text-red-500">{consentError}</p>}
       </div>
 
       <p className="text-xs text-slate-500">
