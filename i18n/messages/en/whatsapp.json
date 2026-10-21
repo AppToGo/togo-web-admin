@@ -56,6 +56,10 @@
         "sessionErrorGeneric": "Something went wrong connecting your WhatsApp Business. Please try again.",
         "generic": "Something went wrong connecting to Facebook. Please try again."
       }
+    },
+    "billing": {
+      "hint": "So the bot keeps replying after the 1,000 free monthly messages run out, your Meta account needs a card on file.",
+      "link": "Open Meta Billing Hub"
     }
   },
   "routing": {
@@ -69,5 +73,13 @@
     "sectionDescription": "One number for all branches. Customers will choose their branch when placing an order.",
     "configure": "Configure shared number",
     "configured": "Number active"
+  },
+  "usage": {
+    "paymentRequired": "Quota used up: check your payment",
+    "quotaLine": "{free} free used ({percent}%) · {billed} billed",
+    "costLine": "Estimated cost: {cost} {currency}",
+    "exhaustedHint": "Without a card on file with Meta, the bot will stop replying once the quota runs out.",
+    "billingHub": "Meta Billing Hub",
+    "botMessagesPerOrder": "Bot average: {count} messages per order this month"
   }
 }

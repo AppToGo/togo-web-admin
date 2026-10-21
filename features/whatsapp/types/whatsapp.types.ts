@@ -5,7 +5,13 @@
  * Basado en los DTOs del backend.
  */
 
-export type WhatsAppAccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+export type WhatsAppAccountStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "SUSPENDED"
+  | "PENDING_SUBSCRIPTION"
+  | "TOKEN_INVALID"
+  | "PAYMENT_REQUIRED";
 export type RoutingStrategy =
   "DIRECT_TO_BRANCH" | "AUTO_ASSIGN" | "SHARED_INBOX";
 
@@ -76,4 +82,32 @@ export interface UpdateWhatsAppRoutingRequest {
   strategy?: RoutingStrategy;
   isActive?: boolean;
   priority?: number;
+}
+
+/** Mes de consumo de una cuenta (fuente: Analytics de Meta). */
+export interface WhatsAppUsageMonth {
+  yearMonth: string;
+  freeMessages: number;
+  billableMessages: number;
+  percent: number;
+  level: "OK" | "WARN" | "EXHAUSTED";
+  estimatedCost?: number | null;
+  currency?: string | null;
+  costAvailable: boolean;
+  syncedAt?: string | null;
+}
+
+/** Consumo de una cuenta de WhatsApp del negocio. */
+export interface WhatsAppAccountUsage {
+  accountId: string;
+  phoneNumber: string;
+  status: string;
+  current: WhatsAppUsageMonth;
+  history: WhatsAppUsageMonth[];
+}
+
+/** Resumen de consumo para el panel del negocio. */
+export interface WhatsAppUsageSummary {
+  accounts: WhatsAppAccountUsage[];
+  botMessagesPerOrder?: number | null;
 }

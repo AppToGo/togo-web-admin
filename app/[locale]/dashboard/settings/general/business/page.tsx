@@ -36,6 +36,7 @@ import {
   useWhatsAppAccounts,
   useWhatsAppRoutings,
   WhatsAppConnectDialog,
+  WhatsAppUsageCard,
 } from "@/features/whatsapp";
 
 const SECTION =
@@ -518,6 +519,10 @@ export default function BusinessSettingsPage() {
                     </>
                   )}
                 </Button>
+              </div>
+              {/* Consumo de mensajería Meta del mes */}
+              <div className="mt-3">
+                <WhatsAppUsageCard />
               </div>
             </section>
 

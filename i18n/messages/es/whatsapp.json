@@ -56,6 +56,10 @@
         "sessionErrorGeneric": "Ocurrió un error al conectar tu WhatsApp Business. Intenta de nuevo.",
         "generic": "Ocurrió un error al conectar con Facebook. Intenta de nuevo."
       }
+    },
+    "billing": {
+      "hint": "Para que el bot siga respondiendo al agotar los 1.000 mensajes gratis del mes, tu cuenta de Meta necesita una tarjeta cargada.",
+      "link": "Abrir el Billing Hub de Meta"
     }
   },
   "routing": {
@@ -69,5 +73,13 @@
     "sectionDescription": "Número único para todas las sedes. Los clientes elegirán la sede al hacer su pedido.",
     "configure": "Configurar número compartido",
     "configured": "Número activo"
+  },
+  "usage": {
+    "paymentRequired": "Cupo agotado: verifica tu pago",
+    "quotaLine": "{free} gratis usados ({percent} %) · {billed} cobrados",
+    "costLine": "Costo estimado: {cost} {currency}",
+    "exhaustedHint": "Sin tarjeta en Meta, el bot dejará de responder al agotar el cupo.",
+    "billingHub": "Billing Hub de Meta",
+    "botMessagesPerOrder": "Promedio del bot: {count} mensajes por pedido este mes"
   }
 }

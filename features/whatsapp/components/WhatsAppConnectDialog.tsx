@@ -501,6 +501,25 @@ export function WhatsAppConnectDialog({
             embeddedSignupView
           )}
 
+          {!isEditMode && (
+            <div className="px-7">
+              <Alert className="bg-amber-50 border-amber-200">
+                <Info className="w-4 h-4 text-amber-600" />
+                <AlertDescription className="text-amber-700 text-xs">
+                  {t("accounts.billing.hint")}{" "}
+                  <a
+                    href="https://business.facebook.com/latest/billing_hub/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium underline"
+                  >
+                    {t("accounts.billing.link")}
+                  </a>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 p-7">
             {/* Disconnect button in edit mode */}
             {isEditMode && (
