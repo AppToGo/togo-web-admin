@@ -341,7 +341,9 @@
       "activated": "Activados",
       "notActivated": "No activados"
     },
-    "noBranches": "No hay sedes disponibles"
+    "noBranches": "No hay sedes disponibles",
+    "noProductsInBranch": "Sin productos en esta sede",
+    "noProductsInBranchHint": "Activa productos del catálogo en esta sede desde Inventario por sede."
   },
   "availabilityTab": {
     "title": "Disponibilidad por Sede",

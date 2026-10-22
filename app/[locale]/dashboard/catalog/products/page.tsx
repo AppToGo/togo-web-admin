@@ -127,6 +127,12 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   // Teléfono: Todos · Activos · Inactivos (el escritorio no filtra por estado).
   const [statusFilter, setStatusFilter] = useState<ProductStatusFilter>("all");
+  // Sede: null = todas. Con sede, activationFilter acota a activados/no.
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+  const [activationFilter, setActivationFilter] = useState({
+    activated: true,
+    notActivated: true,
+  });
   const isMobile = useIsMobile();
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>({
     custom: true,
@@ -150,16 +156,27 @@ export default function ProductsPage() {
   const activeFiltersCount = [
     selectedCategory !== "all",
     !sourceFilter.custom || !sourceFilter.catalog,
+    selectedBranchId !== null,
+    !!selectedBranchId && (!activationFilter.activated || !activationFilter.notActivated),
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
     setSelectedCategory("all");
     setSourceFilter({ custom: true, catalog: true });
+    setSelectedBranchId(null);
+    setActivationFilter({ activated: true, notActivated: true });
   };
 
   // Cambiar un filtro vuelve a la página 1. Ajuste de estado durante el
   // render (no un efecto), mismo patrón que la página de conversaciones.
-  const filtersKey = JSON.stringify([searchQuery, selectedCategory, sourceFilter, statusFilter]);
+  const filtersKey = JSON.stringify([
+    searchQuery,
+    selectedCategory,
+    sourceFilter,
+    statusFilter,
+    selectedBranchId,
+    activationFilter,
+  ]);
   const [prevFiltersKey, setPrevFiltersKey] = useState(filtersKey);
   if (filtersKey !== prevFiltersKey) {
     setPrevFiltersKey(filtersKey);
@@ -178,6 +195,17 @@ export default function ProductsPage() {
         : !sourceFilter.custom && sourceFilter.catalog
           ? true
           : undefined;
+    // Sin sede no se filtra por activación. Con sede: ambos = todos,
+    // uno solo = ese estado, ninguno = todos (estado degenerado).
+    const activationStatus = !selectedBranchId
+      ? undefined
+      : activationFilter.activated && activationFilter.notActivated
+        ? undefined
+        : activationFilter.activated
+          ? ("activated" as const)
+          : activationFilter.notActivated
+            ? ("not_activated" as const)
+            : ("all" as const);
     return {
       search: searchQuery || undefined,
       page,
@@ -186,8 +214,10 @@ export default function ProductsPage() {
       isFromTemplate,
       isActive:
         isMobile && statusFilter !== "all" ? statusFilter === "active" : undefined,
+      branchId: selectedBranchId ?? undefined,
+      activationStatus,
     };
-  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter, isMobile, statusFilter]);
+  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter, isMobile, statusFilter, selectedBranchId, activationFilter]);
 
   const {
     data: productsData,
@@ -354,10 +384,13 @@ export default function ProductsPage() {
             onSearchChange={setSearchQuery}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            selectedBranchId={null}
-            onBranchChange={() => {}}
-            activationFilter={{ activated: true, notActivated: true }}
-            onActivationFilterChange={() => {}}
+            selectedBranchId={selectedBranchId}
+            onBranchChange={(id) => {
+              setSelectedBranchId(id);
+              setActivationFilter({ activated: true, notActivated: true });
+            }}
+            activationFilter={activationFilter}
+            onActivationFilterChange={setActivationFilter}
             sourceFilter={sourceFilter}
             onSourceFilterChange={setSourceFilter}
             categories={categories}
@@ -406,7 +439,21 @@ export default function ProductsPage() {
             <p className="text-red-600 text-sm">{t("products.error.title")}</p>
           </div>
         ) : products.length === 0 ? (
-          <EmptyProductsState onCreate={() => setIsCreateModalOpen(true)} />
+          selectedBranchId ? (
+            <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+                <Store className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                {t("hybridFilters.noProductsInBranch")}
+              </h3>
+              <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+                {t("hybridFilters.noProductsInBranchHint")}
+              </p>
+            </div>
+          ) : (
+            <EmptyProductsState onCreate={() => setIsCreateModalOpen(true)} />
+          )
         ) : (
           <div
             className={cn(
