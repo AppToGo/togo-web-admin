@@ -149,7 +149,8 @@
       "activeInBranch": "Activo",
       "inactiveInBranch": "Inactivo",
       "notActivated": "No activado"
-    }
+    },
+    "variantUnavailableInBranch": "No disponible en esta sede"
   },
   "categories": {
     "error": {
@@ -334,12 +335,12 @@
     "allBranches": "Todas las sedes",
     "activationStatus": "Estado en sede",
     "allStatuses": "Todos los estados",
-    "activated": "Activados",
-    "notActivated": "No activados",
+    "activated": "Disponibles",
+    "notActivated": "No disponibles",
     "branchStatus": {
       "title": "Estado en sede",
-      "activated": "Activados",
-      "notActivated": "No activados"
+      "activated": "Disponibles",
+      "notActivated": "No disponibles"
     },
     "noBranches": "No hay sedes disponibles",
     "noProductsInBranch": "Sin productos en esta sede",

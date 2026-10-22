@@ -117,6 +117,8 @@ export interface WhatsAppAccountUsage {
   accountId: string;
   phoneNumber: string;
   status: string;
+  /** Sedes a las que atiende el número. Vacío = compartido del negocio. */
+  branchIds: string[];
   /**
    * Mes en curso: el mayor entre el conteo en vivo y Analytics de Meta.
    * `syncedAt` = última confirmación con Meta (se concilia cada hora).

@@ -149,7 +149,8 @@
       "activeInBranch": "Active in branch",
       "inactiveInBranch": "Inactive in branch",
       "notActivated": "Not activated"
-    }
+    },
+    "variantUnavailableInBranch": "Not available in this branch"
   },
   "categories": {
     "error": {
@@ -334,12 +335,12 @@
     "allBranches": "All branches",
     "activationStatus": "Activation status",
     "allStatuses": "All statuses",
-    "activated": "Activated",
-    "notActivated": "Not activated",
+    "activated": "Available",
+    "notActivated": "Not available",
     "branchStatus": {
       "title": "Branch status",
-      "activated": "Activated",
-      "notActivated": "Not activated"
+      "activated": "Available",
+      "notActivated": "Not available"
     },
     "noBranches": "No branches available",
     "noProductsInBranch": "No products in this branch",

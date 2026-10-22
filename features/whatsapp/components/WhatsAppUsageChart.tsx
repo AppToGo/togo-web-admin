@@ -3,6 +3,8 @@
  * Consumo de mensajería del mes en el dashboard del negocio: barras por día
  * (gratis y cobrados) y una línea acumulada de gratis contra el cupo de
  * 1.000, con la marca del 80 %. Un número a la vez (el cupo es por número).
+ * Con una sede elegida en el dashboard solo muestra sus números y los
+ * compartidos del negocio, nunca los de otras sedes.
  * El conteo es en vivo y se refresca solo cada minuto; "Actualizar" pide a
  * Meta la cifra oficial sin esperar la conciliación horaria.
  */
@@ -26,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
+import { useDashboardBranchId } from "@/features/dashboard/stores/branch-filter.store";
 import {
   useSyncWhatsAppUsage,
   useWhatsAppUsage,
@@ -44,9 +47,15 @@ export function WhatsAppUsageChart() {
   const locale = useLocale();
   const { data } = useWhatsAppUsage();
   const sync = useSyncWhatsAppUsage();
+  const branchId = useDashboardBranchId();
   const [selected, setSelected] = useState<string | null>(null);
 
-  const accounts = data?.accounts ?? [];
+  // Sin sedes en el routing el número es compartido: atiende a todas.
+  // `?? []` cubre una API anterior que aún no manda `branchIds`.
+  const accounts = (data?.accounts ?? []).filter((a) => {
+    const branchIds = a.branchIds ?? [];
+    return !branchId || branchIds.length === 0 || branchIds.includes(branchId);
+  });
   if (accounts.length === 0) return null;
   const account = accounts.find((a) => a.accountId === selected) ?? accounts[0];
 
