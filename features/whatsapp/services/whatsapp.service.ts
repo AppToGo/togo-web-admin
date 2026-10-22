@@ -15,6 +15,7 @@ import type {
   UpdateWhatsAppRoutingRequest,
   EmbeddedSignupRequest,
   WhatsAppUsageSummary,
+  WhatsAppUsageSyncResponse,
 } from "../types";
 
 // ─── WhatsApp Accounts ───────────────────────────────────────────────────────
@@ -119,6 +120,14 @@ export async function deleteWhatsAppRouting(id: string): Promise<void> {
 export async function getWhatsAppUsage(): Promise<WhatsAppUsageSummary> {
   const { data } = await apiClient.get<WhatsAppUsageSummary>(
     "/whatsapp-accounts/usage"
+  );
+  return data;
+}
+
+/** Concilia ya con Analytics de Meta, sin esperar el job horario. */
+export async function syncWhatsAppUsage(): Promise<WhatsAppUsageSyncResponse> {
+  const { data } = await apiClient.post<WhatsAppUsageSyncResponse>(
+    "/whatsapp-accounts/usage/sync"
   );
   return data;
 }
