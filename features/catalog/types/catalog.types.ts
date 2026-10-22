@@ -398,6 +398,11 @@ export interface ProductVariant {
   deletedAt?: string;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Solo con filtro de sede: si la variante se vende en ella (inventario
+   * disponible y con stock). `false` = apagada o sin fila en esa sede.
+   */
+  branchAvailable?: boolean;
 }
 
 export interface InlineVariant {
