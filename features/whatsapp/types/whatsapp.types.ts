@@ -127,6 +127,11 @@ export interface WhatsAppAccountUsage {
   history: WhatsAppUsageMonth[];
 }
 
+/** Resultado de conciliar el consumo con Meta a pedido (botón Actualizar). */
+export interface WhatsAppUsageSyncResponse {
+  accounts: Array<{ accountId: string; ok: boolean; reason: string | null }>;
+}
+
 /** Resumen de consumo para el panel del negocio. */
 export interface WhatsAppUsageSummary {
   accounts: WhatsAppAccountUsage[];

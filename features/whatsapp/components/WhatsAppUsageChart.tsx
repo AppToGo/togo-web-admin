@@ -3,14 +3,15 @@
  * Consumo de mensajería del mes en el dashboard del negocio: barras por día
  * (gratis y cobrados) y una línea acumulada de gratis contra el cupo de
  * 1.000, con la marca del 80 %. Un número a la vez (el cupo es por número).
- * El conteo es en vivo y se refresca solo cada minuto.
+ * El conteo es en vivo y se refresca solo cada minuto; "Actualizar" pide a
+ * Meta la cifra oficial sin esperar la conciliación horaria.
  */
 
 "use client";
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, RefreshCw } from "lucide-react";
 import {
   Bar,
   CartesianGrid,
@@ -22,9 +23,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
-import { useWhatsAppUsage } from "../hooks/useWhatsAppUsage";
+import {
+  useSyncWhatsAppUsage,
+  useWhatsAppUsage,
+} from "../hooks/useWhatsAppUsage";
 
 /** Cupo gratis por número y mes (doc oficial de Meta, igual que la API). */
 export const FREE_MESSAGES_PER_MONTH = 1000;
@@ -38,6 +43,7 @@ export function WhatsAppUsageChart() {
   const t = useTranslations("whatsapp");
   const locale = useLocale();
   const { data } = useWhatsAppUsage();
+  const sync = useSyncWhatsAppUsage();
   const [selected, setSelected] = useState<string | null>(null);
 
   const accounts = data?.accounts ?? [];
@@ -259,6 +265,15 @@ export function WhatsAppUsageChart() {
               ? t("usageChart.syncedAt", { time: syncedAt })
               : t("usageChart.notSynced")}
           </span>
+          <Button
+            variant="slate-outline"
+            size="sm"
+            isLoading={sync.isPending}
+            onClick={() => sync.mutate()}
+          >
+            {!sync.isPending && <RefreshCw aria-hidden />}
+            {t("usageChart.sync")}
+          </Button>
         </div>
       </CardContent>
     </Card>
