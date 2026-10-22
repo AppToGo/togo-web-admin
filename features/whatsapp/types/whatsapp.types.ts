@@ -5,9 +5,18 @@
  * Basado en los DTOs del backend.
  */
 
-export type WhatsAppAccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+export type WhatsAppAccountStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "SUSPENDED"
+  | "PENDING_SUBSCRIPTION"
+  | "TOKEN_INVALID"
+  | "PAYMENT_REQUIRED"
+  | "DISCONNECTED";
 export type RoutingStrategy =
   "DIRECT_TO_BRANCH" | "AUTO_ASSIGN" | "SHARED_INBOX";
+
+export type WhatsAppConnectionType = "CLOUD_API" | "COEXISTENCE";
 
 export interface WhatsAppAccount {
   id: string;
@@ -17,6 +26,9 @@ export interface WhatsAppAccount {
   phoneNumberId: string;
   displayName?: string;
   status: WhatsAppAccountStatus;
+  connectionType?: WhatsAppConnectionType;
+  contactsSyncStatus?: string;
+  historySyncStatus?: string;
   createdAt: string;
   updatedAt: string;
   // NOTE: accessToken is NEVER returned by the backend for security
@@ -69,6 +81,8 @@ export interface EmbeddedSignupRequest {
   metaUserId?: string;
   branchId?: string | null;
   displayName?: string;
+  /** Coexistencia con la app WhatsApp Business (mismo número en el celular). */
+  isCoexistence?: boolean;
 }
 
 export interface UpdateWhatsAppRoutingRequest {
@@ -76,4 +90,52 @@ export interface UpdateWhatsAppRoutingRequest {
   strategy?: RoutingStrategy;
   isActive?: boolean;
   priority?: number;
+}
+
+/** Mes de consumo de una cuenta. */
+export interface WhatsAppUsageMonth {
+  yearMonth: string;
+  freeMessages: number;
+  billableMessages: number;
+  percent: number;
+  level: "OK" | "WARN" | "EXHAUSTED";
+  estimatedCost?: number | null;
+  currency?: string | null;
+  costAvailable: boolean;
+  syncedAt?: string | null;
+}
+
+/** Un día del mes en curso (hora de Colombia), conteo en vivo. */
+export interface WhatsAppUsageDay {
+  date: string;
+  free: number;
+  billed: number;
+}
+
+/** Consumo de una cuenta de WhatsApp del negocio. */
+export interface WhatsAppAccountUsage {
+  accountId: string;
+  phoneNumber: string;
+  status: string;
+  /** Sedes a las que atiende el número. Vacío = compartido del negocio. */
+  branchIds: string[];
+  /**
+   * Mes en curso: el mayor entre el conteo en vivo y Analytics de Meta.
+   * `syncedAt` = última confirmación con Meta (se concilia cada hora).
+   */
+  current: WhatsAppUsageMonth;
+  /** Día por día del mes en curso hasta hoy. */
+  daily: WhatsAppUsageDay[];
+  history: WhatsAppUsageMonth[];
+}
+
+/** Resultado de conciliar el consumo con Meta a pedido (botón Actualizar). */
+export interface WhatsAppUsageSyncResponse {
+  accounts: Array<{ accountId: string; ok: boolean; reason: string | null }>;
+}
+
+/** Resumen de consumo para el panel del negocio. */
+export interface WhatsAppUsageSummary {
+  accounts: WhatsAppAccountUsage[];
+  botMessagesPerOrder?: number | null;
 }

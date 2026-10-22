@@ -52,7 +52,7 @@ interface AuthProviderProps {
 }
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password", "/legal"];
+const PUBLIC_ROUTES = ["/login", "/register", "/demo", "/forgot-password", "/reset-password", "/legal"];
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [restoreState, setRestoreState] = useState<AuthRestoreState>("checking");
@@ -107,7 +107,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (process.env.NODE_ENV === "development") {
         console.log("[AuthProvider] Access token exists in memory, authenticated");
       }
-      setRestoreState("authenticated");
       return;
     }
 
@@ -116,7 +115,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (process.env.NODE_ENV === "development") {
         console.log("[AuthProvider] On public route, skip restore");
       }
-      setRestoreState("unauthenticated");
       return;
     }
 
@@ -217,8 +215,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     restoreSession();
   }, [accessToken, pathname, router, setAuthData, clearAuth]);
 
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+  const effectiveRestoreState: AuthRestoreState = accessToken
+    ? "authenticated"
+    : isPublicRoute
+      ? "unauthenticated"
+      : restoreState;
+
   // Show loading spinner only while checking on protected routes
-  if (restoreState === "checking" && !PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  if (effectiveRestoreState === "checking" && !isPublicRoute) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
         <div className="flex flex-col items-center gap-4">
@@ -228,10 +233,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
   }
 
-  const isReady = restoreState === "authenticated" || restoreState === "unauthenticated";
+  const isReady =
+    effectiveRestoreState === "authenticated" ||
+    effectiveRestoreState === "unauthenticated";
 
   return (
-    <AuthContext.Provider value={{ restoreState, isReady }}>
+    <AuthContext.Provider value={{ restoreState: effectiveRestoreState, isReady }}>
       {children}
     </AuthContext.Provider>
   );

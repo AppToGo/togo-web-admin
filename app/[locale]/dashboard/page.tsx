@@ -4,7 +4,14 @@ import { Suspense } from "react";
 import { LayoutDashboard } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
-import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import {
+  useCurrentUser,
+  useIsSuperAdmin,
+} from "@/features/auth/stores/auth.store";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useBusinesses } from "@/features/orders/hooks/useOrders";
+import { AiUsageSection } from "@/features/admin/ai-usage/components/AiUsageSection";
+import { WhatsAppUsageChart } from "@/features/whatsapp";
 import { useTranslations } from "next-intl";
 import { DateRangeFilter } from "@/features/filters/components";
 import {
@@ -22,6 +29,13 @@ export default function DashboardPage() {
   useAuthGuard();
 
   const user = useCurrentUser();
+  const isSuperAdmin = useIsSuperAdmin();
+  // Consumo de IA: solo SUPER_ADMIN, del negocio del selector ("" = todos).
+  const aiBusinessId = useEffectiveBusinessId() || null;
+  const { data: businesses } = useBusinesses({
+    enabled: isSuperAdmin && !!aiBusinessId,
+  });
+  const aiBusinessName = businesses?.find((b) => b.id === aiBusinessId)?.name;
 
   return (
     <DashboardLayout>
@@ -77,6 +91,20 @@ export default function DashboardPage() {
         <section aria-label={t("sections.analysis")}>
           <LazyChartsSection />
         </section>
+
+        {/* Consumo de WhatsApp del mes (gratis vs cobrados), en vivo */}
+        <section aria-label={t("sections.whatsappUsage")}>
+          <WhatsAppUsageChart />
+        </section>
+
+        {isSuperAdmin && (
+          <section aria-label={t("sections.aiUsage")}>
+            <AiUsageSection
+              businessId={aiBusinessId}
+              businessName={aiBusinessName}
+            />
+          </section>
+        )}
       </div>
     </DashboardLayout>
   );

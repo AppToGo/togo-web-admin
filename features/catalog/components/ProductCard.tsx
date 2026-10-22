@@ -58,17 +58,39 @@ export function ProductCard({
   const variantsList = (
     <div className="border-t border-slate-100 mt-3 pt-3 space-y-1.5">
       {variants.length > 0 ? (
-        variants.map((v) => (
-          <div
-            key={v.id}
-            className="flex items-center justify-between gap-2 text-xs"
-          >
-            <span className="text-slate-600 truncate">{v.variantLabel}</span>
-            <span className="font-semibold text-slate-900 shrink-0">
-              {formatPrice(v.price)}
-            </span>
-          </div>
-        ))
+        variants.map((v) => {
+          // Con sede elegida: la variante que no se vende en ella se marca
+          // (sigue visible: acá se edita, y puede venderse en otra sede).
+          const unavailable = v.branchAvailable === false;
+          return (
+            <div
+              key={v.id}
+              className={cn(
+                "flex items-center justify-between gap-2 text-xs",
+                unavailable && "opacity-60"
+              )}
+            >
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span
+                  className={cn(
+                    "truncate text-slate-600",
+                    unavailable && "line-through"
+                  )}
+                >
+                  {v.variantLabel}
+                </span>
+                {unavailable && (
+                  <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                    {t("products.variantUnavailableInBranch")}
+                  </span>
+                )}
+              </span>
+              <span className="font-semibold text-slate-900 shrink-0">
+                {formatPrice(v.price)}
+              </span>
+            </div>
+          );
+        })
       ) : (
         <div className="text-xs text-slate-400 py-1">Sin variantes</div>
       )}

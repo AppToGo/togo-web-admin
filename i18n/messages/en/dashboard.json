@@ -8,7 +8,9 @@
   "sections": {
     "kpis": "Key metrics",
     "detail": "Detailed metrics",
-    "analysis": "Analysis"
+    "analysis": "Analysis",
+    "aiUsage": "AI usage",
+    "whatsappUsage": "WhatsApp usage"
   },
   "periods": {
     "today": "Today",

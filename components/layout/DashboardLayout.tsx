@@ -6,6 +6,7 @@ import { MobileTopBar } from "./MobileTopBar";
 import { cn } from "@/lib/utils";
 import { useSingleBranchInit } from "@/features/branches/hooks";
 import { UpgradePlanModal, useUpgradePlanModal, TrialBanner } from "@/features/subscription";
+import { DemoGuide } from "@/features/auth/components/DemoGuide";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -56,6 +57,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex-1 flex flex-col max-w-screen-2xl w-full mx-auto">{children}</div>
         </main>
       </div>
+      {/* Guía flotante del modo demo — solo en sesiones demo */}
+      <DemoGuide />
       <UpgradePlanModal open={open} onClose={closeModal} />
     </div>
   );

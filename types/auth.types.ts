@@ -1,6 +1,6 @@
 /**
  * Authentication Type Definitions
- * 
+ *
  * Types related to authentication and user session
  */
 
@@ -20,6 +20,26 @@ export interface AuthenticatedUser {
   trialEndsAt?: string | null;
   /** Plan solicitado (UpgradePlanModal) pendiente de verificación por un SUPER_ADMIN. */
   requestedPlan?: number | null;
+  /** Sesión del modo demo. Solo presente si el token es demo. */
+  isDemo?: boolean;
+  /** Lead capturado en el login demo. Solo presente si isDemo. */
+  demoLeadId?: string | null;
+  /** Teléfono WhatsApp registrado en el login demo. Solo presente si isDemo. */
+  demoPhone?: string | null;
+  /** Nombre registrado en el login demo. Solo presente si isDemo. */
+  demoName?: string | null;
+  /** Código a enviar por WhatsApp para verificar el número. Solo si isDemo. */
+  demoVerificationCode?: string | null;
+}
+
+// Demo login request (sin credenciales: nombre + WhatsApp del visitante,
+// tipo/negocio opcionales y consentimiento de contacto comercial v1)
+export interface DemoLoginRequest {
+  name: string;
+  phone: string;
+  businessType?: string;
+  businessName?: string;
+  consentAccepted: boolean;
 }
 
 // Login Request
@@ -61,7 +81,7 @@ export interface AuthActions {
 }
 
 // Registration status
-export type RegistrationStatus = 'INCOMPLETE' | 'PENDING_PAYMENT' | 'ACTIVE';
+export type RegistrationStatus = "INCOMPLETE" | "PENDING_PAYMENT" | "ACTIVE";
 
 // Registration API response
 export interface RegistrationResponse {
@@ -133,9 +153,155 @@ export interface SessionBusiness {
  * Session Response
  * Complete session data returned from /auth/session endpoint
  */
+export interface DemoContact {
+  name: string;
+  phone: string;
+  /** Código a enviar por WhatsApp a la demo para verificar el número. */
+  verificationCode: string | null;
+  /** Hasta verificar, el inbox demo está vacío y no se gestionan pedidos. */
+  verified: boolean;
+}
+
 export interface SessionResponse {
+  isDemo: boolean;
+  demoContact: DemoContact | null;
   defaultBranchId: string | null;
   branches: UserBranch[];
   business: SessionBusiness;
   userPreferences: UserPreferences;
+}
+
+// Posible cliente capturado en el login demo (solo SUPER_ADMIN)
+export type DemoLeadStage =
+  | "NEW"
+  | "ACTIVE_DEMO"
+  | "FOLLOW_UP"
+  | "CONTACTED"
+  | "NEGOTIATION"
+  | "CUSTOMER"
+  | "LOST";
+
+export type DemoLeadPriority = "HIGH" | "NORMAL" | "LOW";
+
+export interface DemoLead {
+  id: string;
+  businessId: string | null;
+  businessName?: string | null;
+  name: string;
+  phone: string;
+  createdAt: string;
+  lastDemoAt: string;
+  demoCount: number;
+  stage: DemoLeadStage;
+  businessType?: string | null;
+  establishmentName?: string | null;
+  ownerName?: string | null;
+  priority: DemoLeadPriority;
+  nextAction?: string | null;
+  nextActionAt?: string | null;
+  revoked: boolean;
+  orderCount: number;
+  /** DEMO: entró por el login demo. MANUAL: lo creó un super admin. */
+  source: DemoLeadSource;
+  referredBy?: string | null;
+}
+
+export type DemoLeadSource = "DEMO" | "MANUAL";
+
+/** Lead creado a mano en el CRM (POST /admin/demo-leads). */
+export interface CreateDemoLeadRequest {
+  name?: string;
+  phone: string;
+  businessName?: string;
+  businessType?: string;
+  referredBy?: string;
+  stage?: DemoLeadStage;
+  priority?: DemoLeadPriority;
+  nextAction?: string;
+  nextActionAt?: string;
+  note?: string;
+  consentGiven?: boolean;
+}
+
+export interface DemoLeadPipelineEntry {
+  stage: DemoLeadStage;
+  count: number;
+}
+
+export interface DemoLeadActivityEvent {
+  id: string;
+  type: string;
+  occurredAt: string;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface DemoLeadNote {
+  id: string;
+  body: string;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface DemoLeadSuggestion {
+  key: string;
+  reason: string;
+}
+
+export interface DemoLeadDetailLead extends DemoLead {
+  estimatedOrders?: number | null;
+  planInterest?: string | null;
+  mainNeed?: string | null;
+  consentAt?: string | null;
+  convertedAt?: string | null;
+  lostReason?: string | null;
+  lostAt?: string | null;
+}
+
+/** Acción de seguimiento de un lead (varias por lead). */
+export interface DemoLeadAction {
+  id: string;
+  title: string;
+  dueAt: string | null;
+  doneAt: string | null;
+  createdByName: string | null;
+  createdAt: string;
+}
+
+export interface DemoLeadDetail {
+  lead: DemoLeadDetailLead;
+  events: DemoLeadActivityEvent[];
+  notes: DemoLeadNote[];
+  actions: DemoLeadAction[];
+  summary: {
+    demoCount: number;
+    orderCount: number;
+    distinctActionTypes: number;
+    hasWhatsApp: boolean;
+    repliedInInbox: boolean;
+    lastActivityAt: string | null;
+  };
+  suggestion: DemoLeadSuggestion;
+}
+
+export interface DemoLeadFilters {
+  stage?: DemoLeadStage;
+  q?: string;
+  priority?: DemoLeadPriority;
+  overdueOnly?: boolean;
+  includeRevoked?: boolean;
+}
+
+export interface UpdateDemoLeadRequest {
+  stage?: DemoLeadStage;
+  businessType?: string | null;
+  businessName?: string | null;
+  estimatedOrders?: number | null;
+  planInterest?: string | null;
+  mainNeed?: string | null;
+  priority?: DemoLeadPriority;
+  ownerUserId?: string | null;
+  nextAction?: string | null;
+  nextActionAt?: string | null;
+  lostReason?: string | null;
+  revokedAt?: string | null;
 }

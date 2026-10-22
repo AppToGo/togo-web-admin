@@ -8,7 +8,9 @@
   "sections": {
     "kpis": "Indicadores",
     "detail": "Métricas detalladas",
-    "analysis": "Análisis"
+    "analysis": "Análisis",
+    "aiUsage": "Consumo de IA",
+    "whatsappUsage": "Consumo de WhatsApp"
   },
   "periods": {
     "today": "Hoy",

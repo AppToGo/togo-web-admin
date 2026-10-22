@@ -134,7 +134,12 @@
     "RELAY_ENDED": "Direct WhatsApp reply ended",
     "RELAY_AMBIGUOUS": "The operator has more than one active direct WhatsApp conversation",
     "RELAY_WINDOW_EXPIRED": "The WhatsApp reply window expired",
-    "OUTBOUND_BLOCKED_WINDOW": "Couldn't send: the WhatsApp window already expired"
+    "OUTBOUND_BLOCKED_WINDOW": "Couldn't send: the WhatsApp window already expired",
+    "OWNER_PHONE_REPLY": "The owner replied from their WhatsApp",
+    "BOT_DRAFT": "Bot draft (not sent)",
+    "BOT_DRAFT_REASON_MANUAL_MODE": "human-only mode",
+    "BOT_DRAFT_REASON_OUT_OF_HOURS": "outside business hours",
+    "BOT_DRAFT_REASON_OPERATOR_BUSY": "operator busy"
   },
   "notifications": {
     "humanRequested": "A customer asked to talk to an agent",

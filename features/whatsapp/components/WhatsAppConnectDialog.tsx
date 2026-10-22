@@ -36,6 +36,7 @@ import {
   useMetaEmbeddedSignup,
 } from "../hooks";
 import type { WhatsAppAccount, WhatsAppRouting } from "../types";
+import { BILLING_HUB_URL } from "../constants";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
@@ -88,6 +89,11 @@ export function WhatsAppConnectDialog({
   const [showToken, setShowToken] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
+  // Coexistencia (mismo número en el celular, recomendado) vs número nuevo
+  // solo para Togo. Solo aplica en CREATE con Embedded Signup.
+  const [signupMode, setSignupMode] = useState<"coexistence" | "cloud_api">(
+    "coexistence"
+  );
 
   const createAccount = useCreateWhatsAppAccount();
   const updateAccount = useUpdateWhatsAppAccount();
@@ -208,7 +214,8 @@ export function WhatsAppConnectDialog({
         wabaId,
         phoneNumberId: signupPhoneNumberId,
         metaUserId,
-      } = await launchEmbeddedSignup();
+        isCoexistence,
+      } = await launchEmbeddedSignup(signupMode);
 
       await embeddedSignupMutation.mutateAsync({
         code,
@@ -216,13 +223,20 @@ export function WhatsAppConnectDialog({
         phoneNumberId: signupPhoneNumberId,
         metaUserId,
         branchId,
+        isCoexistence,
       });
 
       onOpenChange(false);
     } catch {
       // Los errores ya se muestran vía el estado del hook / toast de la mutación
     }
-  }, [launchEmbeddedSignup, embeddedSignupMutation, branchId, onOpenChange]);
+  }, [
+    launchEmbeddedSignup,
+    signupMode,
+    embeddedSignupMutation,
+    branchId,
+    onOpenChange,
+  ]);
 
   const handleDisconnect = useCallback(async () => {
     if (!account) return;
@@ -246,8 +260,13 @@ export function WhatsAppConnectDialog({
       : t("accounts.createTitleBusiness");
 
   // En modo CREATE: SUPER_ADMIN puede elegir método; el resto solo ve Embedded Signup.
+  // El manual solo existe bajo "número nuevo": si se vuelve a coexistencia,
+  // el botón no debe ejecutar el alta manual con los campos ocultos.
   const isManualCreate =
-    !isEditMode && isSuperAdmin && connectionMethod === "manual";
+    !isEditMode &&
+    isSuperAdmin &&
+    signupMode === "cloud_api" &&
+    connectionMethod === "manual";
 
   const primaryAction =
     isEditMode || isManualCreate ? handleSubmit : handleEmbeddedConnect;
@@ -477,8 +496,63 @@ export function WhatsAppConnectDialog({
             )}
           </DialogHeader>
 
+          {!isEditMode && (
+            <div className="px-7 space-y-2">
+              <p className="text-sm font-medium text-slate-900">
+                {t("accounts.mode.title")}
+              </p>
+              <label className="flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 p-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="wa-signup-mode"
+                  className="mt-0.5 h-4 w-4 accent-green-600"
+                  checked={signupMode === "coexistence"}
+                  onChange={() => {
+                    setSignupMode("coexistence");
+                    setConnectionMethod("embedded");
+                  }}
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-900">
+                    {t("accounts.mode.coexistenceTitle")}
+                  </span>
+                  <span className="block text-xs text-slate-500">
+                    {t("accounts.mode.coexistenceHint")}
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 rounded-lg border border-slate-200 p-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="wa-signup-mode"
+                  className="mt-0.5 h-4 w-4 accent-slate-900"
+                  checked={signupMode === "cloud_api"}
+                  onChange={() => setSignupMode("cloud_api")}
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-900">
+                    {t("accounts.mode.cloudTitle")}
+                  </span>
+                  <span className="block text-xs text-slate-500">
+                    {t("accounts.mode.cloudHint")}
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+
           {isEditMode ? (
             manualFormFields
+          ) : signupMode === "coexistence" ? (
+            <>
+              <Alert className="mx-7 bg-blue-50 border-blue-200 w-auto">
+                <Info className="w-4 h-4 text-blue-600" />
+                <AlertDescription className="text-blue-700 text-xs">
+                  {t("accounts.mode.coexistenceNote")}
+                </AlertDescription>
+              </Alert>
+              {embeddedSignupView}
+            </>
           ) : isSuperAdmin ? (
             <Tabs
               value={connectionMethod}
@@ -499,6 +573,25 @@ export function WhatsAppConnectDialog({
             </Tabs>
           ) : (
             embeddedSignupView
+          )}
+
+          {!isEditMode && (
+            <div className="px-7">
+              <Alert className="bg-amber-50 border-amber-200">
+                <Info className="w-4 h-4 text-amber-600" />
+                <AlertDescription className="text-amber-700 text-xs">
+                  {t("accounts.billing.hint")}{" "}
+                  <a
+                    href={BILLING_HUB_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium underline"
+                  >
+                    {t("accounts.billing.link")}
+                  </a>
+                </AlertDescription>
+              </Alert>
+            </div>
           )}
 
           <div className="flex items-center gap-2 p-7">

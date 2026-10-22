@@ -172,7 +172,11 @@ export function useConversationsRealtime(
       !APP_CONFIG.features.enableWebSockets ||
       !businessId ||
       !getToken() ||
-      user?.role === "SUPER_ADMIN"
+      user?.role === "SUPER_ADMIN" ||
+      // Sesiones demo: el backend rechaza sus sockets de este namespace
+      // (los pushes llevan contenido de terceros). El inbox funciona por
+      // REST/polling (ver useInboxConversations).
+      user?.isDemo === true
     ) {
       setState({ isConnected: false, isConnecting: false, error: null });
       return;
@@ -340,7 +344,7 @@ export function useConversationsRealtime(
       socketRef.current = null;
       setState({ isConnected: false, isConnecting: false, error: null });
     };
-  }, [enabled, businessId, getToken, queryClient, refreshAndReconnect, user?.role]);
+  }, [enabled, businessId, getToken, queryClient, refreshAndReconnect, user?.role, user?.isDemo]);
 
   return state;
 }

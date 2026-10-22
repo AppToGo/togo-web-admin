@@ -10,6 +10,11 @@ export const WHATSAPP_ACCOUNTS_KEYS = {
   lists: () => [...WHATSAPP_ACCOUNTS_KEYS.all, "list"] as const,
   detail: (id: string) =>
     [...WHATSAPP_ACCOUNTS_KEYS.all, "detail", id] as const,
+  // Fuera de lists(): las mutaciones de cuentas invalidan lists() y no deben
+  // volver a pedir el consumo a Meta. Por negocio: un SUPER_ADMIN que cambia
+  // de negocio no ve el consumo cacheado del anterior.
+  usage: (businessId: string | null) =>
+    [...WHATSAPP_ACCOUNTS_KEYS.all, "usage", businessId] as const,
 };
 
 export const WHATSAPP_ROUTING_KEYS = {
