@@ -26,8 +26,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { formatCurrency } from "@/lib/utils";
 import {
-  useCatalogProducts,
+  useAllCatalogProducts,
   useProductRecommendations,
   useReplaceProductRecommendations,
 } from "../hooks";
@@ -35,21 +36,26 @@ import type { RecommendedProduct } from "../services/catalog.service";
 import type {
   BusinessCategory,
   CatalogProduct,
-  CatalogProductsFilters,
 } from "../types/catalog.types";
 
 /** Mismo tope que la API (MAX_RECOMMENDATIONS_PER_PRODUCT). */
 const MAX_RECOMMENDATIONS = 10;
 
-/** Todos los productos del negocio para elegir; el filtro va en el cliente. */
-const ALL_PRODUCTS: CatalogProductsFilters = { limit: 500 };
+const formatPrice = (price: number) => formatCurrency(price);
 
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-  }).format(price);
+/**
+ * El bot y el catálogo lo agregan con un toque: necesita una presentación
+ * concreta, la predeterminada o la única activa. La API rechaza el resto.
+ */
+function hasConcreteVariant(product: CatalogProduct): boolean {
+  const active = (product.variants ?? []).filter(
+    (v) => v.isActive && !v.deletedAt
+  );
+  // Sin el detalle de variantes en la respuesta no se puede saber: lo
+  // decide la API al guardar.
+  if (!product.variants) return true;
+  return active.length === 1 || active.some((v) => v.isDefault);
+}
 
 const normalize = (text: string) =>
   text
@@ -185,12 +191,12 @@ function RecommendationsEditor({
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
-  const { data: productsData, isLoading: isLoadingProducts } =
-    useCatalogProducts(businessId, ALL_PRODUCTS);
+  const { data: allProducts, isLoading: isLoadingProducts } =
+    useAllCatalogProducts(businessId);
 
   const candidates = useMemo(
-    () => (productsData?.items ?? []).filter((p) => p.id !== product.id),
-    [productsData, product.id]
+    () => (allProducts ?? []).filter((p) => p.id !== product.id),
+    [allProducts, product.id]
   );
   const visible = useMemo(() => {
     const query = normalize(search.trim());
@@ -333,6 +339,7 @@ function RecommendationsEditor({
             ) : (
               visible.map((candidate) => {
                 const isSelected = selectedIds.has(candidate.id);
+                const canRecommend = hasConcreteVariant(candidate);
                 return (
                   <div
                     key={candidate.id}
@@ -358,11 +365,16 @@ function RecommendationsEditor({
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
+                      {!canRecommend && !isSelected && (
+                        <p className="text-xs text-amber-700">
+                          {t("needsDefaultVariant")}
+                        </p>
+                      )}
                     </div>
                     <button
                       type="button"
                       onClick={() => toggle(candidate)}
-                      disabled={!isSelected && limitReached}
+                      disabled={!isSelected && (limitReached || !canRecommend)}
                       aria-pressed={isSelected}
                       aria-label={`${isSelected ? t("remove") : t("add")} ${candidate.name}`}
                       className={cn(

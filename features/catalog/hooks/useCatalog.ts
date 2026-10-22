@@ -1069,6 +1069,15 @@ export function useIndustryCategoriesByIndustry(industryId: string | null | unde
 // RECOMMENDATIONS HOOKS
 // ============================================================================
 
+/** Todos los productos del negocio (selector de recomendados). */
+export function useAllCatalogProducts(businessId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...catalogKeys.catalogProducts(businessId), "all"],
+    queryFn: () => catalogService.getAllCatalogProducts(businessId),
+    enabled: !!businessId && enabled,
+  });
+}
+
 /** Recomendados de un producto (drawer "Agregar recomendación"). */
 export function useProductRecommendations(
   businessId: string,

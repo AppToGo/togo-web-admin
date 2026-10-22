@@ -158,7 +158,10 @@ export default function ProductsPage() {
     useState<CatalogProduct | null>(null);
   const { hasPermission } = useMyPermissions();
   const canViewRecommendations = hasPermission("recommendation.view");
-  const canEditRecommendations = hasPermission("recommendation.create");
+  // El drawer primero lee los recomendados (view) y después los guarda
+  // (create): sin los dos la acción no serviría.
+  const canEditRecommendations =
+    canViewRecommendations && hasPermission("recommendation.create");
   const { data: recommendationCounts } = useRecommendationCounts(
     businessId ?? "",
     canViewRecommendations

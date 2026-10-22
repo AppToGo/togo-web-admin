@@ -45,8 +45,28 @@ function product(id: string, name: string, price: number, categoryId: string) {
   };
 }
 
+function variant(id: string, isDefault: boolean) {
+  return {
+    id,
+    productId: "p-pizza",
+    businessId: "e2e-test-business-id",
+    attributes: {},
+    variantLabel: id,
+    price: 30000,
+    isActive: true,
+    isDefault,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 const PRODUCTS = [
   product("p-burger", "Hamburguesa clásica", 18900, "cat-burgers"),
+  // Varias presentaciones y ninguna predeterminada: no se puede recomendar.
+  {
+    ...product("p-pizza", "Pizza familiar", 30000, "cat-burgers"),
+    variants: [variant("Mediana", false), variant("Grande", false)],
+  },
   product("p-papas", "Papas fritas", 7900, "cat-sides"),
   product("p-aros", "Aros de cebolla", 8500, "cat-sides"),
   product("p-gaseosa", "Gaseosa 400 ml", 4500, "cat-drinks"),
@@ -157,6 +177,14 @@ test.describe("Recomendados de un producto", () => {
     await expect(
       drawer.getByRole("button", { name: "Agregar Hamburguesa clásica" })
     ).toHaveCount(0);
+
+    // Sin presentación predeterminada no se puede elegir.
+    await expect(
+      drawer.getByRole("button", { name: "Agregar Pizza familiar" })
+    ).toBeDisabled();
+    await expect(
+      drawer.getByText(/ninguna predeterminada/)
+    ).toBeVisible();
 
     // Filtro por categoría y agregar.
     await drawer.getByRole("button", { name: "Bebidas" }).click();

@@ -584,6 +584,7 @@
     "save": "Guardar recomendaciones · {count}",
     "saved": "Recomendaciones guardadas",
     "error": "No se pudieron guardar las recomendaciones",
-    "loadError": "No se pudieron cargar las recomendaciones"
+    "loadError": "No se pudieron cargar las recomendaciones",
+    "needsDefaultVariant": "Tiene varias presentaciones y ninguna predeterminada: marca una para poder recomendarlo"
   }
 }

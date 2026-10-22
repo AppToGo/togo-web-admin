@@ -578,6 +578,7 @@
     "save": "Save recommendations · {count}",
     "saved": "Recommendations saved",
     "error": "Couldn't save the recommendations",
-    "loadError": "Couldn't load the recommendations"
+    "loadError": "Couldn't load the recommendations",
+    "needsDefaultVariant": "Has several presentations and no default: mark one as default to recommend it"
   }
 }

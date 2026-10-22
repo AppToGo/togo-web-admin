@@ -23,6 +23,7 @@ export {
   useHasGlobalCatalogProducts,
   useActivateGlobalProduct,
   // Recommendations
+  useAllCatalogProducts,
   useProductRecommendations,
   useRecommendationCounts,
   useReplaceProductRecommendations,
