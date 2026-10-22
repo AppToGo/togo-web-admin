@@ -553,5 +553,32 @@
     "keywords": "Keywords: {list}",
     "noKeywords": "No keywords",
     "inactive": "Inactive"
+  },
+  "recommendations": {
+    "action": "Add recommendation",
+    "actionFor": "Add recommendation to {name}",
+    "count": "{count, plural, one {# recommended} other {# recommended}}",
+    "title": "Recommendations",
+    "description": "When a customer orders this product on WhatsApp, the bot offers one of the ones you pick, at random, as long as it is active and in stock at their branch. The web catalog also shows them when it is added.",
+    "whenOrdering": "When the customer orders",
+    "offer": "Offer them · {count}",
+    "randomHint": "The bot picks one at random",
+    "empty": "You haven't picked any products yet. Add them from the list below.",
+    "addProducts": "Add products",
+    "searchPlaceholder": "Search product",
+    "allCategories": "All",
+    "add": "Add",
+    "added": "Added",
+    "remove": "Remove",
+    "inactive": "Inactive",
+    "noResults": "No products match your search",
+    "noProducts": "There are no other products in your catalog",
+    "limitReached": "Up to {max} recommendations per product",
+    "cancel": "Cancel",
+    "save": "Save recommendations · {count}",
+    "saved": "Recommendations saved",
+    "error": "Couldn't save the recommendations",
+    "loadError": "Couldn't load the recommendations",
+    "needsDefaultVariant": "Has several presentations and no default: mark one as default to recommend it"
   }
 }

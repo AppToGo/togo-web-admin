@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Upload } from "lucide-react";
+import { Link2, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MobileFab } from "@/components/ui/mobile-fab";
@@ -40,6 +40,10 @@ interface ProductsMobileViewProps {
   onPageChange: (page: number) => void;
   onEdit: (product: CatalogProduct) => void;
   onToggleActive: (product: CatalogProduct, isActive: boolean) => void;
+  /** Abre el drawer "Agregar recomendación"; sin él no se muestra. */
+  onRecommend?: (product: CatalogProduct) => void;
+  /** productId → cantidad de recomendados. */
+  recommendationCounts?: Record<string, number>;
   onCreate: () => void;
   onImport: () => void;
 }
@@ -94,6 +98,8 @@ export function ProductsMobileView({
   onPageChange,
   onEdit,
   onToggleActive,
+  onRecommend,
+  recommendationCounts,
   onCreate,
   onImport,
 }: ProductsMobileViewProps) {
@@ -161,6 +167,7 @@ export function ProductsMobileView({
                 ? categoryMap.get(product.businessCategoryId)
                 : undefined;
               const price = priceText(product, (value) => t("mobile.priceFrom", { price: value }));
+              const recommended = recommendationCounts?.[product.id] ?? 0;
               return (
                 <li
                   key={product.id}
@@ -180,7 +187,13 @@ export function ProductsMobileView({
                         {product.name}
                       </span>
                       <span className="truncate text-xs text-slate-500">
-                        {[category, t("mobile.variants", { count: product.variantCount })]
+                        {[
+                          category,
+                          t("mobile.variants", { count: product.variantCount }),
+                          recommended > 0
+                            ? t("recommendations.count", { count: recommended })
+                            : null,
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
@@ -189,6 +202,16 @@ export function ProductsMobileView({
                       )}
                     </span>
                   </button>
+                  {onRecommend && (
+                    <button
+                      type="button"
+                      onClick={() => onRecommend(product)}
+                      aria-label={t("recommendations.actionFor", { name: product.name })}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-500 active:bg-slate-100"
+                    >
+                      <Link2 className="h-5 w-5" />
+                    </button>
+                  )}
                   <Switch
                     checked={product.isActive}
                     onCheckedChange={(checked) => onToggleActive(product, checked)}

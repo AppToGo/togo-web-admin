@@ -3,6 +3,7 @@
  */
 
 export { ProductCard } from "./ProductCard";
+export { ProductRecommendationsDrawer } from "./ProductRecommendationsDrawer";
 export { GlobalProductCard } from "./GlobalProductCard";
 export { ProductForm } from "./ProductForm";
 export { ActivateProductDrawer } from "./ActivateProductDrawer";
