@@ -379,6 +379,8 @@ export interface CatalogProduct {
   variants?: ProductVariant[];
   createdAt: string;
   updatedAt: string;
+  /** Solo cuando se filtra por sede: activación y disponibilidad en ella. */
+  branchInfo?: { isActivated: boolean; isAvailable: boolean };
 }
 
 export interface ProductVariant {
@@ -488,4 +490,6 @@ export interface CatalogProductsFilters {
   isActive?: boolean;
   businessCategoryId?: string;
   isFromTemplate?: boolean;
+  branchId?: string;
+  activationStatus?: "activated" | "not_activated" | "all";
 }
