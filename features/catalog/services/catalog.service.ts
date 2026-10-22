@@ -396,6 +396,26 @@ export async function getCatalogProducts(
   return { items, meta: { total, page, limit, totalPages }, counts };
 }
 
+/**
+ * Todos los productos del negocio, página por página: la API devuelve como
+ * mucho 100 por página. Lo usa el selector de recomendados, que filtra en el
+ * cliente.
+ */
+export async function getAllCatalogProducts(
+  businessId: string
+): Promise<CatalogProduct[]> {
+  const limit = 100;
+  const items: CatalogProduct[] = [];
+  for (let page = 1; ; page++) {
+    const { items: pageItems, meta } = await getCatalogProducts(businessId, {
+      page,
+      limit,
+    });
+    items.push(...pageItems);
+    if (pageItems.length < limit || items.length >= meta.total) return items;
+  }
+}
+
 export async function getCatalogProduct(
   businessId: string,
   productId: string
@@ -610,6 +630,57 @@ export async function getVariantTemplates(
 ): Promise<VariantTemplate[]> {
   const response = await apiClient.get<VariantTemplate[]>(
     `/industry-categories/${industryCategoryId}/variant-templates`
+  );
+  return response.data;
+}
+
+// ============================================================================
+// RECOMMENDATIONS API
+// ============================================================================
+
+/** Un producto que se ofrece al pedir otro ("Va muy bien con"). */
+export interface RecommendedProduct {
+  id: string;
+  name: string;
+  image?: string;
+  price: number;
+  isActive: boolean;
+}
+
+export interface ProductRecommendations {
+  productId: string;
+  recommendations: RecommendedProduct[];
+}
+
+export async function getProductRecommendations(
+  businessId: string,
+  productId: string
+): Promise<ProductRecommendations> {
+  const response = await apiClient.get<ProductRecommendations>(
+    `/businesses/${businessId}/products/${productId}/recommendations`
+  );
+  return response.data;
+}
+
+/** Reemplaza la lista completa, en orden (vacía la borra). */
+export async function replaceProductRecommendations(
+  businessId: string,
+  productId: string,
+  recommendedProductIds: string[]
+): Promise<ProductRecommendations> {
+  const response = await apiClient.put<ProductRecommendations>(
+    `/businesses/${businessId}/products/${productId}/recommendations`,
+    { recommendedProductIds }
+  );
+  return response.data;
+}
+
+/** productId → cantidad de recomendados, para la etiqueta de la tarjeta. */
+export async function getRecommendationCounts(
+  businessId: string
+): Promise<Record<string, number>> {
+  const response = await apiClient.get<Record<string, number>>(
+    `/businesses/${businessId}/product-recommendations/counts`
   );
   return response.data;
 }
