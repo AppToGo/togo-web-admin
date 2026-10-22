@@ -556,5 +556,31 @@
     "keywords": "Palabras clave: {list}",
     "noKeywords": "Sin palabras clave",
     "inactive": "Inactiva"
+  },
+  "recommendations": {
+    "action": "Agregar recomendación",
+    "actionFor": "Agregar recomendación a {name}",
+    "count": "{count, plural, one {# recomendado} other {# recomendados}}",
+    "title": "Recomendaciones",
+    "description": "Cuando un cliente pida este producto por WhatsApp, el bot le ofrecerá uno de los que elijas, al azar, siempre que esté activo y con stock en su sede. El catálogo web también los muestra al agregarlo.",
+    "whenOrdering": "Cuando el cliente pida",
+    "offer": "Ofrecerle · {count}",
+    "randomHint": "El bot elige uno al azar",
+    "empty": "Todavía no elegiste productos. Agrégalos desde la lista de abajo.",
+    "addProducts": "Agregar productos",
+    "searchPlaceholder": "Buscar producto",
+    "allCategories": "Todas",
+    "add": "Agregar",
+    "added": "Agregado",
+    "remove": "Quitar",
+    "inactive": "Inactivo",
+    "noResults": "No hay productos que coincidan con la búsqueda",
+    "noProducts": "No hay otros productos en tu catálogo",
+    "limitReached": "Máximo {max} recomendados por producto",
+    "cancel": "Cancelar",
+    "save": "Guardar recomendaciones · {count}",
+    "saved": "Recomendaciones guardadas",
+    "error": "No se pudieron guardar las recomendaciones",
+    "loadError": "No se pudieron cargar las recomendaciones"
   }
 }

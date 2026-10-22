@@ -611,3 +611,54 @@ export async function getVariantTemplates(
   );
   return response.data;
 }
+
+// ============================================================================
+// RECOMMENDATIONS API
+// ============================================================================
+
+/** Un producto que se ofrece al pedir otro ("Va muy bien con"). */
+export interface RecommendedProduct {
+  id: string;
+  name: string;
+  image?: string;
+  price: number;
+  isActive: boolean;
+}
+
+export interface ProductRecommendations {
+  productId: string;
+  recommendations: RecommendedProduct[];
+}
+
+export async function getProductRecommendations(
+  businessId: string,
+  productId: string
+): Promise<ProductRecommendations> {
+  const response = await apiClient.get<ProductRecommendations>(
+    `/businesses/${businessId}/products/${productId}/recommendations`
+  );
+  return response.data;
+}
+
+/** Reemplaza la lista completa, en orden (vacía la borra). */
+export async function replaceProductRecommendations(
+  businessId: string,
+  productId: string,
+  recommendedProductIds: string[]
+): Promise<ProductRecommendations> {
+  const response = await apiClient.put<ProductRecommendations>(
+    `/businesses/${businessId}/products/${productId}/recommendations`,
+    { recommendedProductIds }
+  );
+  return response.data;
+}
+
+/** productId → cantidad de recomendados, para la etiqueta de la tarjeta. */
+export async function getRecommendationCounts(
+  businessId: string
+): Promise<Record<string, number>> {
+  const response = await apiClient.get<Record<string, number>>(
+    `/businesses/${businessId}/product-recommendations/counts`
+  );
+  return response.data;
+}

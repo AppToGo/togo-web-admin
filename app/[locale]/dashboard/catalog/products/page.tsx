@@ -25,12 +25,15 @@ import {
   useRegenerateCatalogProductKeywords,
   useDeleteCatalogProduct,
   useCategories,
+  useRecommendationCounts,
 } from "@/features/catalog/hooks";
 import {
   ProductCard,
   ProductForm,
   ProductFilters,
+  ProductRecommendationsDrawer,
 } from "@/features/catalog/components";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import type { SourceFilter } from "@/features/catalog/components/ProductFilters";
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
 import { activateProduct } from "@/features/branch-inventory/services/branch-inventory.service";
@@ -143,6 +146,20 @@ export default function ProductsPage() {
 
   const [page, setPage] = useState(1);
   const pageSize = 20;
+
+  // Producto con el drawer "Agregar recomendación" abierto.
+  const [recommendingProduct, setRecommendingProduct] =
+    useState<CatalogProduct | null>(null);
+  const { hasPermission } = useMyPermissions();
+  const canViewRecommendations = hasPermission("recommendation.view");
+  const canEditRecommendations = hasPermission("recommendation.create");
+  const { data: recommendationCounts } = useRecommendationCounts(
+    businessId ?? "",
+    canViewRecommendations
+  );
+  const openRecommendations = canEditRecommendations
+    ? setRecommendingProduct
+    : undefined;
 
   const showProductImages = useShowProductImages();
   const publicCatalogUrl = usePublicCatalogUrl();
@@ -319,6 +336,8 @@ export default function ProductsPage() {
           onToggleActive={(product, isActive) =>
             updateProduct.mutate({ productId: product.id, dto: { isActive } })
           }
+          onRecommend={openRecommendations}
+          recommendationCounts={recommendationCounts}
           onCreate={() => setIsCreateModalOpen(true)}
           onImport={() => router.push("/dashboard/catalog/products/import")}
         />
@@ -428,6 +447,8 @@ export default function ProductsPage() {
                 }
                 onEdit={(p) => openEdit(p)}
                 onDelete={(p) => deleteProduct.mutate(p.id)}
+                onRecommend={openRecommendations}
+                recommendationCount={recommendationCounts?.[product.id]}
               />
             ))}
           </div>
@@ -459,6 +480,14 @@ export default function ProductsPage() {
         )}
       </div>
       )}
+
+      <ProductRecommendationsDrawer
+        businessId={businessId}
+        product={recommendingProduct}
+        onClose={() => setRecommendingProduct(null)}
+        categories={categories}
+        showImages={showProductImages}
+      />
 
       {/* Create Drawer */}
       <Drawer

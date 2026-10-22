@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Edit2, Trash2, Package, ImageOff, Check, Layers } from "lucide-react";
+import { Edit2, Trash2, Package, ImageOff, Check, Layers, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,10 @@ interface ProductCardProps {
   product: CatalogProduct;
   onEdit?: (product: CatalogProduct) => void;
   onDelete?: (product: CatalogProduct) => void;
+  /** Abre el drawer "Agregar recomendación"; sin él no se muestra la acción. */
+  onRecommend?: (product: CatalogProduct) => void;
+  /** Cuántos recomendados tiene; 0 o sin dato no muestra la etiqueta. */
+  recommendationCount?: number;
   viewMode?: "grid" | "list";
   selected?: boolean;
   onSelect?: () => void;
@@ -29,6 +33,8 @@ export function ProductCard({
   product,
   onEdit,
   onDelete,
+  onRecommend,
+  recommendationCount = 0,
   viewMode = "grid",
   selected = false,
   onSelect,
@@ -68,6 +74,14 @@ export function ProductCard({
       )}
     </div>
   );
+
+  const recommendationsBadge =
+    recommendationCount > 0 ? (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium bg-indigo-50 text-indigo-700 rounded-full">
+        <Link2 className="w-3 h-3" />
+        {t("recommendations.count", { count: recommendationCount })}
+      </span>
+    ) : null;
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (!showCheckbox) return;
@@ -205,6 +219,8 @@ export function ProductCard({
             </div>
           )}
 
+          {recommendationsBadge && <div>{recommendationsBadge}</div>}
+
           {product.description && (
             <p className="text-xs text-slate-500 line-clamp-2 flex-1">
               {product.description}
@@ -245,6 +261,17 @@ export function ProductCard({
                 <Edit2 className="w-4 h-4 mr-2" />
                 {tCommon("buttons.edit")}
               </DropdownMenuItem>
+              {onRecommend && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRecommend(product);
+                  }}
+                >
+                  <Link2 className="w-4 h-4 mr-2" />
+                  {t("recommendations.action")}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
@@ -333,6 +360,7 @@ export function ProductCard({
               {categoryName}
             </div>
           )}
+          {recommendationsBadge && <div className="mt-1">{recommendationsBadge}</div>}
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
@@ -347,6 +375,21 @@ export function ProductCard({
           >
             <Edit2 className="w-4 h-4" />
           </Button>
+          {onRecommend && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label={t("recommendations.action")}
+              title={t("recommendations.action")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRecommend(product);
+              }}
+            >
+              <Link2 className="w-4 h-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

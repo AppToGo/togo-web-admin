@@ -22,6 +22,10 @@ export {
   useGlobalCatalog,
   useHasGlobalCatalogProducts,
   useActivateGlobalProduct,
+  // Recommendations
+  useProductRecommendations,
+  useRecommendationCounts,
+  useReplaceProductRecommendations,
   // Categories
   useCategories,
   useCategory,

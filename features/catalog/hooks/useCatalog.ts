@@ -55,6 +55,10 @@ export const catalogKeys = {
     [...catalogKeys.catalogProduct(businessId, productId), "variants"] as const,
   variant: (businessId: string, productId: string, variantId: string) =>
     [...catalogKeys.variants(businessId, productId), variantId] as const,
+  recommendations: (businessId: string, productId: string) =>
+    [...catalogKeys.all, "recommendations", businessId, productId] as const,
+  recommendationCounts: (businessId: string) =>
+    [...catalogKeys.all, "recommendation-counts", businessId] as const,
 };
 
 // ============================================================================
@@ -1058,6 +1062,60 @@ export function useIndustryCategoriesByIndustry(industryId: string | null | unde
     queryFn: () => catalogService.getIndustryCategoriesByIndustry(industryId!),
     enabled: !!industryId,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+// ============================================================================
+// RECOMMENDATIONS HOOKS
+// ============================================================================
+
+/** Recomendados de un producto (drawer "Agregar recomendación"). */
+export function useProductRecommendations(
+  businessId: string,
+  productId: string | null
+) {
+  return useQuery({
+    queryKey: catalogKeys.recommendations(businessId, productId ?? ""),
+    queryFn: () =>
+      catalogService.getProductRecommendations(businessId, productId!),
+    enabled: !!businessId && !!productId,
+  });
+}
+
+/** productId → cantidad de recomendados, para la etiqueta de cada tarjeta. */
+export function useRecommendationCounts(businessId: string, enabled = true) {
+  return useQuery({
+    queryKey: catalogKeys.recommendationCounts(businessId),
+    queryFn: () => catalogService.getRecommendationCounts(businessId),
+    enabled: !!businessId && enabled,
+  });
+}
+
+/** Guarda la lista completa de recomendados de un producto. */
+export function useReplaceProductRecommendations(businessId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      recommendedProductIds,
+    }: {
+      productId: string;
+      recommendedProductIds: string[];
+    }) =>
+      catalogService.replaceProductRecommendations(
+        businessId,
+        productId,
+        recommendedProductIds
+      ),
+    onSuccess: (data) => {
+      queryClient.setQueryData(
+        catalogKeys.recommendations(businessId, data.productId),
+        data
+      );
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.recommendationCounts(businessId),
+      });
+    },
   });
 }
 
