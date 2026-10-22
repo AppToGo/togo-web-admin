@@ -166,6 +166,10 @@
     "legendBilled": "Billed",
     "legendAccumulated": "Month to date",
     "syncedAt": "Live · confirmed with Meta at {time}",
-    "notSynced": "Live · confirmed with Meta every hour"
+    "notSynced": "Live · confirmed with Meta every hour",
+    "sync": "Refresh",
+    "syncSuccess": "Usage refreshed from Meta",
+    "syncFailed": "Meta didn't respond for {count, plural, one {# number} other {# numbers}}: showing the live count",
+    "syncError": "Couldn't refresh usage from Meta"
   }
 }

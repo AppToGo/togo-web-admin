@@ -166,6 +166,10 @@
     "legendBilled": "Cobrados",
     "legendAccumulated": "Acumulado del mes",
     "syncedAt": "En vivo · confirmado con Meta a las {time}",
-    "notSynced": "En vivo · se confirma con Meta cada hora"
+    "notSynced": "En vivo · se confirma con Meta cada hora",
+    "sync": "Actualizar",
+    "syncSuccess": "Consumo actualizado con Meta",
+    "syncFailed": "Meta no respondió para {count, plural, one {# número} other {# números}}: se muestra el conteo en vivo",
+    "syncError": "No se pudo actualizar el consumo con Meta"
   }
 }

@@ -3,14 +3,17 @@
  * Consumo de mensajería del mes en el dashboard del negocio: barras por día
  * (gratis y cobrados) y una línea acumulada de gratis contra el cupo de
  * 1.000, con la marca del 80 %. Un número a la vez (el cupo es por número).
- * El conteo es en vivo y se refresca solo cada minuto.
+ * Con una sede elegida en el dashboard solo muestra sus números y los
+ * compartidos del negocio, nunca los de otras sedes.
+ * El conteo es en vivo y se refresca solo cada minuto; "Actualizar" pide a
+ * Meta la cifra oficial sin esperar la conciliación horaria.
  */
 
 "use client";
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, RefreshCw } from "lucide-react";
 import {
   Bar,
   CartesianGrid,
@@ -22,9 +25,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DashboardCardHeader } from "@/features/dashboard/components/DashboardCardHeader";
-import { useWhatsAppUsage } from "../hooks/useWhatsAppUsage";
+import { useDashboardBranchId } from "@/features/dashboard/stores/branch-filter.store";
+import {
+  useSyncWhatsAppUsage,
+  useWhatsAppUsage,
+} from "../hooks/useWhatsAppUsage";
 
 /** Cupo gratis por número y mes (doc oficial de Meta, igual que la API). */
 export const FREE_MESSAGES_PER_MONTH = 1000;
@@ -38,9 +46,16 @@ export function WhatsAppUsageChart() {
   const t = useTranslations("whatsapp");
   const locale = useLocale();
   const { data } = useWhatsAppUsage();
+  const sync = useSyncWhatsAppUsage();
+  const branchId = useDashboardBranchId();
   const [selected, setSelected] = useState<string | null>(null);
 
-  const accounts = data?.accounts ?? [];
+  // Sin sedes en el routing el número es compartido: atiende a todas.
+  // `?? []` cubre una API anterior que aún no manda `branchIds`.
+  const accounts = (data?.accounts ?? []).filter((a) => {
+    const branchIds = a.branchIds ?? [];
+    return !branchId || branchIds.length === 0 || branchIds.includes(branchId);
+  });
   if (accounts.length === 0) return null;
   const account = accounts.find((a) => a.accountId === selected) ?? accounts[0];
 
@@ -259,6 +274,15 @@ export function WhatsAppUsageChart() {
               ? t("usageChart.syncedAt", { time: syncedAt })
               : t("usageChart.notSynced")}
           </span>
+          <Button
+            variant="slate-outline"
+            size="sm"
+            isLoading={sync.isPending}
+            onClick={() => sync.mutate()}
+          >
+            {!sync.isPending && <RefreshCw aria-hidden />}
+            {t("usageChart.sync")}
+          </Button>
         </div>
       </CardContent>
     </Card>

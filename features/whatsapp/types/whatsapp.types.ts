@@ -117,6 +117,8 @@ export interface WhatsAppAccountUsage {
   accountId: string;
   phoneNumber: string;
   status: string;
+  /** Sedes a las que atiende el número. Vacío = compartido del negocio. */
+  branchIds: string[];
   /**
    * Mes en curso: el mayor entre el conteo en vivo y Analytics de Meta.
    * `syncedAt` = última confirmación con Meta (se concilia cada hora).
@@ -125,6 +127,11 @@ export interface WhatsAppAccountUsage {
   /** Día por día del mes en curso hasta hoy. */
   daily: WhatsAppUsageDay[];
   history: WhatsAppUsageMonth[];
+}
+
+/** Resultado de conciliar el consumo con Meta a pedido (botón Actualizar). */
+export interface WhatsAppUsageSyncResponse {
+  accounts: Array<{ accountId: string; ok: boolean; reason: string | null }>;
 }
 
 /** Resumen de consumo para el panel del negocio. */
