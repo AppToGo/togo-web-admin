@@ -341,7 +341,9 @@
       "activated": "Activated",
       "notActivated": "Not activated"
     },
-    "noBranches": "No branches available"
+    "noBranches": "No branches available",
+    "noProductsInBranch": "No products in this branch",
+    "noProductsInBranchHint": "Activate catalog products in this branch from Branch inventory."
   },
   "availabilityTab": {
     "title": "Availability by Branch",
