@@ -58,7 +58,10 @@ export function useCloneProfile() {
         id: `temp-${Date.now()}`,
         businessId: originalProfile?.businessId || "",
         name: data.name,
-        description: originalProfile?.description ?? null,
+        // Mismo sufijo que agrega el API al clonar (cloneProfile).
+        description: originalProfile?.description
+          ? `${originalProfile.description} (Copia)`
+          : null,
         // Una copia es del dueño, aunque el original fuera recomendado.
         sourceTemplateKey: null,
         permissions: originalProfile?.permissions || [],

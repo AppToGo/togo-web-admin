@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "next-intl";
 import {
   useCreateProfile,
@@ -28,6 +29,8 @@ import {
 } from "@/features/operator-profiles";
 import type { CreateProfileRequest } from "@/features/operator-profiles/types";
 import type { ProfilePermission } from "@/features/operator-profiles/types";
+
+const DESCRIPTION_MAX_LENGTH = 300;
 
 export default function CreateProfilePage() {
   const t = useTranslations("operatorProfiles");
@@ -43,6 +46,7 @@ export default function CreateProfilePage() {
     usePermissionCatalog();
 
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<
     ProfilePermission[]
   >([]);
@@ -75,6 +79,7 @@ export default function CreateProfilePage() {
 
     const data: CreateProfileRequest = {
       name: name.trim(),
+      ...(description.trim() ? { description: description.trim() } : {}),
       // Backend espera `permissionCodes: string[]` (CreateOperatorProfileDto),
       // no `permissions: {permissionCode, params}[]` — ese shape es rechazado
       // por whitelist como `property permissions should not exist`.
@@ -160,6 +165,23 @@ export default function CreateProfilePage() {
                   maxLength={100}
                 />
                 <p className="text-xs text-slate-500">{t("form.help.name")}</p>
+              </div>
+              <div className="space-y-2 max-w-md">
+                <Label htmlFor="profile-description">
+                  {t("form.fields.description")}
+                </Label>
+                <Textarea
+                  id="profile-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t("form.placeholders.description")}
+                  disabled={createProfile.isPending}
+                  maxLength={DESCRIPTION_MAX_LENGTH}
+                  rows={3}
+                />
+                <p className="text-xs text-slate-500">
+                  {t("form.help.description")}
+                </p>
               </div>
             </CardContent>
           </Card>

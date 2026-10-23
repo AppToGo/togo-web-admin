@@ -83,13 +83,16 @@
       "permissions": "Selecciona los permisos que tendrán los usuarios con este perfil"
     },
     "fields": {
-      "name": "Nombre"
+      "name": "Nombre",
+      "description": "Descripción"
     },
     "placeholders": {
-      "name": "Ej: Administrador de Sucursal"
+      "name": "Ej: Administrador de Sucursal",
+      "description": "Ej: Atiende la caja y registra los pagos"
     },
     "help": {
-      "name": "Nombre descriptivo para identificar el perfil"
+      "name": "Nombre descriptivo para identificar el perfil",
+      "description": "Opcional. Explica qué hace este perfil; se muestra en la lista de perfiles."
     },
     "errors": {
       "nameRequired": "El nombre es obligatorio",

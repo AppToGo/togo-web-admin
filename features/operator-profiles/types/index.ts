@@ -20,7 +20,8 @@ export interface ProfilePermission {
 export interface OperatorProfile {
   id: string;
   name: string;
-  description: string | null;
+  /** El API la omite cuando el perfil no tiene descripción. */
+  description?: string | null;
   /**
    * Plantilla de ToGo de la que salió el perfil (p. ej. "cashier"); null si
    * lo creó el dueño. Los recomendados se crean al registrar el negocio
@@ -61,6 +62,8 @@ export interface CreateProfileRequest {
  */
 export interface UpdateProfileRequest {
   name?: string;
+  /** "" la borra. */
+  description?: string;
 }
 
 /**

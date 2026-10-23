@@ -51,9 +51,36 @@ const PROFILES = [
   profile("prof-propio", "TURNO NOCHE", null, null),
 ];
 
+/** Cuerpos de los PUT al perfil, para verificar lo que se envía. */
+const profileUpdates: unknown[] = [];
+
 async function mockProfiles(page: Page): Promise<void> {
   await page.route("**/v1/**", async (route) => {
-    const path = new URL(route.request().url()).pathname;
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path.endsWith("/operator-profiles/catalog/permissions")) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([]),
+      });
+    }
+    if (path.endsWith("/operator-profiles/prof-cajero")) {
+      if (request.method() === "PUT") {
+        const body = request.postDataJSON() as Record<string, unknown>;
+        profileUpdates.push(body);
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ ...PROFILES[0], ...body }),
+        });
+      }
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(PROFILES[0]),
+      });
+    }
     if (path.endsWith("/operator-profiles")) {
       return route.fulfill({
         status: 200,
@@ -99,5 +126,22 @@ test.describe("Perfiles recomendados por ToGo", () => {
     const own = page.locator(".group", { hasText: "TURNO NOCHE" }).first();
     await expect(own).toBeVisible();
     await expect(own.getByText("Recomendado por ToGo")).toHaveCount(0);
+  });
+
+  test("la descripción de un perfil se edita y se envía en el PUT", async ({ page }) => {
+    profileUpdates.length = 0;
+    await login(page);
+    await page.goto("/es/dashboard/settings/operator-profiles/prof-cajero");
+
+    const description = page.getByLabel("Descripción");
+    await expect(description).toHaveValue("Cobra en caja y registra pagos.");
+    await description.fill("Cobra en caja, registra pagos y cierra el turno.");
+    await page.getByRole("button", { name: "Guardar cambios" }).click();
+
+    await expect.poll(() => profileUpdates.length).toBe(1);
+    expect(profileUpdates[0]).toMatchObject({
+      name: "CAJERO",
+      description: "Cobra en caja, registra pagos y cierra el turno.",
+    });
   });
 });
