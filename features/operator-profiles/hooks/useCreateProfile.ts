@@ -47,6 +47,8 @@ export function useCreateProfile() {
         id: `temp-${Date.now()}`,
         businessId: "", // Se asigna en el backend
         name: data.name,
+        description: data.description ?? null,
+        sourceTemplateKey: null,
         permissions: [], // Los permisos se asignan después de la creación
         userCount: 0,
         createdAt: new Date().toISOString(),

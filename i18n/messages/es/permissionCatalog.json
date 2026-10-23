@@ -350,5 +350,13 @@
   "cash_audit": {
     "label": "Auditoría de caja",
     "description": "Consultar la auditoría de movimientos de dinero."
+  },
+  "order_delete": {
+    "label": "Eliminar pedidos",
+    "description": "Permite eliminar un pedido de forma definitiva. No se puede deshacer."
+  },
+  "conversation_reopen": {
+    "label": "Reabrir conversaciones",
+    "description": "Vuelve a abrir una conversación cerrada para seguir atendiéndola."
   }
 }

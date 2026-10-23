@@ -6,7 +6,8 @@
     "subtitle": "Create a new profile with specific permissions"
   },
   "edit": {
-    "title": "Edit Profile"
+    "title": "Edit Profile",
+    "recommendedNote": "Profile recommended by ToGo for your industry. Edit it freely: changes only apply to your business."
   },
   "info": {
     "title": "Profile Information"
@@ -41,7 +42,8 @@
     "permissions": "{count} permissions",
     "users": "{count} users",
     "created": "Created",
-    "clone": "Clone"
+    "clone": "Clone",
+    "recommended": "Recommended by ToGo"
   },
   "clone": {
     "title": "Clone Profile",

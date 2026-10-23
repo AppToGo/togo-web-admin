@@ -350,5 +350,13 @@
   "cash_audit": {
     "label": "Cash audit",
     "description": "Query the money movement audit trail."
+  },
+  "order_delete": {
+    "label": "Delete orders",
+    "description": "Lets you permanently delete an order. This can't be undone."
+  },
+  "conversation_reopen": {
+    "label": "Reopen conversations",
+    "description": "Reopens a closed conversation to keep handling it."
   }
 }

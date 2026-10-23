@@ -255,6 +255,11 @@ export default function EditProfilePage() {
                 count: profile.permissions?.length || 0,
               })}
             </p>
+            {profile.sourceTemplateKey && (
+              <p className="text-xs text-slate-500 mt-1">
+                {t("edit.recommendedNote")}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button

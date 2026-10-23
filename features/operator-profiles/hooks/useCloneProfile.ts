@@ -58,6 +58,9 @@ export function useCloneProfile() {
         id: `temp-${Date.now()}`,
         businessId: originalProfile?.businessId || "",
         name: data.name,
+        description: originalProfile?.description ?? null,
+        // Una copia es del dueño, aunque el original fuera recomendado.
+        sourceTemplateKey: null,
         permissions: originalProfile?.permissions || [],
         userCount: 0,
         createdAt: new Date().toISOString(),
