@@ -94,7 +94,7 @@ interface Recorded {
 async function mockCatalog(
   page: Page,
   recorded: Recorded,
-  opts: { putError?: { code: string; branchIds?: string[] } } = {}
+  opts: { putError?: { code: string; branchIds?: string[] }; summaryFails?: boolean } = {}
 ): Promise<void> {
   await page.route("**/v1/**", async (route) => {
     const request = route.request();
@@ -104,6 +104,7 @@ async function mockCatalog(
       route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
     if (path.endsWith("/featured-products")) {
+      if (opts.summaryFails) return json({ statusCode: 500, message: "Error" }, 500);
       // Sede Norte ya está llena; las Papas están destacadas en Centro.
       return json({
         limit: 10,
@@ -145,7 +146,11 @@ async function mockCatalog(
 async function login(
   page: Page,
   recorded: Recorded,
-  opts: { permissions?: string[]; putError?: { code: string; branchIds?: string[] } } = {}
+  opts: {
+    permissions?: string[];
+    putError?: { code: string; branchIds?: string[] };
+    summaryFails?: boolean;
+  } = {}
 ) {
   await page.context().clearCookies();
   await page.addInitScript(() => {
@@ -163,7 +168,10 @@ async function login(
   await mockOrdersDashboard(page);
   await mockBranches(page);
   await mockRefreshSuccess(page);
-  await mockCatalog(page, recorded, { putError: opts.putError });
+  await mockCatalog(page, recorded, {
+    putError: opts.putError,
+    summaryFails: opts.summaryFails,
+  });
   await mockBoardPermissions(page, opts.permissions ?? PERMISSIONS);
   await openBoard(page);
 }
@@ -260,6 +268,51 @@ test.describe("Destacados del catálogo", () => {
     ]);
     await expect(page.getByText("Una sede ya tiene el máximo de 10 destacados")).toBeVisible();
     await expect(drawer).toBeVisible();
+  });
+
+  test("con la sede del filtro llena no la preselecciona y deja destacar en otra", async ({
+    page,
+  }) => {
+    const recorded = newRecorded();
+    await login(page, recorded);
+    await openProducts(page);
+    await filterByBranch(page, "Sede Norte");
+
+    await page
+      .getByRole("button", { name: "Destacar Gaseosa 400 ml en el catálogo" })
+      .first()
+      .click();
+    const drawer = page.getByTestId("feature-product-drawer");
+
+    // Norte (10/10) no viene marcada: marcada y llena, todo guardado fallaría.
+    const norte = drawer.getByRole("checkbox", { name: /Sede Norte/ });
+    await expect(norte).not.toBeChecked();
+    await expect(norte).toBeDisabled();
+
+    await drawer.getByRole("checkbox", { name: /Sede Centro/ }).click();
+    await drawer.getByRole("button", { name: "Destacar producto" }).click();
+
+    await expect.poll(() => recorded.saved).toEqual([
+      { productId: "p-gaseosa", body: { branchIds: [CENTRO] } },
+    ]);
+  });
+
+  test("si el resumen de destacados no carga, la estrella no permite guardar", async ({
+    page,
+  }) => {
+    const recorded = newRecorded();
+    await login(page, recorded, { summaryFails: true });
+    await openProducts(page);
+
+    // Sin el resumen no se sabe dónde está destacado cada producto: guardar
+    // reemplazaría las sedes reales, así que la estrella queda deshabilitada.
+    const star = page
+      .getByRole("button", { name: "Destacar Papas fritas en el catálogo" })
+      .first();
+    await expect(star).toBeDisabled();
+    await star.click({ force: true });
+    await expect(page.getByTestId("feature-product-drawer")).toBeHidden();
+    expect(recorded.saved).toEqual([]);
   });
 
   test("la estrella rellena quita el destacado de la sede del filtro sin abrir el drawer", async ({

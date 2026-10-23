@@ -26,6 +26,8 @@ interface ProductCardProps {
   featured?: boolean;
   /** Clic en la estrella; sin él (sin permiso) no se muestra. */
   onToggleFeatured?: (product: CatalogProduct) => void;
+  /** Estrella visible pero sin acción (resumen de destacados sin cargar). */
+  featuredDisabled?: boolean;
   viewMode?: "grid" | "list";
   selected?: boolean;
   onSelect?: () => void;
@@ -42,6 +44,7 @@ export function ProductCard({
   recommendationCount = 0,
   featured = false,
   onToggleFeatured,
+  featuredDisabled = false,
   viewMode = "grid",
   selected = false,
   onSelect,
@@ -246,6 +249,7 @@ export function ProductCard({
                 productName={product.name}
                 featured={featured}
                 onClick={() => onToggleFeatured(product)}
+                disabled={featuredDisabled}
                 className="-mt-1.5 -mr-1.5"
               />
             )}
@@ -408,6 +412,7 @@ export function ProductCard({
               productName={product.name}
               featured={featured}
               onClick={() => onToggleFeatured(product)}
+              disabled={featuredDisabled}
               className="h-8 w-8"
             />
           )}

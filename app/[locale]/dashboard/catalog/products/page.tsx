@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { featuredErrorMessage } from "@/features/catalog/utils/featured-errors";
 import {
   useCatalogProducts,
   useCreateCatalogProduct,
@@ -181,11 +182,10 @@ export default function ProductsPage() {
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const canViewFeatured = hasPermission("product.view");
   const canEditFeatured = canViewFeatured && hasPermission("product.update");
-  const { data: featuredSummary } = useFeaturedProducts(
-    businessId ?? "",
-    canViewFeatured
-  );
+  const { data: featuredSummary, isError: featuredSummaryError } =
+    useFeaturedProducts(businessId ?? "", canViewFeatured);
   const setFeatured = useSetProductFeatured(businessId ?? "");
+  const tFeatured = useTranslations("catalog.featured");
 
   const showProductImages = useShowProductImages();
   const publicCatalogUrl = usePublicCatalogUrl();
@@ -371,7 +371,10 @@ export default function ProductsPage() {
         },
         {
           onSuccess: () => toast.success(t("featured.removedFromBranch")),
-          onError: () => toast.error(t("featured.errors.generic")),
+          onError: (err) => {
+            const message = featuredErrorMessage(err, featuredSummary?.limit ?? 0);
+            toast.error(tFeatured(message.key, message.values));
+          },
         }
       );
       return;
@@ -379,6 +382,9 @@ export default function ProductsPage() {
     setFeaturingProduct(product);
   };
   const toggleFeatured = canEditFeatured ? handleToggleFeatured : undefined;
+  // Sin el resumen la estrella no sabe dónde está destacado el producto (y
+  // el PUT reemplaza el conjunto completo): no se puede usar hasta tenerlo.
+  const featuredDisabled = !featuredSummary || setFeatured.isPending;
 
   if (!businessId) {
     return (
@@ -426,6 +432,7 @@ export default function ProductsPage() {
           recommendationCounts={recommendationCounts}
           isFeatured={isFeatured}
           onToggleFeatured={toggleFeatured}
+          featuredDisabled={featuredDisabled}
           onCreate={() => setIsCreateModalOpen(true)}
           onImport={() => router.push("/dashboard/catalog/products/import")}
         />
@@ -570,6 +577,7 @@ export default function ProductsPage() {
                 recommendationCount={recommendationCounts?.[product.id]}
                 featured={isFeatured(product)}
                 onToggleFeatured={toggleFeatured}
+                featuredDisabled={featuredDisabled}
               />
             ))}
           </div>
@@ -615,6 +623,7 @@ export default function ProductsPage() {
         product={featuringProduct}
         presetBranchId={isMobile ? null : selectedBranchId}
         summary={featuredSummary}
+        summaryError={featuredSummaryError}
         categories={categories}
         onClose={() => setFeaturingProduct(null)}
         onEditProduct={(product) => {

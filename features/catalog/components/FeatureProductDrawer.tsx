@@ -23,6 +23,7 @@ import {
 import { cn, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Drawer,
   DrawerContent,
@@ -34,21 +35,13 @@ import {
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useSetProductFeatured, useUploadCatalogProductImage } from "../hooks";
 import type { FeaturedProductsSummary } from "../services/catalog.service";
-import type {
-  BusinessCategory,
-  CatalogProduct,
-  FeaturedErrorBody,
-} from "../types/catalog.types";
-
-const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-
-function featuredError(err: unknown): FeaturedErrorBody {
-  const data = (
-    err as { response?: { data?: FeaturedErrorBody } } | null
-  )?.response?.data;
-  return { code: data?.code, branchIds: data?.branchIds };
-}
+import type { BusinessCategory, CatalogProduct } from "../types/catalog.types";
+import { featuredErrorMessage } from "../utils/featured-errors";
+import {
+  PRODUCT_IMAGE_ACCEPT,
+  PRODUCT_IMAGE_MAX_SIZE,
+  PRODUCT_IMAGE_TYPES,
+} from "../utils/product-image";
 
 interface FeatureProductDrawerProps {
   businessId: string;
@@ -57,6 +50,8 @@ interface FeatureProductDrawerProps {
   /** Sede del filtro de la pantalla: se marca si el producto no estaba destacado. */
   presetBranchId: string | null;
   summary: FeaturedProductsSummary | undefined;
+  /** El resumen de destacados no se pudo cargar: no se puede guardar. */
+  summaryError: boolean;
   categories: BusinessCategory[];
   onClose: () => void;
   /** "Editar producto": cierra este drawer y abre el de edición. */
@@ -68,6 +63,7 @@ export function FeatureProductDrawer({
   product,
   presetBranchId,
   summary,
+  summaryError,
   categories,
   onClose,
   onEditProduct,
@@ -91,7 +87,22 @@ export function FeatureProductDrawer({
           </DrawerTitle>
           <DrawerDescription>{t("description")}</DrawerDescription>
         </DrawerHeader>
-        {product && (
+        {product && !summary && (
+          // El PUT reemplaza el conjunto completo de sedes: sin el resumen el
+          // editor arrancaría vacío y guardar borraría los destacados reales.
+          summaryError ? (
+            <p className="flex-1 p-6 text-sm text-red-600 text-center">
+              {t("loadError")}
+            </p>
+          ) : (
+            <div className="flex-1 px-7 mt-4 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-card" />
+              ))}
+            </div>
+          )
+        )}
+        {product && summary && (
           <FeatureEditor
             key={product.id}
             businessId={businessId}
@@ -117,21 +128,8 @@ export function FeatureProductDrawer({
                     onClose();
                   },
                   onError: (err) => {
-                    const { code, branchIds: fullIds } = featuredError(err);
-                    if (code === "FEATURED_IMAGE_REQUIRED") {
-                      toast.error(t("errors.imageRequired"));
-                    } else if (code === "FEATURED_LIMIT_REACHED") {
-                      toast.error(
-                        t("errors.limitReached", {
-                          max: summary?.limit ?? 10,
-                          count: fullIds?.length ?? 1,
-                        })
-                      );
-                    } else if (code === "INVALID_BRANCH") {
-                      toast.error(t("errors.invalidBranch"));
-                    } else {
-                      toast.error(t("errors.generic"));
-                    }
+                    const message = featuredErrorMessage(err, summary.limit);
+                    toast.error(t(message.key, message.values));
                   },
                 }
               )
@@ -147,7 +145,7 @@ interface EditorProps {
   businessId: string;
   product: CatalogProduct;
   presetBranchId: string | null;
-  summary: FeaturedProductsSummary | undefined;
+  summary: FeaturedProductsSummary;
   categories: BusinessCategory[];
   isSaving: boolean;
   onCancel: () => void;
@@ -171,16 +169,20 @@ function FeatureEditor({
   const upload = useUploadCatalogProductImage(businessId);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const limit = summary?.limit ?? 10;
+  const limit = summary.limit;
   const current = useMemo(
-    () => summary?.byProduct[product.id] ?? [],
+    () => summary.byProduct[product.id] ?? [],
     [summary, product.id]
   );
   const wasFeatured = current.length > 0;
 
   const [selected, setSelected] = useState<Set<string>>(() => {
     if (current.length > 0) return new Set(current);
-    if (presetBranchId) return new Set([presetBranchId]);
+    // La sede del filtro solo se marca si todavía admite destacados: marcada
+    // y llena, todo guardado fallaría por el tope.
+    if (presetBranchId && (summary.branchCounts[presetBranchId] ?? 0) < limit) {
+      return new Set([presetBranchId]);
+    }
     return new Set();
   });
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -222,11 +224,11 @@ function FeatureEditor({
     const file = e.target.files?.[0];
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (!file) return;
-    if (!VALID_IMAGE_TYPES.includes(file.type)) {
+    if (!PRODUCT_IMAGE_TYPES.includes(file.type)) {
       toast.error(t("image.invalidType"));
       return;
     }
-    if (file.size > MAX_IMAGE_SIZE) {
+    if (file.size > PRODUCT_IMAGE_MAX_SIZE) {
       toast.error(t("image.tooLarge"));
       return;
     }
@@ -319,10 +321,12 @@ function FeatureEditor({
           ) : (
             <div className="space-y-2">
               {branches.map((branch) => {
-                const count = summary?.branchCounts[branch.id] ?? 0;
+                const count = summary.branchCounts[branch.id] ?? 0;
                 const isChecked = selected.has(branch.id);
                 // Una sede llena no admite más, salvo que el producto ya esté en ella.
                 const isFull = count >= limit && !current.includes(branch.id);
+                // Llena solo bloquea marcarla: desmarcar siempre se puede.
+                const isLocked = isFull && !isChecked;
                 const inputId = `featured-branch-${branch.id}`;
                 return (
                   <label
@@ -331,13 +335,13 @@ function FeatureEditor({
                     className={cn(
                       "flex items-center gap-3 min-h-12 px-3 py-2 rounded-card border bg-white transition-colors",
                       isChecked ? "border-indigo-300" : "border-slate-200",
-                      isFull ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+                      isLocked ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
                     )}
                   >
                     <Checkbox
                       id={inputId}
                       checked={isChecked}
-                      disabled={isFull}
+                      disabled={isLocked}
                       onCheckedChange={(checked) => toggleBranch(branch.id, checked === true)}
                     />
                     <span className="flex-1 min-w-0">
@@ -375,7 +379,7 @@ function FeatureEditor({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept={PRODUCT_IMAGE_ACCEPT}
             className="hidden"
             onChange={handleFile}
           />

@@ -49,6 +49,8 @@ interface ProductsMobileViewProps {
   isFeatured?: (product: CatalogProduct) => boolean;
   /** Clic en la estrella; sin él (sin permiso) no se muestra. */
   onToggleFeatured?: (product: CatalogProduct) => void;
+  /** Estrella visible pero sin acción (resumen de destacados sin cargar). */
+  featuredDisabled?: boolean;
   onCreate: () => void;
   onImport: () => void;
 }
@@ -107,6 +109,7 @@ export function ProductsMobileView({
   recommendationCounts,
   isFeatured,
   onToggleFeatured,
+  featuredDisabled = false,
   onCreate,
   onImport,
 }: ProductsMobileViewProps) {
@@ -214,6 +217,7 @@ export function ProductsMobileView({
                       productName={product.name}
                       featured={isFeatured?.(product) ?? false}
                       onClick={() => onToggleFeatured(product)}
+                      disabled={featuredDisabled}
                       className="h-11 w-11"
                     />
                   )}
