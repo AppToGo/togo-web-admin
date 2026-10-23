@@ -106,7 +106,8 @@
         "title": "Tipo de producto",
         "custom": "Personalizados",
         "catalog": "Del catálogo"
-      }
+      },
+      "featuredOnly": "Solo destacados"
     },
     "form": {
       "nameLabel": "Nombre del producto",
@@ -586,5 +587,54 @@
     "error": "No se pudieron guardar las recomendaciones",
     "loadError": "No se pudieron cargar las recomendaciones",
     "needsDefaultVariant": "Tiene varias presentaciones y ninguna predeterminada: marca una para poder recomendarlo"
+  },
+  "featured": {
+    "featureFor": "Destacar {name} en el catálogo",
+    "unfeatureFor": "Quitar {name} de destacados",
+    "title": "Destacar producto",
+    "description": "Aparecerá en el carrusel de Destacados del catálogo de las sedes que elijas.",
+    "product": {
+      "title": "Producto",
+      "readOnly": "Solo lectura",
+      "editHint": "Para cambiar estos datos usa <link>Editar producto</link>."
+    },
+    "branches": {
+      "title": "Destacar en",
+      "count": "{count}/{max}",
+      "full": "Límite de {max} destacados alcanzado",
+      "none": "No tienes sedes disponibles"
+    },
+    "image": {
+      "title": "Imagen del destacado",
+      "formats": "JPG, PNG o WebP · máx. 5MB",
+      "upload": "Subir imagen",
+      "uploading": "Subiendo imagen…",
+      "change": "Cambiar imagen",
+      "usingCurrent": "Usaremos la imagen actual del producto",
+      "ready": "Imagen lista",
+      "required": "Este producto no tiene imagen. Para destacarlo necesitas subir una; quedará guardada también como la imagen del producto.",
+      "alwaysShown": "Los destacados siempre se muestran con imagen, aunque tu catálogo esté configurado sin imágenes.",
+      "invalidType": "Formato inválido. Usa PNG, JPG o WebP",
+      "tooLarge": "El archivo es demasiado grande. Máximo 5MB"
+    },
+    "blocked": {
+      "image": "Sube una imagen para poder destacarlo."
+    },
+    "cancel": "Cancelar",
+    "submit": "Destacar producto",
+    "submitUpdate": "Guardar destacado",
+    "submitRemove": "Quitar de destacados",
+    "saved": "Producto destacado",
+    "updated": "Destacado actualizado",
+    "removed": "Producto quitado de destacados",
+    "removedFromBranch": "Producto quitado de destacados en esta sede",
+    "emptyTitle": "No hay productos destacados",
+    "emptyHint": "Toca la estrella de un producto para destacarlo en el catálogo.",
+    "errors": {
+      "imageRequired": "El producto necesita una imagen para poder destacarlo",
+      "limitReached": "{count, plural, one {Una sede ya tiene} other {# sedes ya tienen}} el máximo de {max} destacados",
+      "invalidBranch": "Alguna sede ya no está disponible. Recarga e intenta de nuevo",
+      "generic": "No se pudo guardar el destacado"
+    }
   }
 }

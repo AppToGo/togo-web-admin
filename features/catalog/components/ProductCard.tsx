@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { CatalogProduct } from "../types/catalog.types";
+import { FeaturedStarButton } from "./FeaturedStarButton";
 
 interface ProductCardProps {
   product: CatalogProduct;
@@ -21,6 +22,10 @@ interface ProductCardProps {
   onRecommend?: (product: CatalogProduct) => void;
   /** Cuántos recomendados tiene; 0 o sin dato no muestra la etiqueta. */
   recommendationCount?: number;
+  /** Destacado en la sede del filtro (o en alguna, sin filtro de sede). */
+  featured?: boolean;
+  /** Clic en la estrella; sin él (sin permiso) no se muestra. */
+  onToggleFeatured?: (product: CatalogProduct) => void;
   viewMode?: "grid" | "list";
   selected?: boolean;
   onSelect?: () => void;
@@ -35,6 +40,8 @@ export function ProductCard({
   onDelete,
   onRecommend,
   recommendationCount = 0,
+  featured = false,
+  onToggleFeatured,
   viewMode = "grid",
   selected = false,
   onSelect,
@@ -230,9 +237,19 @@ export function ProductCard({
 
         {/* Content */}
         <div className="flex-1 flex flex-col min-h-0 space-y-2">
-          <h3 className="font-semibold text-slate-900 line-clamp-1">
-            {product.name}
-          </h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-slate-900 line-clamp-1">
+              {product.name}
+            </h3>
+            {onToggleFeatured && (
+              <FeaturedStarButton
+                productName={product.name}
+                featured={featured}
+                onClick={() => onToggleFeatured(product)}
+                className="-mt-1.5 -mr-1.5"
+              />
+            )}
+          </div>
 
           {categoryName && (
             <div className="flex items-center gap-1.5">
@@ -386,6 +403,14 @@ export function ProductCard({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
+          {onToggleFeatured && (
+            <FeaturedStarButton
+              productName={product.name}
+              featured={featured}
+              onClick={() => onToggleFeatured(product)}
+              className="h-8 w-8"
+            />
+          )}
           <Button
             variant="ghost"
             size="icon"
