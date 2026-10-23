@@ -200,6 +200,9 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
   const handleInlineCreate = () => {
     const price = parseFloat(pendingPrice);
     if (!pendingTemplateId || isNaN(price) || price <= 0) return;
+    // Enter con el check 409 en vuelo: esperar a que resuelva (el botón ya
+    // está deshabilitado por canSubmit/canAdd).
+    if (reserveCode.isPending) return;
     const sku = normalizeCode(pendingSku);
     if (!sku) {
       setPendingSkuError(t("products.sku.required"));

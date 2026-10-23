@@ -438,20 +438,53 @@ export function ProductForm({
   const [simpleSku, setSimpleSku] = useState("");
   const [simpleSkuError, setSimpleSkuError] = useState<string | null>(null);
   const [rowSkuErrors, setRowSkuErrors] = useState<Record<string, string | null>>({});
-  const skuPrefillRef = useRef(false);
+  const skuPrefillRef = useRef<string | null>(null);
+  const selectedRef = useRef<SelectedVariant[]>([]);
 
   const normalizeCode = (value: string) => {
     const v = value.trim();
     return /^[a-z]{1,2}\d{3}$/i.test(v) ? v.toUpperCase() : v;
   };
 
+  selectedRef.current = selectedVariants;
+
   useEffect(() => {
-    if (isEditing || !businessId || skuPrefillRef.current) return;
-    skuPrefillRef.current = true;
+    // Clave por negocio: si el businessId llega tarde (store async), el
+    // prefill igual corre cuando aparece; si cambia de negocio, repite.
+    if (isEditing || !businessId || skuPrefillRef.current === businessId) return;
+    skuPrefillRef.current = businessId;
     reserveCode
       .mutateAsync(undefined)
       .then(({ code }) => setSimpleSku((prev) => prev || code))
       .catch(() => undefined);
+    // Filas iniciales (duplicación): un código por fila que venga vacía.
+    const emptyIds = new Set(
+      selectedRef.current
+        .filter((v) => !v.internalSku.trim())
+        .map((v) => v.templateId)
+    );
+    if (emptyIds.size > 0) {
+      void Promise.all(
+        Array.from({ length: emptyIds.size }, () =>
+          reserveCode.mutateAsync(undefined)
+        )
+      )
+        .then((results) => {
+          const byId = new Map(
+            [...emptyIds].map((id, i) => [id, results[i]?.code])
+          );
+          setSelectedVariants((cur) =>
+            cur.map((v) => {
+              const code =
+                emptyIds.has(v.templateId) && !v.internalSku.trim()
+                  ? byId.get(v.templateId)
+                  : undefined;
+              return code ? { ...v, internalSku: code } : v;
+            })
+          );
+        })
+        .catch(() => undefined);
+    }
     // reserveCode es estable (React Query); solo importa negocio/modo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing, businessId]);
@@ -792,6 +825,12 @@ export function ProductForm({
     setSelectedVariants((prev) =>
       prev.filter((v) => v.templateId !== templateId)
     );
+    // Sin esto, el error de una fila borrada bloquearía el envío para siempre.
+    setRowSkuErrors((prev) => {
+      if (!(templateId in prev)) return prev;
+      const { [templateId]: _dropped, ...rest } = prev;
+      return rest;
+    });
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -804,6 +843,11 @@ export function ProductForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Si un prefill o una validación 409 sigue en vuelo (Enter antes que el
+    // blur resuelva), no enviar: el botón ya está deshabilitado, esto cubre
+    // el teclado. Al resolverse, el usuario reintenta.
+    if (!isEditing && reserveCode.isPending) return;
 
     // El backend recalcula las heredadas (categoría, nombre) — solo se
     // envían las entradas que el usuario controla directamente.
@@ -898,12 +942,14 @@ export function ProductForm({
     Object.values(rowSkuErrors).some((e) => e !== null);
   const skusComplete =
     isEditing ||
-    reserveCode.isPending ||
     (pricingMode === "simple"
       ? simpleSku.trim() !== ""
       : selectedVariants.every((v) => v.internalSku.trim() !== ""));
   const canSubmit =
-    formData.name.trim().length > 0 && !hasSkuErrors && skusComplete;
+    formData.name.trim().length > 0 &&
+    !hasSkuErrors &&
+    skusComplete &&
+    !reserveCode.isPending;
 
   // ─── Info fields ─────────────────────────────────────────────────────────────
 
