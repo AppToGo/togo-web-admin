@@ -1049,6 +1049,18 @@ export function useDeleteVariant(
   });
 }
 
+/**
+ * Reserva un código SKU para pre-llenar formularios. Sin `preferred`
+ * asigna el siguiente libre; con `preferred` verifica disponibilidad
+ * (el 409 se maneja en el componente para mostrar el error inline).
+ */
+export function useReserveVariantCode(businessId: string) {
+  return useMutation({
+    mutationFn: (preferred?: string) =>
+      catalogService.reserveVariantCode(businessId, preferred),
+  });
+}
+
 export function useIndustryCategoryVariantTemplates(industryCategoryId: string | null) {
   return useQuery<VariantTemplate[]>({
     queryKey: catalogKeys.variantTemplates(industryCategoryId ?? ""),

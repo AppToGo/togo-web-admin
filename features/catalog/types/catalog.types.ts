@@ -409,6 +409,7 @@ export interface InlineVariant {
   label: string;
   price: number;
   attributes?: Record<string, string | number>;
+  internalSku?: string;
 }
 
 export interface VariantTemplate {
@@ -432,6 +433,8 @@ export interface CreateProductDto {
   isFeatured?: boolean;
   // Inline pricing on creation
   price?: number;
+  /** SKU de la variante única (solo con `price`, sin `inlineVariants`). */
+  internalSku?: string;
   inlineVariants?: InlineVariant[];
   // Solo entradas 'manual'/'ai' — las heredadas las calcula el backend.
   searchKeywords?: KeywordEntry[];

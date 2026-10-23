@@ -28,7 +28,14 @@
     "editDescription": "Modifica los detalles del producto",
     "delete": "Eliminar producto",
     "import": "Importar productos",
-    "search": "Buscar productos...",
+    "search": "Buscar por nombre o código...",
+    "sku": {
+      "label": "Código (SKU)",
+      "placeholder": "Ej: B042",
+      "required": "El código es obligatorio",
+      "taken": "Ese código ya está en uso en tu negocio",
+      "hint": "Se genera automáticamente; podés editarlo."
+    },
     "noProducts": "No hay productos",
     "noProductsDescription": "Comienza agregando tu primer producto al catálogo",
     "name": "Nombre",

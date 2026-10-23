@@ -17,6 +17,8 @@ export interface InventoryItem {
   productName: string;
   productSlug: string;
   variantLabel?: string;
+  /** Código corto de la variante (para mostrar y buscar en POS/pedidos). */
+  internalSku?: string | null;
   basePrice: number;
   stock: number | null;
   isAvailable: boolean;

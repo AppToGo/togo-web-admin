@@ -61,7 +61,14 @@ export function ProductRow({
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900 truncate">{name}</p>
+        <p className="text-sm font-semibold text-slate-900 truncate">
+          {name}
+          {item.internalSku && (
+            <span className="ml-1.5 rounded bg-slate-100 px-1 py-px font-mono text-[10px] font-medium text-slate-500 border border-slate-200 align-middle">
+              {item.internalSku}
+            </span>
+          )}
+        </p>
         <p className="text-xs text-slate-500 truncate">
           {[item.categoryName, formatCurrency(item.effectivePrice)].filter(Boolean).join(" · ")}
         </p>
