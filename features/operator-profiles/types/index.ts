@@ -28,6 +28,11 @@ export interface OperatorProfile {
    * según su industria y se editan como cualquier perfil.
    */
   sourceTemplateKey: string | null;
+  /**
+   * Perfil interno de ToGo (el del usuario demo). El API solo lo devuelve a
+   * SUPER_ADMIN; para el negocio no existe.
+   */
+  isInternal: boolean;
   businessId: string;
   permissions: ProfilePermission[];
   userCount: number;

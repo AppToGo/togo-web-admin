@@ -76,6 +76,15 @@ export const OperatorProfileCard = memo(function OperatorProfileCard({
                   {t("card.recommended")}
                 </Badge>
               )}
+              {profile.isInternal && (
+                <Badge
+                  variant="outline"
+                  className="bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-100"
+                >
+                  <Lock className="w-3 h-3 mr-1" />
+                  {t("card.internal")}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500">
               <Lock className="w-3.5 h-3.5" />
