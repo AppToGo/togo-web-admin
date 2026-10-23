@@ -497,4 +497,18 @@ export interface CatalogProductsFilters {
   isFromTemplate?: boolean;
   branchId?: string;
   activationStatus?: "activated" | "not_activated" | "all";
+  /** Solo destacados: en la sede de branchId o, sin ella, en alguna. */
+  featuredOnly?: boolean;
+}
+
+/** Errores del PUT de destacados (cuerpo del 400 del API). */
+export type FeaturedErrorCode =
+  | "FEATURED_IMAGE_REQUIRED"
+  | "FEATURED_LIMIT_REACHED"
+  | "INVALID_BRANCH";
+
+export interface FeaturedErrorBody {
+  code?: FeaturedErrorCode;
+  /** Con FEATURED_LIMIT_REACHED: las sedes que ya tienen el máximo. */
+  branchIds?: string[];
 }

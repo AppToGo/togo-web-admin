@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { ExternalLink, Plus, Package, Store, Upload } from "lucide-react";
+import { ExternalLink, Plus, Package, Star, Store, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { featuredErrorMessage } from "@/features/catalog/utils/featured-errors";
 import {
   useCatalogProducts,
   useCreateCatalogProduct,
@@ -26,12 +28,15 @@ import {
   useDeleteCatalogProduct,
   useCategories,
   useRecommendationCounts,
+  useFeaturedProducts,
+  useSetProductFeatured,
 } from "@/features/catalog/hooks";
 import {
   ProductCard,
   ProductForm,
   ProductFilters,
   ProductRecommendationsDrawer,
+  FeatureProductDrawer,
 } from "@/features/catalog/components";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import type { SourceFilter } from "@/features/catalog/components/ProductFilters";
@@ -170,6 +175,22 @@ export default function ProductsPage() {
     ? setRecommendingProduct
     : undefined;
 
+  // Destacados por sede (carrusel del catálogo web). La estrella lee el
+  // resumen (view) y guarda (update): sin los dos no se muestra.
+  const [featuringProduct, setFeaturingProduct] =
+    useState<CatalogProduct | null>(null);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
+  const canViewFeatured = hasPermission("product.view");
+  const canEditFeatured = canViewFeatured && hasPermission("product.update");
+  const { data: featuredSummary, isError: featuredSummaryError } =
+    useFeaturedProducts(businessId ?? "", canViewFeatured);
+  const setFeatured = useSetProductFeatured(businessId ?? "");
+  const tFeatured = useTranslations("catalog.featured");
+  // Sin resumen la estrella queda deshabilitada: se avisa por qué, una vez.
+  useEffect(() => {
+    if (featuredSummaryError) toast.error(tFeatured("summaryLoadError"));
+  }, [featuredSummaryError, tFeatured]);
+
   const showProductImages = useShowProductImages();
   const publicCatalogUrl = usePublicCatalogUrl();
 
@@ -178,6 +199,7 @@ export default function ProductsPage() {
     !sourceFilter.custom || !sourceFilter.catalog,
     selectedBranchId !== null,
     !!selectedBranchId && (!activationFilter.activated || !activationFilter.notActivated),
+    featuredOnly,
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
@@ -185,6 +207,7 @@ export default function ProductsPage() {
     setSourceFilter({ custom: true, catalog: true });
     setSelectedBranchId(null);
     setActivationFilter({ activated: true, notActivated: true });
+    setFeaturedOnly(false);
   };
 
   // Cambiar un filtro vuelve a la página 1. Ajuste de estado durante el
@@ -196,6 +219,7 @@ export default function ProductsPage() {
     statusFilter,
     selectedBranchId,
     activationFilter,
+    featuredOnly,
   ]);
   const [prevFiltersKey, setPrevFiltersKey] = useState(filtersKey);
   if (filtersKey !== prevFiltersKey) {
@@ -236,8 +260,9 @@ export default function ProductsPage() {
         isMobile && statusFilter !== "all" ? statusFilter === "active" : undefined,
       branchId: selectedBranchId ?? undefined,
       activationStatus,
+      featuredOnly: featuredOnly || undefined,
     };
-  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter, isMobile, statusFilter, selectedBranchId, activationFilter]);
+  }, [searchQuery, page, pageSize, selectedCategory, sourceFilter, isMobile, statusFilter, selectedBranchId, activationFilter, featuredOnly]);
 
   const {
     data: productsData,
@@ -327,6 +352,44 @@ export default function ProductsPage() {
     setEditingProductId(product.id);
   }, []);
 
+  // Con sede en el filtro, la estrella es la de esa sede; sin sede (o en el
+  // teléfono, que no filtra por sede), la de cualquiera.
+  const featuredBranchesOf = (product: CatalogProduct) =>
+    featuredSummary?.byProduct[product.id] ?? [];
+  const isFeatured = (product: CatalogProduct) => {
+    const branchIds = featuredBranchesOf(product);
+    const scopeBranchId = isMobile ? null : selectedBranchId;
+    return scopeBranchId ? branchIds.includes(scopeBranchId) : branchIds.length > 0;
+  };
+
+  // Destacado en la sede del filtro: la estrella lo quita de esa sede sin
+  // abrir nada. En cualquier otro caso abre el drawer.
+  const handleToggleFeatured = (product: CatalogProduct) => {
+    const branchIds = featuredBranchesOf(product);
+    const scopeBranchId = isMobile ? null : selectedBranchId;
+    if (scopeBranchId && branchIds.includes(scopeBranchId)) {
+      setFeatured.mutate(
+        {
+          productId: product.id,
+          branchIds: branchIds.filter((id) => id !== scopeBranchId),
+        },
+        {
+          onSuccess: () => toast.success(t("featured.removedFromBranch")),
+          onError: (err) => {
+            const message = featuredErrorMessage(err, featuredSummary?.limit ?? 0);
+            toast.error(tFeatured(message.key, message.values));
+          },
+        }
+      );
+      return;
+    }
+    setFeaturingProduct(product);
+  };
+  const toggleFeatured = canEditFeatured ? handleToggleFeatured : undefined;
+  // Sin el resumen la estrella no sabe dónde está destacado el producto (y
+  // el PUT reemplaza el conjunto completo): no se puede usar hasta tenerlo.
+  const featuredDisabled = !featuredSummary || setFeatured.isPending;
+
   if (!businessId) {
     return (
       <DashboardLayout>
@@ -371,6 +434,9 @@ export default function ProductsPage() {
           }
           onRecommend={openRecommendations}
           recommendationCounts={recommendationCounts}
+          isFeatured={isFeatured}
+          onToggleFeatured={toggleFeatured}
+          featuredDisabled={featuredDisabled}
           onCreate={() => setIsCreateModalOpen(true)}
           onImport={() => router.push("/dashboard/catalog/products/import")}
         />
@@ -415,6 +481,8 @@ export default function ProductsPage() {
             onActivationFilterChange={setActivationFilter}
             sourceFilter={sourceFilter}
             onSourceFilterChange={setSourceFilter}
+            featuredOnly={featuredOnly}
+            onFeaturedOnlyChange={canViewFeatured ? setFeaturedOnly : undefined}
             categories={categories}
             activeFiltersCount={activeFiltersCount}
             onClearFilters={clearAllFilters}
@@ -461,7 +529,19 @@ export default function ProductsPage() {
             <p className="text-red-600 text-sm">{t("products.error.title")}</p>
           </div>
         ) : products.length === 0 ? (
-          selectedBranchId ? (
+          featuredOnly ? (
+            <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-50 flex items-center justify-center">
+                <Star className="w-8 h-8 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                {t("featured.emptyTitle")}
+              </h3>
+              <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+                {t("featured.emptyHint")}
+              </p>
+            </div>
+          ) : selectedBranchId ? (
             <div className="text-center py-16 bg-slate-50 rounded-card-lg border border-dashed border-slate-200">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
                 <Store className="w-8 h-8 text-slate-400" />
@@ -499,6 +579,9 @@ export default function ProductsPage() {
                 onDelete={(p) => deleteProduct.mutate(p.id)}
                 onRecommend={openRecommendations}
                 recommendationCount={recommendationCounts?.[product.id]}
+                featured={isFeatured(product)}
+                onToggleFeatured={toggleFeatured}
+                featuredDisabled={featuredDisabled}
               />
             ))}
           </div>
@@ -537,6 +620,20 @@ export default function ProductsPage() {
         onClose={() => setRecommendingProduct(null)}
         categories={categories}
         showImages={showProductImages}
+      />
+
+      <FeatureProductDrawer
+        businessId={businessId}
+        product={featuringProduct}
+        presetBranchId={isMobile ? null : selectedBranchId}
+        summary={featuredSummary}
+        summaryError={featuredSummaryError}
+        categories={categories}
+        onClose={() => setFeaturingProduct(null)}
+        onEditProduct={(product) => {
+          setFeaturingProduct(null);
+          openEdit(product);
+        }}
       />
 
       {/* Create Drawer */}
