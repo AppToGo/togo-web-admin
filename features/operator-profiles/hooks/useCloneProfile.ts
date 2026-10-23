@@ -64,6 +64,8 @@ export function useCloneProfile() {
           : null,
         // Una copia es del dueño, aunque el original fuera recomendado.
         sourceTemplateKey: null,
+        // Un perfil creado o clonado por el negocio nunca es interno.
+        isInternal: false,
         permissions: originalProfile?.permissions || [],
         userCount: 0,
         createdAt: new Date().toISOString(),
