@@ -27,6 +27,9 @@ export {
   useProductRecommendations,
   useRecommendationCounts,
   useReplaceProductRecommendations,
+  // Featured products
+  useFeaturedProducts,
+  useSetProductFeatured,
   // Categories
   useCategories,
   useCategory,

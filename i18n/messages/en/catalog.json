@@ -106,7 +106,8 @@
         "title": "Product type",
         "custom": "Custom",
         "catalog": "From catalog"
-      }
+      },
+      "featuredOnly": "Featured only"
     },
     "form": {
       "nameLabel": "Product name",
@@ -580,5 +581,56 @@
     "error": "Couldn't save the recommendations",
     "loadError": "Couldn't load the recommendations",
     "needsDefaultVariant": "Has several presentations and no default: mark one as default to recommend it"
+  },
+  "featured": {
+    "featureFor": "Feature {name} in the catalog",
+    "unfeatureFor": "Remove {name} from featured",
+    "title": "Feature product",
+    "description": "It will appear in the Featured carousel of the catalog for the branches you choose.",
+    "product": {
+      "title": "Product",
+      "readOnly": "Read only",
+      "editHint": "To change these details use <link>Edit product</link>."
+    },
+    "branches": {
+      "title": "Feature in",
+      "count": "{count}/{max}",
+      "full": "Limit of {max} featured reached",
+      "none": "You have no branches available"
+    },
+    "image": {
+      "title": "Featured image",
+      "formats": "JPG, PNG or WebP · max 5MB",
+      "upload": "Upload image",
+      "uploading": "Uploading image…",
+      "change": "Change image",
+      "usingCurrent": "We'll use the product's current image",
+      "ready": "Image ready",
+      "required": "This product has no image. To feature it you need to upload one; it will also be saved as the product image.",
+      "alwaysShown": "Featured products are always shown with an image, even if your catalog is set up without images.",
+      "invalidType": "Invalid format. Use PNG, JPG or WebP",
+      "tooLarge": "File is too large. Maximum 5MB"
+    },
+    "blocked": {
+      "image": "Upload an image to feature it."
+    },
+    "cancel": "Cancel",
+    "submit": "Feature product",
+    "submitUpdate": "Save featured",
+    "submitRemove": "Remove from featured",
+    "saved": "Product featured",
+    "updated": "Featured updated",
+    "removed": "Product removed from featured",
+    "removedFromBranch": "Product removed from featured in this branch",
+    "emptyTitle": "No featured products",
+    "emptyHint": "Tap a product's star to feature it in the catalog.",
+    "loadError": "Could not load featured products. Close and try again.",
+    "summaryLoadError": "Featured products could not be loaded: the star is disabled. Reload the page to try again.",
+    "errors": {
+      "imageRequired": "The product needs an image to be featured",
+      "limitReached": "{count, plural, one {A branch already has} other {# branches already have}} the maximum of {max} featured",
+      "invalidBranch": "A branch is no longer available. Reload and try again",
+      "generic": "Could not save featured"
+    }
   }
 }

@@ -17,6 +17,7 @@ import { PillGroup, SegmentedControl } from "@/components/ui/pill-group";
 import { SearchField } from "@/components/ui/search-field";
 import { cn, formatCurrency } from "@/lib/utils";
 import { CatalogMobileNav } from "./CatalogMobileNav";
+import { FeaturedStarButton } from "../FeaturedStarButton";
 import type { BusinessCategory, CatalogProduct } from "../../types/catalog.types";
 
 export type ProductStatusFilter = "all" | "active" | "inactive";
@@ -44,6 +45,12 @@ interface ProductsMobileViewProps {
   onRecommend?: (product: CatalogProduct) => void;
   /** productId → cantidad de recomendados. */
   recommendationCounts?: Record<string, number>;
+  /** Si el producto está destacado (el teléfono no filtra por sede: en alguna). */
+  isFeatured?: (product: CatalogProduct) => boolean;
+  /** Clic en la estrella; sin él (sin permiso) no se muestra. */
+  onToggleFeatured?: (product: CatalogProduct) => void;
+  /** Estrella visible pero sin acción (resumen de destacados sin cargar). */
+  featuredDisabled?: boolean;
   onCreate: () => void;
   onImport: () => void;
 }
@@ -100,6 +107,9 @@ export function ProductsMobileView({
   onToggleActive,
   onRecommend,
   recommendationCounts,
+  isFeatured,
+  onToggleFeatured,
+  featuredDisabled = false,
   onCreate,
   onImport,
 }: ProductsMobileViewProps) {
@@ -202,6 +212,15 @@ export function ProductsMobileView({
                       )}
                     </span>
                   </button>
+                  {onToggleFeatured && (
+                    <FeaturedStarButton
+                      productName={product.name}
+                      featured={isFeatured?.(product) ?? false}
+                      onClick={() => onToggleFeatured(product)}
+                      disabled={featuredDisabled}
+                      className="h-11 w-11"
+                    />
+                  )}
                   {onRecommend && (
                     <button
                       type="button"

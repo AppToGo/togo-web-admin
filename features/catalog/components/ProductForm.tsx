@@ -46,6 +46,11 @@ import type {
 } from "../types/catalog.types";
 import { EDITABLE_KEYWORD_SOURCES } from "../types/catalog.types";
 import { generateSlug } from "../utils/slug";
+import {
+  PRODUCT_IMAGE_ACCEPT,
+  PRODUCT_IMAGE_MAX_SIZE,
+  PRODUCT_IMAGE_TYPES,
+} from "../utils/product-image";
 
 const SELECT_NONE = "__none__" as const;
 const SELECT_DISABLED = "__disabled__" as const;
@@ -568,13 +573,12 @@ export function ProductForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
+    if (!PRODUCT_IMAGE_TYPES.includes(file.type)) {
       toast.error(t("products.form.invalidImageType"));
       if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > PRODUCT_IMAGE_MAX_SIZE) {
       toast.error(t("products.form.imageTooLarge"));
       if (imageInputRef.current) imageInputRef.current.value = "";
       return;
@@ -955,7 +959,7 @@ export function ProductForm({
             <input
               ref={imageInputRef}
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept={PRODUCT_IMAGE_ACCEPT}
               className="hidden"
               onChange={handleImageUpload}
             />

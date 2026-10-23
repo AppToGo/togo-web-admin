@@ -4,6 +4,8 @@
 
 export { ProductCard } from "./ProductCard";
 export { ProductRecommendationsDrawer } from "./ProductRecommendationsDrawer";
+export { FeatureProductDrawer } from "./FeatureProductDrawer";
+export { FeaturedStarButton } from "./FeaturedStarButton";
 export { GlobalProductCard } from "./GlobalProductCard";
 export { ProductForm } from "./ProductForm";
 export { ActivateProductDrawer } from "./ActivateProductDrawer";

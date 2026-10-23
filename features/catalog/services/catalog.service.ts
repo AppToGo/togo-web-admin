@@ -387,6 +387,7 @@ export async function getCatalogProducts(
   if (filters?.isFromTemplate !== undefined) params.append("isFromTemplate", String(filters.isFromTemplate));
   if (filters?.branchId) params.append("branchId", filters.branchId);
   if (filters?.activationStatus) params.append("activationStatus", filters.activationStatus);
+  if (filters?.featuredOnly) params.append("featuredOnly", "true");
 
   const response = await apiClient.get<BackendProductsResponse>(
     `/businesses/${businessId}/products?${params}`
@@ -681,6 +682,56 @@ export async function getRecommendationCounts(
 ): Promise<Record<string, number>> {
   const response = await apiClient.get<Record<string, number>>(
     `/businesses/${businessId}/product-recommendations/counts`
+  );
+  return response.data;
+}
+
+// ============================================================================
+// FEATURED PRODUCTS API
+// ============================================================================
+
+/**
+ * Destacados por sede (carrusel del catálogo web): cuántos tiene cada sede
+ * y en qué sedes está cada producto.
+ */
+export interface FeaturedProductsSummary {
+  /** Tope por sede (MAX_FEATURED_PER_BRANCH en la API). */
+  limit: number;
+  /** branchId → cantidad de destacados. */
+  branchCounts: Record<string, number>;
+  /** productId → sedes donde está destacado. */
+  byProduct: Record<string, string[]>;
+}
+
+export interface ProductFeaturedResult {
+  productId: string;
+  branchIds: string[];
+  image: string | null;
+}
+
+export async function getFeaturedProducts(
+  businessId: string
+): Promise<FeaturedProductsSummary> {
+  const response = await apiClient.get<FeaturedProductsSummary>(
+    `/businesses/${businessId}/featured-products`
+  );
+  return response.data;
+}
+
+/**
+ * Reemplaza las sedes donde el producto está destacado (vacío lo quita de
+ * todas). `image`, si viene, se guarda antes como imagen del producto: la
+ * API exige imagen para destacar.
+ */
+export async function setProductFeatured(
+  businessId: string,
+  productId: string,
+  branchIds: string[],
+  image?: string
+): Promise<ProductFeaturedResult> {
+  const response = await apiClient.put<ProductFeaturedResult>(
+    `/businesses/${businessId}/products/${productId}/featured`,
+    image ? { branchIds, image } : { branchIds }
   );
   return response.data;
 }

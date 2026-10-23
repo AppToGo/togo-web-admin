@@ -59,6 +59,8 @@ export const catalogKeys = {
     [...catalogKeys.all, "recommendations", businessId, productId] as const,
   recommendationCounts: (businessId: string) =>
     [...catalogKeys.all, "recommendation-counts", businessId] as const,
+  featuredProducts: (businessId: string) =>
+    [...catalogKeys.all, "featured-products", businessId] as const,
 };
 
 // ============================================================================
@@ -1123,6 +1125,45 @@ export function useReplaceProductRecommendations(businessId: string) {
       );
       queryClient.invalidateQueries({
         queryKey: catalogKeys.recommendationCounts(businessId),
+      });
+    },
+  });
+}
+
+// ============================================================================
+// FEATURED PRODUCTS HOOKS
+// ============================================================================
+
+/** Destacados por sede: estrella de cada tarjeta y cupo de cada sede. */
+export function useFeaturedProducts(businessId: string, enabled = true) {
+  return useQuery({
+    queryKey: catalogKeys.featuredProducts(businessId),
+    queryFn: () => catalogService.getFeaturedProducts(businessId),
+    enabled: !!businessId && enabled,
+  });
+}
+
+/** Guarda las sedes donde un producto está destacado (y su imagen, si se subió). */
+export function useSetProductFeatured(businessId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      branchIds,
+      image,
+    }: {
+      productId: string;
+      branchIds: string[];
+      image?: string;
+    }) =>
+      catalogService.setProductFeatured(businessId, productId, branchIds, image),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.featuredProducts(businessId),
+      });
+      // El filtro "Solo destacados" y la imagen nueva viven en la lista.
+      queryClient.invalidateQueries({
+        queryKey: catalogKeys.catalogProducts(businessId),
       });
     },
   });

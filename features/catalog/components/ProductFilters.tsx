@@ -10,7 +10,7 @@
  */
 
 import { useTranslations } from "next-intl";
-import { Search, Filter, Store, Building2, FolderOpen, X, Tag } from "lucide-react";
+import { Search, Filter, Store, Building2, FolderOpen, X, Tag, Star } from "lucide-react";
 import { ViewToggle } from "@/components/ui/view-toggle";
 import { Switch } from "@/components/ui/switch";
 
@@ -51,6 +51,9 @@ interface ProductFiltersProps {
   onActivationFilterChange?: (value: { activated: boolean; notActivated: boolean }) => void;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (value: SourceFilter) => void;
+  // Destacados en el catálogo (de la sede elegida o de alguna)
+  featuredOnly?: boolean;
+  onFeaturedOnlyChange?: (value: boolean) => void;
   // Conteo y limpieza de filtros
   activeFiltersCount: number;
   onClearFilters: () => void;
@@ -70,6 +73,8 @@ export function ProductFilters({
   onActivationFilterChange,
   sourceFilter,
   onSourceFilterChange,
+  featuredOnly = false,
+  onFeaturedOnlyChange,
   activeFiltersCount,
   onClearFilters,
 }: ProductFiltersProps) {
@@ -82,7 +87,8 @@ export function ProductFilters({
     (!activationFilter.activated || !activationFilter.notActivated);
   const hasSourceFilter = sourceFilter && (!sourceFilter.custom || !sourceFilter.catalog);
 
-  const hasAnyFilter = hasCategoryFilter || !!hasActivationFilter || !!hasSourceFilter;
+  const hasAnyFilter =
+    hasCategoryFilter || !!hasActivationFilter || !!hasSourceFilter || featuredOnly;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -151,6 +157,27 @@ export function ProductFilters({
           </div>
 
           <div className="p-4 space-y-5 max-h-[70vh] overflow-y-auto">
+            {/* Filtro de destacados */}
+            {onFeaturedOnlyChange && (
+              <>
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <span className="text-sm text-slate-700 group-hover:text-slate-900">
+                      {t("products.filters.featuredOnly")}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={featuredOnly}
+                    onCheckedChange={onFeaturedOnlyChange}
+                  />
+                </label>
+                <div className="h-px bg-slate-100" />
+              </>
+            )}
+
             {/* Filtro de Tipo de producto */}
             {onSourceFilterChange && (
               <div className="space-y-3">
