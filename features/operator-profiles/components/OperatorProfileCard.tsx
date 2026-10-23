@@ -9,6 +9,7 @@ import {
   Trash2,
   Copy,
   Lock,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,15 @@ export const OperatorProfileCard = memo(function OperatorProfileCard({
                   {profile.name}
                 </h3>
               </div>
+              {profile.sourceTemplateKey && (
+                <Badge
+                  variant="outline"
+                  className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50"
+                >
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  {t("card.recommended")}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500">
               <Lock className="w-3.5 h-3.5" />
@@ -76,6 +86,12 @@ export const OperatorProfileCard = memo(function OperatorProfileCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
+        {profile.description && (
+          <p className="text-sm text-slate-600 line-clamp-2">
+            {profile.description}
+          </p>
+        )}
+
         {/* Permission Count Badge */}
         <div className="flex items-center gap-2">
           <Badge

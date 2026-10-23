@@ -64,8 +64,8 @@
     "description": "Meant to view an order's payment detail. That's currently covered by \"View orders\"."
   },
   "payment_confirm": {
-    "label": "Confirm payment",
-    "description": "Meant to confirm an order's payment. That's currently covered by \"Change payment status\"."
+    "label": "Confirm payments and refund",
+    "description": "Lets the user mark a paid order as refunded. Recording payments stays under \"Change payment status\"."
   },
   "delivery_assign_self": {
     "label": "Self-assign an order",
@@ -350,5 +350,13 @@
   "cash_audit": {
     "label": "Cash audit",
     "description": "Query the money movement audit trail."
+  },
+  "order_delete": {
+    "label": "Delete orders",
+    "description": "Lets you permanently delete an order. This can't be undone."
+  },
+  "conversation_reopen": {
+    "label": "Reopen conversations",
+    "description": "Reopens a closed conversation to keep handling it."
   }
 }

@@ -121,6 +121,7 @@
     "invalidStatusTransition": "Transición de estado no válida",
     "mustPassThrough": "Primero pasa el pedido a «{status}»",
     "noRevertPermission": "No tienes permiso para devolver un pedido a un estado anterior",
+    "noCancelPermission": "No tienes permiso para cancelar pedidos",
     "notAllowed": "No se puede mover el pedido a ese estado",
     "onlyDelivery": "Solo los pedidos a domicilio pasan a «En camino»"
   },
