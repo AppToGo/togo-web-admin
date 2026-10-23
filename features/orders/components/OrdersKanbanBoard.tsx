@@ -232,7 +232,7 @@ export function OrdersKanbanBoard({
 
   // Columnas del flujo del negocio (OWNER/ADMIN eligen qué estados usa;
   // los que no usa no se muestran y el pedido los salta).
-  const { visible: flowStatuses, canRevert } = useOrderFlow();
+  const { visible: flowStatuses, canRevert, canCancel } = useOrderFlow();
   const columns = useMemo(
     () => allColumns.filter((column) => flowStatuses?.has(column.id) ?? true),
     [allColumns, flowStatuses]
@@ -351,6 +351,7 @@ export function OrdersKanbanBoard({
       const move = checkStatusMove(order.status, newStatus as OrderStatus, {
         visible: flowStatuses,
         canRevert,
+        canCancel,
         deliveryType: order.deliveryType,
       });
       if (!move.ok) {
@@ -383,7 +384,7 @@ export function OrdersKanbanBoard({
         data: { status: newStatus as OrderStatus },
       });
     },
-    [updateStatus, filteredOrdersByStatus, flowStatuses, canRevert, t]
+    [updateStatus, filteredOrdersByStatus, flowStatuses, canRevert, canCancel, t]
   );
 
   const handleDeliveryConfirm = useCallback(

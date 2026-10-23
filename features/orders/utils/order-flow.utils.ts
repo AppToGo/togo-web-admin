@@ -86,14 +86,18 @@ export function isRevertTransition(from: OrderStatus, to: OrderStatus): boolean 
 export type StatusMoveCheck =
   | { ok: true }
   | { ok: false; reason: "mustPassThrough"; next: OrderStatus }
-  | { ok: false; reason: "noRevertPermission" | "notAllowed" | "onlyDelivery" };
+  | {
+      ok: false;
+      reason: "noRevertPermission" | "noCancelPermission" | "notAllowed" | "onlyDelivery";
+    };
 
 const FINAL: readonly OrderStatus[] = ["COMPLETED", "CANCELLED", "ABANDONED"];
 
 /**
  * ¿Se puede mover el pedido de `from` a `to` desde el tablero?
  * - Avanzar: solo a la siguiente columna visible (las ocultas se saltan).
- * - Cancelar: desde cualquier estado no final.
+ * - Cancelar: desde cualquier estado no final, con el permiso `order.cancel`
+ *   (el backend lo exige; `order.change_status` solo no alcanza).
  * - Retroceder: solo entre estados en curso y con el permiso.
  */
 export function checkStatusMove(
@@ -102,11 +106,19 @@ export function checkStatusMove(
   {
     visible,
     canRevert,
+    canCancel = true,
     deliveryType,
-  }: { visible: VisibleStatuses; canRevert: boolean; deliveryType?: string | null }
+  }: {
+    visible: VisibleStatuses;
+    canRevert: boolean;
+    canCancel?: boolean;
+    deliveryType?: string | null;
+  }
 ): StatusMoveCheck {
   if (from === to || FINAL.includes(from)) return { ok: false, reason: "notAllowed" };
-  if (to === "CANCELLED") return { ok: true };
+  if (to === "CANCELLED") {
+    return canCancel ? { ok: true } : { ok: false, reason: "noCancelPermission" };
+  }
   if (!isStatusApplicable(to, deliveryType)) return { ok: false, reason: "onlyDelivery" };
   if (isRevertTransition(from, to)) {
     // Tampoco se retrocede a un estado que el negocio no usa.

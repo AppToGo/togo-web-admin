@@ -6,7 +6,8 @@
     "subtitle": "Create a new profile with specific permissions"
   },
   "edit": {
-    "title": "Edit Profile"
+    "title": "Edit Profile",
+    "recommendedNote": "Profile recommended by ToGo for your industry. Edit it freely: changes only apply to your business."
   },
   "info": {
     "title": "Profile Information"
@@ -41,7 +42,8 @@
     "permissions": "{count} permissions",
     "users": "{count} users",
     "created": "Created",
-    "clone": "Clone"
+    "clone": "Clone",
+    "recommended": "Recommended by ToGo"
   },
   "clone": {
     "title": "Clone Profile",
@@ -81,13 +83,16 @@
       "permissions": "Select the permissions that users with this profile will have"
     },
     "fields": {
-      "name": "Name"
+      "name": "Name",
+      "description": "Description"
     },
     "placeholders": {
-      "name": "E.g.: Branch Administrator"
+      "name": "E.g.: Branch Administrator",
+      "description": "E.g.: Runs the register and records payments"
     },
     "help": {
-      "name": "Descriptive name to identify the profile"
+      "name": "Descriptive name to identify the profile",
+      "description": "Optional. Explains what this profile does; shown in the profile list."
     },
     "errors": {
       "nameRequired": "Name is required",

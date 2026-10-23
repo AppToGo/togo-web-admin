@@ -17,6 +17,7 @@ import { FORWARD_FLOW, type VisibleStatuses } from "../utils/order-flow.utils";
 import type { OrderStatus } from "../types";
 
 export const ORDER_REVERT_STATUS_PERMISSION = "order.revert_status";
+export const ORDER_CANCEL_PERMISSION = "order.cancel";
 
 /** Flujo de fábrica de un negocio: "En camino" arranca apagado (igual que el backend). */
 const DEFAULT_SKIPPED_STATUSES: OrderStatus[] = ["ON_THE_WAY"];
@@ -77,10 +78,12 @@ export function useOrderFlow(): {
   visible: VisibleStatuses;
   skipped: readonly OrderStatus[];
   canRevert: boolean;
+  canCancel: boolean;
 } {
   const { data } = useBusinessOrderFlow();
   const { hasPermission } = useMyPermissions();
   const canRevert = hasPermission(ORDER_REVERT_STATUS_PERMISSION);
+  const canCancel = hasPermission(ORDER_CANCEL_PERMISSION);
   const skippedKey = (data?.skippedStatuses ?? DEFAULT_SKIPPED_STATUSES).join(",");
 
   return useMemo(() => {
@@ -88,6 +91,6 @@ export function useOrderFlow(): {
     const visible = new Set<OrderStatus>(
       [...FORWARD_FLOW, "CANCELLED" as OrderStatus].filter((s) => !skipped.includes(s))
     );
-    return { visible, skipped, canRevert };
-  }, [skippedKey, canRevert]);
+    return { visible, skipped, canRevert, canCancel };
+  }, [skippedKey, canRevert, canCancel]);
 }

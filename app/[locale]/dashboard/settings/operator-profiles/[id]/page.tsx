@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
@@ -47,6 +48,8 @@ import type { UpdateProfileRequest } from "@/features/operator-profiles/types";
 import type { ProfilePermission } from "@/features/operator-profiles/types";
 import { cn } from "@/lib/utils";
 
+const DESCRIPTION_MAX_LENGTH = 300;
+
 export default function EditProfilePage() {
   const t = useTranslations("operatorProfiles");
   const tc = useTranslations("common");
@@ -71,6 +74,7 @@ export default function EditProfilePage() {
 
   const [activeTab, setActiveTab] = useState("general");
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<
     ProfilePermission[]
   >([]);
@@ -86,6 +90,7 @@ export default function EditProfilePage() {
     setSyncedProfile(profile);
     if (profile) {
       setName(profile.name);
+      setDescription(profile.description ?? "");
       setSelectedPermissions(profile.permissions || []);
     }
   }
@@ -118,6 +123,7 @@ export default function EditProfilePage() {
 
     const data: UpdateProfileRequest = {
       name: name.trim(),
+      description: description.trim(),
     };
 
     updateProfile.mutate({ profileId: id, data });
@@ -216,7 +222,9 @@ export default function EditProfilePage() {
   }
 
   const isNameValid = name.trim() && name.length <= 100 && !nameError;
-  const hasUnsavedNameChanges = name !== profile.name;
+  const hasUnsavedNameChanges =
+    name !== profile.name ||
+    description.trim() !== (profile.description ?? "").trim();
   const hasUnsavedPermissionChanges =
     JSON.stringify(selectedPermissions.map((p) => p.permissionCode).sort()) !==
     JSON.stringify(
@@ -255,6 +263,11 @@ export default function EditProfilePage() {
                 count: profile.permissions?.length || 0,
               })}
             </p>
+            {profile.sourceTemplateKey && (
+              <p className="text-xs text-slate-500 mt-1">
+                {t("edit.recommendedNote")}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -347,6 +360,24 @@ export default function EditProfilePage() {
                   />
                   <p className="text-xs text-slate-500">
                     {t("form.help.name")}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile-description">
+                    {t("form.fields.description")}
+                  </Label>
+                  <Textarea
+                    id="profile-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t("form.placeholders.description")}
+                    disabled={updateProfile.isPending}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
+                    rows={3}
+                  />
+                  <p className="text-xs text-slate-500">
+                    {t("form.help.description")}
                   </p>
                 </div>
 

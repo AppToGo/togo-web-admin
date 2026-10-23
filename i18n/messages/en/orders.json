@@ -121,6 +121,7 @@
     "invalidStatusTransition": "Invalid status transition",
     "mustPassThrough": "Move the order to “{status}” first",
     "noRevertPermission": "You don't have permission to move an order back to a previous status",
+    "noCancelPermission": "You don't have permission to cancel orders",
     "notAllowed": "The order can't be moved to that status",
     "onlyDelivery": "Only delivery orders can move to “On the way”"
   },

@@ -64,8 +64,8 @@
     "description": "Pensado para consultar el detalle de pagos de un pedido. Hoy esa consulta va incluida en \"Ver pedidos\"."
   },
   "payment_confirm": {
-    "label": "Confirmar pago",
-    "description": "Pensado para confirmar el pago de un pedido. La función real hoy está en \"Cambiar estado de pago\"."
+    "label": "Confirmar pagos y reembolsar",
+    "description": "Permite marcar un pedido pagado como reembolsado. Registrar cobros sigue en \"Cambiar estado de pago\"."
   },
   "delivery_assign_self": {
     "label": "Autoasignarse un pedido",
@@ -350,5 +350,13 @@
   "cash_audit": {
     "label": "Auditoría de caja",
     "description": "Consultar la auditoría de movimientos de dinero."
+  },
+  "order_delete": {
+    "label": "Eliminar pedidos",
+    "description": "Permite eliminar un pedido de forma definitiva. No se puede deshacer."
+  },
+  "conversation_reopen": {
+    "label": "Reabrir conversaciones",
+    "description": "Vuelve a abrir una conversación cerrada para seguir atendiéndola."
   }
 }
