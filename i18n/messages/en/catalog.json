@@ -625,6 +625,7 @@
     "emptyTitle": "No featured products",
     "emptyHint": "Tap a product's star to feature it in the catalog.",
     "loadError": "Could not load featured products. Close and try again.",
+    "summaryLoadError": "Featured products could not be loaded: the star is disabled. Reload the page to try again.",
     "errors": {
       "imageRequired": "The product needs an image to be featured",
       "limitReached": "{count, plural, one {A branch already has} other {# branches already have}} the maximum of {max} featured",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { ExternalLink, Plus, Package, Star, Store, Upload } from "lucide-react";
@@ -186,6 +186,10 @@ export default function ProductsPage() {
     useFeaturedProducts(businessId ?? "", canViewFeatured);
   const setFeatured = useSetProductFeatured(businessId ?? "");
   const tFeatured = useTranslations("catalog.featured");
+  // Sin resumen la estrella queda deshabilitada: se avisa por qué, una vez.
+  useEffect(() => {
+    if (featuredSummaryError) toast.error(tFeatured("summaryLoadError"));
+  }, [featuredSummaryError, tFeatured]);
 
   const showProductImages = useShowProductImages();
   const publicCatalogUrl = usePublicCatalogUrl();

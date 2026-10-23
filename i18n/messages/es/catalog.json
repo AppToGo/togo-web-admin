@@ -631,6 +631,7 @@
     "emptyTitle": "No hay productos destacados",
     "emptyHint": "Toca la estrella de un producto para destacarlo en el catálogo.",
     "loadError": "No se pudieron cargar los destacados. Cierra e intenta de nuevo.",
+    "summaryLoadError": "No se pudieron cargar los destacados: la estrella queda deshabilitada. Recarga la página para intentar de nuevo.",
     "errors": {
       "imageRequired": "El producto necesita una imagen para poder destacarlo",
       "limitReached": "{count, plural, one {Una sede ya tiene} other {# sedes ya tienen}} el máximo de {max} destacados",
