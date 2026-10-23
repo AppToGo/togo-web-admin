@@ -170,7 +170,9 @@ test.describe("Orders — transiciones de estado", () => {
 
   test("cancelar desde el detalle patchea CANCELLED", async ({ page }) => {
     const scenario: StatusScenario = { patches: [] };
-    await mockStatusScenario(page, scenario);
+    await mockStatusScenario(page, scenario, {
+      permissions: ["order.view", "order.create", "order.cancel"],
+    });
     await openBoard(page);
 
     await boardOrderNumber(page, "#101").click();
@@ -185,6 +187,21 @@ test.describe("Orders — transiciones de estado", () => {
       page.locator("li[data-sonner-toast]").getByText(/estado actualizado/i)
     ).toBeVisible({ timeout: 8_000 });
     expect(scenario.patches).toEqual([{ orderId: "delivery1", body: { status: "CANCELLED" } }]);
+  });
+
+  test("sin order.cancel la opción Cancelada queda deshabilitada", async ({ page }) => {
+    // El backend exige order.cancel para cancelar; cambiar estado no alcanza.
+    const scenario: StatusScenario = { patches: [] };
+    await mockStatusScenario(page, scenario);
+    await openBoard(page);
+
+    await boardOrderNumber(page, "#101").click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 8_000 });
+    await dialog.getByRole("button", { name: /nueva/i }).first().click();
+
+    await expect(page.getByRole("menuitem", { name: "Cancelada" })).toBeDisabled();
+    expect(scenario.patches).toHaveLength(0);
   });
 
   test("PATCH fallido muestra toast y no mueve nada", async ({ page }) => {

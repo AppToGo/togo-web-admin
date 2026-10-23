@@ -24,7 +24,6 @@
 export const NON_OPERATIONAL_PERMISSIONS: ReadonlySet<string> = new Set([
   "order.edit_items",
   "payment.view",
-  "payment.confirm",
   "delivery.assign_self",
   "delivery.view_route",
   "product.view",
