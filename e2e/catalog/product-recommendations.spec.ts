@@ -192,6 +192,18 @@ async function login(page: Page, saved: unknown[], permissions = PERMISSIONS) {
   await openBoard(page);
 }
 
+async function gotoProducts(page: Page) {
+  // Navegación client-side (como el login real): un page.goto recarga y
+  // pierde el token en memoria; como los mocks nunca devuelven 401, la
+  // sesión no se restaura y los gates de permiso quedan cerrados.
+  const misProductos = page.getByRole("link", { name: "Mis Productos" });
+  if ((await misProductos.count()) === 0) {
+    await page.getByRole("button", { name: "Catálogo", exact: true }).click();
+  }
+  await misProductos.click();
+  await expect(page.getByRole("heading", { name: "Mis Productos" })).toBeVisible();
+}
+
 async function openRecommendations(page: Page, productName: string) {
   const card = page.locator(".group", { hasText: productName }).first();
   await card.hover();
@@ -206,7 +218,7 @@ test.describe("Recomendados de un producto", () => {
   }) => {
     const saved: unknown[] = [];
     await login(page, saved);
-    await page.goto("/es/dashboard/catalog/products");
+    await gotoProducts(page);
 
     // La etiqueta sale del conteo por producto.
     await expect(page.getByText("1 recomendado")).toBeVisible();
@@ -250,7 +262,7 @@ test.describe("Recomendados de un producto", () => {
 
   test("sin permiso para crear no se muestra la acción", async ({ page }) => {
     await login(page, [], ["order.view", "order.create", "recommendation.view"]);
-    await page.goto("/es/dashboard/catalog/products");
+    await gotoProducts(page);
 
     const card = page.locator(".group", { hasText: "Hamburguesa clásica" }).first();
     await card.hover();
