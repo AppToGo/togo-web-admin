@@ -43,7 +43,8 @@
     "users": "{count} users",
     "created": "Created",
     "clone": "Clone",
-    "recommended": "Recommended by ToGo"
+    "recommended": "Recommended by ToGo",
+    "internal": "Internal · super admin only"
   },
   "clone": {
     "title": "Clone Profile",

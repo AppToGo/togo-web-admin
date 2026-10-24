@@ -11,7 +11,9 @@ import {
   MapPin,
   ChevronDown,
   Upload,
+  RefreshCw,
 } from "lucide-react";
+import { isAxiosError } from "axios";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +29,11 @@ import {
 } from "@/components/ui/select";
 import { VariantList } from "./VariantList";
 import { useIndustryCategoryVariantTemplates } from "../hooks";
-import { useVariants, useUploadCatalogProductImage } from "../hooks/useCatalog";
+import {
+  useVariants,
+  useUploadCatalogProductImage,
+  useReserveVariantCode,
+} from "../hooks/useCatalog";
 import { useBranches } from "@/features/branches/hooks/useBranches";
 import {
   useBranchInventory,
@@ -77,6 +83,7 @@ interface SelectedVariant {
   label: string;
   attributes: Record<string, string | number>;
   price: number;
+  internalSku: string;
 }
 
 interface VariantBranchConfig {
@@ -404,6 +411,7 @@ export function ProductForm({
       label: v.label,
       attributes: {},
       price: v.price,
+      internalSku: "",
     }));
   });
   const [pendingTemplateId, setPendingTemplateId] = useState<string>("");
@@ -422,6 +430,100 @@ export function ProductForm({
   const initializedProductIdRef = useRef<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const uploadImage = useUploadCatalogProductImage(businessId);
+
+  // ─── SKU auto (solo creación) ─────────────────────────────────────────────
+  // Se pre-llena con el siguiente código libre del negocio; el usuario puede
+  // editarlo. El blur valida contra el endpoint de reserva (409 = en uso).
+  const reserveCode = useReserveVariantCode(businessId);
+  const [simpleSku, setSimpleSku] = useState("");
+  const [simpleSkuError, setSimpleSkuError] = useState<string | null>(null);
+  const [rowSkuErrors, setRowSkuErrors] = useState<Record<string, string | null>>({});
+  const skuPrefillRef = useRef<string | null>(null);
+  const selectedRef = useRef<SelectedVariant[]>([]);
+
+  const normalizeCode = (value: string) => {
+    const v = value.trim();
+    return /^[a-z]{1,2}\d{3}$/i.test(v) ? v.toUpperCase() : v;
+  };
+
+  selectedRef.current = selectedVariants;
+
+  useEffect(() => {
+    // Clave por negocio: si el businessId llega tarde (store async), el
+    // prefill igual corre cuando aparece; si cambia de negocio, repite.
+    if (isEditing || !businessId || skuPrefillRef.current === businessId) return;
+    skuPrefillRef.current = businessId;
+    reserveCode
+      .mutateAsync(undefined)
+      .then(({ code }) => setSimpleSku((prev) => prev || code))
+      .catch(() => undefined);
+    // Filas iniciales (duplicación): un código por fila que venga vacía.
+    const emptyIds = new Set(
+      selectedRef.current
+        .filter((v) => !v.internalSku.trim())
+        .map((v) => v.templateId)
+    );
+    if (emptyIds.size > 0) {
+      void Promise.all(
+        Array.from({ length: emptyIds.size }, () =>
+          reserveCode.mutateAsync(undefined)
+        )
+      )
+        .then((results) => {
+          const byId = new Map(
+            [...emptyIds].map((id, i) => [id, results[i]?.code])
+          );
+          setSelectedVariants((cur) =>
+            cur.map((v) => {
+              const code =
+                emptyIds.has(v.templateId) && !v.internalSku.trim()
+                  ? byId.get(v.templateId)
+                  : undefined;
+              return code ? { ...v, internalSku: code } : v;
+            })
+          );
+        })
+        .catch(() => undefined);
+    }
+    // reserveCode es estable (React Query); solo importa negocio/modo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing, businessId]);
+
+  const checkSkuAvailability = async (raw: string): Promise<string | null> => {
+    const value = normalizeCode(raw);
+    if (!value) return t("products.sku.required");
+    try {
+      await reserveCode.mutateAsync(value);
+      return null;
+    } catch (e) {
+      if (isAxiosError(e) && e.response?.status === 409)
+        return t("products.sku.taken");
+      // Sin red no bloqueamos: el backend genera igual al guardar.
+      return null;
+    }
+  };
+
+  const regenerateSimpleSku = () => {
+    setSimpleSkuError(null);
+    reserveCode
+      .mutateAsync(undefined)
+      .then(({ code }) => setSimpleSku(code))
+      .catch(() => undefined);
+  };
+
+  const regenerateRowSku = (templateId: string) => {
+    setRowSkuErrors((prev) => ({ ...prev, [templateId]: null }));
+    reserveCode
+      .mutateAsync(undefined)
+      .then(({ code }) =>
+        setSelectedVariants((prev) =>
+          prev.map((v) =>
+            v.templateId === templateId ? { ...v, internalSku: code } : v
+          )
+        )
+      )
+      .catch(() => undefined);
+  };
 
   const { data: branches = [] } = useBranches();
 
@@ -651,15 +753,30 @@ export function ProductForm({
       : variantTemplates.find((t) => t.id === pendingTemplateId);
     if (!tpl) return;
 
+    const templateId = tpl.id;
     setSelectedVariants((prev) => [
       ...prev,
       {
-        templateId: tpl.id,
+        templateId,
         label: tpl.label,
         attributes: tpl.attributes,
         price,
+        internalSku: "",
       },
     ]);
+    // Pre-llena el código de la fila; si falla (sin red), el usuario lo digita.
+    reserveCode
+      .mutateAsync(undefined)
+      .then(({ code }) =>
+        setSelectedVariants((prev) =>
+          prev.map((v) =>
+            v.templateId === templateId && !v.internalSku
+              ? { ...v, internalSku: code }
+              : v
+          )
+        )
+      )
+      .catch(() => undefined);
 
     setBranchState((prev) => {
       const next = { ...prev };
@@ -688,10 +805,32 @@ export function ProductForm({
     );
   };
 
+  const updateVariantSku = (templateId: string, internalSku: string) => {
+    setSelectedVariants((prev) =>
+      prev.map((v) =>
+        v.templateId === templateId ? { ...v, internalSku } : v
+      )
+    );
+  };
+
+  const handleRowSkuBlur = (templateId: string, raw: string) => {
+    const value = normalizeCode(raw);
+    updateVariantSku(templateId, value);
+    void checkSkuAvailability(value).then((error) =>
+      setRowSkuErrors((prev) => ({ ...prev, [templateId]: error }))
+    );
+  };
+
   const removeVariant = (templateId: string) => {
     setSelectedVariants((prev) =>
       prev.filter((v) => v.templateId !== templateId)
     );
+    // Sin esto, el error de una fila borrada bloquearía el envío para siempre.
+    setRowSkuErrors((prev) => {
+      if (!(templateId in prev)) return prev;
+      const { [templateId]: _dropped, ...rest } = prev;
+      return rest;
+    });
     setBranchState((prev) => {
       const next = { ...prev };
       for (const id of Object.keys(next)) {
@@ -704,6 +843,11 @@ export function ProductForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Si un prefill o una validación 409 sigue en vuelo (Enter antes que el
+    // blur resuelva), no enviar: el botón ya está deshabilitado, esto cubre
+    // el teclado. Al resolverse, el usuario reintenta.
+    if (!isEditing && reserveCode.isPending) return;
 
     // El backend recalcula las heredadas (categoría, nombre) — solo se
     // envían las entradas que el usuario controla directamente.
@@ -740,6 +884,7 @@ export function ProductForm({
       if (!isNaN(price) && price >= 0) {
         base.price = price;
         base.kind = "SIMPLE";
+        base.internalSku = normalizeCode(simpleSku) || undefined;
       }
     } else {
       const valid = selectedVariants.filter((v) => v.price >= 0);
@@ -749,6 +894,7 @@ export function ProductForm({
           price: v.price,
           attributes:
             Object.keys(v.attributes).length > 0 ? v.attributes : undefined,
+          internalSku: normalizeCode(v.internalSku) || undefined,
         }));
         base.kind = "CONFIGURABLE";
       }
@@ -791,7 +937,19 @@ export function ProductForm({
     onSubmit(base, activations);
   };
 
-  const canSubmit = formData.name.trim().length > 0;
+  const hasSkuErrors =
+    simpleSkuError !== null ||
+    Object.values(rowSkuErrors).some((e) => e !== null);
+  const skusComplete =
+    isEditing ||
+    (pricingMode === "simple"
+      ? simpleSku.trim() !== ""
+      : selectedVariants.every((v) => v.internalSku.trim() !== ""));
+  const canSubmit =
+    formData.name.trim().length > 0 &&
+    !hasSkuErrors &&
+    skusComplete &&
+    !reserveCode.isPending;
 
   // ─── Info fields ─────────────────────────────────────────────────────────────
 
@@ -1031,26 +1189,73 @@ export function ProductForm({
       </div>
 
       {pricingMode === "simple" ? (
-        <div className="space-y-1.5">
-          <Label htmlFor="simplePrice">{t("products.price")}</Label>
-          <div className="relative max-w-48">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
-              $
-            </span>
-            <Input
-              id="simplePrice"
-              type="number"
-              min={0}
-              value={simplePrice}
-              onChange={(e) => setSimplePrice(e.target.value)}
-              placeholder="0"
-              className="pl-6"
-              disabled={isLoading}
-            />
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="simplePrice">{t("products.price")}</Label>
+            <div className="relative max-w-48">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                $
+              </span>
+              <Input
+                id="simplePrice"
+                type="number"
+                min={0}
+                value={simplePrice}
+                onChange={(e) => setSimplePrice(e.target.value)}
+                placeholder="0"
+                className="pl-6"
+                disabled={isLoading}
+              />
+            </div>
+            <p className="text-xs text-slate-500">
+              {t("products.variantPriceHint")}
+            </p>
           </div>
-          <p className="text-xs text-slate-500">
-            {t("products.variantPriceHint")}
-          </p>
+          <div className="space-y-1.5">
+            <Label htmlFor="simpleSku">
+              {t("products.sku.label")} <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex gap-2 max-w-64">
+              <Input
+                id="simpleSku"
+                value={simpleSku}
+                onChange={(e) => {
+                  setSimpleSku(e.target.value);
+                  setSimpleSkuError(null);
+                }}
+                onBlur={() => {
+                  const value = normalizeCode(simpleSku);
+                  setSimpleSku(value);
+                  void checkSkuAvailability(value).then(setSimpleSkuError);
+                }}
+                placeholder={t("products.sku.placeholder")}
+                required
+                disabled={isLoading}
+                className="font-mono uppercase"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={regenerateSimpleSku}
+                disabled={isLoading || reserveCode.isPending}
+                aria-label={t("products.sku.label")}
+                title={t("products.sku.hint")}
+              >
+                <RefreshCw
+                  className={cn(
+                    "w-4 h-4",
+                    reserveCode.isPending && "animate-spin"
+                  )}
+                />
+              </Button>
+            </div>
+            {simpleSkuError ? (
+              <p className="text-xs text-red-600">{simpleSkuError}</p>
+            ) : (
+              <p className="text-xs text-slate-500">{t("products.sku.hint")}</p>
+            )}
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -1071,45 +1276,81 @@ export function ProductForm({
             <>
               {selectedVariants.length > 0 && (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_7rem_2rem] gap-2 text-xs text-slate-400 font-medium px-1">
+                  <div className="grid grid-cols-[1fr_7rem_6.5rem_2rem] gap-2 text-xs text-slate-400 font-medium px-1">
                     <span>{t("products.tabs.variants")}</span>
                     <span>{t("products.basePrice")}</span>
+                    <span>
+                      {t("products.sku.label")}{" "}
+                      <span className="text-red-400">*</span>
+                    </span>
                     <span />
                   </div>
                   {selectedVariants.map((v) => (
-                    <div
-                      key={v.templateId}
-                      className="grid grid-cols-[1fr_7rem_2rem] gap-2 items-center"
-                    >
-                      <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 truncate">
-                        {v.label}
+                    <div key={v.templateId} className="space-y-1">
+                      <div className="grid grid-cols-[1fr_7rem_6.5rem_2rem] gap-2 items-center">
+                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 truncate">
+                          {v.label}
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                            $
+                          </span>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={v.price === 0 ? "" : v.price}
+                            onChange={(e) =>
+                              updateVariantPrice(
+                                v.templateId,
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            placeholder="0"
+                            className="pl-5 h-8 text-sm"
+                          />
+                        </div>
+                        <div className="relative">
+                          <Input
+                            value={v.internalSku}
+                            onChange={(e) => {
+                              updateVariantSku(v.templateId, e.target.value);
+                              setRowSkuErrors((prev) => ({
+                                ...prev,
+                                [v.templateId]: null,
+                              }));
+                            }}
+                            onBlur={(e) =>
+                              handleRowSkuBlur(v.templateId, e.target.value)
+                            }
+                            placeholder={t("products.sku.placeholder")}
+                            required
+                            className="h-8 text-sm font-mono uppercase"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => regenerateRowSku(v.templateId)}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 text-slate-300 hover:text-indigo-600 rounded transition-colors"
+                            tabIndex={-1}
+                            title={t("products.sku.hint")}
+                            aria-label={t("products.sku.label")}
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(v.templateId)}
+                          className="flex items-center justify-center h-8 w-8 text-slate-300 hover:text-red-400 transition-colors rounded-md hover:bg-red-50"
+                          tabIndex={-1}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                      <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-                          $
-                        </span>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={v.price === 0 ? "" : v.price}
-                          onChange={(e) =>
-                            updateVariantPrice(
-                              v.templateId,
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          placeholder="0"
-                          className="pl-5 h-8 text-sm"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeVariant(v.templateId)}
-                        className="flex items-center justify-center h-8 w-8 text-slate-300 hover:text-red-400 transition-colors rounded-md hover:bg-red-50"
-                        tabIndex={-1}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {rowSkuErrors[v.templateId] && (
+                        <p className="text-xs text-red-600 px-1">
+                          {rowSkuErrors[v.templateId]}
+                        </p>
+                      )}
                     </div>
                   ))}
                   {availableTemplates.length > 0 && <div className="pt-1" />}

@@ -49,6 +49,8 @@ export function useCreateProfile() {
         name: data.name,
         description: data.description ?? null,
         sourceTemplateKey: null,
+        // Un perfil creado o clonado por el negocio nunca es interno.
+        isInternal: false,
         permissions: [], // Los permisos se asignan después de la creación
         userCount: 0,
         createdAt: new Date().toISOString(),

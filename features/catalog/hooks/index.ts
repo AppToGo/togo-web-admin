@@ -61,6 +61,7 @@ export {
   useCreateVariant,
   useUpdateVariant,
   useDeleteVariant,
+  useReserveVariantCode,
   useIndustryCategoryVariantTemplates,
   useIndustryCategoriesByIndustry,
 } from "./useCatalog";

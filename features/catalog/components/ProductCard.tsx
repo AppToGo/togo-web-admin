@@ -81,6 +81,11 @@ export function ProductCard({
               )}
             >
               <span className="flex min-w-0 items-center gap-1.5">
+                {v.internalSku && (
+                  <span className="shrink-0 rounded bg-slate-100 px-1 py-px font-mono text-[10px] text-slate-500 border border-slate-200">
+                    {v.internalSku}
+                  </span>
+                )}
                 <span
                   className={cn(
                     "truncate text-slate-600",

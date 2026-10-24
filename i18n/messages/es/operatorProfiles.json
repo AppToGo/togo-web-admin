@@ -43,7 +43,8 @@
     "users": "{count} usuarios",
     "created": "Creado",
     "clone": "Clonar",
-    "recommended": "Recomendado por ToGo"
+    "recommended": "Recomendado por ToGo",
+    "internal": "Interno · solo superadmin"
   },
   "clone": {
     "title": "Clonar Perfil",
