@@ -592,7 +592,9 @@
     "save": "Guardar recomendaciones · {count}",
     "saved": "Recomendaciones guardadas",
     "error": "No se pudieron guardar las recomendaciones",
-    "loadError": "No se pudieron cargar las recomendaciones"
+    "loadError": "No se pudieron cargar las recomendaciones",
+    "resolvingLegacy": "Resolviendo las recomendaciones guardadas…",
+    "unresolvedError": "No se pudo cargar el catálogo: las filas sin presentación no se pueden guardar todavía"
   },
   "featured": {
     "featureFor": "Destacar {name} en el catálogo",

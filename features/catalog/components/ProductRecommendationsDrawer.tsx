@@ -84,6 +84,14 @@ function labelOf(c: Pick<VariantCandidate, "productName" | "variantLabel">) {
   return c.variantLabel ? `${c.productName} · ${c.variantLabel}` : c.productName;
 }
 
+/**
+ * Clave estable de cada fila elegida. Las filas legado aún sin resolver no
+ * tienen variante: se identifican por producto para no borrarlas todas juntas.
+ */
+function rowKey(s: Pick<VariantCandidate, "variantId" | "productId">) {
+  return s.variantId || `product-${s.productId}`;
+}
+
 /** Fila guardada → selección; sin variante es legado y se resuelve al cargar. */
 function toSelected(r: RecommendedProduct): VariantCandidate {
   return {
@@ -214,8 +222,11 @@ function RecommendationsEditor({
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const legacyResolvedRef = useRef(false);
 
-  const { data: allProducts, isLoading: isLoadingProducts } =
-    useAllCatalogProducts(businessId);
+  const {
+    data: allProducts,
+    isLoading: isLoadingProducts,
+    isError: isProductsError,
+  } = useAllCatalogProducts(businessId);
 
   const candidates = useMemo(
     () =>
@@ -281,8 +292,8 @@ function RecommendationsEditor({
       setSelected((prev) => [...prev, candidate]);
     }
   };
-  const remove = (variantId: string) =>
-    setSelected((prev) => prev.filter((s) => s.variantId !== variantId));
+  const remove = (key: string) =>
+    setSelected((prev) => prev.filter((s) => rowKey(s) !== key));
 
   return (
     <>
@@ -341,7 +352,7 @@ function RecommendationsEditor({
                   <span className="text-sm text-slate-500 shrink-0">{formatPrice(s.price)}</span>
                   <button
                     type="button"
-                    onClick={() => remove(s.variantId)}
+                    onClick={() => remove(rowKey(s))}
                     aria-label={`${t("remove")} ${labelOf(s)}`}
                     className="w-9 h-9 rounded-icon flex items-center justify-center text-slate-500 hover:bg-slate-100 shrink-0"
                   >
@@ -454,6 +465,11 @@ function RecommendationsEditor({
       </div>
 
       <DrawerFooter className="border-t-slate-200">
+        {hasUnresolvedLegacy && (
+          <p className="w-full sm:mr-auto text-xs text-slate-500">
+            {isProductsError ? t("unresolvedError") : t("resolvingLegacy")}
+          </p>
+        )}
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>
           {t("cancel")}
         </Button>

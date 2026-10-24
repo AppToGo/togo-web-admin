@@ -586,7 +586,9 @@
     "save": "Save recommendations · {count}",
     "saved": "Recommendations saved",
     "error": "Couldn't save the recommendations",
-    "loadError": "Couldn't load the recommendations"
+    "loadError": "Couldn't load the recommendations",
+    "resolvingLegacy": "Resolving the saved recommendations…",
+    "unresolvedError": "Couldn't load the catalog: rows without a variant can't be saved yet"
   },
   "featured": {
     "featureFor": "Feature {name} in the catalog",
