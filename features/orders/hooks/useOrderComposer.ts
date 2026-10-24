@@ -137,7 +137,9 @@ export function useOrderComposer({
     return products.filter(
       (item) =>
         (!categoryId || item.categoryId === categoryId) &&
-        (!query || productLabel(item).toLowerCase().includes(query))
+        (!query ||
+          productLabel(item).toLowerCase().includes(query) ||
+          (item.internalSku ?? "").toLowerCase().includes(query))
     );
   }, [products, search, categoryId]);
 

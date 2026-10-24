@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Pencil, Trash2, Plus, AlertTriangle, X, Check } from "lucide-react";
+import { isAxiosError } from "axios";
+import { Pencil, Trash2, Plus, AlertTriangle, X, Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import {
   useCreateVariant,
   useUpdateVariant,
   useDeleteVariant,
+  useReserveVariantCode,
   useIndustryCategoryVariantTemplates,
 } from "../hooks/useCatalog";
 import type {
@@ -69,6 +71,14 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
   const [showInlineCreate, setShowInlineCreate] = useState(false);
   const [pendingTemplateId, setPendingTemplateId] = useState("");
   const [pendingPrice, setPendingPrice] = useState("");
+  const [pendingSku, setPendingSku] = useState("");
+  const [pendingSkuError, setPendingSkuError] = useState<string | null>(null);
+  const reserveCode = useReserveVariantCode(businessId);
+
+  const normalizeCode = (value: string) => {
+    const v = value.trim();
+    return /^[a-z]{1,2}\d{3}$/i.test(v) ? v.toUpperCase() : v;
+  };
 
   const editPriceRef = useRef<HTMLInputElement>(null);
   const createPriceRef = useRef<HTMLInputElement>(null);
@@ -150,18 +160,55 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
     setInlineEdit(null);
     setPendingTemplateId("");
     setPendingPrice("");
+    setPendingSku("");
+    setPendingSkuError(null);
     setShowInlineCreate(true);
+    // Pre-llena el código; si falla (sin red), el usuario lo digita.
+    reserveCode
+      .mutateAsync(undefined)
+      .then(({ code }) => setPendingSku((prev) => prev || code))
+      .catch(() => undefined);
   };
 
   const cancelInlineCreate = () => {
     setShowInlineCreate(false);
     setPendingTemplateId("");
     setPendingPrice("");
+    setPendingSku("");
+    setPendingSkuError(null);
+  };
+
+  const handlePendingSkuBlur = () => {
+    const value = normalizeCode(pendingSku);
+    setPendingSku(value);
+    if (!value) {
+      setPendingSkuError(t("products.sku.required"));
+      return;
+    }
+    reserveCode
+      .mutateAsync(value)
+      .then(() => setPendingSkuError(null))
+      .catch((e) => {
+        if (isAxiosError(e) && e.response?.status === 409) {
+          setPendingSkuError(t("products.sku.taken"));
+        } else {
+          setPendingSkuError(null);
+        }
+      });
   };
 
   const handleInlineCreate = () => {
     const price = parseFloat(pendingPrice);
     if (!pendingTemplateId || isNaN(price) || price <= 0) return;
+    // Enter con el check 409 en vuelo: esperar a que resuelva (el botón ya
+    // está deshabilitado por canSubmit/canAdd).
+    if (reserveCode.isPending) return;
+    const sku = normalizeCode(pendingSku);
+    if (!sku) {
+      setPendingSkuError(t("products.sku.required"));
+      return;
+    }
+    if (pendingSkuError) return;
 
     const isUnidad = pendingTemplateId === UNIDAD_ID;
     const template = isUnidad
@@ -173,6 +220,7 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
       variantLabel: template.label,
       price,
       attributes: Object.keys(template.attributes).length > 0 ? template.attributes : undefined,
+      internalSku: sku,
       isActive: true,
       isDefault: variants.length === 0,
     };
@@ -181,6 +229,8 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
       onSuccess: () => {
         setPendingTemplateId("");
         setPendingPrice("");
+        setPendingSku("");
+        setPendingSkuError(null);
       },
     });
   };
@@ -201,7 +251,10 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
   const canAdd =
     pendingTemplateId !== "" &&
     pendingPrice !== "" &&
-    parseFloat(pendingPrice) > 0;
+    parseFloat(pendingPrice) > 0 &&
+    pendingSku.trim() !== "" &&
+    !pendingSkuError &&
+    !reserveCode.isPending;
 
   const canConfirmEdit =
     !!inlineEdit &&
@@ -306,6 +359,11 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     <span className="text-sm font-medium text-slate-800 truncate">
                       {variant.variantLabel}
                     </span>
+                    {variant.internalSku && (
+                      <span className="font-mono text-[10px] px-1.5 py-0 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        {variant.internalSku}
+                      </span>
+                    )}
                     {variant.isDefault && (
                       <Badge className="text-[10px] px-1.5 py-0 bg-indigo-100 text-indigo-700 border-indigo-200">
                         {t("products.variants.default")}
@@ -350,7 +408,8 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
 
           {/* Inline create row */}
           {showInlineCreate && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50">
+            <div className="px-4 py-2.5 bg-slate-50 space-y-1">
+              <div className="flex items-center gap-2">
               {!industryCategoryId ? (
                 <p className="flex-1 text-xs text-amber-700">
                   {t("products.variants.selectCategoryFirst")}
@@ -405,6 +464,44 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
                     />
                   </div>
 
+                  <div className="relative w-24 shrink-0">
+                    <Input
+                      value={pendingSku}
+                      onChange={(e) => {
+                        setPendingSku(e.target.value);
+                        setPendingSkuError(null);
+                      }}
+                      onBlur={handlePendingSkuBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { e.preventDefault(); handleInlineCreate(); }
+                        if (e.key === "Escape") cancelInlineCreate();
+                      }}
+                      placeholder={t("products.sku.placeholder")}
+                      aria-label={t("products.sku.label")}
+                      title={t("products.sku.hint")}
+                      className="h-8 text-sm font-mono uppercase pr-7"
+                      disabled={createVariant.isPending}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        reserveCode
+                          .mutateAsync(undefined)
+                          .then(({ code }) => {
+                            setPendingSku(code);
+                            setPendingSkuError(null);
+                          })
+                          .catch(() => undefined)
+                      }
+                      className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 text-slate-300 hover:text-indigo-600 rounded transition-colors"
+                      tabIndex={-1}
+                      title={t("products.sku.hint")}
+                      aria-label={t("products.sku.label")}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <Button
                     type="button"
                     size="icon"
@@ -426,6 +523,10 @@ export function VariantList({ productId, businessId, schema: _schema, industryCa
               >
                 <X className="h-4 w-4" />
               </button>
+              </div>
+              {pendingSkuError && (
+                <p className="text-xs text-red-600">{pendingSkuError}</p>
+              )}
             </div>
           )}
 

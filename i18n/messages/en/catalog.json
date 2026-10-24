@@ -28,7 +28,14 @@
     "editDescription": "Modify product details",
     "delete": "Delete product",
     "import": "Import products",
-    "search": "Search products...",
+    "search": "Search by name or code...",
+    "sku": {
+      "label": "Code (SKU)",
+      "placeholder": "E.g. B042",
+      "required": "The code is required",
+      "taken": "That code is already used in your business",
+      "hint": "Generated automatically; you can edit it."
+    },
     "noProducts": "No products",
     "noProductsDescription": "Start by adding your first product to the catalog",
     "name": "Name",

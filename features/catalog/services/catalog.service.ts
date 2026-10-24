@@ -439,6 +439,23 @@ export async function createCatalogProduct(
 }
 
 /**
+ * Reserva un código SKU de variante (para pre-llenar formularios).
+ * Sin `preferred`, asigna el siguiente libre del negocio. Con `preferred`,
+ * verifica disponibilidad: 409 si ya está en uso en el negocio.
+ * POST /api/v1/businesses/:businessId/products/variant-codes/reserve
+ */
+export async function reserveVariantCode(
+  businessId: string,
+  preferred?: string
+): Promise<{ code: string }> {
+  const response = await apiClient.post<{ code: string }>(
+    `/businesses/${businessId}/products/variant-codes/reserve`,
+    preferred?.trim() ? { preferred: preferred.trim() } : {}
+  );
+  return response.data;
+}
+
+/**
  * Upload a product image
  * POST /v1/businesses/:businessId/products/upload-image
  * Not scoped to a product id: used both when creating a product (the
