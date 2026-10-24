@@ -3,14 +3,14 @@
 /**
  * Drawer "Agregar recomendación" de la pantalla de productos.
  *
- * Arriba el producto que el cliente pide; debajo, los que el bot y el
- * catálogo web le ofrecen (el bot elige uno al azar entre los que estén
- * activos y con stock en la sede), y la lista de todos los productos para
- * agregarlos — mismo armado que el selector de Nuevo pedido. Guardar
- * reemplaza la lista completa.
+ * Arriba el producto que el cliente pide; debajo, lo que se le ofrece. Cada
+ * fila es una PRESENTACIÓN concreta (igual que en Caja): así se puede
+ * recomendar "limonada de coco" y no solo "limonada". El bot la ofrece al
+ * azar entre las activas con stock en la sede y el catálogo web muestra la
+ * misma presentación. Guardar reemplaza la lista completa.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Plus, Search, X } from "lucide-react";
@@ -43,18 +43,18 @@ const MAX_RECOMMENDATIONS = 10;
 
 const formatPrice = (price: number) => formatCurrency(price);
 
-/**
- * El bot y el catálogo lo agregan con un toque: necesita una presentación
- * concreta, la predeterminada o la única activa. La API rechaza el resto.
- */
-function hasConcreteVariant(product: CatalogProduct): boolean {
-  const active = (product.variants ?? []).filter(
-    (v) => v.isActive && !v.deletedAt
-  );
-  // Sin el detalle de variantes en la respuesta no se puede saber: lo
-  // decide la API al guardar.
-  if (!product.variants) return true;
-  return active.length === 1 || active.some((v) => v.isDefault);
+/** Una presentación candidata a recomendada (una fila por variante). */
+interface VariantCandidate {
+  variantId: string;
+  productId: string;
+  productName: string;
+  variantLabel: string;
+  internalSku?: string | null;
+  price: number;
+  image?: string | null;
+  isActive: boolean;
+  isDefault: boolean;
+  categoryId?: string;
 }
 
 const normalize = (text: string) =>
@@ -63,19 +63,39 @@ const normalize = (text: string) =>
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
 
-function productPrice(product: CatalogProduct): number {
-  if (product.priceFrom !== undefined) return product.priceFrom;
-  const prices = (product.variants ?? []).map((v) => v.price);
-  return prices.length > 0 ? Math.min(...prices) : 0;
+function candidatesOf(product: CatalogProduct): VariantCandidate[] {
+  return (product.variants ?? [])
+    .filter((v) => !v.deletedAt)
+    .map((v) => ({
+      variantId: v.id,
+      productId: product.id,
+      productName: product.name,
+      variantLabel: v.variantLabel,
+      internalSku: v.internalSku,
+      price: v.price,
+      image: product.image,
+      isActive: product.isActive && v.isActive,
+      isDefault: v.isDefault,
+      categoryId: product.businessCategoryId,
+    }));
 }
 
-function toRecommended(product: CatalogProduct): RecommendedProduct {
+function labelOf(c: Pick<VariantCandidate, "productName" | "variantLabel">) {
+  return c.variantLabel ? `${c.productName} · ${c.variantLabel}` : c.productName;
+}
+
+/** Fila guardada → selección; sin variante es legado y se resuelve al cargar. */
+function toSelected(r: RecommendedProduct): VariantCandidate {
   return {
-    id: product.id,
-    name: product.name,
-    image: product.image,
-    price: productPrice(product),
-    isActive: product.isActive,
+    variantId: r.variantId ?? "",
+    productId: r.id,
+    productName: r.name,
+    variantLabel: r.variantLabel ?? "",
+    internalSku: r.internalSku,
+    price: r.price,
+    image: r.image,
+    isActive: r.isActive,
+    isDefault: false,
   };
 }
 
@@ -122,7 +142,7 @@ export function ProductRecommendationsDrawer({
             onCancel={onClose}
             onSave={(ids) =>
               replace.mutate(
-                { productId: product.id, recommendedProductIds: ids },
+                { productId: product.id, recommendedVariantIds: ids },
                 {
                   onSuccess: () => {
                     toast.success(t("saved"));
@@ -146,7 +166,7 @@ interface EditorProps {
   showImages: boolean;
   isSaving: boolean;
   onCancel: () => void;
-  onSave: (recommendedProductIds: string[]) => void;
+  onSave: (recommendedVariantIds: string[]) => void;
 }
 
 /** Espera los recomendados guardados para arrancar el editor con ellos. */
@@ -187,27 +207,60 @@ function RecommendationsEditor({
   initial,
 }: EditorProps & { initial: RecommendedProduct[] }) {
   const t = useTranslations("catalog.recommendations");
-  const [selected, setSelected] = useState<RecommendedProduct[]>(initial);
+  const [selected, setSelected] = useState<VariantCandidate[]>(() =>
+    initial.map((r) => toSelected(r))
+  );
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const legacyResolvedRef = useRef(false);
 
   const { data: allProducts, isLoading: isLoadingProducts } =
     useAllCatalogProducts(businessId);
 
   const candidates = useMemo(
-    () => (allProducts ?? []).filter((p) => p.id !== product.id),
+    () =>
+      (allProducts ?? [])
+        .filter((p) => p.id !== product.id)
+        .flatMap((p) => candidatesOf(p)),
     [allProducts, product.id]
   );
+
+  // Filas legado (producto sin variante): se resuelven a la predeterminada
+  // o la única activa en cuanto cargan los productos; si no hay resoluble,
+  // se sueltan (la API ya no acepta producto sin presentación concreta).
+  useEffect(() => {
+    if (legacyResolvedRef.current || isLoadingProducts || !allProducts) return;
+    legacyResolvedRef.current = true;
+    setSelected((prev) =>
+      prev.flatMap((s) => {
+        if (s.variantId) return [s];
+        const active = candidates.filter(
+          (c) => c.productId === s.productId && c.isActive
+        );
+        const single =
+          active.length === 1
+            ? active[0]
+            : active.find((c) => c.isDefault);
+        return single ? [single] : [];
+      })
+    );
+    // Solo al primer cargue: candidates/allProducts quedan fijos acá.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingProducts, allProducts]);
+
   const visible = useMemo(() => {
     const query = normalize(search.trim());
     return candidates.filter(
-      (p) =>
-        (!categoryId || p.businessCategoryId === categoryId) &&
-        (!query || normalize(p.name).includes(query))
+      (c) =>
+        (!categoryId || c.categoryId === categoryId) &&
+        (!query ||
+          normalize(
+            `${c.productName} ${c.variantLabel} ${c.internalSku ?? ""}`
+          ).includes(query))
     );
   }, [candidates, search, categoryId]);
   const usedCategories = useMemo(() => {
-    const used = new Set(candidates.map((p) => p.businessCategoryId));
+    const used = new Set(candidates.map((c) => c.categoryId));
     return categories.filter((c) => used.has(c.id));
   }, [candidates, categories]);
   const categoryName = useMemo(() => {
@@ -215,18 +268,21 @@ function RecommendationsEditor({
     return (id?: string) => (id ? map.get(id) : undefined);
   }, [categories]);
 
-  const selectedIds = new Set(selected.map((p) => p.id));
+  const selectedIds = new Set(selected.map((s) => s.variantId));
+  const hasUnresolvedLegacy = selected.some((s) => !s.variantId);
   const limitReached = selected.length >= MAX_RECOMMENDATIONS;
 
-  const toggle = (candidate: CatalogProduct) => {
-    if (selectedIds.has(candidate.id)) {
-      setSelected((prev) => prev.filter((p) => p.id !== candidate.id));
+  const toggle = (candidate: VariantCandidate) => {
+    if (selectedIds.has(candidate.variantId)) {
+      setSelected((prev) =>
+        prev.filter((s) => s.variantId !== candidate.variantId)
+      );
     } else if (!limitReached) {
-      setSelected((prev) => [...prev, toRecommended(candidate)]);
+      setSelected((prev) => [...prev, candidate]);
     }
   };
-  const remove = (id: string) =>
-    setSelected((prev) => prev.filter((p) => p.id !== id));
+  const remove = (variantId: string) =>
+    setSelected((prev) => prev.filter((s) => s.variantId !== variantId));
 
   return (
     <>
@@ -261,25 +317,32 @@ function RecommendationsEditor({
             </p>
           ) : (
             <ul className="space-y-2">
-              {selected.map((p) => (
+              {selected.map((s) => (
                 <li
-                  key={p.id}
+                  key={s.variantId || `product-${s.productId}`}
                   className="flex items-center gap-3 py-2 pl-3 pr-2 rounded-card border border-slate-200"
                 >
-                  <Thumb name={p.name} image={showImages ? p.image : undefined} size="sm" />
-                  <span className="flex-1 min-w-0 text-sm font-semibold text-slate-900 truncate">
-                    {p.name}
+                  <Thumb name={s.productName} image={showImages ? s.image : undefined} size="sm" />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-semibold text-slate-900 truncate">
+                      {labelOf(s)}
+                    </span>
+                    {s.internalSku && (
+                      <span className="font-mono text-[10px] px-1.5 py-0 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        {s.internalSku}
+                      </span>
+                    )}
                   </span>
-                  {!p.isActive && (
-                    <span className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-full">
+                  {!s.isActive && (
+                    <span className="px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-full shrink-0">
                       {t("inactive")}
                     </span>
                   )}
-                  <span className="text-sm text-slate-500 shrink-0">{formatPrice(p.price)}</span>
+                  <span className="text-sm text-slate-500 shrink-0">{formatPrice(s.price)}</span>
                   <button
                     type="button"
-                    onClick={() => remove(p.id)}
-                    aria-label={`${t("remove")} ${p.name}`}
+                    onClick={() => remove(s.variantId)}
+                    aria-label={`${t("remove")} ${labelOf(s)}`}
                     className="w-9 h-9 rounded-icon flex items-center justify-center text-slate-500 hover:bg-slate-100 shrink-0"
                   >
                     <X className="w-4 h-4" />
@@ -295,7 +358,7 @@ function RecommendationsEditor({
           )}
         </section>
 
-        {/* Todos los productos */}
+        {/* Todas las presentaciones */}
         <section className="space-y-3 pt-5 border-t border-slate-100" aria-labelledby="recommendations-all">
           <h3 id="recommendations-all" className="text-sm font-semibold text-slate-900">
             {t("addProducts")}
@@ -338,45 +401,40 @@ function RecommendationsEditor({
               </p>
             ) : (
               visible.map((candidate) => {
-                const isSelected = selectedIds.has(candidate.id);
-                const canRecommend = hasConcreteVariant(candidate);
+                const isSelected = selectedIds.has(candidate.variantId);
                 return (
                   <div
-                    key={candidate.id}
+                    key={candidate.variantId}
                     className={cn(
                       "flex items-center gap-3 p-3 rounded-card transition-colors",
                       isSelected ? "bg-indigo-50/60" : "hover:bg-slate-50"
                     )}
                   >
                     <Thumb
-                      name={candidate.name}
+                      name={candidate.productName}
                       image={showImages ? candidate.image : undefined}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-slate-900 truncate">
-                        {candidate.name}
+                        {labelOf(candidate)}
                       </p>
                       <p className="text-xs text-slate-500 truncate">
                         {[
-                          categoryName(candidate.businessCategoryId),
-                          formatPrice(productPrice(candidate)),
+                          categoryName(candidate.categoryId),
+                          formatPrice(candidate.price),
+                          candidate.internalSku,
                           candidate.isActive ? null : t("inactive"),
                         ]
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
-                      {!canRecommend && !isSelected && (
-                        <p className="text-xs text-amber-700">
-                          {t("needsDefaultVariant")}
-                        </p>
-                      )}
                     </div>
                     <button
                       type="button"
                       onClick={() => toggle(candidate)}
-                      disabled={!isSelected && (limitReached || !canRecommend)}
+                      disabled={!isSelected && limitReached}
                       aria-pressed={isSelected}
-                      aria-label={`${isSelected ? t("remove") : t("add")} ${candidate.name}`}
+                      aria-label={`${isSelected ? t("remove") : t("add")} ${labelOf(candidate)}`}
                       className={cn(
                         "h-9 px-3 rounded-icon flex items-center gap-1.5 text-sm font-semibold shrink-0 transition-colors disabled:opacity-50",
                         isSelected
@@ -401,9 +459,13 @@ function RecommendationsEditor({
         </Button>
         <Button
           type="button"
-          onClick={() => onSave(selected.map((p) => p.id))}
+          onClick={() =>
+            onSave(
+              selected.map((s) => s.variantId).filter((id) => id !== "")
+            )
+          }
           isLoading={isSaving}
-          disabled={isSaving}
+          disabled={isSaving || hasUnresolvedLegacy}
         >
           {t("save", { count: selected.length })}
         </Button>
@@ -412,13 +474,19 @@ function RecommendationsEditor({
   );
 }
 
+function productPrice(product: CatalogProduct): number {
+  if (product.priceFrom !== undefined) return product.priceFrom;
+  const prices = (product.variants ?? []).map((v) => v.price);
+  return prices.length > 0 ? Math.min(...prices) : 0;
+}
+
 function Thumb({
   name,
   image,
   size = "md",
 }: {
   name: string;
-  image?: string;
+  image?: string | null;
   size?: "sm" | "md" | "lg";
 }) {
   const box = size === "sm" ? "w-9 h-9" : size === "lg" ? "w-16 h-16" : "w-12 h-12";

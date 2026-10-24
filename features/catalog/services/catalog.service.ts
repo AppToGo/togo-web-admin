@@ -656,13 +656,17 @@ export async function getVariantTemplates(
 // RECOMMENDATIONS API
 // ============================================================================
 
-/** Un producto que se ofrece al pedir otro ("Va muy bien con"). */
+/** Una presentación que se ofrece al pedir otro producto ("Va muy bien con"). */
 export interface RecommendedProduct {
   id: string;
   name: string;
   image?: string;
   price: number;
   isActive: boolean;
+  /** Variante concreta elegida; ausente = legado a nivel producto. */
+  variantId?: string;
+  variantLabel?: string;
+  internalSku?: string;
 }
 
 export interface ProductRecommendations {
@@ -684,11 +688,11 @@ export async function getProductRecommendations(
 export async function replaceProductRecommendations(
   businessId: string,
   productId: string,
-  recommendedProductIds: string[]
+  recommendedVariantIds: string[]
 ): Promise<ProductRecommendations> {
   const response = await apiClient.put<ProductRecommendations>(
     `/businesses/${businessId}/products/${productId}/recommendations`,
-    { recommendedProductIds }
+    { recommendedVariantIds }
   );
   return response.data;
 }
