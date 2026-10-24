@@ -1120,15 +1120,15 @@ export function useReplaceProductRecommendations(businessId: string) {
   return useMutation({
     mutationFn: ({
       productId,
-      recommendedProductIds,
+      recommendedVariantIds,
     }: {
       productId: string;
-      recommendedProductIds: string[];
+      recommendedVariantIds: string[];
     }) =>
       catalogService.replaceProductRecommendations(
         businessId,
         productId,
-        recommendedProductIds
+        recommendedVariantIds
       ),
     onSuccess: (data) => {
       queryClient.setQueryData(
