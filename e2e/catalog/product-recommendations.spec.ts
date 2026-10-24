@@ -45,31 +45,54 @@ function product(id: string, name: string, price: number, categoryId: string) {
   };
 }
 
-function variant(id: string, isDefault: boolean) {
+function variant(
+  id: string,
+  productId: string,
+  label: string,
+  price: number,
+  opts: { isDefault?: boolean; internalSku?: string } = {}
+) {
   return {
     id,
-    productId: "p-pizza",
+    productId,
     businessId: "e2e-test-business-id",
     attributes: {},
-    variantLabel: id,
-    price: 30000,
+    variantLabel: label,
+    price,
+    internalSku: opts.internalSku,
     isActive: true,
-    isDefault,
+    isDefault: opts.isDefault ?? false,
     createdAt: now,
     updatedAt: now,
   };
 }
 
 const PRODUCTS = [
-  product("p-burger", "Hamburguesa clásica", 18900, "cat-burgers"),
-  // Varias presentaciones y ninguna predeterminada: no se puede recomendar.
+  {
+    ...product("p-burger", "Hamburguesa clásica", 18900, "cat-burgers"),
+    variants: [variant("v-burger", "p-burger", "Unidad", 18900, { isDefault: true })],
+  },
+  // Varias presentaciones y ninguna predeterminada: cada una se recomienda
+  // por separado (nuevo flujo por variante).
   {
     ...product("p-pizza", "Pizza familiar", 30000, "cat-burgers"),
-    variants: [variant("Mediana", false), variant("Grande", false)],
+    variants: [
+      variant("v-mediana", "p-pizza", "Mediana", 30000, { internalSku: "B010" }),
+      variant("v-grande", "p-pizza", "Grande", 38000, { internalSku: "B011" }),
+    ],
   },
-  product("p-papas", "Papas fritas", 7900, "cat-sides"),
-  product("p-aros", "Aros de cebolla", 8500, "cat-sides"),
-  product("p-gaseosa", "Gaseosa 400 ml", 4500, "cat-drinks"),
+  {
+    ...product("p-papas", "Papas fritas", 7900, "cat-sides"),
+    variants: [variant("v-papas", "p-papas", "", 7900, { isDefault: true })],
+  },
+  {
+    ...product("p-aros", "Aros de cebolla", 8500, "cat-sides"),
+    variants: [variant("v-aros", "p-aros", "", 8500, { isDefault: true })],
+  },
+  {
+    ...product("p-gaseosa", "Gaseosa", 4500, "cat-drinks"),
+    variants: [variant("v-gaseosa", "p-gaseosa", "400 ml", 4500, { isDefault: true, internalSku: "B042" })],
+  },
 ];
 
 const CATEGORIES = [
@@ -93,6 +116,23 @@ function recommended(id: string) {
   return { id: p.id, name: p.name, price: p.priceFrom, isActive: true };
 }
 
+/** Fila guardada a nivel variante, como la devuelve la API. */
+function recommendedVariant(variantId: string) {
+  const p = PRODUCTS.find((item) =>
+    (item.variants ?? []).some((v: { id: string }) => v.id === variantId)
+  )!;
+  const v = (p.variants ?? []).find((vv: { id: string }) => vv.id === variantId)!;
+  return {
+    id: p.id,
+    name: p.name,
+    price: v.price,
+    isActive: true,
+    variantId: v.id,
+    variantLabel: v.variantLabel,
+    internalSku: v.internalSku,
+  };
+}
+
 async function mockCatalog(page: Page, saved: unknown[]): Promise<void> {
   await page.route("**/v1/**", async (route) => {
     const request = route.request();
@@ -105,14 +145,15 @@ async function mockCatalog(page: Page, saved: unknown[]): Promise<void> {
     }
     const recs = path.match(/\/products\/([^/]+)\/recommendations$/);
     if (recs && request.method() === "PUT") {
-      const body = request.postDataJSON() as { recommendedProductIds: string[] };
+      const body = request.postDataJSON() as { recommendedVariantIds: string[] };
       saved.push(body);
       return json({
         productId: recs[1],
-        recommendations: body.recommendedProductIds.map(recommended),
+        recommendations: body.recommendedVariantIds.map(recommendedVariant),
       });
     }
     if (recs) {
+      // Legado a nivel producto: el drawer lo resuelve a su única variante.
       return json({ productId: recs[1], recommendations: [recommended("p-papas")] });
     }
     if (path.endsWith("/products")) {
@@ -151,6 +192,18 @@ async function login(page: Page, saved: unknown[], permissions = PERMISSIONS) {
   await openBoard(page);
 }
 
+async function gotoProducts(page: Page) {
+  // Navegación client-side (como el login real): un page.goto recarga y
+  // pierde el token en memoria; como los mocks nunca devuelven 401, la
+  // sesión no se restaura y los gates de permiso quedan cerrados.
+  const misProductos = page.getByRole("link", { name: "Mis Productos" });
+  if ((await misProductos.count()) === 0) {
+    await page.getByRole("button", { name: "Catálogo", exact: true }).click();
+  }
+  await misProductos.click();
+  await expect(page.getByRole("heading", { name: "Mis Productos" })).toBeVisible();
+}
+
 async function openRecommendations(page: Page, productName: string) {
   const card = page.locator(".group", { hasText: productName }).first();
   await card.hover();
@@ -165,42 +218,43 @@ test.describe("Recomendados de un producto", () => {
   }) => {
     const saved: unknown[] = [];
     await login(page, saved);
-    await page.goto("/es/dashboard/catalog/products");
+    await gotoProducts(page);
 
     // La etiqueta sale del conteo por producto.
     await expect(page.getByText("1 recomendado")).toBeVisible();
 
     const drawer = await openRecommendations(page, "Hamburguesa clásica");
     await expect(drawer.getByText("Cuando el cliente pida")).toBeVisible();
+    // La fila legado (producto sin variante) se resolvió a su única variante.
     await expect(drawer.getByRole("heading", { name: "Ofrecerle · 1" })).toBeVisible();
     // El producto pedido no se ofrece a sí mismo.
     await expect(
-      drawer.getByRole("button", { name: "Agregar Hamburguesa clásica" })
+      drawer.getByRole("button", { name: /Hamburguesa clásica/ })
     ).toHaveCount(0);
 
-    // Sin presentación predeterminada no se puede elegir.
+    // Sin predeterminada también se puede: cada presentación es elegible.
     await expect(
-      drawer.getByRole("button", { name: "Agregar Pizza familiar" })
-    ).toBeDisabled();
-    await expect(
-      drawer.getByText(/ninguna predeterminada/)
-    ).toBeVisible();
+      drawer.getByRole("button", { name: "Agregar Pizza familiar · Mediana" })
+    ).toBeEnabled();
+    await drawer.getByRole("button", { name: "Agregar Pizza familiar · Grande" }).click();
+    await expect(drawer.getByRole("heading", { name: "Ofrecerle · 2" })).toBeVisible();
 
-    // Filtro por categoría y agregar.
+    // Filtro por categoría, código visible y agregar.
     await drawer.getByRole("button", { name: "Bebidas" }).click();
     await expect(drawer.getByRole("button", { name: "Agregar Aros de cebolla" })).toHaveCount(0);
-    await drawer.getByRole("button", { name: "Agregar Gaseosa 400 ml" }).click();
-    await expect(drawer.getByRole("heading", { name: "Ofrecerle · 2" })).toBeVisible();
+    await expect(drawer.getByText("B042").first()).toBeVisible();
+    await drawer.getByRole("button", { name: "Agregar Gaseosa · 400 ml" }).click();
+    await expect(drawer.getByRole("heading", { name: "Ofrecerle · 3" })).toBeVisible();
 
     // Buscador (sin tildes) y quitar el que ya estaba.
     await drawer.getByRole("button", { name: "Todas" }).click();
-    await drawer.getByPlaceholder("Buscar producto").fill("aros");
+    await drawer.getByPlaceholder("Buscar por nombre, presentación o código").fill("aros");
     await drawer.getByRole("button", { name: "Agregar Aros de cebolla" }).click();
     await drawer.getByRole("button", { name: "Quitar Papas fritas" }).first().click();
 
-    await drawer.getByRole("button", { name: "Guardar recomendaciones · 2" }).click();
+    await drawer.getByRole("button", { name: "Guardar recomendaciones · 3" }).click();
     await expect.poll(() => saved).toEqual([
-      { recommendedProductIds: ["p-gaseosa", "p-aros"] },
+      { recommendedVariantIds: ["v-grande", "v-gaseosa", "v-aros"] },
     ]);
     await expect(page.getByText("Recomendaciones guardadas")).toBeVisible();
     await expect(drawer).toBeHidden();
@@ -208,7 +262,7 @@ test.describe("Recomendados de un producto", () => {
 
   test("sin permiso para crear no se muestra la acción", async ({ page }) => {
     await login(page, [], ["order.view", "order.create", "recommendation.view"]);
-    await page.goto("/es/dashboard/catalog/products");
+    await gotoProducts(page);
 
     const card = page.locator(".group", { hasText: "Hamburguesa clásica" }).first();
     await card.hover();
