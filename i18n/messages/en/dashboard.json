@@ -10,7 +10,8 @@
     "detail": "Detailed metrics",
     "analysis": "Analysis",
     "aiUsage": "AI usage",
-    "whatsappUsage": "WhatsApp usage"
+    "whatsappUsage": "WhatsApp usage",
+    "products": "Products"
   },
   "periods": {
     "today": "Today",
@@ -110,5 +111,39 @@
     "expired": "Your free trial has ended",
     "subtitle": "Choose a plan to keep using ToGo without interruptions",
     "cta": "Choose a plan"
+  },
+  "products": {
+    "top": {
+      "title": "Best sellers",
+      "subtitle": "Products with the most sales in the period",
+      "rankBy": "Sort by",
+      "byQuantity": "Units",
+      "byRevenue": "Revenue",
+      "units": "{count, plural, one {# unit} other {# units}}",
+      "orders": "{count, plural, one {# order} other {# orders}}",
+      "share": "{value}% of total",
+      "leaderLabel": "Best seller:",
+      "empty": "No sales in this period yet.",
+      "error": "We couldn't load the best sellers."
+    },
+    "trends": {
+      "title": "Rising and falling",
+      "subtitle": "Units compared to the previous period",
+      "rising": "Rising",
+      "falling": "Falling",
+      "new": "New",
+      "units": "{previous} → {current} units",
+      "none": "No significant changes.",
+      "empty": "Not enough sales to compare yet.",
+      "error": "We couldn't load the trends."
+    },
+    "withoutSales": {
+      "title": "Products without sales",
+      "subtitle": "{total, plural, =0 {All your active products sold} one {# active product had no sales in the period} other {# active products had no sales in the period}}",
+      "goToCatalog": "View catalog",
+      "more": "{count, plural, one {and # more product} other {and # more products}}",
+      "empty": "All your active products had sales in this period!",
+      "error": "We couldn't load the products without sales."
+    }
   }
 }
