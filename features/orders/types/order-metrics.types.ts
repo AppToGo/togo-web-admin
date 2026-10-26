@@ -61,6 +61,11 @@ export interface OrderMetricsRevenue {
   delivery: RecaudoByPaymentStatus;
   pickup: RecaudoByPaymentStatus;
   dineIn: RecaudoByPaymentStatus;
+  /**
+   * Propinas del período (mesa/mostrador). No están incluidas en ningún
+   * otro monto de recaudos: son del personal, no ventas.
+   */
+  propinas?: { pagadas: number; pendientesPago: number };
 }
 
 /**

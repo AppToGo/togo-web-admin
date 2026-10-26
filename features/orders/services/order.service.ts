@@ -17,6 +17,7 @@ import type {
   UpdateOrderStatusRequest,
   CreateOrderRequest,
   CreateOrderResponse,
+  TipRequest,
 } from "../types";
 import type {
   OrderMetricsResponse,
@@ -292,6 +293,8 @@ export interface UpdatePaymentStatusRequest {
     sessionId?: string;
     receivedAmount?: number;
   };
+  /** Propina confirmada al cobrar (reemplaza la que traía el pedido). */
+  tip?: TipRequest;
 }
 
 export async function updateOrderPaymentStatus(

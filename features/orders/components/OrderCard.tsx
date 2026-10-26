@@ -32,6 +32,7 @@ import {
 } from "../utils/order-lateness.utils";
 import { HoverTooltip } from "./HoverTooltip";
 import { NextStatusButton } from "./NextStatusButton";
+import { orderTipBreakdown } from "../utils/tip.utils";
 
 export type { CardDensity };
 
@@ -160,12 +161,15 @@ function OrderItemsList({
   items,
   totalAmount,
   deliveryFee,
+  tip = 0,
   isDelivery,
   compact = false,
 }: {
   items?: OrderItem[];
+  /** Ya incluye la propina. */
   totalAmount: number;
   deliveryFee?: number;
+  tip?: number;
   isDelivery?: boolean;
   compact?: boolean;
 }) {
@@ -264,6 +268,13 @@ function OrderItemsList({
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500">{t("detail.deliveryFee")}</span>
             <span className="text-slate-600">{formatCurrency(fee)}</span>
+          </div>
+        )}
+        {/* Propina (mesa/mostrador) */}
+        {tip > 0 && (
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500">{t("tip.label")}</span>
+            <span className="text-slate-600">{formatCurrency(tip)}</span>
           </div>
         )}
         {/* Total */}
@@ -394,6 +405,7 @@ export const OrderCard = memo(function OrderCard({
             items={order.items}
             totalAmount={order.totalAmount}
             deliveryFee={order.deliveryFee}
+            tip={order.tip}
             isDelivery={
               order.deliveryType === "DELIVERY" || orderType.isDelivery
             }
@@ -425,6 +437,7 @@ export const OrderCard = memo(function OrderCard({
               paymentMethod={order.paymentMethod}
               currentStatus={order.paymentStatus}
               chargeLabel={`${orderNumber} · ${orderType.label}`}
+              tipBreakdown={orderTipBreakdown(order)}
             />
           )}
           <PaymentProofIndicator order={order} />

@@ -205,6 +205,7 @@
     "expectedDesc": "Opening + cash in − cash out",
     "cashSales": "Cash sales",
     "cashSalesDesc": "{count, plural, =0 {No payments this shift} one {# payment in the register} other {# payments in the register}}",
+    "cashSalesWithTipsDesc": "{count, plural, one {# payment in the register} other {# payments in the register}} · includes {tips} in tips",
     "inOut": "Cash in and out",
     "inOutDesc": "{inCount, plural, one {# in} other {# in}} · {outCount, plural, one {# out} other {# out}}",
     "pending": "To settle · outside the register",
@@ -291,6 +292,7 @@
     "reason": "Reason for the difference (required)",
     "note": "Closing note (optional)",
     "expected": "Expected",
+    "includesTips": "Includes {tips} in tips",
     "counted": "Counted",
     "quantity": "Quantity of {denomination}"
   },

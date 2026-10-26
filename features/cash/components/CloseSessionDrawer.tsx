@@ -36,6 +36,8 @@ interface CloseSessionDrawerProps {
   openedByName: string | null;
   openedAt: string | null;
   expectedAmount: string;
+  /** Propinas en efectivo del turno (ya dentro del esperado). */
+  cashTips?: string;
   pendingCount: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,6 +52,7 @@ export function CloseSessionDrawer({
   openedByName,
   openedAt,
   expectedAmount,
+  cashTips,
   pendingCount,
   open,
   onOpenChange,
@@ -167,6 +170,11 @@ export function CloseSessionDrawer({
                 {t("closeDrawer.expected")}
               </p>
               <p className="mt-1 text-lg font-bold tabular-nums">{formatCOP(expected)}</p>
+              {Number(cashTips ?? 0) > 0 && (
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {t("closeDrawer.includesTips", { tips: formatCOP(cashTips!) })}
+                </p>
+              )}
             </div>
             <div className="rounded-card bg-indigo-50 p-4">
               <p className="text-xs font-medium text-indigo-700">

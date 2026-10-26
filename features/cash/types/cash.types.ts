@@ -91,6 +91,11 @@ export interface CashCollection {
 export interface CashReceivable {
   id: string;
   orderNumber: number | null;
+  /** Desglose para ajustar la propina al cobrar (`total` ya la incluye). */
+  subtotal: string;
+  deliveryFee: string;
+  tip: string;
+  tipPercent: string | null;
   total: string;
   status: string;
   deliveryType: "DINE_IN" | "PICKUP";
@@ -122,6 +127,11 @@ export interface SessionSummary {
   cashSales: { total: string; count: number };
   otherPaymentMethods: Array<{ method: string; total: string; count: number }>;
   pendingCollections: { count: number; total: string };
+  /**
+   * Propinas del turno (no son ventas). `cash` ya está dentro del esperado:
+   * se muestra aparte para repartirla al personal.
+   */
+  tipsTotal?: { cash: string; other: string; total: string };
   auditTrail: Array<CashAuditEntry>;
 }
 

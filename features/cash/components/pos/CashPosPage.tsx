@@ -455,6 +455,7 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
         openedByName={openSession?.openedByName ?? null}
         openedAt={openSession?.openedAt ?? null}
         expectedAmount={summary?.expectedAmount ?? "0"}
+        cashTips={summary?.tipsTotal?.cash}
         pendingCount={collections.length}
         open={closing}
         onOpenChange={setClosing}

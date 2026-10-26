@@ -135,6 +135,21 @@ export const OrderMetrics = memo(function OrderMetrics() {
             {t("orderCount", { count: metrics.conteos.pendientesPago })}
           </p>
         </div>
+
+        {/* Propinas: aparte de las ventas */}
+        {(metrics.recaudos.propinas?.pagadas ?? 0) > 0 && (
+          <>
+            <div className="border-t border-white/20 my-3" />
+            <div className="flex items-baseline justify-between">
+              <p className="text-xs text-white/60 font-medium uppercase tracking-wide">
+                {t("metrics.tips")}
+              </p>
+              <p className="text-sm font-semibold text-white/90">
+                {formatCurrency(metrics.recaudos.propinas!.pagadas)}
+              </p>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );
