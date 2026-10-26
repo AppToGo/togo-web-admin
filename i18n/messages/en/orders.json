@@ -115,6 +115,7 @@
     "alreadyCompleted": "Order is already completed",
     "cannotCompleteCancelled": "Cannot complete a cancelled or abandoned order",
     "paymentPending": "Cannot complete the order: payment is pending",
+    "paymentNotCollected": "Cannot complete the order: the payment failed or was refunded",
     "mustBeReadyOrOnTheWay": "Order must be 'Ready' or 'On the way' to be completed",
     "cannotCancelCompleted": "Cannot cancel an order that is already completed",
     "cannotCancelDelivered": "Cannot cancel an order that has already been delivered",

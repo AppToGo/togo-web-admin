@@ -146,10 +146,18 @@ export function canCompleteOrder(order: {
     };
   }
 
+  // Un cobro fallido (FAILED) o reembolsado no es dinero del negocio: no
+  // se entrega en ningún tipo de pedido hasta resolverlo.
+  if (order.paymentStatus === "FAILED" || order.paymentStatus === "REFUNDED") {
+    return {
+      valid: false,
+      message: "orders.errors.paymentNotCollected",
+    };
+  }
+
   // En mesa o mostrador se entrega y se cobra después de consumir: el pago
   // pendiente no bloquea la entrega (la API ya lo permite). Domicilio y
-  // recoger sí exigen cobro confirmado; un cobro cancelado (FAILED) o
-  // reembolsado tampoco es dinero del negocio.
+  // recoger sí exigen cobro confirmado.
   const payAfterConsumption =
     order.deliveryType === "DINE_IN" || order.deliveryType === "COUNTER";
   if (!payAfterConsumption && order.paymentStatus !== "PAID") {
