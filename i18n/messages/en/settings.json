@@ -59,6 +59,12 @@
       "useProductImages": {
         "label": "Show product images",
         "description": "Shows the product image in the catalog. If the product has no image, initials will be shown."
+      },
+      "directory": {
+        "label": "Appear in the TOGO directory",
+        "description": "Your business shows up in the public TOGO directory when people search by food type or city, and they can order straight from your catalog.",
+        "shown": "We show your name, logo, food types, and your branches' city and address.",
+        "cityHint": "Add the city to your branches to appear in city searches."
       }
     },
     "catalog": {
