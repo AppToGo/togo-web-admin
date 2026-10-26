@@ -362,6 +362,7 @@ export function ScoutLeadsDrawer({
                                 />
                                 <input
                                   type="text"
+                                  maxLength={2000}
                                   value={candidate.suggestedNote}
                                   onChange={(e) =>
                                     updateCandidateNote(

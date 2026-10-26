@@ -180,7 +180,8 @@
     "messagePlaceholder": "Escribe o edita el mensaje que se abrirá en WhatsApp…",
     "autoStageLabel": "Al enviar cambia estado",
     "sendDisclaimer": "Al pulsar enviar se abrirá WhatsApp (wa.me), se guardará el mensaje en las notas y se cambiará el estado automáticamente.",
-    "sendAndAdvance": "Enviar por WhatsApp y pasar a {stage}"
+    "sendAndAdvance": "Enviar por WhatsApp y pasar a {stage}",
+    "popupBlocked": "El navegador bloqueó la ventana de WhatsApp: permite ventanas emergentes e inténtalo de nuevo. No se registró el envío."
   },
   "scout": {
     "button": "Buscar prospectos",

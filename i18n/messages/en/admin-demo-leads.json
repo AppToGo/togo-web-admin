@@ -180,7 +180,8 @@
     "messagePlaceholder": "Write or edit the message to open in WhatsApp…",
     "autoStageLabel": "Stage on send",
     "sendDisclaimer": "Clicking send opens WhatsApp (wa.me), logs the message in notes, and updates the stage automatically.",
-    "sendAndAdvance": "Send via WhatsApp & move to {stage}"
+    "sendAndAdvance": "Send via WhatsApp & move to {stage}",
+    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged."
   },
   "scout": {
     "button": "Find prospects",

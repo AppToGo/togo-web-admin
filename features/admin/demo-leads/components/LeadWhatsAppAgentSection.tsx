@@ -10,8 +10,9 @@
  */
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   ArrowRight,
   MessageCircle,
@@ -72,6 +73,17 @@ export function LeadWhatsAppAgentSection({
   const [showCustomize, setShowCustomize] = useState<boolean>(false);
   const [prospectReply, setProspectReply] = useState<string>("");
   const [objective, setObjective] = useState<string>("");
+  // Borradores ya generados para este lead+etapa: reabrir la ficha no paga
+  // otra llamada a la IA.
+  const draftsCache = useRef<{
+    key: string;
+    response: {
+      strategySummary: string;
+      recommendedNextStage: DemoLeadStage;
+      recommendedNextAction: string;
+      drafts: WhatsAppDraftItem[];
+    };
+  } | null>(null);
 
   const applyDraftsResponse = React.useCallback(
     (res: {
@@ -96,10 +108,18 @@ export function LeadWhatsAppAgentSection({
   useEffect(() => {
     if (lead.revoked) return;
     setNextStage(defaultTargetStage(lead.stage));
+    const cacheKey = `${lead.id}:${lead.stage}`;
+    if (draftsCache.current?.key === cacheKey) {
+      applyDraftsResponse(draftsCache.current.response);
+      return;
+    }
     generateDrafts.mutate(
       {},
       {
-        onSuccess: applyDraftsResponse,
+        onSuccess: (res) => {
+          draftsCache.current = { key: cacheKey, response: res };
+          applyDraftsResponse(res);
+        },
       }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,7 +141,13 @@ export function LeadWhatsAppAgentSection({
         objective: objective.trim() || undefined,
       },
       {
-        onSuccess: applyDraftsResponse,
+        onSuccess: (res) => {
+          draftsCache.current = {
+            key: `${lead.id}:${lead.stage}`,
+            response: res,
+          };
+          applyDraftsResponse(res);
+        },
       }
     );
   };
@@ -134,7 +160,12 @@ export function LeadWhatsAppAgentSection({
     const waUrl = `https://wa.me/${digits}?text=${encodeURIComponent(
       cleanMessage
     )}`;
-    window.open(waUrl, "_blank", "noopener,noreferrer");
+    // Si el navegador bloquea la ventana, nada se envió: no se registra.
+    const popup = window.open(waUrl, "_blank", "noopener,noreferrer");
+    if (!popup) {
+      toast.error(t("harvey.popupBlocked"));
+      return;
+    }
 
     logOutreach.mutate({
       id: lead.id,
