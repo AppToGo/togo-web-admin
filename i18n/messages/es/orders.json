@@ -418,14 +418,13 @@
     "qrAlt": "QR del catálogo en modo operador",
     "scanHint": "Escanéalo con tu celular o ábrelo aquí. La sesión vence a las {time}.",
     "openHere": "Abrir aquí",
-    "copy": "Copiar link",
-    "copied": "Link copiado",
     "activeSessions": "Tus sesiones activas",
     "activeSessionLabel": "{branch} · vence {time}",
     "revoke": "Cerrar",
     "revoked": "Sesión cerrada",
     "createError": "No se pudo abrir el catálogo en modo operador",
-    "revokeError": "No se pudo cerrar la sesión"
+    "revokeError": "No se pudo cerrar la sesión",
+    "doNotShare": "No compartas este link: quien lo tenga puede tomar pedidos a tu nombre hasta que venza. Ciérralo con «Salir» en el catálogo o desde aquí."
   },
   "orderFlow": {
     "title": "Flujo del negocio",

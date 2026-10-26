@@ -418,14 +418,13 @@
     "qrAlt": "Operator mode catalog QR code",
     "scanHint": "Scan it with your phone or open it here. The session expires at {time}.",
     "openHere": "Open here",
-    "copy": "Copy link",
-    "copied": "Link copied",
     "activeSessions": "Your active sessions",
     "activeSessionLabel": "{branch} · expires {time}",
     "revoke": "Close",
     "revoked": "Session closed",
     "createError": "Couldn't open the catalog in operator mode",
-    "revokeError": "Couldn't close the session"
+    "revokeError": "Couldn't close the session",
+    "doNotShare": "Don't share this link: anyone who has it can take orders in your name until it expires. Close it with “Exit” in the catalog or from here."
   },
   "orderFlow": {
     "title": "Business flow",

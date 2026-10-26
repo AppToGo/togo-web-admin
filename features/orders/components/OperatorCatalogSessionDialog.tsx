@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { useTranslations } from "next-intl";
-import { Copy, ExternalLink, Store } from "lucide-react";
-import { toast } from "sonner";
+import { ExternalLink, Store } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -98,12 +97,6 @@ export function OperatorCatalogSessionDialog({
     createSession.mutate({ branchId }, { onSuccess: setSession });
   };
 
-  const handleCopy = async () => {
-    if (!session) return;
-    await navigator.clipboard.writeText(session.url);
-    toast.success(t("copied"));
-  };
-
   const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -163,18 +156,15 @@ export function OperatorCatalogSessionDialog({
             <p className="text-sm text-slate-500 text-center">
               {t("scanHint", { time: formatTime(session.expiresAt) })}
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button asChild>
-                <a href={session.url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink />
-                  {t("openHere")}
-                </a>
-              </Button>
-              <Button variant="outline" onClick={handleCopy}>
-                <Copy />
-                {t("copy")}
-              </Button>
-            </div>
+            <Button asChild className="w-full">
+              <a href={session.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink />
+                {t("openHere")}
+              </a>
+            </Button>
+            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+              {t("doNotShare")}
+            </p>
           </div>
         )}
 

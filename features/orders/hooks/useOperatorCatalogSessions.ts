@@ -30,7 +30,7 @@ export function useCreateOperatorCatalogSession(businessId: string | null) {
   const t = useTranslations("orders.catalogSession");
 
   return useMutation({
-    mutationFn: (data: { branchId: string; tableId?: string }) =>
+    mutationFn: (data: { branchId: string }) =>
       createOperatorCatalogSession(businessId!, data),
     onError: (err) => {
       toast.error(getHumanizedErrorMessage(err) || t("createError"));

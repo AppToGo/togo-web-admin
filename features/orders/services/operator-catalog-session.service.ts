@@ -15,7 +15,7 @@ const baseUrl = (businessId: string) =>
 
 export async function createOperatorCatalogSession(
   businessId: string,
-  data: { branchId: string; tableId?: string }
+  data: { branchId: string }
 ): Promise<CreatedOperatorCatalogSession> {
   const { data: created } = await apiClient.post<CreatedOperatorCatalogSession>(
     baseUrl(businessId),
