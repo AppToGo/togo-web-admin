@@ -10,7 +10,8 @@
     "detail": "Métricas detalladas",
     "analysis": "Análisis",
     "aiUsage": "Consumo de IA",
-    "whatsappUsage": "Consumo de WhatsApp"
+    "whatsappUsage": "Consumo de WhatsApp",
+    "products": "Productos"
   },
   "periods": {
     "today": "Hoy",
@@ -110,5 +111,39 @@
     "expired": "Tu prueba gratis terminó",
     "subtitle": "Elegí un plan para seguir usando ToGo sin interrupciones",
     "cta": "Elegir plan"
+  },
+  "products": {
+    "top": {
+      "title": "Más vendidos",
+      "subtitle": "Productos con más ventas en el período",
+      "rankBy": "Ordenar por",
+      "byQuantity": "Unidades",
+      "byRevenue": "Ingresos",
+      "units": "{count, plural, one {# unidad} other {# unidades}}",
+      "orders": "{count, plural, one {# pedido} other {# pedidos}}",
+      "share": "{value}% del total",
+      "leaderLabel": "El más vendido:",
+      "empty": "Aún no hay ventas en este período.",
+      "error": "No pudimos cargar los productos más vendidos."
+    },
+    "trends": {
+      "title": "En alza y en baja",
+      "subtitle": "Unidades frente al período anterior",
+      "rising": "En alza",
+      "falling": "En baja",
+      "new": "Nuevo",
+      "units": "{previous} → {current} unid.",
+      "none": "Sin cambios importantes.",
+      "empty": "Todavía no hay suficientes ventas para comparar.",
+      "error": "No pudimos cargar las tendencias."
+    },
+    "withoutSales": {
+      "title": "Productos sin ventas",
+      "subtitle": "{total, plural, =0 {Todos tus productos activos se vendieron} one {# producto activo no se vendió en el período} other {# productos activos no se vendieron en el período}}",
+      "goToCatalog": "Ver catálogo",
+      "more": "{count, plural, one {y # producto más} other {y # productos más}}",
+      "empty": "¡Todos tus productos activos tuvieron ventas en este período!",
+      "error": "No pudimos cargar los productos sin ventas."
+    }
   }
 }
