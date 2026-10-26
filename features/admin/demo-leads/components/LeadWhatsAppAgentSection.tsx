@@ -141,6 +141,7 @@ export function LeadWhatsAppAgentSection({
       data: {
         message: cleanMessage,
         nextStage,
+        prospectReply: prospectReply.trim() || undefined,
         nextActionTitle: nextActionTitle.trim() || undefined,
       },
     });

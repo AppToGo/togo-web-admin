@@ -235,6 +235,7 @@ export interface WhatsAppDraftsResponse {
 export interface LogWhatsAppOutreachRequest {
   message: string;
   nextStage?: DemoLeadStage;
+  prospectReply?: string;
   nextActionTitle?: string;
   nextActionDueAt?: string;
 }
