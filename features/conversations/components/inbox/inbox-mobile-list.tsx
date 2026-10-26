@@ -75,6 +75,7 @@ export function InboxMobileList({
     hasError: isFetchNextPageError,
     onLoadMore,
     itemCount: conversations.length,
+    resetKey: JSON.stringify([view, debouncedSearch]),
   });
 
   const tabs: Array<{ id: InboxView; label: string; count?: number }> = [

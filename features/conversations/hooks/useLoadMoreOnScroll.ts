@@ -20,6 +20,12 @@ interface UseLoadMoreOnScrollOptions {
   rootRef?: RefObject<HTMLElement | null>;
   /** Cambia al llegar datos: re-observa por si el sentinel sigue visible. */
   itemCount: number;
+  /**
+   * Identifica la query (filtros + búsqueda). Al cambiar se libera el latch
+   * de error: una lista nueva no hereda el "trabado" de la anterior aunque
+   * traiga la misma cantidad de items.
+   */
+  resetKey: string;
 }
 
 /**
@@ -30,8 +36,9 @@ interface UseLoadMoreOnScrollOptions {
  * sentinel sigue visible y pide otra.
  *
  * Si falla la página siguiente queda "trabado" hasta que el usuario toque
- * Reintentar (`retry`) o cambien los datos (otro filtro, una conversación
- * nueva). `isFetchNextPageError` solo no alcanza: TanStack lo apaga apenas
+ * Reintentar (`retry`) o cambie la query (filtros, búsqueda). El conteo de
+ * items solo no alcanza para liberarlo: la lista nueva puede traer la misma
+ * cantidad. `isFetchNextPageError` solo tampoco: TanStack lo apaga apenas
  * empieza cualquier refetch (socket, intervalo sin socket), y con el
  * sentinel a la vista se volvería a pedir la página rota en cada uno.
  */
@@ -42,12 +49,19 @@ export function useLoadMoreOnScroll({
   onLoadMore,
   rootRef,
   itemCount,
+  resetKey,
 }: UseLoadMoreOnScrollOptions) {
   const [sentinel, setSentinel] = useState<HTMLElement | null>(null);
   const [isStuck, setIsStuck] = useState(false);
   const [prevItemCount, setPrevItemCount] = useState(itemCount);
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
 
   // Ajuste de estado durante el render (no un useEffect).
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey);
+    setPrevItemCount(itemCount);
+    setIsStuck(false);
+  }
   if (hasError && !isStuck) setIsStuck(true);
   if (itemCount !== prevItemCount) {
     setPrevItemCount(itemCount);
@@ -64,7 +78,7 @@ export function useLoadMoreOnScroll({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [sentinel, hasNextPage, isFetching, isStuck, onLoadMore, rootRef, itemCount]);
+  }, [sentinel, hasNextPage, isFetching, isStuck, onLoadMore, rootRef, itemCount, resetKey]);
 
   const retry = () => {
     setIsStuck(false);
