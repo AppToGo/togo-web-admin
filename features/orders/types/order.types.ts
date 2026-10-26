@@ -303,10 +303,39 @@ export interface CreatedOperatorCatalogSession {
   id: string;
   url: string;
   expiresAt: string;
+  operatorName: string;
+}
+
+export interface CreateOperatorCatalogSessionInput {
+  branchId: string;
+  /** Operador que toma los pedidos; por defecto, quien abre la sesión */
+  userId?: string;
+  /** ISO; no puede pasar de `OperatorCatalogSessionWindow.closesAt` */
+  expiresAt?: string;
+}
+
+/** Hasta cuándo puede durar una sesión abierta ahora en la sede. */
+export interface OperatorCatalogSessionWindow {
+  /** Apertura del turno; null si la sede no tiene horario */
+  opensAt: string | null;
+  /** Cierre del turno (puede ser del día siguiente): máximo `expiresAt` */
+  closesAt: string;
+  timezone: string;
+  /** false: sin horario, el máximo es un turno de 12 h */
+  scheduleConfigured: boolean;
+}
+
+export interface OperatorCatalogSessionOptions {
+  /** Usuarios que pueden tomar pedidos en la sede */
+  operators: Array<{ id: string; name: string }>;
+  /** null: la sede no tiene turno en curso ni próximo */
+  window: OperatorCatalogSessionWindow | null;
 }
 
 export interface OperatorCatalogSessionSummary {
   id: string;
+  userId: string;
+  operatorName: string;
   branchId: string;
   branchName: string;
   createdAt: string;
