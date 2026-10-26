@@ -7,13 +7,33 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import {
   createOperatorCatalogSession,
   getMyOperatorCatalogSessions,
+  getOperatorCatalogSessionOptions,
   revokeOperatorCatalogSession,
 } from "../services/operator-catalog-session.service";
+import type { CreateOperatorCatalogSessionInput } from "../types";
 
 const SESSIONS_KEY = (businessId: string | null) =>
   ["operator-catalog-sessions", businessId] as const;
 
-/** Mis sesiones activas del modo operador (para cerrarlas). */
+/**
+ * Operadores y ventana de la sede. La ventana depende de la hora actual:
+ * se pide de nuevo cada vez que se abre el diálogo.
+ */
+export function useOperatorCatalogSessionOptions(
+  businessId: string | null,
+  branchId: string | null,
+  enabled: boolean
+) {
+  return useQuery({
+    queryKey: ["operator-catalog-session-options", businessId, branchId],
+    queryFn: () => getOperatorCatalogSessionOptions(businessId!, branchId!),
+    enabled: enabled && !!businessId && !!branchId,
+    staleTime: 0,
+    gcTime: 0,
+  });
+}
+
+/** Mis sesiones activas y las que abrí para otros (para cerrarlas). */
 export function useMyOperatorCatalogSessions(
   businessId: string | null,
   enabled: boolean
@@ -30,7 +50,7 @@ export function useCreateOperatorCatalogSession(businessId: string | null) {
   const t = useTranslations("orders.catalogSession");
 
   return useMutation({
-    mutationFn: (data: { branchId: string }) =>
+    mutationFn: (data: CreateOperatorCatalogSessionInput) =>
       createOperatorCatalogSession(businessId!, data),
     onError: (err) => {
       toast.error(getHumanizedErrorMessage(err) || t("createError"));

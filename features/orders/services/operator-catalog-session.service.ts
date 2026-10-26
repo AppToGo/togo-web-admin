@@ -7,6 +7,8 @@
 import apiClient from "@/services/api.service";
 import type {
   CreatedOperatorCatalogSession,
+  CreateOperatorCatalogSessionInput,
+  OperatorCatalogSessionOptions,
   OperatorCatalogSessionSummary,
 } from "../types";
 
@@ -15,13 +17,25 @@ const baseUrl = (businessId: string) =>
 
 export async function createOperatorCatalogSession(
   businessId: string,
-  data: { branchId: string }
+  data: CreateOperatorCatalogSessionInput
 ): Promise<CreatedOperatorCatalogSession> {
   const { data: created } = await apiClient.post<CreatedOperatorCatalogSession>(
     baseUrl(businessId),
     data
   );
   return created;
+}
+
+/** Operadores elegibles y hora máxima para abrir una sesión en la sede. */
+export async function getOperatorCatalogSessionOptions(
+  businessId: string,
+  branchId: string
+): Promise<OperatorCatalogSessionOptions> {
+  const { data } = await apiClient.get<OperatorCatalogSessionOptions>(
+    `${baseUrl(businessId)}/options`,
+    { params: { branchId } }
+  );
+  return data;
 }
 
 export async function getMyOperatorCatalogSessions(

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ExternalLink, Store } from "lucide-react";
 import {
   Dialog,
@@ -27,8 +27,10 @@ import { useAuthStore } from "@/features/auth/stores/auth.store";
 import {
   useCreateOperatorCatalogSession,
   useMyOperatorCatalogSessions,
+  useOperatorCatalogSessionOptions,
   useRevokeOperatorCatalogSession,
 } from "../hooks/useOperatorCatalogSessions";
+import { buildSessionExpiryOptions } from "../utils/session-expiry.utils";
 import type { CreatedOperatorCatalogSession } from "../types";
 
 interface OperatorCatalogSessionDialogProps {
@@ -41,8 +43,11 @@ interface OperatorCatalogSessionDialogProps {
 /**
  * "Tomar pedido en catálogo": abre el catálogo web en modo operador para
  * que el mesero tome pedidos de mesa desde ahí (en este equipo o
- * escaneando el QR con su celular). La sesión dura un turno; el link con
- * el token solo existe mientras este diálogo está abierto.
+ * escaneando el QR con su celular). Lo suele usar el cajero o el
+ * administrador: elige a nombre de qué operador queda la sesión y hasta qué
+ * hora dura, sin pasar del cierre del turno de la sede (que puede ser del
+ * día siguiente). El link con el token solo existe mientras este diálogo
+ * está abierto.
  */
 export function OperatorCatalogSessionDialog({
   isOpen,
@@ -50,7 +55,9 @@ export function OperatorCatalogSessionDialog({
   businessId: businessIdProp,
 }: OperatorCatalogSessionDialogProps) {
   const t = useTranslations("orders.catalogSession");
+  const locale = useLocale();
   const userBusinessId = useAuthStore((state) => state.user?.businessId ?? null);
+  const currentUserId = useAuthStore((state) => state.user?.userId ?? null);
   const businessId = businessIdProp ?? userBusinessId;
 
   const { branches, defaultBranchId } = useEffectiveBranches();
@@ -74,6 +81,49 @@ export function OperatorCatalogSessionDialog({
   const createSession = useCreateOperatorCatalogSession(businessId);
   const revokeSession = useRevokeOperatorCatalogSession(businessId);
   const { data: activeSessions = [] } = useMyOperatorCatalogSessions(businessId, isOpen);
+
+  const optionsQuery = useOperatorCatalogSessionOptions(
+    businessId,
+    branchId,
+    isOpen && !session
+  );
+  const operators = useMemo(
+    () => optionsQuery.data?.operators ?? [],
+    [optionsQuery.data]
+  );
+  const sessionWindow = optionsQuery.data?.window ?? null;
+
+  // Por defecto, quien abre el diálogo si puede tomar pedidos en la sede.
+  const [selectedOperatorId, setSelectedOperatorId] = useState<string | null>(null);
+  const operatorId =
+    operators.find((o) => o.id === selectedOperatorId)?.id ??
+    operators.find((o) => o.id === currentUserId)?.id ??
+    operators[0]?.id ??
+    null;
+
+  const expiryOptions = useMemo(
+    () =>
+      sessionWindow
+        ? buildSessionExpiryOptions(sessionWindow.closesAt, sessionWindow.timezone)
+        : [],
+    [sessionWindow]
+  );
+  // Por defecto, el cierre del turno (la última opción).
+  const [selectedExpiresAt, setSelectedExpiresAt] = useState<string | null>(null);
+  const expiresAt =
+    expiryOptions.find((o) => o.value === selectedExpiresAt)?.value ??
+    expiryOptions[expiryOptions.length - 1]?.value ??
+    null;
+
+  // Horas del selector en la zona de la sede, no la del navegador.
+  const formatBranchTime = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: sessionWindow?.timezone,
+    });
+    return (iso: string) => formatter.format(new Date(iso));
+  }, [locale, sessionWindow?.timezone]);
 
   useEffect(() => {
     if (!session) return;
@@ -100,7 +150,16 @@ export function OperatorCatalogSessionDialog({
     setQrErrorUrl(null);
     setQrAttempt(0);
     setSelectedBranchId(null);
+    setSelectedOperatorId(null);
+    setSelectedExpiresAt(null);
     onClose();
+  };
+
+  const handleBranchChange = (id: string) => {
+    // Otra sede: otros operadores y otro horario.
+    setSelectedBranchId(id);
+    setSelectedOperatorId(null);
+    setSelectedExpiresAt(null);
   };
 
   const handleQrRetry = () => {
@@ -109,8 +168,11 @@ export function OperatorCatalogSessionDialog({
   };
 
   const handleCreate = () => {
-    if (!branchId) return;
-    createSession.mutate({ branchId }, { onSuccess: setSession });
+    if (!branchId || !operatorId || !expiresAt) return;
+    createSession.mutate(
+      { branchId, userId: operatorId, expiresAt },
+      { onSuccess: setSession }
+    );
   };
 
   const formatTime = (iso: string) =>
@@ -133,7 +195,7 @@ export function OperatorCatalogSessionDialog({
               {branches.length > 1 && (
                 <div className="space-y-2">
                   <Label htmlFor="operator-session-branch">{t("branch")}</Label>
-                  <Select value={branchId ?? undefined} onValueChange={setSelectedBranchId}>
+                  <Select value={branchId ?? undefined} onValueChange={handleBranchChange}>
                     <SelectTrigger id="operator-session-branch">
                       <SelectValue placeholder={t("branchPlaceholder")} />
                     </SelectTrigger>
@@ -147,10 +209,77 @@ export function OperatorCatalogSessionDialog({
                   </Select>
                 </div>
               )}
+
+              {!branchId ? null : optionsQuery.isPending ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : optionsQuery.isError ? (
+                <p className="text-sm text-red-600">{t("optionsError")}</p>
+              ) : !sessionWindow || expiryOptions.length === 0 ? (
+                <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                  {t("noShift")}
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="operator-session-operator">{t("operator")}</Label>
+                    {operators.length === 0 ? (
+                      <p className="text-sm text-slate-500">{t("noOperators")}</p>
+                    ) : (
+                      <Select
+                        value={operatorId ?? undefined}
+                        onValueChange={setSelectedOperatorId}
+                      >
+                        <SelectTrigger id="operator-session-operator">
+                          <SelectValue placeholder={t("operatorPlaceholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {operators.map((o) => (
+                            <SelectItem key={o.id} value={o.id}>
+                              {o.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="operator-session-expires">{t("expiresAt")}</Label>
+                    <Select
+                      value={expiresAt ?? undefined}
+                      onValueChange={setSelectedExpiresAt}
+                    >
+                      <SelectTrigger id="operator-session-expires">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {expiryOptions.map((option, index) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {formatBranchTime(option.value)}
+                            {option.nextDay && ` (${t("nextDay")})`}
+                            {index === expiryOptions.length - 1 &&
+                              sessionWindow.scheduleConfigured &&
+                              ` · ${t("closingTime")}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-slate-500">
+                      {sessionWindow.scheduleConfigured
+                        ? t("expiresHint")
+                        : t("noScheduleHint")}
+                    </p>
+                  </div>
+                </>
+              )}
+
               <Button
                 className="w-full"
                 onClick={handleCreate}
-                disabled={!branchId || !businessId}
+                disabled={!branchId || !businessId || !operatorId || !expiresAt}
                 isLoading={createSession.isPending}
               >
                 {t("create")}
@@ -178,7 +307,10 @@ export function OperatorCatalogSessionDialog({
                 )}
               </div>
               <p className="text-sm text-slate-500 text-center">
-                {t("scanHint", { time: formatTime(session.expiresAt) })}
+                {t("scanHint", {
+                  operator: session.operatorName,
+                  time: formatTime(session.expiresAt),
+                })}
               </p>
               <Button asChild className="w-full">
                 <a href={session.url} target="_blank" rel="noopener noreferrer">
@@ -203,6 +335,7 @@ export function OperatorCatalogSessionDialog({
                   >
                     <span className="truncate">
                       {t("activeSessionLabel", {
+                        operator: active.operatorName,
                         branch: active.branchName,
                         time: formatTime(active.expiresAt),
                       })}
