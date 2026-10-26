@@ -127,101 +127,103 @@ export function OperatorCatalogSessionDialog({
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
-        {!session ? (
-          <div className="space-y-4">
-            {branches.length > 1 && (
-              <div className="space-y-2">
-                <Label htmlFor="operator-session-branch">{t("branch")}</Label>
-                <Select value={branchId ?? undefined} onValueChange={setSelectedBranchId}>
-                  <SelectTrigger id="operator-session-branch">
-                    <SelectValue placeholder={t("branchPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <Button
-              className="w-full"
-              onClick={handleCreate}
-              disabled={!branchId || !businessId}
-              isLoading={createSession.isPending}
-            >
-              {t("create")}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              {qrDataUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={qrDataUrl}
-                  alt={t("qrAlt")}
-                  className="w-56 h-56 rounded-lg border border-slate-100"
-                />
-              ) : qrFailed ? (
-                <div className="flex w-56 h-56 flex-col items-center justify-center gap-2 rounded-lg border border-slate-100 text-center">
-                  <p className="px-4 text-sm text-slate-500">{t("qrError")}</p>
-                  <Button variant="ghost" size="sm" onClick={handleQrRetry}>
-                    {t("retry")}
-                  </Button>
+        <div className="space-y-4 px-6 pb-6">
+          {!session ? (
+            <div className="space-y-4">
+              {branches.length > 1 && (
+                <div className="space-y-2">
+                  <Label htmlFor="operator-session-branch">{t("branch")}</Label>
+                  <Select value={branchId ?? undefined} onValueChange={setSelectedBranchId}>
+                    <SelectTrigger id="operator-session-branch">
+                      <SelectValue placeholder={t("branchPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                <Skeleton className="w-56 h-56" />
               )}
+              <Button
+                className="w-full"
+                onClick={handleCreate}
+                disabled={!branchId || !businessId}
+                isLoading={createSession.isPending}
+              >
+                {t("create")}
+              </Button>
             </div>
-            <p className="text-sm text-slate-500 text-center">
-              {t("scanHint", { time: formatTime(session.expiresAt) })}
-            </p>
-            <Button asChild className="w-full">
-              <a href={session.url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink />
-                {t("openHere")}
-              </a>
-            </Button>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
-              {t("doNotShare")}
-            </p>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                {qrDataUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={qrDataUrl}
+                    alt={t("qrAlt")}
+                    className="w-56 h-56 rounded-lg border border-slate-100"
+                  />
+                ) : qrFailed ? (
+                  <div className="flex w-56 h-56 flex-col items-center justify-center gap-2 rounded-lg border border-slate-100 text-center">
+                    <p className="px-4 text-sm text-slate-500">{t("qrError")}</p>
+                    <Button variant="ghost" size="sm" onClick={handleQrRetry}>
+                      {t("retry")}
+                    </Button>
+                  </div>
+                ) : (
+                  <Skeleton className="w-56 h-56" />
+                )}
+              </div>
+              <p className="text-sm text-slate-500 text-center">
+                {t("scanHint", { time: formatTime(session.expiresAt) })}
+              </p>
+              <Button asChild className="w-full">
+                <a href={session.url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink />
+                  {t("openHere")}
+                </a>
+              </Button>
+              <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                {t("doNotShare")}
+              </p>
+            </div>
+          )}
 
-        {activeSessions.length > 0 && (
-          <div className="border-t border-slate-100 pt-4 space-y-2">
-            <p className="text-xs font-semibold text-slate-500">{t("activeSessions")}</p>
-            <ul className="space-y-1">
-              {activeSessions.map((active) => (
-                <li
-                  key={active.id}
-                  className="flex items-center justify-between gap-2 text-sm text-slate-700"
-                >
-                  <span className="truncate">
-                    {t("activeSessionLabel", {
-                      branch: active.branchName,
-                      time: formatTime(active.expiresAt),
-                    })}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      revokeSession.mutate(active.id);
-                      if (session?.id === active.id) setSession(null);
-                    }}
-                    disabled={revokeSession.isPending && revokeSession.variables === active.id}
+          {activeSessions.length > 0 && (
+            <div className="border-t border-slate-100 pt-4 space-y-2">
+              <p className="text-xs font-semibold text-slate-500">{t("activeSessions")}</p>
+              <ul className="space-y-1">
+                {activeSessions.map((active) => (
+                  <li
+                    key={active.id}
+                    className="flex items-center justify-between gap-2 text-sm text-slate-700"
                   >
-                    {t("revoke")}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                    <span className="truncate">
+                      {t("activeSessionLabel", {
+                        branch: active.branchName,
+                        time: formatTime(active.expiresAt),
+                      })}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        revokeSession.mutate(active.id);
+                        if (session?.id === active.id) setSession(null);
+                      }}
+                      disabled={revokeSession.isPending && revokeSession.variables === active.id}
+                    >
+                      {t("revoke")}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
