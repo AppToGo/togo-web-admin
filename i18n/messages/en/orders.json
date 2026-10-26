@@ -408,6 +408,24 @@
     "mobileContinue": "Continue",
     "mobileBack": "Products ({count})"
   },
+  "catalogSession": {
+    "buttonTooltip": "Take an order in the web catalog",
+    "title": "Take order in catalog",
+    "description": "Opens the web catalog in operator mode: pick the table, no customer details needed, and the order is confirmed under your name.",
+    "branch": "Branch",
+    "branchPlaceholder": "Select a branch",
+    "create": "Open catalog in operator mode",
+    "qrAlt": "Operator mode catalog QR code",
+    "scanHint": "Scan it with your phone or open it here. The session expires at {time}.",
+    "openHere": "Open here",
+    "activeSessions": "Your active sessions",
+    "activeSessionLabel": "{branch} · expires {time}",
+    "revoke": "Close",
+    "revoked": "Session closed",
+    "createError": "Couldn't open the catalog in operator mode",
+    "revokeError": "Couldn't close the session",
+    "doNotShare": "Don't share this link: anyone who has it can take orders in your name until it expires. Close it with “Exit” in the catalog or from here."
+  },
   "orderFlow": {
     "title": "Business flow",
     "description": "Choose the statuses your operation uses. Unused ones don't show on the board and orders skip them. Applies to the whole team.",

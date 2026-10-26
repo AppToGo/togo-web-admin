@@ -293,3 +293,23 @@ export interface CreateOrderResponse {
   /** Vueltas del cobro en efectivo al crear (calculadas por el servidor). */
   change?: number;
 }
+
+// ============================================================================
+// Modo operador del catálogo web (mesero tomando pedidos en el local)
+// ============================================================================
+
+/** Sesión recién creada: la URL trae el token y solo se entrega acá. */
+export interface CreatedOperatorCatalogSession {
+  id: string;
+  url: string;
+  expiresAt: string;
+}
+
+export interface OperatorCatalogSessionSummary {
+  id: string;
+  branchId: string;
+  branchName: string;
+  createdAt: string;
+  expiresAt: string;
+  lastUsedAt: string | null;
+}

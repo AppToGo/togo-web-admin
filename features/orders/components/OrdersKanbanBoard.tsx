@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Minimize2, Plus } from "lucide-react";
+import { Minimize2, Plus, Store } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -14,6 +14,7 @@ import { GroupedListView } from "./GroupedListView";
 import { HoverTooltip } from "./HoverTooltip";
 import { StatsTickerRail } from "./StatsTickerRail";
 import { NewOrderDrawer } from "./NewOrderDrawer";
+import { OperatorCatalogSessionDialog } from "./OperatorCatalogSessionDialog";
 import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
 import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
@@ -193,6 +194,8 @@ export function OrdersKanbanBoard({
   const isDetailOpen = !!selectedOrderId;
   // "Nuevo pedido" drawer (button in the CONFIRMED column header)
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  // "Catálogo": abrir el catálogo web en modo operador (pedidos en mesa)
+  const [isCatalogSessionOpen, setIsCatalogSessionOpen] = useState(false);
 
   // Hook for LIVE orders (all except COMPLETED)
   const {
@@ -548,6 +551,16 @@ export function OrdersKanbanBoard({
                               <Plus className="w-3.5 h-3.5" />
                               {t("createOrder.button")}
                             </button>
+                            <HoverTooltip content={t("catalogSession.buttonTooltip")}>
+                              <button
+                                type="button"
+                                onClick={() => setIsCatalogSessionOpen(true)}
+                                aria-label={t("catalogSession.buttonTooltip")}
+                                className="ml-1 w-7 h-7 rounded-lg flex items-center justify-center bg-white text-indigo-600 shadow-card-sm hover:bg-indigo-50 transition-colors"
+                              >
+                                <Store className="w-3.5 h-3.5" />
+                              </button>
+                            </HoverTooltip>
                           </Can>
                         ) : undefined
                       }
@@ -650,6 +663,14 @@ export function OrdersKanbanBoard({
       <Can permission="order.create">
         <button
           type="button"
+          onClick={() => setIsCatalogSessionOpen(true)}
+          aria-label={t("catalogSession.buttonTooltip")}
+          className="md:hidden fixed right-4 bottom-24 z-30 h-12 w-12 rounded-full bg-white text-slate-900 border border-slate-200 shadow-lg active:bg-slate-50 flex items-center justify-center"
+        >
+          <Store className="w-5 h-5" />
+        </button>
+        <button
+          type="button"
           onClick={() => setIsNewOrderOpen(true)}
           className="md:hidden fixed right-4 bottom-6 z-30 h-14 pl-4 pr-5 rounded-full bg-slate-900 text-white shadow-lg flex items-center gap-2 text-sm font-semibold"
         >
@@ -661,6 +682,12 @@ export function OrdersKanbanBoard({
       <NewOrderDrawer
         isOpen={isNewOrderOpen}
         onClose={() => setIsNewOrderOpen(false)}
+      />
+
+      <OperatorCatalogSessionDialog
+        isOpen={isCatalogSessionOpen}
+        onClose={() => setIsCatalogSessionOpen(false)}
+        businessId={businessId}
       />
 
       <DeliveryPickerDialog
