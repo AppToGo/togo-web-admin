@@ -33,12 +33,14 @@ export function toTipRequest(choice: TipChoice): TipRequest {
 
 /**
  * Propina con la que arranca el cobro: la que ya trae el pedido (la eligió
- * el comensal en el QR) o, si no tiene, la sugerida de la sede.
+ * el comensal en el QR, incluido "Sin propina", que llega como
+ * `tipPercent: 0`) o, si nunca se eligió, la sugerida de la sede.
  */
 export function initialTipChoice(
   order: { tip?: number; tipPercent?: number | null },
   config: TipConfig
 ): TipChoice {
+  if (order.tipPercent === 0) return NO_TIP_CHOICE;
   if (order.tip && order.tip > 0) {
     return order.tipPercent != null
       ? { percent: order.tipPercent }

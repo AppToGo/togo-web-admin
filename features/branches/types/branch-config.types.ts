@@ -163,15 +163,17 @@ export function isCounterEnabled(raw: unknown): boolean {
 }
 
 /**
- * Propina voluntaria — espeja `TipConfigSchema` del backend. Solo aplica a
- * pedidos en mesa y de mostrador. `suggestedPercent` se precarga al cobrar
- * (y en el carrito del QR de mesa) y debe ser uno de `presets`. Sedes
- * anteriores a la feature traen `{}`, que se interpreta como apagado.
+ * Propina voluntaria — misma forma que `TipConfigSchema` del backend, que es
+ * quien valida (presets de 0 a 30 %, con el 0 incluido, y el sugerido entre
+ * ellos). Solo aplica a pedidos en mesa y de mostrador. `suggestedPercent`
+ * se precarga al cobrar (y en el carrito del QR de mesa). Sedes anteriores
+ * a la feature traen `{}`, que se interpreta como apagado. El admin siempre
+ * guarda `TIP_PRESETS` como presets.
  */
 export interface TipConfig {
   enabled: boolean;
   suggestedPercent: number;
-  /** Opciones rápidas en %, ej. [0, 5, 10, 15]. */
+  /** Opciones rápidas en %; el 0 es "Sin propina". */
   presets: number[];
 }
 
