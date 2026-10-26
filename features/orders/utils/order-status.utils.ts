@@ -131,6 +131,7 @@ export function canChangeStatus(order: {
 export function canCompleteOrder(order: {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
+  deliveryType?: string;
 }): { valid: boolean; message?: string } {
   // Si ya está completada, no se puede completar de nuevo
   if (order.status === "COMPLETED") {
@@ -145,9 +146,13 @@ export function canCompleteOrder(order: {
     };
   }
 
-  // Solo un pago confirmado permite completar; un cobro cancelado
-  // (FAILED) o reembolsado tampoco es dinero del negocio.
-  if (order.paymentStatus !== "PAID") {
+  // En mesa o mostrador se entrega y se cobra después de consumir: el pago
+  // pendiente no bloquea la entrega (la API ya lo permite). Domicilio y
+  // recoger sí exigen cobro confirmado; un cobro cancelado (FAILED) o
+  // reembolsado tampoco es dinero del negocio.
+  const payAfterConsumption =
+    order.deliveryType === "DINE_IN" || order.deliveryType === "COUNTER";
+  if (!payAfterConsumption && order.paymentStatus !== "PAID") {
     return {
       valid: false,
       message: "orders.errors.paymentPending",
