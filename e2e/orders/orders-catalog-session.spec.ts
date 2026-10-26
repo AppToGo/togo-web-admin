@@ -31,6 +31,7 @@ const OPERATORS = [
 
 interface MockOptions {
   window: { opensAt: string | null; closesAt: string; timezone: string; scheduleConfigured: boolean } | null;
+  operators?: Array<{ id: string; name: string }>;
 }
 
 async function mockCatalogSessionApi(
@@ -46,7 +47,7 @@ async function mockCatalogSessionApi(
 
     if (path.endsWith("/auth/me/permissions")) return json(["order.view", "order.create"]);
     if (path.endsWith("/operator-catalog-sessions/options")) {
-      return json({ operators: OPERATORS, window: options.window });
+      return json({ operators: options.operators ?? OPERATORS, window: options.window });
     }
     if (path.endsWith("/operator-catalog-sessions/mine")) return json([]);
     if (path.endsWith("/operator-catalog-sessions") && request.method() === "POST") {
@@ -142,6 +143,23 @@ test.describe("Orders — tomar pedido en el catálogo web", () => {
     expect(created).toEqual([
       { branchId: "e2e-test-branch-id", userId: "user-laura", expiresAt: closesAt },
     ]);
+  });
+
+  test("si quien abre el modal no puede tomar pedidos, el operador se elige a mano", async ({ page }) => {
+    await setup(page, {
+      window: { opensAt: null, closesAt: tomorrowAtTwoInBogota(), timezone: TZ, scheduleConfigured: true },
+      operators: [{ id: "user-laura", name: "Laura Mesera" }],
+    });
+    const dialog = await openCatalogSessionDialog(page);
+
+    const operator = dialog.getByRole("combobox", { name: "Operador" });
+    await expect(operator).toHaveText("Selecciona quién toma los pedidos");
+    const create = dialog.getByRole("button", { name: "Abrir catálogo en modo operador" });
+    await expect(create).toBeDisabled();
+
+    await operator.click();
+    await page.getByRole("option", { name: "Laura Mesera" }).click();
+    await expect(create).toBeEnabled();
   });
 
   test("sin turno abierto ni próximo no deja abrir la sesión", async ({ page }) => {

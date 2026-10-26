@@ -94,19 +94,34 @@ export function OperatorCatalogSessionDialog({
   const sessionWindow = optionsQuery.data?.window ?? null;
 
   // Por defecto, quien abre el diálogo si puede tomar pedidos en la sede.
+  // Si no, nadie: a nombre de quién quedan los pedidos se elige a mano.
   const [selectedOperatorId, setSelectedOperatorId] = useState<string | null>(null);
   const operatorId =
     operators.find((o) => o.id === selectedOperatorId)?.id ??
     operators.find((o) => o.id === currentUserId)?.id ??
-    operators[0]?.id ??
     null;
+
+  // Las horas parten de "ahora": se recalculan cada minuto mientras se
+  // elige, para no ofrecer una que la API ya rechaza (mínimo 5 minutos).
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    if (!isOpen || session) return;
+    // Al abrir de nuevo, "ahora" puede ser de hace horas.
+    const refresh = () => setNow(new Date());
+    const first = setTimeout(refresh, 0);
+    const timer = setInterval(refresh, 60_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
+  }, [isOpen, session]);
 
   const expiryOptions = useMemo(
     () =>
       sessionWindow
-        ? buildSessionExpiryOptions(sessionWindow.closesAt, sessionWindow.timezone)
+        ? buildSessionExpiryOptions(sessionWindow.closesAt, sessionWindow.timezone, now)
         : [],
-    [sessionWindow]
+    [sessionWindow, now]
   );
   // Por defecto, el cierre del turno (la última opción).
   const [selectedExpiresAt, setSelectedExpiresAt] = useState<string | null>(null);
