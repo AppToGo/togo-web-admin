@@ -19,8 +19,10 @@ import {
   KpiSectionSkeleton,
   LazyMetricsGrid,
   LazyChartsSection,
+  LazyProductsSection,
   BranchSelector,
 } from "@/features/dashboard";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
@@ -30,6 +32,8 @@ export default function DashboardPage() {
 
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
+  // Mismo permiso que el endpoint de estadísticas de productos.
+  const { hasPermission } = useMyPermissions();
   // Consumo de IA: solo SUPER_ADMIN, del negocio del selector ("" = todos).
   const aiBusinessId = useEffectiveBusinessId() || null;
   const { data: businesses } = useBusinesses({
@@ -86,6 +90,13 @@ export default function DashboardPage() {
         <section aria-label={t("sections.detail")}>
           <LazyMetricsGrid />
         </section>
+
+        {/* Más vendidos, tendencias y sin ventas - Lazy load */}
+        {hasPermission("metrics.view") && (
+          <section aria-label={t("sections.products")}>
+            <LazyProductsSection />
+          </section>
+        )}
 
         {/* Embudo + horas pico - Lazy load */}
         <section aria-label={t("sections.analysis")}>
