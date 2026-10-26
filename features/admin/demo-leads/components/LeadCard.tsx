@@ -82,6 +82,11 @@ export function LeadCard({
             {lead.referredBy ? t("card.referred") : t("card.manual")}
           </span>
         )}
+        {lead.source === "SCOUT" && (
+          <span className="rounded-full bg-teal-50 px-2.5 py-0.5 font-semibold text-teal-700">
+            {t("card.scout")}
+          </span>
+        )}
         {lead.revoked && (
           <span className="rounded-full bg-red-50 px-2.5 py-0.5 font-semibold text-red-700">
             {t("card.revoked")}

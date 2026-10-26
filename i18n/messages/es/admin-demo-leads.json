@@ -31,6 +31,7 @@
     "revoked": "Sin consentimiento",
     "tries": "{count, plural, one {# entrada} other {# entradas}}",
     "manual": "Manual",
+    "scout": "Harvey Scout",
     "referred": "Referido",
     "noDemo": "Sin demo",
     "noName": "Sin nombre"
@@ -73,6 +74,7 @@
     "writeWhatsApp": "Escribir por WhatsApp",
     "tabsLabel": "Detalle del lead",
     "manual": "Creado a mano",
+    "scout": "Capturado por Harvey Scout",
     "manualReferred": "Creado a mano · Referido por {name}"
   },
   "events": {
@@ -82,7 +84,8 @@
     "INBOX_TAKEOVER": "Tomó su conversación",
     "INBOX_REPLY_SENT": "Se respondió en el inbox",
     "WHATSAPP_RECEIVED": "Escribió por WhatsApp",
-    "LEAD_CREATED": "Creado a mano en el CRM",
+    "LEAD_CREATED": "Creado en el CRM",
+    "WHATSAPP_OUTREACH_SENT": "Se envió mensaje de WhatsApp (wa.me)",
     "DEMO_STARTED_FIRST": "Probó la demo por primera vez"
   },
   "suggestions": {
@@ -90,6 +93,7 @@
     "REVIEW_LOSS": "Documentar por qué no continuó.",
     "NO_CONTACT": "No contactar: revocó la autorización.",
     "DO_PLANNED_ACTION": "Hacer la acción planeada que venció.",
+    "COLD_OUTREACH": "Prospecto en frío: enviar primer WhatsApp e invitar a probar la demo.",
     "INVITE_CONTINUE": "Invitar a seguir probando la demo.",
     "NUDGE_FIRST_ORDER": "Animar a crear su primer pedido de prueba.",
     "PERSONAL_OUTREACH": "Contacto personalizado según lo que probó.",
@@ -105,7 +109,13 @@
     "deleteError": "No se pudo eliminar el lead",
     "created": "Posible cliente creado",
     "createError": "No se pudo crear el posible cliente",
-    "actionError": "No se pudo actualizar la acción"
+    "actionError": "No se pudo actualizar la acción",
+    "draftsError": "No se pudieron generar los mensajes de WhatsApp",
+    "outreachLogged": "WhatsApp registrado y etapa actualizada automáticamente",
+    "outreachError": "No se pudo registrar el envío de WhatsApp",
+    "scoutSearchError": "No se pudo completar la búsqueda de prospectos",
+    "scoutImported": "Se agregaron {count} posibles clientes al tablero",
+    "scoutImportError": "No se pudieron importar los prospectos"
   },
   "loadError": "No se pudieron cargar los posibles clientes.",
   "retry": "Reintentar",
@@ -155,5 +165,44 @@
     "delete": "Eliminar acción",
     "placeholder": "Llamar, enviar propuesta…",
     "add": "Agregar acción"
+  },
+  "harvey": {
+    "title": "Agente Harvey · WhatsApp",
+    "subtitle": "Genera el mensaje ideal según el estado y actividad del cliente",
+    "customize": "Responder / Ajustar",
+    "regenerate": "Regenerar opciones",
+    "prospectReplyLabel": "Modo Handler: ¿Qué te respondió el cliente en WhatsApp?",
+    "prospectReplyPlaceholder": "Pega aquí lo que te dijo o preguntó el cliente para redactar la respuesta…",
+    "objectiveLabel": "Instrucción o foco adicional (opcional)",
+    "objectivePlaceholder": "Ej. Invitarlo a que nos envíe su carta en PDF para cargarla…",
+    "generating": "Harvey está redactando…",
+    "generateWithContext": "Generar respuesta con este contexto",
+    "messagePlaceholder": "Escribe o edita el mensaje que se abrirá en WhatsApp…",
+    "autoStageLabel": "Al enviar cambia estado",
+    "sendDisclaimer": "Al pulsar enviar se abrirá WhatsApp (wa.me), se guardará el mensaje en las notas y se cambiará el estado automáticamente.",
+    "sendAndAdvance": "Enviar por WhatsApp y pasar a {stage}"
+  },
+  "scout": {
+    "button": "Buscar prospectos",
+    "title": "Harvey Scout · Buscar prospectos",
+    "subtitle": "Encuentra negocios potenciales por zona o extráelos con IA desde texto libre y súmalos al tablero.",
+    "modeLabel": "Modo de búsqueda",
+    "modePlaces": "Google Maps / Zona",
+    "modeText": "Extraer desde texto con IA",
+    "placesQueryLabel": "Rubro y ciudad o barrio",
+    "placesQueryPlaceholder": "Ej. Hamburgueserías en Laureles, Medellín",
+    "rawTextLabel": "Pega tu lista, directorio o datos copiados de redes/Maps",
+    "rawTextPlaceholder": "Ej.\nAsados La 80 - 3001234567 - Domicilios propios\nPizzería Roma | +57 310 987 6543 | Piden por WhatsApp",
+    "defaultIndustryLabel": "Rubro por defecto",
+    "searchButton": "Buscar negocios",
+    "extractButton": "Extraer con IA",
+    "searching": "Buscando…",
+    "resultsTitle": "{count, plural, one {# prospecto encontrado} other {# prospectos encontrados}}",
+    "selectAll": "Seleccionar todos los nuevos",
+    "deselectAll": "Deseleccionar todos",
+    "alreadyInCrm": "Ya en el CRM · Ver",
+    "alreadyCustomer": "Ya es cliente",
+    "importButton": "Sumar {count} al CRM",
+    "importing": "Sumando…"
   }
 }

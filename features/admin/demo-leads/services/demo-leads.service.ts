@@ -12,6 +12,14 @@ import type {
   UpdateDemoLeadRequest,
   CreateDemoLeadRequest,
   DemoLeadAction,
+  GenerateWhatsAppDraftsRequest,
+  WhatsAppDraftsResponse,
+  LogWhatsAppOutreachRequest,
+  LogWhatsAppOutreachResponse,
+  ScoutSearchRequest,
+  ScoutSearchResponse,
+  ScoutImportRequest,
+  ScoutImportResponse,
 } from "@/types/auth.types";
 
 /**
@@ -130,4 +138,58 @@ export async function addDemoLeadNote(
  */
 export async function deleteDemoLead(id: string): Promise<void> {
   await apiClient.delete(`/admin/demo-leads/${id}`);
+}
+
+/**
+ * Harvey Writer/Handler: genera 3 borradores de WhatsApp según la etapa y el contexto del lead.
+ */
+export async function generateDemoLeadWhatsAppDrafts(
+  id: string,
+  data: GenerateWhatsAppDraftsRequest = {}
+): Promise<WhatsAppDraftsResponse> {
+  const response = await apiClient.post<WhatsAppDraftsResponse>(
+    `/admin/demo-leads/${id}/whatsapp-drafts`,
+    data
+  );
+  return response.data;
+}
+
+/**
+ * Registra automáticamente el envío del mensaje por wa.me y actualiza la etapa del lead.
+ */
+export async function logDemoLeadWhatsAppOutreach(
+  id: string,
+  data: LogWhatsAppOutreachRequest
+): Promise<LogWhatsAppOutreachResponse> {
+  const response = await apiClient.post<LogWhatsAppOutreachResponse>(
+    `/admin/demo-leads/${id}/whatsapp-outreach`,
+    data
+  );
+  return response.data;
+}
+
+/**
+ * Harvey Scout: busca prospectos en Google Places o extrae de texto con IA.
+ */
+export async function searchScoutProspects(
+  data: ScoutSearchRequest
+): Promise<ScoutSearchResponse> {
+  const response = await apiClient.post<ScoutSearchResponse>(
+    "/admin/demo-leads/scout/search",
+    data
+  );
+  return response.data;
+}
+
+/**
+ * Harvey Scout: importa en lote los prospectos seleccionados al Mini CRM.
+ */
+export async function importScoutProspects(
+  data: ScoutImportRequest
+): Promise<ScoutImportResponse> {
+  const response = await apiClient.post<ScoutImportResponse>(
+    "/admin/demo-leads/scout/import",
+    data
+  );
+  return response.data;
 }
