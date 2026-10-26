@@ -162,6 +162,42 @@ export function isCounterEnabled(raw: unknown): boolean {
   return (raw as CounterConfig).enabled === true;
 }
 
+/**
+ * Propina voluntaria — espeja `TipConfigSchema` del backend. Solo aplica a
+ * pedidos en mesa y de mostrador. `suggestedPercent` se precarga al cobrar
+ * (y en el carrito del QR de mesa) y debe ser uno de `presets`. Sedes
+ * anteriores a la feature traen `{}`, que se interpreta como apagado.
+ */
+export interface TipConfig {
+  enabled: boolean;
+  suggestedPercent: number;
+  /** Opciones rápidas en %, ej. [0, 5, 10, 15]. */
+  presets: number[];
+}
+
+/** Opciones que ofrece el admin; el 0 es "Sin propina". */
+export const TIP_PRESETS = [0, 5, 10, 15, 20] as const;
+
+export const DEFAULT_TIP_CONFIG: TipConfig = {
+  enabled: false,
+  suggestedPercent: 10,
+  presets: [...TIP_PRESETS],
+};
+
+/** Config de propina de una sede tal como llega del API (`{}` = apagada). */
+export function resolveTipConfig(raw: unknown): TipConfig {
+  if (!raw || typeof raw !== "object") return DEFAULT_TIP_CONFIG;
+  const c = raw as Partial<TipConfig>;
+  if (
+    typeof c.enabled !== "boolean" ||
+    typeof c.suggestedPercent !== "number" ||
+    !Array.isArray(c.presets)
+  ) {
+    return DEFAULT_TIP_CONFIG;
+  }
+  return c as TipConfig;
+}
+
 // ============================================================================
 // CONFIGURACIÓN COMPLETA
 // ============================================================================
@@ -178,6 +214,8 @@ export interface BranchSettings {
   transferOptions?: TransferOptions;
   /** Servicio a mesa */
   dineInConfig?: DineInConfig;
+  /** Propina voluntaria */
+  tipConfig?: TipConfig;
 }
 
 // ============================================================================

@@ -102,6 +102,13 @@ export interface Order {
   paymentVerification?: PaymentVerificationSummary;
   subtotal: number;
   tax: number;
+  /**
+   * Propina voluntaria (mesa/mostrador). Ya está dentro de `total`; no
+   * cuenta como venta. 0 si no hay.
+   */
+  tip?: number;
+  /** % elegido si la propina fue por porcentaje (null = monto libre). */
+  tipPercent?: number | null;
   total: number;
   /** Sede del pedido (viene en `OrderResponseDto`; se usa para caja). */
   branchId?: string;
@@ -284,6 +291,17 @@ export interface CreateOrderRequest {
    * `cash.sessionId`. Mostrador siempre cobra al crear y no lo necesita.
    */
   payNow?: boolean;
+  /** Propina (solo mesa/mostrador con propina habilitada en la sede). */
+  tip?: TipRequest;
+}
+
+/**
+ * Propina pedida al API: `percent` sobre el subtotal o `amount` libre,
+ * nunca ambos. Espeja `TipInputDto` del backend.
+ */
+export interface TipRequest {
+  percent?: number;
+  amount?: number;
 }
 
 export interface CreateOrderResponse {

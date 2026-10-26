@@ -5,7 +5,7 @@
  * Basado en los DTOs del backend.
  */
 
-import type { DeliveryConfig, BusinessHours, TransferOptions, DineInConfig, CounterConfig } from './branch-config.types';
+import type { DeliveryConfig, BusinessHours, TransferOptions, DineInConfig, CounterConfig, TipConfig } from './branch-config.types';
 
 /**
  * Información de una sucursal
@@ -54,6 +54,8 @@ export interface Branch {
   dineInConfig?: DineInConfig;
   /** Venta de mostrador (docs/caja-pedidos.md) */
   counterConfig?: CounterConfig;
+  /** Propina voluntaria (mesa y mostrador) */
+  tipConfig?: TipConfig;
   /**
    * Modo de atención propio de la sede (`null`/ausente = hereda del negocio).
    */
@@ -108,6 +110,8 @@ export interface CreateBranchRequest {
   dineInConfig?: DineInConfig;
   /** Venta de mostrador (docs/caja-pedidos.md) */
   counterConfig?: CounterConfig;
+  /** Propina voluntaria (mesa y mostrador) */
+  tipConfig?: TipConfig;
 }
 
 /**
@@ -140,6 +144,8 @@ export interface UpdateBranchRequest {
   dineInConfig?: DineInConfig;
   /** Venta de mostrador (docs/caja-pedidos.md) */
   counterConfig?: CounterConfig;
+  /** Propina voluntaria (mesa y mostrador) */
+  tipConfig?: TipConfig;
   /** Modo de atención propio (`null` = hereda del negocio). */
   attentionMode?: "BOT_ONLY" | "ATTENTION_MANUAL" | "HYBRID" | null;
   /** Minutos de takeover propios (`null` = hereda del negocio). */

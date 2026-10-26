@@ -305,7 +305,8 @@
     "pendingPayment": "Pendiente de pago",
     "active": "En curso",
     "oldest": "Más antigua",
-    "live": "VIVO"
+    "live": "VIVO",
+    "tips": "Propinas (aparte de ventas)"
   },
   "branchSelector": {
     "placeholder": "Seleccionar sucursales",
@@ -442,5 +443,12 @@
     "empty": "No hay usuarios activos para asignar.",
     "loadError": "No se pudieron cargar los repartidores."
   },
-  "cashPaidHint": "El cliente ya pagó en efectivo"
+  "cashPaidHint": "El cliente ya pagó en efectivo",
+  "tip": {
+    "label": "Propina",
+    "labelWithPercent": "Propina ({percent} %)",
+    "none": "Sin propina",
+    "custom": "Otro valor",
+    "voluntary": "La propina es voluntaria y no cuenta como venta."
+  }
 }

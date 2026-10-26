@@ -14,7 +14,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categoryBadgeVariants } from "../styles";
 import { PaymentMethodIcon } from "./PaymentMethodIcon";
-import { CashChargeDrawer } from "./CashChargeDrawer";
+import { CashChargeDrawer, type ChargeableOrder } from "./CashChargeDrawer";
 import type { PaymentStatus } from "../types";
 
 interface PaymentStatusEditorProps {
@@ -26,6 +26,11 @@ interface PaymentStatusEditorProps {
   showMethodIcon?: boolean;
   /** Encabezado del drawer de pago: número de pedido, mesa, etc. */
   chargeLabel?: string;
+  /** Desglose del pedido para ofrecer la propina al cobrar (mesa/mostrador). */
+  tipBreakdown?: Pick<
+    ChargeableOrder,
+    "subtotal" | "deliveryFee" | "tip" | "tipPercent" | "deliveryType"
+  >;
 }
 
 export function PaymentStatusEditor({
@@ -36,6 +41,7 @@ export function PaymentStatusEditor({
   currentStatus,
   showMethodIcon = true,
   chargeLabel,
+  tipBreakdown,
 }: PaymentStatusEditorProps) {
   const t = useTranslations("orders");
   const [chargeOpen, setChargeOpen] = useState(false);
@@ -88,7 +94,14 @@ export function PaymentStatusEditor({
         <ChevronDown className="w-3 h-3 opacity-60" />
       </button>
       <CashChargeDrawer
-        order={{ id: orderId, total, paymentMethod, branchId, label: chargeLabel }}
+        order={{
+          id: orderId,
+          total,
+          paymentMethod,
+          branchId,
+          label: chargeLabel,
+          ...tipBreakdown,
+        }}
         open={chargeOpen}
         onOpenChange={setChargeOpen}
       />

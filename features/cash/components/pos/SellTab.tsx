@@ -23,6 +23,7 @@ import type {
   CreateOrderResponse,
   ManualOrderDeliveryType,
   ManualOrderPaymentMethod,
+  TipRequest,
 } from "@/features/orders/types";
 import { CASH_KEYS } from "../../hooks/query-keys";
 import type { SessionSummary } from "../../types/cash.types";
@@ -106,7 +107,8 @@ export function SellTab({
 
   const charge = async (
     method: ManualOrderPaymentMethod,
-    receivedAmount: number
+    receivedAmount: number,
+    tip: TipRequest | undefined
   ): Promise<CreateOrderResponse | null> => {
     const cash =
       method === "CASH" && session
@@ -118,6 +120,7 @@ export function SellTab({
           ...cash,
           // Mostrador siempre cobra al crear; los demás tipos lo piden.
           ...(deliveryType !== "COUNTER" && { payNow: true }),
+          ...(tip && { tip }),
         })
       );
     } catch (err) {
@@ -266,6 +269,7 @@ export function SellTab({
         paymentMethods={composer.paymentMethods}
         session={session}
         canUseCash={canOperate}
+        tipConfig={composer.tipConfig}
         onCharge={charge}
         onDone={newSale}
         formatDate={formatDate}

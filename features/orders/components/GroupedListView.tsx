@@ -14,6 +14,7 @@ import { formatCurrency, getOrderGrandTotal } from "../utils/order-status.utils"
 import { formatOrderNumber } from "../utils/order-number.utils";
 import { useOrderDropZone } from "../hooks/useOrderDropZone";
 import { NextStatusButton } from "./NextStatusButton";
+import { orderTipBreakdown } from "../utils/tip.utils";
 
 // Literal class names (not built dynamically) so Tailwind picks them up.
 const STATUS_STYLE: Partial<Record<OrderStatus, { pill: string; borderOver: string }>> = {
@@ -88,6 +89,7 @@ function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: List
           branchId={order.branchId}
           paymentMethod={order.paymentMethod}
           currentStatus={order.paymentStatus}
+          tipBreakdown={orderTipBreakdown(order)}
         />
         <PaymentProofIndicator order={order} />
       </span>

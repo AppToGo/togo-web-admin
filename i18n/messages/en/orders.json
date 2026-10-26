@@ -305,7 +305,8 @@
     "pendingPayment": "Pending payment",
     "active": "Active",
     "oldest": "Oldest",
-    "live": "LIVE"
+    "live": "LIVE",
+    "tips": "Tips (separate from sales)"
   },
   "branchSelector": {
     "placeholder": "Select branches",
@@ -442,5 +443,12 @@
     "empty": "There are no active users to assign.",
     "loadError": "Couldn't load couriers."
   },
-  "cashPaidHint": "The customer already paid in cash"
+  "cashPaidHint": "The customer already paid in cash",
+  "tip": {
+    "label": "Tip",
+    "labelWithPercent": "Tip ({percent}%)",
+    "none": "No tip",
+    "custom": "Other amount",
+    "voluntary": "Tips are voluntary and don't count as sales."
+  }
 }

@@ -13,6 +13,8 @@ export interface ReceiptData {
   lines: Array<{ name: string; quantity: number; total: number }>;
   subtotal: number;
   deliveryFee: number | null;
+  /** Propina voluntaria (mesa/mostrador); 0 o ausente = sin línea. */
+  tip?: number;
   total: number;
   methodLabel: string;
   received: number | null;
@@ -21,6 +23,7 @@ export interface ReceiptData {
     order: string;
     subtotal: string;
     deliveryFee: string;
+    tip: string;
     total: string;
     paidWith: string;
     received: string;
@@ -54,6 +57,7 @@ export function buildReceiptHtml(data: ReceiptData): string {
     data.deliveryFee
       ? row(labels.deliveryFee, formatCOP(data.deliveryFee))
       : "",
+    data.tip ? row(labels.tip, formatCOP(data.tip)) : "",
     row(labels.total, formatCOP(data.total), true),
     row(labels.paidWith, data.methodLabel),
     data.received !== null

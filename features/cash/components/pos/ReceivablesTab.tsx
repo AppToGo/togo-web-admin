@@ -227,6 +227,12 @@ export function ReceivablesTab({
                         setCharging({
                           id: order.id,
                           total: Number(order.total),
+                          subtotal: Number(order.subtotal),
+                          deliveryFee: Number(order.deliveryFee),
+                          tip: Number(order.tip),
+                          tipPercent:
+                            order.tipPercent != null ? Number(order.tipPercent) : null,
+                          deliveryType: order.deliveryType,
                           paymentMethod: order.paymentMethod ?? undefined,
                           branchId,
                           label: `${orderNumber(order)} · ${selected.label}`,

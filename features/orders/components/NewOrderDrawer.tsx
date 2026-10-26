@@ -23,6 +23,7 @@ import {
   Store,
   Utensils,
   Banknote,
+  HandCoins,
   Phone,
   User,
   MapPin,
@@ -60,6 +61,8 @@ import { useOpenSessions } from "@/features/cash/hooks/useCash";
 import { CurrencyInput } from "@/features/cash/components/CurrencyInput";
 import { quickCashAmounts } from "@/features/cash/utils/cash.utils";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { TipSelector } from "./TipSelector";
+import { tipAmount, toTipRequest, type TipChoice } from "../utils/tip.utils";
 import type {
   ManualOrderDeliveryType,
   ManualOrderPaymentMethod,
@@ -104,6 +107,7 @@ export function NewOrderDrawer({
   const tDelivery = useTranslations("orders.deliveryTypes");
   const tPayment = useTranslations("orders.paymentMethods");
   const tCash = useTranslations("cash");
+  const tTip = useTranslations("orders.tip");
 
   const user = useCurrentUser();
   const businessId = useEffectiveBusinessId();
@@ -153,7 +157,8 @@ export function NewOrderDrawer({
     itemCount,
     subtotal,
     deliveryFee,
-    total,
+    total: itemsTotal,
+    tipConfig,
     setQuantity,
     deliveryTypes,
     deliveryType,
@@ -187,6 +192,16 @@ export function NewOrderDrawer({
     setCashSessionId(null);
     setCashReceived(0);
   };
+
+  // Propina: solo mostrador se cobra al crear desde acá; la mesa la elige
+  // al cobrar en Caja.
+  const counterTipConfig = deliveryType === "COUNTER" ? tipConfig : null;
+  const [pickedTip, setTip] = useState<TipChoice | null>(null);
+  const tipChoice: TipChoice | null = counterTipConfig
+    ? (pickedTip ?? { percent: counterTipConfig.suggestedPercent })
+    : null;
+  const tip = tipChoice ? tipAmount(tipChoice, subtotal) : 0;
+  const total = itemsTotal + tip;
 
   const isCounterCash = deliveryType === "COUNTER" && paymentMethod === "CASH";
   // Ver los turnos exige `cash.view`: sin él no se piden (403 con reintentos).
@@ -228,6 +243,7 @@ export function NewOrderDrawer({
     setPaymentMethod(null);
     setCashSessionId(null);
     setCashReceived(0);
+    setTip(null);
     setSubmitted(false);
     setMobileStep("products");
   };
@@ -253,6 +269,7 @@ export function NewOrderDrawer({
                 ...(cashReceived > 0 && { receivedAmount: cashReceived }),
               },
             }),
+          ...(tipChoice && { tip: toTipRequest(tipChoice) }),
         })
       );
       resetForm();
@@ -518,6 +535,19 @@ export function NewOrderDrawer({
                 )}
               </FieldGroup>
 
+              {counterTipConfig && tipChoice && (
+                <FieldGroup label={tTip("label")} icon={HandCoins}>
+                  <TipSelector
+                    id="new-order-tip"
+                    config={counterTipConfig}
+                    subtotal={subtotal}
+                    value={tipChoice}
+                    onChange={setTip}
+                    hideLabel
+                  />
+                </FieldGroup>
+              )}
+
               {isCounterCash && (
                 <FieldGroup label={t("cashSection")} icon={Banknote}>
                   {!canSeeCash ? (
@@ -670,6 +700,12 @@ export function NewOrderDrawer({
                             ? t("deliveryFeeByDistance")
                             : formatCurrency(deliveryFee)}
                         </span>
+                      </div>
+                    )}
+                    {tip > 0 && (
+                      <div className="flex justify-between">
+                        <span>{tTip("label")}</span>
+                        <span>{formatCurrency(tip)}</span>
                       </div>
                     )}
                   </div>
