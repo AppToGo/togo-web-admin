@@ -15,10 +15,10 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { PillGroup } from '@/components/ui/pill-group';
 import { formatCOP } from '@/features/cash/utils/cash.utils';
-import { useProductMetrics } from '../../hooks/useProductMetrics';
-import { CardSkeleton } from '../loading/CardSkeleton';
 import { DashboardCardHeader } from '../DashboardCardHeader';
 import type { ProductSales } from '../../types/dashboard.types';
+import type { ProductCardProps } from './card-props';
+import { productKey } from './product-key';
 
 type RankBy = 'quantity' | 'revenue';
 
@@ -31,13 +31,9 @@ const shortName = (name: string) =>
   name.length > MAX_LABEL_LENGTH ? `${name.slice(0, MAX_LABEL_LENGTH - 1)}…` : name;
 
 /** Gráfica de los más vendidos del período, por unidades o por ingresos. */
-export function TopProductsCard() {
+export function TopProductsCard({ data, isError }: ProductCardProps) {
   const t = useTranslations('dashboard.products.top');
   const [rankBy, setRankBy] = useState<RankBy>('quantity');
-  const { data, isLoading, isError } = useProductMetrics();
-
-  if (isLoading) return <CardSkeleton className="h-80" />;
-
   const rows: ProductSales[] =
     (rankBy === 'quantity' ? data?.topByQuantity : data?.topByRevenue) ?? [];
   const formatValue = (value: number) =>
@@ -108,7 +104,7 @@ export function TopProductsCard() {
                   <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={22}>
                     {chartData.map((entry, index) => (
                       <Cell
-                        key={entry.productId ?? entry.name}
+                        key={productKey(entry)}
                         fill={index === 0 ? TOP_COLOR : BAR_COLOR}
                       />
                     ))}

@@ -20,6 +20,7 @@ import {
   LazyMetricsGrid,
   LazyChartsSection,
   LazyProductsSection,
+  ProductsSectionSkeleton,
   BranchSelector,
 } from "@/features/dashboard";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
@@ -32,8 +33,11 @@ export default function DashboardPage() {
 
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
-  // Mismo permiso que el endpoint de estadísticas de productos.
-  const { hasPermission } = useMyPermissions();
+  // Mismo permiso que el endpoint de estadísticas de productos. Mientras
+  // cargan los permisos se reserva el espacio (skeleton) para que la
+  // sección no aparezca de golpe y empuje lo de abajo.
+  const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
+  const canViewProducts = hasPermission("metrics.view");
   // Consumo de IA: solo SUPER_ADMIN, del negocio del selector ("" = todos).
   const aiBusinessId = useEffectiveBusinessId() || null;
   const { data: businesses } = useBusinesses({
@@ -92,10 +96,14 @@ export default function DashboardPage() {
         </section>
 
         {/* Más vendidos, tendencias y sin ventas - Lazy load */}
-        {hasPermission("metrics.view") && (
-          <section aria-label={t("sections.products")}>
-            <LazyProductsSection />
-          </section>
+        {permissionsLoading ? (
+          <ProductsSectionSkeleton />
+        ) : (
+          canViewProducts && (
+            <section aria-label={t("sections.products")}>
+              <LazyProductsSection />
+            </section>
+          )
         )}
 
         {/* Embudo + horas pico - Lazy load */}

@@ -5,3 +5,4 @@ export type { UseKpiMetricsOptions } from './useKpiMetrics';
 export type { UseDetailedMetricsOptions } from './useDetailedMetrics';
 export { usePeriodLabel } from './usePeriodLabel';
 export { useProductMetrics } from './useProductMetrics';
+export type { UseProductMetricsOptions } from './useProductMetrics';

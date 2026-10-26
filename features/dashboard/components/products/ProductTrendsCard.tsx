@@ -3,19 +3,15 @@
 import { useTranslations } from 'next-intl';
 import { ArrowUpDown, TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useProductMetrics } from '../../hooks/useProductMetrics';
-import { CardSkeleton } from '../loading/CardSkeleton';
 import { DashboardCardHeader } from '../DashboardCardHeader';
 import { TrendBadge } from '../kpi/TrendBadge';
 import type { ProductTrend } from '../../types/dashboard.types';
+import type { ProductCardProps } from './card-props';
+import { productKey } from './product-key';
 
 /** Productos que más subieron y más bajaron en unidades vs el período anterior. */
-export function ProductTrendsCard() {
+export function ProductTrendsCard({ data, isError }: ProductCardProps) {
   const t = useTranslations('dashboard.products.trends');
-  const { data, isLoading, isError } = useProductMetrics();
-
-  if (isLoading) return <CardSkeleton className="h-80" />;
-
   const rising = data?.trends.rising ?? [];
   const falling = data?.trends.falling ?? [];
 
@@ -69,7 +65,7 @@ function TrendList({
         <ul className="space-y-2">
           {rows.map((row) => (
             <li
-              key={row.productId ?? row.name}
+              key={productKey(row)}
               className="flex items-center justify-between gap-3 text-sm"
             >
               <div className="min-w-0">

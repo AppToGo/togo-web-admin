@@ -84,16 +84,24 @@ async function fetchProductMetrics(
   };
 }
 
+export interface UseProductMetricsOptions {
+  enabled?: boolean;
+  branchId?: string | null;
+}
+
 /** Estadísticas de productos con el período y la sede del dashboard. */
-export function useProductMetrics() {
+export function useProductMetrics(options?: UseProductMetricsOptions) {
   const businessId = useCurrentUser()?.businessId;
   const dateRange = useDateFilterRange();
-  const branchId = useDashboardBranchId();
+  const dashboardBranchId = useDashboardBranchId();
+
+  // Usar branchId de las opciones si se proporciona, sino usar el del store
+  const branchId = options?.branchId !== undefined ? options.branchId : dashboardBranchId;
 
   return useQuery({
     queryKey: ['dashboard', 'products', businessId, dateRange.from, dateRange.to, branchId],
     queryFn: () => fetchProductMetrics(businessId!, dateRange.from, dateRange.to, branchId),
-    enabled: !!businessId,
+    enabled: options?.enabled !== false && !!businessId,
     staleTime: PRODUCTS_STALE_TIME,
     gcTime: PRODUCTS_GC_TIME,
   });

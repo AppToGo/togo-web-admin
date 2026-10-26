@@ -4,20 +4,15 @@ import { useTranslations } from 'next-intl';
 import { ArrowRight, PackageX } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
-import { useProductMetrics } from '../../hooks/useProductMetrics';
-import { CardSkeleton } from '../loading/CardSkeleton';
 import { DashboardCardHeader } from '../DashboardCardHeader';
+import type { ProductCardProps } from './card-props';
 
 /**
  * Productos activos que no se vendieron en el período (los más antiguos
  * primero): candidatos a promocionar, revisar o retirar del catálogo.
  */
-export function ProductsWithoutSalesCard() {
+export function ProductsWithoutSalesCard({ data, isError }: ProductCardProps) {
   const t = useTranslations('dashboard.products.withoutSales');
-  const { data, isLoading, isError } = useProductMetrics();
-
-  if (isLoading) return <CardSkeleton className="h-48" />;
-
   const total = data?.withoutSales.total ?? 0;
   const products = data?.withoutSales.products ?? [];
   const remaining = total - products.length;
