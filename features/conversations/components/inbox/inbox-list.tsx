@@ -69,6 +69,7 @@ export function InboxList({
     onLoadMore,
     rootRef: scrollRef,
     itemCount: conversations.length,
+    resetKey: JSON.stringify([filters, debouncedSearch]),
   });
 
   return (

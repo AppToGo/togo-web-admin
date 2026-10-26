@@ -18,6 +18,21 @@ function viewParams(view: InboxView): GetConversationsParams {
   }
 }
 
+/** Día calendario válido ("YYYY-MM-DD") o `null` si el texto no lo es. */
+function parseDay(value: string): { y: number; m: number; d: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  // Round-trip: febrero 30 o mes 13 "rotan" en el constructor y no valen.
+  const check = new Date(y, m - 1, d);
+  if (check.getFullYear() !== y || check.getMonth() !== m - 1 || check.getDate() !== d) {
+    return null;
+  }
+  return { y, m, d };
+}
+
 /**
  * El backend filtra `startedAt` entre `dateFrom` y `dateTo` tal cual llegan:
  * con "YYYY-MM-DD" a secas `dateTo` sería la medianoche UTC del inicio del
@@ -31,11 +46,14 @@ function viewParams(view: InboxView): GetConversationsParams {
 function dateParams(date: DateFilterValue | null): GetConversationsParams {
   if (!date) return {};
   const range = date.preset === "custom" ? date.range : getRangeFromPreset(date.preset);
-  const [fromY, fromM, fromD] = range.from.split("-").map(Number);
-  const [toY, toM, toD] = range.to.split("-").map(Number);
+  const from = parseDay(range.from);
+  const to = parseDay(range.to);
+  // Rango interno siempre válido; si llegara uno malformado se ignora la
+  // fecha en vez de romper el render con un RangeError de `toISOString`.
+  if (!from || !to) return {};
   return {
-    dateFrom: new Date(fromY, fromM - 1, fromD, 0, 0, 0, 0).toISOString(),
-    dateTo: new Date(toY, toM - 1, toD, 23, 59, 59, 999).toISOString(),
+    dateFrom: new Date(from.y, from.m - 1, from.d, 0, 0, 0, 0).toISOString(),
+    dateTo: new Date(to.y, to.m - 1, to.d, 23, 59, 59, 999).toISOString(),
   };
 }
 
