@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   CheckCircle2,
   Clock,
+  Compass,
   Handshake,
   Plus,
   Search,
@@ -34,6 +35,7 @@ import {
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import { LeadDetailPanel } from "@/features/admin/demo-leads/components/LeadDetailPanel";
 import { CreateLeadDrawer } from "@/features/admin/demo-leads/components/CreateLeadDrawer";
+import { ScoutLeadsDrawer } from "@/features/admin/demo-leads/components/ScoutLeadsDrawer";
 import { LeadCard } from "@/features/admin/demo-leads/components/LeadCard";
 import { LeadsBoardColumn } from "@/features/admin/demo-leads/components/LeadsBoardColumn";
 import {
@@ -60,6 +62,7 @@ export default function DemoLeadsPage() {
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isScoutOpen, setIsScoutOpen] = useState(false);
   // Teléfono: el tablero no cabe, se ve una etapa a la vez.
   const [mobileStage, setMobileStage] = useState<DemoLeadStage>("NEW");
 
@@ -184,6 +187,16 @@ export default function DemoLeadsPage() {
                 className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
               />
             </label>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsScoutOpen(true)}
+              className="h-11 shrink-0 rounded-full border-indigo-200 bg-white/85 px-4 text-indigo-700 hover:bg-indigo-50"
+              aria-label={t("scout.button")}
+            >
+              <Compass className="h-[18px] w-[18px]" aria-hidden />
+              <span className="hidden sm:inline">{t("scout.button")}</span>
+            </Button>
             <Button
               type="button"
               onClick={() => setIsCreateOpen(true)}
@@ -353,6 +366,12 @@ export default function DemoLeadsPage() {
       <CreateLeadDrawer
         open={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
+        onOpenLead={setSelectedId}
+      />
+
+      <ScoutLeadsDrawer
+        open={isScoutOpen}
+        onClose={() => setIsScoutOpen(false)}
         onOpenLead={setSelectedId}
       />
 

@@ -36,9 +36,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Lightbulb, MessageCircle, Trash2 } from "lucide-react";
+import { Lightbulb, Trash2 } from "lucide-react";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
+import { LeadWhatsAppAgentSection } from "@/features/admin/demo-leads/components/LeadWhatsAppAgentSection";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
@@ -176,19 +177,13 @@ export function LeadDetailPanel({
                       : t("detail.manual")}
                   </p>
                 )}
+                {detail?.lead.source === "SCOUT" && (
+                  <p className="mt-1.5 inline-flex rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700">
+                    {t("detail.scout")}
+                  </p>
+                )}
               </div>
             </div>
-            {detail && !detail.lead.revoked && (
-              <a
-                href={`https://wa.me/${detail.lead.phone.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex h-11 items-center gap-2 self-start rounded-full bg-green-600 px-4.5 text-sm font-semibold text-white transition-colors hover:bg-green-700"
-              >
-                <MessageCircle className="h-[18px] w-[18px]" aria-hidden />
-                {t("detail.writeWhatsApp")}
-              </a>
-            )}
           </DrawerHeader>
           <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
             {isLoading ? (
@@ -210,6 +205,8 @@ export function LeadDetailPanel({
                 {detail.lead.revoked && (
                   <Badge variant="destructive">{t("card.revoked")}</Badge>
                 )}
+
+                <LeadWhatsAppAgentSection detail={detail} />
 
                 <section className="flex gap-3.5 rounded-[20px] border border-indigo-100 bg-indigo-50 p-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
