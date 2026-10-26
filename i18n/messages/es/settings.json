@@ -54,6 +54,12 @@
       "useProductImages": {
         "label": "Mostrar imágenes de productos",
         "description": "Muestra la imagen del producto en el catálogo. Si el producto no tiene imagen, se mostrarán sus iniciales."
+      },
+      "directory": {
+        "label": "Aparecer en el directorio de TOGO",
+        "description": "Tu negocio sale en el directorio público de TOGO cuando alguien busca por tipo de comida o ciudad, y puede pedirte directo desde tu catálogo.",
+        "shown": "Se muestra tu nombre, logo, tipos de comida y la ciudad y dirección de tus sedes.",
+        "cityHint": "Completa la ciudad de tus sedes para aparecer en las búsquedas por ciudad."
       }
     },
     "slug": {

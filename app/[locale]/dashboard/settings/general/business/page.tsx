@@ -55,6 +55,8 @@ interface FormData {
   accentColor: string;
   description: string;
   useProductImages: boolean;
+  /** catalogVisibility === "PUBLIC": el negocio sale en el directorio público. */
+  listedInDirectory: boolean;
 }
 
 const defaultFormData: FormData = {
@@ -66,6 +68,7 @@ const defaultFormData: FormData = {
   accentColor: "#10B981",
   description: "",
   useProductImages: false,
+  listedInDirectory: false,
 };
 
 /**
@@ -93,6 +96,7 @@ function formDataFrom(business: Business): FormData {
     accentColor: (s.accentColor as string) || "#10B981",
     description: (s.description as string) || "",
     useProductImages: Boolean(s.useProductImages),
+    listedInDirectory: business.catalogVisibility === "PUBLIC",
   };
 }
 
@@ -210,7 +214,13 @@ export default function BusinessSettingsPage() {
             slug: formData.slug,
             phone: formData.phone || undefined,
             industryId: formData.industryId || undefined,
-            catalogVisibility: business.catalogVisibility,
+            // Salir del directorio vuelve a TOKEN_ONLY; un catálogo
+            // DISABLED solo cambia si el negocio se suma al directorio.
+            catalogVisibility: formData.listedInDirectory
+              ? "PUBLIC"
+              : business.catalogVisibility === "PUBLIC"
+                ? "TOKEN_ONLY"
+                : business.catalogVisibility,
             settings: {
               ...existingSettings,
               primaryColor: formData.primaryColor || undefined,
@@ -489,6 +499,24 @@ export default function BusinessSettingsPage() {
                     id="useProductImages"
                     checked={formData.useProductImages}
                     onCheckedChange={(checked) => handleBooleanChange("useProductImages", checked)}
+                  />
+                </div>
+                <div className="flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
+                  <div className="min-w-0 flex-1">
+                    <Label htmlFor="listedInDirectory" className="text-sm font-semibold">
+                      {tb("config.directory.label")}
+                    </Label>
+                    <p className="text-xs text-slate-500">{tb("config.directory.description")}</p>
+                    {formData.listedInDirectory && (
+                      <p className="mt-1.5 text-xs text-slate-500">
+                        {tb("config.directory.shown")} {tb("config.directory.cityHint")}
+                      </p>
+                    )}
+                  </div>
+                  <Switch
+                    id="listedInDirectory"
+                    checked={formData.listedInDirectory}
+                    onCheckedChange={(checked) => handleBooleanChange("listedInDirectory", checked)}
                   />
                 </div>
               </section>
