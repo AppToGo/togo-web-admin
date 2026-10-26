@@ -65,7 +65,11 @@ export function OperatorCatalogSessionDialog({
 
   const [session, setSession] = useState<CreatedOperatorCatalogSession | null>(null);
   const [qr, setQr] = useState<{ url: string; dataUrl: string } | null>(null);
+  const [qrAttempt, setQrAttempt] = useState(0);
+  // URL que falló al generar el QR (igual que `qr`: amarrado a la sesión).
+  const [qrErrorUrl, setQrErrorUrl] = useState<string | null>(null);
   const qrDataUrl = session && qr?.url === session.url ? qr.dataUrl : null;
+  const qrFailed = session !== null && qrErrorUrl === session.url;
 
   const createSession = useCreateOperatorCatalogSession(businessId);
   const revokeSession = useRevokeOperatorCatalogSession(businessId);
@@ -74,22 +78,34 @@ export function OperatorCatalogSessionDialog({
   useEffect(() => {
     if (!session) return;
     let cancelled = false;
+    // Sin catch, un rechazo dejaba el Skeleton para siempre. El QR es
+    // opcional (el link sigue sirviendo): se muestra error con reintento.
     QRCode.toDataURL(session.url, { width: 360, margin: 1, errorCorrectionLevel: "M" }).then(
       (dataUrl) => {
         if (!cancelled) setQr({ url: session.url, dataUrl });
+      },
+      () => {
+        if (!cancelled) setQrErrorUrl(session.url);
       }
     );
     return () => {
       cancelled = true;
     };
-  }, [session]);
+  }, [session, qrAttempt]);
 
   const handleClose = () => {
     // El token no queda guardado en el admin: se descarta al cerrar.
     setSession(null);
     setQr(null);
+    setQrErrorUrl(null);
+    setQrAttempt(0);
     setSelectedBranchId(null);
     onClose();
+  };
+
+  const handleQrRetry = () => {
+    setQrErrorUrl(null);
+    setQrAttempt((n) => n + 1);
   };
 
   const handleCreate = () => {
@@ -149,6 +165,13 @@ export function OperatorCatalogSessionDialog({
                   alt={t("qrAlt")}
                   className="w-56 h-56 rounded-lg border border-slate-100"
                 />
+              ) : qrFailed ? (
+                <div className="flex w-56 h-56 flex-col items-center justify-center gap-2 rounded-lg border border-slate-100 text-center">
+                  <p className="px-4 text-sm text-slate-500">{t("qrError")}</p>
+                  <Button variant="ghost" size="sm" onClick={handleQrRetry}>
+                    {t("retry")}
+                  </Button>
+                </div>
               ) : (
                 <Skeleton className="w-56 h-56" />
               )}

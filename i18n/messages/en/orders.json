@@ -416,6 +416,8 @@
     "branchPlaceholder": "Select a branch",
     "create": "Open catalog in operator mode",
     "qrAlt": "Operator mode catalog QR code",
+    "qrError": "We couldn't generate the QR code, but you can still use the link below.",
+    "retry": "Retry",
     "scanHint": "Scan it with your phone or open it here. The session expires at {time}.",
     "openHere": "Open here",
     "activeSessions": "Your active sessions",

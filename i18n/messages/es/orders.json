@@ -416,6 +416,8 @@
     "branchPlaceholder": "Selecciona una sede",
     "create": "Abrir catálogo en modo operador",
     "qrAlt": "QR del catálogo en modo operador",
+    "qrError": "No se pudo generar el QR, pero puedes usar el link de abajo.",
+    "retry": "Reintentar",
     "scanHint": "Escanéalo con tu celular o ábrelo aquí. La sesión vence a las {time}.",
     "openHere": "Abrir aquí",
     "activeSessions": "Tus sesiones activas",
