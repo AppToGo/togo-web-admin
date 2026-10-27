@@ -9,8 +9,9 @@ import { useCategories, useBusiness, useIndustryCategoriesByIndustry } from "@/f
 import { ImportPageClient } from "@/features/products/import/components/ImportPageClient";
 import type { BusinessCategory } from "@/features/catalog/types/catalog.types";
 import type { IndustryCategory } from "@/features/admin/industry-categories/types/industry-category.types";
+import { FeaturePage } from "@/features/business-features/components/FeaturePage";
 
-export default function ImportProductsPage() {
+function ImportProductsPageContent() {
   const t = useTranslations("catalog");
 
   useAuthGuard();
@@ -65,5 +66,14 @@ export default function ImportProductsPage() {
         industryCategories={industryCategories}
       />
     </DashboardLayout>
+  );
+}
+
+/** Solo si el negocio tiene activa la funcionalidad (ver /admin/features). */
+export default function ImportProductsPage() {
+  return (
+    <FeaturePage name="AI_PRODUCT_IMPORT">
+      <ImportProductsPageContent />
+    </FeaturePage>
   );
 }

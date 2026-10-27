@@ -56,6 +56,7 @@ import {
   toTipRequest,
   type TipChoice,
 } from "../utils/tip.utils";
+import { useBusinessFeatures } from "@/features/business-features";
 
 export interface ChargeableOrder {
   id: string;
@@ -157,7 +158,9 @@ export function CashChargeDrawer({
     openSessions.find((session) => session.id === sessionId)?.register.name ??
     "";
 
-  const tipConfig = resolveTipConfig(branch?.tipConfig);
+  const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
+  // Sin Propinas activa para el negocio, la sede se trata como sin propina
+  const tipConfig = resolveTipConfig(isFeatureEnabled("TIPS") ? branch?.tipConfig : null);
   const canTip =
     !!order && order.subtotal !== undefined && isTippable(order.deliveryType, tipConfig);
   // `null` = aún no la tocó: arranca con la del pedido o la sugerida.

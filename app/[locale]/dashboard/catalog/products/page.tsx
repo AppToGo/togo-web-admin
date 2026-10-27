@@ -58,6 +58,7 @@ import type {
   CreateProductDto,
   UpdateCatalogProductDto,
 } from "@/features/catalog/types";
+import { useBusinessFeature } from "@/features/business-features";
 
 type ViewMode = "grid" | "list";
 
@@ -126,6 +127,7 @@ export default function ProductsPage() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
   const router = useRouter();
+  const { enabled: canImport } = useBusinessFeature("AI_PRODUCT_IMPORT");
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
@@ -438,7 +440,9 @@ export default function ProductsPage() {
           onToggleFeatured={toggleFeatured}
           featuredDisabled={featuredDisabled}
           onCreate={() => setIsCreateModalOpen(true)}
-          onImport={() => router.push("/dashboard/catalog/products/import")}
+          onImport={
+            canImport ? () => router.push("/dashboard/catalog/products/import") : undefined
+          }
         />
       ) : (
       <div className="space-y-6">
@@ -504,13 +508,15 @@ export default function ProductsPage() {
             </div>
           )}
           <div className="flex gap-2 ml-auto">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/dashboard/catalog/products/import")}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {t("products.import")}
-            </Button>
+            {canImport && (
+              <Button
+                variant="outline"
+                onClick={() => router.push("/dashboard/catalog/products/import")}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {t("products.import")}
+              </Button>
+            )}
             <Button
               onClick={() => setIsCreateModalOpen(true)}
               className="bg-indigo-600 hover:bg-indigo-700"

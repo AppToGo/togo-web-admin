@@ -29,6 +29,7 @@ import type {
   ActivateCatalogProductDto,
 } from "@/features/catalog/types";
 import type { BranchActivation } from "@/features/catalog/components/ProductForm";
+import { FeaturePage } from "@/features/business-features/components/FeaturePage";
 
 type ViewMode = "grid" | "list";
 
@@ -105,7 +106,7 @@ function ErrorState({ error }: { error: Error | null }) {
   );
 }
 
-export default function GlobalCatalogPage() {
+function GlobalCatalogPageContent() {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
 
@@ -334,5 +335,14 @@ export default function GlobalCatalogPage() {
         showProductImages={showProductImages}
       />
     </DashboardLayout>
+  );
+}
+
+/** Solo si el negocio tiene activa la funcionalidad (ver /admin/features). */
+export default function GlobalCatalogPage() {
+  return (
+    <FeaturePage name="GLOBAL_CATALOG">
+      <GlobalCatalogPageContent />
+    </FeaturePage>
   );
 }
