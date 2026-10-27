@@ -13,6 +13,8 @@ export interface BusinessSubscription {
   lastPaymentAt: string | null;
   nextPaymentDue: string | null;
   maxBranchesOverride: number | null;
+  /** Límite personalizado de usuarios activos. null = límite del plan. */
+  maxUsersOverride: number | null;
   /** Cupo mensual personalizado de análisis de comprobantes. null = límite del plan. */
   proofQuotaOverride: number | null;
   gracePeriodDays: number;
@@ -42,7 +44,10 @@ export interface PaymentRecord {
 export interface BusinessWithSubscription extends Business {
   subscription: BusinessSubscription | null;
   branchesCount: number;
+  /** Usuarios activos, sin contar el usuario demo de ToGo. */
   userCount: number;
+  /** Límite efectivo de usuarios (personalizado o del plan). */
+  maxUsers: number;
   orderCount: number;
   totalPaid: string;
   daysUntilDue: number | null;
@@ -70,6 +75,10 @@ export interface PaginatedBusinesses {
 
 export interface UpdateBranchesLimitDto {
   maxBranchesOverride: number | null;
+}
+
+export interface UpdateUsersLimitDto {
+  maxUsersOverride: number | null;
 }
 
 export interface UpdateProofQuotaDto {

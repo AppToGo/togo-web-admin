@@ -28,6 +28,7 @@ interface BusinessTableProps {
   businesses: BusinessWithSubscription[];
   onRecordPayment: (business: BusinessWithSubscription) => void;
   onEditBranches: (business: BusinessWithSubscription) => void;
+  onEditUsers: (business: BusinessWithSubscription) => void;
   onEditProofQuota: (business: BusinessWithSubscription) => void;
   onSendNotification: (business: BusinessWithSubscription) => void;
   onToggleStatus: (business: BusinessWithSubscription) => void;
@@ -38,6 +39,7 @@ export function BusinessTable({
   businesses,
   onRecordPayment,
   onEditBranches,
+  onEditUsers,
   onEditProofQuota,
   onSendNotification,
   onToggleStatus,
@@ -69,6 +71,7 @@ export function BusinessTable({
             <TableHead>{t("table.paymentStatus")}</TableHead>
             <TableHead>{t("table.dueDate")}</TableHead>
             <TableHead>{t("table.branches")}</TableHead>
+            <TableHead>{t("table.users")}</TableHead>
             <TableHead>{t("table.status")}</TableHead>
             <TableHead className="text-right">{t("table.actions")}</TableHead>
           </TableRow>
@@ -137,6 +140,16 @@ export function BusinessTable({
                 />
               </TableCell>
 
+              {/* Users */}
+              <TableCell>
+                <UsersCount
+                  count={business.userCount}
+                  max={business.maxUsers}
+                  isCustom={business.subscription?.maxUsersOverride != null}
+                  customLabel={t("table.customLimit")}
+                />
+              </TableCell>
+
               {/* Status */}
               <TableCell>
                 <span
@@ -172,6 +185,16 @@ export function BusinessTable({
                     title={t("actions.editBranches")}
                   >
                     <BuildingIcon className="w-4 h-4" />
+                  </Button>
+
+                  {/* Edit Users */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEditUsers(business)}
+                    title={t("actions.editUsers")}
+                  >
+                    <UsersIcon className="w-4 h-4" />
                   </Button>
 
                   {/* Edit Proof Quota */}
@@ -262,6 +285,35 @@ function BranchesCount({ count, plan, override, catalog }: BranchesCountProps) {
   );
 }
 
+interface UsersCountProps {
+  count: number;
+  max: number;
+  isCustom: boolean;
+  customLabel: string;
+}
+
+function UsersCount({ count, max, isCustom, customLabel }: UsersCountProps) {
+  const isUnlimited = max >= UNLIMITED_PLAN_LIMIT;
+  const isNearLimit = !isUnlimited && count >= max * 0.8;
+  const isOverLimit = !isUnlimited && count > max;
+
+  return (
+    <div className="flex flex-col">
+      <span
+        className={cn(
+          "text-sm font-medium",
+          isOverLimit ? "text-red-600" : isNearLimit ? "text-amber-600" : "text-slate-700"
+        )}
+      >
+        {count} / {isUnlimited ? "∞" : max}
+      </span>
+      {isCustom && (
+        <span className="text-xs text-purple-600">{customLabel}</span>
+      )}
+    </div>
+  );
+}
+
 function BusinessTableSkeleton() {
   return (
     <div className="space-y-4">
@@ -289,6 +341,24 @@ function BuildingIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5"
+      />
+    </svg>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
       />
     </svg>
   );

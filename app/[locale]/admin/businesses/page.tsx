@@ -20,6 +20,7 @@ import {
   useBusinesses,
   usePaymentAlerts,
   useUpdateBranchesLimit,
+  useUpdateUsersLimit,
   useUpdateProofQuota,
   useRecordPayment,
   useSendNotification,
@@ -30,6 +31,7 @@ import {
   FilterPopover,
   RecordPaymentModal,
   EditBranchesLimitModal,
+  EditUsersLimitModal,
   EditProofQuotaModal,
   SendNotificationModal,
 } from "@/features/admin/business-management/components";
@@ -38,6 +40,7 @@ import type {
   BusinessWithSubscription,
   RecordPaymentDto,
   UpdateBranchesLimitDto,
+  UpdateUsersLimitDto,
   UpdateProofQuotaDto,
   SendNotificationDto,
 } from "@/features/admin/business-management/types/business-subscription.types";
@@ -61,6 +64,7 @@ export default function BusinessManagementPage() {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessWithSubscription | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isBranchesModalOpen, setIsBranchesModalOpen] = useState(false);
+  const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
   const [isProofQuotaModalOpen, setIsProofQuotaModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
@@ -83,6 +87,7 @@ export default function BusinessManagementPage() {
 
   // Mutations
   const updateBranchesLimit = useUpdateBranchesLimit();
+  const updateUsersLimit = useUpdateUsersLimit();
   const updateProofQuota = useUpdateProofQuota();
   const recordPayment = useRecordPayment();
   const sendNotification = useSendNotification();
@@ -101,6 +106,11 @@ export default function BusinessManagementPage() {
   const handleEditBranches = useCallback((business: BusinessWithSubscription) => {
     setSelectedBusiness(business);
     setIsBranchesModalOpen(true);
+  }, []);
+
+  const handleEditUsers = useCallback((business: BusinessWithSubscription) => {
+    setSelectedBusiness(business);
+    setIsUsersModalOpen(true);
   }, []);
 
   const handleEditProofQuota = useCallback((business: BusinessWithSubscription) => {
@@ -150,6 +160,22 @@ export default function BusinessManagementPage() {
       );
     },
     [updateBranchesLimit, selectedBusiness]
+  );
+
+  const handleSubmitUsersLimit = useCallback(
+    (data: UpdateUsersLimitDto) => {
+      if (!selectedBusiness) return;
+      updateUsersLimit.mutate(
+        { businessId: selectedBusiness.id, data },
+        {
+          onSuccess: () => {
+            setIsUsersModalOpen(false);
+            setSelectedBusiness(null);
+          },
+        }
+      );
+    },
+    [updateUsersLimit, selectedBusiness]
   );
 
   const handleSubmitProofQuota = useCallback(
@@ -356,6 +382,7 @@ export default function BusinessManagementPage() {
             businesses={businessesData?.data || []}
             onRecordPayment={handleRecordPayment}
             onEditBranches={handleEditBranches}
+            onEditUsers={handleEditUsers}
             onEditProofQuota={handleEditProofQuota}
             onSendNotification={handleSendNotification}
             onToggleStatus={handleToggleStatus}
@@ -424,6 +451,18 @@ export default function BusinessManagementPage() {
           }}
           onSubmit={handleSubmitBranchesLimit}
           isSubmitting={updateBranchesLimit.isPending}
+        />
+
+        <EditUsersLimitModal
+          key={selectedBusiness?.id ?? "none"}
+          business={selectedBusiness}
+          isOpen={isUsersModalOpen}
+          onClose={() => {
+            setIsUsersModalOpen(false);
+            setSelectedBusiness(null);
+          }}
+          onSubmit={handleSubmitUsersLimit}
+          isSubmitting={updateUsersLimit.isPending}
         />
 
         <EditProofQuotaModal

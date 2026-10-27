@@ -28,6 +28,28 @@ export async function getUsers(includeInactive = false): Promise<User[]> {
   return data;
 }
 
+export interface UserLimit {
+  allowed: boolean;
+  current: number;
+  max: number;
+  remaining: number;
+  upgradePlan?: number;
+}
+
+/**
+ * Cupo de usuarios activos del negocio actual.
+ *
+ * Lo calcula el backend (límite personalizado por el SUPER_ADMIN o el del
+ * plan, sin contar el usuario demo): el cliente no conoce el override ni el
+ * plan del negocio cuando entra un SUPER_ADMIN.
+ */
+export async function getUserLimit(): Promise<UserLimit> {
+  const businessId = getEffectiveBusinessId();
+  if (!businessId) throw new Error("Se requiere businessId");
+  const { data } = await apiClient.get<UserLimit>(`/businesses/${businessId}/users/can-create`);
+  return data;
+}
+
 /**
  * Obtener un usuario específico por ID
  */

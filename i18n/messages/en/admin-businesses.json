@@ -7,7 +7,8 @@
   "errors": {
     "unauthorized": "Unauthorized Access",
     "superAdminRequired": "Super Admin role is required to access this page",
-    "updateProofQuota": "Could not update the receipt quota"
+    "updateProofQuota": "Could not update the receipt quota",
+    "updateUsersLimit": "Could not update the user limit"
   },
   "alerts": {
     "title": "{count, plural, =1 {Payment Alert} other {Payment Alerts}}",
@@ -28,7 +29,9 @@
     "dueDate": "Due Date",
     "branches": "Branches",
     "status": "Status",
-    "actions": "Actions"
+    "actions": "Actions",
+    "users": "Users",
+    "customLimit": "Custom"
   },
   "status": {
     "active": "Active",
@@ -40,7 +43,8 @@
     "editProofQuota": "Edit receipt quota",
     "sendNotification": "Send Notification",
     "deactivate": "Deactivate",
-    "activate": "Activate"
+    "activate": "Activate",
+    "editUsers": "Edit user limit"
   },
   "filters": {
     "title": "Filters",
@@ -129,6 +133,19 @@
       "sendEmail": "Send via email",
       "sendInApp": "Send in-app notification",
       "submit": "Send Notification"
+    },
+    "editUsers": {
+      "title": "Edit user limit",
+      "description": "Editing: {businessName}",
+      "currentPlan": "Current plan",
+      "planLimit": "Plan limit",
+      "currentUsers": "Active users",
+      "usersCount": "{count, plural, =1 {# user} other {# users}}",
+      "useOverride": "Use custom limit",
+      "overrideDescription": "Turn on to set a user limit different from the plan's",
+      "overrideValue": "Custom limit",
+      "overrideHint": "Counts active users across all branches. If it is lower than the current active users, no users can be created or reactivated until the count drops below it.",
+      "submit": "Save Changes"
     }
   },
   "notifications": {
@@ -140,6 +157,7 @@
     "proofQuotaUpdated": "Receipt quota updated successfully",
     "statusUpdated": "Status updated successfully",
     "businessDeactivated": "Business deactivated successfully",
-    "businessActivated": "Business activated successfully"
+    "businessActivated": "Business activated successfully",
+    "usersLimitUpdated": "User limit updated successfully"
   }
 }
