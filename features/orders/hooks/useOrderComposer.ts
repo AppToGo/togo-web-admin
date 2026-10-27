@@ -90,7 +90,8 @@ export function useOrderComposer({
   );
 
   // Además de la sede, el negocio debe tener activa la funcionalidad
-  const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
+  const { isEnabled: isFeatureEnabled, isLoading: isLoadingFeatures } =
+    useBusinessFeatures();
   const dineInAllowed =
     isFeatureEnabled("DINE_IN_QR") &&
     !!branch?.dineInConfig?.enabled &&
@@ -296,7 +297,9 @@ export function useOrderComposer({
   return {
     branch,
     products,
-    isLoadingProducts,
+    // El pedido no se arma con mesa/mostrador/propina provisionales: se
+    // espera a conocer las funcionalidades reales del negocio.
+    isLoadingProducts: isLoadingProducts || isLoadingFeatures,
     hasProductImages,
     categories,
     visibleProducts,
