@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { DEFAULT_TRIAL_DAYS } from "@/features/auth/demo.constants";
 import { getPlanCatalog } from "../services/subscription.service";
 
 /**
@@ -24,11 +23,12 @@ export function usePlanCatalog(enabled: boolean = true) {
 }
 
 /**
- * Días de prueba gratis configurados en el sistema: prioriza `trialDays` del
- * catálogo del backend (`TRIAL_DAYS` en `api-togo`) y usa `NEXT_PUBLIC_TRIAL_DAYS`
- * como fallback inmediato mientras carga.
+ * Días de prueba gratis configurados en el sistema (`TRIAL_DAYS` del .env de
+ * `api-togo`, vía el catálogo). `null` mientras carga: el frontend no tiene
+ * un número propio (docs/cobro-suscripciones.md §1), así que quien lo
+ * muestra espera el dato en vez de mostrar uno inventado.
  */
-export function useTrialDays(enabled: boolean = true): number {
+export function useTrialDays(enabled: boolean = true): number | null {
   const { data: catalog } = usePlanCatalog(enabled);
-  return catalog?.trialDays ?? DEFAULT_TRIAL_DAYS;
+  return catalog?.trialDays ?? null;
 }

@@ -62,9 +62,11 @@ export function DemoSidebarCard({ isCollapsed }: DemoSidebarCardProps) {
         >
           {logout.isPending ? t("leaving") : t("createAccount")}
         </button>
-        <span className="text-center text-xs text-indigo-100">
-          {t("trialNote", { days: trialDays })}
-        </span>
+        {trialDays !== null && (
+          <span className="text-center text-xs text-indigo-100">
+            {t("trialNote", { days: trialDays })}
+          </span>
+        )}
       </div>
     </div>
   );
