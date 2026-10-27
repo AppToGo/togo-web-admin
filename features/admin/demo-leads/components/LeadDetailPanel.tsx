@@ -206,7 +206,10 @@ export function LeadDetailPanel({
                   <Badge variant="destructive">{t("card.revoked")}</Badge>
                 )}
 
-                <LeadWhatsAppAgentSection detail={detail} />
+                <LeadWhatsAppAgentSection
+                  key={`${detail.lead.id}:${detail.lead.stage}:${detail.lead.whatsappDraftsAt ?? ""}`}
+                  detail={detail}
+                />
 
                 <section className="flex gap-3.5 rounded-[20px] border border-indigo-100 bg-indigo-50 p-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">

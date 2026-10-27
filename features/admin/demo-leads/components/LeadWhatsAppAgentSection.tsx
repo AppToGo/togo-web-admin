@@ -11,7 +11,7 @@
  */
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -64,14 +64,31 @@ export function LeadWhatsAppAgentSection({
   const generateDrafts = useGenerateWhatsAppDrafts(lead.id);
   const logOutreach = useLogWhatsAppOutreach();
 
-  const [drafts, setDrafts] = useState<WhatsAppDraftItem[]>([]);
-  const [selectedDraftId, setSelectedDraftId] = useState<string>("direct");
-  const [messageText, setMessageText] = useState<string>("");
-  const [strategySummary, setStrategySummary] = useState<string>("");
-  const [nextStage, setNextStage] = useState<DemoLeadStage>(() =>
-    defaultTargetStage(lead.stage)
+  const persisted =
+    lead.whatsappDrafts &&
+    Array.isArray(lead.whatsappDrafts.drafts) &&
+    lead.whatsappDrafts.drafts.length > 0
+      ? lead.whatsappDrafts
+      : null;
+
+  const [drafts, setDrafts] = useState<WhatsAppDraftItem[]>(
+    () => persisted?.drafts ?? []
   );
-  const [nextActionTitle, setNextActionTitle] = useState<string>("");
+  const [selectedDraftId, setSelectedDraftId] = useState<string>(
+    () => persisted?.drafts[0]?.id ?? "direct"
+  );
+  const [messageText, setMessageText] = useState<string>(
+    () => persisted?.drafts[0]?.message ?? ""
+  );
+  const [strategySummary, setStrategySummary] = useState<string>(
+    () => persisted?.strategySummary ?? ""
+  );
+  const [nextStage, setNextStage] = useState<DemoLeadStage>(
+    () => persisted?.recommendedNextStage ?? defaultTargetStage(lead.stage)
+  );
+  const [nextActionTitle, setNextActionTitle] = useState<string>(
+    () => persisted?.recommendedNextAction ?? ""
+  );
   const [showCustomize, setShowCustomize] = useState<boolean>(false);
   const [prospectReply, setProspectReply] = useState<string>("");
   const [objective, setObjective] = useState<string>("");
@@ -90,20 +107,6 @@ export function LeadWhatsAppAgentSection({
     },
     []
   );
-
-  // Hidrata desde los borradores ya persistidos en base de datos sin llamar a la IA
-  useEffect(() => {
-    const persisted = lead.whatsappDrafts;
-    if (persisted && Array.isArray(persisted.drafts) && persisted.drafts.length > 0) {
-      applyDraftsResponse(persisted);
-    } else {
-      setDrafts([]);
-      setStrategySummary("");
-      setMessageText("");
-      setNextStage(defaultTargetStage(lead.stage));
-      setNextActionTitle("");
-    }
-  }, [lead.id, lead.stage, lead.whatsappDrafts, applyDraftsResponse]);
 
   if (lead.revoked) {
     return null;
