@@ -21,6 +21,7 @@ import type {
   ScoutImportRequest,
   ScoutImportResponse,
 } from "@/types/auth.types";
+import type { DemoLeadOwnerOption } from "@/types/auth.types";
 
 /**
  * Posibles clientes de la demo (solo SUPER_ADMIN).
@@ -191,5 +192,14 @@ export async function importScoutProspects(
     "/admin/demo-leads/scout/import",
     data
   );
+  return response.data;
+}
+
+/**
+ * Responsables posibles de un lead: solo personal de ToGo (super admin y
+ * usuarios internos con acceso a posibles clientes).
+ */
+export async function getDemoLeadOwners(): Promise<DemoLeadOwnerOption[]> {
+  const response = await apiClient.get<DemoLeadOwnerOption[]>("/admin/demo-leads/owners");
   return response.data;
 }

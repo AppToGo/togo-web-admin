@@ -15,6 +15,7 @@ const TONES = [
 ];
 
 const SIZES = {
+  xs: "h-7 w-7 text-[11px]",
   sm: "h-10 w-10 text-sm",
   md: "h-11 w-11 text-[15px]",
   lg: "h-[52px] w-[52px] text-lg",

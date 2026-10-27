@@ -75,7 +75,9 @@
     "tabsLabel": "Lead details",
     "manual": "Created manually",
     "scout": "Captured by ToGo Scout",
-    "manualReferred": "Created manually · Referred by {name}"
+    "manualReferred": "Created manually · Referred by {name}",
+    "owner": "Owner",
+    "noOwner": "No owner"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -210,5 +212,31 @@
     "editHint": "You can edit the business name, phone, industry, or note directly on each card before importing.",
     "contactNamePlaceholder": "Contact person (optional)",
     "defaultBusinessName": "Commercial prospect"
+  },
+  "harvey": {
+    "title": "Harvey Agent · WhatsApp",
+    "subtitle": "Generates the best message based on the lead's stage and activity",
+    "customize": "Reply / Adjust",
+    "regenerate": "Regenerate options",
+    "prospectReplyLabel": "Handler Mode: What did the prospect reply on WhatsApp?",
+    "prospectReplyPlaceholder": "Paste what the prospect said or asked to draft a response…",
+    "objectiveLabel": "Additional instruction or focus (optional)",
+    "objectivePlaceholder": "E.g. Offer to upload their menu PDF for free…",
+    "generating": "Harvey is writing…",
+    "generateWithContext": "Generate reply with this context",
+    "messagePlaceholder": "Write or edit the message to open in WhatsApp…",
+    "autoStageLabel": "Stage on send",
+    "sendDisclaimer": "Clicking send opens WhatsApp (wa.me), logs the message in notes, and updates the stage automatically.",
+    "sendAndAdvance": "Send via WhatsApp & move to {stage}",
+    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged."
+  },
+  "owner": {
+    "title": "Owner",
+    "description": "Choose who at ToGo follows up with {name}.",
+    "search": "Search by name or email",
+    "empty": "No ToGo users match",
+    "remove": "Remove owner",
+    "add": "Assign owner",
+    "current": "Owner: {name}"
   }
 }

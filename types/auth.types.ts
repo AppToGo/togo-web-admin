@@ -195,6 +195,8 @@ export interface DemoLead {
   stage: DemoLeadStage;
   businessType?: string | null;
   establishmentName?: string | null;
+  /** Responsable: siempre un usuario de ToGo (super admin o usuario interno). */
+  ownerUserId?: string | null;
   ownerName?: string | null;
   priority: DemoLeadPriority;
   nextAction?: string | null;
@@ -395,4 +397,11 @@ export interface UpdateDemoLeadRequest {
   nextActionAt?: string | null;
   lostReason?: string | null;
   revokedAt?: string | null;
+}
+
+/** Responsable posible de un lead: personal de ToGo, nunca usuarios de negocios. */
+export interface DemoLeadOwnerOption {
+  id: string;
+  name: string;
+  email: string | null;
 }

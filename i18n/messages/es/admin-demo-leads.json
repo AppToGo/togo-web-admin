@@ -75,7 +75,9 @@
     "tabsLabel": "Detalle del lead",
     "manual": "Creado a mano",
     "scout": "Capturado por ToGo Scout",
-    "manualReferred": "Creado a mano · Referido por {name}"
+    "manualReferred": "Creado a mano · Referido por {name}",
+    "owner": "Responsable",
+    "noOwner": "Sin responsable"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -210,5 +212,31 @@
     "editHint": "Puedes corregir nombre, teléfono, rubro o notas directamente en cada tarjeta antes de sumarlos.",
     "contactNamePlaceholder": "Persona de contacto (opcional)",
     "defaultBusinessName": "Prospecto comercial"
+  },
+  "harvey": {
+    "title": "Agente Harvey · WhatsApp",
+    "subtitle": "Genera el mensaje ideal según el estado y actividad del cliente",
+    "customize": "Responder / Ajustar",
+    "regenerate": "Regenerar opciones",
+    "prospectReplyLabel": "Modo Handler: ¿Qué te respondió el cliente en WhatsApp?",
+    "prospectReplyPlaceholder": "Pega aquí lo que te dijo o preguntó el cliente para redactar la respuesta…",
+    "objectiveLabel": "Instrucción o foco adicional (opcional)",
+    "objectivePlaceholder": "Ej. Invitarlo a que nos envíe su carta en PDF para cargarla…",
+    "generating": "Harvey está redactando…",
+    "generateWithContext": "Generar respuesta con este contexto",
+    "messagePlaceholder": "Escribe o edita el mensaje que se abrirá en WhatsApp…",
+    "autoStageLabel": "Al enviar cambia estado",
+    "sendDisclaimer": "Al pulsar enviar se abrirá WhatsApp (wa.me), se guardará el mensaje en las notas y se cambiará el estado automáticamente.",
+    "sendAndAdvance": "Enviar por WhatsApp y pasar a {stage}",
+    "popupBlocked": "El navegador bloqueó la ventana de WhatsApp: permite ventanas emergentes e inténtalo de nuevo. No se registró el envío."
+  },
+  "owner": {
+    "title": "Responsable",
+    "description": "Elige quién de ToGo hace el seguimiento de {name}.",
+    "search": "Buscar por nombre o email",
+    "empty": "No hay usuarios de ToGo que coincidan",
+    "remove": "Quitar responsable",
+    "add": "Asignar responsable",
+    "current": "Responsable: {name}"
   }
 }

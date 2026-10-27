@@ -61,6 +61,7 @@ import {
   formatPhone,
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
+import { LeadOwnerAvatar } from "@/features/admin/demo-leads/components/LeadOwnerAvatar";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -351,6 +352,10 @@ export function LeadDetailPanel({
                             </SelectContent>
                           </Select>
                         </label>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2">
+                        <span className="text-xs text-slate-600">{t("detail.owner")}</span>
+                        <LeadOwnerAvatar lead={detail.lead} showName />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <IndustrySelect
