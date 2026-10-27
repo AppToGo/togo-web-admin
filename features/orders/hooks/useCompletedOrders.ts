@@ -72,16 +72,20 @@ export function useCompletedOrdersInfinite(
       enabled: isEnabled,
     });
 
+  // Una sola referencia para las dependencias: con `data?.pages` en la lista
+  // y `data.pages` en el cuerpo, React Compiler no puede preservar el memo.
+  const pages = data?.pages;
+
   // Flatten all pages into a single array of orders
   const allOrders = useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap((page) => page.orders);
-  }, [data?.pages]);
+    if (!pages) return [];
+    return pages.flatMap((page) => page.orders);
+  }, [pages]);
 
   // Get total from first page
   const total = useMemo(() => {
-    return data?.pages[0]?.total || 0;
-  }, [data?.pages]);
+    return pages?.[0]?.total || 0;
+  }, [pages]);
 
   // Wrapper for fetchNextPage with error handling
   const handleFetchNextPage = useCallback(() => {
