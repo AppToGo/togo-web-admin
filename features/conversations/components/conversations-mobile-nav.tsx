@@ -11,6 +11,7 @@ import { Filter, Inbox, MessageCircle } from "lucide-react";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 export function ConversationsMobileNav() {
   const t = useTranslations("navigation.sidebar");
@@ -36,7 +37,7 @@ export function ConversationsMobileNav() {
           icon: MessageCircle,
           // Mismo gate por rol que la entrada del Sidebar.
           show:
-            user?.role === "OWNER" || user?.role === "ADMIN" || user?.role === "SUPER_ADMIN",
+            user?.role === "OWNER" || user?.role === "ADMIN" || isPlatformStaffRole(user?.role),
         },
         {
           href: "/dashboard/conversation-funnel",

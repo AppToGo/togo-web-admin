@@ -22,11 +22,15 @@ import { AiCostChart } from "@/features/admin/ai-usage/components/AiCostChart";
 import { AiFeatureBreakdown } from "@/features/admin/ai-usage/components/AiFeatureBreakdown";
 import { AiBusinessTable } from "@/features/admin/ai-usage/components/AiBusinessTable";
 import { AiModelList } from "@/features/admin/ai-usage/components/AiModelList";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 export default function AdminAiUsagePage() {
   const t = useTranslations("admin-ai-usage");
   const { isLoading: isAuthLoading } = useAuthGuard();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.ai_usage.view");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
   const range = useDateFilterRange();
   const [business, setBusiness] = useState<{ id: string; name: string } | null>(
     null
@@ -41,7 +45,7 @@ export default function AdminAiUsagePage() {
     isSuperAdmin
   );
 
-  if (isAuthLoading) return null;
+  if (isAuthLoading || isPermissionLoading) return null;
 
   if (!isSuperAdmin) {
     return (

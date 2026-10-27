@@ -11,6 +11,7 @@ import { useBusinessStore } from "@/features/business/stores/business.store";
 import { useDateFilterParams } from "@/features/filters/hooks/useDateFilterQuery";
 import { getCustomers } from "../services/customer.service";
 import type { GetCustomersParams, PaginatedCustomersResponse } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 // Query keys para mantener consistencia
 export const CUSTOMERS_KEYS = {
@@ -45,7 +46,7 @@ export function useCustomers(
   const { user } = useAuthStore.getState();
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = params?.businessId !== undefined || !!selectedBusinessId;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;

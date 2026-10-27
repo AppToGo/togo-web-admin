@@ -48,6 +48,7 @@ import type {
   ImportItemDto,
   UpdateImportItemPayload,
 } from "@/features/admin/catalog/types";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 // ============================================================================
 // TYPES
@@ -670,7 +671,10 @@ function ResultsStep({ jobId, onNewImport }: ResultsStepProps) {
 export default function ImportGlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.global_catalog.manage");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
   const t = useTranslations("admin-catalog");
   const tCommon = useTranslations("common");
 
@@ -704,6 +708,8 @@ export default function ImportGlobalProductsPage() {
     setCurrentStep("upload");
     setJobId(null);
   }, []);
+
+  if (isPermissionLoading) return null;
 
   if (!isSuperAdmin) {
     return (

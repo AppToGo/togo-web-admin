@@ -30,6 +30,7 @@ import {
   clearGlobalRefreshState
 } from "@/services/auth-sync.service";
 import { forceLogout, notifyTrialExpired, notifyPaymentOverdue } from "@/services/session.service";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -89,7 +90,7 @@ apiClient.interceptors.request.use(
     // For SUPER_ADMIN: Send selected business ID in header
     // This allows the backend to know which business context to use
     const { selectedBusinessId } = useBusinessStore.getState();
-    const isSuperAdmin = user?.role === "SUPER_ADMIN";
+    const isSuperAdmin = isPlatformStaffRole(user?.role);
     
     // Only send x-business-id header when:
     // 1. User is SUPER_ADMIN

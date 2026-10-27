@@ -1,0 +1,98 @@
+{
+  "accessDenied": "Only the super admin can manage internal users.",
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "errors": {
+    "generic": "The action could not be completed"
+  },
+  "users": {
+    "title": "Internal users",
+    "subtitle": "ToGo staff with no business of their own (sales, supervisors). Their profile defines what they can access.",
+    "manageProfiles": "Manage profiles",
+    "add": "New internal user",
+    "empty": "There are no internal users yet.",
+    "noProfile": "No profile",
+    "active": "Active",
+    "inactive": "Inactive",
+    "notifications": {
+      "created": "Internal user created",
+      "updated": "Internal user updated"
+    },
+    "form": {
+      "createTitle": "New internal user",
+      "editTitle": "Edit internal user",
+      "description": "They sign in to the admin with their email and password.",
+      "name": "Name",
+      "email": "Email",
+      "emailLocked": "The email cannot be changed.",
+      "phone": "Phone",
+      "password": "Password",
+      "passwordHint": "At least 8 characters. Share it with the person through a secure channel.",
+      "newPassword": "New password (optional)",
+      "newPasswordHint": "Leave it empty to keep it. Changing it signs them out everywhere.",
+      "profile": "Profile",
+      "profilePlaceholder": "Select a profile",
+      "create": "Create user",
+      "errors": {
+        "name": "Enter the name",
+        "email": "Invalid email",
+        "phone": "Invalid phone (include the country code)",
+        "password": "At least 8 characters",
+        "profile": "Choose a profile"
+      }
+    }
+  },
+  "profiles": {
+    "title": "Internal profiles",
+    "subtitle": "What each kind of ToGo internal user can see and do. Only you (super admin) can see them.",
+    "add": "New profile",
+    "system": "Default",
+    "userCount": "{count, plural, =0 {No users} =1 {1 user} other {# users}}",
+    "noPermissions": "No permissions",
+    "deleteTitle": "Delete profile?",
+    "deleteDescription": "The profile \"{name}\" will be deleted. Only possible if it has no users.",
+    "notifications": {
+      "saved": "Profile saved",
+      "deleted": "Profile deleted"
+    },
+    "form": {
+      "createTitle": "New internal profile",
+      "editTitle": "Edit internal profile",
+      "description": "Changes apply immediately to users with this profile.",
+      "name": "Name",
+      "descriptionLabel": "Description",
+      "permissions": "Permissions",
+      "errors": {
+        "name": "Enter the name"
+      }
+    }
+  },
+  "permissionGroups": {
+    "business": "Businesses",
+    "features": "Features",
+    "leads": "Leads",
+    "global_catalog": "Global catalog",
+    "industry": "Industries",
+    "ai_usage": "AI usage"
+  },
+  "permissions": {
+    "platform_business_view": "See every business and open it read-only",
+    "platform_business_operate": "Work inside a business as its administrator",
+    "platform_business_limits": "Edit branch, user and receipt-analysis limits",
+    "platform_business_status": "Activate and deactivate businesses",
+    "platform_business_payments": "Record subscription payments",
+    "platform_business_notify": "Send payment notifications to businesses",
+    "platform_features_view": "See each business's active features",
+    "platform_features_manage": "Turn features on and off per business",
+    "platform_leads_view_own": "See the leads assigned to them",
+    "platform_leads_view_all": "See all leads",
+    "platform_leads_manage": "Create and manage leads",
+    "platform_global_catalog_manage": "Manage the global product catalog",
+    "platform_industry_manage": "Manage industries and industry categories",
+    "platform_ai_usage_view": "See AI usage across all businesses"
+  }
+}

@@ -21,7 +21,7 @@ import { HoverTooltip } from "./HoverTooltip";
 const OPTIONAL_STATUSES: OrderStatus[] = ["IN_PROGRESS", "READY", "ON_THE_WAY"];
 
 /** Quién decide el flujo del negocio (el backend aplica la misma regla). */
-const FLOW_EDITOR_ROLES = ["OWNER", "ADMIN", "SUPER_ADMIN"];
+const FLOW_EDITOR_ROLES = ["OWNER", "ADMIN", "SUPER_ADMIN", "PLATFORM"];
 
 /**
  * Flujo del tablero del negocio: qué estados usa su operación. Es igual para

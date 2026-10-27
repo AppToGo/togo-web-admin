@@ -23,6 +23,7 @@ import {
 } from "@/types/auth.types";
 import { login as loginApi } from "@/features/auth/services/auth.service";
 import { APP_CONFIG } from "@/config/app.config";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 // Extended state with actions
 interface AuthStore extends AuthState, AuthActions {
@@ -211,9 +212,21 @@ export function useHasBusiness(): boolean {
 }
 
 /**
- * Check if user is SUPER_ADMIN
+ * Personal de ToGo sin negocio propio: SUPER_ADMIN o usuario interno
+ * (PLATFORM). Es lo que la mayoría de pantallas necesita saber ("elige el
+ * negocio con el selector"); qué puede hacer cada uno lo dicen sus permisos
+ * (`usePlatformPermission`, `useMyPermissions`).
  */
 export function useIsSuperAdmin(): boolean {
+  const user = useCurrentUser();
+  return isPlatformStaffRole(user?.role);
+}
+
+/**
+ * Solo el SUPER_ADMIN real: lo que ningún usuario interno puede hacer
+ * (crear usuarios internos y sus perfiles).
+ */
+export function useIsRootSuperAdmin(): boolean {
   const user = useCurrentUser();
   return user?.role === "SUPER_ADMIN";
 }

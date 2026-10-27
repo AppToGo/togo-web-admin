@@ -15,10 +15,11 @@ import type {
   GetConversationsParams,
   PaginatedConversationsResponse,
 } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 function getBusinessId(): string | null {
   const { user } = useAuthStore.getState();
-  if (!user?.businessId && user?.role !== "SUPER_ADMIN") {
+  if (!user?.businessId && !isPlatformStaffRole(user?.role)) {
     throw new Error("Usuario no tiene un negocio asignado");
   }
   return user?.businessId || null;

@@ -12,6 +12,7 @@ import { ORDERS_KEYS } from "../types/order-cache.types";
 import type { CompletedOrdersFilters } from "../types/order-cache.types";
 import { getCompletedOrders } from "../services/order.service";
 import type { Order } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 // Default page size for infinite scroll
 const DEFAULT_PAGE_SIZE = 20;
@@ -40,7 +41,7 @@ export function useCompletedOrdersInfinite(
   filters: CompletedOrdersFilters
 ): UseCompletedOrdersInfiniteResult {
   const user = useAuthStore((state) => state.user);
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = filters.businessId !== undefined;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
