@@ -45,6 +45,7 @@ import {
 } from "../hooks/useOrders";
 import type { Order } from "../types/order.types";
 import type { PaymentProof, PaymentProofItem } from "../services/order.service";
+import { Feature } from "@/features/business-features";
 
 type UnavailableKey =
   | "WHATSAPP_MEDIA_NOT_ARCHIVED"
@@ -455,7 +456,11 @@ export function PaymentProofDialog({
             onSelect={setSelectedAt}
           />
           <div className="min-w-0">
-            {open && <PaymentVerificationCard orderId={order.id} />}
+            {open && (
+              <Feature name="AI_PAYMENT_VERIFICATION">
+                <PaymentVerificationCard orderId={order.id} />
+              </Feature>
+            )}
           </div>
         </div>
 

@@ -40,6 +40,7 @@ import {
   WhatsAppConnectDialog,
   WhatsAppUsageCard,
 } from "@/features/whatsapp";
+import { Feature } from "@/features/business-features";
 
 const SECTION =
   "flex flex-col gap-4 rounded-3xl border border-white/90 bg-white/65 p-6";
@@ -524,7 +525,9 @@ export default function BusinessSettingsPage() {
             </form>
 
             {/* Voz del asistente de WhatsApp (plan bot natural, T18) */}
-            <BotVoiceCard key={botVoiceKey(business)} business={business} />
+            <Feature name="BOT_VOICE">
+              <BotVoiceCard key={botVoiceKey(business)} business={business} />
+            </Feature>
 
             {/* WhatsApp Compartido (AUTO_ASSIGN) */}
             <section className={SECTION}>

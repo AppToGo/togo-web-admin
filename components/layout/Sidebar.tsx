@@ -33,6 +33,7 @@ import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useUnseenOrdersCount } from "@/features/orders/hooks/useUnseenOrders";
 import { useInboxSummary } from "@/features/conversations/hooks/useInboxSummary";
 import { useIsBelowDesktop, useIsMobile } from "@/hooks/useIsMobile";
+import { useBusinessFeatures } from "@/features/business-features";
 
 
 interface SidebarProps {
@@ -173,7 +174,8 @@ export function Sidebar({
   const canViewConversationFunnel = hasPermission("metrics.view");
 
   // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
-  const canViewCash = hasPermission("cash.view");
+  const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
+  const canViewCash = hasPermission("cash.view") && isFeatureEnabled("CASH_POS");
   // Submenú de Caja: lo registra CashPosPage mientras está montada.
   const posMenuEntries = usePosPageStore(
     (state) => state.page?.entries ?? NO_POS_ENTRIES

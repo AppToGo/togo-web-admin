@@ -33,6 +33,7 @@ import type {
   ManualOrderDeliveryType,
   ManualOrderPaymentMethod,
 } from "../types";
+import { useBusinessFeatures } from "@/features/business-features";
 
 export interface CartLine {
   variantId: string;
@@ -88,9 +89,16 @@ export function useOrderComposer({
     enabled
   );
 
-  const dineInAllowed = !!branch?.dineInConfig?.enabled && !!branch.dineInConfig.allowOperators;
+  // Además de la sede, el negocio debe tener activa la funcionalidad
+  const { isEnabled: isFeatureEnabled, isLoading: isLoadingFeatures } =
+    useBusinessFeatures();
+  const dineInAllowed =
+    isFeatureEnabled("DINE_IN_QR") &&
+    !!branch?.dineInConfig?.enabled &&
+    !!branch.dineInConfig.allowOperators;
   // Mostrador (docs/caja-pedidos.md): solo si la sede lo tiene habilitado.
-  const counterAllowed = isCounterEnabled(branch?.counterConfig);
+  const counterAllowed =
+    isFeatureEnabled("COUNTER_SALE") && isCounterEnabled(branch?.counterConfig);
   const { data: tables = [] } = useTables(enabled && dineInAllowed ? businessId : null, branchId);
   const activeTables = useMemo(() => tables.filter((table) => table.isActive), [tables]);
 
@@ -170,7 +178,10 @@ export function useOrderComposer({
   const total = subtotal + (deliveryFee ?? 0);
   // Propina: se elige al cobrar (mesa/mostrador con propina en la sede).
   const branchTipConfig = resolveTipConfig(branch?.tipConfig);
-  const tipConfig = isTippable(deliveryType, branchTipConfig) ? branchTipConfig : null;
+  const tipConfig =
+    isFeatureEnabled("TIPS") && isTippable(deliveryType, branchTipConfig)
+      ? branchTipConfig
+      : null;
 
   const setQuantity = (item: InventoryItem, quantity: number) => {
     setCart((prev) => {
@@ -286,7 +297,9 @@ export function useOrderComposer({
   return {
     branch,
     products,
-    isLoadingProducts,
+    // El pedido no se arma con mesa/mostrador/propina provisionales: se
+    // espera a conocer las funcionalidades reales del negocio.
+    isLoadingProducts: isLoadingProducts || isLoadingFeatures,
     hasProductImages,
     categories,
     visibleProducts,

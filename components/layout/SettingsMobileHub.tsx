@@ -22,6 +22,7 @@ import {
 import { Link } from "@/i18n/routing";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { BOT_MESSAGES_PERMISSION } from "@/features/bot-messages";
+import { useBusinessFeatures } from "@/features/business-features";
 
 interface HubItem {
   href: string;
@@ -35,6 +36,7 @@ export function SettingsMobileHub() {
   const t = useTranslations("navigation.sidebar");
   const th = useTranslations("navigation.settingsHub");
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
+  const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
 
   const groups: Array<{ title: string; items: HubItem[] }> = [
     {
@@ -54,7 +56,9 @@ export function SettingsMobileHub() {
           icon: MessageSquareText,
           // Mismo permiso que el enlace de Datos del negocio: sin él la
           // pantalla solo dice "sin acceso".
-          show: permissionsLoading || hasPermission(BOT_MESSAGES_PERMISSION),
+          show:
+            isFeatureEnabled("BOT_MESSAGES") &&
+            (permissionsLoading || hasPermission(BOT_MESSAGES_PERMISSION)),
         },
       ],
     },

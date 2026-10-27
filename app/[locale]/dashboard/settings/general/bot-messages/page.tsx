@@ -3,14 +3,24 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { BotMessagesPage } from "@/features/bot-messages";
+import { FeaturePage } from "@/features/business-features/components/FeaturePage";
 
 /** Mensajes del asistente (plan bot natural, T22). */
-export default function BotMessagesSettingsPage() {
+function BotMessagesSettingsPageContent() {
   useAuthGuard();
 
   return (
     <DashboardLayout>
       <BotMessagesPage />
     </DashboardLayout>
+  );
+}
+
+/** Solo si el negocio tiene activa la funcionalidad (ver /admin/features). */
+export default function BotMessagesSettingsPage() {
+  return (
+    <FeaturePage name="BOT_MESSAGES">
+      <BotMessagesSettingsPageContent />
+    </FeaturePage>
   );
 }
