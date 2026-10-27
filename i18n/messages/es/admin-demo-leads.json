@@ -75,7 +75,9 @@
     "tabsLabel": "Detalle del lead",
     "manual": "Creado a mano",
     "scout": "Capturado por Harvey Scout",
-    "manualReferred": "Creado a mano · Referido por {name}"
+    "manualReferred": "Creado a mano · Referido por {name}",
+    "owner": "Responsable",
+    "noOwner": "Sin responsable"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",

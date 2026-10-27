@@ -53,6 +53,7 @@ import {
   useDeleteDemoLead,
   useDemoLeadDetail,
   useUpdateDemoLead,
+  useDemoLeadOwners,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import {
   DEMO_LEAD_PRIORITIES,
@@ -61,12 +62,16 @@ import {
   formatPhone,
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
+import { usePlatformPermissions } from "@/features/auth/hooks/usePlatformPermission";
 
 interface LeadDetailPanelProps {
   leadId: string | null;
   onClose: () => void;
   onDeleted?: () => void;
 }
+
+/** Valor del selector para "sin responsable" (Radix no admite value=""). */
+const NO_OWNER = "__none__";
 
 export function LeadDetailPanel({
   leadId,
@@ -82,6 +87,11 @@ export function LeadDetailPanel({
     refetch,
   } = useDemoLeadDetail(leadId);
   const updateLead = useUpdateDemoLead();
+  // Asignar a otro responsable: quien ve todos los leads y puede gestionarlos
+  // (SUPER_ADMIN, supervisor). Un comercial solo ve el responsable.
+  const { can } = usePlatformPermissions();
+  const canAssignOwner = can("platform.leads.view_all") && can("platform.leads.manage");
+  const { data: owners = [] } = useDemoLeadOwners(canAssignOwner);
   const addNote = useAddDemoLeadNote();
   const deleteLead = useDeleteDemoLead();
 
@@ -107,6 +117,13 @@ export function LeadDetailPanel({
         mainNeed: (form.get("mainNeed") as string) || null,
         lostReason:
           stage === "LOST" ? (form.get("lostReason") as string) || null : null,
+        // Sin el selector (comercial) no se toca el responsable
+        ...(form.has("ownerUserId") && {
+          ownerUserId:
+            form.get("ownerUserId") === NO_OWNER
+              ? null
+              : (form.get("ownerUserId") as string),
+        }),
         // Marcada: revoca con sello de ahora. Sin marcar: no toca el sello.
         revokedAt:
           form.get("revokeConsent") === "on"
@@ -310,7 +327,7 @@ export function LeadDetailPanel({
                 {tab === "profile" && (
                   <section>
                     <form
-                      key={`${detail.lead.id}-${detail.lead.stage}-${detail.lead.priority}-${detail.lead.revoked}`}
+                      key={`${detail.lead.id}-${detail.lead.stage}-${detail.lead.priority}-${detail.lead.revoked}-${detail.lead.ownerUserId ?? ""}`}
                       onSubmit={handleSave(detail.lead)}
                       className="space-y-3"
                     >
@@ -349,6 +366,42 @@ export function LeadDetailPanel({
                           </Select>
                         </label>
                       </div>
+                      {canAssignOwner ? (
+                        <label className="block text-xs text-slate-600 space-y-1">
+                          <span>{t("detail.owner")}</span>
+                          <Select
+                            name="ownerUserId"
+                            defaultValue={detail.lead.ownerUserId ?? NO_OWNER}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={NO_OWNER}>{t("detail.noOwner")}</SelectItem>
+                              {/* El responsable actual se muestra aunque ya no
+                                  esté en la lista (ej. usuario desactivado) */}
+                              {detail.lead.ownerUserId &&
+                                !owners.some((o) => o.id === detail.lead.ownerUserId) && (
+                                  <SelectItem value={detail.lead.ownerUserId}>
+                                    {detail.lead.ownerName ?? t("detail.noOwner")}
+                                  </SelectItem>
+                                )}
+                              {owners.map((owner) => (
+                                <SelectItem key={owner.id} value={owner.id}>
+                                  {owner.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </label>
+                      ) : (
+                        <p className="text-xs text-slate-600">
+                          {t("detail.owner")}:{" "}
+                          <span className="font-medium text-slate-900">
+                            {detail.lead.ownerName ?? t("detail.noOwner")}
+                          </span>
+                        </p>
+                      )}
                       <div className="grid grid-cols-2 gap-3">
                         <IndustrySelect
                           id="lead-detail-business-type"

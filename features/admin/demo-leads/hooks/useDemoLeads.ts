@@ -20,6 +20,7 @@ import {
   logDemoLeadWhatsAppOutreach,
   searchScoutProspects,
   importScoutProspects,
+  getDemoLeadOwners,
 } from "../services/demo-leads.service";
 import type {
   CreateDemoLeadRequest,
@@ -39,6 +40,7 @@ export const DEMO_LEADS_KEYS = {
     [...DEMO_LEADS_KEYS.all, "list", filters] as const,
   pipeline: () => [...DEMO_LEADS_KEYS.all, "pipeline"] as const,
   detail: (id: string) => [...DEMO_LEADS_KEYS.all, "detail", id] as const,
+  owners: () => [...DEMO_LEADS_KEYS.all, "owners"] as const,
 };
 
 function stableFilters(filters: DemoLeadFilters): DemoLeadFilters {
@@ -63,6 +65,19 @@ export function useDemoLeads(
   return useQuery({
     queryKey: DEMO_LEADS_KEYS.list(stable),
     queryFn: () => getDemoLeads(stable),
+    enabled,
+  });
+}
+
+/**
+ * Responsables posibles (personal de ToGo). Solo para quien puede asignar
+ * leads a otros: el endpoint exige platform.leads.manage.
+ */
+export function useDemoLeadOwners(enabled: boolean = true) {
+  return useQuery({
+    queryKey: DEMO_LEADS_KEYS.owners(),
+    queryFn: () => getDemoLeadOwners(),
+    staleTime: 5 * 60 * 1000,
     enabled,
   });
 }
