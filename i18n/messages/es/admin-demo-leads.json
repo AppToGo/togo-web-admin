@@ -13,7 +13,10 @@
     },
     "overdueOnly": "Solo vencidos",
     "includeRevoked": "Incluir sin consentimiento",
-    "priorityLabel": "Prioridad"
+    "priorityLabel": "Prioridad",
+    "ownerLabel": "Responsable",
+    "ownerAll": "Responsable: todos",
+    "ownerNone": "Sin responsable"
   },
   "stages": {
     "TO_CONTACT": "Por contactar",
@@ -31,7 +34,10 @@
     "scout": "ToGo Scout",
     "referred": "Referido",
     "noDemo": "Sin demo",
-    "noName": "Sin nombre"
+    "noName": "Sin nombre",
+    "noContact": "No contactar · retiró el consentimiento",
+    "addAction": "Agregar próxima acción",
+    "inDemo": "En demo"
   },
   "detail": {
     "close": "Cerrar",
@@ -77,7 +83,24 @@
     "noOwner": "Sin responsable",
     "outcome": "Resultado",
     "outcomePlaceholder": "¿Se ganó o se perdió?",
-    "outcomeRequired": "Para cerrar indica si se ganó o se perdió."
+    "outcomeRequired": "Para cerrar indica si se ganó o se perdió.",
+    "copyPhone": "Copiar teléfono",
+    "phoneCopied": "Teléfono copiado",
+    "phoneCopyError": "No se pudo copiar el teléfono",
+    "call": "Llamar",
+    "statOrders": "Pedidos",
+    "statTries": "Entradas",
+    "statLast": "Última act.",
+    "statChannels": "Canales",
+    "tabContact": "Contactar",
+    "tabFollowUp": "Seguimiento",
+    "tabProfile": "Ficha",
+    "tabHistory": "Historial",
+    "groupBusiness": "Negocio",
+    "groupOpportunity": "Oportunidad",
+    "groupPrivacy": "Privacidad",
+    "mainNeedPlaceholder": "¿Qué problema quiere resolver con ToGo?",
+    "deleteLead": "Eliminar posible cliente"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -122,10 +145,12 @@
   "loadError": "No se pudieron cargar los posibles clientes.",
   "retry": "Reintentar",
   "kpis": {
-    "onBoard": "En el tablero",
+    "onBoard": "Activos en el tablero",
     "overdue": "Acciones vencidas",
     "negotiation": "En negociación",
-    "customers": "Ya son clientes"
+    "customers": "Ya son clientes",
+    "unassigned": "Sin responsable",
+    "see": "Ver"
   },
   "actions": {
     "collapseColumn": "Contraer columna",
@@ -166,7 +191,9 @@
     "overdue": "Venció: {date}",
     "delete": "Eliminar acción",
     "placeholder": "Llamar, enviar propuesta…",
-    "add": "Agregar acción"
+    "add": "Agregar acción",
+    "pendingTitle": "Pendientes · {count}",
+    "resolvedTitle": "Resueltas · {count}"
   },
   "agent": {
     "title": "Agente ToGo · WhatsApp",
@@ -185,7 +212,12 @@
     "sendAndAdvance": "Enviar por WhatsApp y pasar a {stage}",
     "popupBlocked": "El navegador bloqueó la ventana de WhatsApp: permite ventanas emergentes e inténtalo de nuevo. No se registró el envío.",
     "emptyHint": "Genera tus mensajes de venta para este estado una sola vez; quedarán guardados aquí para cuando vuelvas a abrir la ficha.",
-    "generateInitialButton": "Generar mensajes con ToGo"
+    "generateInitialButton": "Generar mensajes con ToGo",
+    "variantsLabel": "Variante del mensaje",
+    "messageLabel": "Mensaje",
+    "strategy": "Ver estrategia del agente",
+    "sendMoves": "Al enviar pasa de",
+    "send": "Enviar por WhatsApp"
   },
   "scout": {
     "button": "Buscar prospectos",
@@ -248,5 +280,28 @@
     "ALL": "Todos",
     "WON": "Ganados",
     "LOST": "Perdidos"
+  },
+  "actionDialog": {
+    "title": "Próxima acción",
+    "description": "Qué sigue con {name} y cuándo.",
+    "what": "¿Qué hay que hacer?",
+    "whatPlaceholder": "Llamar, enviar propuesta…",
+    "suggestionsLabel": "Sugerencias",
+    "suggestions": {
+      "call": "Llamar",
+      "whatsapp": "Escribir por WhatsApp",
+      "proposal": "Enviar propuesta",
+      "meeting": "Agendar reunión"
+    },
+    "when": "¿Cuándo?",
+    "presets": {
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "in3days": "En 3 días",
+      "none": "Sin fecha"
+    },
+    "dateLabel": "Fecha y hora",
+    "hint": "La tarjeta del tablero muestra siempre la acción pendiente más próxima.",
+    "submit": "Agregar acción"
   }
 }
