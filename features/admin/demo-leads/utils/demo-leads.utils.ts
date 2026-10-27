@@ -2,17 +2,29 @@
  * Utilidades y constantes compartidas del Mini CRM de posibles clientes (demo-leads).
  */
 
-import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
+import type {
+  DemoLeadOutcome,
+  DemoLeadPriority,
+  DemoLeadStage,
+} from "@/types/auth.types";
 
 export const DEMO_LEAD_STAGES: readonly DemoLeadStage[] = [
-  "NEW",
-  "ACTIVE_DEMO",
-  "FOLLOW_UP",
+  "TO_CONTACT",
   "CONTACTED",
   "NEGOTIATION",
-  "CUSTOMER",
-  "LOST",
+  "CLOSED",
 ];
+
+/** Etapas a las que se puede llevar un lead sin indicar resultado (no cerradas). */
+export const OPEN_DEMO_LEAD_STAGES: readonly DemoLeadStage[] =
+  DEMO_LEAD_STAGES.filter((stage) => stage !== "CLOSED");
+
+export const DEMO_LEAD_OUTCOMES: readonly DemoLeadOutcome[] = ["WON", "LOST"];
+
+export const OUTCOME_PILL_CLASS: Record<DemoLeadOutcome, string> = {
+  WON: "bg-emerald-50 text-emerald-700",
+  LOST: "bg-slate-100 text-slate-600",
+};
 
 export const DEMO_LEAD_PRIORITIES: readonly DemoLeadPriority[] = [
   "HIGH",
@@ -74,13 +86,10 @@ export function safeLabel(
 
 /** Punto de color de cada etapa en el tablero (mismo patrón que Pedidos). */
 export const STAGE_DOT_CLASS: Record<DemoLeadStage, string> = {
-  NEW: "bg-indigo-500",
-  ACTIVE_DEMO: "bg-violet-500",
-  FOLLOW_UP: "bg-amber-500",
+  TO_CONTACT: "bg-indigo-500",
   CONTACTED: "bg-sky-500",
   NEGOTIATION: "bg-teal-500",
-  CUSTOMER: "bg-emerald-500",
-  LOST: "bg-slate-400",
+  CLOSED: "bg-slate-400",
 };
 
 /** Etiqueta de prioridad en la tarjeta: alta resalta, baja se apaga. */
@@ -127,11 +136,19 @@ export function formatRelative(
 }
 
 const COLLAPSED_STAGES_STORAGE_KEY = "togo-demo-leads-collapsed-stages";
-/** Cliente y Perdido arrancan colapsadas: las que menos se revisan a diario. */
-const DEFAULT_COLLAPSED_STAGES: Partial<Record<DemoLeadStage, boolean>> = {
-  CUSTOMER: true,
-  LOST: true,
-};
+/** Con 4 etapas el tablero cabe entero: ninguna arranca colapsada. */
+const DEFAULT_COLLAPSED_STAGES: Partial<Record<DemoLeadStage, boolean>> = {};
+
+/** Descarta etapas guardadas antes de la reducción (NEW, CUSTOMER…). */
+function knownStagesOnly(
+  value: Record<string, boolean>
+): Partial<Record<DemoLeadStage, boolean>> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([stage]) =>
+      (DEMO_LEAD_STAGES as readonly string[]).includes(stage)
+    )
+  );
+}
 
 /**
  * Etapas colapsadas guardadas en este navegador (mismo patrón que las
@@ -145,7 +162,7 @@ export function readCollapsedStages(): Partial<Record<DemoLeadStage, boolean>> {
         ? localStorage.getItem(COLLAPSED_STAGES_STORAGE_KEY)
         : null;
     return saved
-      ? { ...DEFAULT_COLLAPSED_STAGES, ...JSON.parse(saved) }
+      ? { ...DEFAULT_COLLAPSED_STAGES, ...knownStagesOnly(JSON.parse(saved)) }
       : DEFAULT_COLLAPSED_STAGES;
   } catch {
     return DEFAULT_COLLAPSED_STAGES;

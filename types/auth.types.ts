@@ -173,13 +173,13 @@ export interface SessionResponse {
 
 // Posible cliente capturado en el login demo (solo SUPER_ADMIN)
 export type DemoLeadStage =
-  | "NEW"
-  | "ACTIVE_DEMO"
-  | "FOLLOW_UP"
+  | "TO_CONTACT"
   | "CONTACTED"
   | "NEGOTIATION"
-  | "CUSTOMER"
-  | "LOST";
+  | "CLOSED";
+
+/** Resultado de un lead cerrado (stage = CLOSED); null en otra etapa. */
+export type DemoLeadOutcome = "WON" | "LOST";
 
 export type DemoLeadPriority = "HIGH" | "NORMAL" | "LOW";
 
@@ -193,6 +193,7 @@ export interface DemoLead {
   lastDemoAt: string;
   demoCount: number;
   stage: DemoLeadStage;
+  outcome?: DemoLeadOutcome | null;
   businessType?: string | null;
   establishmentName?: string | null;
   /** Responsable: siempre un usuario de ToGo (super admin o usuario interno). */
@@ -317,6 +318,9 @@ export interface CreateDemoLeadRequest {
 export interface DemoLeadPipelineEntry {
   stage: DemoLeadStage;
   count: number;
+  /** Solo en CLOSED: cuántos se ganaron y cuántos se perdieron. */
+  won?: number;
+  lost?: number;
 }
 
 export interface DemoLeadActivityEvent {
@@ -397,6 +401,8 @@ export interface UpdateDemoLeadRequest {
   nextActionAt?: string | null;
   lostReason?: string | null;
   revokedAt?: string | null;
+  /** Obligatorio al pasar a CLOSED; null fuera de CLOSED. */
+  outcome?: DemoLeadOutcome | null;
 }
 
 /** Responsable posible de un lead: personal de ToGo, nunca usuarios de negocios. */

@@ -16,13 +16,10 @@
     "priorityLabel": "Priority"
   },
   "stages": {
-    "NEW": "New",
-    "ACTIVE_DEMO": "Active demo",
-    "FOLLOW_UP": "Follow-up pending",
+    "TO_CONTACT": "To contact",
     "CONTACTED": "Contacted",
-    "NEGOTIATION": "Negotiation",
-    "CUSTOMER": "Customer",
-    "LOST": "Lost"
+    "NEGOTIATION": "In negotiation",
+    "CLOSED": "Closed"
   },
   "card": {
     "orders": "{count, plural, one {# order} other {# orders}}",
@@ -77,7 +74,10 @@
     "scout": "Captured by ToGo Scout",
     "manualReferred": "Created manually · Referred by {name}",
     "owner": "Owner",
-    "noOwner": "No owner"
+    "noOwner": "No owner",
+    "outcome": "Outcome",
+    "outcomePlaceholder": "Won or lost?",
+    "outcomeRequired": "To close it, say whether it was won or lost."
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -238,5 +238,15 @@
     "remove": "Remove owner",
     "add": "Assign owner",
     "current": "Owner: {name}"
+  },
+  "outcomes": {
+    "WON": "Won",
+    "LOST": "Lost"
+  },
+  "outcomeFilter": {
+    "label": "Outcome",
+    "ALL": "All",
+    "WON": "Won",
+    "LOST": "Lost"
   }
 }

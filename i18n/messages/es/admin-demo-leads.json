@@ -16,13 +16,10 @@
     "priorityLabel": "Prioridad"
   },
   "stages": {
-    "NEW": "Nuevo",
-    "ACTIVE_DEMO": "Demo activa",
-    "FOLLOW_UP": "Seguimiento pendiente",
+    "TO_CONTACT": "Por contactar",
     "CONTACTED": "Contactado",
-    "NEGOTIATION": "Negociación",
-    "CUSTOMER": "Cliente",
-    "LOST": "Perdido"
+    "NEGOTIATION": "En negociación",
+    "CLOSED": "Cerrado"
   },
   "card": {
     "orders": "{count, plural, one {# pedido} other {# pedidos}}",
@@ -77,7 +74,10 @@
     "scout": "Capturado por ToGo Scout",
     "manualReferred": "Creado a mano · Referido por {name}",
     "owner": "Responsable",
-    "noOwner": "Sin responsable"
+    "noOwner": "Sin responsable",
+    "outcome": "Resultado",
+    "outcomePlaceholder": "¿Se ganó o se perdió?",
+    "outcomeRequired": "Para cerrar indica si se ganó o se perdió."
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -238,5 +238,15 @@
     "remove": "Quitar responsable",
     "add": "Asignar responsable",
     "current": "Responsable: {name}"
+  },
+  "outcomes": {
+    "WON": "Ganado",
+    "LOST": "Perdido"
+  },
+  "outcomeFilter": {
+    "label": "Resultado",
+    "ALL": "Todos",
+    "WON": "Ganados",
+    "LOST": "Perdidos"
   }
 }

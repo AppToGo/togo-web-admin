@@ -1,15 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SegmentedControl } from "@/components/ui/pill-group";
 import { HoverTooltip } from "@/features/orders/components/HoverTooltip";
-import type { DemoLead, DemoLeadStage } from "@/types/auth.types";
+import type {
+  DemoLead,
+  DemoLeadOutcome,
+  DemoLeadStage,
+} from "@/types/auth.types";
 import { STAGE_DOT_CLASS } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 import { LeadCard } from "./LeadCard";
 
 /** Ancho del riel de una columna colapsada (igual que en Pedidos). */
 const RAIL_WIDTH = 56;
+
+type OutcomeFilter = "ALL" | DemoLeadOutcome;
+const OUTCOME_FILTERS: readonly OutcomeFilter[] = ["ALL", "WON", "LOST"];
 
 /**
  * Columna del tablero de posibles clientes. Como en Pedidos, se puede
@@ -33,6 +42,12 @@ export function LeadsBoardColumn({
 }) {
   const t = useTranslations("admin-demo-leads");
   const name = t(`stages.${stage}`);
+  // Cerrados: ganados y perdidos comparten columna, con filtro local.
+  const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>("ALL");
+  const visibleLeads =
+    stage === "CLOSED" && outcomeFilter !== "ALL"
+      ? leads.filter((lead) => lead.outcome === outcomeFilter)
+      : leads;
 
   if (collapsed) {
     return (
@@ -92,7 +107,18 @@ export function LeadsBoardColumn({
           </button>
         </HoverTooltip>
       </header>
-      {leads.map((lead) => (
+      {stage === "CLOSED" && leads.length > 0 && (
+        <SegmentedControl
+          label={t("outcomeFilter.label")}
+          value={outcomeFilter}
+          onChange={setOutcomeFilter}
+          options={OUTCOME_FILTERS.map((id) => ({
+            id,
+            label: t(`outcomeFilter.${id}`),
+          }))}
+        />
+      )}
+      {visibleLeads.map((lead) => (
         <LeadCard key={lead.id} lead={lead} onOpen={onOpenLead} />
       ))}
     </section>

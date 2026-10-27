@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import type { DemoLead } from "@/types/auth.types";
 import {
+  OUTCOME_PILL_CLASS,
   PRIORITY_PILL_CLASS,
   formatPhone,
   formatRelative,
@@ -68,14 +69,26 @@ export function LeadCard({
             </span>
           )}
         </span>
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-            PRIORITY_PILL_CLASS[lead.priority]
-          )}
-        >
-          {safeLabel(tt, `filters.priority.${lead.priority}`, lead.priority)}
-        </span>
+        {lead.stage === "CLOSED" && lead.outcome ? (
+          // Cerrado: el resultado importa más que la prioridad.
+          <span
+            className={cn(
+              "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+              OUTCOME_PILL_CLASS[lead.outcome]
+            )}
+          >
+            {t(`outcomes.${lead.outcome}`)}
+          </span>
+        ) : (
+          <span
+            className={cn(
+              "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+              PRIORITY_PILL_CLASS[lead.priority]
+            )}
+          >
+            {safeLabel(tt, `filters.priority.${lead.priority}`, lead.priority)}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-1.5 text-xs text-slate-600">
