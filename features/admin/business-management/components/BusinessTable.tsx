@@ -6,6 +6,7 @@
  */
 
 import { useTranslations } from "next-intl";
+import { ToggleRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ interface BusinessTableProps {
   onRecordPayment: (business: BusinessWithSubscription) => void;
   onEditBranches: (business: BusinessWithSubscription) => void;
   onEditUsers: (business: BusinessWithSubscription) => void;
+  onEditFeatures: (business: BusinessWithSubscription) => void;
   onEditProofQuota: (business: BusinessWithSubscription) => void;
   onSendNotification: (business: BusinessWithSubscription) => void;
   onToggleStatus: (business: BusinessWithSubscription) => void;
@@ -40,6 +42,7 @@ export function BusinessTable({
   onRecordPayment,
   onEditBranches,
   onEditUsers,
+  onEditFeatures,
   onEditProofQuota,
   onSendNotification,
   onToggleStatus,
@@ -195,6 +198,16 @@ export function BusinessTable({
                     title={t("actions.editUsers")}
                   >
                     <UsersIcon className="w-4 h-4" />
+                  </Button>
+
+                  {/* Features */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEditFeatures(business)}
+                    title={t("actions.editFeatures")}
+                  >
+                    <ToggleRight className="w-4 h-4" />
                   </Button>
 
                   {/* Edit Proof Quota */}

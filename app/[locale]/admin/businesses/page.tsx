@@ -45,6 +45,7 @@ import type {
   SendNotificationDto,
 } from "@/features/admin/business-management/types/business-subscription.types";
 
+import { BusinessFeaturesDialog } from "@/features/admin/feature-flags/components";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const DEFAULT_FILTERS: BusinessFiltersType = {
@@ -65,6 +66,7 @@ export default function BusinessManagementPage() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isBranchesModalOpen, setIsBranchesModalOpen] = useState(false);
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
+  const [isFeaturesModalOpen, setIsFeaturesModalOpen] = useState(false);
   const [isProofQuotaModalOpen, setIsProofQuotaModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
@@ -111,6 +113,11 @@ export default function BusinessManagementPage() {
   const handleEditUsers = useCallback((business: BusinessWithSubscription) => {
     setSelectedBusiness(business);
     setIsUsersModalOpen(true);
+  }, []);
+
+  const handleEditFeatures = useCallback((business: BusinessWithSubscription) => {
+    setSelectedBusiness(business);
+    setIsFeaturesModalOpen(true);
   }, []);
 
   const handleEditProofQuota = useCallback((business: BusinessWithSubscription) => {
@@ -383,6 +390,7 @@ export default function BusinessManagementPage() {
             onRecordPayment={handleRecordPayment}
             onEditBranches={handleEditBranches}
             onEditUsers={handleEditUsers}
+            onEditFeatures={handleEditFeatures}
             onEditProofQuota={handleEditProofQuota}
             onSendNotification={handleSendNotification}
             onToggleStatus={handleToggleStatus}
@@ -463,6 +471,15 @@ export default function BusinessManagementPage() {
           }}
           onSubmit={handleSubmitUsersLimit}
           isSubmitting={updateUsersLimit.isPending}
+        />
+
+        <BusinessFeaturesDialog
+          business={selectedBusiness}
+          isOpen={isFeaturesModalOpen}
+          onClose={() => {
+            setIsFeaturesModalOpen(false);
+            setSelectedBusiness(null);
+          }}
         />
 
         <EditProofQuotaModal

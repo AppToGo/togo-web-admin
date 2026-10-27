@@ -32,6 +32,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     "admin-industry-categories": (await import(`./messages/${validLocale}/admin-industry-categories.json`)).default,
     "admin-demo-leads": (await import(`./messages/${validLocale}/admin-demo-leads.json`)).default,
     "admin-ai-usage": (await import(`./messages/${validLocale}/admin-ai-usage.json`)).default,
+    "admin-feature-flags": (await import(`./messages/${validLocale}/admin-feature-flags.json`)).default,
     settings: (await import(`./messages/${validLocale}/settings.json`)).default,
     navigation: (await import(`./messages/${validLocale}/navigation.json`)).default,
     validation: (await import(`./messages/${validLocale}/validation.json`)).default,
