@@ -342,6 +342,8 @@ export interface DemoLeadDetailLead extends DemoLead {
   convertedAt?: string | null;
   lostReason?: string | null;
   lostAt?: string | null;
+  whatsappDrafts?: WhatsAppDraftsResponse | null;
+  whatsappDraftsAt?: string | null;
 }
 
 /** Acción de seguimiento de un lead (varias por lead). */

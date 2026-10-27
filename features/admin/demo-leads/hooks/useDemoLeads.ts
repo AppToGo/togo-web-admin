@@ -221,13 +221,20 @@ export function useDeleteDemoLead() {
 
 /**
  * Hook para generar borradores personalizados de WhatsApp con Harvey.
+ * Al completarse invalida el detalle del lead para reflejar los borradores persistidos.
  */
 export function useGenerateWhatsAppDrafts(leadId: string) {
+  const queryClient = useQueryClient();
   const t = useTranslations("admin-demo-leads");
 
   return useMutation({
     mutationFn: (data: GenerateWhatsAppDraftsRequest = {}) =>
       generateDemoLeadWhatsAppDrafts(leadId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: DEMO_LEADS_KEYS.detail(leadId),
+      });
+    },
     onError: (error) => {
       toast.error(extractErrorMessage(error, t("toasts.draftsError")));
     },

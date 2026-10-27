@@ -181,7 +181,9 @@
     "autoStageLabel": "Stage on send",
     "sendDisclaimer": "Clicking send opens WhatsApp (wa.me), logs the message in notes, and updates the stage automatically.",
     "sendAndAdvance": "Send via WhatsApp & move to {stage}",
-    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged."
+    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged.",
+    "emptyHint": "Generate sales messages for this stage once; they will stay saved on this card whenever you reopen it.",
+    "generateInitialButton": "Generate messages with Harvey"
   },
   "scout": {
     "button": "Find prospects",
@@ -204,6 +206,8 @@
     "alreadyInCrm": "Already in CRM · Open",
     "alreadyCustomer": "Already a customer",
     "importButton": "Add {count} to CRM",
-    "importing": "Adding…"
+    "importing": "Adding…",
+    "editHint": "You can edit the business name, phone, industry, or note directly on each card before importing.",
+    "contactNamePlaceholder": "Contact person (optional)"
   }
 }
