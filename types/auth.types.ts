@@ -214,6 +214,7 @@ export interface GenerateWhatsAppDraftsRequest {
   objective?: string;
   prospectReply?: string;
   tone?: WhatsAppDraftTone;
+  forceRegenerate?: boolean;
 }
 
 export interface WhatsAppDraftItem {
@@ -230,6 +231,7 @@ export interface WhatsAppDraftsResponse {
   recommendedNextAction: string;
   recommendedNextActionDays: number;
   drafts: WhatsAppDraftItem[];
+  generatedForStage?: DemoLeadStage;
 }
 
 export interface LogWhatsAppOutreachRequest {
@@ -342,6 +344,8 @@ export interface DemoLeadDetailLead extends DemoLead {
   convertedAt?: string | null;
   lostReason?: string | null;
   lostAt?: string | null;
+  whatsappDrafts?: WhatsAppDraftsResponse | null;
+  whatsappDraftsAt?: string | null;
 }
 
 /** Acción de seguimiento de un lead (varias por lead). */

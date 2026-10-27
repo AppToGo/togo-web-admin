@@ -31,7 +31,7 @@
     "revoked": "No consent",
     "tries": "{count, plural, one {# visit} other {# visits}}",
     "manual": "Manual",
-    "scout": "Harvey Scout",
+    "scout": "ToGo Scout",
     "referred": "Referred",
     "noDemo": "No demo",
     "noName": "No name"
@@ -74,7 +74,7 @@
     "writeWhatsApp": "Message on WhatsApp",
     "tabsLabel": "Lead details",
     "manual": "Created manually",
-    "scout": "Captured by Harvey Scout",
+    "scout": "Captured by ToGo Scout",
     "manualReferred": "Created manually · Referred by {name}"
   },
   "events": {
@@ -166,8 +166,8 @@
     "placeholder": "Call, send proposal…",
     "add": "Add action"
   },
-  "harvey": {
-    "title": "Harvey Agent · WhatsApp",
+  "agent": {
+    "title": "ToGo Agent · WhatsApp",
     "subtitle": "Generates the best message based on the lead's stage and activity",
     "customize": "Reply / Adjust",
     "regenerate": "Regenerate options",
@@ -175,17 +175,19 @@
     "prospectReplyPlaceholder": "Paste what the prospect said or asked to draft a response…",
     "objectiveLabel": "Additional instruction or focus (optional)",
     "objectivePlaceholder": "E.g. Offer to upload their menu PDF for free…",
-    "generating": "Harvey is writing…",
+    "generating": "ToGo is writing…",
     "generateWithContext": "Generate reply with this context",
     "messagePlaceholder": "Write or edit the message to open in WhatsApp…",
     "autoStageLabel": "Stage on send",
     "sendDisclaimer": "Clicking send opens WhatsApp (wa.me), logs the message in notes, and updates the stage automatically.",
     "sendAndAdvance": "Send via WhatsApp & move to {stage}",
-    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged."
+    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged.",
+    "emptyHint": "Generate sales messages for this stage once; they will stay saved on this card whenever you reopen it.",
+    "generateInitialButton": "Generate messages with ToGo"
   },
   "scout": {
     "button": "Find prospects",
-    "title": "Harvey Scout · Find prospects",
+    "title": "ToGo Scout · Find prospects",
     "subtitle": "Find potential businesses by area or extract them with AI from free text and add them to the board.",
     "modeLabel": "Search mode",
     "modePlaces": "Google Maps / Area",
@@ -204,6 +206,9 @@
     "alreadyInCrm": "Already in CRM · Open",
     "alreadyCustomer": "Already a customer",
     "importButton": "Add {count} to CRM",
-    "importing": "Adding…"
+    "importing": "Adding…",
+    "editHint": "You can edit the business name, phone, industry, or note directly on each card before importing.",
+    "contactNamePlaceholder": "Contact person (optional)",
+    "defaultBusinessName": "Commercial prospect"
   }
 }

@@ -31,7 +31,7 @@
     "revoked": "Sin consentimiento",
     "tries": "{count, plural, one {# entrada} other {# entradas}}",
     "manual": "Manual",
-    "scout": "Harvey Scout",
+    "scout": "ToGo Scout",
     "referred": "Referido",
     "noDemo": "Sin demo",
     "noName": "Sin nombre"
@@ -74,7 +74,7 @@
     "writeWhatsApp": "Escribir por WhatsApp",
     "tabsLabel": "Detalle del lead",
     "manual": "Creado a mano",
-    "scout": "Capturado por Harvey Scout",
+    "scout": "Capturado por ToGo Scout",
     "manualReferred": "Creado a mano · Referido por {name}"
   },
   "events": {
@@ -166,8 +166,8 @@
     "placeholder": "Llamar, enviar propuesta…",
     "add": "Agregar acción"
   },
-  "harvey": {
-    "title": "Agente Harvey · WhatsApp",
+  "agent": {
+    "title": "Agente ToGo · WhatsApp",
     "subtitle": "Genera el mensaje ideal según el estado y actividad del cliente",
     "customize": "Responder / Ajustar",
     "regenerate": "Regenerar opciones",
@@ -175,17 +175,19 @@
     "prospectReplyPlaceholder": "Pega aquí lo que te dijo o preguntó el cliente para redactar la respuesta…",
     "objectiveLabel": "Instrucción o foco adicional (opcional)",
     "objectivePlaceholder": "Ej. Invitarlo a que nos envíe su carta en PDF para cargarla…",
-    "generating": "Harvey está redactando…",
+    "generating": "ToGo está redactando…",
     "generateWithContext": "Generar respuesta con este contexto",
     "messagePlaceholder": "Escribe o edita el mensaje que se abrirá en WhatsApp…",
     "autoStageLabel": "Al enviar cambia estado",
     "sendDisclaimer": "Al pulsar enviar se abrirá WhatsApp (wa.me), se guardará el mensaje en las notas y se cambiará el estado automáticamente.",
     "sendAndAdvance": "Enviar por WhatsApp y pasar a {stage}",
-    "popupBlocked": "El navegador bloqueó la ventana de WhatsApp: permite ventanas emergentes e inténtalo de nuevo. No se registró el envío."
+    "popupBlocked": "El navegador bloqueó la ventana de WhatsApp: permite ventanas emergentes e inténtalo de nuevo. No se registró el envío.",
+    "emptyHint": "Genera tus mensajes de venta para este estado una sola vez; quedarán guardados aquí para cuando vuelvas a abrir la ficha.",
+    "generateInitialButton": "Generar mensajes con ToGo"
   },
   "scout": {
     "button": "Buscar prospectos",
-    "title": "Harvey Scout · Buscar prospectos",
+    "title": "ToGo Scout · Buscar prospectos",
     "subtitle": "Encuentra negocios potenciales por zona o extráelos con IA desde texto libre y súmalos al tablero.",
     "modeLabel": "Modo de búsqueda",
     "modePlaces": "Google Maps / Zona",
@@ -204,6 +206,9 @@
     "alreadyInCrm": "Ya en el CRM · Ver",
     "alreadyCustomer": "Ya es cliente",
     "importButton": "Sumar {count} al CRM",
-    "importing": "Sumando…"
+    "importing": "Sumando…",
+    "editHint": "Puedes corregir nombre, teléfono, rubro o notas directamente en cada tarjeta antes de sumarlos.",
+    "contactNamePlaceholder": "Persona de contacto (opcional)",
+    "defaultBusinessName": "Prospecto comercial"
   }
 }
