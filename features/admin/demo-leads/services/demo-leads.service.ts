@@ -142,7 +142,7 @@ export async function deleteDemoLead(id: string): Promise<void> {
 }
 
 /**
- * Harvey Writer/Handler: genera 3 borradores de WhatsApp según la etapa y el contexto del lead.
+ * Agente ToGo (Writer/Handler): genera 3 borradores de WhatsApp según la etapa y el contexto del lead.
  */
 export async function generateDemoLeadWhatsAppDrafts(
   id: string,
@@ -170,7 +170,7 @@ export async function logDemoLeadWhatsAppOutreach(
 }
 
 /**
- * Harvey Scout: busca prospectos en Google Places o extrae de texto con IA.
+ * ToGo Scout: busca prospectos en Google Places o extrae de texto con IA.
  */
 export async function searchScoutProspects(
   data: ScoutSearchRequest
@@ -183,7 +183,7 @@ export async function searchScoutProspects(
 }
 
 /**
- * Harvey Scout: importa en lote los prospectos seleccionados al Mini CRM.
+ * ToGo Scout: importa en lote los prospectos seleccionados al Mini CRM.
  */
 export async function importScoutProspects(
   data: ScoutImportRequest
