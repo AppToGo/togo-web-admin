@@ -72,7 +72,7 @@
       "contactSupport": "Already paid? Send us the receipt via WhatsApp using the button above."
     },
     "nextPaymentDue": "Your next payment is due on {date}.",
-    "gracePeriod": "Your payment is overdue, but you're still in the grace period until {date}.",
+    "gracePeriod": "Your payment was due on {date}. You have {days} days to pay before your account is suspended.",
     "pendingRequest": {
       "title": "Your request to switch to {planName} is being verified.",
       "graceEndsAt": "While it's being verified, you have access until {date}."
