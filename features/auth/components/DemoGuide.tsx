@@ -244,9 +244,11 @@ export function DemoGuide() {
           >
             {logout.isPending ? tb("leaving") : tb("createAccount")}
           </button>
-          <span className="text-center text-xs text-slate-500">
-            {tb("trialNote", { days: trialDays })}
-          </span>
+          {trialDays !== null && (
+            <span className="text-center text-xs text-slate-500">
+              {tb("trialNote", { days: trialDays })}
+            </span>
+          )}
         </div>
       )}
     </aside>
