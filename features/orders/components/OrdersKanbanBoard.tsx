@@ -40,6 +40,7 @@ import { formatOrderNumber } from "../utils/order-number.utils";
 import { checkStatusMove } from "../utils/order-flow.utils";
 import { useOrderFlow } from "../hooks/useOrderFlow";
 import type { CardDensity } from "./OrderCard";
+import { Feature } from "@/features/business-features";
 
 // Gap between board columns — must match the container's `gap-3` (12px)
 // class, since it's also part of each column's flexBasis calculation.
@@ -551,16 +552,18 @@ export function OrdersKanbanBoard({
                               <Plus className="w-3.5 h-3.5" />
                               {t("createOrder.button")}
                             </button>
-                            <HoverTooltip content={t("catalogSession.buttonTooltip")}>
-                              <button
-                                type="button"
-                                onClick={() => setIsCatalogSessionOpen(true)}
-                                aria-label={t("catalogSession.buttonTooltip")}
-                                className="ml-1 w-7 h-7 rounded-lg flex items-center justify-center bg-white text-indigo-600 shadow-card-sm hover:bg-indigo-50 transition-colors"
-                              >
-                                <Store className="w-3.5 h-3.5" />
-                              </button>
-                            </HoverTooltip>
+                            <Feature name="OPERATOR_CATALOG_ORDER">
+                              <HoverTooltip content={t("catalogSession.buttonTooltip")}>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsCatalogSessionOpen(true)}
+                                  aria-label={t("catalogSession.buttonTooltip")}
+                                  className="ml-1 w-7 h-7 rounded-lg flex items-center justify-center bg-white text-indigo-600 shadow-card-sm hover:bg-indigo-50 transition-colors"
+                                >
+                                  <Store className="w-3.5 h-3.5" />
+                                </button>
+                              </HoverTooltip>
+                            </Feature>
                           </Can>
                         ) : undefined
                       }
@@ -661,14 +664,16 @@ export function OrdersKanbanBoard({
       {/* Teléfono: el botón de la columna "Nueva" no existe en la vista por
           estado, así que "Nuevo pedido" flota abajo a la derecha. */}
       <Can permission="order.create">
-        <button
-          type="button"
-          onClick={() => setIsCatalogSessionOpen(true)}
-          aria-label={t("catalogSession.buttonTooltip")}
-          className="md:hidden fixed right-4 bottom-24 z-30 h-12 w-12 rounded-full bg-white text-slate-900 border border-slate-200 shadow-lg active:bg-slate-50 flex items-center justify-center"
-        >
-          <Store className="w-5 h-5" />
-        </button>
+        <Feature name="OPERATOR_CATALOG_ORDER">
+          <button
+            type="button"
+            onClick={() => setIsCatalogSessionOpen(true)}
+            aria-label={t("catalogSession.buttonTooltip")}
+            className="md:hidden fixed right-4 bottom-24 z-30 h-12 w-12 rounded-full bg-white text-slate-900 border border-slate-200 shadow-lg active:bg-slate-50 flex items-center justify-center"
+          >
+            <Store className="w-5 h-5" />
+          </button>
+        </Feature>
         <button
           type="button"
           onClick={() => setIsNewOrderOpen(true)}

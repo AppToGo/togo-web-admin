@@ -9,6 +9,7 @@
 import apiClient from "@/services/api.service";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import type { Customer, CustomerMetrics, PaginatedCustomersResponse, GlobalCustomerMetrics, GetCustomersParams, UpdateCustomerRequest, PaginatedOrdersResponse } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Obtener el businessId del usuario autenticado
@@ -16,7 +17,7 @@ import type { Customer, CustomerMetrics, PaginatedCustomersResponse, GlobalCusto
  */
 function getBusinessId(): string | null {
   const { user } = useAuthStore.getState();
-  if (!user?.businessId && user?.role !== "SUPER_ADMIN") {
+  if (!user?.businessId && !isPlatformStaffRole(user?.role)) {
     throw new Error("Usuario no tiene un negocio asignado");
   }
   return user?.businessId || null;

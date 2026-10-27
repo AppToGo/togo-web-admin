@@ -27,6 +27,7 @@ import {
 import { forceLogout } from '@/services/session.service';
 import { createReconnectScheduler } from '@/lib/socket-reconnect';
 import { completeDemoGuideStep } from '@/features/auth/stores/demo-guide.store';
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 // WebSocket URL con fallback más robusto
 const WS_URL =
@@ -230,7 +231,7 @@ export function useOrdersRealtime(enabled: boolean = true): RealtimeState {
   });
 
   useEffect(() => {
-    if (!enabled || !APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || user?.role === 'SUPER_ADMIN') {
+    if (!enabled || !APP_CONFIG.features.enableWebSockets || !businessId || !getToken() || isPlatformStaffRole(user?.role)) {
       setState({ isConnected: false, isConnecting: false, error: null });
       return;
     }

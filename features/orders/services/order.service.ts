@@ -26,6 +26,7 @@ import type {
 import type { OrdersPage } from "../types/order-cache.types";
 import { LIVE_STATUSES } from "../constants/order-statuses";
 import { stripOrderNumbers } from "../utils/order-number.utils";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Obtener el businessId del usuario autenticado
@@ -33,7 +34,7 @@ import { stripOrderNumbers } from "../utils/order-number.utils";
  */
 function getBusinessId(): string | null {
   const { user } = useAuthStore.getState();
-  if (!user?.businessId && user?.role !== "SUPER_ADMIN") {
+  if (!user?.businessId && !isPlatformStaffRole(user?.role)) {
     throw new Error("Usuario no tiene un negocio asignado");
   }
   return user?.businessId || null;
@@ -44,7 +45,7 @@ function getBusinessId(): string | null {
  */
 function isSuperAdmin(): boolean {
   const { user } = useAuthStore.getState();
-  return user?.role === "SUPER_ADMIN";
+  return isPlatformStaffRole(user?.role);
 }
 
 /**

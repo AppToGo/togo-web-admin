@@ -1,20 +1,20 @@
 "use client";
 
 /**
- * ScoutLeadsDrawer — Agente Harvey Scout (Buscador y extractor de prospectos).
+ * ScoutLeadsDrawer — Agente ToGo Scout (Buscador y extractor de prospectos).
  *
  * Permite buscar posibles clientes por rubro + ciudad (Google Places) o
  * extraerlos con IA pegando texto libre (directorios, Instagram, Maps),
- * deduplicando teléfonos contra el Mini CRM antes de sumarlos al tablero.
+ * permitiendo corregir cualquier dato en cada tarjeta antes de sumarlos al CRM.
  */
 
 import * as React from "react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   CheckSquare,
   Compass,
-  FileText,
   MapPin,
   Search,
   Sparkles,
@@ -48,6 +48,14 @@ interface ScoutLeadsDrawerProps {
   onOpenLead: (id: string) => void;
 }
 
+interface EditableScoutCandidate extends ScoutProspectCandidate {
+  localId: string;
+}
+
+function isValidScoutPhone(phone: string): boolean {
+  return phone.replace(/\D/g, "").length >= 10;
+}
+
 export function ScoutLeadsDrawer({
   open,
   onClose,
@@ -61,8 +69,8 @@ export function ScoutLeadsDrawer({
   const [query, setQuery] = useState("");
   const [rawText, setRawText] = useState("");
   const [defaultBusinessType, setDefaultBusinessType] = useState("Restaurante");
-  const [candidates, setCandidates] = useState<ScoutProspectCandidate[]>([]);
-  const [selectedPhones, setSelectedPhones] = useState<Set<string>>(new Set());
+  const [candidates, setCandidates] = useState<EditableScoutCandidate[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleClose = () => {
     scoutSearch.reset();
@@ -81,48 +89,90 @@ export function ScoutLeadsDrawer({
       },
       {
         onSuccess: (res) => {
-          setCandidates(res.candidates);
-          const selectable = new Set(
-            res.candidates
-              .filter((c) => !c.alreadyInCrm && !c.alreadyCustomerBusiness)
-              .map((c) => c.phone)
+          const withIds: EditableScoutCandidate[] = res.candidates.map(
+            (c, idx) => ({
+              ...c,
+              localId: `scout_${idx}_${c.phone}`,
+            })
           );
-          setSelectedPhones(selectable);
+          setCandidates(withIds);
+          const selectable = new Set(
+            withIds
+              .filter(
+                (c) =>
+                  !c.alreadyInCrm &&
+                  !c.alreadyCustomerBusiness &&
+                  isValidScoutPhone(c.phone)
+              )
+              .map((c) => c.localId)
+          );
+          setSelectedIds(selectable);
         },
       }
     );
   };
 
-  const toggleCandidate = (phone: string) => {
-    setSelectedPhones((prev) => {
+  const toggleCandidate = (localId: string) => {
+    const target = candidates.find((c) => c.localId === localId);
+    if (!target) return;
+    if (!selectedIds.has(localId) && !isValidScoutPhone(target.phone)) {
+      toast.error(t("create.phoneInvalid"));
+      return;
+    }
+    setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(phone)) {
-        next.delete(phone);
+      if (next.has(localId)) {
+        next.delete(localId);
       } else {
-        next.add(phone);
+        next.add(localId);
       }
       return next;
     });
   };
 
-  const updateCandidateNote = (phone: string, note: string) => {
+  const updateCandidateField = <K extends keyof EditableScoutCandidate>(
+    localId: string,
+    field: K,
+    value: EditableScoutCandidate[K]
+  ) => {
     setCandidates((prev) =>
-      prev.map((c) => (c.phone === phone ? { ...c, suggestedNote: note } : c))
+      prev.map((c) => {
+        if (c.localId !== localId) return c;
+        if (field === "phone") {
+          return {
+            ...c,
+            phone: String(value),
+            alreadyInCrm: false,
+            existingLeadId: null,
+            alreadyCustomerBusiness: false,
+          };
+        }
+        return { ...c, [field]: value };
+      })
     );
   };
 
-  const handleImport = () => {
-    const toImport = candidates
-      .filter((c) => selectedPhones.has(c.phone))
-      .map((c) => ({
-        name: c.name || undefined,
-        phone: c.phone,
-        businessName: c.businessName,
-        businessType: c.businessType,
-        note: c.suggestedNote,
-      }));
+  const validSelectedCandidates = candidates.filter(
+    (c) =>
+      selectedIds.has(c.localId) &&
+      !c.alreadyInCrm &&
+      !c.alreadyCustomerBusiness &&
+      isValidScoutPhone(c.phone)
+  );
 
-    if (toImport.length === 0) return;
+  const handleImport = () => {
+    if (validSelectedCandidates.length === 0) {
+      toast.error(t("create.phoneInvalid"));
+      return;
+    }
+
+    const toImport = validSelectedCandidates.map((c) => ({
+      name: c.name.trim() || undefined,
+      phone: c.phone.trim(),
+      businessName: c.businessName.trim() || t("scout.defaultBusinessName"),
+      businessType: c.businessType.trim() || undefined,
+      note: c.suggestedNote.trim() || undefined,
+    }));
 
     scoutImport.mutate(
       { leads: toImport },
@@ -138,7 +188,10 @@ export function ScoutLeadsDrawer({
   };
 
   const selectableCount = candidates.filter(
-    (c) => !c.alreadyInCrm && !c.alreadyCustomerBusiness
+    (c) =>
+      !c.alreadyInCrm &&
+      !c.alreadyCustomerBusiness &&
+      isValidScoutPhone(c.phone)
   ).length;
 
   return (
@@ -230,48 +283,56 @@ export function ScoutLeadsDrawer({
             {candidates.length > 0 && (
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-800">
-                    {t("scout.resultsTitle", { count: candidates.length })}
-                  </h3>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-800">
+                      {t("scout.resultsTitle", { count: candidates.length })}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      {t("scout.editHint")}
+                    </p>
+                  </div>
                   {selectableCount > 0 && (
                     <button
                       type="button"
                       onClick={() => {
-                        if (selectedPhones.size === selectableCount) {
-                          setSelectedPhones(new Set());
+                        if (validSelectedCandidates.length === selectableCount) {
+                          setSelectedIds(new Set());
                         } else {
-                          setSelectedPhones(
+                          setSelectedIds(
                             new Set(
                               candidates
                                 .filter(
                                   (c) =>
                                     !c.alreadyInCrm &&
-                                    !c.alreadyCustomerBusiness
+                                    !c.alreadyCustomerBusiness &&
+                                    isValidScoutPhone(c.phone)
                                 )
-                                .map((c) => c.phone)
+                                .map((c) => c.localId)
                             )
                           );
                         }
                       }}
                       className="text-xs font-semibold text-indigo-600 hover:underline"
                     >
-                      {selectedPhones.size === selectableCount
+                      {validSelectedCandidates.length === selectableCount
                         ? t("scout.deselectAll")
                         : t("scout.selectAll")}
                     </button>
                   )}
                 </div>
 
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {candidates.map((candidate) => {
                     const disabled =
                       candidate.alreadyInCrm ||
                       candidate.alreadyCustomerBusiness;
-                    const checked = selectedPhones.has(candidate.phone);
+                    const phoneValid = isValidScoutPhone(candidate.phone);
+                    const checked =
+                      selectedIds.has(candidate.localId) && phoneValid;
 
                     return (
                       <li
-                        key={candidate.phone}
+                        key={candidate.localId}
                         className={cn(
                           "rounded-2xl border p-3.5 transition-colors",
                           disabled
@@ -285,8 +346,8 @@ export function ScoutLeadsDrawer({
                           <button
                             type="button"
                             disabled={disabled}
-                            onClick={() => toggleCandidate(candidate.phone)}
-                            className="mt-0.5 text-indigo-600 disabled:text-slate-300"
+                            onClick={() => toggleCandidate(candidate.localId)}
+                            className="mt-1 text-indigo-600 disabled:text-slate-300"
                           >
                             {checked ? (
                               <CheckSquare className="h-5 w-5" aria-hidden />
@@ -294,85 +355,171 @@ export function ScoutLeadsDrawer({
                               <Square className="h-5 w-5" aria-hidden />
                             )}
                           </button>
-                          <div className="min-w-0 flex-1 space-y-1.5">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div>
-                                <p className="text-sm font-bold text-slate-900">
-                                  {candidate.businessName}
-                                </p>
-                                <p className="text-xs text-slate-500">
-                                  {candidate.businessType} ·{" "}
-                                  <span className="tabular-nums font-medium text-slate-700">
-                                    {candidate.formattedPhone}
-                                  </span>
-                                </p>
-                              </div>
 
-                              <div className="flex items-center gap-1.5">
-                                {candidate.rating !== null && (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                                    <Star
-                                      className="h-3 w-3 fill-amber-400 text-amber-500"
+                          <div className="min-w-0 flex-1 space-y-2.5">
+                            {/* Encabezado de estado y calificación */}
+                            {(candidate.rating !== null ||
+                              candidate.alreadyInCrm ||
+                              candidate.alreadyCustomerBusiness ||
+                              candidate.address) && (
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                {candidate.address ? (
+                                  <p className="flex items-center gap-1 text-xs text-slate-500">
+                                    <MapPin
+                                      className="h-3 w-3 shrink-0"
                                       aria-hidden
                                     />
-                                    {candidate.rating}
-                                  </span>
+                                    <span className="truncate">
+                                      {candidate.address}
+                                    </span>
+                                  </p>
+                                ) : (
+                                  <span />
                                 )}
-                                {candidate.alreadyInCrm && (
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      if (candidate.existingLeadId) {
-                                        handleClose();
-                                        onOpenLead(candidate.existingLeadId);
-                                      }
-                                    }}
-                                    className="h-7 rounded-full px-2.5 text-xs"
-                                  >
-                                    {t("scout.alreadyInCrm")}
-                                  </Button>
-                                )}
-                                {candidate.alreadyCustomerBusiness && (
-                                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-                                    {t("scout.alreadyCustomer")}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
 
-                            {candidate.address && (
-                              <p className="flex items-center gap-1 text-xs text-slate-500">
-                                <MapPin
-                                  className="h-3 w-3 shrink-0"
-                                  aria-hidden
-                                />
-                                <span className="truncate">
-                                  {candidate.address}
-                                </span>
-                              </p>
+                                <div className="flex items-center gap-1.5">
+                                  {candidate.rating !== null && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                                      <Star
+                                        className="h-3 w-3 fill-amber-400 text-amber-500"
+                                        aria-hidden
+                                      />
+                                      {candidate.rating}
+                                    </span>
+                                  )}
+                                  {candidate.alreadyInCrm && (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        if (candidate.existingLeadId) {
+                                          handleClose();
+                                          onOpenLead(candidate.existingLeadId);
+                                        }
+                                      }}
+                                      className="h-7 rounded-full px-2.5 text-xs"
+                                    >
+                                      {t("scout.alreadyInCrm")}
+                                    </Button>
+                                  )}
+                                  {candidate.alreadyCustomerBusiness && (
+                                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                                      {t("scout.alreadyCustomer")}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             )}
 
-                            {!disabled && (
-                              <div className="flex items-center gap-1.5 pt-1">
-                                <FileText
-                                  className="h-3.5 w-3.5 shrink-0 text-slate-400"
-                                  aria-hidden
-                                />
+                            {/* Campos editables de la tarjeta */}
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                              <label className="block space-y-0.5">
+                                <span className="text-[11px] font-medium text-slate-500">
+                                  {t("detail.businessName")}
+                                </span>
                                 <input
                                   type="text"
-                                  maxLength={2000}
-                                  value={candidate.suggestedNote}
+                                  disabled={disabled}
+                                  value={candidate.businessName}
                                   onChange={(e) =>
-                                    updateCandidateNote(
-                                      candidate.phone,
+                                    updateCandidateField(
+                                      candidate.localId,
+                                      "businessName",
                                       e.target.value
                                     )
                                   }
-                                  className="w-full rounded-lg border border-slate-200/80 bg-white/90 px-2.5 py-1 text-xs text-slate-700 outline-none focus:border-indigo-400"
+                                  maxLength={120}
+                                  className="w-full rounded-lg border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 disabled:bg-slate-100"
                                 />
-                              </div>
+                              </label>
+
+                              <label className="block space-y-0.5">
+                                <span className="text-[11px] font-medium text-slate-500">
+                                  {t("create.phone")}
+                                </span>
+                                <input
+                                  type="tel"
+                                  disabled={disabled}
+                                  value={candidate.phone}
+                                  onChange={(e) =>
+                                    updateCandidateField(
+                                      candidate.localId,
+                                      "phone",
+                                      e.target.value
+                                    )
+                                  }
+                                  maxLength={25}
+                                  className={cn(
+                                    "w-full rounded-lg border bg-white px-2.5 py-1.5 text-xs font-medium tabular-nums text-slate-800 outline-none disabled:bg-slate-100",
+                                    phoneValid
+                                      ? "border-slate-200/90 focus:border-indigo-500"
+                                      : "border-amber-400 focus:border-amber-500"
+                                  )}
+                                />
+                              </label>
+
+                              <label className="block space-y-0.5">
+                                <span className="text-[11px] font-medium text-slate-500">
+                                  {t("create.name")}
+                                </span>
+                                <input
+                                  type="text"
+                                  disabled={disabled}
+                                  value={candidate.name}
+                                  placeholder={t("scout.contactNamePlaceholder")}
+                                  onChange={(e) =>
+                                    updateCandidateField(
+                                      candidate.localId,
+                                      "name",
+                                      e.target.value
+                                    )
+                                  }
+                                  maxLength={80}
+                                  className="w-full rounded-lg border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-indigo-500 disabled:bg-slate-100"
+                                />
+                              </label>
+
+                              <label className="block space-y-0.5">
+                                <span className="text-[11px] font-medium text-slate-500">
+                                  {t("detail.businessType")}
+                                </span>
+                                <input
+                                  type="text"
+                                  disabled={disabled}
+                                  value={candidate.businessType}
+                                  onChange={(e) =>
+                                    updateCandidateField(
+                                      candidate.localId,
+                                      "businessType",
+                                      e.target.value
+                                    )
+                                  }
+                                  maxLength={80}
+                                  className="w-full rounded-lg border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-indigo-500 disabled:bg-slate-100"
+                                />
+                              </label>
+                            </div>
+
+                            {!disabled && (
+                              <label className="block space-y-0.5">
+                                <span className="text-[11px] font-medium text-slate-500">
+                                  {t("create.note")}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={candidate.suggestedNote}
+                                  onChange={(e) =>
+                                    updateCandidateField(
+                                      candidate.localId,
+                                      "suggestedNote",
+                                      e.target.value
+                                    )
+                                  }
+                                  maxLength={2000}
+                                  className="w-full rounded-lg border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-indigo-500"
+                                />
+                              </label>
                             )}
                           </div>
                         </div>
@@ -391,13 +538,17 @@ export function ScoutLeadsDrawer({
             <Button
               type="button"
               onClick={handleImport}
-              disabled={selectedPhones.size === 0 || scoutImport.isPending}
+              disabled={
+                validSelectedCandidates.length === 0 || scoutImport.isPending
+              }
               isLoading={scoutImport.isPending}
               className="ml-auto rounded-full px-5"
             >
               {scoutImport.isPending
                 ? t("scout.importing")
-                : t("scout.importButton", { count: selectedPhones.size })}
+                : t("scout.importButton", {
+                    count: validSelectedCandidates.length,
+                  })}
             </Button>
           </div>
         </div>

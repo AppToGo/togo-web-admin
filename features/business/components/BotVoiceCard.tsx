@@ -33,6 +33,7 @@ import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlan
 import { canCustomizeAssistant } from "@/features/subscription/utils/plan.util";
 import { useBotVoicePreview, useUpdateBusiness } from "../hooks/useBusiness";
 import type { BotVoice, Business } from "../types/business.types";
+import { useBusinessFeatures } from "@/features/business-features";
 
 const ASSISTANT_NAME_MAX = 30;
 const ASSISTANT_NAME_FORMAT = /^[\p{L}\p{N} .'-]*$/u;
@@ -95,8 +96,10 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
   // Sin `bot_messages.manage` el enlace sería un callejón (la página muestra
   // "sin acceso"). El plan no se filtra: la página destino invita a mejorar
   // el plan. Mientras cargan los permisos se muestra para no parpadear.
+  const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
   const showMessagesLink =
-    permissionsLoading || hasPermission("bot_messages.manage");
+    isFeatureEnabled("BOT_MESSAGES") &&
+    (permissionsLoading || hasPermission("bot_messages.manage"));
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
   // Sin acceso (Basic/Free) se muestra la voz por defecto con el nombre

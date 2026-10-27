@@ -13,6 +13,8 @@ import {
   updateUser,
   deleteUser,
   activateUser,
+  getUserLimit,
+  type UserLimit,
 } from "../services/user.service";
 import type { User, CreateUserRequest, UpdateUserRequest } from "../types";
 
@@ -27,6 +29,9 @@ const USERS_KEYS = {
   lists: (businessId?: string | null, includeInactive = false) =>
     [...USERS_KEYS.all, "list", businessId ?? null, includeInactive] as const,
   detail: (id: string) => [...USERS_KEYS.all, "detail", id] as const,
+  // Bajo `all`: crear, activar o desactivar usuarios invalida también el cupo
+  limit: (businessId?: string | null) =>
+    [...USERS_KEYS.all, "limit", businessId ?? null] as const,
 };
 
 const STALE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -51,6 +56,21 @@ export function useUsers(includeInactive = false) {
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: !!businessId,
+  });
+}
+
+/**
+ * Hook para obtener el cupo de usuarios del negocio actual.
+ */
+export function useUserLimit(enabled = true) {
+  const businessId = useEffectiveBusinessId();
+
+  return useQuery<UserLimit, Error>({
+    queryKey: USERS_KEYS.limit(businessId),
+    queryFn: getUserLimit,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled: enabled && !!businessId,
   });
 }
 

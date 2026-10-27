@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
+import { useIsRootSuperAdmin } from "@/features/auth/stores/auth.store";
 import {
   useCreateWhatsAppAccount,
   useUpdateWhatsAppAccount,
@@ -73,7 +73,7 @@ export function WhatsAppConnectDialog({
   const tCommon = useTranslations("common");
 
   const isEditMode = !!account;
-  const isSuperAdmin = useIsSuperAdmin();
+  const isSuperAdmin = useIsRootSuperAdmin();
 
   // Método manual: solo SUPER_ADMIN. Los demás roles solo ven Embedded Signup.
   const [connectionMethod, setConnectionMethod] =

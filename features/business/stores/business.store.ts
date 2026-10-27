@@ -10,6 +10,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 interface BusinessState {
   /** ID del negocio seleccionado. "" = Todos (solo SUPER_ADMIN), null = usar el del usuario */
@@ -84,7 +85,7 @@ function resolveEffectiveBusinessId(
   if (!user) return null;
 
   // SUPER_ADMIN puede seleccionar cualquier negocio
-  if (user.role === 'SUPER_ADMIN') {
+  if (isPlatformStaffRole(user.role)) {
     return selectedBusinessId ?? user.businessId ?? null;
   }
 

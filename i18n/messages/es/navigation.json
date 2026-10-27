@@ -32,7 +32,10 @@
     "business": "Datos del Negocio",
     "businesses": "Negocios",
     "users": "Usuarios",
-    "billing": "Facturación"
+    "billing": "Facturación",
+    "features": "Funcionalidades",
+    "internalUsers": "Usuarios internos",
+    "platformProfiles": "Perfiles internos"
   },
   "breadcrumbs": {
     "home": "Inicio",

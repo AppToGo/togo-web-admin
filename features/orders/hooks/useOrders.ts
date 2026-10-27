@@ -43,6 +43,7 @@ import {
   ORDERS_KEYS,
   type LiveOrdersFilters,
 } from "../types/order-cache.types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 // Stale times configurables
 const STALE_TIME = 30 * 1000; // 30 seconds
@@ -59,7 +60,7 @@ const GC_TIME = 5 * 60 * 1000; // 5 minutes
 export function useOrders(params?: GetOrdersParams & { businessId?: string }) {
   const dateParams = useDateFilterParams();
   const user = useAuthStore((state) => state.user);
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = params?.businessId !== undefined;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;
@@ -170,7 +171,7 @@ export function useOrdersByStatus(params?: UseOrdersByStatusParams) {
  */
 export function useLiveOrders(filters: LiveOrdersFilters) {
   const user = useAuthStore((state) => state.user);
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = filters.businessId !== undefined;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;

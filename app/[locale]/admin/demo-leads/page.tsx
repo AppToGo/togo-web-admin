@@ -46,13 +46,17 @@ import {
   readCollapsedStages,
   saveCollapsedStages,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 type PriorityFilter = DemoLeadPriority | "ALL";
 
 export default function DemoLeadsPage() {
   const t = useTranslations("admin-demo-leads");
   const { isLoading: isAuthLoading } = useAuthGuard();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.leads.view_own", "platform.leads.view_all");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
   const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
@@ -113,7 +117,7 @@ export default function DemoLeadsPage() {
     [leads]
   );
 
-  if (isAuthLoading) return null;
+  if (isAuthLoading || isPermissionLoading) return null;
 
   if (!isSuperAdmin) {
     return (

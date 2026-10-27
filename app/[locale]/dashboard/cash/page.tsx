@@ -26,8 +26,9 @@ import { CashRegisterTitle } from "@/features/cash/components/pos/CashRegisterTi
 import { usePosPageStore } from "@/stores/pos-menu.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { CashPage, OwnerOverview } from "@/features/cash/components";
+import { FeaturePage } from "@/features/business-features/components/FeaturePage";
 
-export default function CashRoutePage() {
+function CashRoutePageContent() {
   const t = useTranslations("cash");
   const tOrders = useTranslations("orders");
 
@@ -147,5 +148,14 @@ export default function CashRoutePage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+/** Solo si el negocio tiene activa la funcionalidad (ver /admin/features). */
+export default function CashRoutePage() {
+  return (
+    <FeaturePage name="CASH_POS">
+      <CashRoutePageContent />
+    </FeaturePage>
   );
 }

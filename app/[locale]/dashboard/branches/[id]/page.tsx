@@ -41,6 +41,7 @@ import {
   useWhatsAppAccounts,
   useWhatsAppRoutings,
 } from "@/features/whatsapp";
+import { Feature } from "@/features/business-features";
 
 export default function EditBranchPage() {
   const t = useTranslations("branches");
@@ -238,17 +239,19 @@ export default function EditBranchPage() {
             </div>
 
             {/* Mesas (docs/architecture/pedidos-en-mesa.md, Fase 1) */}
-            <Can permission="table.view">
-              <div id={TABLES_SECTION_ID} className="scroll-mt-4">
-                <TablesManager
-                  businessId={branch.businessId}
-                  branchId={id}
-                  businessSlug={business?.slug}
-                  branchSlug={branch.slug}
-                  isMultiBranch={isMultiBranch}
-                />
-              </div>
-            </Can>
+            <Feature name="DINE_IN_QR">
+              <Can permission="table.view">
+                <div id={TABLES_SECTION_ID} className="scroll-mt-4">
+                  <TablesManager
+                    businessId={branch.businessId}
+                    branchId={id}
+                    businessSlug={business?.slug}
+                    branchSlug={branch.slug}
+                    isMultiBranch={isMultiBranch}
+                  />
+                </div>
+              </Can>
+            </Feature>
 
             <p className="text-xs text-slate-500">
               {t("detail.meta", {

@@ -17,6 +17,7 @@ import {
   GC_TIME,
 } from "./query-keys";
 import type { WhatsAppRouting } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Hook para obtener todas las reglas de enrutamiento de WhatsApp del negocio
@@ -25,7 +26,7 @@ export function useWhatsAppRoutings() {
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = !!selectedBusinessId;
 

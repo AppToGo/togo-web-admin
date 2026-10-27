@@ -32,7 +32,10 @@
     "business": "Business Details",
     "businesses": "Businesses",
     "users": "Users",
-    "billing": "Billing"
+    "billing": "Billing",
+    "features": "Features",
+    "internalUsers": "Internal users",
+    "platformProfiles": "Internal profiles"
   },
   "breadcrumbs": {
     "home": "Home",

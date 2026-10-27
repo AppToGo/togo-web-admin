@@ -7,6 +7,7 @@ export {
   useBusinesses,
   usePaymentAlerts,
   useUpdateBranchesLimit,
+  useUpdateUsersLimit,
   useUpdateProofQuota,
   useRecordPayment,
   useSendNotification,

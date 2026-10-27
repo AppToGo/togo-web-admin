@@ -21,6 +21,7 @@ import type {
   ScoutImportRequest,
   ScoutImportResponse,
 } from "@/types/auth.types";
+import type { DemoLeadOwnerOption } from "@/types/auth.types";
 
 /**
  * Posibles clientes de la demo (solo SUPER_ADMIN).
@@ -141,7 +142,7 @@ export async function deleteDemoLead(id: string): Promise<void> {
 }
 
 /**
- * Harvey Writer/Handler: genera 3 borradores de WhatsApp según la etapa y el contexto del lead.
+ * Agente ToGo (Writer/Handler): genera 3 borradores de WhatsApp según la etapa y el contexto del lead.
  */
 export async function generateDemoLeadWhatsAppDrafts(
   id: string,
@@ -169,7 +170,7 @@ export async function logDemoLeadWhatsAppOutreach(
 }
 
 /**
- * Harvey Scout: busca prospectos en Google Places o extrae de texto con IA.
+ * ToGo Scout: busca prospectos en Google Places o extrae de texto con IA.
  */
 export async function searchScoutProspects(
   data: ScoutSearchRequest
@@ -182,7 +183,7 @@ export async function searchScoutProspects(
 }
 
 /**
- * Harvey Scout: importa en lote los prospectos seleccionados al Mini CRM.
+ * ToGo Scout: importa en lote los prospectos seleccionados al Mini CRM.
  */
 export async function importScoutProspects(
   data: ScoutImportRequest
@@ -191,5 +192,14 @@ export async function importScoutProspects(
     "/admin/demo-leads/scout/import",
     data
   );
+  return response.data;
+}
+
+/**
+ * Responsables posibles de un lead: solo personal de ToGo (super admin y
+ * usuarios internos con acceso a posibles clientes).
+ */
+export async function getDemoLeadOwners(): Promise<DemoLeadOwnerOption[]> {
+  const response = await apiClient.get<DemoLeadOwnerOption[]>("/admin/demo-leads/owners");
   return response.data;
 }

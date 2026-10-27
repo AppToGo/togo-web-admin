@@ -12,6 +12,7 @@ import {
   isOverdue,
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
+import { LeadOwnerAvatar } from "./LeadOwnerAvatar";
 
 /**
  * Tarjeta de un posible cliente en el tablero: toda la tarjeta abre la
@@ -36,10 +37,19 @@ export function LeadCard({
   const overdue = isOverdue(lead.nextActionAt);
 
   return (
-    <button
-      type="button"
+    // div y no button: adentro va el botón del responsable (no se anidan botones)
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(lead.id)}
-      className="group flex w-full flex-col gap-3 rounded-[20px] border border-white/90 bg-white/70 px-4 py-3.5 text-left shadow-card-sm transition-colors hover:border-indigo-200 hover:bg-white hover:shadow-card-md"
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(lead.id);
+        }
+      }}
+      className="group flex cursor-pointer w-full flex-col gap-3 rounded-[20px] border border-white/90 bg-white/70 px-4 py-3.5 text-left shadow-card-sm transition-colors hover:border-indigo-200 hover:bg-white hover:shadow-card-md"
     >
       <div className="flex items-center gap-3">
         <InitialsAvatar name={lead.name} seed={lead.id} size="md" />
@@ -120,12 +130,13 @@ export function LeadCard({
         </div>
       )}
 
-      <div className="flex justify-between gap-2 border-t border-slate-200/80 pt-2.5 text-xs text-slate-500">
+      <div className="flex items-center justify-between gap-2 border-t border-slate-200/80 pt-2.5 text-xs text-slate-500">
         <span className="truncate tabular-nums">{formatPhone(lead.phone)}</span>
-        <span className="shrink-0">
+        <span className="flex shrink-0 items-center gap-2">
           {formatRelative(lead.lastDemoAt, locale)}
+          <LeadOwnerAvatar lead={lead} />
         </span>
       </div>
-    </button>
+    </div>
   );
 }

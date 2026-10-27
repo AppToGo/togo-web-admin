@@ -19,6 +19,7 @@ import {
 } from "../services/branch.service";
 import { BRANCHES_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 import type { Branch, CanCreateBranchResponse } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Hook para obtener todas las sucursales del negocio actual
@@ -30,7 +31,7 @@ export function useBranches() {
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = !!selectedBusinessId;
 
@@ -109,7 +110,7 @@ export function useCanCreateBranch() {
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = !!selectedBusinessId;
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useMessages } from "next-intl";
-import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
+import { useIsRootSuperAdmin } from "@/features/auth/stores/auth.store";
 import {
   isNonOperational,
   permissionI18nKey,
@@ -33,7 +33,7 @@ interface OperatorProfilesMessages {
  */
 export function usePermissionMeta() {
   const messages = useMessages();
-  const isSuperAdmin = useIsSuperAdmin();
+  const isSuperAdmin = useIsRootSuperAdmin();
 
   const catalog = useMemo(
     () => (messages?.permissionCatalog ?? {}) as PermissionCatalogMessages,

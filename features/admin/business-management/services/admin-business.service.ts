@@ -6,6 +6,7 @@
  * - GET /admin/businesses
  * - GET /admin/businesses/payment-alerts
  * - PATCH /admin/businesses/:id/branches-limit
+ * - PATCH /admin/businesses/:id/users-limit
  * - POST /admin/businesses/:id/payments
  * - POST /admin/businesses/:id/notifications
  * - PATCH /admin/businesses/:id/status
@@ -17,6 +18,7 @@ import type {
   BusinessFilters,
   PaginatedBusinesses,
   UpdateBranchesLimitDto,
+  UpdateUsersLimitDto,
   UpdateProofQuotaDto,
   RecordPaymentDto,
   SendNotificationDto,
@@ -71,6 +73,21 @@ export async function updateBranchesLimit(
 ): Promise<BusinessWithSubscription> {
   const response = await apiClient.patch<BusinessWithSubscription>(
     `/admin/businesses/${businessId}/branches-limit`,
+    data
+  );
+  return response.data;
+}
+
+/**
+ * Update users limit for a business
+ * PATCH /admin/businesses/:id/users-limit
+ */
+export async function updateUsersLimit(
+  businessId: string,
+  data: UpdateUsersLimitDto
+): Promise<BusinessWithSubscription> {
+  const response = await apiClient.patch<BusinessWithSubscription>(
+    `/admin/businesses/${businessId}/users-limit`,
     data
   );
   return response.data;

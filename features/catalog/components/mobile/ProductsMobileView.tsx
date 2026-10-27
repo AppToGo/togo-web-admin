@@ -52,7 +52,8 @@ interface ProductsMobileViewProps {
   /** Estrella visible pero sin acción (resumen de destacados sin cargar). */
   featuredDisabled?: boolean;
   onCreate: () => void;
-  onImport: () => void;
+  /** Sin él (importación no activa para el negocio) no se muestra el botón. */
+  onImport?: () => void;
 }
 
 function priceText(product: CatalogProduct, from: (price: string) => string): string | null {
@@ -123,15 +124,17 @@ export function ProductsMobileView({
           <span className="flex-1 text-xs text-slate-500">
             {total !== undefined && t("products.stats.total", { count: total })}
           </span>
-          <button
-            type="button"
-            onClick={onImport}
-            aria-label={t("products.import")}
-            className="flex h-9 items-center gap-1.5 rounded-full px-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
-          >
-            <Upload className="h-4 w-4" />
-            {t("products.import")}
-          </button>
+          {onImport && (
+            <button
+              type="button"
+              onClick={onImport}
+              aria-label={t("products.import")}
+              className="flex h-9 items-center gap-1.5 rounded-full px-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              <Upload className="h-4 w-4" />
+              {t("products.import")}
+            </button>
+          )}
         </div>
         <SearchField value={searchQuery} onChange={onSearchChange} placeholder={t("mobile.searchProducts")} />
         {categories.length > 0 && (

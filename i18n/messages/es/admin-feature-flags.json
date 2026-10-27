@@ -1,0 +1,99 @@
+{
+  "title": "Funcionalidades por negocio",
+  "subtitle": "Activa funcionalidades negocio por negocio. Solo los negocios con una funcionalidad activa la ven y la pueden usar.",
+  "accessDenied": "Solo el super admin puede gestionar funcionalidades.",
+  "tabs": {
+    "bulk": "Activación masiva",
+    "business": "Por negocio"
+  },
+  "requires": "Requiere: {features}",
+  "requiresAnyOf": "Requiere: {features}",
+  "or": "o",
+  "bulk": {
+    "businessesLabel": "Negocios",
+    "businessesPlaceholder": "Selecciona uno o varios negocios",
+    "searchBusiness": "Buscar negocio...",
+    "noBusinesses": "No se encontraron negocios",
+    "selectAll": "Seleccionar todos",
+    "clearAll": "Limpiar",
+    "featuresLabel": "Funcionalidades",
+    "activeIn": "Activa en {count} de {total}",
+    "enable": "Activar",
+    "disable": "Desactivar"
+  },
+  "business": {
+    "selectLabel": "Negocio",
+    "selectPlaceholder": "Selecciona un negocio",
+    "empty": "Selecciona un negocio para ver sus funcionalidades.",
+    "activeCount": "{count} de {total} funcionalidades activas",
+    "default": "Por defecto",
+    "changedBy": "Cambiado por {name} · {date}",
+    "unknownUser": "usuario eliminado"
+  },
+  "dialog": {
+    "title": "Funcionalidades",
+    "description": "Negocio: {businessName}"
+  },
+  "confirm": {
+    "enableTitle": "¿Activar funcionalidades?",
+    "disableTitle": "¿Desactivar funcionalidades?",
+    "summary": "{businesses, plural, =1 {1 negocio} other {# negocios}} × {features, plural, =1 {1 funcionalidad} other {# funcionalidades}}:",
+    "alsoEnables": "También se activará lo que requieren: {features}.",
+    "mayDisable": "Si quedan sin requisitos, también se apagarán: {features}.",
+    "cascade": "{features} depende de {feature} y también se desactivará.",
+    "cancel": "Cancelar"
+  },
+  "notifications": {
+    "updated": "{count, plural, =1 {1 cambio aplicado} other {# cambios aplicados}}",
+    "noChanges": "No hubo cambios: los negocios ya tenían ese estado"
+  },
+  "errors": {
+    "update": "No se pudieron actualizar las funcionalidades"
+  },
+  "catalog": {
+    "CASH_POS": {
+      "name": "Caja / POS",
+      "description": "Cajas, turnos, movimientos, arqueos y venta desde el POS."
+    },
+    "COUNTER_SALE": {
+      "name": "Venta de mostrador",
+      "description": "Pedidos que se crean, cobran y entregan en un solo paso en la sede."
+    },
+    "AI_PAYMENT_VERIFICATION": {
+      "name": "Verificación de comprobantes con IA",
+      "description": "Analiza los comprobantes de transferencia que envía el cliente y calcula el riesgo."
+    },
+    "AI_PRODUCT_IMPORT": {
+      "name": "Importación de productos con IA",
+      "description": "Carga de productos desde CSV, imágenes o PDF con clasificación automática."
+    },
+    "BOT_VOICE": {
+      "name": "Voz del asistente",
+      "description": "Trato (tú/usted), emojis y nombre del asistente. Además requiere plan Pro o Enterprise."
+    },
+    "DINE_IN_QR": {
+      "name": "Pedidos en mesa + QR",
+      "description": "Mesas con QR imprimible y pedidos desde la mesa."
+    },
+    "OPERATOR_CATALOG_ORDER": {
+      "name": "Tomar pedido desde el catálogo",
+      "description": "El operador abre el catálogo web con una sesión y toma pedidos (por ejemplo, de mesas)."
+    },
+    "TIPS": {
+      "name": "Propinas",
+      "description": "Propina voluntaria en pedidos de mesa y mostrador."
+    },
+    "GLOBAL_CATALOG": {
+      "name": "Catálogo global",
+      "description": "Biblioteca de productos por industria que el negocio puede activar en su catálogo."
+    },
+    "AI_BOT_PARAPHRASE": {
+      "name": "Paráfrasis de mensajes del bot",
+      "description": "La IA reescribe los mensajes del asistente para que suenen más naturales."
+    },
+    "BOT_MESSAGES": {
+      "name": "Mensajes editables del asistente",
+      "description": "El negocio edita los mensajes del asistente a mano o con IA. Además requiere plan Pro o Enterprise."
+    }
+  }
+}

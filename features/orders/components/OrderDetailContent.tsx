@@ -60,6 +60,7 @@ import { PaymentProofIndicator } from "./PaymentProofDialog";
 import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import { MoneyTrailBlock } from "./MoneyTrailBlock";
 import { orderTipBreakdown } from "../utils/tip.utils";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -258,7 +259,7 @@ export function OrderDetailContent({
   const canViewHistory =
     user?.role === "OWNER" ||
     user?.role === "ADMIN" ||
-    user?.role === "SUPER_ADMIN";
+    isPlatformStaffRole(user?.role);
 
   // Sesión demo: sin pestaña Conversación — el backend la deniega (solo
   // inbox propio) y el 403 se vería como error en vez de estado vacío.

@@ -60,6 +60,7 @@ import { DineInConfigSection } from "./DineInConfigSection";
 import { CounterConfigSection } from "./CounterConfigSection";
 import { TipConfigSection } from "./TipConfigSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
+import { Feature } from "@/features/business-features";
 
 interface BranchFormProps {
   branch?: Branch | null;
@@ -764,28 +765,34 @@ export function BranchForm({
 
       <div id={BRANCH_FORM_SECTION_IDS.channels} className="scroll-mt-4 space-y-4">
         {/* Dine-in service (docs/architecture/pedidos-en-mesa.md) */}
-        <DineInConfigSection
-          value={formData.dineInConfig}
-          onChange={(config) =>
-            setFormData((prev) => ({ ...prev, dineInConfig: config }))
-          }
-        />
+        <Feature name="DINE_IN_QR">
+          <DineInConfigSection
+            value={formData.dineInConfig}
+            onChange={(config) =>
+              setFormData((prev) => ({ ...prev, dineInConfig: config }))
+            }
+          />
+        </Feature>
 
         {/* Venta de mostrador (docs/caja-pedidos.md) */}
-        <CounterConfigSection
-          value={formData.counterConfig}
-          onChange={(config) =>
-            setFormData((prev) => ({ ...prev, counterConfig: config }))
-          }
-        />
+        <Feature name="COUNTER_SALE">
+          <CounterConfigSection
+            value={formData.counterConfig}
+            onChange={(config) =>
+              setFormData((prev) => ({ ...prev, counterConfig: config }))
+            }
+          />
+        </Feature>
 
         {/* Propina voluntaria (mesa y mostrador) */}
-        <TipConfigSection
-          value={formData.tipConfig}
-          onChange={(config) =>
-            setFormData((prev) => ({ ...prev, tipConfig: config }))
-          }
-        />
+        <Feature name="TIPS">
+          <TipConfigSection
+            value={formData.tipConfig}
+            onChange={(config) =>
+              setFormData((prev) => ({ ...prev, tipConfig: config }))
+            }
+          />
+        </Feature>
       </div>
 
       <div id={BRANCH_FORM_SECTION_IDS.payments} className="scroll-mt-4 space-y-4">

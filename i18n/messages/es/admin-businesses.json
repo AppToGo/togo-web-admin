@@ -7,7 +7,8 @@
   "errors": {
     "unauthorized": "Acceso no autorizado",
     "superAdminRequired": "Se requiere ser Super Admin para acceder a esta página",
-    "updateProofQuota": "No se pudo actualizar el cupo de comprobantes"
+    "updateProofQuota": "No se pudo actualizar el cupo de comprobantes",
+    "updateUsersLimit": "No se pudo actualizar el límite de usuarios"
   },
   "alerts": {
     "title": "{count, plural, =1 {Alerta de Pago} other {Alertas de Pago}}",
@@ -28,7 +29,9 @@
     "dueDate": "Fecha de Vencimiento",
     "branches": "Sedes",
     "status": "Estado",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "users": "Usuarios",
+    "customLimit": "Personalizado"
   },
   "status": {
     "active": "Activo",
@@ -40,7 +43,9 @@
     "editProofQuota": "Editar cupo de comprobantes",
     "sendNotification": "Enviar Notificación",
     "deactivate": "Desactivar",
-    "activate": "Activar"
+    "activate": "Activar",
+    "editUsers": "Editar límite de usuarios",
+    "editFeatures": "Funcionalidades"
   },
   "filters": {
     "title": "Filtros",
@@ -129,6 +134,19 @@
       "sendEmail": "Enviar por correo electrónico",
       "sendInApp": "Enviar notificación en la aplicación",
       "submit": "Enviar Notificación"
+    },
+    "editUsers": {
+      "title": "Editar límite de usuarios",
+      "description": "Modificando: {businessName}",
+      "currentPlan": "Plan actual",
+      "planLimit": "Límite del plan",
+      "currentUsers": "Usuarios activos",
+      "usersCount": "{count, plural, =1 {# usuario} other {# usuarios}}",
+      "useOverride": "Usar límite personalizado",
+      "overrideDescription": "Activar para establecer un límite de usuarios diferente al del plan",
+      "overrideValue": "Límite personalizado",
+      "overrideHint": "Cuenta usuarios activos de todas las sedes. Si es menor que los activos actuales, no se podrán crear ni reactivar usuarios hasta bajar de ese número.",
+      "submit": "Guardar Cambios"
     }
   },
   "notifications": {
@@ -140,6 +158,7 @@
     "proofQuotaUpdated": "Cupo de comprobantes actualizado exitosamente",
     "statusUpdated": "Estado actualizado exitosamente",
     "businessDeactivated": "Negocio desactivado exitosamente",
-    "businessActivated": "Negocio activado exitosamente"
+    "businessActivated": "Negocio activado exitosamente",
+    "usersLimitUpdated": "Límite de usuarios actualizado exitosamente"
   }
 }

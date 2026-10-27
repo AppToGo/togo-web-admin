@@ -195,6 +195,8 @@ export interface DemoLead {
   stage: DemoLeadStage;
   businessType?: string | null;
   establishmentName?: string | null;
+  /** Responsable: siempre un usuario de ToGo (super admin o usuario interno). */
+  ownerUserId?: string | null;
   ownerName?: string | null;
   priority: DemoLeadPriority;
   nextAction?: string | null;
@@ -214,6 +216,7 @@ export interface GenerateWhatsAppDraftsRequest {
   objective?: string;
   prospectReply?: string;
   tone?: WhatsAppDraftTone;
+  forceRegenerate?: boolean;
 }
 
 export interface WhatsAppDraftItem {
@@ -230,6 +233,7 @@ export interface WhatsAppDraftsResponse {
   recommendedNextAction: string;
   recommendedNextActionDays: number;
   drafts: WhatsAppDraftItem[];
+  generatedForStage?: DemoLeadStage;
 }
 
 export interface LogWhatsAppOutreachRequest {
@@ -342,6 +346,8 @@ export interface DemoLeadDetailLead extends DemoLead {
   convertedAt?: string | null;
   lostReason?: string | null;
   lostAt?: string | null;
+  whatsappDrafts?: WhatsAppDraftsResponse | null;
+  whatsappDraftsAt?: string | null;
 }
 
 /** Acción de seguimiento de un lead (varias por lead). */
@@ -391,4 +397,11 @@ export interface UpdateDemoLeadRequest {
   nextActionAt?: string | null;
   lostReason?: string | null;
   revokedAt?: string | null;
+}
+
+/** Responsable posible de un lead: personal de ToGo, nunca usuarios de negocios. */
+export interface DemoLeadOwnerOption {
+  id: string;
+  name: string;
+  email: string | null;
 }

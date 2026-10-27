@@ -1,0 +1,99 @@
+{
+  "title": "Features by business",
+  "subtitle": "Turn features on business by business. Only businesses with a feature turned on can see and use it.",
+  "accessDenied": "Only the super admin can manage features.",
+  "tabs": {
+    "bulk": "Bulk activation",
+    "business": "By business"
+  },
+  "requires": "Requires: {features}",
+  "requiresAnyOf": "Requires: {features}",
+  "or": "or",
+  "bulk": {
+    "businessesLabel": "Businesses",
+    "businessesPlaceholder": "Select one or more businesses",
+    "searchBusiness": "Search business...",
+    "noBusinesses": "No businesses found",
+    "selectAll": "Select all",
+    "clearAll": "Clear",
+    "featuresLabel": "Features",
+    "activeIn": "On in {count} of {total}",
+    "enable": "Turn on",
+    "disable": "Turn off"
+  },
+  "business": {
+    "selectLabel": "Business",
+    "selectPlaceholder": "Select a business",
+    "empty": "Select a business to see its features.",
+    "activeCount": "{count} of {total} features on",
+    "default": "Default",
+    "changedBy": "Changed by {name} · {date}",
+    "unknownUser": "deleted user"
+  },
+  "dialog": {
+    "title": "Features",
+    "description": "Business: {businessName}"
+  },
+  "confirm": {
+    "enableTitle": "Turn features on?",
+    "disableTitle": "Turn features off?",
+    "summary": "{businesses, plural, =1 {1 business} other {# businesses}} × {features, plural, =1 {1 feature} other {# features}}:",
+    "alsoEnables": "What they require will also be turned on: {features}.",
+    "mayDisable": "If left without their requirements, these will also be turned off: {features}.",
+    "cascade": "{features} depends on {feature} and will also be turned off.",
+    "cancel": "Cancel"
+  },
+  "notifications": {
+    "updated": "{count, plural, =1 {1 change applied} other {# changes applied}}",
+    "noChanges": "No changes: the businesses already had that state"
+  },
+  "errors": {
+    "update": "Could not update the features"
+  },
+  "catalog": {
+    "CASH_POS": {
+      "name": "Cash register / POS",
+      "description": "Registers, shifts, cash movements, counts and POS sales."
+    },
+    "COUNTER_SALE": {
+      "name": "Counter sales",
+      "description": "Orders created, paid and handed over in a single step at the branch."
+    },
+    "AI_PAYMENT_VERIFICATION": {
+      "name": "AI receipt verification",
+      "description": "Analyzes the transfer receipts customers send and scores the risk."
+    },
+    "AI_PRODUCT_IMPORT": {
+      "name": "AI product import",
+      "description": "Import products from CSV, images or PDF with automatic classification."
+    },
+    "BOT_VOICE": {
+      "name": "Assistant voice",
+      "description": "Formality, emojis and the assistant's name. Also requires the Pro or Enterprise plan."
+    },
+    "DINE_IN_QR": {
+      "name": "Table orders + QR",
+      "description": "Tables with printable QR codes and ordering from the table."
+    },
+    "OPERATOR_CATALOG_ORDER": {
+      "name": "Take orders from the catalog",
+      "description": "Staff open the web catalog with a session and take orders (for example, for tables)."
+    },
+    "TIPS": {
+      "name": "Tips",
+      "description": "Optional tip on table and counter orders."
+    },
+    "GLOBAL_CATALOG": {
+      "name": "Global catalog",
+      "description": "Industry product library that the business can add to its catalog."
+    },
+    "AI_BOT_PARAPHRASE": {
+      "name": "Bot message paraphrasing",
+      "description": "AI rewrites the assistant's messages so they sound more natural."
+    },
+    "BOT_MESSAGES": {
+      "name": "Editable assistant messages",
+      "description": "The business edits the assistant's messages by hand or with AI. Also requires the Pro or Enterprise plan."
+    }
+  }
+}

@@ -16,6 +16,7 @@ import { useIndustryCategories } from "@/features/admin/industry-categories/hook
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { CreateGlobalProductDto, UpdateGlobalProductDto } from "@/features/admin/catalog/types";
 import { useState } from "react";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 // ============================================================================
 // COMPONENT
@@ -24,7 +25,10 @@ import { useState } from "react";
 export default function CreateGlobalProductPage() {
   useAuthGuard();
   const router = useRouter();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.global_catalog.manage");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
   const { admin, common, catalog } = useAdminCatalogTranslations();
 
   // Form state for industry selection
@@ -58,6 +62,8 @@ export default function CreateGlobalProductPage() {
   };
 
   // Check access
+  if (isPermissionLoading) return null;
+
   if (!isSuperAdmin) {
     return (
       <DashboardLayout>
