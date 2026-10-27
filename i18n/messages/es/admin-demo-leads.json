@@ -207,5 +207,14 @@
     "alreadyCustomer": "Ya es cliente",
     "importButton": "Sumar {count} al CRM",
     "importing": "Sumando…"
+  },
+  "owner": {
+    "title": "Responsable",
+    "description": "Elige quién de ToGo hace el seguimiento de {name}.",
+    "search": "Buscar por nombre o email",
+    "empty": "No hay usuarios de ToGo que coincidan",
+    "remove": "Quitar responsable",
+    "add": "Asignar responsable",
+    "current": "Responsable: {name}"
   }
 }

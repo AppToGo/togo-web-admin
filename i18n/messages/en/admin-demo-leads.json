@@ -207,5 +207,14 @@
     "alreadyCustomer": "Already a customer",
     "importButton": "Add {count} to CRM",
     "importing": "Adding…"
+  },
+  "owner": {
+    "title": "Owner",
+    "description": "Choose who at ToGo follows up with {name}.",
+    "search": "Search by name or email",
+    "empty": "No ToGo users match",
+    "remove": "Remove owner",
+    "add": "Assign owner",
+    "current": "Owner: {name}"
   }
 }
