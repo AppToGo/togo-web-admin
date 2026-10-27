@@ -31,6 +31,7 @@
     "revoked": "No consent",
     "tries": "{count, plural, one {# visit} other {# visits}}",
     "manual": "Manual",
+    "scout": "Harvey Scout",
     "referred": "Referred",
     "noDemo": "No demo",
     "noName": "No name"
@@ -73,6 +74,7 @@
     "writeWhatsApp": "Message on WhatsApp",
     "tabsLabel": "Lead details",
     "manual": "Created manually",
+    "scout": "Captured by Harvey Scout",
     "manualReferred": "Created manually · Referred by {name}"
   },
   "events": {
@@ -82,7 +84,8 @@
     "INBOX_TAKEOVER": "Took over their conversation",
     "INBOX_REPLY_SENT": "Replied to themselves in the inbox",
     "WHATSAPP_RECEIVED": "Wrote via WhatsApp",
-    "LEAD_CREATED": "Created manually in the CRM",
+    "LEAD_CREATED": "Created in the CRM",
+    "WHATSAPP_OUTREACH_SENT": "Sent WhatsApp message (wa.me)",
     "DEMO_STARTED_FIRST": "Tried the demo for the first time"
   },
   "suggestions": {
@@ -90,6 +93,7 @@
     "REVIEW_LOSS": "Document why they didn't continue.",
     "NO_CONTACT": "Do not contact: consent withdrawn.",
     "DO_PLANNED_ACTION": "Do the planned action that went overdue.",
+    "COLD_OUTREACH": "Cold prospect: send first WhatsApp message and invite to try the demo.",
     "INVITE_CONTINUE": "Invite them to keep trying the demo.",
     "NUDGE_FIRST_ORDER": "Nudge them to create their first test order.",
     "PERSONAL_OUTREACH": "Personal outreach based on what they tried.",
@@ -105,7 +109,13 @@
     "deleteError": "Could not delete the lead",
     "created": "Lead created",
     "createError": "Could not create the lead",
-    "actionError": "Could not update the action"
+    "actionError": "Could not update the action",
+    "draftsError": "Could not generate WhatsApp messages",
+    "outreachLogged": "WhatsApp logged and stage updated automatically",
+    "outreachError": "Could not log WhatsApp outreach",
+    "scoutSearchError": "Could not complete prospect search",
+    "scoutImported": "Added {count} potential customers to the board",
+    "scoutImportError": "Could not import prospects"
   },
   "loadError": "Could not load potential customers.",
   "retry": "Retry",
@@ -155,5 +165,45 @@
     "delete": "Delete action",
     "placeholder": "Call, send proposal…",
     "add": "Add action"
+  },
+  "harvey": {
+    "title": "Harvey Agent · WhatsApp",
+    "subtitle": "Generates the best message based on the lead's stage and activity",
+    "customize": "Reply / Adjust",
+    "regenerate": "Regenerate options",
+    "prospectReplyLabel": "Handler Mode: What did the prospect reply on WhatsApp?",
+    "prospectReplyPlaceholder": "Paste what the prospect said or asked to draft a response…",
+    "objectiveLabel": "Additional instruction or focus (optional)",
+    "objectivePlaceholder": "E.g. Offer to upload their menu PDF for free…",
+    "generating": "Harvey is writing…",
+    "generateWithContext": "Generate reply with this context",
+    "messagePlaceholder": "Write or edit the message to open in WhatsApp…",
+    "autoStageLabel": "Stage on send",
+    "sendDisclaimer": "Clicking send opens WhatsApp (wa.me), logs the message in notes, and updates the stage automatically.",
+    "sendAndAdvance": "Send via WhatsApp & move to {stage}",
+    "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged."
+  },
+  "scout": {
+    "button": "Find prospects",
+    "title": "Harvey Scout · Find prospects",
+    "subtitle": "Find potential businesses by area or extract them with AI from free text and add them to the board.",
+    "modeLabel": "Search mode",
+    "modePlaces": "Google Maps / Area",
+    "modeText": "Extract from text with AI",
+    "placesQueryLabel": "Category and city or neighborhood",
+    "placesQueryPlaceholder": "E.g. Burger restaurants in Medellín",
+    "rawTextLabel": "Paste your list, directory, or copied data from social/Maps",
+    "rawTextPlaceholder": "E.g.\nBurger 80 - 3001234567 - Own delivery\nRoma Pizza | +57 310 987 6543 | Orders via WhatsApp",
+    "defaultIndustryLabel": "Default industry",
+    "searchButton": "Search businesses",
+    "extractButton": "Extract with AI",
+    "searching": "Searching…",
+    "resultsTitle": "{count, plural, one {# prospect found} other {# prospects found}}",
+    "selectAll": "Select all new",
+    "deselectAll": "Deselect all",
+    "alreadyInCrm": "Already in CRM · Open",
+    "alreadyCustomer": "Already a customer",
+    "importButton": "Add {count} to CRM",
+    "importing": "Adding…"
   }
 }

@@ -16,12 +16,20 @@ import {
   deleteDemoLeadAction,
   addDemoLeadNote,
   deleteDemoLead,
+  generateDemoLeadWhatsAppDrafts,
+  logDemoLeadWhatsAppOutreach,
+  searchScoutProspects,
+  importScoutProspects,
 } from "../services/demo-leads.service";
 import type {
   CreateDemoLeadRequest,
   DemoLead,
   DemoLeadFilters,
   UpdateDemoLeadRequest,
+  GenerateWhatsAppDraftsRequest,
+  LogWhatsAppOutreachRequest,
+  ScoutSearchRequest,
+  ScoutImportRequest,
 } from "@/types/auth.types";
 import { extractErrorMessage } from "@/lib/error.utils";
 
@@ -207,6 +215,84 @@ export function useDeleteDemoLead() {
     },
     onError: (error) => {
       toast.error(extractErrorMessage(error, t("toasts.deleteError")));
+    },
+  });
+}
+
+/**
+ * Hook para generar borradores personalizados de WhatsApp con Harvey.
+ */
+export function useGenerateWhatsAppDrafts(leadId: string) {
+  const t = useTranslations("admin-demo-leads");
+
+  return useMutation({
+    mutationFn: (data: GenerateWhatsAppDraftsRequest = {}) =>
+      generateDemoLeadWhatsAppDrafts(leadId, data),
+    onError: (error) => {
+      toast.error(extractErrorMessage(error, t("toasts.draftsError")));
+    },
+  });
+}
+
+/**
+ * Hook para registrar automáticamente el envío por WhatsApp y actualizar el estado del lead.
+ */
+export function useLogWhatsAppOutreach() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: LogWhatsAppOutreachRequest;
+    }) => logDemoLeadWhatsAppOutreach(id, data),
+    onSuccess: (_res, variables) => {
+      queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: DEMO_LEADS_KEYS.detail(variables.id),
+      });
+      toast.success(t("toasts.outreachLogged"));
+    },
+    onError: (error) => {
+      toast.error(extractErrorMessage(error, t("toasts.outreachError")));
+    },
+  });
+}
+
+/**
+ * Hook para buscar o extraer prospectos con Harvey Scout.
+ */
+export function useScoutSearch() {
+  const t = useTranslations("admin-demo-leads");
+
+  return useMutation({
+    mutationFn: (data: ScoutSearchRequest) => searchScoutProspects(data),
+    onError: (error) => {
+      toast.error(extractErrorMessage(error, t("toasts.scoutSearchError")));
+    },
+  });
+}
+
+/**
+ * Hook para importar prospectos seleccionados desde Harvey Scout al Mini CRM.
+ */
+export function useScoutImport() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-demo-leads");
+
+  return useMutation({
+    mutationFn: (data: ScoutImportRequest) => importScoutProspects(data),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+      toast.success(
+        t("toasts.scoutImported", { count: res.createdCount })
+      );
+    },
+    onError: (error) => {
+      toast.error(extractErrorMessage(error, t("toasts.scoutImportError")));
     },
   });
 }

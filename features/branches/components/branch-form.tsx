@@ -48,6 +48,8 @@ import {
   DEFAULT_TRANSFER_OPTIONS,
   DEFAULT_DINE_IN_CONFIG,
   DEFAULT_COUNTER_CONFIG,
+  DEFAULT_TIP_CONFIG,
+  resolveTipConfig,
   parseBusinessHours,
   validateBusinessHours,
 } from "../types";
@@ -56,6 +58,7 @@ import { BusinessHoursSection } from "./BusinessHoursSection";
 import { TransferOptionsSection } from "./TransferOptionsSection";
 import { DineInConfigSection } from "./DineInConfigSection";
 import { CounterConfigSection } from "./CounterConfigSection";
+import { TipConfigSection } from "./TipConfigSection";
 import { BranchLocationPicker } from "./BranchLocationPicker";
 
 interface BranchFormProps {
@@ -163,6 +166,7 @@ export function BranchForm({
         transferOptions: DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: DEFAULT_DINE_IN_CONFIG,
         counterConfig: DEFAULT_COUNTER_CONFIG,
+        tipConfig: DEFAULT_TIP_CONFIG,
       };
     }
     const to = branch.transferOptions as TransferOptions | null;
@@ -188,6 +192,7 @@ export function BranchForm({
       transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
       dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
       counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
+      tipConfig: resolveTipConfig(branch.tipConfig),
     };
   });
 
@@ -243,6 +248,7 @@ export function BranchForm({
         transferOptions: to?.options !== undefined ? to : DEFAULT_TRANSFER_OPTIONS,
         dineInConfig: di?.enabled !== undefined ? di : DEFAULT_DINE_IN_CONFIG,
         counterConfig: co?.enabled !== undefined ? co : DEFAULT_COUNTER_CONFIG,
+        tipConfig: resolveTipConfig(branch.tipConfig),
       };
       setFormData(next);
       setSavedSnapshot(JSON.stringify(next));
@@ -396,6 +402,7 @@ export function BranchForm({
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
           counterConfig: { enabled: formData.counterConfig?.enabled === true },
+          tipConfig: formData.tipConfig,
         }
       : {
           name: formData.name,
@@ -416,6 +423,7 @@ export function BranchForm({
           transferOptions: normalizeTransferOptions(formData.transferOptions),
           dineInConfig: normalizeDineInConfig(formData.dineInConfig),
           counterConfig: { enabled: formData.counterConfig?.enabled === true },
+          tipConfig: formData.tipConfig,
         };
 
     onSubmit(data);
@@ -768,6 +776,14 @@ export function BranchForm({
           value={formData.counterConfig}
           onChange={(config) =>
             setFormData((prev) => ({ ...prev, counterConfig: config }))
+          }
+        />
+
+        {/* Propina voluntaria (mesa y mostrador) */}
+        <TipConfigSection
+          value={formData.tipConfig}
+          onChange={(config) =>
+            setFormData((prev) => ({ ...prev, tipConfig: config }))
           }
         />
       </div>

@@ -319,6 +319,14 @@
       "description": "Para ventas en el local: el cliente pide, paga y se lleva el producto en el momento",
       "enable": "Activar venta de mostrador",
       "enableDescription": "Agrega el tipo \"Mostrador\" a \"Nuevo pedido\" en esta sede. El pedido se cobra y queda entregado en un solo paso; en efectivo exige una caja abierta."
+    },
+    "tip": {
+      "title": "Propina",
+      "description": "Propina voluntaria sugerida en pedidos de mesa y de mostrador",
+      "enable": "Sugerir propina",
+      "enableDescription": "Al cobrar en Caja se precarga la propina sugerida y el cajero puede cambiarla o quitarla. En el QR de mesa el comensal también puede elegirla. No cuenta como venta.",
+      "suggested": "Propina sugerida",
+      "suggestedDescription": "Se aplica sobre el subtotal del pedido. La propina siempre es voluntaria."
     }
   },
   "filters": {

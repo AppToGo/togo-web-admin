@@ -19,7 +19,11 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { PHONE_REGEX } from "@/components/ui/phone-input";
 import { useBranch } from "@/features/branches/hooks/useBranches";
-import { isCounterEnabled } from "@/features/branches/types/branch-config.types";
+import {
+  isCounterEnabled,
+  resolveTipConfig,
+} from "@/features/branches/types/branch-config.types";
+import { isTippable } from "../utils/tip.utils";
 import { useTables } from "@/features/tables/hooks";
 import type { InventoryItem } from "@/features/branch-inventory/types";
 import { useOrderableProducts } from "./useOrderableProducts";
@@ -164,6 +168,9 @@ export function useOrderComposer({
           ? 0
           : null;
   const total = subtotal + (deliveryFee ?? 0);
+  // Propina: se elige al cobrar (mesa/mostrador con propina en la sede).
+  const branchTipConfig = resolveTipConfig(branch?.tipConfig);
+  const tipConfig = isTippable(deliveryType, branchTipConfig) ? branchTipConfig : null;
 
   const setQuantity = (item: InventoryItem, quantity: number) => {
     setCart((prev) => {
@@ -233,7 +240,7 @@ export function useOrderComposer({
   /** Cuerpo de `POST …/orders/manual` con lo que armó el operador. */
   const buildRequest = (
     paymentMethod: ManualOrderPaymentMethod,
-    extra?: Pick<CreateOrderRequest, "cash" | "payNow">
+    extra?: Pick<CreateOrderRequest, "cash" | "payNow" | "tip">
   ): CreateOrderRequest => ({
     branchId: branchId!,
     deliveryType,
@@ -293,6 +300,7 @@ export function useOrderComposer({
     subtotal,
     deliveryFee,
     total,
+    tipConfig,
     setQuantity,
     setLineQuantity,
     setLineNote,

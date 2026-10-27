@@ -319,6 +319,14 @@
       "description": "For in-store sales: the customer orders, pays and takes the product right away",
       "enable": "Enable counter sales",
       "enableDescription": "Adds the \"Counter\" type to \"New order\" at this branch. The order is charged and marked delivered in one step; cash requires an open register."
+    },
+    "tip": {
+      "title": "Tip",
+      "description": "Suggested voluntary tip for dine-in and counter orders",
+      "enable": "Suggest a tip",
+      "enableDescription": "When charging at the register the suggested tip is pre-filled and the cashier can change or remove it. Diners ordering from the table QR can choose it too. It doesn't count as sales.",
+      "suggested": "Suggested tip",
+      "suggestedDescription": "Applied to the order subtotal. Tips are always voluntary."
     }
   },
   "filters": {

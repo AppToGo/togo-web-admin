@@ -8,6 +8,9 @@
  * los demás tipos nacen pagados (`payNow`). En efectivo el dinero entra al
  * turno abierto de la caja; las vueltas las calcula el servidor.
  *
+ * Propina (mostrador y mesa con propina habilitada en la sede): se elige
+ * acá, al cobrar, con la sugerida precargada; el total la incluye.
+ *
  * WhatsApp solo con la ventana de 24 h abierta (el cliente escribió hace
  * menos de 24 h): fuera de ella el botón queda deshabilitado con el motivo.
  */
@@ -28,7 +31,15 @@ import { cn } from "@/lib/utils";
 import type {
   CreateOrderResponse,
   ManualOrderPaymentMethod,
+  TipRequest,
 } from "@/features/orders/types";
+import type { TipConfig } from "@/features/branches/types";
+import { TipSelector } from "@/features/orders/components/TipSelector";
+import {
+  tipAmount,
+  toTipRequest,
+  type TipChoice,
+} from "@/features/orders/utils/tip.utils";
 import { CurrencyInput } from "../CurrencyInput";
 import { formatCOP, quickCashAmounts } from "../../utils/cash.utils";
 import { useReceiptWhatsappWindow } from "../../hooks/useCash";
@@ -38,7 +49,7 @@ import { printReceipt, type ReceiptData } from "./receipt-print";
 /** Lo que el recibo necesita de la venta (se congela al cobrar). */
 export type SaleSnapshot = Pick<
   ReceiptData,
-  "typeLabel" | "lines" | "subtotal" | "deliveryFee" | "total"
+  "typeLabel" | "lines" | "subtotal" | "deliveryFee" | "tip" | "total"
 >;
 
 interface CheckoutDrawerProps {
@@ -54,10 +65,13 @@ interface CheckoutDrawerProps {
   session: { id: string; registerName: string } | null;
   /** `cash.operate`: sin él no se recibe efectivo. */
   canUseCash: boolean;
+  /** Config de propina de la sede si el pedido la admite; `null` = sin propina. */
+  tipConfig: TipConfig | null;
   /** Crea el pedido cobrado. `null` si falló (el toast ya lo dijo). */
   onCharge: (
     method: ManualOrderPaymentMethod,
-    receivedAmount: number
+    receivedAmount: number,
+    tip: TipRequest | undefined
   ) => Promise<CreateOrderResponse | null>;
   /** "Nueva venta": limpia el carrito. */
   onDone: () => void;
@@ -82,6 +96,7 @@ export function CheckoutDrawer({
   paymentMethods,
   session,
   canUseCash,
+  tipConfig,
   onCharge,
   onDone,
   formatDate,
@@ -107,7 +122,14 @@ export function CheckoutDrawer({
   const [charging, setCharging] = useState(false);
   const [charged, setCharged] = useState<Charged | null>(null);
 
-  const total = sale.total;
+  // `null` = aún no la tocó: arranca con la sugerida de la sede.
+  const [pickedTip, setTip] = useState<TipChoice | null>(null);
+  const tipChoice: TipChoice | null = tipConfig
+    ? (pickedTip ?? { percent: tipConfig.suggestedPercent })
+    : null;
+  const tip = tipChoice ? tipAmount(tipChoice, sale.subtotal) : 0;
+
+  const total = sale.total + tip;
   const received = typed ?? total;
   const difference = received - total;
   const canSubmit = !!method && (!isCash || difference >= 0) && !charging;
@@ -119,6 +141,7 @@ export function CheckoutDrawer({
   const reset = () => {
     setMethod(null);
     setTyped(null);
+    setTip(null);
     setCharged(null);
   };
 
@@ -134,13 +157,18 @@ export function CheckoutDrawer({
     if (!canSubmit || !method) return;
     setCharging(true);
     try {
-      const order = await onCharge(method, received);
+      const order = await onCharge(
+        method,
+        received,
+        tipChoice ? toTipRequest(tipChoice) : undefined
+      );
       if (order) {
         setCharged({
           order,
           method,
           received: method === "CASH" ? received : null,
-          sale,
+          // El recibo muestra lo cobrado: con la propina y el total del servidor.
+          sale: { ...sale, tip, total: order.total },
           chargedAt: new Date(),
         });
       }
@@ -164,6 +192,7 @@ export function CheckoutDrawer({
         order: t("pos.receipt.order"),
         subtotal: tOrders("createOrder.subtotal"),
         deliveryFee: tOrders("createOrder.deliveryFee"),
+        tip: tOrders("tip.label"),
         total: t("pos.cart.total"),
         paidWith: t("pos.receipt.paidWith"),
         received: t("pos.receipt.received"),
@@ -259,6 +288,20 @@ export function CheckoutDrawer({
           </div>
         ) : (
           <div className="flex-1 min-h-0 space-y-5 overflow-y-auto px-6 py-4">
+            {tipConfig && tipChoice && (
+              <TipSelector
+                id="checkout-tip"
+                config={tipConfig}
+                subtotal={sale.subtotal}
+                value={tipChoice}
+                onChange={(next) => {
+                  setTip(next);
+                  // El pago exacto sigue al nuevo total.
+                  setTyped(null);
+                }}
+              />
+            )}
+
             <div className="flex items-baseline justify-between rounded-card bg-slate-50 p-4">
               <span className="text-sm font-medium text-slate-600">
                 {t("charge.total")}

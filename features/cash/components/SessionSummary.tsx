@@ -88,7 +88,14 @@ export function SessionSummaryCard({ summary, pendingTotal, pendingCount }: Sess
         variant="metrics-emerald"
         title={t("kpi.cashSales")}
         value={formatCOP(summary.cashSales.total)}
-        description={t("kpi.cashSalesDesc", { count: summary.cashSales.count })}
+        description={
+          Number(summary.tipsTotal?.cash ?? 0) > 0
+            ? t("kpi.cashSalesWithTipsDesc", {
+                count: summary.cashSales.count,
+                tips: formatCOP(summary.tipsTotal!.cash),
+              })
+            : t("kpi.cashSalesDesc", { count: summary.cashSales.count })
+        }
         icon={<Banknote className="h-6 w-6 text-emerald-700" />}
       />
       <Metric

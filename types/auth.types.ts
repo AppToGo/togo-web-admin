@@ -206,7 +206,94 @@ export interface DemoLead {
   referredBy?: string | null;
 }
 
-export type DemoLeadSource = "DEMO" | "MANUAL";
+export type DemoLeadSource = "DEMO" | "MANUAL" | "SCOUT";
+
+export type WhatsAppDraftTone = "DIRECT" | "CONSULTATIVE" | "FRIENDLY";
+
+export interface GenerateWhatsAppDraftsRequest {
+  objective?: string;
+  prospectReply?: string;
+  tone?: WhatsAppDraftTone;
+}
+
+export interface WhatsAppDraftItem {
+  id: string;
+  label: string;
+  message: string;
+  rationale: string;
+}
+
+export interface WhatsAppDraftsResponse {
+  strategyKey: string;
+  strategySummary: string;
+  recommendedNextStage: DemoLeadStage;
+  recommendedNextAction: string;
+  recommendedNextActionDays: number;
+  drafts: WhatsAppDraftItem[];
+}
+
+export interface LogWhatsAppOutreachRequest {
+  message: string;
+  nextStage?: DemoLeadStage;
+  prospectReply?: string;
+  nextActionTitle?: string;
+  nextActionDueAt?: string;
+}
+
+export interface LogWhatsAppOutreachResponse {
+  lead: DemoLead;
+  previousStage: DemoLeadStage;
+  newStage: DemoLeadStage;
+}
+
+export type ScoutSearchMode = "PLACES" | "TEXT";
+
+export interface ScoutSearchRequest {
+  mode: ScoutSearchMode;
+  query?: string;
+  rawText?: string;
+  defaultBusinessType?: string;
+}
+
+export interface ScoutProspectCandidate {
+  name: string;
+  businessName: string;
+  businessType: string;
+  phone: string;
+  formattedPhone: string;
+  address: string | null;
+  rating: number | null;
+  reviewCount: number | null;
+  website: string | null;
+  suggestedNote: string;
+  alreadyInCrm: boolean;
+  existingLeadId: string | null;
+  alreadyCustomerBusiness: boolean;
+}
+
+export interface ScoutSearchResponse {
+  source: "GOOGLE_PLACES" | "AI_TEXT_EXTRACTION";
+  candidates: ScoutProspectCandidate[];
+}
+
+export interface ScoutImportItem {
+  name?: string;
+  phone: string;
+  businessName: string;
+  businessType?: string;
+  note?: string;
+  priority?: DemoLeadPriority;
+}
+
+export interface ScoutImportRequest {
+  leads: ScoutImportItem[];
+}
+
+export interface ScoutImportResponse {
+  createdCount: number;
+  skippedDuplicateCount: number;
+  createdLeads: DemoLead[];
+}
 
 /** Lead creado a mano en el CRM (POST /admin/demo-leads). */
 export interface CreateDemoLeadRequest {

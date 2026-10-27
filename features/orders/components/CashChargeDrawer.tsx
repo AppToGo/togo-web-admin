@@ -8,6 +8,9 @@
  *   - entra a un turno abierto (`cash.sessionId`), o
  *   - queda por liquidar (el servidor resuelve el portador).
  * Las vueltas y el esperado los calcula el servidor; acá solo se muestran.
+ * - Propina (mesa/mostrador con propina habilitada en la sede): se precarga
+ *   la que eligió el comensal en el QR o la sugerida, y el total a cobrar
+ *   la incluye. El servidor la recalcula al registrar el pago.
  * Entrar a un turno exige ver la caja y operarla (`cash.view` +
  * `cash.operate`): sin ellos solo se ofrece dejarlo por liquidar.
  */
@@ -44,6 +47,15 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { resolveTipConfig } from "@/features/branches/types";
+import { TipSelector } from "./TipSelector";
+import {
+  initialTipChoice,
+  isTippable,
+  tipAmount,
+  toTipRequest,
+  type TipChoice,
+} from "../utils/tip.utils";
 
 export interface ChargeableOrder {
   id: string;
@@ -52,6 +64,15 @@ export interface ChargeableOrder {
   branchId?: string;
   /** Texto del encabezado: número de pedido, mesa, etc. */
   label?: string;
+  /**
+   * Desglose para ofrecer la propina. Sin `subtotal` el cobro no ofrece
+   * propina y cobra `total` tal cual.
+   */
+  subtotal?: number;
+  deliveryFee?: number;
+  tip?: number;
+  tipPercent?: number | null;
+  deliveryType?: string | null;
 }
 
 interface CashChargeDrawerProps {
@@ -136,7 +157,18 @@ export function CashChargeDrawer({
     openSessions.find((session) => session.id === sessionId)?.register.name ??
     "";
 
-  const total = order?.total ?? 0;
+  const tipConfig = resolveTipConfig(branch?.tipConfig);
+  const canTip =
+    !!order && order.subtotal !== undefined && isTippable(order.deliveryType, tipConfig);
+  // `null` = aún no la tocó: arranca con la del pedido o la sugerida.
+  const [pickedTip, setTip] = useState<TipChoice | null>(null);
+  const tipChoice = pickedTip ?? (order ? initialTipChoice(order, tipConfig) : null);
+  const subtotal = order?.subtotal ?? 0;
+
+  const total =
+    canTip && tipChoice
+      ? subtotal + (order?.deliveryFee ?? 0) + tipAmount(tipChoice, subtotal)
+      : (order?.total ?? 0);
   const received = typed ?? total;
   const difference = received - total;
   const toRegister = isCash && destination === "settle" && !!sessionId;
@@ -147,6 +179,7 @@ export function CashChargeDrawer({
     setDestination("settle");
     setSessionId(null);
     setTyped(null);
+    setTip(null);
   };
 
   const submit = () => {
@@ -164,6 +197,7 @@ export function CashChargeDrawer({
           ...(toRegister && sessionId
             ? { cash: { sessionId, receivedAmount: received } }
             : {}),
+          ...(canTip && tipChoice ? { tip: toTipRequest(tipChoice) } : {}),
         },
       },
       {
@@ -213,6 +247,20 @@ export function CashChargeDrawer({
           {order?.label && <DrawerDescription>{order.label}</DrawerDescription>}
         </DrawerHeader>
         <div className="flex-1 min-h-0 space-y-5 overflow-y-auto px-6 py-4">
+          {canTip && tipChoice && (
+            <TipSelector
+              id="cash-charge-tip"
+              config={tipConfig}
+              subtotal={subtotal}
+              value={tipChoice}
+              onChange={(next) => {
+                setTip(next);
+                // El pago exacto sigue al nuevo total.
+                setTyped(null);
+              }}
+            />
+          )}
+
           <div className="flex items-baseline justify-between rounded-card bg-slate-50 p-4">
             <span className="text-sm font-medium text-slate-600">{t("charge.total")}</span>
             <span className="text-2xl font-bold tabular-nums">{formatCOP(total)}</span>

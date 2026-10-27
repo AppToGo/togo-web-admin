@@ -59,6 +59,7 @@ import { useOrderFlow } from "../hooks/useOrderFlow";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import { MoneyTrailBlock } from "./MoneyTrailBlock";
+import { orderTipBreakdown } from "../utils/tip.utils";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -364,9 +365,9 @@ export function OrderDetailContent({
     [isDemo, t]
   );
 
-  // Calcular totales incluyendo domicilio
-  const { subtotal, deliveryFee, total } = useMemo(() => {
-    if (!order) return { subtotal: 0, deliveryFee: 0, total: 0 };
+  // Calcular totales incluyendo domicilio y propina
+  const { subtotal, deliveryFee, tip, total } = useMemo(() => {
+    if (!order) return { subtotal: 0, deliveryFee: 0, tip: 0, total: 0 };
 
     const itemsTotal =
       order.items?.reduce(
@@ -376,11 +377,13 @@ export function OrderDetailContent({
 
     const isDelivery = order.deliveryType === "DELIVERY" || !!order.addressId;
     const fee = isDelivery ? order.deliveryFee || 0 : 0;
+    const tipValue = order.tip || 0;
 
     return {
       subtotal: itemsTotal,
       deliveryFee: fee,
-      total: itemsTotal + fee,
+      tip: tipValue,
+      total: itemsTotal + fee + tipValue,
     };
   }, [order]);
 
@@ -635,6 +638,16 @@ export function OrderDetailContent({
                       </span>
                     </div>
                   )}
+                  {tip > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600">
+                        {order.tipPercent
+                          ? t("tip.labelWithPercent", { percent: order.tipPercent })
+                          : t("tip.label")}
+                      </span>
+                      <span className="text-slate-700">{formatCurrency(tip)}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between pt-1 border-t border-slate-200">
                     <p className="font-semibold text-slate-900">
                       {t("detail.total")}
@@ -692,6 +705,7 @@ export function OrderDetailContent({
                   chargeLabel={
                     order.id ? formatOrderNumber(order.id, order.orderNumber) : undefined
                   }
+                  tipBreakdown={orderTipBreakdown(order)}
                 />
               )}
               <PaymentProofIndicator order={order} variant="labeled" />
