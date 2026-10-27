@@ -1,5 +1,6 @@
 export { UpgradePlanModal } from "./UpgradePlanModal";
 export { TrialBanner } from "./TrialBanner";
+export { BillingBanner } from "./BillingBanner";
 export {
   SubscriptionStatusCard,
   PaymentHistoryTable,

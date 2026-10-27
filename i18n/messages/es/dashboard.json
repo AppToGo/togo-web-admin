@@ -104,6 +104,17 @@
       "description": "Para ver el dashboard, necesitas tener un negocio asignado a tu cuenta. Contacta al administrador del sistema."
     }
   },
+  "billingBanner": {
+    "pending": "Tu pago está pendiente: te quedan {days} días antes de que la cuenta se suspenda.",
+    "pendingLastDay": "Hoy es el último día para pagar: mañana la cuenta se suspende.",
+    "declined": "No pudimos cobrar tu tarjeta ({reason}).",
+    "suspended": "Tu cuenta está suspendida.",
+    "suspendedDetail": "Tus clientes no pueden confirmar pedidos por WhatsApp hasta que pagues.",
+    "cancelled": "Tu suscripción terminó. Reactívala para volver a recibir pedidos.",
+    "payNow": "Pagar ahora",
+    "reactivate": "Pagar y reactivar",
+    "redirecting": "Abriendo pago…"
+  },
   "trialBanner": {
     "daysRemaining": "Te quedan {days} días de prueba gratis",
     "oneDayRemaining": "Te queda 1 día de prueba gratis",

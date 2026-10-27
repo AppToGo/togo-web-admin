@@ -72,7 +72,7 @@
       "contactSupport": "¿Ya pagaste? Envianos el comprobante por WhatsApp desde el botón de arriba."
     },
     "nextPaymentDue": "Tu próximo pago vence el {date}.",
-    "gracePeriod": "Tu pago venció, pero seguís en período de gracia hasta el {date}.",
+    "gracePeriod": "Tu pago venció el {date}. Te quedan {days} días para pagar antes de que la cuenta se suspenda.",
     "pendingRequest": {
       "title": "Tu solicitud para pasar a {planName} está en verificación.",
       "graceEndsAt": "Mientras se verifica, tenés acceso hasta el {date}."

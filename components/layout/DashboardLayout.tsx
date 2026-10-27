@@ -5,7 +5,12 @@ import { Sidebar } from "./Sidebar";
 import { MobileTopBar } from "./MobileTopBar";
 import { cn } from "@/lib/utils";
 import { useSingleBranchInit } from "@/features/branches/hooks";
-import { UpgradePlanModal, useUpgradePlanModal, TrialBanner } from "@/features/subscription";
+import {
+  UpgradePlanModal,
+  useUpgradePlanModal,
+  TrialBanner,
+  BillingBanner,
+} from "@/features/subscription";
 import { DemoGuide } from "@/features/auth/components/DemoGuide";
 
 interface DashboardLayoutProps {
@@ -51,6 +56,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Trial banner — global, visible on every dashboard page while Free trial is active */}
         <TrialBanner />
+        {/* Cobro: pago pendiente, suspensión o cancelación (planes pagos) */}
+        <BillingBanner />
 
         {/* Page content */}
         <main className="flex-1 flex flex-col p-4 sm:p-6">

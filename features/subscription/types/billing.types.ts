@@ -42,6 +42,19 @@ export interface SubscriptionStatus {
   totalPaid: string;
   /** false = el negocio nunca tuvo fila de BusinessSubscription (estado sintético). */
   hasSubscriptionRecord: boolean;
+  /** Banner de cobro, calculado en vivo por la API. null = sin aviso. */
+  billingAlert: BillingAlert | null;
+}
+
+/** `BillingAlertDto` del backend (docs/cobro-suscripciones.md §5 en api-togo). */
+export interface BillingAlert {
+  /** PAYMENT_PENDING no bloquea; SUSPENDED y CANCELLED sí. */
+  kind: "PAYMENT_PENDING" | "SUSPENDED" | "CANCELLED";
+  /** Solo PAYMENT_PENDING: días que faltan para la suspensión. */
+  daysUntilSuspension: number | null;
+  hasCard: boolean;
+  /** Motivo del banco del último cobro rechazado de este ciclo. */
+  lastDeclineReason: string | null;
 }
 
 export interface OwnerPaymentRecord {

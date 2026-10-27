@@ -160,8 +160,14 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
         {status.hasSubscriptionRecord && !isFreeTrial && !status.isBlocked && status.nextPaymentDue && (
           <div className="flex items-center gap-2 text-sm text-slate-700">
             <Clock className="h-4 w-4 text-slate-400 shrink-0" />
-            {status.isInGracePeriod ? (
-              <span className="text-amber-700 font-medium">{t("gracePeriod", { date: nextPaymentDue })}</span>
+            {/* Mismo plazo que el ciclo de cobro (billingAlert), no los 7 días viejos de gracia */}
+            {status.billingAlert?.kind === "PAYMENT_PENDING" ? (
+              <span className="text-amber-700 font-medium">
+                {t("gracePeriod", {
+                  date: nextPaymentDue,
+                  days: status.billingAlert.daysUntilSuspension ?? 0,
+                })}
+              </span>
             ) : (
               <span>{t("nextPaymentDue", { date: nextPaymentDue })}</span>
             )}
