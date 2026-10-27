@@ -37,6 +37,7 @@ import type {
   GlobalProduct,
   GlobalProductFilters,
 } from "@/features/admin/catalog/types";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 type ViewMode = "grid" | "list";
 
@@ -118,7 +119,10 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
 export default function GlobalProductsPage() {
   useAuthGuard();
   const router = useRouter();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.global_catalog.manage");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
   const { admin, common } = useAdminCatalogTranslations();
 
   // View state
@@ -232,6 +236,8 @@ export default function GlobalProductsPage() {
   const brands = stats?.topBrands.map((b) => b.brand) || [];
 
   // Check access
+  if (isPermissionLoading) return null;
+
   if (!isSuperAdmin) {
     return (
       <DashboardLayout>

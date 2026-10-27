@@ -17,6 +17,7 @@ import { createReconnectScheduler } from "@/lib/socket-reconnect";
 import { useInboxNotification } from "@/features/notifications/hooks/useInboxNotification";
 import { CONVERSATIONS_KEYS } from "./query-keys";
 import type { ConversationDetail, ConversationMessage } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Clon de `useOrdersRealtime` (features/orders/hooks/useOrdersRealtime.ts)
@@ -172,7 +173,7 @@ export function useConversationsRealtime(
       !APP_CONFIG.features.enableWebSockets ||
       !businessId ||
       !getToken() ||
-      user?.role === "SUPER_ADMIN" ||
+      isPlatformStaffRole(user?.role) ||
       // Sesiones demo: el backend rechaza sus sockets de este namespace
       // (los pushes llevan contenido de terceros). El inbox funciona por
       // REST/polling (ver useInboxConversations).

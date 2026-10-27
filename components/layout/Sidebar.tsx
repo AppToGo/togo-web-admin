@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { useLinkStatus } from "next/link";
-import { Filter, History, Inbox, MessageCircle, Banknote, ToggleRight } from "lucide-react";
+import { Filter, History, Inbox, MessageCircle, Banknote, ToggleRight, UserCog, ShieldCheck } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import {
   useCurrentUser,
   useIsSuperAdmin,
+  useIsRootSuperAdmin,
 } from "@/features/auth/stores/auth.store";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { DemoSidebarCard } from "@/features/auth/components/DemoSidebarCard";
@@ -34,6 +35,8 @@ import { useUnseenOrdersCount } from "@/features/orders/hooks/useUnseenOrders";
 import { useInboxSummary } from "@/features/conversations/hooks/useInboxSummary";
 import { useIsBelowDesktop, useIsMobile } from "@/hooks/useIsMobile";
 import { useBusinessFeatures } from "@/features/business-features";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
+import { usePlatformPermissions } from "@/features/auth/hooks/usePlatformPermission";
 
 
 interface SidebarProps {
@@ -129,6 +132,8 @@ export function Sidebar({
   const pathname = usePathname();
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
+  const isRootSuperAdmin = useIsRootSuperAdmin();
+  const { can: canPlatform } = usePlatformPermissions();
   const logout = useLogout();
 
   // Menú de usuario colapsable (idioma + cerrar sesión) — mismo patrón que
@@ -143,7 +148,9 @@ export function Sidebar({
   };
 
   // Fetch payment alerts for badge
-  const { data: paymentAlerts } = usePaymentAlerts(isSuperAdmin);
+  const { data: paymentAlerts } = usePaymentAlerts(
+    isSuperAdmin && canPlatform("platform.business.view")
+  );
   const alertCount = paymentAlerts?.length || 0;
 
   // El catálogo global solo se muestra si el negocio tiene productos
@@ -156,7 +163,7 @@ export function Sidebar({
   const canViewConversations =
     user?.role === "OWNER" ||
     user?.role === "ADMIN" ||
-    user?.role === "SUPER_ADMIN";
+    isPlatformStaffRole(user?.role);
 
   // Gating por permiso real (Fase C) — a diferencia de `canViewConversations`
   // de arriba, el inbox es la primera pantalla pensada también para
@@ -374,39 +381,79 @@ export function Sidebar({
     posMenuEntries,
   ]);
 
-  // Admin navigation (Super Admin only)
+  // Administración de ToGo: el SUPER_ADMIN ve todo; un usuario interno, solo
+  // las secciones que permite su perfil. Usuarios internos y perfiles son
+  // exclusivos del SUPER_ADMIN.
   const adminNavigation: NavigationItem[] = [
-    {
-      name: t("sidebar.businesses"),
-      href: "/admin/businesses",
-      icon: BuildingStoreIcon,
-      badge: alertCount,
-    },
-    {
-      name: t("sidebar.globalCatalog"),
-      href: "/admin/global-products",
-      icon: GlobeIcon,
-    },
-    {
-      name: t("sidebar.industryCategories"),
-      href: "/admin/industry-categories",
-      icon: TagsIcon,
-    },
-    {
-      name: t("sidebar.demoLeads"),
-      href: "/admin/demo-leads",
-      icon: LeadsIcon,
-    },
-    {
-      name: t("sidebar.aiUsage"),
-      href: "/admin/ai-usage",
-      icon: SparklesIcon,
-    },
-    {
-      name: t("sidebar.features"),
-      href: "/admin/features",
-      icon: ToggleRight,
-    },
+    ...(canPlatform("platform.business.view")
+      ? [
+          {
+            name: t("sidebar.businesses"),
+            href: "/admin/businesses",
+            icon: BuildingStoreIcon,
+            badge: alertCount,
+          },
+        ]
+      : []),
+    ...(canPlatform("platform.global_catalog.manage")
+      ? [
+          {
+            name: t("sidebar.globalCatalog"),
+            href: "/admin/global-products",
+            icon: GlobeIcon,
+          },
+        ]
+      : []),
+    ...(canPlatform("platform.industry.manage")
+      ? [
+          {
+            name: t("sidebar.industryCategories"),
+            href: "/admin/industry-categories",
+            icon: TagsIcon,
+          },
+        ]
+      : []),
+    ...(canPlatform("platform.leads.view_own", "platform.leads.view_all")
+      ? [
+          {
+            name: t("sidebar.demoLeads"),
+            href: "/admin/demo-leads",
+            icon: LeadsIcon,
+          },
+        ]
+      : []),
+    ...(canPlatform("platform.ai_usage.view")
+      ? [
+          {
+            name: t("sidebar.aiUsage"),
+            href: "/admin/ai-usage",
+            icon: SparklesIcon,
+          },
+        ]
+      : []),
+    ...(canPlatform("platform.features.view", "platform.features.manage")
+      ? [
+          {
+            name: t("sidebar.features"),
+            href: "/admin/features",
+            icon: ToggleRight,
+          },
+        ]
+      : []),
+    ...(isRootSuperAdmin
+      ? [
+          {
+            name: t("sidebar.internalUsers"),
+            href: "/admin/internal-users",
+            icon: UserCog,
+          },
+          {
+            name: t("sidebar.platformProfiles"),
+            href: "/admin/platform-profiles",
+            icon: ShieldCheck,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -480,7 +527,7 @@ export function Sidebar({
           </nav>
 
           {/* Admin Navigation (Super Admin only) */}
-          {isSuperAdmin && (
+          {isSuperAdmin && adminNavigation.length > 0 && (
             <>
               {!isCollapsed && (
                 <div className="px-4 pt-4 pb-2">

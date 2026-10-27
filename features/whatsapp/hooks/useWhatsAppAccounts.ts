@@ -17,6 +17,7 @@ import {
   GC_TIME,
 } from "./query-keys";
 import type { WhatsAppAccount } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Hook para obtener todas las cuentas de WhatsApp del negocio actual
@@ -25,7 +26,7 @@ export function useWhatsAppAccounts() {
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = !!selectedBusinessId;
 

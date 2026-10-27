@@ -17,10 +17,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Business } from "@/types";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 export function BusinessSelector() {
   const t = useTranslations();
-  const isSuperAdmin = useIsSuperAdmin();
+  const isPlatformStaff = useIsSuperAdmin();
+  // Un usuario interno sin acceso a negocios (ej. comercial solo de leads)
+  // no tiene negocios que elegir
+  const { allowed: canViewBusinesses } = usePlatformPermission(
+    "platform.business.view",
+    "platform.business.operate"
+  );
+  const isSuperAdmin = isPlatformStaff && canViewBusinesses;
   const user = useCurrentUser();
   const { data: businesses, isLoading } = useBusinesses({ enabled: isSuperAdmin });
   const { selectedBusinessId, selectedBusinessName, setSelectedBusiness } =
@@ -34,7 +43,7 @@ export function BusinessSelector() {
 
   // Para usuarios normales, sincronizar su businessId
   useEffect(() => {
-    if (userRole !== 'SUPER_ADMIN' && userBusinessId) {
+    if (!isPlatformStaffRole(userRole) && userBusinessId) {
       // Si no hay selección, o la selección no coincide con el negocio actual
       if (!selectedBusinessId || selectedBusinessId !== userBusinessId) {
         setSelectedBusiness(userBusinessId, userBusinessName || undefined);

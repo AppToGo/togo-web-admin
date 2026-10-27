@@ -24,6 +24,7 @@ import {
 } from "@/features/admin/catalog/hooks";
 import { GlobalProductForm } from "@/features/admin/catalog/components";
 import type { UpdateGlobalProductDto } from "@/features/admin/catalog/types";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 // ============================================================================
 // COMPONENT
@@ -33,7 +34,10 @@ export default function EditGlobalProductPage() {
   useAuthGuard();
   const router = useRouter();
   const params = useParams();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.global_catalog.manage");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
   const { admin, common, catalog } = useAdminCatalogTranslations();
   const productId = params.id as string;
 
@@ -80,6 +84,8 @@ export default function EditGlobalProductPage() {
   };
 
   // Check access
+  if (isPermissionLoading) return null;
+
   if (!isSuperAdmin) {
     return (
       <DashboardLayout>

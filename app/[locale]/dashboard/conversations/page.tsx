@@ -39,6 +39,7 @@ import { ConversationsMobileNav } from "@/features/conversations/components/conv
 import { useIsBelowDesktop } from "@/hooks/useIsMobile";
 import { useUrlParamState } from "@/hooks/useUrlParamState";
 import { useConversation } from "@/features/conversations/hooks/useConversation";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Outcomes que califican como "sin pedido" (§1.1 del plan Fase B, backend
@@ -94,7 +95,7 @@ export default function ConversationsWithoutOrderPage() {
   const canViewConversations =
     user?.role === "OWNER" ||
     user?.role === "ADMIN" ||
-    user?.role === "SUPER_ADMIN";
+    isPlatformStaffRole(user?.role);
 
   const [page, setPage] = useState(1);
   const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>("ALL");

@@ -16,6 +16,7 @@ import {
 } from "../services/whatsapp.service";
 import { WHATSAPP_ACCOUNTS_KEYS, STALE_TIME, GC_TIME } from "./query-keys";
 import type { WhatsAppUsageSummary } from "../types";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 /**
  * Hook para obtener el consumo de WhatsApp del negocio actual.
@@ -24,7 +25,7 @@ export function useWhatsAppUsage() {
   const user = useAuthStore((state) => state.user);
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = !!selectedBusinessId;
 

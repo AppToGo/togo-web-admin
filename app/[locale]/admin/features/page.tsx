@@ -19,11 +19,16 @@ import {
   BusinessFeaturesPanel,
   FeatureBulkPanel,
 } from "@/features/admin/feature-flags/components";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 export default function AdminFeaturesPage() {
   const t = useTranslations("admin-feature-flags");
   const { isLoading: isAuthLoading } = useAuthGuard();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.features.view", "platform.features.manage");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
+  const { allowed: canManage } = usePlatformPermission("platform.features.manage");
   const { data: businesses } = useBusinesses({ enabled: isSuperAdmin });
   const [businessId, setBusinessId] = useState("");
 
@@ -32,7 +37,7 @@ export default function AdminFeaturesPage() {
     [businesses]
   );
 
-  if (isAuthLoading) return null;
+  if (isAuthLoading || isPermissionLoading) return null;
 
   if (!isSuperAdmin) {
     return (
@@ -54,17 +59,20 @@ export default function AdminFeaturesPage() {
           <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
         </div>
 
-        <Tabs defaultValue="bulk">
+        {/* Sin platform.features.manage solo se consulta: no hay activación masiva */}
+        <Tabs defaultValue={canManage ? "bulk" : "business"}>
           <TabsList>
-            <TabsTrigger value="bulk">{t("tabs.bulk")}</TabsTrigger>
+            {canManage && <TabsTrigger value="bulk">{t("tabs.bulk")}</TabsTrigger>}
             <TabsTrigger value="business">{t("tabs.business")}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="bulk">
-            <Card className="p-4 lg:p-6">
-              <FeatureBulkPanel />
-            </Card>
-          </TabsContent>
+          {canManage && (
+            <TabsContent value="bulk">
+              <Card className="p-4 lg:p-6">
+                <FeatureBulkPanel />
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="business">
             <Card className="space-y-4 p-4 lg:p-6">

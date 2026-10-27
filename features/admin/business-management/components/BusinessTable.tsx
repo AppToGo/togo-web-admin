@@ -24,6 +24,7 @@ import type { BusinessWithSubscription } from "../types/business-subscription.ty
 import { getPlanLabel, getPlanMaxBranches, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 import type { PlanCatalogEntry } from "@/features/subscription/services/subscription.service";
+import { usePlatformPermissions } from "@/features/auth/hooks/usePlatformPermission";
 
 interface BusinessTableProps {
   businesses: BusinessWithSubscription[];
@@ -50,6 +51,8 @@ export function BusinessTable({
 }: BusinessTableProps) {
   const t = useTranslations("admin-businesses");
   const { data: catalog } = usePlanCatalog();
+  // Cada acción según el perfil del personal de ToGo (SUPER_ADMIN: todas)
+  const { can } = usePlatformPermissions();
 
   if (isLoading) {
     return <BusinessTableSkeleton />;
@@ -170,83 +173,111 @@ export function BusinessTable({
               {/* Actions */}
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
-                  {/* Record Payment */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onRecordPayment(business)}
-                    title={t("actions.recordPayment")}
-                  >
-                    <DollarIcon className="w-4 h-4" />
-                  </Button>
+                  {can("platform.business.payments") && (
+                    <>
+                    {/* Record Payment */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onRecordPayment(business)}
+                      title={t("actions.recordPayment")}
+                    >
+                      <DollarIcon className="w-4 h-4" />
+                    </Button>
+                    </>
+                  )}
 
-                  {/* Edit Branches */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditBranches(business)}
-                    title={t("actions.editBranches")}
-                  >
-                    <BuildingIcon className="w-4 h-4" />
-                  </Button>
+                  {can("platform.business.limits") && (
+                    <>
+                    {/* Edit Branches */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditBranches(business)}
+                      title={t("actions.editBranches")}
+                    >
+                      <BuildingIcon className="w-4 h-4" />
+                    </Button>
+                    </>
+                  )}
 
-                  {/* Edit Users */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditUsers(business)}
-                    title={t("actions.editUsers")}
-                  >
-                    <UsersIcon className="w-4 h-4" />
-                  </Button>
+                  {can("platform.business.limits") && (
+                    <>
+                    {/* Edit Users */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditUsers(business)}
+                      title={t("actions.editUsers")}
+                    >
+                      <UsersIcon className="w-4 h-4" />
+                    </Button>
+                    </>
+                  )}
 
-                  {/* Features */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditFeatures(business)}
-                    title={t("actions.editFeatures")}
-                  >
-                    <ToggleRight className="w-4 h-4" />
-                  </Button>
+                  {can("platform.features.view", "platform.features.manage") && (
+                    <>
+                    {/* Features */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditFeatures(business)}
+                      title={t("actions.editFeatures")}
+                    >
+                      <ToggleRight className="w-4 h-4" />
+                    </Button>
+                    </>
+                  )}
 
-                  {/* Edit Proof Quota */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEditProofQuota(business)}
-                    title={t("actions.editProofQuota")}
-                  >
-                    <ReceiptIcon className="w-4 h-4" />
-                  </Button>
+                  {can("platform.business.limits") && (
+                    <>
+                    {/* Edit Proof Quota */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditProofQuota(business)}
+                      title={t("actions.editProofQuota")}
+                    >
+                      <ReceiptIcon className="w-4 h-4" />
+                    </Button>
+                    </>
+                  )}
 
-                  {/* Send Notification */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onSendNotification(business)}
-                    title={t("actions.sendNotification")}
-                  >
-                    <BellIcon className="w-4 h-4" />
-                  </Button>
+                  {can("platform.business.notify") && (
+                    <>
+                    {/* Send Notification */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onSendNotification(business)}
+                      title={t("actions.sendNotification")}
+                    >
+                      <BellIcon className="w-4 h-4" />
+                    </Button>
+                    </>
+                  )}
 
-                  {/* Toggle Status */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onToggleStatus(business)}
-                    title={
-                      business.isActive
-                        ? t("actions.deactivate")
-                        : t("actions.activate")
-                    }
-                  >
-                    {business.isActive ? (
-                      <PauseIcon className="w-4 h-4" />
-                    ) : (
-                      <PlayIcon className="w-4 h-4" />
-                    )}
-                  </Button>
+                  {can("platform.business.status") && (
+                    <>
+                    {/* Toggle Status */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onToggleStatus(business)}
+                      title={
+                        business.isActive
+                          ? t("actions.deactivate")
+                          : t("actions.activate")
+                      }
+                    >
+                      {business.isActive ? (
+                        <PauseIcon className="w-4 h-4" />
+                      ) : (
+                        <PlayIcon className="w-4 h-4" />
+                      )}
+                    </Button>
+                    </>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

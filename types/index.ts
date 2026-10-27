@@ -7,6 +7,8 @@
 // User roles matching backend
 export enum UserRole {
   SUPER_ADMIN = "SUPER_ADMIN",
+  /** Usuario interno de ToGo (comercial, supervisor): sin negocio propio. */
+  PLATFORM = "PLATFORM",
   OWNER = "OWNER",
   ADMIN = "ADMIN",
   OPERATOR = "OPERATOR",

@@ -11,6 +11,7 @@ import { useBusinessStore } from "@/features/business/stores/business.store";
 import { useDateFilterParams } from "@/features/filters/hooks/useDateFilterQuery";
 import { getGlobalCustomerMetrics } from "../services/customer.service";
 import { CUSTOMERS_KEYS, STALE_TIME, GC_TIME } from "./useCustomers";
+import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
 
 interface UseGlobalCustomerMetricsParams {
   businessId?: string;
@@ -30,7 +31,7 @@ export function useGlobalCustomerMetrics(params?: UseGlobalCustomerMetricsParams
   const { user } = useAuthStore.getState();
   const { selectedBusinessId } = useBusinessStore();
 
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = isPlatformStaffRole(user?.role);
   const hasBusinessId = !!user?.businessId;
   const hasSelectedBusiness = !!params?.businessId || !!selectedBusinessId;
   const isEnabled = isSuperAdmin ? hasSelectedBusiness : hasBusinessId;

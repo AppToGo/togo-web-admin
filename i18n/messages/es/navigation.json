@@ -33,7 +33,9 @@
     "businesses": "Negocios",
     "users": "Usuarios",
     "billing": "Facturación",
-    "features": "Funcionalidades"
+    "features": "Funcionalidades",
+    "internalUsers": "Usuarios internos",
+    "platformProfiles": "Perfiles internos"
   },
   "breadcrumbs": {
     "home": "Inicio",

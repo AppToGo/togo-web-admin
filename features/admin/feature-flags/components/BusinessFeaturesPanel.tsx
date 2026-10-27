@@ -26,6 +26,7 @@ import { useBulkUpdateFeatures, useBusinessFeatureStatus } from "../hooks/useFea
 import { useFeatureLabels } from "../hooks/useFeatureLabels";
 import { getDependents } from "../utils/dependencies";
 import type { BusinessFeatureStatus } from "../types";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 interface BusinessFeaturesPanelProps {
   businessId: string;
@@ -36,6 +37,8 @@ export function BusinessFeaturesPanel({ businessId }: BusinessFeaturesPanelProps
   const label = useFeatureLabels();
   const { data: features, isLoading } = useBusinessFeatureStatus(businessId);
   const bulkUpdate = useBulkUpdateFeatures();
+  // Con solo platform.features.view se ve el estado pero no se cambia
+  const { allowed: canManage } = usePlatformPermission("platform.features.manage");
   // Apagar algo de lo que dependen otras activas pide confirmación
   const [pendingDisable, setPendingDisable] = useState<{
     feature: BusinessFeatureStatus;
@@ -108,7 +111,7 @@ export function BusinessFeaturesPanel({ businessId }: BusinessFeaturesPanelProps
               </div>
               <Switch
                 checked={feature.enabled}
-                disabled={bulkUpdate.isPending}
+                disabled={!canManage || bulkUpdate.isPending}
                 onCheckedChange={(value) => handleToggle(feature, value)}
                 aria-label={name}
               />

@@ -34,6 +34,7 @@ import {
   IndustryCategoryDialog,
   IndustryCategoryList,
 } from "@/features/admin/industry-categories";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 // ============================================================================
 // STATS CARD COMPONENT
@@ -93,7 +94,10 @@ function StatCard({
 export default function IndustryCategoriesPage() {
   useAuthGuard();
   const t = useTranslations("admin-industry-categories");
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.industry.manage");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
 
   // ============================================================================
   // STATE
@@ -219,6 +223,8 @@ export default function IndustryCategoriesPage() {
   // ============================================================================
   // ACCESS CHECK
   // ============================================================================
+
+  if (isPermissionLoading) return null;
 
   if (!isSuperAdmin) {
     return (

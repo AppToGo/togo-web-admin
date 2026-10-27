@@ -16,12 +16,13 @@ import {
 } from "../hooks/useOrderFlow";
 import type { OrderStatus } from "../types";
 import { HoverTooltip } from "./HoverTooltip";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 /** Estados del flujo que el negocio puede dejar de usar. */
 const OPTIONAL_STATUSES: OrderStatus[] = ["IN_PROGRESS", "READY", "ON_THE_WAY"];
 
 /** Quién decide el flujo del negocio (el backend aplica la misma regla). */
-const FLOW_EDITOR_ROLES = ["OWNER", "ADMIN", "SUPER_ADMIN"];
+const FLOW_EDITOR_ROLES = ["OWNER", "ADMIN", "SUPER_ADMIN", "PLATFORM"];
 
 /**
  * Flujo del tablero del negocio: qué estados usa su operación. Es igual para
@@ -33,8 +34,12 @@ export function OrderFlowSettings() {
   const user = useCurrentUser();
   const { data: flow } = useBusinessOrderFlow();
   const updateFlow = useUpdateBusinessOrderFlow();
+  // Un usuario interno solo edita el flujo si su perfil le permite operar
+  // negocios; con solo lectura el backend respondería 403 al guardar.
+  const { allowed: canOperate } = usePlatformPermission("platform.business.operate");
 
   if (!user || !FLOW_EDITOR_ROLES.includes(user.role)) return null;
+  if (user.role === "PLATFORM" && !canOperate) return null;
 
   const skipped = flow?.skippedStatuses ?? [];
   const toggle = (status: OrderStatus, used: boolean) => {

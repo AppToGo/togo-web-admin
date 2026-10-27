@@ -47,6 +47,7 @@ import type {
 
 import { BusinessFeaturesDialog } from "@/features/admin/feature-flags/components";
 import { useDebounce } from "@/hooks/useDebounce";
+import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 const DEFAULT_FILTERS: BusinessFiltersType = {
   page: 1,
@@ -56,7 +57,10 @@ const DEFAULT_FILTERS: BusinessFiltersType = {
 export default function BusinessManagementPage() {
   const t = useTranslations("settings");
   const { isLoading: isAuthLoading } = useAuthGuard();
-  const isSuperAdmin = useIsSuperAdmin();
+  // Personal de ToGo con permiso para esta sección (el SUPER_ADMIN siempre)
+  const { allowed: canAccessSection, isLoading: isPermissionLoading } =
+    usePlatformPermission("platform.business.view");
+  const isSuperAdmin = useIsSuperAdmin() && canAccessSection;
 
   // State
   const [filters, setFilters] = useState<BusinessFiltersType>(DEFAULT_FILTERS);
@@ -236,7 +240,7 @@ export default function BusinessManagementPage() {
     (filters.paymentStatuses && filters.paymentStatuses.length > 0) ||
     (filters.statusFilter !== undefined && filters.statusFilter !== "all");
 
-  if (isAuthLoading) {
+  if (isAuthLoading || isPermissionLoading) {
     return null; // Let the loading.tsx handle this
   }
 
