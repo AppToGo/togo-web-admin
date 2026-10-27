@@ -220,7 +220,7 @@ export function useDeleteDemoLead() {
 }
 
 /**
- * Hook para generar borradores personalizados de WhatsApp con Harvey.
+ * Hook para generar borradores personalizados de WhatsApp con el agente ToGo.
  * Al completarse invalida el detalle del lead para reflejar los borradores persistidos.
  */
 export function useGenerateWhatsAppDrafts(leadId: string) {
@@ -270,7 +270,7 @@ export function useLogWhatsAppOutreach() {
 }
 
 /**
- * Hook para buscar o extraer prospectos con Harvey Scout.
+ * Hook para buscar o extraer prospectos con ToGo Scout.
  */
 export function useScoutSearch() {
   const t = useTranslations("admin-demo-leads");
@@ -284,7 +284,7 @@ export function useScoutSearch() {
 }
 
 /**
- * Hook para importar prospectos seleccionados desde Harvey Scout al Mini CRM.
+ * Hook para importar prospectos seleccionados desde ToGo Scout al Mini CRM.
  */
 export function useScoutImport() {
   const queryClient = useQueryClient();

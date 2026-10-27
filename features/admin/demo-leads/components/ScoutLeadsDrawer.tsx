@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScoutLeadsDrawer — Agente Harvey Scout (Buscador y extractor de prospectos).
+ * ScoutLeadsDrawer — Agente ToGo Scout (Buscador y extractor de prospectos).
  *
  * Permite buscar posibles clientes por rubro + ciudad (Google Places) o
  * extraerlos con IA pegando texto libre (directorios, Instagram, Maps),

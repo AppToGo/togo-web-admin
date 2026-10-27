@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * LeadWhatsAppAgentSection — Agente Harvey (Writer & Handler) para WhatsApp.
+ * LeadWhatsAppAgentSection — Agente ToGo (Writer & Handler) para WhatsApp.
  *
  * No consume la API de IA al abrir la tarjeta: si el lead ya tiene borradores
  * persistidos en BD (`lead.whatsappDrafts`), los muestra de inmediato. Si aún
@@ -13,6 +13,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   ArrowRight,
   MessageCircle,
@@ -133,7 +134,11 @@ export function LeadWhatsAppAgentSection({
     const waUrl = `https://wa.me/${digits}?text=${encodeURIComponent(
       cleanMessage
     )}`;
-    window.open(waUrl, "_blank", "noopener,noreferrer");
+    const popup = window.open(waUrl, "_blank", "noopener,noreferrer");
+    if (!popup) {
+      toast.error(t("agent.popupBlocked"));
+      return;
+    }
 
     logOutreach.mutate({
       id: lead.id,
@@ -158,10 +163,10 @@ export function LeadWhatsAppAgentSection({
           </span>
           <div>
             <h3 className="text-sm font-bold text-slate-900">
-              {t("harvey.title")}
+              {t("agent.title")}
             </h3>
             <p className="text-xs text-slate-600">
-              {strategySummary || t("harvey.subtitle")}
+              {strategySummary || t("agent.subtitle")}
             </p>
           </div>
         </div>
@@ -174,7 +179,7 @@ export function LeadWhatsAppAgentSection({
             className="h-8 rounded-full px-2.5 text-xs text-slate-600 hover:bg-emerald-100/60"
           >
             <SlidersHorizontal className="mr-1 h-3.5 w-3.5" aria-hidden />
-            {t("harvey.customize")}
+            {t("agent.customize")}
           </Button>
           {hasPersistedOrGeneratedDrafts && (
             <Button
@@ -184,7 +189,7 @@ export function LeadWhatsAppAgentSection({
               onClick={handleGenerateOrRegenerate}
               disabled={generateDrafts.isPending}
               className="h-8 rounded-full px-2.5 text-xs text-emerald-700 hover:bg-emerald-100/60"
-              title={t("harvey.regenerate")}
+              title={t("agent.regenerate")}
             >
               <RefreshCw
                 className={cn(
@@ -193,7 +198,7 @@ export function LeadWhatsAppAgentSection({
                 )}
                 aria-hidden
               />
-              <span className="hidden sm:inline">{t("harvey.regenerate")}</span>
+              <span className="hidden sm:inline">{t("agent.regenerate")}</span>
             </Button>
           )}
         </div>
@@ -203,22 +208,22 @@ export function LeadWhatsAppAgentSection({
         <div className="mt-3 space-y-2.5 rounded-2xl border border-emerald-200/70 bg-white/85 p-3">
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-slate-700">
-              {t("harvey.prospectReplyLabel")}
+              {t("agent.prospectReplyLabel")}
             </span>
             <Textarea
               rows={2}
               value={prospectReply}
               onChange={(e) => setProspectReply(e.target.value)}
-              placeholder={t("harvey.prospectReplyPlaceholder")}
+              placeholder={t("agent.prospectReplyPlaceholder")}
               maxLength={1000}
               className="text-xs"
             />
           </label>
           <Input
-            label={t("harvey.objectiveLabel")}
+            label={t("agent.objectiveLabel")}
             value={objective}
             onChange={(e) => setObjective(e.target.value)}
-            placeholder={t("harvey.objectivePlaceholder")}
+            placeholder={t("agent.objectivePlaceholder")}
             maxLength={300}
           />
           <Button
@@ -231,15 +236,15 @@ export function LeadWhatsAppAgentSection({
           >
             <Sparkles className="mr-1.5 h-3.5 w-3.5" aria-hidden />
             {generateDrafts.isPending
-              ? t("harvey.generating")
-              : t("harvey.generateWithContext")}
+              ? t("agent.generating")
+              : t("agent.generateWithContext")}
           </Button>
         </div>
       )}
 
       {!hasPersistedOrGeneratedDrafts && (
         <div className="mt-3 rounded-2xl border border-dashed border-emerald-300/90 bg-white/75 p-3.5 text-center">
-          <p className="text-xs text-slate-600">{t("harvey.emptyHint")}</p>
+          <p className="text-xs text-slate-600">{t("agent.emptyHint")}</p>
           <Button
             type="button"
             size="sm"
@@ -250,8 +255,8 @@ export function LeadWhatsAppAgentSection({
           >
             <Sparkles className="mr-1.5 h-3.5 w-3.5" aria-hidden />
             {generateDrafts.isPending
-              ? t("harvey.generating")
-              : t("harvey.generateInitialButton")}
+              ? t("agent.generating")
+              : t("agent.generateInitialButton")}
           </Button>
         </div>
       )}
@@ -286,8 +291,8 @@ export function LeadWhatsAppAgentSection({
           onChange={(e) => setMessageText(e.target.value)}
           placeholder={
             generateDrafts.isPending
-              ? t("harvey.generating")
-              : t("harvey.messagePlaceholder")
+              ? t("agent.generating")
+              : t("agent.messagePlaceholder")
           }
           maxLength={2000}
           className="bg-white/95 text-sm leading-relaxed text-slate-900"
@@ -303,7 +308,7 @@ export function LeadWhatsAppAgentSection({
       <div className="mt-3 rounded-2xl border border-emerald-200/80 bg-white/80 p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700">
-            <span>{t("harvey.autoStageLabel")}:</span>
+            <span>{t("agent.autoStageLabel")}:</span>
             <span className="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-700">
               {t(`stages.${lead.stage}`)}
             </span>
@@ -328,7 +333,7 @@ export function LeadWhatsAppAgentSection({
           </div>
         </div>
         <p className="mt-1.5 text-[11px] text-slate-500">
-          {t("harvey.sendDisclaimer")}
+          {t("agent.sendDisclaimer")}
         </p>
       </div>
 
@@ -344,7 +349,7 @@ export function LeadWhatsAppAgentSection({
         className="mt-3 h-11 w-full rounded-full bg-green-600 text-sm font-semibold text-white hover:bg-green-700"
       >
         <MessageCircle className="mr-2 h-[18px] w-[18px]" aria-hidden />
-        {t("harvey.sendAndAdvance", {
+        {t("agent.sendAndAdvance", {
           stage: t(`stages.${nextStage}`),
         })}
       </Button>
