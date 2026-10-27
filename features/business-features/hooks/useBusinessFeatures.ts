@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { getBusinessFeatures } from "../services/business-features.service";
-import type { FeatureKey } from "../types";
+import { FEATURE_DEFAULTS, type FeatureKey } from "../types";
 
 export const BUSINESS_FEATURES_KEYS = {
   all: ["business-features"] as const,
@@ -25,10 +25,14 @@ export function useBusinessFeatures() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Mientras carga se usa el valor por defecto de cada funcionalidad: así lo
+  // que casi todos tienen activo no aparece ~200 ms tarde, ni lo que arranca
+  // apagado aparece y desaparece. Quien no pueda usar un valor provisional
+  // (ej. armar un pedido) debe esperar `isLoading`.
   const isEnabled = useCallback(
     (key: FeatureKey) => {
       if (!businessId) return true;
-      return query.data?.includes(key) ?? false;
+      return query.data ? query.data.includes(key) : FEATURE_DEFAULTS[key];
     },
     [businessId, query.data]
   );
