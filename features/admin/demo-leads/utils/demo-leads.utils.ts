@@ -21,6 +21,22 @@ export const OPEN_DEMO_LEAD_STAGES: readonly DemoLeadStage[] =
 
 export const DEMO_LEAD_OUTCOMES: readonly DemoLeadOutcome[] = ["WON", "LOST"];
 
+/** Ventana en la que una entrada a la demo cuenta como "está probando". */
+const IN_DEMO_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+/**
+ * Señal "En demo": entró a la demo en las últimas 48 h. Reemplaza a la
+ * antigua etapa "Demo activa": la actividad es una señal, no una etapa.
+ */
+export function isInDemo(
+  lead: { demoCount: number; lastDemoAt: string },
+  now: number = Date.now()
+): boolean {
+  if (lead.demoCount <= 0) return false;
+  const last = Date.parse(lead.lastDemoAt);
+  return !Number.isNaN(last) && now - last <= IN_DEMO_WINDOW_MS;
+}
+
 export const OUTCOME_PILL_CLASS: Record<DemoLeadOutcome, string> = {
   WON: "bg-emerald-50 text-emerald-700",
   LOST: "bg-slate-100 text-slate-600",

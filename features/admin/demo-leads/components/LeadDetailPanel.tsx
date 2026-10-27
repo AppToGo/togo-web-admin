@@ -1,7 +1,9 @@
 /**
  * LeadDetailPanel
- * Drawer lateral con la ficha comercial del lead: resumen de actividad,
- * acción sugerida, formulario de perfil, línea de tiempo y notas.
+ * Drawer lateral con la ficha del posible cliente. Encabezado fijo (quién es,
+ * etapa, prioridad, responsable, teléfono y actividad en una fila) y cuatro
+ * pestañas: Contactar (agente de WhatsApp), Seguimiento (acciones), Ficha
+ * (perfil comercial) e Historial (línea de tiempo y notas).
  */
 
 "use client";
@@ -9,10 +11,10 @@
 import * as React from "react";
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -36,13 +38,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Lightbulb, Trash2 } from "lucide-react";
+import {
+  Ban,
+  Compass,
+  Copy,
+  Flag,
+  Lightbulb,
+  Phone,
+  Trash2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
 import { LeadWhatsAppAgentSection } from "@/features/admin/demo-leads/components/LeadWhatsAppAgentSection";
+import { LeadOwnerAvatar } from "@/features/admin/demo-leads/components/LeadOwnerAvatar";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
+  DemoLeadDetail,
   DemoLeadDetailLead,
   DemoLeadOutcome,
   DemoLeadPriority,
@@ -56,14 +69,20 @@ import {
   useUpdateDemoLead,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import {
-  DEMO_LEAD_PRIORITIES,
   DEMO_LEAD_OUTCOMES,
-  DEMO_LEAD_STAGES,
+  DEMO_LEAD_PRIORITIES,
+  OPEN_DEMO_LEAD_STAGES,
+  STAGE_DOT_CLASS,
   formatDateTime,
   formatPhone,
+  formatRelative,
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
-import { LeadOwnerAvatar } from "@/features/admin/demo-leads/components/LeadOwnerAvatar";
+
+type DetailTab = "contact" | "followUp" | "profile" | "history";
+
+/** Valor del selector de etapa: las abiertas tal cual, cerrado con su resultado. */
+type StageOption = DemoLeadStage | `CLOSED:${DemoLeadOutcome}`;
 
 interface LeadDetailPanelProps {
   leadId: string | null;
@@ -77,84 +96,14 @@ export function LeadDetailPanel({
   onDeleted,
 }: LeadDetailPanelProps) {
   const t = useTranslations("admin-demo-leads");
-  const locale = useLocale();
   const {
     data: detail,
     isLoading,
     isError,
     refetch,
   } = useDemoLeadDetail(leadId);
-  const updateLead = useUpdateDemoLead();
-  const addNote = useAddDemoLeadNote();
   const deleteLead = useDeleteDemoLead();
-
-  const [noteBody, setNoteBody] = useState("");
-  const [tab, setTab] = useState<"profile" | "activity" | "notes">("profile");
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  // Etapa y resultado elegidos en el formulario (deciden si se piden el
-  // resultado y el motivo de pérdida). Atados a la versión del lead: si el
-  // lead cambia, vuelven a sus valores guardados sin un efecto.
-  const [stageDraft, setStageDraft] = useState<{
-    key: string;
-    stage: DemoLeadStage;
-    outcome: DemoLeadOutcome | null;
-  } | null>(null);
-  const formKey = detail
-    ? `${detail.lead.id}-${detail.lead.stage}-${detail.lead.outcome ?? ""}-${detail.lead.priority}-${detail.lead.revoked}`
-    : "";
-  const formStage = detail
-    ? stageDraft?.key === formKey
-      ? stageDraft
-      : {
-          key: formKey,
-          stage: detail.lead.stage,
-          outcome: detail.lead.outcome ?? null,
-        }
-    : null;
-  const missingOutcome = formStage?.stage === "CLOSED" && !formStage.outcome;
-
-  const handleSave =
-    (lead: DemoLeadDetailLead) => (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const form = new FormData(e.currentTarget);
-      const stage = form.get("stage") as DemoLeadStage;
-      const priority = form.get("priority") as DemoLeadPriority;
-      // El resultado solo existe en CLOSED; el motivo, solo si se perdió.
-      const outcome =
-        stage === "CLOSED"
-          ? ((form.get("outcome") as DemoLeadOutcome | null) || null)
-          : null;
-      if (stage === "CLOSED" && !outcome) return;
-      const data: UpdateDemoLeadRequest = {
-        stage,
-        outcome,
-        priority,
-        businessType: (form.get("businessType") as string) || null,
-        businessName: (form.get("businessName") as string) || null,
-        estimatedOrders: form.get("estimatedOrders")
-          ? Number(form.get("estimatedOrders"))
-          : null,
-        planInterest: (form.get("planInterest") as string) || null,
-        mainNeed: (form.get("mainNeed") as string) || null,
-        lostReason:
-          outcome === "LOST"
-            ? (form.get("lostReason") as string) || null
-            : null,
-        // Marcada: revoca con sello de ahora. Sin marcar: no toca el sello.
-        revokedAt:
-          form.get("revokeConsent") === "on"
-            ? new Date().toISOString()
-            : undefined,
-      };
-      updateLead.mutate({ id: lead.id, data });
-    };
-
-  const handleAddNote = (id: string) => (e: React.FormEvent) => {
-    e.preventDefault();
-    const body = noteBody.trim();
-    if (!body) return;
-    addNote.mutate({ id, body }, { onSuccess: () => setNoteBody("") });
-  };
 
   const confirmDelete = () => {
     if (!detail) return;
@@ -167,436 +116,37 @@ export function LeadDetailPanel({
     });
   };
 
-  const tt = t as (key: string) => string;
-  const sectionTitle = "mb-2.5 text-sm font-semibold text-slate-700";
-
   return (
     <>
       <Drawer open={!!leadId} onOpenChange={(open) => !open && onClose()}>
         <DrawerContent>
-          <DrawerHeader className="border-b border-slate-100/80 px-6 pb-5 pt-6">
-            <div className="flex items-start gap-3.5 pr-10">
-              {detail && (
-                <InitialsAvatar
-                  name={detail.lead.name}
-                  seed={detail.lead.id}
-                  size="lg"
-                />
-              )}
-              <div className="min-w-0 flex-1">
-                <DrawerTitle className="truncate text-xl font-bold text-slate-900">
-                  {detail ? detail.lead.name || t("card.noName") : "…"}
-                </DrawerTitle>
-                {detail &&
-                  (detail.lead.establishmentName ||
-                    detail.lead.businessType) && (
-                    <p className="mt-0.5 truncate text-sm text-slate-500">
-                      {[detail.lead.establishmentName, detail.lead.businessType]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  )}
-                {detail && (
-                  <p className="mt-0.5 text-sm tabular-nums text-slate-500">
-                    {formatPhone(detail.lead.phone)}
-                  </p>
-                )}
-                {detail?.lead.source === "MANUAL" && (
-                  <p className="mt-1.5 inline-flex rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
-                    {detail.lead.referredBy
-                      ? t("detail.manualReferred", {
-                          name: detail.lead.referredBy,
-                        })
-                      : t("detail.manual")}
-                  </p>
-                )}
-                {detail?.lead.source === "SCOUT" && (
-                  <p className="mt-1.5 inline-flex rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700">
-                    {t("detail.scout")}
-                  </p>
-                )}
-              </div>
+          {isLoading || (!detail && !isError) ? (
+            <>
+              <DrawerTitle className="sr-only">…</DrawerTitle>
+              <p className="px-6 py-6 text-sm text-slate-500">…</p>
+            </>
+          ) : isError || !detail ? (
+            <div className="flex items-center gap-3 px-6 py-6">
+              <DrawerTitle className="sr-only">{t("detail.loadError")}</DrawerTitle>
+              <p className="text-sm text-red-600">{t("detail.loadError")}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+              >
+                {t("retry")}
+              </Button>
             </div>
-          </DrawerHeader>
-          <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
-            {isLoading ? (
-              <p className="text-sm text-slate-500">…</p>
-            ) : isError || !detail ? (
-              <div className="flex items-center gap-3">
-                <p className="text-sm text-red-600">{t("detail.loadError")}</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => refetch()}
-                >
-                  {t("retry")}
-                </Button>
-              </div>
-            ) : (
-              <>
-                {detail.lead.revoked && (
-                  <Badge variant="destructive">{t("card.revoked")}</Badge>
-                )}
-
-                <LeadWhatsAppAgentSection
-                  key={`${detail.lead.id}:${detail.lead.stage}:${detail.lead.whatsappDraftsAt ?? ""}`}
-                  detail={detail}
-                />
-
-                <section className="flex gap-3.5 rounded-[20px] border border-indigo-100 bg-indigo-50 p-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
-                    <Lightbulb className="h-5 w-5" aria-hidden />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-indigo-700">
-                      {t("detail.suggestion")}
-                    </p>
-                    <p className="mt-0.5 text-[15px] text-indigo-950">
-                      {safeLabel(
-                        tt,
-                        `suggestions.${detail.suggestion.key}`,
-                        detail.suggestion.key
-                      )}
-                    </p>
-                    <p className="mt-1 text-xs text-indigo-700">
-                      {detail.suggestion.reason}
-                    </p>
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className={sectionTitle}>{t("detail.summary")}</h3>
-                  <dl className="grid grid-cols-2 gap-2.5 text-sm">
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
-                      <dt className="text-xs text-slate-500">
-                        {t("detail.summaryOrders")}
-                      </dt>
-                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">
-                        {detail.summary.orderCount}
-                      </dd>
-                    </div>
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
-                      <dt className="text-xs text-slate-500">
-                        {t("detail.summaryTries")}
-                      </dt>
-                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">
-                        {detail.summary.demoCount}
-                      </dd>
-                    </div>
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
-                      <dt className="text-xs text-slate-500">
-                        {t("detail.summaryActions")}
-                      </dt>
-                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">
-                        {detail.summary.distinctActionTypes}
-                      </dd>
-                    </div>
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
-                      <dt className="text-xs text-slate-500">
-                        {t("detail.summaryLastEvent")}
-                      </dt>
-                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">
-                        {formatDateTime(detail.summary.lastActivityAt, locale)}
-                      </dd>
-                    </div>
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
-                      <dt className="text-xs text-slate-500">
-                        {t("detail.summaryWhatsApp")}
-                      </dt>
-                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">
-                        {detail.summary.hasWhatsApp ? "✓" : "—"}
-                      </dd>
-                    </div>
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
-                      <dt className="text-xs text-slate-500">
-                        {t("detail.summaryInbox")}
-                      </dt>
-                      <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">
-                        {detail.summary.repliedInInbox ? "✓" : "—"}
-                      </dd>
-                    </div>
-                  </dl>
-                </section>
-
-                <SegmentedControl
-                  label={t("detail.tabsLabel")}
-                  variant="tabs"
-                  value={tab}
-                  onChange={setTab}
-                  options={[
-                    { id: "profile", label: t("detail.profile") },
-                    { id: "activity", label: t("detail.timeline") },
-                    {
-                      id: "notes",
-                      label: detail.notes.length
-                        ? `${t("detail.notes")} · ${detail.notes.length}`
-                        : t("detail.notes"),
-                    },
-                  ]}
-                />
-
-                {tab === "profile" && (
-                  <LeadActionsSection
-                    leadId={detail.lead.id}
-                    actions={detail.actions ?? []}
-                  />
-                )}
-
-                {tab === "profile" && (
-                  <section>
-                    <form
-                      key={formKey}
-                      onSubmit={handleSave(detail.lead)}
-                      className="space-y-3"
-                    >
-                      <div className="grid grid-cols-2 gap-3">
-                        <label className="text-xs text-slate-600 space-y-1">
-                          <span>{t("detail.stage")}</span>
-                          <Select
-                            name="stage"
-                            value={formStage?.stage}
-                            onValueChange={(stage) =>
-                              formStage &&
-                              setStageDraft({
-                                ...formStage,
-                                stage: stage as DemoLeadStage,
-                              })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {DEMO_LEAD_STAGES.map((stage) => (
-                                <SelectItem key={stage} value={stage}>
-                                  {t(`stages.${stage}`)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </label>
-                        <label className="text-xs text-slate-600 space-y-1">
-                          <span>{t("detail.priority")}</span>
-                          <Select
-                            name="priority"
-                            defaultValue={detail.lead.priority}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {DEMO_LEAD_PRIORITIES.map((p) => (
-                                <SelectItem key={p} value={p}>
-                                  {t(`filters.priority.${p}`)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </label>
-                      </div>
-                      {formStage?.stage === "CLOSED" && (
-                        <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5">
-                          <label className="block text-xs text-slate-600 space-y-1">
-                            <span>{t("detail.outcome")}</span>
-                            <Select
-                              name="outcome"
-                              value={formStage.outcome ?? ""}
-                              onValueChange={(outcome) =>
-                                setStageDraft({
-                                  ...formStage,
-                                  outcome: outcome as DemoLeadOutcome,
-                                })
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue
-                                  placeholder={t("detail.outcomePlaceholder")}
-                                />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {DEMO_LEAD_OUTCOMES.map((outcome) => (
-                                  <SelectItem key={outcome} value={outcome}>
-                                    {t(`outcomes.${outcome}`)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </label>
-                          {missingOutcome && (
-                            <p className="text-xs text-amber-800">
-                              {t("detail.outcomeRequired")}
-                            </p>
-                          )}
-                          {formStage.outcome === "LOST" && (
-                            <Input
-                              label={t("detail.lostReason")}
-                              name="lostReason"
-                              defaultValue={detail.lead.lostReason ?? ""}
-                              maxLength={255}
-                            />
-                          )}
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2">
-                        <span className="text-xs text-slate-600">{t("detail.owner")}</span>
-                        <LeadOwnerAvatar lead={detail.lead} showName />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <IndustrySelect
-                          id="lead-detail-business-type"
-                          label={t("detail.businessType")}
-                          name="businessType"
-                          defaultValue={detail.lead.businessType ?? ""}
-                        />
-                        <Input
-                          label={t("detail.businessName")}
-                          name="businessName"
-                          defaultValue={detail.lead.establishmentName ?? ""}
-                          maxLength={120}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          label={t("detail.estimatedOrders")}
-                          name="estimatedOrders"
-                          type="number"
-                          min={0}
-                          defaultValue={detail.lead.estimatedOrders ?? ""}
-                        />
-                        <Input
-                          label={t("detail.planInterest")}
-                          name="planInterest"
-                          defaultValue={detail.lead.planInterest ?? ""}
-                          maxLength={60}
-                        />
-                      </div>
-                      <Input
-                        label={t("detail.mainNeed")}
-                        name="mainNeed"
-                        defaultValue={detail.lead.mainNeed ?? ""}
-                        maxLength={255}
-                      />
-                      {!detail.lead.revoked && (
-                        <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            name="revokeConsent"
-                            className="mt-0.5 h-4 w-4 accent-slate-900"
-                          />
-                          <span>
-                            {t("detail.revokeConsent")} {t("detail.revokeHint")}
-                          </span>
-                        </label>
-                      )}
-                      <Button
-                        type="submit"
-                        className="w-full"
-                        isLoading={updateLead.isPending}
-                        disabled={updateLead.isPending || missingOutcome}
-                      >
-                        {updateLead.isPending
-                          ? t("detail.saving")
-                          : t("detail.save")}
-                      </Button>
-                    </form>
-                  </section>
-                )}
-
-                {tab === "activity" && (
-                  <section>
-                    {detail.events.length === 0 ? (
-                      <p className="text-xs text-slate-500">—</p>
-                    ) : (
-                      <ol className="flex flex-col">
-                        {detail.events.map((event, index) => (
-                          <li key={event.id} className="flex gap-3.5">
-                            <span className="flex flex-col items-center">
-                              <span
-                                className="mt-1 h-3 w-3 rounded-full bg-indigo-500 ring-4 ring-indigo-100"
-                                aria-hidden
-                              />
-                              {index < detail.events.length - 1 && (
-                                <span
-                                  className="my-1 w-0.5 flex-1 bg-slate-200"
-                                  aria-hidden
-                                />
-                              )}
-                            </span>
-                            <span className="flex flex-1 flex-col pb-4">
-                              <span className="text-sm font-medium text-slate-900">
-                                {event.type === "DEMO_STARTED" &&
-                                event.metadata?.firstDemo === true
-                                  ? t("events.DEMO_STARTED_FIRST")
-                                  : safeLabel(
-                                      tt,
-                                      `events.${event.type}`,
-                                      event.type
-                                    )}
-                              </span>
-                              <span className="mt-0.5 text-[13px] text-slate-500">
-                                {formatDateTime(event.occurredAt, locale)}
-                              </span>
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                    )}
-                  </section>
-                )}
-
-                {tab === "notes" && (
-                  <section>
-                    <ul className="space-y-2 mb-3">
-                      {detail.notes.map((note) => (
-                        <li
-                          key={note.id}
-                          className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-3 text-sm"
-                        >
-                          <p className="text-slate-800">{note.body}</p>
-                          <p className="text-xs text-slate-500 mt-1">
-                            {note.authorName ?? "—"} ·{" "}
-                            {formatDateTime(note.createdAt, locale)}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                    <form
-                      onSubmit={handleAddNote(detail.lead.id)}
-                      className="flex gap-2"
-                    >
-                      <Textarea
-                        placeholder={t("detail.notePlaceholder")}
-                        value={noteBody}
-                        onChange={(e) => setNoteBody(e.target.value)}
-                        rows={2}
-                        maxLength={2000}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="submit"
-                        disabled={addNote.isPending || !noteBody.trim()}
-                        isLoading={addNote.isPending}
-                      >
-                        {t("detail.addNote")}
-                      </Button>
-                    </form>
-                  </section>
-                )}
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="text-red-600"
-                  onClick={() => setConfirmDeleteOpen(true)}
-                  disabled={deleteLead.isPending}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t("detail.delete")}
-                </Button>
-              </>
-            )}
-          </div>
+          ) : (
+            // key: al cambiar de lead la pestaña vuelve a la inicial.
+            <LeadDetailBody
+              key={detail.lead.id}
+              detail={detail}
+              onDelete={() => setConfirmDeleteOpen(true)}
+              isDeleting={deleteLead.isPending}
+            />
+          )}
         </DrawerContent>
       </Drawer>
 
@@ -626,5 +176,524 @@ export function LeadDetailPanel({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function LeadDetailBody({
+  detail,
+  onDelete,
+  isDeleting,
+}: {
+  detail: DemoLeadDetail;
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  const t = useTranslations("admin-demo-leads");
+  const locale = useLocale();
+  const tt = t as (key: string) => string;
+  const updateLead = useUpdateDemoLead();
+  const { lead, summary, suggestion } = detail;
+  // Sin consentimiento no hay agente: arranca en Seguimiento.
+  const [tab, setTab] = useState<DetailTab>(
+    lead.revoked ? "followUp" : "contact"
+  );
+
+  const pendingActions = (detail.actions ?? []).filter((a) => !a.doneAt).length;
+  const business = [lead.establishmentName, lead.businessType]
+    .filter(Boolean)
+    .join(" · ");
+  const stageValue: StageOption =
+    lead.stage === "CLOSED" && lead.outcome
+      ? `CLOSED:${lead.outcome}`
+      : lead.stage;
+
+  const changeStage = (value: string) => {
+    if (value === stageValue) return;
+    const [stage, outcome] = value.split(":") as [
+      DemoLeadStage,
+      DemoLeadOutcome | undefined,
+    ];
+    updateLead.mutate({
+      id: lead.id,
+      data: { stage, outcome: outcome ?? null },
+    });
+  };
+
+  const copyPhone = async () => {
+    try {
+      await navigator.clipboard.writeText(formatPhone(lead.phone));
+      toast.success(t("detail.phoneCopied"));
+    } catch {
+      toast.error(t("detail.phoneCopyError"));
+    }
+  };
+
+  const chip =
+    "h-8 w-auto gap-1.5 rounded-lg border-slate-200 bg-white px-2.5 text-[13px] font-semibold text-slate-700";
+
+  return (
+    <>
+      <DrawerHeader className="space-y-3.5 px-6 pb-0 pt-5">
+        <div className="flex items-start gap-3 pr-10">
+          <InitialsAvatar name={lead.name} seed={lead.id} size="sm" />
+          <div className="min-w-0 flex-1">
+            <DrawerTitle className="line-clamp-2 pr-0 text-lg font-bold leading-snug text-slate-900">
+              {lead.name || t("card.noName")}
+            </DrawerTitle>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-slate-500">
+              {business && <span className="truncate">{business}</span>}
+              {business && lead.source !== "DEMO" && <span aria-hidden>·</span>}
+              {lead.source === "SCOUT" && (
+                <span className="inline-flex items-center gap-1 font-semibold text-teal-700">
+                  <Compass className="h-3.5 w-3.5" aria-hidden />
+                  {t("card.scout")}
+                </span>
+              )}
+              {lead.source === "MANUAL" && (
+                <span className="font-semibold text-violet-700">
+                  {lead.referredBy
+                    ? t("detail.manualReferred", { name: lead.referredBy })
+                    : t("detail.manual")}
+                </span>
+              )}
+            </p>
+            <p className="mt-1 flex items-center gap-0.5 text-[13px] tabular-nums text-slate-700">
+              <span className="mr-1">{formatPhone(lead.phone)}</span>
+              <button
+                type="button"
+                onClick={copyPhone}
+                aria-label={t("detail.copyPhone")}
+                title={t("detail.copyPhone")}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              >
+                <Copy className="h-3.5 w-3.5" aria-hidden />
+              </button>
+              <a
+                href={`tel:${formatPhone(lead.phone)}`}
+                aria-label={t("detail.call")}
+                title={t("detail.call")}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              >
+                <Phone className="h-3.5 w-3.5" aria-hidden />
+              </a>
+            </p>
+          </div>
+        </div>
+
+        {/* Etapa, prioridad y responsable: se guardan al cambiar */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={stageValue} onValueChange={changeStage}>
+            <SelectTrigger aria-label={t("detail.stage")} className={chip}>
+              <span
+                aria-hidden
+                className={cn("h-2 w-2 rounded-full", STAGE_DOT_CLASS[lead.stage])}
+              />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {OPEN_DEMO_LEAD_STAGES.map((stage) => (
+                <SelectItem key={stage} value={stage}>
+                  {t(`stages.${stage}`)}
+                </SelectItem>
+              ))}
+              {DEMO_LEAD_OUTCOMES.map((outcome) => (
+                <SelectItem key={outcome} value={`CLOSED:${outcome}`}>
+                  {`${t("stages.CLOSED")} · ${t(`outcomes.${outcome}`)}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={lead.priority}
+            onValueChange={(priority) =>
+              priority !== lead.priority &&
+              updateLead.mutate({
+                id: lead.id,
+                data: { priority: priority as DemoLeadPriority },
+              })
+            }
+          >
+            <SelectTrigger
+              aria-label={t("detail.priority")}
+              className={cn(
+                chip,
+                lead.priority === "HIGH" && "border-red-200 bg-red-50 text-red-700"
+              )}
+            >
+              <Flag className="h-3.5 w-3.5" aria-hidden />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DEMO_LEAD_PRIORITIES.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {t(`filters.priority.${p}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <LeadOwnerAvatar
+            lead={lead}
+            showName
+            className="h-8 rounded-lg border border-slate-200 bg-white pl-1 pr-2.5 text-[13px] font-semibold"
+          />
+        </div>
+
+        {/* Actividad en una fila */}
+        <dl className="grid grid-cols-4 overflow-hidden rounded-xl border border-slate-200/70 bg-white/70">
+          {[
+            { label: t("detail.statOrders"), value: summary.orderCount },
+            { label: t("detail.statTries"), value: summary.demoCount },
+            {
+              label: t("detail.statLast"),
+              value: formatRelative(summary.lastActivityAt, locale),
+            },
+          ].map(({ label, value }) => (
+            <div key={label} className="min-w-0 border-r border-slate-200/70 px-2.5 py-2">
+              <dt className="truncate text-[11.5px] text-slate-500">{label}</dt>
+              <dd className="truncate text-[15px] font-bold tabular-nums text-slate-900">
+                {value}
+              </dd>
+            </div>
+          ))}
+          <div className="min-w-0 px-2.5 py-2">
+            <dt className="truncate text-[11.5px] text-slate-500">
+              {t("detail.statChannels")}
+            </dt>
+            <dd className="mt-0.5 flex gap-1">
+              {[
+                { key: "WA", on: summary.hasWhatsApp, title: t("detail.summaryWhatsApp") },
+                { key: "Inbox", on: summary.repliedInInbox, title: t("detail.summaryInbox") },
+              ].map(({ key, on, title }) => (
+                <span
+                  key={key}
+                  title={`${title}: ${on ? "✓" : "—"}`}
+                  className={cn(
+                    "rounded-md px-1.5 text-[11px] font-semibold leading-5",
+                    on ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-500"
+                  )}
+                >
+                  {key}
+                </span>
+              ))}
+            </dd>
+          </div>
+        </dl>
+
+        <SegmentedControl
+          label={t("detail.tabsLabel")}
+          variant="tabs"
+          value={tab}
+          onChange={setTab}
+          className="-mx-1"
+          options={[
+            { id: "contact", label: t("detail.tabContact") },
+            {
+              id: "followUp",
+              label: pendingActions
+                ? `${t("detail.tabFollowUp")} · ${pendingActions}`
+                : t("detail.tabFollowUp"),
+            },
+            { id: "profile", label: t("detail.tabProfile") },
+            {
+              id: "history",
+              label: detail.notes.length
+                ? `${t("detail.tabHistory")} · ${detail.notes.length}`
+                : t("detail.tabHistory"),
+            },
+          ]}
+        />
+      </DrawerHeader>
+
+      <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+        {lead.revoked && (
+          <p className="flex items-center gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] font-medium text-red-700">
+            <Ban className="h-4 w-4 shrink-0" aria-hidden />
+            {t("card.noContact")}
+          </p>
+        )}
+
+        {tab === "contact" && (
+          <>
+            <div className="flex gap-2.5 rounded-xl bg-indigo-50 px-3.5 py-3">
+              <Lightbulb className="mt-0.5 h-[18px] w-[18px] shrink-0 text-indigo-600" aria-hidden />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-indigo-950">
+                  {safeLabel(tt, `suggestions.${suggestion.key}`, suggestion.key)}
+                </p>
+                <p className="mt-0.5 text-[12.5px] text-indigo-700">
+                  {suggestion.reason}
+                </p>
+              </div>
+            </div>
+            {lead.revoked ? null : (
+              <LeadWhatsAppAgentSection
+                key={`${lead.id}:${lead.stage}:${lead.whatsappDraftsAt ?? ""}`}
+                detail={detail}
+              />
+            )}
+          </>
+        )}
+
+        {tab === "followUp" && (
+          <LeadActionsSection
+            leadId={lead.id}
+            leadName={lead.name}
+            actions={detail.actions ?? []}
+          />
+        )}
+
+        {tab === "profile" && (
+          <LeadProfileForm
+            lead={lead}
+            onDelete={onDelete}
+            isDeleting={isDeleting}
+          />
+        )}
+
+        {tab === "history" && <LeadHistory detail={detail} />}
+      </div>
+    </>
+  );
+}
+
+/** Pestaña Ficha: perfil comercial agrupado; etapa y prioridad van arriba. */
+function LeadProfileForm({
+  lead,
+  onDelete,
+  isDeleting,
+}: {
+  lead: DemoLeadDetailLead;
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  const t = useTranslations("admin-demo-leads");
+  const updateLead = useUpdateDemoLead();
+  const lost = lead.stage === "CLOSED" && lead.outcome === "LOST";
+
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const data: UpdateDemoLeadRequest = {
+      businessType: (form.get("businessType") as string) || null,
+      businessName: (form.get("businessName") as string) || null,
+      estimatedOrders: form.get("estimatedOrders")
+        ? Number(form.get("estimatedOrders"))
+        : null,
+      planInterest: (form.get("planInterest") as string) || null,
+      mainNeed: (form.get("mainNeed") as string) || null,
+      // El motivo solo existe si se perdió; si no, no se toca.
+      ...(lost && {
+        lostReason: (form.get("lostReason") as string) || null,
+      }),
+      // Marcada: revoca con sello de ahora. Sin marcar: no toca el sello.
+      revokedAt:
+        form.get("revokeConsent") === "on" ? new Date().toISOString() : undefined,
+    };
+    updateLead.mutate({ id: lead.id, data });
+  };
+
+  const legend =
+    "mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500";
+
+  return (
+    <form
+      key={`${lead.id}-${lead.stage}-${lead.outcome ?? ""}-${lead.revoked}`}
+      onSubmit={handleSave}
+      className="space-y-6"
+    >
+      <fieldset className="space-y-3">
+        <legend className={legend}>{t("detail.groupBusiness")}</legend>
+        <Input
+          label={t("detail.businessName")}
+          name="businessName"
+          defaultValue={lead.establishmentName ?? ""}
+          maxLength={120}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <IndustrySelect
+            id="lead-detail-business-type"
+            label={t("detail.businessType")}
+            name="businessType"
+            defaultValue={lead.businessType ?? ""}
+          />
+          <Input
+            label={t("detail.estimatedOrders")}
+            name="estimatedOrders"
+            type="number"
+            min={0}
+            defaultValue={lead.estimatedOrders ?? ""}
+          />
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className={legend}>{t("detail.groupOpportunity")}</legend>
+        <Input
+          label={t("detail.planInterest")}
+          name="planInterest"
+          defaultValue={lead.planInterest ?? ""}
+          maxLength={60}
+        />
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-slate-700">
+            {t("detail.mainNeed")}
+          </span>
+          <Textarea
+            name="mainNeed"
+            rows={3}
+            defaultValue={lead.mainNeed ?? ""}
+            maxLength={255}
+            placeholder={t("detail.mainNeedPlaceholder")}
+          />
+        </label>
+        {lost && (
+          <Input
+            label={t("detail.lostReason")}
+            name="lostReason"
+            defaultValue={lead.lostReason ?? ""}
+            maxLength={255}
+          />
+        )}
+      </fieldset>
+
+      {!lead.revoked && (
+        <fieldset>
+          <legend className={legend}>{t("detail.groupPrivacy")}</legend>
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200/80 bg-white px-3.5 py-3">
+            <input
+              type="checkbox"
+              name="revokeConsent"
+              className="mt-0.5 h-[18px] w-[18px] accent-indigo-600"
+            />
+            <span className="space-y-0.5">
+              <span className="block text-sm font-medium text-slate-900">
+                {t("detail.revokeConsent")}
+              </span>
+              <span className="block text-xs text-slate-500">
+                {t("detail.revokeHint")}
+              </span>
+            </span>
+          </label>
+        </fieldset>
+      )}
+
+      <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+        <Button
+          type="button"
+          variant="ghost"
+          className="-ml-3 text-red-600 hover:bg-red-50 hover:text-red-700"
+          onClick={onDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+          {t("detail.deleteLead")}
+        </Button>
+        <Button
+          type="submit"
+          isLoading={updateLead.isPending}
+          disabled={updateLead.isPending}
+        >
+          {updateLead.isPending ? t("detail.saving") : t("detail.save")}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/** Pestaña Historial: notas (con su campo) y la línea de tiempo de la demo. */
+function LeadHistory({ detail }: { detail: DemoLeadDetail }) {
+  const t = useTranslations("admin-demo-leads");
+  const locale = useLocale();
+  const tt = t as (key: string) => string;
+  const addNote = useAddDemoLeadNote();
+  const [noteBody, setNoteBody] = useState("");
+
+  const handleAddNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    const body = noteBody.trim();
+    if (!body) return;
+    addNote.mutate(
+      { id: detail.lead.id, body },
+      { onSuccess: () => setNoteBody("") }
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <section className="space-y-2.5">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          {t("detail.notes")}
+        </h3>
+        <form onSubmit={handleAddNote} className="space-y-2">
+          <Textarea
+            aria-label={t("detail.notePlaceholder")}
+            placeholder={t("detail.notePlaceholder")}
+            value={noteBody}
+            onChange={(e) => setNoteBody(e.target.value)}
+            rows={2}
+            maxLength={2000}
+          />
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={addNote.isPending || !noteBody.trim()}
+              isLoading={addNote.isPending}
+            >
+              {t("detail.addNote")}
+            </Button>
+          </div>
+        </form>
+        <ul className="space-y-2">
+          {detail.notes.map((note) => (
+            <li
+              key={note.id}
+              className="rounded-xl border border-slate-200/70 bg-white px-3.5 py-3 text-sm"
+            >
+              <p className="whitespace-pre-line text-slate-800">{note.body}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {note.authorName ?? "—"} · {formatDateTime(note.createdAt, locale)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="space-y-2.5">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          {t("detail.timeline")}
+        </h3>
+        {detail.events.length === 0 ? (
+          <p className="text-xs text-slate-500">—</p>
+        ) : (
+          <ol className="flex flex-col">
+            {detail.events.map((event, index) => (
+              <li key={event.id} className="flex gap-3.5">
+                <span className="flex flex-col items-center">
+                  <span
+                    className="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-100"
+                    aria-hidden
+                  />
+                  {index < detail.events.length - 1 && (
+                    <span className="my-1 w-0.5 flex-1 bg-slate-200" aria-hidden />
+                  )}
+                </span>
+                <span className="flex flex-1 flex-col pb-4">
+                  <span className="text-sm font-medium text-slate-900">
+                    {event.type === "DEMO_STARTED" &&
+                    event.metadata?.firstDemo === true
+                      ? t("events.DEMO_STARTED_FIRST")
+                      : safeLabel(tt, `events.${event.type}`, event.type)}
+                  </span>
+                  <span className="mt-0.5 text-[13px] text-slate-500">
+                    {formatDateTime(event.occurredAt, locale)}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </div>
   );
 }
