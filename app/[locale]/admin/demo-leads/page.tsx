@@ -68,7 +68,7 @@ export default function DemoLeadsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isScoutOpen, setIsScoutOpen] = useState(false);
   // Teléfono: el tablero no cabe, se ve una etapa a la vez.
-  const [mobileStage, setMobileStage] = useState<DemoLeadStage>("NEW");
+  const [mobileStage, setMobileStage] = useState<DemoLeadStage>("TO_CONTACT");
 
   // Columnas colapsadas a un riel: preferencia por navegador, como Pedidos.
   const [collapsedStages, setCollapsedStages] = useState(readCollapsedStages);
@@ -104,6 +104,9 @@ export default function DemoLeadsPage() {
     for (const entry of pipeline ?? []) map.set(entry.stage, entry.count);
     return map;
   }, [pipeline]);
+  // Clientes = cerrados como ganados (CLOSED trae el desglose).
+  const wonCount =
+    pipeline?.find((entry) => entry.stage === "CLOSED")?.won ?? 0;
 
   const byStage = React.useMemo(() => {
     const map = new Map<DemoLeadStage, NonNullable<typeof leads>>();
@@ -148,7 +151,7 @@ export default function DemoLeadsPage() {
     },
     {
       label: t("kpis.customers"),
-      value: counts.get("CUSTOMER") ?? 0,
+      value: wonCount,
       icon: CheckCircle2,
       tone: "bg-emerald-50 text-emerald-700",
     },

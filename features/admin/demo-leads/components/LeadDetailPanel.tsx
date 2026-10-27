@@ -44,6 +44,7 @@ import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
 import { SegmentedControl } from "@/components/ui/pill-group";
 import type {
   DemoLeadDetailLead,
+  DemoLeadOutcome,
   DemoLeadPriority,
   DemoLeadStage,
   UpdateDemoLeadRequest,
@@ -56,6 +57,7 @@ import {
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import {
   DEMO_LEAD_PRIORITIES,
+  DEMO_LEAD_OUTCOMES,
   DEMO_LEAD_STAGES,
   formatDateTime,
   formatPhone,
@@ -89,6 +91,27 @@ export function LeadDetailPanel({
   const [noteBody, setNoteBody] = useState("");
   const [tab, setTab] = useState<"profile" | "activity" | "notes">("profile");
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  // Etapa y resultado elegidos en el formulario (deciden si se piden el
+  // resultado y el motivo de pérdida). Atados a la versión del lead: si el
+  // lead cambia, vuelven a sus valores guardados sin un efecto.
+  const [stageDraft, setStageDraft] = useState<{
+    key: string;
+    stage: DemoLeadStage;
+    outcome: DemoLeadOutcome | null;
+  } | null>(null);
+  const formKey = detail
+    ? `${detail.lead.id}-${detail.lead.stage}-${detail.lead.outcome ?? ""}-${detail.lead.priority}-${detail.lead.revoked}`
+    : "";
+  const formStage = detail
+    ? stageDraft?.key === formKey
+      ? stageDraft
+      : {
+          key: formKey,
+          stage: detail.lead.stage,
+          outcome: detail.lead.outcome ?? null,
+        }
+    : null;
+  const missingOutcome = formStage?.stage === "CLOSED" && !formStage.outcome;
 
   const handleSave =
     (lead: DemoLeadDetailLead) => (e: React.FormEvent<HTMLFormElement>) => {
@@ -96,8 +119,15 @@ export function LeadDetailPanel({
       const form = new FormData(e.currentTarget);
       const stage = form.get("stage") as DemoLeadStage;
       const priority = form.get("priority") as DemoLeadPriority;
+      // El resultado solo existe en CLOSED; el motivo, solo si se perdió.
+      const outcome =
+        stage === "CLOSED"
+          ? ((form.get("outcome") as DemoLeadOutcome | null) || null)
+          : null;
+      if (stage === "CLOSED" && !outcome) return;
       const data: UpdateDemoLeadRequest = {
         stage,
+        outcome,
         priority,
         businessType: (form.get("businessType") as string) || null,
         businessName: (form.get("businessName") as string) || null,
@@ -107,7 +137,9 @@ export function LeadDetailPanel({
         planInterest: (form.get("planInterest") as string) || null,
         mainNeed: (form.get("mainNeed") as string) || null,
         lostReason:
-          stage === "LOST" ? (form.get("lostReason") as string) || null : null,
+          outcome === "LOST"
+            ? (form.get("lostReason") as string) || null
+            : null,
         // Marcada: revoca con sello de ahora. Sin marcar: no toca el sello.
         revokedAt:
           form.get("revokeConsent") === "on"
@@ -314,14 +346,24 @@ export function LeadDetailPanel({
                 {tab === "profile" && (
                   <section>
                     <form
-                      key={`${detail.lead.id}-${detail.lead.stage}-${detail.lead.priority}-${detail.lead.revoked}`}
+                      key={formKey}
                       onSubmit={handleSave(detail.lead)}
                       className="space-y-3"
                     >
                       <div className="grid grid-cols-2 gap-3">
                         <label className="text-xs text-slate-600 space-y-1">
                           <span>{t("detail.stage")}</span>
-                          <Select name="stage" defaultValue={detail.lead.stage}>
+                          <Select
+                            name="stage"
+                            value={formStage?.stage}
+                            onValueChange={(stage) =>
+                              formStage &&
+                              setStageDraft({
+                                ...formStage,
+                                stage: stage as DemoLeadStage,
+                              })
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -353,6 +395,49 @@ export function LeadDetailPanel({
                           </Select>
                         </label>
                       </div>
+                      {formStage?.stage === "CLOSED" && (
+                        <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5">
+                          <label className="block text-xs text-slate-600 space-y-1">
+                            <span>{t("detail.outcome")}</span>
+                            <Select
+                              name="outcome"
+                              value={formStage.outcome ?? ""}
+                              onValueChange={(outcome) =>
+                                setStageDraft({
+                                  ...formStage,
+                                  outcome: outcome as DemoLeadOutcome,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("detail.outcomePlaceholder")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DEMO_LEAD_OUTCOMES.map((outcome) => (
+                                  <SelectItem key={outcome} value={outcome}>
+                                    {t(`outcomes.${outcome}`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </label>
+                          {missingOutcome && (
+                            <p className="text-xs text-amber-800">
+                              {t("detail.outcomeRequired")}
+                            </p>
+                          )}
+                          {formStage.outcome === "LOST" && (
+                            <Input
+                              label={t("detail.lostReason")}
+                              name="lostReason"
+                              defaultValue={detail.lead.lostReason ?? ""}
+                              maxLength={255}
+                            />
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2">
                         <span className="text-xs text-slate-600">{t("detail.owner")}</span>
                         <LeadOwnerAvatar lead={detail.lead} showName />
@@ -392,12 +477,6 @@ export function LeadDetailPanel({
                         defaultValue={detail.lead.mainNeed ?? ""}
                         maxLength={255}
                       />
-                      <Input
-                        label={t("detail.lostReason")}
-                        name="lostReason"
-                        defaultValue={detail.lead.lostReason ?? ""}
-                        maxLength={255}
-                      />
                       {!detail.lead.revoked && (
                         <label className="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
                           <input
@@ -414,7 +493,7 @@ export function LeadDetailPanel({
                         type="submit"
                         className="w-full"
                         isLoading={updateLead.isPending}
-                        disabled={updateLead.isPending}
+                        disabled={updateLead.isPending || missingOutcome}
                       >
                         {updateLead.isPending
                           ? t("detail.saving")

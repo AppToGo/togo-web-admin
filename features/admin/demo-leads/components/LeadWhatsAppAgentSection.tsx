@@ -42,17 +42,34 @@ import {
   useGenerateWhatsAppDrafts,
   useLogWhatsAppOutreach,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
-import { DEMO_LEAD_STAGES } from "@/features/admin/demo-leads/utils/demo-leads.utils";
+import {
+  DEMO_LEAD_STAGES,
+  OPEN_DEMO_LEAD_STAGES,
+} from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
 interface LeadWhatsAppAgentSectionProps {
   detail: DemoLeadDetail;
 }
 
 function defaultTargetStage(stage: DemoLeadStage): DemoLeadStage {
-  if (stage === "NEW" || stage === "ACTIVE_DEMO" || stage === "FOLLOW_UP") {
+  if (stage === "TO_CONTACT") {
     return "CONTACTED";
   }
   return stage;
+}
+
+/**
+ * Enviar un WhatsApp no cierra un lead (cerrar exige ganado / perdido): si la
+ * recomendación es CLOSED y el lead sigue abierto, se usa la etapa por defecto.
+ */
+function safeTargetStage(
+  recommended: DemoLeadStage | undefined,
+  current: DemoLeadStage
+): DemoLeadStage {
+  if (!recommended || (recommended === "CLOSED" && current !== "CLOSED")) {
+    return defaultTargetStage(current);
+  }
+  return recommended;
 }
 
 export function LeadWhatsAppAgentSection({
@@ -85,7 +102,7 @@ export function LeadWhatsAppAgentSection({
     () => persisted?.strategySummary ?? ""
   );
   const [nextStage, setNextStage] = useState<DemoLeadStage>(
-    () => persisted?.recommendedNextStage ?? defaultTargetStage(lead.stage)
+    () => safeTargetStage(persisted?.recommendedNextStage, lead.stage)
   );
   const [nextActionTitle, setNextActionTitle] = useState<string>(
     () => persisted?.recommendedNextAction ?? ""
@@ -98,7 +115,7 @@ export function LeadWhatsAppAgentSection({
     (res: WhatsAppDraftsResponse) => {
       setDrafts(res.drafts);
       setStrategySummary(res.strategySummary);
-      setNextStage(res.recommendedNextStage);
+      setNextStage(safeTargetStage(res.recommendedNextStage, lead.stage));
       setNextActionTitle(res.recommendedNextAction);
       const first = res.drafts[0];
       if (first) {
@@ -106,7 +123,7 @@ export function LeadWhatsAppAgentSection({
         setMessageText(first.message);
       }
     },
-    []
+    [lead.stage]
   );
 
   if (lead.revoked) {
@@ -328,7 +345,10 @@ export function LeadWhatsAppAgentSection({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DEMO_LEAD_STAGES.map((stage) => (
+                {(lead.stage === "CLOSED"
+                  ? DEMO_LEAD_STAGES
+                  : OPEN_DEMO_LEAD_STAGES
+                ).map((stage) => (
                   <SelectItem key={stage} value={stage}>
                     {t(`stages.${stage}`)}
                   </SelectItem>
