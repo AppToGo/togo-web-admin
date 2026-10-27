@@ -208,6 +208,7 @@
     "importButton": "Add {count} to CRM",
     "importing": "Adding…",
     "editHint": "You can edit the business name, phone, industry, or note directly on each card before importing.",
-    "contactNamePlaceholder": "Contact person (optional)"
+    "contactNamePlaceholder": "Contact person (optional)",
+    "defaultBusinessName": "Commercial prospect"
   }
 }

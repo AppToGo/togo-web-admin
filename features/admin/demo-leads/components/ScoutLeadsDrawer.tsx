@@ -11,6 +11,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   CheckSquare,
   Compass,
@@ -49,6 +50,10 @@ interface ScoutLeadsDrawerProps {
 
 interface EditableScoutCandidate extends ScoutProspectCandidate {
   localId: string;
+}
+
+function isValidScoutPhone(phone: string): boolean {
+  return phone.replace(/\D/g, "").length >= 10;
 }
 
 export function ScoutLeadsDrawer({
@@ -93,7 +98,12 @@ export function ScoutLeadsDrawer({
           setCandidates(withIds);
           const selectable = new Set(
             withIds
-              .filter((c) => !c.alreadyInCrm && !c.alreadyCustomerBusiness)
+              .filter(
+                (c) =>
+                  !c.alreadyInCrm &&
+                  !c.alreadyCustomerBusiness &&
+                  isValidScoutPhone(c.phone)
+              )
               .map((c) => c.localId)
           );
           setSelectedIds(selectable);
@@ -103,6 +113,12 @@ export function ScoutLeadsDrawer({
   };
 
   const toggleCandidate = (localId: string) => {
+    const target = candidates.find((c) => c.localId === localId);
+    if (!target) return;
+    if (!selectedIds.has(localId) && !isValidScoutPhone(target.phone)) {
+      toast.error(t("create.phoneInvalid"));
+      return;
+    }
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(localId)) {
@@ -120,23 +136,43 @@ export function ScoutLeadsDrawer({
     value: EditableScoutCandidate[K]
   ) => {
     setCandidates((prev) =>
-      prev.map((c) => (c.localId === localId ? { ...c, [field]: value } : c))
+      prev.map((c) => {
+        if (c.localId !== localId) return c;
+        if (field === "phone") {
+          return {
+            ...c,
+            phone: String(value),
+            alreadyInCrm: false,
+            existingLeadId: null,
+            alreadyCustomerBusiness: false,
+          };
+        }
+        return { ...c, [field]: value };
+      })
     );
   };
 
-  const handleImport = () => {
-    const toImport = candidates
-      .filter((c) => selectedIds.has(c.localId))
-      .map((c) => ({
-        name: c.name.trim() || undefined,
-        phone: c.phone.trim(),
-        businessName: c.businessName.trim() || "Prospecto Comercial",
-        businessType: c.businessType.trim() || undefined,
-        note: c.suggestedNote.trim() || undefined,
-      }))
-      .filter((c) => c.phone.replace(/\D/g, "").length >= 10);
+  const validSelectedCandidates = candidates.filter(
+    (c) =>
+      selectedIds.has(c.localId) &&
+      !c.alreadyInCrm &&
+      !c.alreadyCustomerBusiness &&
+      isValidScoutPhone(c.phone)
+  );
 
-    if (toImport.length === 0) return;
+  const handleImport = () => {
+    if (validSelectedCandidates.length === 0) {
+      toast.error(t("create.phoneInvalid"));
+      return;
+    }
+
+    const toImport = validSelectedCandidates.map((c) => ({
+      name: c.name.trim() || undefined,
+      phone: c.phone.trim(),
+      businessName: c.businessName.trim() || t("scout.defaultBusinessName"),
+      businessType: c.businessType.trim() || undefined,
+      note: c.suggestedNote.trim() || undefined,
+    }));
 
     scoutImport.mutate(
       { leads: toImport },
@@ -152,7 +188,10 @@ export function ScoutLeadsDrawer({
   };
 
   const selectableCount = candidates.filter(
-    (c) => !c.alreadyInCrm && !c.alreadyCustomerBusiness
+    (c) =>
+      !c.alreadyInCrm &&
+      !c.alreadyCustomerBusiness &&
+      isValidScoutPhone(c.phone)
   ).length;
 
   return (
@@ -256,7 +295,7 @@ export function ScoutLeadsDrawer({
                     <button
                       type="button"
                       onClick={() => {
-                        if (selectedIds.size === selectableCount) {
+                        if (validSelectedCandidates.length === selectableCount) {
                           setSelectedIds(new Set());
                         } else {
                           setSelectedIds(
@@ -265,7 +304,8 @@ export function ScoutLeadsDrawer({
                                 .filter(
                                   (c) =>
                                     !c.alreadyInCrm &&
-                                    !c.alreadyCustomerBusiness
+                                    !c.alreadyCustomerBusiness &&
+                                    isValidScoutPhone(c.phone)
                                 )
                                 .map((c) => c.localId)
                             )
@@ -274,7 +314,7 @@ export function ScoutLeadsDrawer({
                       }}
                       className="text-xs font-semibold text-indigo-600 hover:underline"
                     >
-                      {selectedIds.size === selectableCount
+                      {validSelectedCandidates.length === selectableCount
                         ? t("scout.deselectAll")
                         : t("scout.selectAll")}
                     </button>
@@ -286,7 +326,9 @@ export function ScoutLeadsDrawer({
                     const disabled =
                       candidate.alreadyInCrm ||
                       candidate.alreadyCustomerBusiness;
-                    const checked = selectedIds.has(candidate.localId);
+                    const phoneValid = isValidScoutPhone(candidate.phone);
+                    const checked =
+                      selectedIds.has(candidate.localId) && phoneValid;
 
                     return (
                       <li
@@ -408,7 +450,12 @@ export function ScoutLeadsDrawer({
                                     )
                                   }
                                   maxLength={25}
-                                  className="w-full rounded-lg border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs font-medium tabular-nums text-slate-800 outline-none focus:border-indigo-500 disabled:bg-slate-100"
+                                  className={cn(
+                                    "w-full rounded-lg border bg-white px-2.5 py-1.5 text-xs font-medium tabular-nums text-slate-800 outline-none disabled:bg-slate-100",
+                                    phoneValid
+                                      ? "border-slate-200/90 focus:border-indigo-500"
+                                      : "border-amber-400 focus:border-amber-500"
+                                  )}
                                 />
                               </label>
 
@@ -469,7 +516,7 @@ export function ScoutLeadsDrawer({
                                       e.target.value
                                     )
                                   }
-                                  maxLength={500}
+                                  maxLength={2000}
                                   className="w-full rounded-lg border border-slate-200/90 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-indigo-500"
                                 />
                               </label>
@@ -491,13 +538,17 @@ export function ScoutLeadsDrawer({
             <Button
               type="button"
               onClick={handleImport}
-              disabled={selectedIds.size === 0 || scoutImport.isPending}
+              disabled={
+                validSelectedCandidates.length === 0 || scoutImport.isPending
+              }
               isLoading={scoutImport.isPending}
               className="ml-auto rounded-full px-5"
             >
               {scoutImport.isPending
                 ? t("scout.importing")
-                : t("scout.importButton", { count: selectedIds.size })}
+                : t("scout.importButton", {
+                    count: validSelectedCandidates.length,
+                  })}
             </Button>
           </div>
         </div>

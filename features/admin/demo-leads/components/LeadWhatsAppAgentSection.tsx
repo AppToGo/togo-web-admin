@@ -66,6 +66,7 @@ export function LeadWhatsAppAgentSection({
 
   const persisted =
     lead.whatsappDrafts &&
+    lead.whatsappDrafts.generatedForStage === lead.stage &&
     Array.isArray(lead.whatsappDrafts.drafts) &&
     lead.whatsappDrafts.drafts.length > 0
       ? lead.whatsappDrafts

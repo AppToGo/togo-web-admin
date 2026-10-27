@@ -208,6 +208,7 @@
     "importButton": "Sumar {count} al CRM",
     "importing": "Sumando…",
     "editHint": "Puedes corregir nombre, teléfono, rubro o notas directamente en cada tarjeta antes de sumarlos.",
-    "contactNamePlaceholder": "Persona de contacto (opcional)"
+    "contactNamePlaceholder": "Persona de contacto (opcional)",
+    "defaultBusinessName": "Prospecto comercial"
   }
 }
