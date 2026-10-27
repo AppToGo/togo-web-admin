@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { ADMIN_BUSINESS_KEYS } from "./query-keys";
 import * as adminBusinessService from "../services/admin-business.service";
-import type { BusinessFilters, PaginatedBusinesses, UpdateBranchesLimitDto, UpdateProofQuotaDto, RecordPaymentDto, SendNotificationDto } from "../types/business-subscription.types";
+import type { BusinessFilters, PaginatedBusinesses, UpdateBranchesLimitDto, UpdateUsersLimitDto, UpdateProofQuotaDto, RecordPaymentDto, SendNotificationDto } from "../types/business-subscription.types";
 
 // ============================================================================
 // QUERY HOOKS
@@ -79,6 +79,38 @@ export function useUpdateBranchesLimit() {
     },
     onError: (error: Error) => {
       toast.error(error.message || t("errors.updateBranchesLimit"));
+    },
+  });
+}
+
+/**
+ * Hook to update users limit for a business
+ */
+export function useUpdateUsersLimit() {
+  const queryClient = useQueryClient();
+  const t = useTranslations("admin-businesses");
+
+  return useMutation({
+    mutationFn: async ({
+      businessId,
+      data,
+    }: {
+      businessId: string;
+      data: UpdateUsersLimitDto;
+    }) => {
+      return adminBusinessService.updateUsersLimit(businessId, data);
+    },
+    onSuccess: (data) => {
+      toast.success(t("notifications.usersLimitUpdated"));
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_BUSINESS_KEYS.businesses(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_BUSINESS_KEYS.business(data.id),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || t("errors.updateUsersLimit"));
     },
   });
 }

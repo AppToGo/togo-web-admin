@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
@@ -26,12 +26,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Link } from "@/i18n/routing";
-import { useUsers, useDeleteUser, useActivateUser } from "@/features/users/hooks/useUsers";
+import { useUsers, useUserLimit, useDeleteUser, useActivateUser } from "@/features/users/hooks/useUsers";
 import { CreateUserDialog } from "@/features/users/components/CreateUserDialog";
-import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
 import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
-import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
 import { UsersMobileView } from "@/features/users/components/UsersMobileView";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
@@ -49,9 +48,10 @@ export default function UsersPage() {
   // includeInactive: true — sin esto los usuarios desactivados no aparecían
   // en el listado y no había forma de reactivarlos desde el admin.
   const { data: users, isLoading } = useUsers(true);
-  const { data: catalog } = usePlanCatalog(true);
+  // El cupo lo calcula el backend: incluye el límite personalizado por el
+  // SUPER_ADMIN y usa el plan del negocio (no el del usuario que mira).
+  const { data: userLimit } = useUserLimit();
   const { user } = useAuthStore();
-  const subscriptionPlan = user?.subscriptionPlan ?? 1;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -60,15 +60,10 @@ export default function UsersPage() {
   const deleteUser = useDeleteUser();
   const activateUser = useActivateUser();
 
-  const planEntry = useMemo(() => {
-    if (!catalog?.plans) return null;
-    return catalog.plans.find((p) => p.plan === subscriptionPlan) ?? null;
-  }, [catalog, subscriptionPlan]);
-
-  const maxUsers = planEntry?.maxUsers ?? UNLIMITED_PLAN_LIMIT;
-  const activeCount = useMemo(() => users?.filter((u) => u.active).length ?? 0, [users]);
+  const maxUsers = userLimit?.max ?? UNLIMITED_PLAN_LIMIT;
+  const activeCount = userLimit?.current ?? 0;
   const isUnlimited = maxUsers >= UNLIMITED_PLAN_LIMIT;
-  const isLimitReached = !isUnlimited && activeCount >= maxUsers;
+  const isLimitReached = userLimit ? !userLimit.allowed : false;
 
   const limitLabel = isUnlimited
     ? ts("usersUnlimited")
@@ -116,7 +111,7 @@ export default function UsersPage() {
 
   const limitText = `${
     isUnlimited ? `${activeCount} ${t("limits.activeUsers")}` : `${activeCount} / ${maxUsers} ${t("limits.activeUsers")}`
-  } · ${limitLabel}${planEntry?.name ? ` · ${planEntry.name}` : ""}`;
+  } · ${limitLabel}`;
 
   return (
     <DashboardLayout>
@@ -148,7 +143,6 @@ export default function UsersPage() {
                 {isUnlimited ? `${activeCount} ${t("limits.activeUsers")}` : `${activeCount} / ${maxUsers} ${t("limits.activeUsers")}`}
                 {" · "}
                 {limitLabel}
-                {planEntry?.name ? ` · ${planEntry.name}` : ""}
               </span>
               {isLimitReached && (
                 <button onClick={() => setIsUpgradeOpen(true)} className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium">
