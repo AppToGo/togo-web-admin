@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { useLinkStatus } from "next/link";
-import { Filter, History, Inbox, MessageCircle, Banknote } from "lucide-react";
+import { Filter, History, Inbox, MessageCircle, Banknote, ToggleRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeLabels, localeFlags } from "@/i18n/config";
@@ -399,6 +399,11 @@ export function Sidebar({
       name: t("sidebar.aiUsage"),
       href: "/admin/ai-usage",
       icon: SparklesIcon,
+    },
+    {
+      name: t("sidebar.features"),
+      href: "/admin/features",
+      icon: ToggleRight,
     },
   ];
 

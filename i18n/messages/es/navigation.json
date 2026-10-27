@@ -32,7 +32,8 @@
     "business": "Datos del Negocio",
     "businesses": "Negocios",
     "users": "Usuarios",
-    "billing": "Facturación"
+    "billing": "Facturación",
+    "features": "Funcionalidades"
   },
   "breadcrumbs": {
     "home": "Inicio",

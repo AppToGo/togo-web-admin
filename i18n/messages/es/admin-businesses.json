@@ -44,7 +44,8 @@
     "sendNotification": "Enviar Notificación",
     "deactivate": "Desactivar",
     "activate": "Activar",
-    "editUsers": "Editar límite de usuarios"
+    "editUsers": "Editar límite de usuarios",
+    "editFeatures": "Funcionalidades"
   },
   "filters": {
     "title": "Filtros",
