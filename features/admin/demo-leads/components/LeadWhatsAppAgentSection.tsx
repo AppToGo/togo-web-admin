@@ -117,11 +117,12 @@ export function LeadWhatsAppAgentSection({
     setMessageText(draft.message);
   };
 
-  const handleGenerateOrRegenerate = () => {
+  const handleGenerateOrRegenerate = (forceRegenerate: boolean = false) => {
     generateDrafts.mutate(
       {
         prospectReply: prospectReply.trim() || undefined,
         objective: objective.trim() || undefined,
+        forceRegenerate: forceRegenerate || undefined,
       },
       {
         onSuccess: applyDraftsResponse,
@@ -189,7 +190,7 @@ export function LeadWhatsAppAgentSection({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={handleGenerateOrRegenerate}
+              onClick={() => handleGenerateOrRegenerate(true)}
               disabled={generateDrafts.isPending}
               className="h-8 rounded-full px-2.5 text-xs text-emerald-700 hover:bg-emerald-100/60"
               title={t("agent.regenerate")}
@@ -233,7 +234,7 @@ export function LeadWhatsAppAgentSection({
             type="button"
             size="sm"
             variant="outline"
-            onClick={handleGenerateOrRegenerate}
+            onClick={() => handleGenerateOrRegenerate(true)}
             disabled={generateDrafts.isPending}
             className="w-full rounded-xl border-emerald-300 text-emerald-800 hover:bg-emerald-50"
           >
@@ -251,7 +252,7 @@ export function LeadWhatsAppAgentSection({
           <Button
             type="button"
             size="sm"
-            onClick={handleGenerateOrRegenerate}
+            onClick={() => handleGenerateOrRegenerate(false)}
             disabled={generateDrafts.isPending}
             isLoading={generateDrafts.isPending}
             className="mt-2.5 rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white hover:bg-emerald-700"

@@ -214,6 +214,7 @@ export interface GenerateWhatsAppDraftsRequest {
   objective?: string;
   prospectReply?: string;
   tone?: WhatsAppDraftTone;
+  forceRegenerate?: boolean;
 }
 
 export interface WhatsAppDraftItem {
@@ -230,6 +231,7 @@ export interface WhatsAppDraftsResponse {
   recommendedNextAction: string;
   recommendedNextActionDays: number;
   drafts: WhatsAppDraftItem[];
+  generatedForStage?: DemoLeadStage;
 }
 
 export interface LogWhatsAppOutreachRequest {
