@@ -6,7 +6,7 @@
  */
 
 import { useTranslations } from "next-intl";
-import { ToggleRight } from "lucide-react";
+import { History, ToggleRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,8 @@ interface BusinessTableProps {
   onEditProofQuota: (business: BusinessWithSubscription) => void;
   onSendNotification: (business: BusinessWithSubscription) => void;
   onToggleStatus: (business: BusinessWithSubscription) => void;
+  /** Historial de cobros iniciados en Wompi (docs/cobro-suscripciones.md §7). */
+  onViewCharges: (business: BusinessWithSubscription) => void;
   isLoading?: boolean;
 }
 
@@ -47,6 +49,7 @@ export function BusinessTable({
   onEditProofQuota,
   onSendNotification,
   onToggleStatus,
+  onViewCharges,
   isLoading,
 }: BusinessTableProps) {
   const t = useTranslations("admin-businesses");
@@ -173,6 +176,16 @@ export function BusinessTable({
               {/* Actions */}
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
+                  {/* Historial de cobros: lo ve todo quien ve la tabla */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onViewCharges(business)}
+                    title={t("actions.viewCharges")}
+                  >
+                    <History className="w-4 h-4" />
+                  </Button>
+
                   {can("platform.business.payments") && (
                     <>
                     {/* Record Payment */}

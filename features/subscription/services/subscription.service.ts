@@ -1,5 +1,6 @@
 import apiClient from "@/services/api.service";
 import type {
+  SavedCard,
   SubscriptionStatus,
   OwnerPaymentRecord,
   OwnerPaymentNotification,
@@ -144,3 +145,101 @@ export async function getCheckoutStatus(
   );
   return response.data;
 }
+
+// ─── Autogestión (docs/cobro-suscripciones.md §6 en api-togo) ───────────
+
+/** Resultado de un pago iniciado por el dueño. */
+export type PaymentStart =
+  /** Se cobró la tarjeta guardada; el resultado llega por el webhook. */
+  | { mode: "CHARGED"; reference: string }
+  /** Sin tarjeta: hay que abrir el checkout hospedado de Wompi. */
+  | { mode: "CHECKOUT"; checkout: WompiCheckout };
+
+export interface PlanChangeQuote {
+  plan: number;
+  planName: string;
+  direction: "UP" | "DOWN";
+  /** UP: lo que se cobra hoy. DOWN: 0. */
+  amountInCents: number;
+  currency: string;
+  /** UP con un ciclo pagado en curso: solo la diferencia por los días que faltan. */
+  prorated: boolean;
+  /** DOWN: el vencimiento (cuándo aplica). UP: hoy. */
+  effectiveAt: string;
+  /** DOWN: qué sobra (sedes o usuarios). null = se puede. */
+  blockedReason: string | null;
+}
+
+export interface CardSetup {
+  publicKey: string;
+  acceptanceToken: string;
+  acceptancePermalink: string;
+  personalDataToken: string;
+  personalDataPermalink: string;
+}
+
+/** Pagar el mes del plan actual (con tarjeta guardada o checkout). Permiso billing.view. */
+export async function payNow(businessId: string): Promise<PaymentStart> {
+  const response = await apiClient.post<PaymentStart>(`${getBillingBaseUrl(businessId)}/pay`);
+  return response.data;
+}
+
+export async function quotePlanChange(
+  businessId: string,
+  plan: number
+): Promise<PlanChangeQuote> {
+  const response = await apiClient.get<PlanChangeQuote>(
+    `${getBillingBaseUrl(businessId)}/plan-change/quote`,
+    { params: { plan } }
+  );
+  return response.data;
+}
+
+export async function upgradePlan(businessId: string, plan: number): Promise<PaymentStart> {
+  const response = await apiClient.post<PaymentStart>(
+    `${getBillingBaseUrl(businessId)}/plan-change/upgrade`,
+    { plan }
+  );
+  return response.data;
+}
+
+export async function scheduleDowngrade(
+  businessId: string,
+  plan: number
+): Promise<PlanChangeQuote> {
+  const response = await apiClient.post<PlanChangeQuote>(
+    `${getBillingBaseUrl(businessId)}/plan-change/downgrade`,
+    { plan }
+  );
+  return response.data;
+}
+
+export async function cancelScheduledDowngrade(businessId: string): Promise<void> {
+  await apiClient.delete(`${getBillingBaseUrl(businessId)}/plan-change/downgrade`);
+}
+
+export async function cancelSubscription(businessId: string): Promise<void> {
+  await apiClient.post(`${getBillingBaseUrl(businessId)}/cancel`);
+}
+
+export async function undoCancelSubscription(businessId: string): Promise<void> {
+  await apiClient.delete(`${getBillingBaseUrl(businessId)}/cancel`);
+}
+
+export async function getCardSetup(businessId: string): Promise<CardSetup> {
+  const response = await apiClient.get<CardSetup>(`${getBillingBaseUrl(businessId)}/card/setup`);
+  return response.data;
+}
+
+export async function saveCard(
+  businessId: string,
+  /** Token y tipo que devuelve el widget de Wompi (solo CARD se acepta). */
+  data: { cardToken: string; sourceType: string }
+): Promise<{ card: SavedCard; payment: PaymentStart | null }> {
+  const response = await apiClient.put<{ card: SavedCard; payment: PaymentStart | null }>(
+    `${getBillingBaseUrl(businessId)}/card`,
+    data
+  );
+  return response.data;
+}
+

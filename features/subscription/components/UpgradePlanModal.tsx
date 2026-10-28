@@ -22,10 +22,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn, formatCurrency } from "@/lib/utils";
 import { NEQUI_PAYMENT_INFO, type PlanNumber } from "@/lib/plan.utils";
+import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
+import { useFormatDate } from "@/hooks/useFormatDate";
 import { usePlanCatalog } from "../hooks/usePlanCatalog";
-import { useWompiCheckout } from "../hooks/useWompiCheckout";
-import { UNLIMITED_PLAN_LIMIT, type PlanCatalogEntry } from "../services/subscription.service";
+import { useSubscriptionStatus } from "../hooks/useSubscriptionStatus";
+import { useSubscriptionActions } from "../hooks/useSubscriptionActions";
+import {
+  UNLIMITED_PLAN_LIMIT,
+  quotePlanChange,
+  type PlanCatalogEntry,
+} from "../services/subscription.service";
 
 interface UpgradePlanModalProps {
   open: boolean;
@@ -51,7 +60,21 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     1
   > | null>(null);
 
-  const { mutate: startWompiCheckout, isPending: isWompiPending } = useWompiCheckout();
+  const businessId = useEffectiveBusinessId();
+  const { hasPermission } = useMyPermissions();
+  const canManage = hasPermission("billing.manage");
+  const { data: status } = useSubscriptionStatus(open && hasPermission("billing.view"));
+  const actions = useSubscriptionActions();
+  // Cotización del plan elegido (docs/cobro-suscripciones.md §6 en api-togo):
+  // subir = cuánto se cobra hoy (prorrateado o el mes completo); bajar =
+  // desde cuándo aplica y si sobran sedes o usuarios.
+  const { data: quote, isLoading: isQuoteLoading } = useQuery({
+    queryKey: ["billing", "plan-quote", businessId, selectedPlan],
+    queryFn: () => quotePlanChange(businessId!, selectedPlan!),
+    enabled: open && view === "payment" && !!businessId && selectedPlan != null,
+    staleTime: 0,
+  });
+  const effectiveAt = useFormatDate(quote?.effectiveAt, { preset: "short" });
   // Solo pide el catálogo cuando el modal realmente está abierto — evita un
   // fetch innecesario en cada carga del dashboard para negocios que nunca lo abren.
   const { data: catalog, isLoading: isCatalogLoading, isError: isCatalogError, refetch: refetchCatalog } = usePlanCatalog(open);
@@ -73,18 +96,21 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
     setView("payment");
   };
 
-  const handlePayWithWompi = () => {
-    if (selectedPlan == null) return;
-    startWompiCheckout(selectedPlan);
+  const handleConfirm = () => {
+    if (selectedPlan == null || !quote) return;
+    if (quote.direction === "UP") {
+      actions.upgrade.mutate(selectedPlan, { onSuccess: onClose });
+    } else {
+      actions.downgrade.mutate(selectedPlan, { onSuccess: onClose });
+    }
   };
+  const isConfirming = actions.upgrade.isPending || actions.downgrade.isPending;
 
   const formatPrice = (amount: number) => formatCurrency(amount, catalog?.currency);
 
-  // El backend rechaza una solicitud que no supere tanto el plan activo como
-  // cualquier solicitud ya pendiente (para no pisar en silencio una solicitud
-  // más alta ya notificada a soporte) — este piso evita ofrecer un botón que
-  // el backend va a rechazar.
-  const requestFloor = Math.max(user?.subscriptionPlan ?? 1, user?.requestedPlan ?? 1);
+  // Plan actual según el estado de cuenta (el del usuario en sesión puede ir
+  // un poco detrás tras un cambio).
+  const currentPlan = status?.plan ?? user?.subscriptionPlan ?? 1;
 
   const getPlanEntry = (planNum: Exclude<PlanNumber, 1>) =>
     catalog?.plans.find((p) => p.plan === planNum);
@@ -209,8 +235,10 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                 const features = getPlanFeatures(planEntry);
                 const Icon = PLAN_ICONS[planNum];
                 const isPopular = planNum === 3;
-                const isBelowFloor = planNum <= requestFloor;
-                const isDisabled = isBelowFloor;
+                const isCurrent = planNum === currentPlan;
+                // Bajar desde la prueba gratis no aplica (no hay ciclo pagado).
+                const isDowngrade = planNum < currentPlan;
+                const isDisabled = isCurrent || !canManage;
 
                 return (
                   <div
@@ -279,12 +307,16 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                       disabled={isDisabled}
                       onClick={() => handleUpgrade(planNum)}
                     >
-                      {t("upgradeButton", { planName: planEntry.name })}
+                      {isCurrent
+                        ? t("currentPlanButton")
+                        : isDowngrade
+                          ? t("downgradeButton", { planName: planEntry.name })
+                          : t("upgradeButton", { planName: planEntry.name })}
                     </Button>
 
-                    {isBelowFloor && (
+                    {!canManage && !isCurrent && (
                       <p className="text-[11px] text-slate-400 text-center -mt-1.5">
-                        {t("planUnavailable")}
+                        {t("noManagePermission")}
                       </p>
                     )}
 
@@ -331,58 +363,88 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
         ) : (
           <>
             <DialogHeader className="px-6 pt-6 pb-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <Check className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div>
-                  <DialogTitle className="text-lg font-bold text-slate-900">
-                    {t("paymentPendingTitle")}
-                  </DialogTitle>
-                  <p className="text-xs text-slate-500">
-                    {t("paymentPendingSubtitle", {
-                      planName: selectedPlanInfo?.name ?? "",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium px-2.5 py-1 rounded-full w-fit">
-                <CreditCard className="w-3 h-3" />
-                {t("pendingBadge")}
-              </div>
+              <DialogTitle className="text-lg font-bold text-slate-900">
+                {quote?.direction === "DOWN"
+                  ? t("downgradeTitle", { planName: selectedPlanInfo?.name ?? "" })
+                  : t("upgradeTitle", { planName: selectedPlanInfo?.name ?? "" })}
+              </DialogTitle>
             </DialogHeader>
 
             <div className="px-6 pb-6 space-y-4">
-              <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50/50 p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <p className="text-sm font-semibold text-slate-900">
-                    {t("wompiTitle")}
+              {isQuoteLoading || !quote ? (
+                <div className="py-8 flex justify-center">
+                  <span className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                </div>
+              ) : quote.direction === "UP" ? (
+                <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50/50 p-4 space-y-2">
+                  <p className="text-xs text-slate-500">{t("chargeToday")}</p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {formatCurrency(quote.amountInCents / 100, quote.currency)}
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    {quote.prorated ? t("proratedNote") : t("fullMonthNote")}
+                  </p>
+                  <p className="flex items-center gap-1.5 text-xs text-slate-600 pt-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    {status?.card
+                      ? status.card.brand === "NEQUI"
+                        ? t("chargeNequi", { lastFour: status.card.lastFour ?? "" })
+                        : t("chargeCard", {
+                            brand: status.card.brand ?? "",
+                            lastFour: status.card.lastFour ?? "",
+                          })
+                      : t("payWithWompi")}
                   </p>
                 </div>
-                <p className="text-xs text-slate-600">{t("wompiSubtitle")}</p>
-                <Button
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                  disabled={isWompiPending}
-                  onClick={handlePayWithWompi}
+              ) : (
+                <div
+                  className={cn(
+                    "rounded-xl border-2 p-4 space-y-2",
+                    quote.blockedReason
+                      ? "border-amber-200 bg-amber-50"
+                      : "border-slate-200 bg-slate-50"
+                  )}
                 >
-                  {isWompiPending ? (
+                  {quote.blockedReason ? (
+                    <p className="flex gap-2 text-sm text-amber-900">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      {quote.blockedReason}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-slate-700">
+                        {t("downgradeNote", { date: effectiveAt })}
+                      </p>
+                      <p className="text-xs text-slate-500">{t("downgradeNoRefund")}</p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setView("plans")}>
+                  {t("backButton")}
+                </Button>
+                <Button
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={!quote || !!quote.blockedReason || isConfirming || !canManage}
+                  onClick={handleConfirm}
+                >
+                  {isConfirming ? (
                     <span className="flex items-center gap-2">
                       <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {t("wompiRedirecting")}
+                      {t("processing")}
                     </span>
+                  ) : quote?.direction === "DOWN" ? (
+                    t("confirmDowngrade")
                   ) : (
                     <span className="flex items-center gap-2">
                       <CreditCard className="w-3.5 h-3.5" />
-                      {t("wompiButton")}
+                      {status?.card ? t("confirmCharge") : t("wompiButton")}
                     </span>
                   )}
                 </Button>
               </div>
-
-              <Button variant="outline" className="w-full" onClick={onClose}>
-                {t("closeButton")}
-              </Button>
             </div>
           </>
         )}

@@ -44,7 +44,24 @@
       "quotaFooter": "Need a higher receipt-analysis quota?",
       "extraQuotaCta": "Message us to buy more",
       "extraQuotaMessage": "Hi, I'd like to buy more receipt-analysis quota for ToGo (business: {businessName})."
-    }
+    },
+    "currentPlanButton": "Your current plan",
+    "downgradeButton": "Switch to {planName}",
+    "noManagePermission": "Ask whoever manages the business to make the change.",
+    "upgradeTitle": "Upgrade to {planName}",
+    "downgradeTitle": "Switch to {planName}",
+    "chargeToday": "Charged today",
+    "proratedNote": "Only the difference for the days left in your cycle. Your due date doesn't change.",
+    "fullMonthNote": "The new plan's full month.",
+    "chargeCard": "To your {brand} card ending in {lastFour}.",
+    "payWithWompi": "You pay with Wompi: card, PSE or Nequi.",
+    "downgradeNote": "The change applies on {date}, when your paid cycle ends. Until then you keep your current plan.",
+    "downgradeNoRefund": "There's no refund for the remaining days of the cycle.",
+    "backButton": "Back",
+    "processing": "Processing…",
+    "confirmDowngrade": "Schedule the change",
+    "confirmCharge": "Charge my payment method",
+    "chargeNequi": "To your Nequi ending in {lastFour}."
   },
   "billing": {
     "title": "Billing statement",
@@ -72,7 +89,7 @@
       "contactSupport": "Already paid? Send us the receipt via WhatsApp using the button above."
     },
     "nextPaymentDue": "Your next payment is due on {date}.",
-    "gracePeriod": "Your payment is overdue, but you're still in the grace period until {date}.",
+    "gracePeriod": "Your payment was due on {date}. You have {days} days to pay before your account is suspended.",
     "pendingRequest": {
       "title": "Your request to switch to {planName} is being verified.",
       "graceEndsAt": "While it's being verified, you have access until {date}."
@@ -108,5 +125,44 @@
       "WARNING": "Warning",
       "PAYMENT_REMINDER": "Payment reminder"
     }
+  },
+  "actions": {
+    "chargeStarted": "We're charging your card. We'll email you as soon as it's confirmed.",
+    "payError": "We couldn't start the payment",
+    "upgradeError": "We couldn't change your plan",
+    "downgradeScheduled": "Done: you'll move to the {planName} plan at the end of your cycle.",
+    "downgradeError": "We couldn't schedule the plan change",
+    "downgradeUndone": "You undid the plan change.",
+    "cancelScheduled": "You cancelled your subscription. It stays active until the end of your cycle.",
+    "cancelUndone": "Your subscription is still active.",
+    "cardSaved": "Your payment method was saved.",
+    "cardError": "We couldn't save the payment method",
+    "genericError": "Something went wrong. Please try again.",
+    "noBusiness": "Choose a business to manage its subscription."
+  },
+  "management": {
+    "title": "Manage your subscription",
+    "owes": "You have a pending payment for your plan.",
+    "payNow": "Pay my month",
+    "processing": "Processing…",
+    "cardSaved": "{brand} card ending in {lastFour}",
+    "cardGeneric": "saved",
+    "noCard": "No saved payment method: billing is not automatic.",
+    "changeCard": "Change payment method",
+    "saveCard": "Save card or Nequi",
+    "currentPlan": "{planName} plan",
+    "changePlan": "Change plan",
+    "downgradeScheduled": "You'll move to the {planName} plan on {date}.",
+    "undo": "Undo",
+    "cancelScheduled": "Your subscription ends on {date}. You won't be charged again.",
+    "undoCancel": "Undo cancellation",
+    "cancel": "Cancel my subscription",
+    "cancelConfirm": {
+      "title": "Cancel your subscription?",
+      "description": "Your account stays active until {date}. After that you won't be charged again and your customers won't be able to confirm orders on WhatsApp. You can undo it before that date.",
+      "keep": "Keep my plan",
+      "confirm": "Yes, cancel"
+    },
+    "nequiSaved": "Nequi ending in {lastFour}"
   }
 }

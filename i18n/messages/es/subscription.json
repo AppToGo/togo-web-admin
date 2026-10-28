@@ -44,7 +44,24 @@
       "quotaFooter": "¿Necesitás más cupo de análisis de comprobantes?",
       "extraQuotaCta": "Escribinos para comprar más",
       "extraQuotaMessage": "Hola, quiero comprar más cupo de análisis de comprobantes en ToGo (negocio: {businessName})."
-    }
+    },
+    "currentPlanButton": "Tu plan actual",
+    "downgradeButton": "Cambiar a {planName}",
+    "noManagePermission": "Pide a quien administra el negocio que haga el cambio.",
+    "upgradeTitle": "Subir al plan {planName}",
+    "downgradeTitle": "Cambiar al plan {planName}",
+    "chargeToday": "Se cobra hoy",
+    "proratedNote": "Solo la diferencia por los días que faltan de tu ciclo. Tu fecha de vencimiento no cambia.",
+    "fullMonthNote": "El mes completo del plan nuevo.",
+    "chargeCard": "A tu tarjeta {brand} terminada en {lastFour}.",
+    "payWithWompi": "Pagas con Wompi: tarjeta, PSE o Nequi.",
+    "downgradeNote": "El cambio se aplica el {date}, al terminar tu ciclo pagado. Hasta entonces sigues con tu plan actual.",
+    "downgradeNoRefund": "No hay devolución por los días que quedan del ciclo.",
+    "backButton": "Volver",
+    "processing": "Procesando…",
+    "confirmDowngrade": "Programar el cambio",
+    "confirmCharge": "Cobrar a mi medio de pago",
+    "chargeNequi": "A tu Nequi terminado en {lastFour}."
   },
   "billing": {
     "title": "Estado de cuenta",
@@ -72,7 +89,7 @@
       "contactSupport": "¿Ya pagaste? Envianos el comprobante por WhatsApp desde el botón de arriba."
     },
     "nextPaymentDue": "Tu próximo pago vence el {date}.",
-    "gracePeriod": "Tu pago venció, pero seguís en período de gracia hasta el {date}.",
+    "gracePeriod": "Tu pago venció el {date}. Te quedan {days} días para pagar antes de que la cuenta se suspenda.",
     "pendingRequest": {
       "title": "Tu solicitud para pasar a {planName} está en verificación.",
       "graceEndsAt": "Mientras se verifica, tenés acceso hasta el {date}."
@@ -108,5 +125,44 @@
       "WARNING": "Advertencia",
       "PAYMENT_REMINDER": "Recordatorio de pago"
     }
+  },
+  "actions": {
+    "chargeStarted": "Estamos cobrando tu tarjeta. Te avisamos por correo apenas se confirme.",
+    "payError": "No pudimos iniciar el pago",
+    "upgradeError": "No pudimos cambiar tu plan",
+    "downgradeScheduled": "Listo: pasarás al plan {planName} al terminar tu ciclo.",
+    "downgradeError": "No pudimos programar el cambio de plan",
+    "downgradeUndone": "Deshiciste el cambio de plan.",
+    "cancelScheduled": "Cancelaste tu suscripción. Sigue activa hasta el fin de tu ciclo.",
+    "cancelUndone": "Tu suscripción sigue activa.",
+    "cardSaved": "Guardamos tu medio de pago.",
+    "cardError": "No pudimos guardar el medio de pago",
+    "genericError": "Algo salió mal. Intenta de nuevo.",
+    "noBusiness": "Elige un negocio para gestionar su suscripción."
+  },
+  "management": {
+    "title": "Gestiona tu suscripción",
+    "owes": "Tienes un pago pendiente de tu plan.",
+    "payNow": "Pagar mi mes",
+    "processing": "Procesando…",
+    "cardSaved": "Tarjeta {brand} terminada en {lastFour}",
+    "cardGeneric": "guardada",
+    "noCard": "Sin medio de pago guardado: el cobro no es automático.",
+    "changeCard": "Cambiar medio de pago",
+    "saveCard": "Guardar tarjeta o Nequi",
+    "currentPlan": "Plan {planName}",
+    "changePlan": "Cambiar plan",
+    "downgradeScheduled": "Pasarás al plan {planName} el {date}.",
+    "undo": "Deshacer",
+    "cancelScheduled": "Tu suscripción termina el {date}. No se te volverá a cobrar.",
+    "undoCancel": "Deshacer la cancelación",
+    "cancel": "Cancelar mi suscripción",
+    "cancelConfirm": {
+      "title": "¿Cancelar tu suscripción?",
+      "description": "Tu cuenta sigue activa hasta el {date}. Después no se te volverá a cobrar y tus clientes no podrán confirmar pedidos por WhatsApp. Puedes deshacerlo antes de esa fecha.",
+      "keep": "Mantener mi plan",
+      "confirm": "Sí, cancelar"
+    },
+    "nequiSaved": "Nequi terminado en {lastFour}"
   }
 }

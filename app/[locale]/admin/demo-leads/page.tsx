@@ -20,19 +20,28 @@ import {
   CheckCircle2,
   Clock,
   Compass,
-  Handshake,
   Plus,
   Search,
   UserPlus,
+  UserRound,
+  UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
+  useDemoLeadOwners,
   useDemoLeads,
   useDemoLeadsPipeline,
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LeadDetailPanel } from "@/features/admin/demo-leads/components/LeadDetailPanel";
 import { CreateLeadDrawer } from "@/features/admin/demo-leads/components/CreateLeadDrawer";
 import { ScoutLeadsDrawer } from "@/features/admin/demo-leads/components/ScoutLeadsDrawer";
@@ -46,7 +55,10 @@ import {
   readCollapsedStages,
   saveCollapsedStages,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
-import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
+import {
+  usePlatformPermission,
+  usePlatformPermissions,
+} from "@/features/auth/hooks/usePlatformPermission";
 
 type PriorityFilter = DemoLeadPriority | "ALL";
 
@@ -64,11 +76,17 @@ export default function DemoLeadsPage() {
   const [priority, setPriority] = useState<PriorityFilter>("ALL");
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [includeRevoked, setIncludeRevoked] = useState(false);
+  // "ALL", "NONE" (sin responsable) o el id de un usuario de ToGo.
+  const [ownerFilter, setOwnerFilter] = useState<string>("ALL");
+  // Solo quien ve todos los leads filtra por responsable.
+  const { can } = usePlatformPermissions();
+  const canSeeAll = can("platform.leads.view_all");
+  const { data: owners } = useDemoLeadOwners(isSuperAdmin && canSeeAll);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isScoutOpen, setIsScoutOpen] = useState(false);
   // Teléfono: el tablero no cabe, se ve una etapa a la vez.
-  const [mobileStage, setMobileStage] = useState<DemoLeadStage>("NEW");
+  const [mobileStage, setMobileStage] = useState<DemoLeadStage>("TO_CONTACT");
 
   // Columnas colapsadas a un riel: preferencia por navegador, como Pedidos.
   const [collapsedStages, setCollapsedStages] = useState(readCollapsedStages);
@@ -99,23 +117,36 @@ export default function DemoLeadsPage() {
   );
   const { data: pipeline } = useDemoLeadsPipeline(isSuperAdmin);
 
-  const counts = React.useMemo(() => {
-    const map = new Map<DemoLeadStage, number>();
-    for (const entry of pipeline ?? []) map.set(entry.stage, entry.count);
-    return map;
-  }, [pipeline]);
+  // Clientes = cerrados como ganados (CLOSED trae el desglose).
+  const wonCount =
+    pipeline?.find((entry) => entry.stage === "CLOSED")?.won ?? 0;
+
+  // El filtro de responsable se aplica en el cliente: la lista ya trae
+  // ownerUserId y quien solo ve los suyos no necesita el filtro.
+  const visibleLeads = React.useMemo(() => {
+    if (!leads || ownerFilter === "ALL") return leads;
+    return leads.filter((lead) =>
+      ownerFilter === "NONE"
+        ? !lead.ownerUserId
+        : lead.ownerUserId === ownerFilter
+    );
+  }, [leads, ownerFilter]);
 
   const byStage = React.useMemo(() => {
     const map = new Map<DemoLeadStage, NonNullable<typeof leads>>();
     for (const stage of DEMO_LEAD_STAGES) map.set(stage, []);
-    for (const lead of leads ?? []) map.get(lead.stage)?.push(lead);
+    for (const lead of visibleLeads ?? []) map.get(lead.stage)?.push(lead);
     return map;
-  }, [leads]);
+  }, [visibleLeads]);
 
-  const overdueCount = React.useMemo(
-    () => (leads ?? []).filter((lead) => isOverdue(lead.nextActionAt)).length,
-    [leads]
+  const openLeads = React.useMemo(
+    () => (visibleLeads ?? []).filter((lead) => lead.stage !== "CLOSED"),
+    [visibleLeads]
   );
+  const overdueCount = openLeads.filter((lead) =>
+    isOverdue(lead.nextActionAt)
+  ).length;
+  const unassignedCount = openLeads.filter((lead) => !lead.ownerUserId).length;
 
   if (isAuthLoading || isPermissionLoading) return null;
 
@@ -127,10 +158,16 @@ export default function DemoLeadsPage() {
     );
   }
 
-  const kpis = [
+  const kpis: {
+    label: string;
+    value: number;
+    icon: typeof UserPlus;
+    tone: string;
+    action?: { label: string; onClick: () => void };
+  }[] = [
     {
       label: t("kpis.onBoard"),
-      value: leads?.length ?? 0,
+      value: openLeads.length,
       icon: UserPlus,
       tone: "bg-indigo-50 text-indigo-600",
     },
@@ -139,16 +176,24 @@ export default function DemoLeadsPage() {
       value: overdueCount,
       icon: Clock,
       tone: "bg-amber-50 text-amber-700",
+      action:
+        overdueCount > 0 && !overdueOnly
+          ? { label: t("kpis.see"), onClick: () => setOverdueOnly(true) }
+          : undefined,
     },
     {
-      label: t("kpis.negotiation"),
-      value: counts.get("NEGOTIATION") ?? 0,
-      icon: Handshake,
-      tone: "bg-teal-50 text-teal-700",
+      label: t("kpis.unassigned"),
+      value: unassignedCount,
+      icon: UserX,
+      tone: "bg-slate-100 text-slate-600",
+      action:
+        canSeeAll && unassignedCount > 0 && ownerFilter !== "NONE"
+          ? { label: t("kpis.see"), onClick: () => setOwnerFilter("NONE") }
+          : undefined,
     },
     {
       label: t("kpis.customers"),
-      value: counts.get("CUSTOMER") ?? 0,
+      value: wonCount,
       icon: CheckCircle2,
       tone: "bg-emerald-50 text-emerald-700",
     },
@@ -175,22 +220,7 @@ export default function DemoLeadsPage() {
             </h1>
             <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-white/90 bg-white/75 px-4 shadow-glass lg:w-80 lg:flex-none">
-              <Search
-                className="h-[18px] w-[18px] shrink-0 text-slate-500"
-                aria-hidden
-              />
-              <span className="sr-only">{t("filters.search")}</span>
-              <input
-                type="search"
-                placeholder={t("filters.search")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                maxLength={120}
-                className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
-              />
-            </label>
+          <div className="flex items-center gap-2 lg:shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -213,38 +243,84 @@ export default function DemoLeadsPage() {
           </div>
         </div>
 
-        {/* Métricas */}
-        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {kpis.map(({ label, value, icon: Icon, tone }, index) => (
+        {/* Métricas: una sola franja */}
+        <dl className="grid grid-cols-2 overflow-hidden rounded-[20px] border border-white/90 bg-white/70 lg:grid-cols-4">
+          {kpis.map(({ label, value, icon: Icon, tone, action }, index) => (
             <div
               key={label}
               className={cn(
-                "flex items-center gap-3.5 rounded-[20px] border border-white/90 bg-white/65 px-4 py-3.5 md:rounded-3xl md:px-5",
-                index > 1 && "hidden lg:flex"
+                "flex items-center gap-3 px-4 py-3 lg:px-5",
+                index % 2 === 0 && "border-r border-slate-200/60",
+                index === 1 && "lg:border-r lg:border-slate-200/60",
+                index < 2 && "max-lg:border-b max-lg:border-slate-200/60"
               )}
             >
               <span
                 className={cn(
-                  "hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl sm:flex",
+                  "hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:flex",
                   tone
                 )}
               >
-                <Icon className="h-5 w-5" aria-hidden />
+                <Icon className="h-[18px] w-[18px]" aria-hidden />
               </span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <dt className="truncate text-xs text-slate-500 md:text-[13px]">
                   {label}
                 </dt>
-                <dd className="mt-0.5 text-xl font-bold tabular-nums text-slate-900 md:text-2xl">
+                <dd className="text-xl font-bold tabular-nums text-slate-900">
                   {isLeadsLoading ? "–" : value}
                 </dd>
               </div>
+              {action && (
+                <button
+                  type="button"
+                  onClick={action.onClick}
+                  className="shrink-0 rounded-lg px-2 py-1 text-[13px] font-semibold text-indigo-700 transition-colors hover:bg-indigo-50"
+                >
+                  {action.label}
+                </button>
+              )}
             </div>
           ))}
         </dl>
 
         {/* Filtros */}
         <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          <label className="flex h-10 min-w-[220px] shrink-0 items-center gap-2 rounded-xl border border-white/90 bg-white/80 px-3.5 sm:w-72">
+            <Search
+              className="h-[17px] w-[17px] shrink-0 text-slate-500"
+              aria-hidden
+            />
+            <span className="sr-only">{t("filters.search")}</span>
+            <input
+              type="search"
+              placeholder={t("filters.search")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              maxLength={120}
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
+            />
+          </label>
+          {canSeeAll && (
+            <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+              <SelectTrigger
+                aria-label={t("filters.ownerLabel")}
+                className="h-10 w-auto min-w-[190px] shrink-0 gap-2 rounded-xl border-white/90 bg-white/80 text-[13px]"
+              >
+                <UserRound className="h-4 w-4 text-slate-500" aria-hidden />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t("filters.ownerAll")}</SelectItem>
+                <SelectItem value="NONE">{t("filters.ownerNone")}</SelectItem>
+                {(owners ?? []).map((owner) => (
+                  <SelectItem key={owner.id} value={owner.id}>
+                    {owner.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <PillGroup
             label={t("filters.priorityLabel")}
             value={priority}
@@ -286,7 +362,7 @@ export default function DemoLeadsPage() {
           </button>
           {!isLeadsLoading && leads && (
             <span className="ml-auto hidden text-sm text-slate-500 sm:inline">
-              {t("count", { count: leads.length })}
+              {t("count", { count: visibleLeads?.length ?? 0 })}
             </span>
           )}
         </div>

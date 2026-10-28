@@ -12,7 +12,33 @@
   },
   "alerts": {
     "title": "{count, plural, =1 {Alerta de Pago} other {Alertas de Pago}}",
-    "description": "Hay negocios con pagos vencidos o próximos a vencer. Revisa las acciones pendientes."
+    "description": "Negocios con algo que atender, del más urgente al menos urgente.",
+    "kinds": {
+      "SUSPENDED": "Suspendido",
+      "PAYMENT_PENDING": "Pago pendiente",
+      "TRIAL_EXPIRED": "Prueba vencida",
+      "DUE_SOON": "Vence pronto",
+      "TRIAL_ENDING": "Prueba por terminar",
+      "CANCEL_SCHEDULED": "Cancelación programada",
+      "PLAN_REQUEST": "Solicitud de plan",
+      "CANCELLED": "Cancelado"
+    },
+    "detail": {
+      "pending": "{days, plural, =0 {se suspende hoy} =1 {se suspende mañana} other {se suspende en # días}}",
+      "overdueToday": "venció, se procesa en el próximo ciclo",
+      "dueIn": "{days, plural, =0 {vence hoy} =1 {vence mañana} other {vence en # días}}",
+      "SUSPENDED": "no se pudo cobrar: bot y panel bloqueados",
+      "TRIAL_EXPIRED": "terminó la prueba sin elegir plan",
+      "TRIAL_ENDING": "la prueba termina en los próximos días",
+      "CANCEL_SCHEDULED": "sigue activo hasta el vencimiento",
+      "PLAN_REQUEST": "pidió cambio de plan, falta verificar el pago",
+      "CANCELLED": "canceló y terminó su ciclo"
+    },
+    "hasCard": "Con tarjeta",
+    "declineReason": "Rechazo: {reason}",
+    "viewCharges": "Cobros",
+    "showAll": "Ver las {count} alertas",
+    "showLess": "Ver menos"
   },
   "pagination": {
     "showing": "Mostrando {from} - {to} de {total}",
@@ -45,7 +71,8 @@
     "deactivate": "Desactivar",
     "activate": "Activar",
     "editUsers": "Editar límite de usuarios",
-    "editFeatures": "Funcionalidades"
+    "editFeatures": "Funcionalidades",
+    "viewCharges": "Historial de cobros"
   },
   "filters": {
     "title": "Filtros",
@@ -131,9 +158,9 @@
       "message": "Mensaje",
       "messagePlaceholder": "Escribe el mensaje aquí...",
       "deliveryOptions": "Opciones de Entrega",
-      "sendEmail": "Enviar por correo electrónico",
-      "sendInApp": "Enviar notificación en la aplicación",
-      "submit": "Enviar Notificación"
+      "sendEmail": "Enviar por correo al dueño",
+      "submit": "Enviar Notificación",
+      "panelNote": "El aviso siempre queda en el estado de cuenta del dueño."
     },
     "editUsers": {
       "title": "Editar límite de usuarios",
@@ -160,5 +187,28 @@
     "businessDeactivated": "Negocio desactivado exitosamente",
     "businessActivated": "Negocio activado exitosamente",
     "usersLimitUpdated": "Límite de usuarios actualizado exitosamente"
+  },
+  "chargeAttempts": {
+    "title": "Cobros de {businessName}",
+    "description": "Cada cobro que ToGo inició en Wompi, con su resultado.",
+    "empty": "Todavía no hay cobros registrados.",
+    "date": "Fecha",
+    "kind": "Tipo",
+    "amount": "Monto",
+    "status": "Estado",
+    "reason": "Motivo",
+    "attempt": "intento {n}",
+    "kinds": {
+      "RENEWAL": "Renovación",
+      "CHECKOUT": "Pago",
+      "UPGRADE": "Subida de plan"
+    },
+    "statuses": {
+      "PENDING": "En curso",
+      "APPROVED": "Aprobado",
+      "DECLINED": "Rechazado",
+      "ERROR": "Error",
+      "VOIDED": "Anulado"
+    }
   }
 }

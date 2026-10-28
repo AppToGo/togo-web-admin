@@ -1,7 +1,9 @@
 export {
   UpgradePlanModal,
   TrialBanner,
+  BillingBanner,
   SubscriptionStatusCard,
+  SubscriptionManagementCard,
   PaymentHistoryTable,
   PaymentNotificationsList,
   BillingStatusBadge,

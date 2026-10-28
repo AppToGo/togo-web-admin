@@ -64,11 +64,16 @@ export const PAYMENT_METHODS = [
   { value: 'OTHER', label: 'Otro' },
 ] as const;
 
+/**
+ * Tipos de aviso manual: deben ser los valores del enum `NotificationType`
+ * de la API. Antes se mandaban OVERDUE_WARNING, GRACE_PERIOD_NOTICE y CUSTOM,
+ * que la API rechazaba con 400.
+ */
 export const NOTIFICATION_TYPES = [
-  { value: 'PAYMENT_REMINDER', label: 'Recordatorio de pago', defaultSubject: 'Recordatorio de pago próximo' },
-  { value: 'OVERDUE_WARNING', label: 'Advertencia de vencimiento', defaultSubject: 'Pago vencido - Acción requerida' },
-  { value: 'GRACE_PERIOD_NOTICE', label: 'Aviso de periodo de gracia', defaultSubject: 'Estás en periodo de gracia' },
-  { value: 'CUSTOM', label: 'Personalizado', defaultSubject: '' },
+  { value: 'PAYMENT_REMINDER', label: 'Recordatorio de pago', defaultSubject: 'Recordatorio de pago' },
+  { value: 'REMINDER', label: 'Pago pendiente', defaultSubject: 'Tu pago está pendiente' },
+  { value: 'OVERDUE', label: 'Pago vencido', defaultSubject: 'Tu pago está vencido' },
+  { value: 'WARNING', label: 'Aviso importante', defaultSubject: '' },
 ] as const;
 
 /**

@@ -37,7 +37,7 @@ import {
 } from "@/features/admin/demo-leads/hooks/useDemoLeads";
 import {
   DEMO_LEAD_PRIORITIES,
-  DEMO_LEAD_STAGES,
+  OPEN_DEMO_LEAD_STAGES,
   parseOptionalIsoDateTime,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
@@ -203,12 +203,13 @@ export function CreateLeadDrawer({
               <div className="grid grid-cols-2 gap-3">
                 <label className="space-y-1 text-xs text-slate-600">
                   <span>{t("detail.stage")}</span>
-                  <Select name="stage" defaultValue="NEW">
+                  <Select name="stage" defaultValue="TO_CONTACT">
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {DEMO_LEAD_STAGES.map((stage) => (
+                      {/* Un lead nuevo no nace cerrado */}
+                      {OPEN_DEMO_LEAD_STAGES.map((stage) => (
                         <SelectItem key={stage} value={stage}>
                           {t(`stages.${stage}`)}
                         </SelectItem>

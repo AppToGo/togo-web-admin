@@ -13,16 +13,16 @@
     },
     "overdueOnly": "Overdue only",
     "includeRevoked": "Include without consent",
-    "priorityLabel": "Priority"
+    "priorityLabel": "Priority",
+    "ownerLabel": "Owner",
+    "ownerAll": "Owner: all",
+    "ownerNone": "No owner"
   },
   "stages": {
-    "NEW": "New",
-    "ACTIVE_DEMO": "Active demo",
-    "FOLLOW_UP": "Follow-up pending",
+    "TO_CONTACT": "To contact",
     "CONTACTED": "Contacted",
-    "NEGOTIATION": "Negotiation",
-    "CUSTOMER": "Customer",
-    "LOST": "Lost"
+    "NEGOTIATION": "In negotiation",
+    "CLOSED": "Closed"
   },
   "card": {
     "orders": "{count, plural, one {# order} other {# orders}}",
@@ -34,7 +34,10 @@
     "scout": "ToGo Scout",
     "referred": "Referred",
     "noDemo": "No demo",
-    "noName": "No name"
+    "noName": "No name",
+    "noContact": "Do not contact · consent withdrawn",
+    "addAction": "Add next action",
+    "inDemo": "In demo"
   },
   "detail": {
     "close": "Close",
@@ -77,7 +80,27 @@
     "scout": "Captured by ToGo Scout",
     "manualReferred": "Created manually · Referred by {name}",
     "owner": "Owner",
-    "noOwner": "No owner"
+    "noOwner": "No owner",
+    "outcome": "Outcome",
+    "outcomePlaceholder": "Won or lost?",
+    "outcomeRequired": "To close it, say whether it was won or lost.",
+    "copyPhone": "Copy phone",
+    "phoneCopied": "Phone copied",
+    "phoneCopyError": "Couldn't copy the phone",
+    "call": "Call",
+    "statOrders": "Orders",
+    "statTries": "Visits",
+    "statLast": "Last activity",
+    "statChannels": "Channels",
+    "tabContact": "Contact",
+    "tabFollowUp": "Follow-up",
+    "tabProfile": "Profile",
+    "tabHistory": "History",
+    "groupBusiness": "Business",
+    "groupOpportunity": "Opportunity",
+    "groupPrivacy": "Privacy",
+    "mainNeedPlaceholder": "What problem do they want ToGo to solve?",
+    "deleteLead": "Delete prospect"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -122,10 +145,12 @@
   "loadError": "Could not load potential customers.",
   "retry": "Retry",
   "kpis": {
-    "onBoard": "On the board",
+    "onBoard": "Active on the board",
     "overdue": "Overdue actions",
     "negotiation": "In negotiation",
-    "customers": "Already customers"
+    "customers": "Already customers",
+    "unassigned": "No owner",
+    "see": "View"
   },
   "actions": {
     "collapseColumn": "Collapse column",
@@ -166,7 +191,9 @@
     "overdue": "Overdue: {date}",
     "delete": "Delete action",
     "placeholder": "Call, send proposal…",
-    "add": "Add action"
+    "add": "Add action",
+    "pendingTitle": "Pending · {count}",
+    "resolvedTitle": "Done · {count}"
   },
   "agent": {
     "title": "ToGo Agent · WhatsApp",
@@ -185,7 +212,12 @@
     "sendAndAdvance": "Send via WhatsApp & move to {stage}",
     "popupBlocked": "The browser blocked the WhatsApp window: allow pop-ups and try again. Nothing was logged.",
     "emptyHint": "Generate sales messages for this stage once; they will stay saved on this card whenever you reopen it.",
-    "generateInitialButton": "Generate messages with ToGo"
+    "generateInitialButton": "Generate messages with ToGo",
+    "variantsLabel": "Message variant",
+    "messageLabel": "Message",
+    "strategy": "See the agent's strategy",
+    "sendMoves": "Sending moves it from",
+    "send": "Send on WhatsApp"
   },
   "scout": {
     "button": "Find prospects",
@@ -238,5 +270,38 @@
     "remove": "Remove owner",
     "add": "Assign owner",
     "current": "Owner: {name}"
+  },
+  "outcomes": {
+    "WON": "Won",
+    "LOST": "Lost"
+  },
+  "outcomeFilter": {
+    "label": "Outcome",
+    "ALL": "All",
+    "WON": "Won",
+    "LOST": "Lost"
+  },
+  "actionDialog": {
+    "title": "Next action",
+    "description": "What's next with {name} and when.",
+    "what": "What needs to be done?",
+    "whatPlaceholder": "Call, send proposal…",
+    "suggestionsLabel": "Suggestions",
+    "suggestions": {
+      "call": "Call",
+      "whatsapp": "Write on WhatsApp",
+      "proposal": "Send proposal",
+      "meeting": "Schedule a meeting"
+    },
+    "when": "When?",
+    "presets": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "in3days": "In 3 days",
+      "none": "No date"
+    },
+    "dateLabel": "Date and time",
+    "hint": "The board card always shows the nearest pending action.",
+    "submit": "Add action"
   }
 }

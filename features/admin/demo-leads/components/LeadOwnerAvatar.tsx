@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { usePlatformPermissions } from "@/features/auth/hooks/usePlatformPermission";
@@ -46,7 +46,7 @@ export function LeadOwnerAvatar({ lead, showName = false, className }: LeadOwner
       aria-hidden
       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-dashed border-slate-300 text-slate-400 transition-colors group-hover/owner:border-indigo-400 group-hover/owner:text-indigo-600"
     >
-      <Plus className="h-3.5 w-3.5" />
+      <UserPlus className="h-3.5 w-3.5" />
     </span>
   );
 
