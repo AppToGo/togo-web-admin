@@ -5,7 +5,7 @@
  * Modal for sending notifications to a business
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -59,13 +59,13 @@ export function SendNotificationModal({
   const [message, setMessage] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
 
-  // Auto-fill subject when type changes
-  useEffect(() => {
-    const selectedType = NOTIFICATION_TYPES.find((nt) => nt.value === type);
-    if (selectedType && selectedType.defaultSubject) {
-      setSubject(selectedType.defaultSubject);
-    }
-  }, [type]);
+  // El asunto se completa en el mismo cambio del selector (antes, un
+  // setState dentro de un efecto que provocaba un render de más).
+  const handleTypeChange = (value: string) => {
+    setType(value);
+    const selectedType = NOTIFICATION_TYPES.find((nt) => nt.value === value);
+    if (selectedType?.defaultSubject) setSubject(selectedType.defaultSubject);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +104,7 @@ export function SendNotificationModal({
               <Label htmlFor="type">
                 {t("modals.sendNotification.type")} *
               </Label>
-              <Select value={type} onValueChange={setType} required>
+              <Select value={type} onValueChange={handleTypeChange} required>
                 <SelectTrigger>
                   <SelectValue
                     placeholder={t("modals.sendNotification.selectType")}
