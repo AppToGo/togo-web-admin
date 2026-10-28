@@ -113,7 +113,9 @@
     "cancelled": "Your subscription has ended. Reactivate it to receive orders again.",
     "payNow": "Pay now",
     "reactivate": "Pay and reactivate",
-    "redirecting": "Opening payment…"
+    "redirecting": "Opening payment…",
+    "cancelScheduled": "You cancelled your subscription: it stays active until {date}.",
+    "undoCancel": "Undo"
   },
   "trialBanner": {
     "daysRemaining": "{days} days left in your free trial",

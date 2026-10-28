@@ -44,7 +44,23 @@
       "quotaFooter": "Need a higher receipt-analysis quota?",
       "extraQuotaCta": "Message us to buy more",
       "extraQuotaMessage": "Hi, I'd like to buy more receipt-analysis quota for ToGo (business: {businessName})."
-    }
+    },
+    "currentPlanButton": "Your current plan",
+    "downgradeButton": "Switch to {planName}",
+    "noManagePermission": "Ask whoever manages the business to make the change.",
+    "upgradeTitle": "Upgrade to {planName}",
+    "downgradeTitle": "Switch to {planName}",
+    "chargeToday": "Charged today",
+    "proratedNote": "Only the difference for the days left in your cycle. Your due date doesn't change.",
+    "fullMonthNote": "The new plan's full month.",
+    "chargeCard": "To your {brand} card ending in {lastFour}.",
+    "payWithWompi": "You pay with Wompi: card, PSE or Nequi.",
+    "downgradeNote": "The change applies on {date}, when your paid cycle ends. Until then you keep your current plan.",
+    "downgradeNoRefund": "There's no refund for the remaining days of the cycle.",
+    "backButton": "Back",
+    "processing": "Processing…",
+    "confirmDowngrade": "Schedule the change",
+    "confirmCharge": "Charge my card"
   },
   "billing": {
     "title": "Billing statement",
@@ -107,6 +123,58 @@
       "OVERDUE": "Overdue",
       "WARNING": "Warning",
       "PAYMENT_REMINDER": "Payment reminder"
+    }
+  },
+  "actions": {
+    "chargeStarted": "We're charging your card. We'll email you as soon as it's confirmed.",
+    "payError": "We couldn't start the payment",
+    "upgradeError": "We couldn't change your plan",
+    "downgradeScheduled": "Done: you'll move to the {planName} plan at the end of your cycle.",
+    "downgradeError": "We couldn't schedule the plan change",
+    "downgradeUndone": "You undid the plan change.",
+    "cancelScheduled": "You cancelled your subscription. It stays active until the end of your cycle.",
+    "cancelUndone": "Your subscription is still active.",
+    "cardSaved": "Your card was saved.",
+    "cardError": "We couldn't save the card",
+    "genericError": "Something went wrong. Please try again.",
+    "noBusiness": "Choose a business to manage its subscription."
+  },
+  "cardForm": {
+    "title": "Card for automatic billing",
+    "subtitle": "We'll charge your plan to this card on each month's due date.",
+    "number": "Card number",
+    "expMonth": "Month",
+    "expYear": "Year",
+    "cvc": "CVC",
+    "holder": "Name on card",
+    "terms": "I accept the <privacy>privacy policy</privacy> and the <personal>personal data processing authorization</personal> of Wompi, which processes the payment.",
+    "secure": "Your card details go straight to Wompi: ToGo never sees or stores them.",
+    "cancel": "Cancel",
+    "save": "Save card",
+    "saving": "Saving…"
+  },
+  "management": {
+    "title": "Manage your subscription",
+    "owes": "You have a pending payment for your plan.",
+    "payNow": "Pay my month",
+    "processing": "Processing…",
+    "cardSaved": "{brand} card ending in {lastFour}",
+    "cardGeneric": "saved",
+    "noCard": "No saved card: billing is not automatic.",
+    "changeCard": "Change card",
+    "saveCard": "Save card",
+    "currentPlan": "{planName} plan",
+    "changePlan": "Change plan",
+    "downgradeScheduled": "You'll move to the {planName} plan on {date}.",
+    "undo": "Undo",
+    "cancelScheduled": "Your subscription ends on {date}. You won't be charged again.",
+    "undoCancel": "Undo cancellation",
+    "cancel": "Cancel my subscription",
+    "cancelConfirm": {
+      "title": "Cancel your subscription?",
+      "description": "Your account stays active until {date}. After that you won't be charged again and your customers won't be able to confirm orders on WhatsApp. You can undo it before that date.",
+      "keep": "Keep my plan",
+      "confirm": "Yes, cancel"
     }
   }
 }

@@ -7,3 +7,4 @@ export {
   PaymentNotificationsList,
   BillingStatusBadge,
 } from "./billing";
+export { SubscriptionManagementCard } from "./billing/SubscriptionManagementCard";

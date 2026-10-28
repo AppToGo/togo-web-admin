@@ -3,6 +3,7 @@ export {
   TrialBanner,
   BillingBanner,
   SubscriptionStatusCard,
+  SubscriptionManagementCard,
   PaymentHistoryTable,
   PaymentNotificationsList,
   BillingStatusBadge,
