@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertBadge } from "@/components/ui/alert-badge";
 import { Input } from "@/components/ui/input";
-import { Filter, Search, Shield, X, AlertTriangle } from "lucide-react";
+import { Filter, Search, Shield, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useBusinesses,
@@ -34,6 +34,8 @@ import {
   EditUsersLimitModal,
   EditProofQuotaModal,
   SendNotificationModal,
+  PaymentAlertsPanel,
+  ChargeAttemptsDialog,
 } from "@/features/admin/business-management/components";
 import type {
   BusinessFilters as BusinessFiltersType,
@@ -73,6 +75,8 @@ export default function BusinessManagementPage() {
   const [isFeaturesModalOpen, setIsFeaturesModalOpen] = useState(false);
   const [isProofQuotaModalOpen, setIsProofQuotaModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  // Historial de cobros (docs/cobro-suscripciones.md §7 en api-togo).
+  const [chargesFor, setChargesFor] = useState<{ id: string; name: string } | null>(null);
 
   // Al cambiar la búsqueda (debounced) se actualiza el filtro y se vuelve a
   // la página 1. Ajuste de estado durante el render en vez de un efecto: se
@@ -325,21 +329,14 @@ export default function BusinessManagementPage() {
           </div>
         </div>
 
-        {/* Alerts Section */}
-        {alertCount > 0 && (
-          <Card className="p-4 border-amber-200 bg-amber-50/50">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-amber-900">
-                  {t("adminBusinesses.alerts.title", { count: alertCount })}
-                </h3>
-                <p className="text-sm text-amber-700 mt-1">
-                  {t("adminBusinesses.alerts.description")}
-                </p>
-              </div>
-            </div>
-          </Card>
+        {/* Alerts Section: qué negocio, qué pasa y qué hace falta */}
+        {alertCount > 0 && alerts && (
+          <PaymentAlertsPanel
+            alerts={alerts}
+            onViewCharges={(alert) =>
+              setChargesFor({ id: alert.businessId, name: alert.businessName })
+            }
+          />
         )}
 
         {/* Active Filters Indicator */}
@@ -398,6 +395,9 @@ export default function BusinessManagementPage() {
             onEditProofQuota={handleEditProofQuota}
             onSendNotification={handleSendNotification}
             onToggleStatus={handleToggleStatus}
+            onViewCharges={(business) =>
+              setChargesFor({ id: business.id, name: business.name })
+            }
             isLoading={isBusinessesLoading}
           />
 
@@ -508,6 +508,11 @@ export default function BusinessManagementPage() {
           isSubmitting={sendNotification.isPending}
         />
       </div>
+      <ChargeAttemptsDialog
+        businessId={chargesFor?.id ?? null}
+        businessName={chargesFor?.name ?? ""}
+        onClose={() => setChargesFor(null)}
+      />
     </DashboardLayout>
   );
 }
