@@ -55,6 +55,7 @@ import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
 import { checkStatusMove, isStatusApplicable } from "../utils/order-flow.utils";
 import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
+import { CancelOrderDialog } from "./CancelOrderDialog";
 import { useOrderFlow } from "../hooks/useOrderFlow";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 import { PaymentStatusEditor } from "./PaymentStatusEditor";
@@ -294,6 +295,8 @@ export function OrderDetailContent({
   const flow = useOrderFlow();
   // Selector de repartidor al pasar el pedido a "En camino".
   const [isDeliveryPickerOpen, setIsDeliveryPickerOpen] = useState(false);
+  // Motivo obligatorio al cancelar.
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
   const handleStatusChange = useCallback(
     (newStatus: OrderStatus) => {
       if (!order || newStatus === order.status) return;
@@ -320,6 +323,13 @@ export function OrderDetailContent({
         return;
       }
 
+      // Cancelar exige el motivo obligatorio: se pide en el modal y sin él
+      // no se cambia el estado.
+      if (newStatus === "CANCELLED") {
+        setIsCancelOpen(true);
+        return;
+      }
+
       updateStatus.mutate(
         { orderId, data: { status: newStatus } },
         {
@@ -339,6 +349,21 @@ export function OrderDetailContent({
         {
           onSuccess: () => {
             setIsDeliveryPickerOpen(false);
+            onClose?.();
+          },
+        }
+      );
+    },
+    [orderId, updateStatus, onClose]
+  );
+
+  const handleCancelConfirm = useCallback(
+    (reason: string) => {
+      updateStatus.mutate(
+        { orderId, data: { status: "CANCELLED", changeNotes: reason } },
+        {
+          onSuccess: () => {
+            setIsCancelOpen(false);
             onClose?.();
           },
         }
@@ -447,6 +472,13 @@ export function OrderDetailContent({
               isSubmitting={updateStatus.isPending}
               onClose={() => setIsDeliveryPickerOpen(false)}
               onConfirm={handleDeliveryConfirm}
+            />
+            <CancelOrderDialog
+              isOpen={isCancelOpen}
+              orderLabel={formatOrderNumber(order.id, order.orderNumber)}
+              isSubmitting={updateStatus.isPending}
+              onClose={() => setIsCancelOpen(false)}
+              onConfirm={handleCancelConfirm}
             />
 
             {customerEditing && (

@@ -454,6 +454,14 @@
     "empty": "No hay usuarios activos para asignar.",
     "loadError": "No se pudieron cargar los repartidores."
   },
+  "cancelDialog": {
+    "title": "Cancelar pedido",
+    "description": "El pedido {order} pasará a «Cancelado» y se le avisará al cliente con este motivo.",
+    "reasonLabel": "Motivo de la cancelación",
+    "reasonPlaceholder": "Ej: sin stock de pollo, sede cerrada…",
+    "reasonRequired": "El motivo es obligatorio para cancelar.",
+    "confirm": "Cancelar pedido"
+  },
   "cashPaidHint": "El cliente ya pagó en efectivo",
   "tip": {
     "label": "Propina",

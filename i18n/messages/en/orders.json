@@ -454,6 +454,14 @@
     "empty": "There are no active users to assign.",
     "loadError": "Couldn't load couriers."
   },
+  "cancelDialog": {
+    "title": "Cancel order",
+    "description": "Order {order} will move to “Cancelled” and the customer will be notified with this reason.",
+    "reasonLabel": "Cancellation reason",
+    "reasonPlaceholder": "E.g.: out of chicken stock, branch closed…",
+    "reasonRequired": "A reason is required to cancel.",
+    "confirm": "Cancel order"
+  },
   "cashPaidHint": "The customer already paid in cash",
   "tip": {
     "label": "Tip",
