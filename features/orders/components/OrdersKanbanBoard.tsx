@@ -339,8 +339,8 @@ export function OrdersKanbanBoard({
   // "Move to" menu, next-step button, "By status" tab drops). Checks the move
   // against the visible columns (only the next visible one is mandatory;
   // going back needs order.revert_status), and moving to Delivered runs the
-  // same canCompleteOrder check as the detail status editor, so no view can
-  // complete an unpaid order.
+  // same canCompleteOrder check as the detail status editor. El pago no
+  // bloquea la entrega: hay negocios que cobran después de entregar.
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
       const order = Object.values(filteredOrdersByStatus)
