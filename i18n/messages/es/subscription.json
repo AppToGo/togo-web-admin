@@ -60,7 +60,8 @@
     "backButton": "Volver",
     "processing": "Procesando…",
     "confirmDowngrade": "Programar el cambio",
-    "confirmCharge": "Cobrar a mi tarjeta"
+    "confirmCharge": "Cobrar a mi medio de pago",
+    "chargeNequi": "A tu Nequi terminado en {lastFour}."
   },
   "billing": {
     "title": "Estado de cuenta",
@@ -134,8 +135,8 @@
     "downgradeUndone": "Deshiciste el cambio de plan.",
     "cancelScheduled": "Cancelaste tu suscripción. Sigue activa hasta el fin de tu ciclo.",
     "cancelUndone": "Tu suscripción sigue activa.",
-    "cardSaved": "Guardamos tu tarjeta.",
-    "cardError": "No pudimos guardar la tarjeta",
+    "cardSaved": "Guardamos tu medio de pago.",
+    "cardError": "No pudimos guardar el medio de pago",
     "genericError": "Algo salió mal. Intenta de nuevo.",
     "noBusiness": "Elige un negocio para gestionar su suscripción."
   },
@@ -146,9 +147,9 @@
     "processing": "Procesando…",
     "cardSaved": "Tarjeta {brand} terminada en {lastFour}",
     "cardGeneric": "guardada",
-    "noCard": "Sin tarjeta guardada: el cobro no es automático.",
-    "changeCard": "Cambiar tarjeta",
-    "saveCard": "Guardar tarjeta",
+    "noCard": "Sin medio de pago guardado: el cobro no es automático.",
+    "changeCard": "Cambiar medio de pago",
+    "saveCard": "Guardar tarjeta o Nequi",
     "currentPlan": "Plan {planName}",
     "changePlan": "Cambiar plan",
     "downgradeScheduled": "Pasarás al plan {planName} el {date}.",
@@ -161,6 +162,7 @@
       "description": "Tu cuenta sigue activa hasta el {date}. Después no se te volverá a cobrar y tus clientes no podrán confirmar pedidos por WhatsApp. Puedes deshacerlo antes de esa fecha.",
       "keep": "Mantener mi plan",
       "confirm": "Sí, cancelar"
-    }
+    },
+    "nequiSaved": "Nequi terminado en {lastFour}"
   }
 }

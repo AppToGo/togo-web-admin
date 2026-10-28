@@ -80,10 +80,12 @@ export function SubscriptionManagementCard({ status }: SubscriptionManagementCar
               <CreditCard className="h-4 w-4 text-slate-400 shrink-0" />
               {status.card ? (
                 <span>
-                  {t("cardSaved", {
-                    brand: status.card.brand ?? t("cardGeneric"),
-                    lastFour: status.card.lastFour ?? "••••",
-                  })}
+                  {status.card.brand === "NEQUI"
+                    ? t("nequiSaved", { lastFour: status.card.lastFour ?? "••••" })
+                    : t("cardSaved", {
+                        brand: status.card.brand ?? t("cardGeneric"),
+                        lastFour: status.card.lastFour ?? "••••",
+                      })}
                 </span>
               ) : (
                 <span className="text-slate-500">{t("noCard")}</span>

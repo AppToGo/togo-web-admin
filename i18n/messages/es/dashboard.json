@@ -107,7 +107,7 @@
   "billingBanner": {
     "pending": "Tu pago está pendiente: te quedan {days} días antes de que la cuenta se suspenda.",
     "pendingLastDay": "Hoy es el último día para pagar: mañana la cuenta se suspende.",
-    "declined": "No pudimos cobrar tu tarjeta ({reason}).",
+    "declined": "No pudimos hacer el cobro ({reason}).",
     "suspended": "Tu cuenta está suspendida.",
     "suspendedDetail": "Tus clientes no pueden confirmar pedidos por WhatsApp hasta que pagues.",
     "cancelled": "Tu suscripción terminó. Reactívala para volver a recibir pedidos.",
