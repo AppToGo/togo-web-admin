@@ -30,7 +30,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -274,25 +280,29 @@ export function NewOrderDrawer({
         size="2xl"
         className="max-w-[calc(100vw-2rem)] sm:max-w-5xl"
       >
-        {/* Barra delgada en vez del header alto: las dos columnas ganan ese
-            alto y la columna de datos ocupa casi todo el drawer. */}
-        <div className="shrink-0 flex items-baseline gap-2 px-4 sm:px-6 py-3 pr-12 border-b border-slate-100/50 min-w-0">
-          <h2 className="shrink-0 text-base font-semibold text-slate-900">
-            {t("title")}
-          </h2>
-          <p className="min-w-0 flex-1 truncate text-sm text-slate-500">
-            {t.rich("subtitle", {
-              status: tStatus("CONFIRMED"),
-              name: user?.name ?? "",
-              strong: (chunks) => (
-                <span className="font-semibold text-indigo-600">{chunks}</span>
-              ),
-            })}
-          </p>
-        </div>
-
         <div className="flex-1 min-h-0 flex flex-col md:flex-row md:overflow-hidden">
-          {/* Productos */}
+          {/* Izquierda: header + productos. En teléfono muestra el paso
+              activo; en md+ llena el alto junto a la columna de datos. */}
+          <div
+            className={cn(
+              "flex flex-col min-w-0 min-h-0 md:overflow-hidden",
+              mobileStep === "details" ? "shrink-0 md:flex-1" : "flex-1"
+            )}
+          >
+            <DrawerHeader>
+              <DrawerTitle>{t("title")}</DrawerTitle>
+              <DrawerDescription>
+                {t.rich("subtitle", {
+                  status: tStatus("CONFIRMED"),
+                  name: user?.name ?? "",
+                  strong: (chunks) => (
+                    <span className="font-semibold text-indigo-600">{chunks}</span>
+                  ),
+                })}
+              </DrawerDescription>
+            </DrawerHeader>
+
+            {/* Productos */}
           <section
             className={cn(
               "flex-1 flex-col min-h-0 min-w-0 p-4 sm:p-6 gap-4 md:border-r border-slate-100",
@@ -389,8 +399,9 @@ export function NewOrderDrawer({
               <span className="tabular-nums">{formatCurrency(total)}</span>
             </button>
           </section>
+          </div>
 
-          {/* Datos del pedido */}
+          {/* Datos del pedido: columna aparte a todo el alto del drawer. */}
           <aside
             className={cn(
               "flex-1 md:flex-none flex-col min-h-0 md:w-105 md:shrink-0 bg-slate-50/60",
