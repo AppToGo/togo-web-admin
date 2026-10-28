@@ -114,8 +114,6 @@
     "cannotComplete": "No se puede completar la orden",
     "alreadyCompleted": "La orden ya está completada",
     "cannotCompleteCancelled": "No se puede completar una orden cancelada o abandonada",
-    "paymentPending": "No se puede completar la orden: el pago está pendiente",
-    "paymentNotCollected": "No se puede completar la orden: el cobro falló o fue reembolsado",
     "mustBeReadyOrOnTheWay": "La orden debe estar 'Lista' o 'En camino' para completarse",
     "cannotCancelCompleted": "No se puede cancelar una orden que ya está completada",
     "cannotCancelDelivered": "No se puede cancelar una orden que ya fue entregada",
