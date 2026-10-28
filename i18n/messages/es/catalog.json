@@ -193,6 +193,8 @@
       "keywordsRegenerate": "Regenerar con IA"
     },
     "industryCategory": "Categoría de Industria",
+    "orderLabel": "Prioridad",
+    "orderHelp": "Menor número aparece primero en el pedido y en caja. Con el mismo número se ordenan por nombre.",
     "slugHelp": "URL amigable para la categoría (ej: bebidas-gaseosas)",
     "selectIndustryCategory": "Selecciona una categoría de industria",
     "descriptionPlaceholder": "Descripción opcional de la categoría",

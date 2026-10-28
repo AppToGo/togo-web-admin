@@ -193,6 +193,8 @@
       "keywordsRegenerate": "Regenerate with AI"
     },
     "industryCategory": "Industry Category",
+    "orderLabel": "Priority",
+    "orderHelp": "Lower numbers appear first in orders and POS. Same numbers sort by name.",
     "slugHelp": "URL-friendly identifier for the category (e.g.: beverages-soft-drinks)",
     "selectIndustryCategory": "Select an industry category",
     "descriptionPlaceholder": "Optional category description",
