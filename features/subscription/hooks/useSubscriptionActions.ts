@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -8,17 +9,16 @@ import { extractErrorMessage } from "@/lib/error.utils";
 import {
   cancelScheduledDowngrade,
   cancelSubscription,
+  getCardSetup,
   payNow,
   saveCard,
   scheduleDowngrade,
-  tokenizeCard,
   undoCancelSubscription,
   upgradePlan,
-  type CardInput,
-  type CardSetup,
   type PaymentStart,
 } from "../services/subscription.service";
 import { redirectToWompiCheckout } from "../utils/wompi-checkout.util";
+import { openWompiTokenizeWidget } from "../utils/wompi-widget.util";
 import { BILLING_KEYS } from "./query-keys";
 
 /** Reintentos del estado mientras Wompi confirma un cobro con tarjeta. */
@@ -109,20 +109,13 @@ export function useSubscriptionActions() {
     onError: onError(t("genericError")),
   });
 
-  /**
-   * Guarda la tarjeta: la tokeniza en el navegador contra Wompi y a la API
-   * solo le manda el token, con los términos aceptados.
-   */
+  /** Crea la fuente de pago con el token que devolvió el widget de Wompi. */
   const saveCardMutation = useMutation({
-    mutationFn: async ({ card, setup }: { card: CardInput; setup: CardSetup }) => {
-      const id = requireBusiness();
-      const cardToken = await tokenizeCard(setup, card);
-      return saveCard(id, {
-        cardToken,
-        acceptanceToken: setup.acceptanceToken,
-        personalDataToken: setup.personalDataToken,
-      });
-    },
+    mutationFn: (payment: { token: string; type: string }) =>
+      saveCard(requireBusiness(), {
+        cardToken: payment.token,
+        sourceType: payment.type,
+      }),
     onSuccess: (result) => {
       toast.success(t("cardSaved"));
       refresh();
@@ -130,6 +123,26 @@ export function useSubscriptionActions() {
     },
     onError: onError(t("cardError")),
   });
+
+  /**
+   * Guardar o cambiar la tarjeta: abre el widget oficial de Wompi en modo
+   * tokenización (la tarjeta se captura en la ventana de Wompi, nunca en
+   * una página de ToGo). Si el dueño cierra la ventana no pasa nada.
+   */
+  const [isOpeningCardWidget, setIsOpeningCardWidget] = React.useState(false);
+  const openCardWidget = async () => {
+    setIsOpeningCardWidget(true);
+    try {
+      const setup = await getCardSetup(requireBusiness());
+      await openWompiTokenizeWidget(setup.publicKey, (payment) =>
+        saveCardMutation.mutate(payment)
+      );
+    } catch (error) {
+      onError(t("cardError"))(error);
+    } finally {
+      setIsOpeningCardWidget(false);
+    }
+  };
 
   return {
     pay,
@@ -139,5 +152,7 @@ export function useSubscriptionActions() {
     cancel,
     undoCancel,
     saveCard: saveCardMutation,
+    openCardWidget,
+    isOpeningCardWidget,
   };
 }

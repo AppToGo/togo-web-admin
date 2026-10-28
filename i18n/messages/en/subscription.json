@@ -60,7 +60,8 @@
     "backButton": "Back",
     "processing": "Processing…",
     "confirmDowngrade": "Schedule the change",
-    "confirmCharge": "Charge my card"
+    "confirmCharge": "Charge my payment method",
+    "chargeNequi": "To your Nequi ending in {lastFour}."
   },
   "billing": {
     "title": "Billing statement",
@@ -134,24 +135,10 @@
     "downgradeUndone": "You undid the plan change.",
     "cancelScheduled": "You cancelled your subscription. It stays active until the end of your cycle.",
     "cancelUndone": "Your subscription is still active.",
-    "cardSaved": "Your card was saved.",
-    "cardError": "We couldn't save the card",
+    "cardSaved": "Your payment method was saved.",
+    "cardError": "We couldn't save the payment method",
     "genericError": "Something went wrong. Please try again.",
     "noBusiness": "Choose a business to manage its subscription."
-  },
-  "cardForm": {
-    "title": "Card for automatic billing",
-    "subtitle": "We'll charge your plan to this card on each month's due date.",
-    "number": "Card number",
-    "expMonth": "Month",
-    "expYear": "Year",
-    "cvc": "CVC",
-    "holder": "Name on card",
-    "terms": "I accept the <privacy>privacy policy</privacy> and the <personal>personal data processing authorization</personal> of Wompi, which processes the payment.",
-    "secure": "Your card details go straight to Wompi: ToGo never sees or stores them.",
-    "cancel": "Cancel",
-    "save": "Save card",
-    "saving": "Saving…"
   },
   "management": {
     "title": "Manage your subscription",
@@ -160,9 +147,9 @@
     "processing": "Processing…",
     "cardSaved": "{brand} card ending in {lastFour}",
     "cardGeneric": "saved",
-    "noCard": "No saved card: billing is not automatic.",
-    "changeCard": "Change card",
-    "saveCard": "Save card",
+    "noCard": "No saved payment method: billing is not automatic.",
+    "changeCard": "Change payment method",
+    "saveCard": "Save card or Nequi",
     "currentPlan": "{planName} plan",
     "changePlan": "Change plan",
     "downgradeScheduled": "You'll move to the {planName} plan on {date}.",
@@ -175,6 +162,7 @@
       "description": "Your account stays active until {date}. After that you won't be charged again and your customers won't be able to confirm orders on WhatsApp. You can undo it before that date.",
       "keep": "Keep my plan",
       "confirm": "Yes, cancel"
-    }
+    },
+    "nequiSaved": "Nequi ending in {lastFour}"
   }
 }

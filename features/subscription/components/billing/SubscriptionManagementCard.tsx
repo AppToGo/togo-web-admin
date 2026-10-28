@@ -20,7 +20,6 @@ import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useOpenUpgradePlanModal } from "../../hooks/useUpgradePlanModal";
 import { useSubscriptionActions } from "../../hooks/useSubscriptionActions";
 import type { SubscriptionStatus } from "../../types/billing.types";
-import { CardFormDialog } from "./CardFormDialog";
 
 interface SubscriptionManagementCardProps {
   status: SubscriptionStatus | undefined;
@@ -37,7 +36,6 @@ export function SubscriptionManagementCard({ status }: SubscriptionManagementCar
   const canManage = hasPermission("billing.manage");
   const openPlans = useOpenUpgradePlanModal();
   const actions = useSubscriptionActions();
-  const [cardOpen, setCardOpen] = React.useState(false);
   const [confirmCancel, setConfirmCancel] = React.useState(false);
   const periodEnd = useFormatDate(status?.nextPaymentDue, { preset: "short" });
 
@@ -82,17 +80,29 @@ export function SubscriptionManagementCard({ status }: SubscriptionManagementCar
               <CreditCard className="h-4 w-4 text-slate-400 shrink-0" />
               {status.card ? (
                 <span>
-                  {t("cardSaved", {
-                    brand: status.card.brand ?? t("cardGeneric"),
-                    lastFour: status.card.lastFour ?? "••••",
-                  })}
+                  {status.card.brand === "NEQUI"
+                    ? t("nequiSaved", { lastFour: status.card.lastFour ?? "••••" })
+                    : t("cardSaved", {
+                        brand: status.card.brand ?? t("cardGeneric"),
+                        lastFour: status.card.lastFour ?? "••••",
+                      })}
                 </span>
               ) : (
                 <span className="text-slate-500">{t("noCard")}</span>
               )}
             </div>
-            <Button size="sm" variant="outline" onClick={() => setCardOpen(true)}>
-              {status.card ? t("changeCard") : t("saveCard")}
+            {/* La tarjeta se captura en el widget de Wompi, nunca en ToGo */}
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={actions.isOpeningCardWidget || actions.saveCard.isPending}
+              onClick={() => void actions.openCardWidget()}
+            >
+              {actions.isOpeningCardWidget || actions.saveCard.isPending
+                ? t("processing")
+                : status.card
+                  ? t("changeCard")
+                  : t("saveCard")}
             </Button>
           </div>
         )}
@@ -163,7 +173,6 @@ export function SubscriptionManagementCard({ status }: SubscriptionManagementCar
         )}
       </CardContent>
 
-      <CardFormDialog open={cardOpen} onClose={() => setCardOpen(false)} />
 
       <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
         <AlertDialogContent>

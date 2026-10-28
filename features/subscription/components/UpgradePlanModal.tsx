@@ -387,10 +387,12 @@ export function UpgradePlanModal({ open, onClose }: UpgradePlanModalProps) {
                   <p className="flex items-center gap-1.5 text-xs text-slate-600 pt-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                     {status?.card
-                      ? t("chargeCard", {
-                          brand: status.card.brand ?? "",
-                          lastFour: status.card.lastFour ?? "",
-                        })
+                      ? status.card.brand === "NEQUI"
+                        ? t("chargeNequi", { lastFour: status.card.lastFour ?? "" })
+                        : t("chargeCard", {
+                            brand: status.card.brand ?? "",
+                            lastFour: status.card.lastFour ?? "",
+                          })
                       : t("payWithWompi")}
                   </p>
                 </div>

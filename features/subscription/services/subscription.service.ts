@@ -172,20 +172,10 @@ export interface PlanChangeQuote {
 
 export interface CardSetup {
   publicKey: string;
-  /** URL base de la API de Wompi (sandbox o producción). */
-  apiUrl: string;
   acceptanceToken: string;
   acceptancePermalink: string;
   personalDataToken: string;
   personalDataPermalink: string;
-}
-
-export interface CardInput {
-  number: string;
-  cvc: string;
-  expMonth: string;
-  expYear: string;
-  cardHolder: string;
 }
 
 /** Pagar el mes del plan actual (con tarjeta guardada o checkout). Permiso billing.view. */
@@ -241,40 +231,10 @@ export async function getCardSetup(businessId: string): Promise<CardSetup> {
   return response.data;
 }
 
-/**
- * Tokeniza la tarjeta directo contra Wompi con la llave pública: el número
- * de la tarjeta nunca llega a la API de ToGo, solo el token que devuelve.
- */
-export async function tokenizeCard(setup: CardSetup, card: CardInput): Promise<string> {
-  const response = await fetch(`${setup.apiUrl}/tokens/cards`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${setup.publicKey}`,
-    },
-    body: JSON.stringify({
-      number: card.number.replace(/\s+/g, ""),
-      cvc: card.cvc.trim(),
-      exp_month: card.expMonth.padStart(2, "0"),
-      exp_year: card.expYear.slice(-2),
-      card_holder: card.cardHolder.trim(),
-    }),
-  });
-  const json = (await response.json().catch(() => ({}))) as {
-    status?: string;
-    data?: { id?: string };
-    error?: { messages?: Record<string, string[]> };
-  };
-  if (!response.ok || !json.data?.id) {
-    const messages = json.error?.messages ? Object.values(json.error.messages).flat() : [];
-    throw new Error(messages[0] ?? "No pudimos validar la tarjeta. Revisa los datos.");
-  }
-  return json.data.id;
-}
-
 export async function saveCard(
   businessId: string,
-  data: { cardToken: string; acceptanceToken: string; personalDataToken: string }
+  /** Token y tipo que devuelve el widget de Wompi (solo CARD se acepta). */
+  data: { cardToken: string; sourceType: string }
 ): Promise<{ card: SavedCard; payment: PaymentStart | null }> {
   const response = await apiClient.put<{ card: SavedCard; payment: PaymentStart | null }>(
     `${getBillingBaseUrl(businessId)}/card`,
