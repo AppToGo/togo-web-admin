@@ -23,6 +23,8 @@ import type {
   RecordPaymentDto,
   SendNotificationDto,
   PaymentRecord,
+  PaymentAlert,
+  ChargeAttempt,
 } from "../types/business-subscription.types";
 
 // ============================================================================
@@ -58,8 +60,16 @@ export async function getBusinesses(
  * Get payment alerts (businesses with pending/overdue payments)
  * GET /admin/businesses/payment-alerts
  */
-export async function getPaymentAlerts(): Promise<BusinessWithSubscription[]> {
-  const response = await apiClient.get<BusinessWithSubscription[]>("/admin/businesses/payment-alerts");
+export async function getPaymentAlerts(): Promise<PaymentAlert[]> {
+  const response = await apiClient.get<PaymentAlert[]>("/admin/businesses/payment-alerts");
+  return response.data;
+}
+
+/** Cobros que ToGo inició en Wompi para este negocio (últimos 100). */
+export async function getChargeAttempts(businessId: string): Promise<ChargeAttempt[]> {
+  const response = await apiClient.get<ChargeAttempt[]>(
+    `/admin/businesses/${businessId}/charge-attempts`
+  );
   return response.data;
 }
 

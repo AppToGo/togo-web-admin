@@ -12,7 +12,33 @@
   },
   "alerts": {
     "title": "{count, plural, =1 {Payment Alert} other {Payment Alerts}}",
-    "description": "There are businesses with overdue or upcoming payment due dates. Review pending actions."
+    "description": "Businesses that need attention, most urgent first.",
+    "kinds": {
+      "SUSPENDED": "Suspended",
+      "PAYMENT_PENDING": "Payment pending",
+      "TRIAL_EXPIRED": "Trial expired",
+      "DUE_SOON": "Due soon",
+      "TRIAL_ENDING": "Trial ending",
+      "CANCEL_SCHEDULED": "Cancellation scheduled",
+      "PLAN_REQUEST": "Plan request",
+      "CANCELLED": "Cancelled"
+    },
+    "detail": {
+      "pending": "{days, plural, =0 {suspended today} =1 {suspended tomorrow} other {suspended in # days}}",
+      "overdueToday": "overdue, processed in the next cycle",
+      "dueIn": "{days, plural, =0 {due today} =1 {due tomorrow} other {due in # days}}",
+      "SUSPENDED": "couldn't be charged: bot and panel blocked",
+      "TRIAL_EXPIRED": "trial ended without choosing a plan",
+      "TRIAL_ENDING": "trial ends in the next few days",
+      "CANCEL_SCHEDULED": "active until the due date",
+      "PLAN_REQUEST": "asked for a plan change, payment pending verification",
+      "CANCELLED": "cancelled and finished the cycle"
+    },
+    "hasCard": "Card saved",
+    "declineReason": "Declined: {reason}",
+    "viewCharges": "Charges",
+    "showAll": "See all {count} alerts",
+    "showLess": "See less"
   },
   "pagination": {
     "showing": "Showing {from} - {to} of {total}",
@@ -45,7 +71,8 @@
     "deactivate": "Deactivate",
     "activate": "Activate",
     "editUsers": "Edit user limit",
-    "editFeatures": "Features"
+    "editFeatures": "Features",
+    "viewCharges": "Charge history"
   },
   "filters": {
     "title": "Filters",
@@ -131,9 +158,9 @@
       "message": "Message",
       "messagePlaceholder": "Write your message here...",
       "deliveryOptions": "Delivery Options",
-      "sendEmail": "Send via email",
-      "sendInApp": "Send in-app notification",
-      "submit": "Send Notification"
+      "sendEmail": "Email it to the owner",
+      "submit": "Send Notification",
+      "panelNote": "The notice always stays in the owner's account status."
     },
     "editUsers": {
       "title": "Edit user limit",
@@ -160,5 +187,28 @@
     "businessDeactivated": "Business deactivated successfully",
     "businessActivated": "Business activated successfully",
     "usersLimitUpdated": "User limit updated successfully"
+  },
+  "chargeAttempts": {
+    "title": "Charges for {businessName}",
+    "description": "Every charge ToGo started on Wompi, with its result.",
+    "empty": "No charges recorded yet.",
+    "date": "Date",
+    "kind": "Type",
+    "amount": "Amount",
+    "status": "Status",
+    "reason": "Reason",
+    "attempt": "attempt {n}",
+    "kinds": {
+      "RENEWAL": "Renewal",
+      "CHECKOUT": "Payment",
+      "UPGRADE": "Plan upgrade"
+    },
+    "statuses": {
+      "PENDING": "In progress",
+      "APPROVED": "Approved",
+      "DECLINED": "Declined",
+      "ERROR": "Error",
+      "VOIDED": "Voided"
+    }
   }
 }

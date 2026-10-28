@@ -13,3 +13,5 @@ export { EditUsersLimitModal } from "./EditUsersLimitModal";
 export { EditProofQuotaModal } from "./EditProofQuotaModal";
 export { SendNotificationModal } from "./SendNotificationModal";
 export { FilterPopover } from "./FilterPopover";
+export { PaymentAlertsPanel } from "./PaymentAlertsPanel";
+export { ChargeAttemptsDialog } from "./ChargeAttemptsDialog";

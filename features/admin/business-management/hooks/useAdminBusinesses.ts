@@ -47,6 +47,18 @@ export function usePaymentAlerts(
   });
 }
 
+/**
+ * Historial de cobros que ToGo inició en Wompi para un negocio
+ * (docs/cobro-suscripciones.md §7 en api-togo).
+ */
+export function useChargeAttempts(businessId: string | null) {
+  return useQuery({
+    queryKey: ADMIN_BUSINESS_KEYS.chargeAttempts(businessId ?? ""),
+    queryFn: () => adminBusinessService.getChargeAttempts(businessId!),
+    enabled: !!businessId,
+  });
+}
+
 // ============================================================================
 // MUTATION HOOKS
 // ============================================================================

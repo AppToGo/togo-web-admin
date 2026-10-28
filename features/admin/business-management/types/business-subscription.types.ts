@@ -105,17 +105,62 @@ export interface RecordPaymentDto {
   skipPlanActivation?: boolean;
 }
 
+/** Valores reales del enum `NotificationType` de la API. */
+export type NotificationTypeValue = 'PAYMENT_REMINDER' | 'REMINDER' | 'OVERDUE' | 'WARNING';
+
 export interface SendNotificationDto {
-  type: 'PAYMENT_REMINDER' | 'OVERDUE_WARNING' | 'GRACE_PERIOD_NOTICE' | 'CUSTOM';
+  type: NotificationTypeValue;
   subject: string;
   message: string;
+  /** El aviso se envía por correo al dueño; sin correo solo queda en su panel. */
   sendEmail?: boolean;
-  sendInApp?: boolean;
 }
+
+/**
+ * Alerta de pago del super admin (`PaymentAlertDto` en api-togo,
+ * docs/cobro-suscripciones.md §7), en orden de urgencia.
+ */
+export type PaymentAlertKind =
+  | 'SUSPENDED'
+  | 'PAYMENT_PENDING'
+  | 'TRIAL_EXPIRED'
+  | 'DUE_SOON'
+  | 'TRIAL_ENDING'
+  | 'CANCEL_SCHEDULED'
+  | 'PLAN_REQUEST'
+  | 'CANCELLED';
 
 export interface PaymentAlert {
   businessId: string;
   businessName: string;
+  businessPhone: string;
+  kind: PaymentAlertKind;
+  paymentStatus: 'PENDING' | 'PAID' | 'OVERDUE' | 'GRACE_PERIOD';
+  nextPaymentDue: string | null;
   daysUntilDue: number;
-  severity: 'SAFE' | 'WARNING' | 'URGENT' | 'CRITICAL' | 'OVERDUE';
+  /** Solo PAYMENT_PENDING. */
+  daysUntilSuspension: number | null;
+  trialEndsAt: string | null;
+  hasCard: boolean;
+  lastDeclineReason: string | null;
+  plan: number;
+  requestedPlan: number | null;
+}
+
+/** Un cobro que ToGo inició en Wompi (historial por negocio). */
+export interface ChargeAttempt {
+  id: string;
+  kind: 'RENEWAL' | 'CHECKOUT' | 'UPGRADE';
+  status: 'PENDING' | 'APPROVED' | 'DECLINED' | 'ERROR' | 'VOIDED';
+  cycleDueDate: string | null;
+  attemptNumber: number;
+  plan: number;
+  planName: string;
+  amountInCents: number;
+  currency: string;
+  reference: string;
+  wompiTransactionId: string | null;
+  statusMessage: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
 }

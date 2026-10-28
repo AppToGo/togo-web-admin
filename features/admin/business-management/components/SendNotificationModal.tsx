@@ -28,22 +28,20 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NOTIFICATION_TYPES } from "../constants/payment-status";
-import type { BusinessWithSubscription } from "../types/business-subscription.types";
+import type {
+  BusinessWithSubscription,
+  NotificationTypeValue,
+} from "../types/business-subscription.types";
 
 interface SendNotificationModalProps {
   business: BusinessWithSubscription | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: {
-    type:
-      | "PAYMENT_REMINDER"
-      | "OVERDUE_WARNING"
-      | "GRACE_PERIOD_NOTICE"
-      | "CUSTOM";
+    type: NotificationTypeValue;
     subject: string;
     message: string;
     sendEmail?: boolean;
-    sendInApp?: boolean;
   }) => void;
   isSubmitting?: boolean;
 }
@@ -60,7 +58,6 @@ export function SendNotificationModal({
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
-  const [sendInApp, setSendInApp] = useState(true);
 
   // Auto-fill subject when type changes
   useEffect(() => {
@@ -73,15 +70,10 @@ export function SendNotificationModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      type: type as
-        | "PAYMENT_REMINDER"
-        | "OVERDUE_WARNING"
-        | "GRACE_PERIOD_NOTICE"
-        | "CUSTOM",
+      type: type as NotificationTypeValue,
       subject,
       message,
       sendEmail,
-      sendInApp,
     });
   };
 
@@ -90,7 +82,6 @@ export function SendNotificationModal({
     setSubject("");
     setMessage("");
     setSendEmail(true);
-    setSendInApp(true);
     onClose();
   };
 
@@ -177,21 +168,11 @@ export function SendNotificationModal({
                     {t("modals.sendNotification.sendEmail")}
                   </label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sendInApp"
-                    checked={sendInApp}
-                    onCheckedChange={(checked) =>
-                      setSendInApp(checked as boolean)
-                    }
-                  />
-                  <label
-                    htmlFor="sendInApp"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {t("modals.sendNotification.sendInApp")}
-                  </label>
-                </div>
+                {/* La API no tiene "in-app": el aviso siempre queda en el
+                    estado de cuenta del dueño. */}
+                <p className="text-xs text-slate-500">
+                  {t("modals.sendNotification.panelNote")}
+                </p>
               </div>
             </div>
           </div>
