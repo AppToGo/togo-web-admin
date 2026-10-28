@@ -30,13 +30,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -280,9 +274,13 @@ export function NewOrderDrawer({
         size="2xl"
         className="max-w-[calc(100vw-2rem)] sm:max-w-5xl"
       >
-        <DrawerHeader>
-          <DrawerTitle>{t("title")}</DrawerTitle>
-          <DrawerDescription>
+        {/* Barra delgada en vez del header alto: las dos columnas ganan ese
+            alto y la columna de datos ocupa casi todo el drawer. */}
+        <div className="shrink-0 flex items-baseline gap-2 px-4 sm:px-6 py-3 pr-12 border-b border-slate-100/50 min-w-0">
+          <h2 className="shrink-0 text-base font-semibold text-slate-900">
+            {t("title")}
+          </h2>
+          <p className="min-w-0 flex-1 truncate text-sm text-slate-500">
             {t.rich("subtitle", {
               status: tStatus("CONFIRMED"),
               name: user?.name ?? "",
@@ -290,8 +288,8 @@ export function NewOrderDrawer({
                 <span className="font-semibold text-indigo-600">{chunks}</span>
               ),
             })}
-          </DrawerDescription>
-        </DrawerHeader>
+          </p>
+        </div>
 
         <div className="flex-1 min-h-0 flex flex-col md:flex-row md:overflow-hidden">
           {/* Productos */}
