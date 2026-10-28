@@ -408,7 +408,10 @@ export function NewOrderDrawer({
               <ChevronLeft className="w-4 h-4" />
               {t("mobileBack", { count: itemCount })}
             </button>
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin p-4 sm:p-6 space-y-6">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-4 sm:p-6 gap-6">
+              {/* Campos: ocupan lo que necesiten hasta el 45% y luego scrollean,
+                  para que el resumen siempre conserve la mayor parte del alto. */}
+              <div className="shrink-0 min-h-0 max-h-[45%] overflow-y-auto scrollbar-thin space-y-6 pr-1">
               <FieldGroup label={t("orderType")}>
                 <div
                   className={cn(
@@ -625,10 +628,12 @@ export function NewOrderDrawer({
                   maxLength={500}
                 />
               </FieldGroup>
+              </div>
 
-              {/* Resumen */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
+              {/* Resumen: ocupa todo el alto restante con scroll propio para
+                  pedidos con muchos productos. */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-2">
+                <div className="shrink-0 flex items-center justify-between">
                   <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                     {t("summary")}
                   </h4>
@@ -636,7 +641,8 @@ export function NewOrderDrawer({
                     {t("productsCount", { count: itemCount })}
                   </span>
                 </div>
-                <div className="rounded-card border border-slate-100 bg-white shadow-card p-4 space-y-2 text-sm">
+                <div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-card border border-slate-100 bg-white shadow-card p-4 text-sm">
+                  <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin space-y-2 pr-1">
                   {cartLines.length === 0 ? (
                     <p className="text-slate-400">{t("emptySummary")}</p>
                   ) : (
@@ -660,7 +666,8 @@ export function NewOrderDrawer({
                       </div>
                     ))
                   )}
-                  <div className="border-t border-slate-100 pt-2 mt-2 space-y-1 text-slate-500">
+                  </div>
+                  <div className="shrink-0 border-t border-slate-100 pt-2 mt-2 space-y-1 text-slate-500">
                     <div className="flex justify-between">
                       <span>{t("subtotal")}</span>
                       <span>{formatCurrency(subtotal)}</span>
