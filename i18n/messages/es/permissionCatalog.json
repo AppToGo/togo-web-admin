@@ -323,6 +323,10 @@
     "label": "Ver facturación",
     "description": "Da acceso al estado de cuenta de la suscripción, al historial de pagos y a los avisos de cobranza."
   },
+  "billing_manage": {
+    "label": "Gestionar la suscripción",
+    "description": "Permite guardar o cambiar la tarjeta del cobro automático, cambiar de plan y cancelar la suscripción."
+  },
   "bot_messages_manage": {
     "label": "Editar mensajes del asistente",
     "description": "Permite cambiar en el admin cómo responde el asistente de WhatsApp en cada momento de la conversación, generar los mensajes con IA y publicarlos."

@@ -10,6 +10,7 @@ import {
   usePaymentHistory,
   usePaymentNotifications,
   SubscriptionStatusCard,
+  SubscriptionManagementCard,
   PaymentHistoryTable,
   PaymentNotificationsList,
 } from "@/features/subscription";
@@ -61,6 +62,7 @@ export default function BillingPage() {
         </div>
 
         <SubscriptionStatusCard status={status} isLoading={statusLoading} />
+        <SubscriptionManagementCard status={status} />
         <PaymentHistoryTable
           payments={payments}
           isLoading={paymentsLoading}

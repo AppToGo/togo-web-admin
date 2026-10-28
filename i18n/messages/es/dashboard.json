@@ -113,14 +113,16 @@
     "cancelled": "Tu suscripción terminó. Reactívala para volver a recibir pedidos.",
     "payNow": "Pagar ahora",
     "reactivate": "Pagar y reactivar",
-    "redirecting": "Abriendo pago…"
+    "redirecting": "Abriendo pago…",
+    "cancelScheduled": "Cancelaste tu suscripción: sigue activa hasta el {date}.",
+    "undoCancel": "Deshacer"
   },
   "trialBanner": {
     "daysRemaining": "Te quedan {days} días de prueba gratis",
     "oneDayRemaining": "Te queda 1 día de prueba gratis",
     "lastDay": "Tu prueba gratis termina hoy",
     "expired": "Tu prueba gratis terminó",
-    "subtitle": "Elegí un plan para seguir usando ToGo sin interrupciones",
+    "subtitle": "Elige un plan para seguir usando ToGo sin interrupciones",
     "cta": "Elegir plan"
   },
   "products": {

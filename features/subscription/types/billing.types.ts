@@ -44,12 +44,26 @@ export interface SubscriptionStatus {
   hasSubscriptionRecord: boolean;
   /** Banner de cobro, calculado en vivo por la API. null = sin aviso. */
   billingAlert: BillingAlert | null;
+  /** Tarjeta guardada para el cobro automático. null = sin tarjeta. */
+  card: SavedCard | null;
+  /** Bajada de plan programada para el fin del ciclo. */
+  scheduledPlan: number | null;
+  scheduledPlanName: string | null;
+  /** Canceló: sigue activo hasta nextPaymentDue y no se le vuelve a cobrar. */
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface SavedCard {
+  brand: string | null;
+  lastFour: string | null;
 }
 
 /** `BillingAlertDto` del backend (docs/cobro-suscripciones.md §5 en api-togo). */
 export interface BillingAlert {
-  /** PAYMENT_PENDING no bloquea; SUSPENDED y CANCELLED sí. */
-  kind: "PAYMENT_PENDING" | "SUSPENDED" | "CANCELLED";
+  /** PAYMENT_PENDING y CANCEL_SCHEDULED no bloquean; SUSPENDED y CANCELLED sí. */
+  kind: "PAYMENT_PENDING" | "SUSPENDED" | "CANCELLED" | "CANCEL_SCHEDULED";
+  /** Solo CANCEL_SCHEDULED: hasta cuándo sigue activa la cuenta. */
+  endsAt: string | null;
   /** Solo PAYMENT_PENDING: días que faltan para la suspensión. */
   daysUntilSuspension: number | null;
   hasCard: boolean;

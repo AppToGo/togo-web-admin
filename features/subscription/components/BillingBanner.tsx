@@ -1,12 +1,13 @@
 "use client";
 
-import { AlertTriangle, Ban, CreditCard } from "lucide-react";
+import { AlertTriangle, Ban, CalendarClock, CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useSubscriptionStatus } from "../hooks/useSubscriptionStatus";
-import { useWompiCheckout } from "../hooks/useWompiCheckout";
+import { useSubscriptionActions } from "../hooks/useSubscriptionActions";
+import { useFormatDate } from "@/hooks/useFormatDate";
 import type { BillingAlert } from "../types/billing.types";
 
 const STYLES: Record<
@@ -28,14 +29,20 @@ const STYLES: Record<
     text: "text-slate-900",
     button: "bg-indigo-600 hover:bg-indigo-700",
   },
+  CANCEL_SCHEDULED: {
+    container: "bg-slate-50 border-b border-slate-200",
+    text: "text-slate-800",
+    button: "bg-slate-700 hover:bg-slate-800",
+  },
 };
 
 /**
  * Banner global de cobro (docs/cobro-suscripciones.md §5 en api-togo): pago
  * pendiente con los días que faltan para la suspensión, cuenta suspendida o
- * suscripción cancelada. El estado lo calcula la API en vivo
- * (`billingAlert`), no depende de que el correo haya salido. "Pagar ahora"
- * abre el checkout de Wompi del plan actual (renovación).
+ * suscripción cancelada o con la cancelación programada. El estado lo
+ * calcula la API en vivo (`billingAlert`), no depende de que el correo haya
+ * salido. "Pagar ahora" cobra la tarjeta guardada o, sin tarjeta, abre el
+ * checkout de Wompi del plan actual.
  *
  * Solo para quien puede pagar (`billing.view`, el mismo permiso del
  * checkout). La prueba gratis tiene su propio banner (TrialBanner).
@@ -46,14 +53,24 @@ export function BillingBanner() {
   const { hasPermission } = useMyPermissions();
   const canPay = hasPermission("billing.view") && !user?.isDemo;
   const { data: status } = useSubscriptionStatus(canPay);
-  const checkout = useWompiCheckout();
+  const canManage = hasPermission("billing.manage");
+  const actions = useSubscriptionActions();
+  const endsAt = useFormatDate(status?.billingAlert?.endsAt, { preset: "short" });
 
   const alert = status?.billingAlert;
   if (!canPay || !alert) return null;
+  // Deshacer la cancelación es de quien gestiona la suscripción.
+  if (alert.kind === "CANCEL_SCHEDULED" && !canManage) return null;
 
   const style = STYLES[alert.kind];
   const Icon =
-    alert.kind === "SUSPENDED" ? Ban : alert.hasCard ? CreditCard : AlertTriangle;
+    alert.kind === "SUSPENDED"
+      ? Ban
+      : alert.kind === "CANCEL_SCHEDULED"
+        ? CalendarClock
+        : alert.hasCard
+          ? CreditCard
+          : AlertTriangle;
 
   const message =
     alert.kind === "PAYMENT_PENDING"
@@ -62,7 +79,9 @@ export function BillingBanner() {
         : t("pending", { days: alert.daysUntilSuspension ?? 0 })
       : alert.kind === "SUSPENDED"
         ? t("suspended")
-        : t("cancelled");
+        : alert.kind === "CANCEL_SCHEDULED"
+          ? t("cancelScheduled", { date: endsAt })
+          : t("cancelled");
 
   const detail =
     alert.kind === "PAYMENT_PENDING" && alert.hasCard && alert.lastDeclineReason
@@ -88,18 +107,24 @@ export function BillingBanner() {
       </div>
       <button
         type="button"
-        onClick={() => checkout.mutate(undefined)}
-        disabled={checkout.isPending}
+        onClick={() =>
+          alert.kind === "CANCEL_SCHEDULED"
+            ? actions.undoCancel.mutate()
+            : actions.pay.mutate()
+        }
+        disabled={actions.pay.isPending || actions.undoCancel.isPending}
         className={cn(
           "flex-shrink-0 text-xs font-semibold text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
           style.button
         )}
       >
-        {checkout.isPending
+        {actions.pay.isPending || actions.undoCancel.isPending
           ? t("redirecting")
           : alert.kind === "PAYMENT_PENDING"
             ? t("payNow")
-            : t("reactivate")}
+            : alert.kind === "CANCEL_SCHEDULED"
+              ? t("undoCancel")
+              : t("reactivate")}
       </button>
     </div>
   );

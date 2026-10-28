@@ -1,5 +1,6 @@
 import apiClient from "@/services/api.service";
 import type {
+  SavedCard,
   SubscriptionStatus,
   OwnerPaymentRecord,
   OwnerPaymentNotification,
@@ -144,3 +145,141 @@ export async function getCheckoutStatus(
   );
   return response.data;
 }
+
+// ─── Autogestión (docs/cobro-suscripciones.md §6 en api-togo) ───────────
+
+/** Resultado de un pago iniciado por el dueño. */
+export type PaymentStart =
+  /** Se cobró la tarjeta guardada; el resultado llega por el webhook. */
+  | { mode: "CHARGED"; reference: string }
+  /** Sin tarjeta: hay que abrir el checkout hospedado de Wompi. */
+  | { mode: "CHECKOUT"; checkout: WompiCheckout };
+
+export interface PlanChangeQuote {
+  plan: number;
+  planName: string;
+  direction: "UP" | "DOWN";
+  /** UP: lo que se cobra hoy. DOWN: 0. */
+  amountInCents: number;
+  currency: string;
+  /** UP con un ciclo pagado en curso: solo la diferencia por los días que faltan. */
+  prorated: boolean;
+  /** DOWN: el vencimiento (cuándo aplica). UP: hoy. */
+  effectiveAt: string;
+  /** DOWN: qué sobra (sedes o usuarios). null = se puede. */
+  blockedReason: string | null;
+}
+
+export interface CardSetup {
+  publicKey: string;
+  /** URL base de la API de Wompi (sandbox o producción). */
+  apiUrl: string;
+  acceptanceToken: string;
+  acceptancePermalink: string;
+  personalDataToken: string;
+  personalDataPermalink: string;
+}
+
+export interface CardInput {
+  number: string;
+  cvc: string;
+  expMonth: string;
+  expYear: string;
+  cardHolder: string;
+}
+
+/** Pagar el mes del plan actual (con tarjeta guardada o checkout). Permiso billing.view. */
+export async function payNow(businessId: string): Promise<PaymentStart> {
+  const response = await apiClient.post<PaymentStart>(`${getBillingBaseUrl(businessId)}/pay`);
+  return response.data;
+}
+
+export async function quotePlanChange(
+  businessId: string,
+  plan: number
+): Promise<PlanChangeQuote> {
+  const response = await apiClient.get<PlanChangeQuote>(
+    `${getBillingBaseUrl(businessId)}/plan-change/quote`,
+    { params: { plan } }
+  );
+  return response.data;
+}
+
+export async function upgradePlan(businessId: string, plan: number): Promise<PaymentStart> {
+  const response = await apiClient.post<PaymentStart>(
+    `${getBillingBaseUrl(businessId)}/plan-change/upgrade`,
+    { plan }
+  );
+  return response.data;
+}
+
+export async function scheduleDowngrade(
+  businessId: string,
+  plan: number
+): Promise<PlanChangeQuote> {
+  const response = await apiClient.post<PlanChangeQuote>(
+    `${getBillingBaseUrl(businessId)}/plan-change/downgrade`,
+    { plan }
+  );
+  return response.data;
+}
+
+export async function cancelScheduledDowngrade(businessId: string): Promise<void> {
+  await apiClient.delete(`${getBillingBaseUrl(businessId)}/plan-change/downgrade`);
+}
+
+export async function cancelSubscription(businessId: string): Promise<void> {
+  await apiClient.post(`${getBillingBaseUrl(businessId)}/cancel`);
+}
+
+export async function undoCancelSubscription(businessId: string): Promise<void> {
+  await apiClient.delete(`${getBillingBaseUrl(businessId)}/cancel`);
+}
+
+export async function getCardSetup(businessId: string): Promise<CardSetup> {
+  const response = await apiClient.get<CardSetup>(`${getBillingBaseUrl(businessId)}/card/setup`);
+  return response.data;
+}
+
+/**
+ * Tokeniza la tarjeta directo contra Wompi con la llave pública: el número
+ * de la tarjeta nunca llega a la API de ToGo, solo el token que devuelve.
+ */
+export async function tokenizeCard(setup: CardSetup, card: CardInput): Promise<string> {
+  const response = await fetch(`${setup.apiUrl}/tokens/cards`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${setup.publicKey}`,
+    },
+    body: JSON.stringify({
+      number: card.number.replace(/\s+/g, ""),
+      cvc: card.cvc.trim(),
+      exp_month: card.expMonth.padStart(2, "0"),
+      exp_year: card.expYear.slice(-2),
+      card_holder: card.cardHolder.trim(),
+    }),
+  });
+  const json = (await response.json().catch(() => ({}))) as {
+    status?: string;
+    data?: { id?: string };
+    error?: { messages?: Record<string, string[]> };
+  };
+  if (!response.ok || !json.data?.id) {
+    const messages = json.error?.messages ? Object.values(json.error.messages).flat() : [];
+    throw new Error(messages[0] ?? "No pudimos validar la tarjeta. Revisa los datos.");
+  }
+  return json.data.id;
+}
+
+export async function saveCard(
+  businessId: string,
+  data: { cardToken: string; acceptanceToken: string; personalDataToken: string }
+): Promise<{ card: SavedCard; payment: PaymentStart | null }> {
+  const response = await apiClient.put<{ card: SavedCard; payment: PaymentStart | null }>(
+    `${getBillingBaseUrl(businessId)}/card`,
+    data
+  );
+  return response.data;
+}
+
