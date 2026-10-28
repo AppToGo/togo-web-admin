@@ -135,6 +135,7 @@ export default function CategoriesPage() {
                 slug: data.slug,
                 industryCategoryId: data.industryCategoryId,
                 description: data.description,
+                order: data.order,
                 searchKeywords: data.searchKeywords,
               })
             }
@@ -146,6 +147,7 @@ export default function CategoriesPage() {
                   slug: data.slug,
                   industryCategoryId: data.industryCategoryId,
                   description: data.description,
+                  order: data.order,
                   searchKeywords: data.searchKeywords,
                 },
               })

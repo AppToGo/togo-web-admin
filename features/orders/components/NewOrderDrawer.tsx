@@ -293,25 +293,36 @@ export function NewOrderDrawer({
       onOpenChange={(open) => !open && handleClose()}
       isLoading={createOrder.isPending}
     >
-      <DrawerContent size="2xl" className="sm:max-w-6xl">
-        <DrawerHeader>
-          <DrawerTitle>{t("title")}</DrawerTitle>
-          <DrawerDescription>
-            {t.rich("subtitle", {
-              status: tStatus("CONFIRMED"),
-              name: user?.name ?? "",
-              strong: (chunks) => (
-                <span className="font-semibold text-indigo-600">{chunks}</span>
-              ),
-            })}
-          </DrawerDescription>
-        </DrawerHeader>
-
+      <DrawerContent
+        size="2xl"
+        className="max-w-[calc(100vw-2rem)] sm:max-w-5xl"
+      >
         <div className="flex-1 min-h-0 flex flex-col md:flex-row md:overflow-hidden">
-          {/* Productos */}
+          {/* Izquierda: header + productos. En teléfono muestra el paso
+              activo; en md+ llena el alto junto a la columna de datos. */}
+          <div
+            className={cn(
+              "flex flex-col min-w-0 min-h-0 md:overflow-hidden",
+              mobileStep === "details" ? "shrink-0 md:flex-1" : "flex-1"
+            )}
+          >
+            <DrawerHeader>
+              <DrawerTitle>{t("title")}</DrawerTitle>
+              <DrawerDescription>
+                {t.rich("subtitle", {
+                  status: tStatus("CONFIRMED"),
+                  name: user?.name ?? "",
+                  strong: (chunks) => (
+                    <span className="font-semibold text-indigo-600">{chunks}</span>
+                  ),
+                })}
+              </DrawerDescription>
+            </DrawerHeader>
+
+            {/* Productos */}
           <section
             className={cn(
-              "flex-1 flex-col min-h-0 p-4 sm:p-6 gap-4 md:border-r border-slate-100",
+              "flex-1 flex-col min-h-0 min-w-0 p-4 sm:p-6 gap-4 md:border-r border-slate-100",
               mobileStep === "products" ? "flex" : "hidden md:flex"
             )}
           >
@@ -405,8 +416,9 @@ export function NewOrderDrawer({
               <span className="tabular-nums">{formatCurrency(total)}</span>
             </button>
           </section>
+          </div>
 
-          {/* Datos del pedido */}
+          {/* Datos del pedido: columna aparte a todo el alto del drawer. */}
           <aside
             className={cn(
               "flex-1 md:flex-none flex-col min-h-0 md:w-105 md:shrink-0 bg-slate-50/60",
