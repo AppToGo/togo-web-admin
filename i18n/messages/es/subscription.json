@@ -139,20 +139,6 @@
     "genericError": "Algo salió mal. Intenta de nuevo.",
     "noBusiness": "Elige un negocio para gestionar su suscripción."
   },
-  "cardForm": {
-    "title": "Tarjeta para el cobro automático",
-    "subtitle": "Cobraremos tu plan a esta tarjeta el día de vencimiento de cada mes.",
-    "number": "Número de la tarjeta",
-    "expMonth": "Mes",
-    "expYear": "Año",
-    "cvc": "CVC",
-    "holder": "Nombre en la tarjeta",
-    "terms": "Acepto la <privacy>política de privacidad</privacy> y la <personal>autorización de tratamiento de datos personales</personal> de Wompi, que procesa el pago.",
-    "secure": "Los datos de tu tarjeta van directo a Wompi: ToGo no los ve ni los guarda.",
-    "cancel": "Cancelar",
-    "save": "Guardar tarjeta",
-    "saving": "Guardando…"
-  },
   "management": {
     "title": "Gestiona tu suscripción",
     "owes": "Tienes un pago pendiente de tu plan.",

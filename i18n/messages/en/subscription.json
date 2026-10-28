@@ -139,20 +139,6 @@
     "genericError": "Something went wrong. Please try again.",
     "noBusiness": "Choose a business to manage its subscription."
   },
-  "cardForm": {
-    "title": "Card for automatic billing",
-    "subtitle": "We'll charge your plan to this card on each month's due date.",
-    "number": "Card number",
-    "expMonth": "Month",
-    "expYear": "Year",
-    "cvc": "CVC",
-    "holder": "Name on card",
-    "terms": "I accept the <privacy>privacy policy</privacy> and the <personal>personal data processing authorization</personal> of Wompi, which processes the payment.",
-    "secure": "Your card details go straight to Wompi: ToGo never sees or stores them.",
-    "cancel": "Cancel",
-    "save": "Save card",
-    "saving": "Saving…"
-  },
   "management": {
     "title": "Manage your subscription",
     "owes": "You have a pending payment for your plan.",
