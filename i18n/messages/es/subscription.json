@@ -136,7 +136,8 @@
     "cancelUndone": "Tu suscripción sigue activa.",
     "cardSaved": "Guardamos tu tarjeta.",
     "cardError": "No pudimos guardar la tarjeta",
-    "genericError": "Algo salió mal. Intenta de nuevo."
+    "genericError": "Algo salió mal. Intenta de nuevo.",
+    "noBusiness": "Elige un negocio para gestionar su suscripción."
   },
   "cardForm": {
     "title": "Tarjeta para el cobro automático",

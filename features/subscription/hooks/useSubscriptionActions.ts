@@ -52,7 +52,9 @@ export function useSubscriptionActions() {
     toast.error(extractErrorMessage(error, fallback));
 
   const requireBusiness = () => {
-    if (!businessId) throw new Error("No business selected");
+    // Llega al toast vía extractErrorMessage: traducido (p. ej. staff de
+    // ToGo sin negocio elegido).
+    if (!businessId) throw new Error(t("noBusiness"));
     return businessId;
   };
 

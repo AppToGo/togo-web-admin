@@ -136,7 +136,8 @@
     "cancelUndone": "Your subscription is still active.",
     "cardSaved": "Your card was saved.",
     "cardError": "We couldn't save the card",
-    "genericError": "Something went wrong. Please try again."
+    "genericError": "Something went wrong. Please try again.",
+    "noBusiness": "Choose a business to manage its subscription."
   },
   "cardForm": {
     "title": "Card for automatic billing",
