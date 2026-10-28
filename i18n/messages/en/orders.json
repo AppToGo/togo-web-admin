@@ -376,6 +376,7 @@
     "paymentMethod": "Payment method",
     "notes": "Notes",
     "notesPlaceholder": "Order instructions (optional)",
+    "addNote": "+ Order note",
     "itemNotes": "Product note",
     "itemNotesPlaceholder": "E.g. no onions (optional)",
     "summary": "Summary",

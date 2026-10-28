@@ -136,6 +136,9 @@ export function NewOrderDrawer({
   // Teléfono (< md): primero los productos a pantalla completa y después
   // los datos del pedido, como la venta de Caja. En md+ van lado a lado.
   const [mobileStep, setMobileStep] = useState<"products" | "details">("products");
+  // Notas como en Caja: un enlace y, al tocarlo, el campo.
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [notedLines, setNotedLines] = useState<Record<string, boolean>>({});
 
   const composer = useOrderComposer({
     businessId,
@@ -246,6 +249,8 @@ export function NewOrderDrawer({
     setTip(null);
     setSubmitted(false);
     setMobileStep("products");
+    setNoteOpen(false);
+    setNotedLines({});
   };
 
   const handleClose = () => {
@@ -656,15 +661,6 @@ export function NewOrderDrawer({
                 </FieldGroup>
               )}
 
-              <FieldGroup label={t("notes")}>
-                <Input
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder={t("notesPlaceholder")}
-                  maxLength={500}
-                />
-              </FieldGroup>
-
               {/* Resumen */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -688,16 +684,49 @@ export function NewOrderDrawer({
                             {formatCurrency(line.unitPrice * line.quantity)}
                           </span>
                         </div>
-                        <Input
-                          className="mt-1"
-                          value={line.notes ?? ""}
-                          onChange={(e) => setLineNote(line.variantId, e.target.value)}
-                          placeholder={t("itemNotesPlaceholder")}
-                          aria-label={t("itemNotes")}
-                          maxLength={200}
-                        />
+                        {/* Como en Caja: un enlace que abre el campo. */}
+                        {notedLines[line.variantId] || line.notes ? (
+                          <Input
+                            className="mt-1"
+                            autoFocus={!!notedLines[line.variantId] && !line.notes}
+                            value={line.notes ?? ""}
+                            onChange={(e) => setLineNote(line.variantId, e.target.value)}
+                            placeholder={t("itemNotesPlaceholder")}
+                            aria-label={t("itemNotes")}
+                            maxLength={200}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setNotedLines((prev) => ({ ...prev, [line.variantId]: true }))
+                            }
+                            className="mt-0.5 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                          >
+                            {t("itemNotes")}
+                          </button>
+                        )}
                       </div>
                     ))
+                  )}
+                  {noteOpen || notes ? (
+                    <Input
+                      className="mt-3"
+                      autoFocus={noteOpen && !notes}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder={t("notesPlaceholder")}
+                      aria-label={t("notes")}
+                      maxLength={500}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setNoteOpen(true)}
+                      className="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                    >
+                      {t("addNote")}
+                    </button>
                   )}
                   <div className="border-t border-slate-100 pt-2 mt-2 space-y-1 text-slate-500">
                     <div className="flex justify-between">
