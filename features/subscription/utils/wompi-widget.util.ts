@@ -41,14 +41,16 @@ export function loadWompiWidget(): Promise<WompiWidgetConstructor> {
     const script = document.createElement("script");
     script.src = WIDGET_SRC;
     script.async = true;
-    script.onload = () =>
-      window.WidgetCheckout
-        ? resolve(window.WidgetCheckout)
-        : reject(new Error("No se pudo cargar la ventana de pago de Wompi"));
-    script.onerror = () => {
+    // Ante cualquier fallo se suelta el single-flight para que el próximo
+    // intento vuelva a cargar el script en vez de heredar el rechazo.
+    const fail = () => {
       loading = null;
+      script.remove();
       reject(new Error("No se pudo cargar la ventana de pago de Wompi"));
     };
+    script.onload = () =>
+      window.WidgetCheckout ? resolve(window.WidgetCheckout) : fail();
+    script.onerror = fail;
     document.body.appendChild(script);
   });
   return loading;
