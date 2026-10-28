@@ -61,6 +61,7 @@ interface CategoryListProps {
     slug: string;
     industryCategoryId: string;
     description?: string;
+    order?: number;
     searchKeywords?: KeywordEntry[];
   }) => void;
   onUpdate: (
@@ -70,6 +71,7 @@ interface CategoryListProps {
       slug: string;
       industryCategoryId: string;
       description?: string;
+      order?: number;
       searchKeywords?: KeywordEntry[];
     }
   ) => void;
@@ -122,6 +124,7 @@ export function CategoryList({
     slug: "",
     industryCategoryId: "",
     description: "",
+    order: 0,
   });
   const [searchKeywords, setSearchKeywords] = useState<KeywordEntry[]>([]);
 
@@ -196,6 +199,7 @@ export function CategoryList({
       slug: "",
       industryCategoryId: "",
       description: "",
+      order: 0,
     });
     setSearchKeywords([]);
   };
@@ -214,6 +218,7 @@ export function CategoryList({
       slug: category.slug,
       industryCategoryId: category.industryCategoryId,
       description: category.description || "",
+      order: category.order ?? 0,
     });
     setSearchKeywords(category.searchKeywords ?? []);
     setEditingCategoryId(category.id);
@@ -254,6 +259,7 @@ export function CategoryList({
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
         description: formData.description.trim() || undefined,
+        order: formData.order,
         searchKeywords: editableKeywords,
       });
     } else {
@@ -262,6 +268,7 @@ export function CategoryList({
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
         description: formData.description.trim() || undefined,
+        order: formData.order,
         searchKeywords: editableKeywords,
       });
     }
@@ -501,6 +508,29 @@ export function CategoryList({
                 placeholder={t("categories.descriptionPlaceholder")}
                 disabled={isLoading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category-order">
+                {t("categories.orderLabel")}
+              </Label>
+              <Input
+                id="category-order"
+                type="number"
+                min={0}
+                step={1}
+                value={formData.order}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    order: Math.max(0, Math.floor(Number(e.target.value) || 0)),
+                  }))
+                }
+                disabled={isLoading}
+              />
+              <p className="text-xs text-slate-500">
+                {t("categories.orderHelp")}
+              </p>
             </div>
 
             <KeywordsInput

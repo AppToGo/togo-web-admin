@@ -276,7 +276,10 @@ export function NewOrderDrawer({
       onOpenChange={(open) => !open && handleClose()}
       isLoading={createOrder.isPending}
     >
-      <DrawerContent size="2xl" className="sm:max-w-6xl">
+      <DrawerContent
+        size="2xl"
+        className="max-w-[calc(100vw-2rem)] sm:max-w-5xl"
+      >
         <DrawerHeader>
           <DrawerTitle>{t("title")}</DrawerTitle>
           <DrawerDescription>
@@ -294,7 +297,7 @@ export function NewOrderDrawer({
           {/* Productos */}
           <section
             className={cn(
-              "flex-1 flex-col min-h-0 p-4 sm:p-6 gap-4 md:border-r border-slate-100",
+              "flex-1 flex-col min-h-0 min-w-0 p-4 sm:p-6 gap-4 md:border-r border-slate-100",
               mobileStep === "products" ? "flex" : "hidden md:flex"
             )}
           >

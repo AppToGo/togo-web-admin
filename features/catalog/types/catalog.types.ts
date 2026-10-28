@@ -246,6 +246,8 @@ export interface CreateCategoryDto {
   description?: string;
   slug: string;
   industryCategoryId: string;
+  // Prioridad de visualización (menor = primero). Alineado con CreateBusinessCategoryDto.
+  order?: number;
   // Solo entradas 'manual'/'ai' — las heredadas las calcula el backend.
   searchKeywords?: KeywordEntry[];
 }
