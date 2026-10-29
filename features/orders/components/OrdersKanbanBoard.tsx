@@ -16,6 +16,7 @@ import { StatsTickerRail } from "./StatsTickerRail";
 import { NewOrderDrawer } from "./NewOrderDrawer";
 import { OperatorCatalogSessionDialog } from "./OperatorCatalogSessionDialog";
 import { DeliveryPickerDialog } from "./DeliveryPickerDialog";
+import { CancelOrderDialog } from "./CancelOrderDialog";
 import { Can } from "@/components/auth/Can";
 import type { BoardViewMode } from "./OrderBoardToolbar";
 
@@ -334,13 +335,15 @@ export function OrdersKanbanBoard({
 
   // Pedido que espera repartidor para pasar a "En camino".
   const [deliveryPickerOrder, setDeliveryPickerOrder] = useState<Order | null>(null);
+  // Pedido al que se le pide el motivo obligatorio de cancelación.
+  const [cancelOrder, setCancelOrder] = useState<Order | null>(null);
 
   // Single entry point for every status change on this screen (drag & drop,
   // "Move to" menu, next-step button, "By status" tab drops). Checks the move
   // against the visible columns (only the next visible one is mandatory;
   // going back needs order.revert_status), and moving to Delivered runs the
-  // same canCompleteOrder check as the detail status editor, so no view can
-  // complete an unpaid order.
+  // same canCompleteOrder check as the detail status editor. El pago no
+  // bloquea la entrega: hay negocios que cobran después de entregar.
   const handleStatusChange = useCallback(
     (orderId: string, newStatus: string) => {
       const order = Object.values(filteredOrdersByStatus)
@@ -383,6 +386,12 @@ export function OrdersKanbanBoard({
         setDeliveryPickerOrder(order);
         return;
       }
+      // Cancelar exige el motivo obligatorio: se pide en el modal y sin él
+      // no se cambia el estado.
+      if (newStatus === "CANCELLED") {
+        setCancelOrder(order);
+        return;
+      }
       updateStatus.mutate({
         orderId,
         data: { status: newStatus as OrderStatus },
@@ -403,6 +412,20 @@ export function OrdersKanbanBoard({
       );
     },
     [deliveryPickerOrder, updateStatus]
+  );
+
+  const handleCancelConfirm = useCallback(
+    (reason: string) => {
+      if (!cancelOrder) return;
+      updateStatus.mutate(
+        {
+          orderId: cancelOrder.id,
+          data: { status: "CANCELLED", changeNotes: reason },
+        },
+        { onSettled: () => setCancelOrder(null) }
+      );
+    },
+    [cancelOrder, updateStatus]
   );
 
   // Delivered orders come from a separate paginated query; every view uses
@@ -705,6 +728,18 @@ export function OrdersKanbanBoard({
         isSubmitting={updateStatus.isPending}
         onClose={() => setDeliveryPickerOrder(null)}
         onConfirm={handleDeliveryConfirm}
+      />
+
+      <CancelOrderDialog
+        isOpen={!!cancelOrder}
+        orderLabel={
+          cancelOrder
+            ? formatOrderNumber(cancelOrder.id, cancelOrder.orderNumber)
+            : undefined
+        }
+        isSubmitting={updateStatus.isPending}
+        onClose={() => setCancelOrder(null)}
+        onConfirm={handleCancelConfirm}
       />
 
       {/* Order detail as a side panel - only rendered when an order is selected */}

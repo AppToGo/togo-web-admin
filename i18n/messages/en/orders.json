@@ -114,8 +114,6 @@
     "cannotComplete": "Cannot complete the order",
     "alreadyCompleted": "Order is already completed",
     "cannotCompleteCancelled": "Cannot complete a cancelled or abandoned order",
-    "paymentPending": "Cannot complete the order: payment is pending",
-    "paymentNotCollected": "Cannot complete the order: the payment failed or was refunded",
     "mustBeReadyOrOnTheWay": "Order must be 'Ready' or 'On the way' to be completed",
     "cannotCancelCompleted": "Cannot cancel an order that is already completed",
     "cannotCancelDelivered": "Cannot cancel an order that has already been delivered",
@@ -378,6 +376,7 @@
     "paymentMethod": "Payment method",
     "notes": "Notes",
     "notesPlaceholder": "Order instructions (optional)",
+    "addNote": "+ Order note",
     "itemNotes": "Product note",
     "itemNotesPlaceholder": "E.g. no onions (optional)",
     "summary": "Summary",
@@ -438,7 +437,17 @@
     "revoked": "Session closed",
     "createError": "Couldn't open the catalog in operator mode",
     "revokeError": "Couldn't close the session",
-    "doNotShare": "Don't share this link: anyone who has it can take orders under the operator's name until it expires. Close it with “Exit” in the catalog or from here."
+    "doNotShare": "Don't share this link: anyone who has it can take orders under the operator's name until it expires. Close it with “Exit” in the catalog or from here.",
+    "auditTitle": "Who enabled whom",
+    "auditEmpty": "No enablements yet.",
+    "auditEntry": "{creator} enabled {operator}",
+    "auditSelf": "{operator} (self-enabled)",
+    "auditEntered": "Entered {time}",
+    "auditEnteredAt": "Entered {datetime}",
+    "auditNotEntered": "Not entered",
+    "auditRevoked": "Closed",
+    "auditExpired": "Expired",
+    "auditMore": "Showing the last 100 enablements."
   },
   "orderFlow": {
     "title": "Business flow",
@@ -453,6 +462,14 @@
     "confirm": "Send order",
     "empty": "There are no active users to assign.",
     "loadError": "Couldn't load couriers."
+  },
+  "cancelDialog": {
+    "title": "Cancel order",
+    "description": "Order {order} will move to “Cancelled” and the customer will be notified with this reason.",
+    "reasonLabel": "Cancellation reason",
+    "reasonPlaceholder": "E.g.: out of chicken stock, branch closed…",
+    "reasonRequired": "A reason is required to cancel.",
+    "confirm": "Cancel order"
   },
   "cashPaidHint": "The customer already paid in cash",
   "tip": {

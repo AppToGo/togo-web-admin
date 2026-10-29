@@ -114,8 +114,6 @@
     "cannotComplete": "No se puede completar la orden",
     "alreadyCompleted": "La orden ya está completada",
     "cannotCompleteCancelled": "No se puede completar una orden cancelada o abandonada",
-    "paymentPending": "No se puede completar la orden: el pago está pendiente",
-    "paymentNotCollected": "No se puede completar la orden: el cobro falló o fue reembolsado",
     "mustBeReadyOrOnTheWay": "La orden debe estar 'Lista' o 'En camino' para completarse",
     "cannotCancelCompleted": "No se puede cancelar una orden que ya está completada",
     "cannotCancelDelivered": "No se puede cancelar una orden que ya fue entregada",
@@ -378,6 +376,7 @@
     "paymentMethod": "Método de pago",
     "notes": "Notas",
     "notesPlaceholder": "Indicaciones para el pedido (opcional)",
+    "addNote": "+ Nota para la orden",
     "itemNotes": "Nota del producto",
     "itemNotesPlaceholder": "Ej.: sin cebolla (opcional)",
     "summary": "Resumen",
@@ -438,7 +437,17 @@
     "revoked": "Sesión cerrada",
     "createError": "No se pudo abrir el catálogo en modo operador",
     "revokeError": "No se pudo cerrar la sesión",
-    "doNotShare": "No compartas este link: quien lo tenga puede tomar pedidos a nombre del operador hasta que venza. Ciérralo con «Salir» en el catálogo o desde aquí."
+    "doNotShare": "No compartas este link: quien lo tenga puede tomar pedidos a nombre del operador hasta que venza. Ciérralo con «Salir» en el catálogo o desde aquí.",
+    "auditTitle": "Quién habilitó a quién",
+    "auditEmpty": "Aún no hay habilitaciones.",
+    "auditEntry": "{creator} habilitó a {operator}",
+    "auditSelf": "{operator} (se habilitó)",
+    "auditEntered": "Ingresó {time}",
+    "auditEnteredAt": "Ingresó {datetime}",
+    "auditNotEntered": "Sin ingresar",
+    "auditRevoked": "Cerrada",
+    "auditExpired": "Vencida",
+    "auditMore": "Mostrando las últimas 100 habilitaciones."
   },
   "orderFlow": {
     "title": "Flujo del negocio",
@@ -453,6 +462,14 @@
     "confirm": "Enviar pedido",
     "empty": "No hay usuarios activos para asignar.",
     "loadError": "No se pudieron cargar los repartidores."
+  },
+  "cancelDialog": {
+    "title": "Cancelar pedido",
+    "description": "El pedido {order} pasará a «Cancelado» y se le avisará al cliente con este motivo.",
+    "reasonLabel": "Motivo de la cancelación",
+    "reasonPlaceholder": "Ej: sin stock de pollo, sede cerrada…",
+    "reasonRequired": "El motivo es obligatorio para cancelar.",
+    "confirm": "Cancelar pedido"
   },
   "cashPaidHint": "El cliente ya pagó en efectivo",
   "tip": {
