@@ -21,6 +21,10 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import {
+  useCurrentUser,
+  useHasRole,
+} from "@/features/auth/stores/auth.store";
 import { useBusiness } from "@/features/business/hooks/useBusiness";
 import { useOrderComposer } from "@/features/orders/hooks/useOrderComposer";
 import type { ManualOrderDeliveryType } from "@/features/orders/types";
@@ -102,7 +106,23 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
   const openSession = register?.openSession ?? null;
   const openSessionId = openSession?.id ?? null;
   const registerName = register?.name ?? "";
-  const session = openSessionId ? { id: openSessionId, registerName } : null;
+
+  // Propiedad del turno: solo quien lo abrió opera en él. Un turno ajeno se
+  // ve (solo lectura) pero no se toca: ni vender, ni cobrar, ni mover, ni
+  // liquidar en él. El cierre ajeno es privilegio de dueño/ADMIN o
+  // supervisor (`cash.manage`).
+  const me = useCurrentUser();
+  const isOwnerOrAdmin = useHasRole(["OWNER", "ADMIN"]);
+  const isMine =
+    !!openSession && !!me && openSession.openedById === me.userId;
+  const isForeign = !!openSession && !isMine;
+  const mySession =
+    isMine && openSessionId ? { id: openSessionId, registerName } : null;
+  const canCloseForeign = isOwnerOrAdmin || canManage;
+
+  // Primera caja sin turno abierto: destino de "Abrir mi turno" cuando la
+  // elegida está ocupada por otro usuario.
+  const freeRegister = registers.find((item) => !item.openSession) ?? null;
 
   const { data: summary } = useSessionSummary(
     businessId,
@@ -180,13 +200,30 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
   // Acciones del turno: un solo callback por acción, compartido por el
   // encabezado de la página y la pestaña Vender.
   const canOpenRegister = canOperate && !openSessionId;
-  const canMove = !!openSessionId && (canOperate || canWithdraw);
+  const canMove = isMine && (canOperate || canWithdraw);
   // Sin el resumen el esperado saldría en $ 0 y la diferencia del arqueo
-  // sería falsa.
-  const canCloseRegister = !!openSessionId && canClose && !!summary;
+  // sería falsa. El turno ajeno solo lo cierra quien puede (dueño/ADMIN o
+  // supervisor), y el servidor además le exige el motivo.
+  const canCloseRegister =
+    !!openSessionId &&
+    canClose &&
+    !!summary &&
+    (isMine || (isForeign && canCloseForeign));
   const openRegister = useMemo(
     () => (canOpenRegister ? () => setOpening(true) : null),
     [canOpenRegister]
+  );
+  // Turno ajeno: abrir el mío en la primera caja libre (la selecciona y
+  // abre el drawer). Sin cajas libres no hay a dónde ir: solo lectura.
+  const openInFreeRegister = useMemo(
+    () =>
+      isForeign && canOperate && freeRegister
+        ? () => {
+            setSelectedId(freeRegister.id);
+            setOpening(true);
+          }
+        : null,
+    [isForeign, canOperate, freeRegister]
   );
   const movement = useMemo(
     () => (canMove ? () => setMoving(true) : null),
@@ -201,7 +238,7 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
     ? t("pos.header.open", {
         name: openSession.openedByName ?? "—",
         time: fmt.time(openSession.openedAt),
-      })
+      }) + (isForeign ? t("pos.header.readOnly") : "")
     : t("pos.header.closed");
 
   // Pestañas (submenú de Caja en el Sidebar), caja seleccionada (título de
@@ -361,10 +398,16 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
             businessName={business?.name ?? ""}
             composer={composer}
             onTypeChange={changeType}
-            session={session}
+            session={mySession}
             summary={summary}
             pendingTotal={pendingTotal}
             onOpenRegister={openRegister}
+            foreign={
+              isForeign
+                ? { openedByName: openSession?.openedByName ?? null }
+                : null
+            }
+            onOpenInFreeRegister={openInFreeRegister}
             canOperate={canOperate}
             canChargeNow={canCharge}
             formatDate={fmt.dateTime}
@@ -376,9 +419,9 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
         <ReceivablesTab
           branchId={branchId}
           receivables={receivables}
-          session={session && canOperate ? session : null}
+          session={mySession && canOperate ? mySession : null}
           canCharge={canCharge}
-          onAddToTable={canSell && openSessionId ? addToTable : null}
+          onAddToTable={canSell && mySession ? addToTable : null}
         />
       )}
 
@@ -387,7 +430,7 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
           businessId={businessId}
           branchId={branchId}
           collections={collections}
-          session={session}
+          session={mySession}
           canOperate={canOperate}
         />
       )}
@@ -452,6 +495,7 @@ export function CashPosPage({ businessId, branchId }: CashPosPageProps) {
         branchId={branchId}
         sessionId={openSessionId}
         registerName={registerName}
+        isForeign={isForeign}
         openedByName={openSession?.openedByName ?? null}
         openedAt={openSession?.openedAt ?? null}
         expectedAmount={summary?.expectedAmount ?? "0"}

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Package, Store, Grid3X3 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
@@ -112,6 +114,11 @@ function GlobalCatalogPageContent() {
 
   useAuthGuard();
   const businessId = useEffectiveBusinessId();
+  // Activar un producto global lo crea en el negocio: solo con permiso de
+  // escritura; el servidor además lo exige (403).
+  const { hasPermission } = useMyPermissions();
+  const canActivate =
+    hasPermission("product.create") || hasPermission("product.update");
   const showProductImages = useShowProductImages();
   const isSuperAdmin = useIsSuperAdmin();
   const { hasProducts: hasGlobalProducts, isLoading: isCheckingGlobalProducts } =
@@ -215,6 +222,7 @@ function GlobalCatalogPageContent() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="catalog.view">
       <div className="space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
@@ -281,10 +289,12 @@ function GlobalCatalogPageContent() {
                     )}
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setActivatingProduct(product)}>
+                {canActivate && (
+                  <Button variant="outline" size="sm" onClick={() => setActivatingProduct(product)}>
                   <Store className="w-4 h-4 mr-2" />
                   {t("globalCatalog.activate")}
-                </Button>
+                  </Button>
+                )}
               </div>
             ))}
           </div>
@@ -294,7 +304,7 @@ function GlobalCatalogPageContent() {
               <GlobalProductCard
                 key={product.id}
                 product={product}
-                onActivate={setActivatingProduct}
+                onActivate={canActivate ? setActivatingProduct : undefined}
               />
             ))}
           </div>
@@ -334,6 +344,7 @@ function GlobalCatalogPageContent() {
         isLoading={activateGlobal.isPending}
         showProductImages={showProductImages}
       />
+      </RequirePermission>
     </DashboardLayout>
   );
 }

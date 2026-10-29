@@ -47,6 +47,7 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { resolveTipConfig } from "@/features/branches/types";
 import { TipSelector } from "./TipSelector";
 import {
@@ -113,6 +114,7 @@ export function CashChargeDrawer({
 
   const { hasPermission } = useMyPermissions();
   const canSettle = hasPermission("cash.view") && hasPermission("cash.operate");
+  const me = useCurrentUser();
 
   const queryClient = useQueryClient();
   const [pickedMethod, setMethod] = useState<Method | null>(null);
@@ -142,20 +144,32 @@ export function CashChargeDrawer({
     needsSessions ? branchId : null
   );
 
-  const canEnterRegister = !!fixedSession || (canSettle && openSessions.length > 0);
+  // Solo el turno propio recibe cobros: los ajenos no se listan como destino
+  // (el servidor los rechaza con 403). Sin turno propio no hay a dónde cobrar
+  // en efectivo: sessionId queda null y el pedido va a Por cobrar hasta que
+  // el operador abra su turno.
+  const ownSessions = openSessions.filter(
+    (session) => session.openedById === me?.userId
+  );
+  const ownSessionId = ownSessions[0]?.id ?? null;
+  // Liquidar exige turno propio abierto: sin él la opción ni se ofrece y el
+  // pedido va a Por cobrar (con el aviso de abrir turno) en vez de terminar
+  // en un 403 contra el turno de otro.
+  const canEnterRegister = !!fixedSession || (canSettle && ownSessionId !== null);
   const destination: "settle" | "pending" = fixedSession
     ? "settle"
     : canEnterRegister
       ? pickedDestination
       : "pending";
+  const hasOwnSession = !!fixedSession || ownSessionId !== null;
   const sessionId =
     fixedSession?.id ??
-    (pickedSessionId && openSessions.some((session) => session.id === pickedSessionId)
+    (pickedSessionId && ownSessions.some((session) => session.id === pickedSessionId)
       ? pickedSessionId
-      : (openSessions[0]?.id ?? null));
+      : ownSessionId);
   const registerName =
     fixedSession?.registerName ??
-    openSessions.find((session) => session.id === sessionId)?.register.name ??
+    ownSessions.find((session) => session.id === sessionId)?.register.name ??
     "";
 
   const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
@@ -381,19 +395,27 @@ export function CashChargeDrawer({
                       </label>
                     );
                   })}
-                {!fixedSession && destination === "settle" && openSessions.length > 1 && (
+                {!fixedSession && destination === "settle" && ownSessions.length > 1 && (
                   <Select value={sessionId ?? undefined} onValueChange={setSessionId}>
                     <SelectTrigger aria-label={t("charge.chooseRegister")}>
                       <SelectValue placeholder={t("charge.chooseRegister")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {openSessions.map((session) => (
+                      {ownSessions.map((session) => (
                         <SelectItem key={session.id} value={session.id}>
                           {session.register.name}
+                          {session.openedByName
+                            ? ` · ${session.openedByName}`
+                            : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                )}
+                {!fixedSession && isCash && canSettle && !hasOwnSession && (
+                  <p className="rounded-card bg-amber-50 p-3 text-sm text-amber-800">
+                    {t("charge.noOwnSession")}
+                  </p>
                 )}
               </fieldset>
             </>

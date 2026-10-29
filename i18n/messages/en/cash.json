@@ -294,7 +294,8 @@
     "expected": "Expected",
     "includesTips": "Includes {tips} in tips",
     "counted": "Counted",
-    "quantity": "Quantity of {denomination}"
+    "quantity": "Quantity of {denomination}",
+    "foreignNotice": "You're closing {name}'s shift. A reason is required."
   },
   "history": {
     "register": "Register",
@@ -316,7 +317,8 @@
     "pendingHint": "The courier or another operator holds it. It enters the register when settled.",
     "nonCash": "The order is marked paid by {method}. No cash enters the register; it shows under \"Other payment methods\" for the shift.",
     "confirm": "Confirm payment",
-    "confirmToRegister": "Confirm and add to register"
+    "confirmToRegister": "Confirm and add to register",
+    "noOwnSession": "To collect cash you need your own open shift. Open it at a free register and try again."
   },
   "trail": {
     "paid": "The customer paid {amount} in cash",
@@ -340,7 +342,8 @@
       "register": "Register",
       "open": "Open · {name} · since {time}",
       "closed": "No open shift",
-      "movement": "Movement"
+      "movement": "Movement",
+      "readOnly": " · read-only"
     },
     "searchPlaceholder": "Search product or scan code",
     "view": {
@@ -400,7 +403,11 @@
     "closed": {
       "title": "The register has no open shift",
       "hint": "Open the register to start selling and receiving cash.",
-      "openRegister": "Open register"
+      "openRegister": "Open register",
+      "foreignTitle": "This shift belongs to {name}",
+      "foreignHint": "You're read-only: you can't sell or move money in another user's shift.",
+      "openFree": "Open my shift at a free register",
+      "noFreeHint": "No free registers: ask to be assigned one or wait for a shift to free up."
     },
     "receivables": {
       "cardMeta": "{count, plural, one {# order} other {# orders}} · since {time}",

@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { LayoutDashboard } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useCurrentUser,
@@ -47,6 +48,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="metrics.view">
       <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -125,6 +127,7 @@ export default function DashboardPage() {
           </section>
         )}
       </div>
+      </RequirePermission>
     </DashboardLayout>
   );
 }

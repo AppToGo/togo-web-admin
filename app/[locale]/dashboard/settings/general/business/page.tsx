@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -316,6 +317,7 @@ export default function BusinessSettingsPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="settings.view">
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5">
         {/* Header (< md el título está en la barra superior) */}
         <header className="hidden md:block">
@@ -673,6 +675,7 @@ export default function BusinessSettingsPage() {
         account={autoAssignAccount}
         existingRouting={autoAssignRouting}
       />
+      </RequirePermission>
     </DashboardLayout>
   );
 }

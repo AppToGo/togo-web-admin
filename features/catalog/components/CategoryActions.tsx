@@ -13,9 +13,10 @@ import type { BusinessCategory } from "../types/catalog.types";
 
 interface CategoryActionsProps {
   category: BusinessCategory;
-  onEdit: (category: BusinessCategory) => void;
-  onDelete: (category: BusinessCategory) => void;
-  onToggleStatus: (category: BusinessCategory) => void;
+  /** Sin ellos (sin permiso) no se muestran las acciones. */
+  onEdit?: (category: BusinessCategory) => void;
+  onDelete?: (category: BusinessCategory) => void;
+  onToggleStatus?: (category: BusinessCategory) => void;
 }
 
 export function CategoryActions({
@@ -39,38 +40,44 @@ export function CategoryActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem
-          onClick={() => onEdit(category)}
-          className="cursor-pointer"
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          {tCommon("actions.edit")}
-        </DropdownMenuItem>
+        {onEdit && (
+          <DropdownMenuItem
+            onClick={() => onEdit(category)}
+            className="cursor-pointer"
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {tCommon("actions.edit")}
+          </DropdownMenuItem>
+        )}
 
-        <DropdownMenuItem
-          onClick={() => onToggleStatus(category)}
-          className="cursor-pointer"
-        >
-          {category.isActive ? (
-            <>
-              <PowerOff className="mr-2 h-4 w-4" />
-              {tCommon("actions.deactivate")}
-            </>
-          ) : (
-            <>
-              <Power className="mr-2 h-4 w-4" />
-              {tCommon("actions.activate")}
-            </>
-          )}
-        </DropdownMenuItem>
+        {onToggleStatus && (
+          <DropdownMenuItem
+            onClick={() => onToggleStatus(category)}
+            className="cursor-pointer"
+          >
+            {category.isActive ? (
+              <>
+                <PowerOff className="mr-2 h-4 w-4" />
+                {tCommon("actions.deactivate")}
+              </>
+            ) : (
+              <>
+                <Power className="mr-2 h-4 w-4" />
+                {tCommon("actions.activate")}
+              </>
+            )}
+          </DropdownMenuItem>
+        )}
 
-        <DropdownMenuItem
-          onClick={() => onDelete(category)}
-          className="cursor-pointer text-red-600 focus:text-red-600"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          {tCommon("actions.delete")}
-        </DropdownMenuItem>
+        {onDelete && (
+          <DropdownMenuItem
+            onClick={() => onDelete(category)}
+            className="cursor-pointer text-red-600 focus:text-red-600"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {tCommon("actions.delete")}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

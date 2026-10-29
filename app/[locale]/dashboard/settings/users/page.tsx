@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
 import { Users, Plus, User, Crown, Pencil, Trash2, RotateCcw } from "lucide-react";
@@ -115,6 +116,7 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="settings.view">
       {isMobile ? (
         <UsersMobileView
           users={users}
@@ -327,6 +329,7 @@ export default function UsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </RequirePermission>
     </DashboardLayout>
   );
 }

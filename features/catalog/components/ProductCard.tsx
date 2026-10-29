@@ -300,15 +300,17 @@ export function ProductCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit?.(product);
-                }}
-              >
-                <Edit2 className="w-4 h-4 mr-2" />
-                {tCommon("buttons.edit")}
-              </DropdownMenuItem>
+              {onEdit && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(product);
+                  }}
+                >
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  {tCommon("buttons.edit")}
+                </DropdownMenuItem>
+              )}
               {onRecommend && (
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -320,16 +322,18 @@ export function ProductCard({
                   {t("recommendations.action")}
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete?.(product);
-                }}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                {tCommon("buttons.delete")}
-              </DropdownMenuItem>
+              {onDelete && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(product);
+                  }}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {tCommon("buttons.delete")}
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -421,17 +425,19 @@ export function ProductCard({
               className="h-8 w-8"
             />
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit?.(product);
-            }}
-          >
-            <Edit2 className="w-4 h-4" />
-          </Button>
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(product);
+              }}
+            >
+              <Edit2 className="w-4 h-4" />
+            </Button>
+          )}
           {onRecommend && (
             <Button
               variant="ghost"
@@ -447,17 +453,19 @@ export function ProductCard({
               <Link2 className="w-4 h-4" />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-red-600 hover:text-red-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete?.(product);
-            }}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-600 hover:text-red-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(product);
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 

@@ -183,6 +183,16 @@ export function Sidebar({
   // Caja (docs/caja-pedidos.md): mismo permiso que sus endpoints de lectura.
   const { isEnabled: isFeatureEnabled } = useBusinessFeatures();
   const canViewCash = hasPermission("cash.view") && isFeatureEnabled("CASH_POS");
+  // Dashboard: las secciones son métricas (`metrics.view`). Sin él no hay
+  // nada que mostrar: el tablero no es para todos.
+  const canViewDashboard = hasPermission("metrics.view");
+  // Catálogo: ver es dueño/ADMIN/supervisor (`catalog.view`); crear, editar
+  // y eliminar siguen exigiendo `product.*` / `category.*` en cada endpoint.
+  const canViewCatalog = hasPermission("catalog.view");
+  // Configuración del negocio: solo dueño/ADMIN (`settings.view`).
+  // Cada pantalla sigue exigiendo su permiso propio (usuarios, perfiles,
+  // facturación, mensajes del bot...).
+  const canViewSettings = hasPermission("settings.view");
   // Submenú de Caja: lo registra CashPosPage mientras está montada.
   const posMenuEntries = usePosPageStore(
     (state) => state.page?.entries ?? NO_POS_ENTRIES
@@ -260,11 +270,15 @@ export function Sidebar({
     // Orden: Dashboard, Pedidos, Caja, Conversaciones, Clientes, Catálogo y
     // Configuración.
     const items: NavigationItem[] = [
-      {
-        name: t("sidebar.dashboard"),
-        href: "/dashboard",
-        icon: LayoutDashboardIcon,
-      },
+      ...(canViewDashboard
+        ? [
+            {
+              name: t("sidebar.dashboard"),
+              href: "/dashboard",
+              icon: LayoutDashboardIcon,
+            },
+          ]
+        : []),
       {
         name: t("sidebar.orders"),
         href: "/dashboard/orders",
@@ -289,78 +303,86 @@ export function Sidebar({
         href: "/dashboard/customers",
         icon: UsersIcon,
       },
-      {
-        name: t("sidebar.catalog"),
-        href: "/dashboard/catalog",
-        icon: PackageIcon,
-        children: [
-          {
-            name: t("sidebar.myProducts"),
-            href: "/dashboard/catalog/products",
-            icon: BoxIcon,
-          },
-          {
-            name: t("sidebar.inventory"),
-            href: "/dashboard/inventory",
-            icon: InventoryIcon,
-          },
-          ...(showGlobalCatalog
-            ? [
+      ...(canViewCatalog
+        ? [
+            {
+              name: t("sidebar.catalog"),
+              href: "/dashboard/catalog",
+              icon: PackageIcon,
+              children: [
                 {
-                  name: t("sidebar.globalCatalog"),
-                  href: "/dashboard/catalog/global",
-                  icon: GlobeIcon,
+                  name: t("sidebar.myProducts"),
+                  href: "/dashboard/catalog/products",
+                  icon: BoxIcon,
                 },
-              ]
-            : []),
-          {
-            name: t("sidebar.categories"),
-            href: "/dashboard/catalog/categories",
-            icon: TagsIcon,
-          },
-        ],
-      },
-      {
-        name: t("sidebar.settings"),
-        href: "/dashboard/settings",
-        icon: SettingsIcon,
-        children: [
-          {
-            name: t("sidebar.business"),
-            href: "/dashboard/settings/general/business",
-            icon: StoreIcon,
-          },
-          {
-            name: t("sidebar.branches"),
-            href: "/dashboard/branches",
-            icon: BuildingIcon,
-          },
-          {
-            name: t("sidebar.users"),
-            href: "/dashboard/settings/users",
-            icon: UsersIcon,
-          },
-          {
-            name: t("sidebar.operatorProfiles"),
-            href: "/dashboard/settings/operator-profiles",
-            icon: ShieldIcon,
-          },
-          {
-            name: t("sidebar.notifications"),
-            href: "/dashboard/settings/notifications",
-            icon: BellIcon,
-          },
-          ...(canViewBilling
-            ? [
                 {
-                  name: t("sidebar.billing"),
-                  href: "/dashboard/settings/billing",
-                  icon: CreditCardIcon,
+                  name: t("sidebar.inventory"),
+                  href: "/dashboard/inventory",
+                  icon: InventoryIcon,
                 },
-              ]
-            : []),
-        ],
-      },
+                ...(showGlobalCatalog
+                  ? [
+                      {
+                        name: t("sidebar.globalCatalog"),
+                        href: "/dashboard/catalog/global",
+                        icon: GlobeIcon,
+                      },
+                    ]
+                  : []),
+                {
+                  name: t("sidebar.categories"),
+                  href: "/dashboard/catalog/categories",
+                  icon: TagsIcon,
+                },
+              ],
+            },
+          ]
+        : []),
+      ...(canViewSettings
+        ? [
+            {
+              name: t("sidebar.settings"),
+              href: "/dashboard/settings",
+              icon: SettingsIcon,
+              children: [
+                {
+                  name: t("sidebar.business"),
+                  href: "/dashboard/settings/general/business",
+                  icon: StoreIcon,
+                },
+                {
+                  name: t("sidebar.branches"),
+                  href: "/dashboard/branches",
+                  icon: BuildingIcon,
+                },
+                {
+                  name: t("sidebar.users"),
+                  href: "/dashboard/settings/users",
+                  icon: UsersIcon,
+                },
+                {
+                  name: t("sidebar.operatorProfiles"),
+                  href: "/dashboard/settings/operator-profiles",
+                  icon: ShieldIcon,
+                },
+                {
+                  name: t("sidebar.notifications"),
+                  href: "/dashboard/settings/notifications",
+                  icon: BellIcon,
+                },
+                ...(canViewBilling
+                  ? [
+                      {
+                        name: t("sidebar.billing"),
+                        href: "/dashboard/settings/billing",
+                        icon: CreditCardIcon,
+                      },
+                    ]
+                  : []),
+              ],
+            },
+          ]
+        : []),
     ];
 
     return isBelowDesktop
@@ -376,6 +398,9 @@ export function Sidebar({
     canViewInbox,
     canViewBilling,
     canViewCash,
+    canViewDashboard,
+    canViewCatalog,
+    canViewSettings,
     unseenOrdersCount,
     inboxAttentionCount,
     posMenuEntries,

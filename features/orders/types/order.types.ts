@@ -291,6 +291,14 @@ export interface CreateOrderRequest {
    * `cash.sessionId`. Mostrador siempre cobra al crear y no lo necesita.
    */
   payNow?: boolean;
+  /**
+   * Turno de caja PROPIO al que se atribuye la venta cuando nace en Caja
+   * como POS. La Caja siempre lo envía (su turno abierto); el tablero de
+   * pedidos nunca. Si viene, el servidor exige que esté abierto y sea del
+   * operador (403 si es ajeno): todo pedido vendido desde caja exige turno
+   * propio.
+   */
+  posSessionId?: string;
   /** Propina (solo mesa/mostrador con propina habilitada en la sede). */
   tip?: TipRequest;
 }

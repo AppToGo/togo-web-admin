@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useTranslations } from "next-intl";
 import { Bell, Volume2, MessageSquare } from "lucide-react";
@@ -34,6 +35,7 @@ export default function NotificationSettingsPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="settings.view">
       <div className="flex flex-col gap-6">
         {/* Header (< md el título está en la barra superior) */}
         <div className="hidden md:block">
@@ -131,6 +133,7 @@ export default function NotificationSettingsPage() {
           </p>
         </div>
       </div>
+      </RequirePermission>
     </DashboardLayout>
   );
 }

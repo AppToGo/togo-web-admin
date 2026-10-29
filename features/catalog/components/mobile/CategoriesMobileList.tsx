@@ -17,8 +17,9 @@ interface CategoriesMobileListProps {
   categories: BusinessCategory[];
   search: string;
   onSearchChange: (search: string) => void;
-  onEdit: (category: BusinessCategory) => void;
-  onCreate: () => void;
+  /** Sin ellos (sin permiso) la fila no abre el editor ni se muestra el FAB. */
+  onEdit?: (category: BusinessCategory) => void;
+  onCreate?: () => void;
 }
 
 export function CategoriesMobileList({
@@ -47,7 +48,7 @@ export function CategoriesMobileList({
               <button
                 key={category.id}
                 type="button"
-                onClick={() => onEdit(category)}
+                onClick={onEdit ? () => onEdit(category) : undefined}
                 className={cn(
                   "flex min-h-[68px] items-center gap-3 rounded-[14px] bg-white px-3.5 py-3 text-left",
                   !category.isActive && "opacity-60"
@@ -79,7 +80,9 @@ export function CategoriesMobileList({
         <div aria-hidden className="h-14" />
       </div>
 
-      <MobileFab label={t("categories.new")} onClick={onCreate} aboveBottomNav testId="categories-mobile-create" />
+      {onCreate && (
+        <MobileFab label={t("categories.new")} onClick={onCreate} aboveBottomNav testId="categories-mobile-create" />
+      )}
       <CatalogMobileNav />
     </div>
   );
