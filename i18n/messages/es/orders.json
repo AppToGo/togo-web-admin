@@ -437,7 +437,17 @@
     "revoked": "Sesión cerrada",
     "createError": "No se pudo abrir el catálogo en modo operador",
     "revokeError": "No se pudo cerrar la sesión",
-    "doNotShare": "No compartas este link: quien lo tenga puede tomar pedidos a nombre del operador hasta que venza. Ciérralo con «Salir» en el catálogo o desde aquí."
+    "doNotShare": "No compartas este link: quien lo tenga puede tomar pedidos a nombre del operador hasta que venza. Ciérralo con «Salir» en el catálogo o desde aquí.",
+    "auditTitle": "Quién habilitó a quién",
+    "auditEmpty": "Aún no hay habilitaciones.",
+    "auditEntry": "{creator} habilitó a {operator}",
+    "auditSelf": "{operator} (se habilitó)",
+    "auditEntered": "Ingresó {time}",
+    "auditEnteredAt": "Ingresó {datetime}",
+    "auditNotEntered": "Sin ingresar",
+    "auditRevoked": "Cerrada",
+    "auditExpired": "Vencida",
+    "auditMore": "Mostrando las últimas 100 habilitaciones."
   },
   "orderFlow": {
     "title": "Flujo del negocio",

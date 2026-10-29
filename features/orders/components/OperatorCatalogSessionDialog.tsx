@@ -23,10 +23,14 @@ import {
 } from "@/components/ui/select";
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import {
+  useAuthStore,
+  useHasRole,
+} from "@/features/auth/stores/auth.store";
 import {
   useCreateOperatorCatalogSession,
   useMyOperatorCatalogSessions,
+  useOperatorCatalogSessionAudit,
   useOperatorCatalogSessionOptions,
   useRevokeOperatorCatalogSession,
 } from "../hooks/useOperatorCatalogSessions";
@@ -81,6 +85,10 @@ export function OperatorCatalogSessionDialog({
   const createSession = useCreateOperatorCatalogSession(businessId);
   const revokeSession = useRevokeOperatorCatalogSession(businessId);
   const { data: activeSessions = [] } = useMyOperatorCatalogSessions(businessId, isOpen);
+  // Auditoría: solo el dueño la ve (el servidor la restringe por rol).
+  const isOwner = useHasRole("OWNER");
+  const { data: audit = { items: [], hasMore: false }, isPending: isAuditPending } =
+    useOperatorCatalogSessionAudit(businessId, isOpen && isOwner);
 
   const optionsQuery = useOperatorCatalogSessionOptions(
     businessId,
@@ -192,6 +200,26 @@ export function OperatorCatalogSessionDialog({
 
   const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  // Auditoría: fecha con día para ubicar habilitaciones de días pasados.
+  const formatAuditDateTime = (iso: string) =>
+    new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: sessionWindow?.timezone,
+    }).format(new Date(iso));
+
+  const isSameDay = (aIso: string, bIso: string) => {
+    const f = new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+      timeZone: sessionWindow?.timezone,
+    });
+    return f.format(new Date(aIso)) === f.format(new Date(bIso));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -369,6 +397,60 @@ export function OperatorCatalogSessionDialog({
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {isOwner && (
+            <div className="border-t border-slate-100 pt-4 space-y-2">
+              <p className="text-xs font-semibold text-slate-500">{t("auditTitle")}</p>
+              {isAuditPending ? (
+                <Skeleton className="h-10 w-full" />
+              ) : audit.items.length === 0 ? (
+                <p className="text-sm text-slate-500">{t("auditEmpty")}</p>
+              ) : (
+                <>
+                  <ul className="space-y-1.5">
+                    {audit.items.map((entry) => {
+                      const expired = new Date(entry.expiresAt) <= new Date();
+                      const entered = entry.firstUsedAt
+                        ? isSameDay(entry.firstUsedAt, entry.createdAt)
+                          ? t("auditEntered", {
+                              time: formatTime(entry.firstUsedAt),
+                            })
+                          : t("auditEnteredAt", {
+                              datetime: formatAuditDateTime(entry.firstUsedAt),
+                            })
+                        : t("auditNotEntered");
+                      const status = entry.revokedAt
+                        ? t("auditRevoked")
+                        : expired
+                          ? t("auditExpired")
+                          : entered;
+                      return (
+                        <li key={entry.id} className="text-sm text-slate-700">
+                          <span className="block truncate font-medium">
+                            {entry.createdById === entry.userId
+                              ? t("auditSelf", {
+                                  operator: entry.operatorName,
+                                })
+                              : t("auditEntry", {
+                                  creator: entry.createdByName,
+                                  operator: entry.operatorName,
+                                })}
+                          </span>
+                          <span className="block truncate text-xs text-slate-500">
+                            {entry.branchName} ·{" "}
+                            {formatAuditDateTime(entry.createdAt)} · {status}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {audit.hasMore && (
+                    <p className="text-xs text-slate-400">{t("auditMore")}</p>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>

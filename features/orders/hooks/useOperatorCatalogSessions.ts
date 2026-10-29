@@ -7,6 +7,7 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import {
   createOperatorCatalogSession,
   getMyOperatorCatalogSessions,
+  getOperatorCatalogSessionAudit,
   getOperatorCatalogSessionOptions,
   revokeOperatorCatalogSession,
 } from "../services/operator-catalog-session.service";
@@ -14,6 +15,8 @@ import type { CreateOperatorCatalogSessionInput } from "../types";
 
 const SESSIONS_KEY = (businessId: string | null) =>
   ["operator-catalog-sessions", businessId] as const;
+const AUDIT_KEY = (businessId: string | null) =>
+  ["operator-catalog-session-audit", businessId] as const;
 
 /**
  * Operadores y ventana de la sede. La ventana depende de la hora actual:
@@ -57,7 +60,23 @@ export function useCreateOperatorCatalogSession(businessId: string | null) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY(businessId) });
+      queryClient.invalidateQueries({ queryKey: AUDIT_KEY(businessId) });
     },
+  });
+}
+
+/**
+ * Auditoría de habilitaciones. El servidor solo la entrega al dueño; el
+ * `enabled` además la pide únicamente cuando corresponde mostrarla.
+ */
+export function useOperatorCatalogSessionAudit(
+  businessId: string | null,
+  enabled: boolean
+) {
+  return useQuery({
+    queryKey: AUDIT_KEY(businessId),
+    queryFn: () => getOperatorCatalogSessionAudit(businessId!),
+    enabled: enabled && !!businessId,
   });
 }
 
@@ -74,6 +93,7 @@ export function useRevokeOperatorCatalogSession(businessId: string | null) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY(businessId) });
+      queryClient.invalidateQueries({ queryKey: AUDIT_KEY(businessId) });
     },
   });
 }
