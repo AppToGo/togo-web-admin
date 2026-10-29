@@ -45,7 +45,7 @@ export function CurrencyInput({
       placeholder={placeholder}
       disabled={disabled}
       className={cn(
-        size === "lg" && "h-13 rounded-icon text-xl font-semibold tabular-nums",
+        size === "lg" && "h-13 rounded-icon text-xl! font-semibold tabular-nums",
         className
       )}
       onChange={(event) => onChange(parseCOPInput(event.target.value))}
