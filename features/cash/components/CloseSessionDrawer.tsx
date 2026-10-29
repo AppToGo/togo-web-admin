@@ -33,6 +33,8 @@ interface CloseSessionDrawerProps {
   branchId: string;
   sessionId: string | null;
   registerName: string;
+  /** Cierre de un turno que abrió otro usuario: el motivo es obligatorio. */
+  isForeign?: boolean;
   openedByName: string | null;
   openedAt: string | null;
   expectedAmount: string;
@@ -49,6 +51,7 @@ export function CloseSessionDrawer({
   branchId,
   sessionId,
   registerName,
+  isForeign,
   openedByName,
   openedAt,
   expectedAmount,
@@ -69,8 +72,9 @@ export function CloseSessionDrawer({
   const counted = useMemo(() => sumDenominations(counts), [counts]);
   const expected = Number(expectedAmount);
   const difference = counted - expected;
-  // El servidor exige motivo cuando hay diferencia.
-  const needsReason = difference !== 0;
+  // El servidor exige motivo cuando hay diferencia, y siempre en el cierre
+  // de un turno ajeno (el dueño del turno no está para explicarlo).
+  const needsReason = difference !== 0 || !!isForeign;
 
   const setCount = (denomination: number, raw: string) => {
     const qty = Number(raw.replace(/[^0-9]/g, ""));
@@ -156,6 +160,13 @@ export function CloseSessionDrawer({
                 time: fmt.time(openedAt),
               })}
             </DrawerDescription>
+          )}
+          {isForeign && (
+            <p className="rounded-card bg-amber-50 p-3 text-sm text-amber-800">
+              {t("closeDrawer.foreignNotice", {
+                name: openedByName ?? "—",
+              })}
+            </p>
           )}
         </DrawerHeader>
         <div className="flex-1 min-h-0 space-y-5 overflow-y-auto px-6 py-4">

@@ -3,6 +3,7 @@
 import { Lock, Receipt } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import {
@@ -51,6 +52,7 @@ export default function BillingPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="settings.view">
       <div className="flex flex-col gap-6">
         {/* < md el título está en la barra superior. */}
         <div className="hidden md:block">
@@ -70,6 +72,7 @@ export default function BillingPage() {
         />
         <PaymentNotificationsList notifications={notifications} isLoading={notificationsLoading} />
       </div>
+      </RequirePermission>
     </DashboardLayout>
   );
 }

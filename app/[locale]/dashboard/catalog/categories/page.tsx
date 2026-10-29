@@ -4,6 +4,8 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Tags, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useHasBusiness,
@@ -32,6 +34,12 @@ export default function CategoriesPage() {
   const hasBusiness = useHasBusiness();
   const isSuperAdmin = useIsSuperAdmin();
   const businessId = useEffectiveBusinessId();
+  // Solo lectura (supervisor): sin estos permisos no se muestra ninguna
+  // acción de escritura; el servidor además las rechaza (403).
+  const { hasPermission } = useMyPermissions();
+  const canCreate = hasPermission("category.create");
+  const canEdit = hasPermission("category.update");
+  const canDelete = hasPermission("category.delete");
 
   // HOOKS
   const {
@@ -104,6 +112,7 @@ export default function CategoriesPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="catalog.view">
       <div className="space-y-6">
         {isLoadingCategories ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -129,32 +138,41 @@ export default function CategoriesPage() {
           <CategoryList
             categories={categories}
             industryCategories={industryCategories}
-            onCreate={(data) =>
-              createCategory.mutate({
-                name: data.name,
-                slug: data.slug,
-                industryCategoryId: data.industryCategoryId,
-                description: data.description,
-                order: data.order,
-                searchKeywords: data.searchKeywords,
-              })
+            onCreate={
+              canCreate
+                ? (data) =>
+                    createCategory.mutate({
+                      name: data.name,
+                      slug: data.slug,
+                      industryCategoryId: data.industryCategoryId,
+                      description: data.description,
+                      order: data.order,
+                      searchKeywords: data.searchKeywords,
+                    })
+                : undefined
             }
-            onUpdate={(id, data) =>
-              updateCategory.mutate({
-                categoryId: id,
-                data: {
-                  name: data.name,
-                  slug: data.slug,
-                  industryCategoryId: data.industryCategoryId,
-                  description: data.description,
-                  order: data.order,
-                  searchKeywords: data.searchKeywords,
-                },
-              })
+            onUpdate={
+              canEdit
+                ? (id, data) =>
+                    updateCategory.mutate({
+                      categoryId: id,
+                      data: {
+                        name: data.name,
+                        slug: data.slug,
+                        industryCategoryId: data.industryCategoryId,
+                        description: data.description,
+                        order: data.order,
+                        searchKeywords: data.searchKeywords,
+                      },
+                    })
+                : undefined
             }
-            onDelete={(id) => deleteCategory.mutate(id)}
-            onToggleStatus={(id, isActive) =>
-              toggleCategory.mutate({ categoryId: id, isActive })
+            onDelete={canDelete ? (id) => deleteCategory.mutate(id) : undefined}
+            onToggleStatus={
+              canEdit
+                ? (id, isActive) =>
+                    toggleCategory.mutate({ categoryId: id, isActive })
+                : undefined
             }
             onRegenerateKeywords={(id) => regenerateKeywords.mutate(id)}
             isRegeneratingKeywords={regenerateKeywords.isPending}
@@ -167,6 +185,7 @@ export default function CategoriesPage() {
           />
         )}
       </div>
+      </RequirePermission>
     </DashboardLayout>
   );
 }

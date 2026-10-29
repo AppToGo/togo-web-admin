@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { BotMessagesPage } from "@/features/bot-messages";
 import { FeaturePage } from "@/features/business-features/components/FeaturePage";
@@ -11,7 +12,9 @@ function BotMessagesSettingsPageContent() {
 
   return (
     <DashboardLayout>
-      <BotMessagesPage />
+      <RequirePermission code="settings.view">
+        <BotMessagesPage />
+      </RequirePermission>
     </DashboardLayout>
   );
 }

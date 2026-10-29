@@ -294,7 +294,8 @@
     "expected": "Esperado",
     "includesTips": "Incluye {tips} de propinas",
     "counted": "Contado",
-    "quantity": "Cantidad de {denomination}"
+    "quantity": "Cantidad de {denomination}",
+    "foreignNotice": "Estás cerrando el turno de {name}. El motivo es obligatorio."
   },
   "history": {
     "register": "Caja",
@@ -316,7 +317,8 @@
     "pendingHint": "Lo tiene el domiciliario u otro operador. Entra a caja al liquidarlo.",
     "nonCash": "El pedido queda pagado con {method}. No entra efectivo a la caja; aparece en \"Otros medios de pago\" del turno.",
     "confirm": "Confirmar pago",
-    "confirmToRegister": "Confirmar y entrar a caja"
+    "confirmToRegister": "Confirmar y entrar a caja",
+    "noOwnSession": "Para cobrar en efectivo necesitas tu turno abierto. Ábrelo en una caja libre y vuelve a intentarlo."
   },
   "trail": {
     "paid": "El cliente pagó {amount} en efectivo",
@@ -340,7 +342,8 @@
       "register": "Caja",
       "open": "Abierta · {name} · desde las {time}",
       "closed": "Sin turno abierto",
-      "movement": "Movimiento"
+      "movement": "Movimiento",
+      "readOnly": " · solo lectura"
     },
     "searchPlaceholder": "Buscar producto o escanear código",
     "view": {
@@ -400,7 +403,11 @@
     "closed": {
       "title": "La caja no tiene turno abierto",
       "hint": "Abre la caja para empezar a vender y recibir efectivo.",
-      "openRegister": "Abrir caja"
+      "openRegister": "Abrir caja",
+      "foreignTitle": "Este turno es de {name}",
+      "foreignHint": "Estás en solo lectura: no puedes vender ni mover dinero en el turno de otro usuario.",
+      "openFree": "Abrir mi turno en caja libre",
+      "noFreeHint": "No hay cajas libres: pide que te asignen una o espera a que se libere un turno."
     },
     "receivables": {
       "cardMeta": "{count, plural, one {# pedido} other {# pedidos}} · desde las {time}",

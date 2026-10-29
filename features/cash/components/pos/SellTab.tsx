@@ -38,11 +38,15 @@ interface SellTabProps {
   businessName: string;
   composer: OrderComposer;
   onTypeChange: (type: ManualOrderDeliveryType) => void;
-  /** Turno abierto de la caja elegida. */
+  /** Turno abierto PROPIO en la caja elegida (null si es ajeno o no hay). */
   session: { id: string; registerName: string } | null;
   summary: SessionSummary | undefined;
   pendingTotal: string;
   onOpenRegister: (() => void) | null;
+  /** La caja elegida tiene turno de otro usuario: solo lectura. */
+  foreign: { openedByName: string | null } | null;
+  /** Abrir mi turno en una caja libre (null si no hay). */
+  onOpenInFreeRegister: (() => void) | null;
   /** `cash.operate`: recibir efectivo. */
   canOperate: boolean;
   /** `order.change_payment_status`: cobrar al crear. */
@@ -69,6 +73,8 @@ export function SellTab({
   summary,
   pendingTotal,
   onOpenRegister,
+  foreign,
+  onOpenInFreeRegister,
   canOperate,
   canChargeNow,
   formatDate,
@@ -110,14 +116,20 @@ export function SellTab({
     receivedAmount: number,
     tip: TipRequest | undefined
   ): Promise<CreateOrderResponse | null> => {
+    // Sin turno propio no se vende: la UI no llega acá. El servidor solo
+    // valida `posSessionId` cuando viene, así que este guard de la UI es lo
+    // que realmente impide vender sin turno (el tablero, que no lo envía,
+    // sigue funcionando igual).
+    if (!session) return null;
     const cash =
-      method === "CASH" && session
+      method === "CASH"
         ? { cash: { sessionId: session.id, receivedAmount } }
         : {};
     try {
       return await createOrder.mutateAsync(
         composer.buildRequest(method, {
           ...cash,
+          posSessionId: session.id,
           // Mostrador siempre cobra al crear; los demás tipos lo piden.
           ...(deliveryType !== "COUNTER" && { payNow: true }),
           ...(tip && { tip }),
@@ -140,11 +152,14 @@ export function SellTab({
   /** Crea el pedido sin cobrar: queda pendiente de pago (Por cobrar). */
   const hold = async () => {
     setSubmitted(true);
-    if (!isValid) return;
+    if (!isValid || !session) return;
     try {
       // Se cobra al final: en efectivo aparece en Por cobrar, y al cobrar
-      // se puede cambiar el método.
-      await createOrder.mutateAsync(composer.buildRequest("CASH"));
+      // se puede cambiar el método. También exige turno propio: el pedido
+      // nace atribuido a la caja que lo vendió (`posSessionId`).
+      await createOrder.mutateAsync(
+        composer.buildRequest("CASH", { posSessionId: session.id })
+      );
       setCartSheetOpen(false);
       newSale();
     } catch {
@@ -205,6 +220,27 @@ export function SellTab({
               showErrors={submitted}
             />
           </div>
+        ) : foreign ? (
+          <aside className="flex flex-col items-center justify-center gap-3 rounded-card-lg border border-white/80 bg-white/60 p-8 text-center backdrop-blur-xl lg:w-80 lg:shrink-0 xl:w-96 2xl:w-105">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+              <Lock className="h-6 w-6 text-slate-500" />
+            </span>
+            <p className="font-semibold text-slate-900">
+              {t("closed.foreignTitle", {
+                name: foreign.openedByName ?? "—",
+              })}
+            </p>
+            <p className="text-sm text-slate-500">{t("closed.foreignHint")}</p>
+            {onOpenInFreeRegister ? (
+              <Button onClick={onOpenInFreeRegister}>
+                {t("closed.openFree")}
+              </Button>
+            ) : (
+              <p className="text-sm text-slate-500">
+                {t("closed.noFreeHint")}
+              </p>
+            )}
+          </aside>
         ) : (
           <aside className="flex flex-col items-center justify-center gap-3 rounded-card-lg border border-white/80 bg-white/60 p-8 text-center backdrop-blur-xl lg:w-80 lg:shrink-0 xl:w-96 2xl:w-105">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">

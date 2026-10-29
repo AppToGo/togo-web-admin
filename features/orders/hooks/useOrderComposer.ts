@@ -251,7 +251,7 @@ export function useOrderComposer({
   /** Cuerpo de `POST …/orders/manual` con lo que armó el operador. */
   const buildRequest = (
     paymentMethod: ManualOrderPaymentMethod,
-    extra?: Pick<CreateOrderRequest, "cash" | "payNow" | "tip">
+    extra?: Pick<CreateOrderRequest, "cash" | "payNow" | "tip" | "posSessionId">
   ): CreateOrderRequest => ({
     branchId: branchId!,
     deliveryType,

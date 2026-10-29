@@ -13,9 +13,10 @@ const VISIBLE_KEYWORDS = 3;
 interface CategoryCardProps {
   category: BusinessCategory;
   industryCategoryName: string | undefined;
-  onEdit: (category: BusinessCategory) => void;
-  onDelete: (category: BusinessCategory) => void;
-  onToggleStatus: (category: BusinessCategory) => void;
+  /** Sin ellos (sin permiso) no se muestran las acciones. */
+  onEdit?: (category: BusinessCategory) => void;
+  onDelete?: (category: BusinessCategory) => void;
+  onToggleStatus?: (category: BusinessCategory) => void;
   /** Sin palabras clave: generarlas con IA desde la tarjeta. */
   onRegenerateKeywords?: (id: string) => void;
   isRegeneratingKeywords?: boolean;
@@ -108,25 +109,31 @@ export function CategoryCard({
       </p>
 
       <div className="flex items-center gap-2 border-t border-slate-200/80 pt-3.5">
-        <Button
-          variant="slate-outline"
-          className="h-10 rounded-xl px-4"
-          onClick={() => onEdit(category)}
-        >
-          {t("categories.card.edit")}
-        </Button>
+        {onEdit && (
+          <Button
+            variant="slate-outline"
+            className="h-10 rounded-xl px-4"
+            onClick={() => onEdit(category)}
+          >
+            {t("categories.card.edit")}
+          </Button>
+        )}
         <span className="flex-1" />
-        <Switch
-          checked={category.isActive}
-          onCheckedChange={() => onToggleStatus(category)}
-          aria-label={t("categories.card.toggle", { name: category.name })}
-        />
-        <CategoryActions
-          category={category}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onToggleStatus={onToggleStatus}
-        />
+        {onToggleStatus && (
+          <Switch
+            checked={category.isActive}
+            onCheckedChange={() => onToggleStatus(category)}
+            aria-label={t("categories.card.toggle", { name: category.name })}
+          />
+        )}
+        {(onEdit || onDelete || onToggleStatus) && (
+          <CategoryActions
+            category={category}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onToggleStatus={onToggleStatus}
+          />
+        )}
       </div>
     </li>
   );

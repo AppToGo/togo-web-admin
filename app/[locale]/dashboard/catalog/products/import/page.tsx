@@ -3,6 +3,7 @@
 import { Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useCategories, useBusiness, useIndustryCategoriesByIndustry } from "@/features/catalog/hooks";
@@ -60,11 +61,13 @@ function ImportProductsPageContent() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="catalog.view">
       <ImportPageClient
         businessId={businessId}
         categories={categories}
         industryCategories={industryCategories}
       />
+      </RequirePermission>
     </DashboardLayout>
   );
 }
