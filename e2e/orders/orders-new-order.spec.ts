@@ -199,4 +199,34 @@ test.describe("Orders — nuevo pedido desde el admin", () => {
       },
     ]);
   });
+
+  test("las notas son enlaces que abren el campo, como en Caja", async ({ page }) => {
+    await openBoard(page);
+
+    await page.getByRole("button", { name: "Nuevo pedido" }).click();
+    const drawer = page.getByRole("dialog");
+
+    await drawer.getByRole("button", { name: "Agregar Gaseosa Coca-cola" }).click();
+    await expect(drawer.getByPlaceholder("Ej.: sin cebolla (opcional)")).toHaveCount(0);
+    await expect(drawer.getByPlaceholder("Indicaciones para el pedido (opcional)")).toHaveCount(0);
+
+    await drawer.getByRole("button", { name: "Nota del producto" }).click();
+    await drawer.getByPlaceholder("Ej.: sin cebolla (opcional)").fill("Sin hielo");
+    await drawer.getByRole("button", { name: "+ Nota para la orden" }).click();
+    await drawer.getByPlaceholder("Indicaciones para el pedido (opcional)").fill("Con pitillo");
+
+    await drawer.getByPlaceholder("300 123 4567").fill("3001234567");
+    await drawer.getByPlaceholder("Nombre del cliente").fill("Laura Gómez");
+    await drawer.getByPlaceholder("Cl. 45 #12-30, Apto 402").fill("Cl. 45 #12-30");
+    await drawer.getByRole("button", { name: "Efectivo" }).click();
+    await drawer.getByRole("button", { name: /Crear pedido/ }).click();
+
+    await expect(page.getByText("Pedido #16 creado")).toBeVisible();
+    expect(created).toEqual([
+      expect.objectContaining({
+        items: [{ productVariantId: "var-3", quantity: 1, notes: "Sin hielo" }],
+        notes: "Con pitillo",
+      }),
+    ]);
+  });
 });
