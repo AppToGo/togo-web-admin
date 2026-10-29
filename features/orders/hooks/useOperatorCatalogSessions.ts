@@ -7,6 +7,7 @@ import { getHumanizedErrorMessage } from "@/lib/error.utils";
 import {
   createOperatorCatalogSession,
   getMyOperatorCatalogSessions,
+  getOperatorCatalogSessionAudit,
   getOperatorCatalogSessionOptions,
   revokeOperatorCatalogSession,
 } from "../services/operator-catalog-session.service";
@@ -58,6 +59,21 @@ export function useCreateOperatorCatalogSession(businessId: string | null) {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY(businessId) });
     },
+  });
+}
+
+/**
+ * Auditoría de habilitaciones. El servidor solo la entrega al dueño; el
+ * `enabled` además la pide únicamente cuando corresponde mostrarla.
+ */
+export function useOperatorCatalogSessionAudit(
+  businessId: string | null,
+  enabled: boolean
+) {
+  return useQuery({
+    queryKey: ["operator-catalog-session-audit", businessId],
+    queryFn: () => getOperatorCatalogSessionAudit(businessId!),
+    enabled: enabled && !!businessId,
   });
 }
 

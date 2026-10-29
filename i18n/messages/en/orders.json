@@ -437,7 +437,14 @@
     "revoked": "Session closed",
     "createError": "Couldn't open the catalog in operator mode",
     "revokeError": "Couldn't close the session",
-    "doNotShare": "Don't share this link: anyone who has it can take orders under the operator's name until it expires. Close it with “Exit” in the catalog or from here."
+    "doNotShare": "Don't share this link: anyone who has it can take orders under the operator's name until it expires. Close it with “Exit” in the catalog or from here.",
+    "auditTitle": "Who enabled whom",
+    "auditEmpty": "No enablements yet.",
+    "auditEntry": "{operator} enabled by {creator}",
+    "auditEntered": "Entered {time}",
+    "auditNotEntered": "Not entered",
+    "auditRevoked": "Closed",
+    "auditExpired": "Expired"
   },
   "orderFlow": {
     "title": "Business flow",

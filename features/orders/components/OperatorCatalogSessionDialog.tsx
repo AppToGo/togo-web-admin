@@ -23,10 +23,14 @@ import {
 } from "@/components/ui/select";
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
-import { useAuthStore } from "@/features/auth/stores/auth.store";
+import {
+  useAuthStore,
+  useHasRole,
+} from "@/features/auth/stores/auth.store";
 import {
   useCreateOperatorCatalogSession,
   useMyOperatorCatalogSessions,
+  useOperatorCatalogSessionAudit,
   useOperatorCatalogSessionOptions,
   useRevokeOperatorCatalogSession,
 } from "../hooks/useOperatorCatalogSessions";
@@ -81,6 +85,10 @@ export function OperatorCatalogSessionDialog({
   const createSession = useCreateOperatorCatalogSession(businessId);
   const revokeSession = useRevokeOperatorCatalogSession(businessId);
   const { data: activeSessions = [] } = useMyOperatorCatalogSessions(businessId, isOpen);
+  // Auditoría: solo el dueño la ve (el servidor la restringe por rol).
+  const isOwner = useHasRole("OWNER");
+  const { data: audit = [], isPending: isAuditPending } =
+    useOperatorCatalogSessionAudit(businessId, isOpen && isOwner);
 
   const optionsQuery = useOperatorCatalogSessionOptions(
     businessId,
@@ -369,6 +377,45 @@ export function OperatorCatalogSessionDialog({
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {isOwner && (
+            <div className="border-t border-slate-100 pt-4 space-y-2">
+              <p className="text-xs font-semibold text-slate-500">{t("auditTitle")}</p>
+              {isAuditPending ? (
+                <Skeleton className="h-10 w-full" />
+              ) : audit.length === 0 ? (
+                <p className="text-sm text-slate-500">{t("auditEmpty")}</p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {audit.map((entry) => {
+                    const expired = new Date(entry.expiresAt) <= new Date();
+                    const status = entry.revokedAt
+                      ? t("auditRevoked")
+                      : expired
+                        ? t("auditExpired")
+                        : entry.firstUsedAt
+                          ? t("auditEntered", {
+                              time: formatTime(entry.firstUsedAt),
+                            })
+                          : t("auditNotEntered");
+                    return (
+                      <li key={entry.id} className="text-sm text-slate-700">
+                        <span className="block truncate font-medium">
+                          {t("auditEntry", {
+                            operator: entry.operatorName,
+                            creator: entry.createdByName,
+                          })}
+                        </span>
+                        <span className="block truncate text-xs text-slate-500">
+                          {entry.branchName} · {status}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           )}
         </div>

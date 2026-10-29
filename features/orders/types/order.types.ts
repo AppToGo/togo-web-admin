@@ -360,3 +360,20 @@ export interface OperatorCatalogSessionSummary {
   expiresAt: string;
   lastUsedAt: string | null;
 }
+
+/** Auditoría de habilitaciones: solo la ve el dueño del negocio. */
+export interface OperatorCatalogSessionAudit {
+  id: string;
+  branchId: string;
+  branchName: string;
+  userId: string;
+  operatorName: string;
+  createdById: string;
+  createdByName: string;
+  createdAt: string;
+  expiresAt: string;
+  revokedAt: string | null;
+  /** null: habilitada pero el mesero no ha ingresado */
+  firstUsedAt: string | null;
+  lastUsedAt: string | null;
+}
