@@ -294,7 +294,8 @@
     "expected": "Esperado",
     "includesTips": "Incluye {tips} de propinas",
     "counted": "Contado",
-    "quantity": "Cantidad de {denomination}"
+    "quantity": "Cantidad de {denomination}",
+    "foreignNotice": "Estás cerrando el turno de {name}. El motivo es obligatorio."
   },
   "history": {
     "register": "Caja",
@@ -340,7 +341,8 @@
       "register": "Caja",
       "open": "Abierta · {name} · desde las {time}",
       "closed": "Sin turno abierto",
-      "movement": "Movimiento"
+      "movement": "Movimiento",
+      "readOnly": " · solo lectura"
     },
     "searchPlaceholder": "Buscar producto o escanear código",
     "view": {
@@ -400,7 +402,11 @@
     "closed": {
       "title": "La caja no tiene turno abierto",
       "hint": "Abre la caja para empezar a vender y recibir efectivo.",
-      "openRegister": "Abrir caja"
+      "openRegister": "Abrir caja",
+      "foreignTitle": "Este turno es de {name}",
+      "foreignHint": "Estás en solo lectura: no puedes vender ni mover dinero en el turno de otro usuario.",
+      "openFree": "Abrir mi turno en caja libre",
+      "noFreeHint": "No hay cajas libres: pide que te asignen una o espera a que se libere un turno."
     },
     "receivables": {
       "cardMeta": "{count, plural, one {# pedido} other {# pedidos}} · desde las {time}",

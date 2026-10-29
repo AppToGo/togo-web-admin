@@ -47,6 +47,7 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { resolveTipConfig } from "@/features/branches/types";
 import { TipSelector } from "./TipSelector";
 import {
@@ -113,6 +114,7 @@ export function CashChargeDrawer({
 
   const { hasPermission } = useMyPermissions();
   const canSettle = hasPermission("cash.view") && hasPermission("cash.operate");
+  const me = useCurrentUser();
 
   const queryClient = useQueryClient();
   const [pickedMethod, setMethod] = useState<Method | null>(null);
@@ -148,11 +150,17 @@ export function CashChargeDrawer({
     : canEnterRegister
       ? pickedDestination
       : "pending";
+  // El cobro entra al turno de quien cobra: por defecto el propio (el
+  // servidor rechaza el ajeno con 403). El selector sigue visible para ver
+  // los turnos abiertos, pero arranca en el propio.
+  const ownFirstSessionId =
+    openSessions.find((session) => session.openedById === me?.userId)?.id ??
+    (openSessions[0]?.id ?? null);
   const sessionId =
     fixedSession?.id ??
     (pickedSessionId && openSessions.some((session) => session.id === pickedSessionId)
       ? pickedSessionId
-      : (openSessions[0]?.id ?? null));
+      : ownFirstSessionId);
   const registerName =
     fixedSession?.registerName ??
     openSessions.find((session) => session.id === sessionId)?.register.name ??
@@ -390,6 +398,9 @@ export function CashChargeDrawer({
                       {openSessions.map((session) => (
                         <SelectItem key={session.id} value={session.id}>
                           {session.register.name}
+                          {session.openedByName
+                            ? ` · ${session.openedByName}`
+                            : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
