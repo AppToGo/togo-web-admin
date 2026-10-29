@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { MobileFab } from "@/components/ui/mobile-fab";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
@@ -103,6 +104,7 @@ export default function OperatorProfilesPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="settings.view">
       <div className="flex flex-col gap-6 flex-1 min-h-0">
         {/* Header (< md: título en la barra superior y crear en el botón flotante) */}
         <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -160,6 +162,7 @@ export default function OperatorProfilesPage() {
         )}
       </div>
       <MobileFab label={t("createProfile")} onClick={handleCreateProfile} />
+      </RequirePermission>
     </DashboardLayout>
   );
 }

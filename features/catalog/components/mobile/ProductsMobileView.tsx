@@ -39,8 +39,10 @@ interface ProductsMobileViewProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onEdit: (product: CatalogProduct) => void;
-  onToggleActive: (product: CatalogProduct, isActive: boolean) => void;
+  /** Sin él (sin permiso) la fila no abre el editor. */
+  onEdit?: (product: CatalogProduct) => void;
+  /** Sin él (sin permiso) no se muestra el interruptor de activo. */
+  onToggleActive?: (product: CatalogProduct, isActive: boolean) => void;
   /** Abre el drawer "Agregar recomendación"; sin él no se muestra. */
   onRecommend?: (product: CatalogProduct) => void;
   /** productId → cantidad de recomendados. */
@@ -51,7 +53,8 @@ interface ProductsMobileViewProps {
   onToggleFeatured?: (product: CatalogProduct) => void;
   /** Estrella visible pero sin acción (resumen de destacados sin cargar). */
   featuredDisabled?: boolean;
-  onCreate: () => void;
+  /** Sin él (sin permiso) no se muestra el botón flotante de crear. */
+  onCreate?: () => void;
   /** Sin él (importación no activa para el negocio) no se muestra el botón. */
   onImport?: () => void;
 }
@@ -191,7 +194,7 @@ export function ProductsMobileView({
                 >
                   <button
                     type="button"
-                    onClick={() => onEdit(product)}
+                    onClick={onEdit ? () => onEdit(product) : undefined}
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
                     <ProductThumb product={product} showImage={showImages} />
@@ -234,11 +237,13 @@ export function ProductsMobileView({
                       <Link2 className="h-5 w-5" />
                     </button>
                   )}
-                  <Switch
-                    checked={product.isActive}
-                    onCheckedChange={(checked) => onToggleActive(product, checked)}
-                    aria-label={t("mobile.productActive", { name: product.name })}
-                  />
+                  {onToggleActive && (
+                    <Switch
+                      checked={product.isActive}
+                      onCheckedChange={(checked) => onToggleActive(product, checked)}
+                      aria-label={t("mobile.productActive", { name: product.name })}
+                    />
+                  )}
                 </li>
               );
             })}
@@ -270,7 +275,9 @@ export function ProductsMobileView({
         <div aria-hidden className="h-14" />
       </div>
 
-      <MobileFab label={t("products.create")} onClick={onCreate} aboveBottomNav testId="products-mobile-create" />
+      {onCreate && (
+        <MobileFab label={t("products.create")} onClick={onCreate} aboveBottomNav testId="products-mobile-create" />
+      )}
       <CatalogMobileNav />
     </div>
   );

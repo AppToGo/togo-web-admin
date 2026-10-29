@@ -9,6 +9,7 @@
  */
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { useBranches } from "@/features/branches/hooks/useBranches";
@@ -122,6 +123,7 @@ export default function InventoryPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="catalog.view">
       {/* Inventory management component */}
       <BranchInventoryManager
         businessId={businessId}
@@ -133,6 +135,7 @@ export default function InventoryPage() {
           isMainBranch: b.isMainBranch,
         }))}
       />
+      </RequirePermission>
     </DashboardLayout>
   );
 }

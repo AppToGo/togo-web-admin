@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { ExternalLink, Plus, Package, Star, Store, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useEffectiveBusinessId } from "@/features/business/stores/business.store";
 import { Button } from "@/components/ui/button";
@@ -99,7 +100,7 @@ function ProductsLoading({ viewMode }: { viewMode: ViewMode }) {
   );
 }
 
-function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
+function EmptyProductsState({ onCreate }: { onCreate?: () => void }) {
   const t = useTranslations("catalog");
   const tc = useTranslations("common");
   return (
@@ -113,12 +114,14 @@ function EmptyProductsState({ onCreate }: { onCreate: () => void }) {
       <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
         {t("products.empty.message")}
       </p>
-      <div className="flex justify-center gap-3">
-        <Button onClick={onCreate} variant="outline">
-          <Plus className="w-4 h-4 mr-2" />
-          {tc("buttons.create")}
-        </Button>
-      </div>
+      {onCreate && (
+        <div className="flex justify-center gap-3">
+          <Button onClick={onCreate} variant="outline">
+            <Plus className="w-4 h-4 mr-2" />
+            {tc("buttons.create")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -184,6 +187,11 @@ export default function ProductsPage() {
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const canViewFeatured = hasPermission("product.view");
   const canEditFeatured = canViewFeatured && hasPermission("product.update");
+  // Catálogo en solo lectura (supervisor): sin estos permisos no se muestra
+  // ninguna acción de escritura; el servidor además las rechaza (403).
+  const canCreate = hasPermission("product.create");
+  const canEdit = hasPermission("product.update");
+  const canDelete = hasPermission("product.delete");
   const { data: featuredSummary, isError: featuredSummaryError } =
     useFeaturedProducts(businessId ?? "", canViewFeatured);
   const setFeatured = useSetProductFeatured(businessId ?? "");
@@ -412,6 +420,7 @@ export default function ProductsPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="catalog.view">
       {isMobile ? (
         <ProductsMobileView
           products={products}
@@ -430,18 +439,21 @@ export default function ProductsPage() {
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}
-          onEdit={openEdit}
-          onToggleActive={(product, isActive) =>
-            updateProduct.mutate({ productId: product.id, dto: { isActive } })
+          onEdit={canEdit ? openEdit : undefined}
+          onToggleActive={
+            canEdit
+              ? (product, isActive) =>
+                  updateProduct.mutate({ productId: product.id, dto: { isActive } })
+              : undefined
           }
           onRecommend={openRecommendations}
           recommendationCounts={recommendationCounts}
           isFeatured={isFeatured}
           onToggleFeatured={toggleFeatured}
           featuredDisabled={featuredDisabled}
-          onCreate={() => setIsCreateModalOpen(true)}
+          onCreate={canCreate ? () => setIsCreateModalOpen(true) : undefined}
           onImport={
-            canImport ? () => router.push("/dashboard/catalog/products/import") : undefined
+            canImport && canCreate ? () => router.push("/dashboard/catalog/products/import") : undefined
           }
         />
       ) : (
@@ -508,7 +520,7 @@ export default function ProductsPage() {
             </div>
           )}
           <div className="flex gap-2 ml-auto">
-            {canImport && (
+            {canImport && canCreate && (
               <Button
                 variant="outline"
                 onClick={() => router.push("/dashboard/catalog/products/import")}
@@ -517,13 +529,15 @@ export default function ProductsPage() {
                 {t("products.import")}
               </Button>
             )}
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
+            {canCreate && (
+              <Button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
               <Plus className="w-4 h-4 mr-2" />
               {t("products.create")}
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -560,7 +574,9 @@ export default function ProductsPage() {
               </p>
             </div>
           ) : (
-            <EmptyProductsState onCreate={() => setIsCreateModalOpen(true)} />
+            <EmptyProductsState
+              onCreate={canCreate ? () => setIsCreateModalOpen(true) : undefined}
+            />
           )
         ) : (
           <div
@@ -581,8 +597,8 @@ export default function ProductsPage() {
                     ? categoryMap.get(product.businessCategoryId)
                     : undefined
                 }
-                onEdit={(p) => openEdit(p)}
-                onDelete={(p) => deleteProduct.mutate(p.id)}
+                onEdit={canEdit ? (p) => openEdit(p) : undefined}
+                onDelete={canDelete ? (p) => deleteProduct.mutate(p.id) : undefined}
                 onRecommend={openRecommendations}
                 recommendationCount={recommendationCounts?.[product.id]}
                 featured={isFeatured(product)}
@@ -636,10 +652,14 @@ export default function ProductsPage() {
         summaryError={featuredSummaryError}
         categories={categories}
         onClose={() => setFeaturingProduct(null)}
-        onEditProduct={(product) => {
-          setFeaturingProduct(null);
-          openEdit(product);
-        }}
+        onEditProduct={
+          canEdit
+            ? (product) => {
+                setFeaturingProduct(null);
+                openEdit(product);
+              }
+            : undefined
+        }
       />
 
       {/* Create Drawer */}
@@ -747,6 +767,7 @@ export default function ProductsPage() {
         </DrawerContent>
       </Drawer>
 
+      </RequirePermission>
     </DashboardLayout>
   );
 }

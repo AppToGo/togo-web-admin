@@ -56,7 +56,7 @@ interface IndustryCategoryOption {
 interface CategoryListProps {
   categories: BusinessCategory[];
   industryCategories: IndustryCategoryOption[];
-  onCreate: (data: {
+  onCreate?: (data: {
     name: string;
     slug: string;
     industryCategoryId: string;
@@ -64,7 +64,7 @@ interface CategoryListProps {
     order?: number;
     searchKeywords?: KeywordEntry[];
   }) => void;
-  onUpdate: (
+  onUpdate?: (
     id: string,
     data: {
       name: string;
@@ -75,8 +75,8 @@ interface CategoryListProps {
       searchKeywords?: KeywordEntry[];
     }
   ) => void;
-  onDelete: (id: string) => void;
-  onToggleStatus: (id: string, isActive: boolean) => void;
+  onDelete?: (id: string) => void;
+  onToggleStatus?: (id: string, isActive: boolean) => void;
   onRegenerateKeywords?: (id: string) => void;
   isRegeneratingKeywords?: boolean;
   isLoading?: boolean;
@@ -254,7 +254,7 @@ export function CategoryList({
     );
 
     if (isEditing && editingCategory) {
-      onUpdate(editingCategory.id, {
+      onUpdate?.(editingCategory.id, {
         name: formData.name.trim(),
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
@@ -263,7 +263,7 @@ export function CategoryList({
         searchKeywords: editableKeywords,
       });
     } else {
-      onCreate({
+      onCreate?.({
         name: formData.name.trim(),
         slug: formData.slug.trim(),
         industryCategoryId: formData.industryCategoryId,
@@ -286,13 +286,13 @@ export function CategoryList({
   const handleDelete = () => {
     if (!deletingCategory) return;
 
-    onDelete(deletingCategory.id);
+    onDelete?.(deletingCategory.id);
     setDeletingCategory(null);
   };
 
   // Handle toggle status
   const handleToggleStatus = (category: BusinessCategory) => {
-    onToggleStatus(category.id, !category.isActive);
+    onToggleStatus?.(category.id, !category.isActive);
   };
 
   // Teléfono: tarjetas con buscador (diseño móvil); el diálogo de crear y
@@ -302,8 +302,8 @@ export function CategoryList({
       categories={filteredCategories}
       search={filters.name ?? ""}
       onSearchChange={(name) => setFilters({ ...filters, name })}
-      onEdit={handleOpenEdit}
-      onCreate={handleOpenCreate}
+      onEdit={onUpdate ? handleOpenEdit : undefined}
+      onCreate={onCreate ? handleOpenCreate : undefined}
     />
   ) : null;
 
@@ -319,10 +319,12 @@ export function CategoryList({
           </h1>
           <p className="mt-1 text-sm text-slate-500">{t("categories.pageSubtitle")}</p>
         </div>
-        <Button onClick={handleOpenCreate} disabled={isLoading} className="h-11 rounded-card px-5">
-          <Plus className="h-4 w-4" />
-          {t("categories.new")}
-        </Button>
+        {onCreate && (
+          <Button onClick={handleOpenCreate} disabled={isLoading} className="h-11 rounded-card px-5">
+            <Plus className="h-4 w-4" />
+            {t("categories.new")}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -399,9 +401,9 @@ export function CategoryList({
                 industryCategories.find((ic) => ic.id === category.industryCategoryId)
                   ?.name
               }
-              onEdit={handleOpenEdit}
-              onDelete={setDeletingCategory}
-              onToggleStatus={handleToggleStatus}
+              onEdit={onUpdate ? handleOpenEdit : undefined}
+              onDelete={onDelete ? setDeletingCategory : undefined}
+              onToggleStatus={onToggleStatus ? handleToggleStatus : undefined}
               onRegenerateKeywords={onRegenerateKeywords}
               isRegeneratingKeywords={isRegeneratingKeywords}
             />

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RequirePermission } from "@/features/auth/components/RequirePermission";
 import { SettingsMobileHub } from "@/components/layout/SettingsMobileHub";
 import { isBelowDesktopViewport, useIsBelowDesktop } from "@/hooks/useIsMobile";
 
@@ -34,7 +35,9 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
+      <RequirePermission code="settings.view">
       <SettingsMobileHub />
+      </RequirePermission>
     </DashboardLayout>
   );
 }
