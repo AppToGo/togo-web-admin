@@ -317,7 +317,8 @@
     "pendingHint": "Lo tiene el domiciliario u otro operador. Entra a caja al liquidarlo.",
     "nonCash": "El pedido queda pagado con {method}. No entra efectivo a la caja; aparece en \"Otros medios de pago\" del turno.",
     "confirm": "Confirmar pago",
-    "confirmToRegister": "Confirmar y entrar a caja"
+    "confirmToRegister": "Confirmar y entrar a caja",
+    "noOwnSession": "Para cobrar en efectivo necesitas tu turno abierto. Ábrelo en una caja libre y vuelve a intentarlo."
   },
   "trail": {
     "paid": "El cliente pagó {amount} en efectivo",

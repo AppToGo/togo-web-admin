@@ -116,8 +116,10 @@ export function SellTab({
     receivedAmount: number,
     tip: TipRequest | undefined
   ): Promise<CreateOrderResponse | null> => {
-    // Sin turno propio no se vende: la UI no llega acá, pero el servidor
-    // lo exige igual (`posSessionId`).
+    // Sin turno propio no se vende: la UI no llega acá. El servidor solo
+    // valida `posSessionId` cuando viene, así que este guard de la UI es lo
+    // que realmente impide vender sin turno (el tablero, que no lo envía,
+    // sigue funcionando igual).
     if (!session) return null;
     const cash =
       method === "CASH"

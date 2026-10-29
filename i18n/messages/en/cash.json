@@ -317,7 +317,8 @@
     "pendingHint": "The courier or another operator holds it. It enters the register when settled.",
     "nonCash": "The order is marked paid by {method}. No cash enters the register; it shows under \"Other payment methods\" for the shift.",
     "confirm": "Confirm payment",
-    "confirmToRegister": "Confirm and add to register"
+    "confirmToRegister": "Confirm and add to register",
+    "noOwnSession": "To collect cash you need your own open shift. Open it at a free register and try again."
   },
   "trail": {
     "paid": "The customer paid {amount} in cash",
