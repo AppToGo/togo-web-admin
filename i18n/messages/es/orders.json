@@ -440,11 +440,14 @@
     "doNotShare": "No compartas este link: quien lo tenga puede tomar pedidos a nombre del operador hasta que venza. Ciérralo con «Salir» en el catálogo o desde aquí.",
     "auditTitle": "Quién habilitó a quién",
     "auditEmpty": "Aún no hay habilitaciones.",
-    "auditEntry": "{operator} habilitado por {creator}",
+    "auditEntry": "{creator} habilitó a {operator}",
+    "auditSelf": "{operator} (se habilitó)",
     "auditEntered": "Ingresó {time}",
+    "auditEnteredAt": "Ingresó {datetime}",
     "auditNotEntered": "Sin ingresar",
     "auditRevoked": "Cerrada",
-    "auditExpired": "Vencida"
+    "auditExpired": "Vencida",
+    "auditMore": "Mostrando las últimas 100 habilitaciones."
   },
   "orderFlow": {
     "title": "Flujo del negocio",

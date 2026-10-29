@@ -15,6 +15,8 @@ import type { CreateOperatorCatalogSessionInput } from "../types";
 
 const SESSIONS_KEY = (businessId: string | null) =>
   ["operator-catalog-sessions", businessId] as const;
+const AUDIT_KEY = (businessId: string | null) =>
+  ["operator-catalog-session-audit", businessId] as const;
 
 /**
  * Operadores y ventana de la sede. La ventana depende de la hora actual:
@@ -58,6 +60,7 @@ export function useCreateOperatorCatalogSession(businessId: string | null) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY(businessId) });
+      queryClient.invalidateQueries({ queryKey: AUDIT_KEY(businessId) });
     },
   });
 }
@@ -71,7 +74,7 @@ export function useOperatorCatalogSessionAudit(
   enabled: boolean
 ) {
   return useQuery({
-    queryKey: ["operator-catalog-session-audit", businessId],
+    queryKey: AUDIT_KEY(businessId),
     queryFn: () => getOperatorCatalogSessionAudit(businessId!),
     enabled: enabled && !!businessId,
   });
@@ -90,6 +93,7 @@ export function useRevokeOperatorCatalogSession(businessId: string | null) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_KEY(businessId) });
+      queryClient.invalidateQueries({ queryKey: AUDIT_KEY(businessId) });
     },
   });
 }

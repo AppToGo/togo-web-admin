@@ -8,7 +8,7 @@ import apiClient from "@/services/api.service";
 import type {
   CreatedOperatorCatalogSession,
   CreateOperatorCatalogSessionInput,
-  OperatorCatalogSessionAudit,
+  OperatorCatalogSessionAuditResponse,
   OperatorCatalogSessionOptions,
   OperatorCatalogSessionSummary,
 } from "../types";
@@ -58,8 +58,8 @@ export async function revokeOperatorCatalogSession(
 /** Auditoría de habilitaciones (solo el dueño; el servidor lo exige). */
 export async function getOperatorCatalogSessionAudit(
   businessId: string
-): Promise<OperatorCatalogSessionAudit[]> {
-  const { data } = await apiClient.get<OperatorCatalogSessionAudit[]>(
+): Promise<OperatorCatalogSessionAuditResponse> {
+  const { data } = await apiClient.get<OperatorCatalogSessionAuditResponse>(
     `${baseUrl(businessId)}/audit`
   );
   return data;

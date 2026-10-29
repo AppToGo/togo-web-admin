@@ -377,3 +377,8 @@ export interface OperatorCatalogSessionAudit {
   firstUsedAt: string | null;
   lastUsedAt: string | null;
 }
+
+export interface OperatorCatalogSessionAuditResponse {
+  items: OperatorCatalogSessionAudit[];
+  hasMore: boolean;
+}
