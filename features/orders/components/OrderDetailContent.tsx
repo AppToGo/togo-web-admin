@@ -487,27 +487,41 @@ export function OrderDetailContent({
     [canViewConversation, t]
   );
 
-  // Calcular totales incluyendo domicilio y propina
-  const { subtotal, deliveryFee, tip, total } = useMemo(() => {
-    if (!order) return { subtotal: 0, deliveryFee: 0, tip: 0, total: 0 };
+  // Calcular totales incluyendo domicilio y propina. Las filas se muestran
+  // por tipo de pedido (domicilio si es DELIVERY, propina si es mesa o
+  // mostrador) aunque el valor sea 0: así el valor siempre queda explícito.
+  const { subtotal, deliveryFee, tip, total, isDelivery, isTippableType } =
+    useMemo(() => {
+      if (!order)
+        return {
+          subtotal: 0,
+          deliveryFee: 0,
+          tip: 0,
+          total: 0,
+          isDelivery: false,
+          isTippableType: false,
+        };
 
-    const itemsTotal =
-      order.items?.reduce(
-        (sum, item) => sum + item.unitPrice * item.quantity,
-        0
-      ) || 0;
+      const itemsTotal =
+        order.items?.reduce(
+          (sum, item) => sum + item.unitPrice * item.quantity,
+          0
+        ) || 0;
 
-    const isDelivery = order.deliveryType === "DELIVERY" || !!order.addressId;
-    const fee = isDelivery ? order.deliveryFee || 0 : 0;
-    const tipValue = order.tip || 0;
+      const delivery = order.deliveryType === "DELIVERY" || !!order.addressId;
+      const fee = delivery ? order.deliveryFee || 0 : 0;
+      const tipValue = order.tip || 0;
 
-    return {
-      subtotal: itemsTotal,
-      deliveryFee: fee,
-      tip: tipValue,
-      total: itemsTotal + fee + tipValue,
-    };
-  }, [order]);
+      return {
+        subtotal: itemsTotal,
+        deliveryFee: fee,
+        tip: tipValue,
+        total: itemsTotal + fee + tipValue,
+        isDelivery: delivery,
+        isTippableType:
+          order.deliveryType === "DINE_IN" || order.deliveryType === "COUNTER",
+      };
+    }, [order]);
 
   if (isLoadingOrder) {
     return <OrderDetailSkeleton />;
@@ -778,7 +792,7 @@ export function OrderDetailContent({
                       {formatCurrency(subtotal)}
                     </span>
                   </div>
-                  {deliveryFee > 0 && (
+                  {isDelivery && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">
                         {t("detail.deliveryFee")}
@@ -788,7 +802,7 @@ export function OrderDetailContent({
                       </span>
                     </div>
                   )}
-                  {tip > 0 && (
+                  {(isTippableType || tip > 0) && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">
                         {order.tipPercent
