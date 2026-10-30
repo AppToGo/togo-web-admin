@@ -9,7 +9,11 @@
  * and can be localized (ES/EN).
  *
  * Audited against api-togo (@RequirePermissions decorators, the Business
- * Action Engine, and service-level checks) on 2026-08-18.
+ * Action Engine, and service-level checks) on 2026-08-18, re-audited on
+ * 2026-10-29: `product.view/create/update/delete` are now enforced
+ * (product mutations require them since ToGoApi #446; `product.view` gates
+ * featured products), so they left this list. Everything else below is
+ * still unwired — toggling it has zero effect.
  */
 
 /**
@@ -26,10 +30,6 @@ export const NON_OPERATIONAL_PERMISSIONS: ReadonlySet<string> = new Set([
   "payment.view",
   "delivery.assign_self",
   "delivery.view_route",
-  "product.view",
-  "product.create",
-  "product.update",
-  "product.delete",
   "customer.address.view",
   "customer.address.create",
   "customer.address.update",
