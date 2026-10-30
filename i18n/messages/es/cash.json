@@ -304,6 +304,9 @@
   "charge": {
     "title": "Confirmar pago",
     "total": "Total a cobrar",
+    "orderValue": "Valor del pedido",
+    "deliveryFee": "Domicilio",
+    "tip": "Propina",
     "method": "Método de pago",
     "payWith": "Paga con",
     "exact": "Exacto",
