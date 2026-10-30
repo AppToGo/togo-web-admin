@@ -50,20 +50,21 @@ export function initialTipChoice(
 }
 
 /**
- * Desglose de un pedido del listado/detalle para el cobro con propina.
- * Solo se usa en mesa/mostrador, que no llevan domicilio: el `deliveryFee`
- * del listado viene de la config del negocio, no del pedido, así que no se
- * pasa.
+ * Desglose de un pedido del listado/detalle para el cobro.
+ * El `deliveryFee` es el del pedido (la API lo trae por pedido, 0 cuando no
+ * es domicilio): así el drawer de confirmar pago puede desglosar valor del
+ * pedido + domicilio + propina. La propina solo aplica en mesa/mostrador.
  */
 export function orderTipBreakdown(order: {
   subtotal: number;
+  deliveryFee?: number;
   tip?: number;
   tipPercent?: number | null;
   deliveryType?: string | null;
 }) {
   return {
     subtotal: order.subtotal,
-    deliveryFee: 0,
+    deliveryFee: order.deliveryFee ?? 0,
     tip: order.tip ?? 0,
     tipPercent: order.tipPercent ?? null,
     deliveryType: order.deliveryType,

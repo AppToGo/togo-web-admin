@@ -186,6 +186,11 @@ export function CashChargeDrawer({
     canTip && tipChoice
       ? subtotal + (order?.deliveryFee ?? 0) + tipAmount(tipChoice, subtotal)
       : (order?.total ?? 0);
+  // Desglose visible al confirmar: valor del pedido + domicilio + propina.
+  const deliveryFee = order?.deliveryFee ?? 0;
+  const currentTip =
+    canTip && tipChoice ? tipAmount(tipChoice, subtotal) : (order?.tip ?? 0);
+  const hasBreakdown = order?.subtotal !== undefined;
   const received = typed ?? total;
   const difference = received - total;
   const toRegister = isCash && destination === "settle" && !!sessionId;
@@ -278,9 +283,38 @@ export function CashChargeDrawer({
             />
           )}
 
-          <div className="flex items-baseline justify-between rounded-card bg-slate-50 p-4">
-            <span className="text-sm font-medium text-slate-600">{t("charge.total")}</span>
-            <span className="text-2xl font-bold tabular-nums">{formatCOP(total)}</span>
+          <div className="space-y-1 rounded-card bg-slate-50 p-4">
+            {hasBreakdown && (
+              <>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-slate-600">{t("charge.orderValue")}</span>
+                  <span className="text-sm font-semibold tabular-nums text-slate-800">
+                    {formatCOP(subtotal)}
+                  </span>
+                </div>
+                {deliveryFee > 0 && (
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm text-slate-600">{t("charge.deliveryFee")}</span>
+                    <span className="text-sm font-semibold tabular-nums text-slate-800">
+                      {formatCOP(deliveryFee)}
+                    </span>
+                  </div>
+                )}
+                {currentTip > 0 && (
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-sm text-slate-600">{t("charge.tip")}</span>
+                    <span className="text-sm font-semibold tabular-nums text-slate-800">
+                      {formatCOP(currentTip)}
+                    </span>
+                  </div>
+                )}
+                <div className="my-2 border-t border-slate-200" />
+              </>
+            )}
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm font-medium text-slate-600">{t("charge.total")}</span>
+              <span className="text-2xl font-bold tabular-nums">{formatCOP(total)}</span>
+            </div>
           </div>
 
           <div className="space-y-2">

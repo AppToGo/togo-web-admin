@@ -304,6 +304,9 @@
   "charge": {
     "title": "Confirm payment",
     "total": "Total to charge",
+    "orderValue": "Order value",
+    "deliveryFee": "Delivery",
+    "tip": "Tip",
     "method": "Payment method",
     "payWith": "Pays with",
     "exact": "Exact",
