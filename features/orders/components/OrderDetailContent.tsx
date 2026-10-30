@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   User,
+  Users,
   Phone,
   MapPin,
   Clock,
@@ -14,6 +15,7 @@ import {
   Home,
   Utensils,
   Banknote,
+  Bike,
   AlertTriangle,
   ChevronDown,
   Check,
@@ -62,6 +64,7 @@ import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import { MoneyTrailBlock } from "./MoneyTrailBlock";
 import { orderTipBreakdown } from "../utils/tip.utils";
 import { isPlatformStaffRole } from "@/lib/auth/platform-staff";
+import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 
 export interface OrderDetailContentProps {
   orderId: string;
@@ -127,6 +130,93 @@ function getOrderTypeInfo(
     icon: <Store className="w-3 h-3" />,
     variant: "amber",
   };
+}
+
+// Fila de la sección Responsables: visible para todos los roles con
+// permiso order.view (pestaña General, sin gate de historial).
+interface ResponsibleRow {
+  key: string;
+  label: string;
+  value: string;
+  empty: boolean;
+  icon: React.ReactNode;
+}
+
+/**
+ * Quién responde por el pedido según su tipo:
+ * - DELIVERY → Domiciliario (asignado o "Sin asignar") + Tomado por si lo
+ *   creó un operador.
+ * - DINE_IN → Mesero que tomó el pedido.
+ * - COUNTER → Cajero que lo cobró.
+ * - PICKUP → Atendido por (solo si lo tomó un operador).
+ * Sin filas (recoger creado por el cliente) la sección se oculta.
+ */
+function getResponsibleRows(
+  order: {
+    deliveryType?: string;
+    assignedDelivery?: { name?: string } | null;
+    createdByType?: string;
+    createdByUser?: { name?: string } | null;
+  },
+  t: ReturnType<typeof useTranslations>
+): ResponsibleRow[] {
+  const rows: ResponsibleRow[] = [];
+  const operatorName = order.createdByUser?.name?.trim() || null;
+  const isOperatorOrder = order.createdByType === "OPERATOR";
+
+  if (order.deliveryType === "DELIVERY") {
+    rows.push({
+      key: "delivery",
+      label: t("detail.responsibleDelivery"),
+      value: order.assignedDelivery?.name?.trim() || t("detail.unassigned"),
+      empty: !order.assignedDelivery?.name?.trim(),
+      icon: <Bike className="w-4 h-4 text-slate-400 shrink-0" />,
+    });
+    if (isOperatorOrder) {
+      rows.push({
+        key: "takenBy",
+        label: t("detail.takenBy"),
+        value: operatorName || t("detail.unregistered"),
+        empty: !operatorName,
+        icon: <User className="w-4 h-4 text-slate-400 shrink-0" />,
+      });
+    }
+    return rows;
+  }
+
+  if (order.deliveryType === "DINE_IN") {
+    rows.push({
+      key: "waiter",
+      label: t("detail.responsibleWaiter"),
+      value: operatorName || t("detail.unregistered"),
+      empty: !operatorName,
+      icon: <Utensils className="w-4 h-4 text-slate-400 shrink-0" />,
+    });
+    return rows;
+  }
+
+  if (order.deliveryType === "COUNTER") {
+    rows.push({
+      key: "cashier",
+      label: t("detail.responsibleCashier"),
+      value: operatorName || t("detail.unregistered"),
+      empty: !operatorName,
+      icon: <Banknote className="w-4 h-4 text-slate-400 shrink-0" />,
+    });
+    return rows;
+  }
+
+  // PICKUP (u otro): solo hay responsable si un operador lo tomó.
+  if (isOperatorOrder || operatorName) {
+    rows.push({
+      key: "attended",
+      label: t("detail.responsibleAttendedBy"),
+      value: operatorName || t("detail.unregistered"),
+      empty: !operatorName,
+      icon: <Store className="w-4 h-4 text-slate-400 shrink-0" />,
+    });
+  }
+  return rows;
 }
 
 // Component to change order status (similar to PaymentStatusEditor)
@@ -266,6 +356,12 @@ export function OrderDetailContent({
   // inbox propio) y el 403 se vería como error en vez de estado vacío.
   const isDemo = user?.isDemo === true;
 
+  // Sin permiso conversation.view el backend responde 403 en
+  // GET .../orders/:id/conversation: se oculta la pestaña y ni siquiera se
+  // llama al endpoint para no arruinar la experiencia.
+  const { hasPermission } = useMyPermissions();
+  const canViewConversation = !isDemo && hasPermission("conversation.view");
+
   // Tab "Conversación" se muestra de forma optimista (§4 del plan Fase B):
   // en vez de agregar conversationSessionId a Order, se resuelve perezosamente
   // vía GET .../orders/:id/conversation sólo cuando el tab está activo. Un
@@ -273,12 +369,12 @@ export function OrderDetailContent({
   // no se oculta el tab — evita reordenar la lista de tabs a media sesión.
   const conversationQuery = useConversationByOrder(
     orderId,
-    !isDemo && activeTab === "conversation"
+    canViewConversation && activeTab === "conversation"
   );
 
   const tabs = [
     { value: "general", icon: ClipboardList, label: t("tabs.general") },
-    ...(!isDemo
+    ...(canViewConversation
       ? [
           {
             value: "conversation",
@@ -384,34 +480,48 @@ export function OrderDetailContent({
   // (tomando la conversación si la ventana de 24 h está abierta).
   const handleItemIssue = useCallback(
     (item: OrderItem) => {
-      if (isDemo) return;
+      if (!canViewConversation) return;
       setActiveTabState("conversation");
       setConversationDraft(t("itemIssue.draft", { productName: item.productName }));
     },
-    [isDemo, t]
+    [canViewConversation, t]
   );
 
-  // Calcular totales incluyendo domicilio y propina
-  const { subtotal, deliveryFee, tip, total } = useMemo(() => {
-    if (!order) return { subtotal: 0, deliveryFee: 0, tip: 0, total: 0 };
+  // Calcular totales incluyendo domicilio y propina. Las filas se muestran
+  // por tipo de pedido (domicilio si es DELIVERY, propina si es mesa o
+  // mostrador) aunque el valor sea 0: así el valor siempre queda explícito.
+  const { subtotal, deliveryFee, tip, total, isDelivery, isTippableType } =
+    useMemo(() => {
+      if (!order)
+        return {
+          subtotal: 0,
+          deliveryFee: 0,
+          tip: 0,
+          total: 0,
+          isDelivery: false,
+          isTippableType: false,
+        };
 
-    const itemsTotal =
-      order.items?.reduce(
-        (sum, item) => sum + item.unitPrice * item.quantity,
-        0
-      ) || 0;
+      const itemsTotal =
+        order.items?.reduce(
+          (sum, item) => sum + item.unitPrice * item.quantity,
+          0
+        ) || 0;
 
-    const isDelivery = order.deliveryType === "DELIVERY" || !!order.addressId;
-    const fee = isDelivery ? order.deliveryFee || 0 : 0;
-    const tipValue = order.tip || 0;
+      const delivery = order.deliveryType === "DELIVERY" || !!order.addressId;
+      const fee = delivery ? order.deliveryFee || 0 : 0;
+      const tipValue = order.tip || 0;
 
-    return {
-      subtotal: itemsTotal,
-      deliveryFee: fee,
-      tip: tipValue,
-      total: itemsTotal + fee + tipValue,
-    };
-  }, [order]);
+      return {
+        subtotal: itemsTotal,
+        deliveryFee: fee,
+        tip: tipValue,
+        total: itemsTotal + fee + tipValue,
+        isDelivery: delivery,
+        isTippableType:
+          order.deliveryType === "DINE_IN" || order.deliveryType === "COUNTER",
+      };
+    }, [order]);
 
   if (isLoadingOrder) {
     return <OrderDetailSkeleton />;
@@ -576,19 +686,6 @@ export function OrderDetailContent({
                   {tc("empty.infoNotAvailable")}
                 </p>
               )}
-              {/* Pedidos en mesa (docs/architecture/pedidos-en-mesa.md, Fase
-                  3): un pedido tomado por /nuevo (comando del operador)
-                  queda atribuido a quien lo tomó, independiente del
-                  Customer asociado (o del cliente técnico si no dio
-                  teléfono). */}
-              {order.createdByType === "OPERATOR" && (
-                <div className="flex items-center gap-2 text-sm text-slate-600 pt-1 border-t border-slate-200">
-                  <User className="w-4 h-4" />
-                  {order.createdByUser?.name
-                    ? t("detail.createdByOperator", { name: order.createdByUser.name })
-                    : t("detail.createdByOperatorUnknown")}
-                </div>
-              )}
             </div>
           </div>
 
@@ -607,6 +704,40 @@ export function OrderDetailContent({
               </div>
             </div>
           )}
+
+          {/* Responsables: visible para todos los roles (pestaña General).
+              Domicilio → domiciliario, mesa → mesero, resto según el caso. */}
+          {(() => {
+            const responsibleRows = getResponsibleRows(order, t);
+            if (responsibleRows.length === 0) return null;
+            return (
+              <div className="space-y-3">
+                <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  {t("detail.responsibles")}
+                </h4>
+                <div className="bg-slate-50 rounded-card p-4 space-y-2">
+                  {responsibleRows.map((row) => (
+                    <div
+                      key={row.key}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      {row.icon}
+                      <span className="text-slate-500">{row.label}:</span>
+                      <span
+                        className={cn(
+                          "font-medium",
+                          row.empty ? "text-slate-400" : "text-slate-900"
+                        )}
+                      >
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Order Items */}
           {order.items && order.items.length > 0 && (
@@ -640,7 +771,7 @@ export function OrderDetailContent({
                         {formatCurrency(item.unitPrice * item.quantity)}
                       </p>
                       {/* Subtle icon to indicate out of stock */}
-                      {!isReadOnly && !isDemo && (
+                      {!isReadOnly && canViewConversation && (
                         <button
                           onClick={() => handleItemIssue(item)}
                           className="text-slate-300 hover:text-amber-500 transition-colors"
@@ -661,7 +792,7 @@ export function OrderDetailContent({
                       {formatCurrency(subtotal)}
                     </span>
                   </div>
-                  {deliveryFee > 0 && (
+                  {isDelivery && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">
                         {t("detail.deliveryFee")}
@@ -671,7 +802,7 @@ export function OrderDetailContent({
                       </span>
                     </div>
                   )}
-                  {tip > 0 && (
+                  {(isTippableType || tip > 0) && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">
                         {order.tipPercent
@@ -753,7 +884,7 @@ export function OrderDetailContent({
         </TabsContent>
 
         {/* Conversación Tab */}
-        {!isDemo && (
+        {canViewConversation && (
           <TabsContent value="conversation" className="space-y-4">
             <OrderConversationPanel
               conversationQuery={conversationQuery}
