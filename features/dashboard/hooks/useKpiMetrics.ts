@@ -1,9 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
-import { useDashboardBranchId } from '../stores/branch-filter.store';
+import {
+  useDashboardBranchId,
+  useDashboardBusinessId,
+} from '../stores/branch-filter.store';
 import apiClient from '@/services/api.service';
 import { KpiMetrics } from '../types/dashboard.types';
 
@@ -78,8 +80,7 @@ async function fetchKpiMetrics(
 }
 
 export function useKpiMetrics(options?: UseKpiMetricsOptions) {
-  const user = useCurrentUser();
-  const businessId = user?.businessId;
+  const businessId = useDashboardBusinessId();
   const dateRange = useDateFilterRange();
   const dashboardBranchId = useDashboardBranchId();
   

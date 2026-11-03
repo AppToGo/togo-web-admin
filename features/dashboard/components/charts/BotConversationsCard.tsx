@@ -4,11 +4,13 @@ import { useTranslations } from 'next-intl';
 import { ArrowRight, Headset, MessagesSquare } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
 import { useConversationFunnel } from '@/features/conversations/hooks/useConversationFunnel';
 import { formatRate } from '@/features/conversations/components/conversation-funnel/funnel-format';
-import { useDashboardBranchId } from '../../stores/branch-filter.store';
+import {
+  useDashboardBranchId,
+  useDashboardBusinessId,
+} from '../../stores/branch-filter.store';
 import { CardSkeleton } from '../loading/CardSkeleton';
 import { DashboardCardHeader } from '../DashboardCardHeader';
 import { SegmentedBreakdown } from './SegmentedBreakdown';
@@ -22,9 +24,8 @@ export function BotConversationsCard() {
   const t = useTranslations('dashboard.charts.botConversations');
   const range = useDateFilterRange();
   const branchId = useDashboardBranchId();
-  // Mismo negocio que los KPIs y las demás tarjetas, no el del selector de
-  // SUPER_ADMIN: si no, la tarjeta podría mostrar otro negocio.
-  const businessId = useCurrentUser()?.businessId ?? undefined;
+  // Mismo negocio que los KPIs y las demás tarjetas.
+  const businessId = useDashboardBusinessId();
   const { data, isLoading, isError } = useConversationFunnel(
     { dateFrom: range.from, dateTo: range.to },
     { businessId },
