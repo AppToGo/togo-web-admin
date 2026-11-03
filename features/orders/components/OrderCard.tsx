@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Clock,
@@ -17,12 +17,15 @@ import type { Order, OrderItem } from "../types";
 import type { CardDensity } from "../types/order-ui.types";
 import { formatCurrency, getTimeElapsed, isCustomerEditing } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
+import { resolveBranchDisplay } from "../utils/branch-label.utils";
 import {
   kanbanCardVariants,
   categoryBadgeVariants,
   type CategoryBadgeVariantProps,
 } from "../styles";
 import { cn } from "@/lib/utils";
+import { useBranchStore } from "@/stores/branch.store";
+import { useSessionStore } from "@/stores/session.store";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import {
@@ -137,6 +140,41 @@ export function OrderTypeBadge({ order }: { order: Order }) {
       {orderType.icon}
       {orderType.label}
     </span>
+  );
+}
+
+// Código corto de la sede en el encabezado + Tooltip con el nombre limpio.
+// Solo se renderiza cuando hay más de 1 sede seleccionada en el tablero.
+export function OrderBranchBadge({ order }: { order: Order }) {
+  const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
+  const selectedBranchNames = useBranchStore((state) => state.selectedBranchNames);
+  const sessionBranches = useSessionStore((state) => state.branches);
+
+  const branchDisplay = useMemo(() => {
+    if (selectedBranchIds.length <= 1 || !order.branchId) return null;
+
+    const namesById: Record<string, string> = {};
+    for (const branch of sessionBranches) {
+      namesById[branch.id] = branch.name;
+    }
+    for (const [id, name] of Object.entries(selectedBranchNames)) {
+      if (name) namesById[id] = name;
+    }
+
+    return resolveBranchDisplay(order.branchId, namesById);
+  }, [selectedBranchIds.length, order.branchId, sessionBranches, selectedBranchNames]);
+
+  if (!branchDisplay) return null;
+
+  return (
+    <HoverTooltip content={branchDisplay.cleanName}>
+      <span
+        data-testid="order-card-branch"
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide uppercase bg-slate-100 text-slate-600 border border-slate-200/80 shrink-0"
+      >
+        {branchDisplay.shortCode}
+      </span>
+    </HoverTooltip>
   );
 }
 
@@ -359,15 +397,16 @@ export const OrderCard = memo(function OrderCard({
         )}
         onClick={handleCardClick}
       >
-        {/* Header: order number, type and elapsed time */}
+        {/* Header: order number, branch short code, type and elapsed time */}
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-1">
             <span className="font-bold text-slate-900 text-sm shrink-0">
               {orderNumber}
             </span>
+            <OrderBranchBadge order={order} />
             <span
               className={categoryBadgeVariants({
-                variant: orderType.variant as any,
+                variant: orderType.variant as CategoryBadgeVariantProps["variant"],
               })}
             >
               {orderType.icon}

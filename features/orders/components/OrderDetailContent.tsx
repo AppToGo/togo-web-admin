@@ -16,6 +16,7 @@ import {
   Utensils,
   Banknote,
   Bike,
+  Building2,
   AlertTriangle,
   ChevronDown,
   Check,
@@ -37,7 +38,8 @@ import {
   isCustomerEditing,
 } from "../utils/order-status.utils";
 import { formatOrderNumber } from "../utils/order-number.utils";
-import { categoryBadgeVariants } from "../styles";
+import { resolveBranchDisplay } from "../utils/branch-label.utils";
+import { categoryBadgeVariants, type CategoryBadgeVariantProps } from "../styles";
 import { toast } from "sonner";
 
 import { Separator } from "@/components/ui/separator";
@@ -52,6 +54,9 @@ import {
 import { getColumnVariant } from "../config/kanban-columns.config";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
+import { useEffectiveBranches } from "@/features/branches/hooks";
+import { useBranchStore } from "@/stores/branch.store";
+import { useSessionStore } from "@/stores/session.store";
 import { useConversationByOrder } from "@/features/conversations";
 import { OrderConversationPanel } from "./OrderConversationPanel";
 import { HoverTooltip } from "./HoverTooltip";
@@ -269,7 +274,9 @@ function OrderStatusEditor({
         <button
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            categoryBadgeVariants({ variant: variant as any }),
+            categoryBadgeVariants({
+              variant: variant as CategoryBadgeVariantProps["variant"],
+            }),
             "cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 text-xs"
           )}
         >
@@ -523,6 +530,46 @@ export function OrderDetailContent({
       };
     }, [order]);
 
+  const { branches: effectiveBranches } = useEffectiveBranches();
+  const selectedBranchIds = useBranchStore((state) => state.selectedBranchIds);
+  const selectedBranchNames = useBranchStore((state) => state.selectedBranchNames);
+  const sessionBranches = useSessionStore((state) => state.branches);
+  const orderBranchId = order?.branchId;
+  const selectedBranchCount = selectedBranchIds.length;
+
+  // Sede del pedido en el drawer: solo se renderiza si hay más de 1 sede
+  // y con limpieza de prefijo (ej. "Sede Norte" → "Norte").
+  const branchDisplay = useMemo(() => {
+    if (!orderBranchId) return null;
+
+    const namesById: Record<string, string> = {};
+    for (const branch of sessionBranches) {
+      namesById[branch.id] = branch.name;
+    }
+    for (const branch of effectiveBranches) {
+      namesById[branch.id] = branch.name;
+    }
+    for (const [id, name] of Object.entries(selectedBranchNames)) {
+      if (name) namesById[id] = name;
+    }
+
+    const totalBranches = Math.max(
+      effectiveBranches.length,
+      sessionBranches.length,
+      selectedBranchCount,
+      Object.keys(namesById).length
+    );
+    if (totalBranches <= 1) return null;
+
+    return resolveBranchDisplay(orderBranchId, namesById);
+  }, [
+    orderBranchId,
+    effectiveBranches,
+    sessionBranches,
+    selectedBranchCount,
+    selectedBranchNames,
+  ]);
+
   if (isLoadingOrder) {
     return <OrderDetailSkeleton />;
   }
@@ -553,9 +600,9 @@ export function OrderDetailContent({
 
   return (
     <div className="space-y-6">
-      {/* Header: Número de orden, Estado, Tipo y Total */}
+      {/* Header: Número de orden, Estado, Tipo, Sede y Total */}
       <div className="flex items-start justify-between">
-        {/* Izquierda: Número, badges de estado y tipo */}
+        {/* Izquierda: Número, badges de estado, tipo y sede */}
         <div className="flex flex-col gap-2">
           {/* Número de orden */}
           <span className="text-xl font-bold text-slate-900">
@@ -564,7 +611,7 @@ export function OrderDetailContent({
 
           {/* Badges debajo del número */}
           <div
-            className="flex items-center gap-2"
+            className="flex flex-wrap items-center gap-2"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
@@ -608,13 +655,29 @@ export function OrderDetailContent({
             {/* Badge de tipo (domicilio/recoger/en mesa) */}
             <span
               className={cn(
-                categoryBadgeVariants({ variant: orderType.variant as any }),
+                categoryBadgeVariants({
+                  variant: orderType.variant as CategoryBadgeVariantProps["variant"],
+                }),
                 "text-xs"
               )}
             >
               {orderType.icon}
               <span>{orderType.label}</span>
             </span>
+
+            {/* Badge de sede (solo cuando hay más de 1 sede, con limpieza de prefijo) */}
+            {branchDisplay && (
+              <span
+                data-testid="order-detail-branch"
+                className={cn(
+                  categoryBadgeVariants({ variant: "slate" }),
+                  "text-xs gap-1"
+                )}
+              >
+                <Building2 className="w-3 h-3" />
+                <span>{branchDisplay.cleanName}</span>
+              </span>
+            )}
           </div>
         </div>
 
