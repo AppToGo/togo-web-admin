@@ -41,7 +41,7 @@ import {
   useWhatsAppAccounts,
   useWhatsAppRoutings,
 } from "@/features/whatsapp";
-import { Feature } from "@/features/business-features";
+import { Feature, useBusinessFeature } from "@/features/business-features";
 
 export default function EditBranchPage() {
   const t = useTranslations("branches");
@@ -59,7 +59,9 @@ export default function EditBranchPage() {
   const { data: branch, isLoading: isLoadingBranch } = useBranch(id);
   const { data: metrics } = useBranchMetrics(branch?.isActive ? id : null);
   const { hasPermission } = useMyPermissions();
-  const canViewTables = hasPermission("table.view");
+  // Mismo criterio que la sección: sin "Mesas y QR" activa no va en el menú.
+  const { enabled: dineInEnabled } = useBusinessFeature("DINE_IN_QR");
+  const canViewTables = dineInEnabled && hasPermission("table.view");
   const updateBranch = useUpdateBranch();
 
   // QR imprimible por mesa (Fase 2, docs/architecture/pedidos-en-mesa.md):
