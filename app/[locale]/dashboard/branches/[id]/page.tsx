@@ -60,8 +60,12 @@ export default function EditBranchPage() {
   const { data: metrics } = useBranchMetrics(branch?.isActive ? id : null);
   const { hasPermission } = useMyPermissions();
   // Mismo criterio que la sección: sin "Mesas y QR" activa no va en el menú.
-  const { enabled: dineInEnabled } = useBusinessFeature("DINE_IN_QR");
-  const canViewTables = dineInEnabled && hasPermission("table.view");
+  // Mientras cargan las funcionalidades se muestra: si no, el ítem
+  // desaparecía y volvía (~200 ms) en los negocios que sí la tienen.
+  const { enabled: dineInEnabled, isLoading: featuresLoading } =
+    useBusinessFeature("DINE_IN_QR");
+  const canViewTables =
+    (featuresLoading || dineInEnabled) && hasPermission("table.view");
   const updateBranch = useUpdateBranch();
 
   // QR imprimible por mesa (Fase 2, docs/architecture/pedidos-en-mesa.md):

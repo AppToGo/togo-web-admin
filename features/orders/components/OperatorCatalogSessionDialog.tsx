@@ -109,20 +109,6 @@ export function OperatorCatalogSessionDialog({
     operators.find((o) => o.id === currentUserId)?.id ??
     null;
 
-  // Sin elegir hora: la sesión dura hasta el cierre del turno (la API lo
-  // pone si no llega `expiresAt`). Hora y día en la zona de la sede.
-  const closing = useMemo(() => {
-    if (!sessionWindow) return null;
-    const inBranch = (options: Intl.DateTimeFormatOptions) =>
-      new Intl.DateTimeFormat(locale, { ...options, timeZone: sessionWindow.timezone });
-    const day = inBranch({ day: "numeric", month: "numeric", year: "numeric" });
-    return {
-      time: inBranch({ hour: "2-digit", minute: "2-digit" }).format(
-        new Date(sessionWindow.closesAt)
-      ),
-      nextDay: day.format(new Date(sessionWindow.closesAt)) !== day.format(new Date()),
-    };
-  }, [locale, sessionWindow]);
 
   useEffect(() => {
     if (!session) return;
@@ -173,8 +159,13 @@ export function OperatorCatalogSessionDialog({
     );
   };
 
+  // Horas en la zona de la sede, no la del navegador del admin.
   const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    new Intl.DateTimeFormat(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: sessionWindow?.timezone,
+    }).format(new Date(iso));
 
   // Auditoría: fecha con día para ubicar habilitaciones de días pasados.
   const formatAuditDateTime = (iso: string) =>
@@ -195,6 +186,23 @@ export function OperatorCatalogSessionDialog({
     });
     return f.format(new Date(aIso)) === f.format(new Date(bIso));
   };
+
+  // Sin elegir hora: la sesión dura hasta el cierre del turno (la API lo
+  // pone si no llega `expiresAt`). Fuera de un memo: "mañana" se evalúa en
+  // cada render, aunque el diálogo quede abierto al cruzar la medianoche.
+  const closing = sessionWindow
+    ? {
+        time: formatTime(sessionWindow.closesAt),
+        nextDay: !isSameDay(sessionWindow.closesAt, new Date().toISOString()),
+      }
+    : null;
+
+  // Inicio de la sesión continuada: con fecha si no es de hoy (turno de
+  // noche que cruzó la medianoche).
+  const formatStartedAt = (iso: string) =>
+    isSameDay(iso, new Date().toISOString())
+      ? formatTime(iso)
+      : formatAuditDateTime(iso);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -316,7 +324,7 @@ export function OperatorCatalogSessionDialog({
                 <p className="text-xs text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">
                   {t("continuedNotice", {
                     operator: session.operatorName,
-                    time: formatTime(session.startedAt),
+                    time: formatStartedAt(session.startedAt),
                   })}
                 </p>
               )}
