@@ -170,6 +170,12 @@
     "sync": "Refresh",
     "syncSuccess": "Usage refreshed from Meta",
     "syncFailed": "Meta didn't respond for {count, plural, one {# number} other {# numbers}}: showing the live count",
-    "syncError": "Couldn't refresh usage from Meta"
+    "syncError": "Couldn't refresh usage from Meta",
+    "monthSelector": "Month to show",
+    "pastSubtitle": "{month} summary · reconciled totals",
+    "pastSummary": "In {month}: {count} free of {quota}.",
+    "quotaUsed": "{percent}% of free quota used",
+    "cost": "Est. cost",
+    "monthSynced": "Reconciled with Meta on {date}"
   }
 }
