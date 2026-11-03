@@ -7,9 +7,19 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import {
+  getEffectiveBusinessId,
+  useEffectiveBusinessId,
+} from '@/features/business/stores/business.store';
 
 export interface BranchFilterState {
   selectedBranchId: string | null;
+  /**
+   * Negocio en que se eligió la sede. Un SUPER_ADMIN que cambia de negocio
+   * no debe seguir filtrando por una sede del anterior (las métricas salían
+   * vacías con "Todas las sedes" en el selector).
+   */
+  businessId: string | null;
 }
 
 export interface BranchFilterActions {
@@ -21,6 +31,7 @@ type BranchFilterStore = BranchFilterState & BranchFilterActions;
 
 const initialState: BranchFilterState = {
   selectedBranchId: null,
+  businessId: null,
 };
 
 /**
@@ -38,14 +49,14 @@ export const useBranchFilterStore = create<BranchFilterStore>()(
        * Establecer la sede seleccionada
        */
       setSelectedBranch: (branchId: string | null) => {
-        set({ selectedBranchId: branchId });
+        set({ selectedBranchId: branchId, businessId: getEffectiveBusinessId() });
       },
 
       /**
        * Limpiar el filtro de sede (mostrar todas las sedes)
        */
       clearBranchFilter: () => {
-        set({ selectedBranchId: null });
+        set(initialState);
       },
     }),
     {
@@ -56,10 +67,17 @@ export const useBranchFilterStore = create<BranchFilterStore>()(
 );
 
 /**
- * Hook para obtener el ID de la sede seleccionada
+ * Hook para obtener el ID de la sede seleccionada, solo si se eligió en el
+ * negocio actual. Las selecciones guardadas antes del campo `businessId`
+ * (llegan como null) se respetan: un usuario de negocio no cambia de negocio.
  */
 export function useDashboardBranchId(): string | null {
-  return useBranchFilterStore((state) => state.selectedBranchId);
+  const businessId = useEffectiveBusinessId();
+  return useBranchFilterStore((state) =>
+    state.businessId === null || state.businessId === businessId
+      ? state.selectedBranchId
+      : null
+  );
 }
 
 /**

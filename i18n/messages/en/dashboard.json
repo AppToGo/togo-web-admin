@@ -1,6 +1,7 @@
 {
   "title": "Dashboard",
   "greeting": "Hello, {name}!",
+  "selectBusiness": "Choose a business in the selector to see its statistics.",
   "welcome": {
     "withBusiness": "Welcome to {businessName}. Here you can manage your orders and products.",
     "withoutBusiness": "Welcome to your dashboard. Here you can manage your orders and products."

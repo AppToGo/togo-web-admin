@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowRight, Headset, MessagesSquare } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
 import { useConversationFunnel } from '@/features/conversations/hooks/useConversationFunnel';
 import { formatRate } from '@/features/conversations/components/conversation-funnel/funnel-format';
@@ -22,9 +22,9 @@ export function BotConversationsCard() {
   const t = useTranslations('dashboard.charts.botConversations');
   const range = useDateFilterRange();
   const branchId = useDashboardBranchId();
-  // Mismo negocio que los KPIs y las demás tarjetas, no el del selector de
-  // SUPER_ADMIN: si no, la tarjeta podría mostrar otro negocio.
-  const businessId = useCurrentUser()?.businessId ?? undefined;
+  // Mismo negocio que los KPIs y las demás tarjetas: el del selector del
+  // SUPER_ADMIN o el propio.
+  const businessId = useEffectiveBusinessId() || undefined;
   const { data, isLoading, isError } = useConversationFunnel(
     { dateFrom: range.from, dateTo: range.to },
     { businessId },

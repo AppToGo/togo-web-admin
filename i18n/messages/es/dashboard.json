@@ -1,6 +1,7 @@
 {
   "title": "Dashboard",
   "greeting": "¡Hola, {name}!",
+  "selectBusiness": "Elige un negocio en el selector para ver sus estadísticas.",
   "welcome": {
     "withBusiness": "Bienvenido a {businessName}. Aquí podrás gestionar tus pedidos y productos.",
     "withoutBusiness": "Bienvenido a tu dashboard. Aquí podrás gestionar tus pedidos y productos."

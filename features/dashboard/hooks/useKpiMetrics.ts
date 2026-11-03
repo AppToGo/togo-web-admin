@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
+import { useEffectiveBusinessId } from '@/features/business/stores/business.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
 import { useDashboardBranchId } from '../stores/branch-filter.store';
 import apiClient from '@/services/api.service';
@@ -78,8 +78,8 @@ async function fetchKpiMetrics(
 }
 
 export function useKpiMetrics(options?: UseKpiMetricsOptions) {
-  const user = useCurrentUser();
-  const businessId = user?.businessId;
+  // El negocio del selector (SUPER_ADMIN) o el propio; "" = todos: sin datos.
+  const businessId = useEffectiveBusinessId() || undefined;
   const dateRange = useDateFilterRange();
   const dashboardBranchId = useDashboardBranchId();
   
