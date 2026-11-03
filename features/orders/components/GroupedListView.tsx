@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { OrderTypeBadge, TimeBadge } from "./OrderCard";
+import { OrderBranchBadge, OrderTypeBadge, TimeBadge } from "./OrderCard";
 import { PaymentStatusEditor } from "./PaymentStatusEditor";
 import { PaymentProofIndicator } from "./PaymentProofDialog";
 import type { ArchivePagination, Order, OrderStatus } from "../types";
@@ -69,6 +69,7 @@ function ListRow({ order, status, tourStep, onOrderClick, onStatusChange }: List
         <span className="text-[13px] font-semibold text-slate-800 truncate">
           {order.customer?.name || t("unknownCustomer")}
         </span>
+        <OrderBranchBadge order={order} />
         <span className="shrink-0">
           <OrderTypeBadge order={order} />
         </span>
