@@ -39,12 +39,15 @@ export default function DashboardPage() {
   // sección no aparezca de golpe y empuje lo de abajo.
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
   const canViewProducts = hasPermission("metrics.view");
-  // Consumo de IA: solo SUPER_ADMIN, del negocio del selector ("" = todos).
+  // Negocio del selector (SUPER_ADMIN) o el propio; "" = todos los negocios.
   const aiBusinessId = useEffectiveBusinessId() || null;
   const { data: businesses } = useBusinesses({
     enabled: isSuperAdmin && !!aiBusinessId,
   });
   const aiBusinessName = businesses?.find((b) => b.id === aiBusinessId)?.name;
+  const businessName = isSuperAdmin ? aiBusinessName : user?.businessName;
+  // Las estadísticas son de un negocio: con "Todos" no hay qué consultar.
+  const needsBusiness = isSuperAdmin && !aiBusinessId;
 
   return (
     <DashboardLayout>
@@ -60,9 +63,9 @@ export default function DashboardPage() {
             {/* En el teléfono el título basta: la bienvenida ocupa media pantalla. */}
             <p className="hidden md:block text-slate-500 mt-1 text-sm">
               {t("greeting", { name: user?.name || tc("empty.title") })}{" "}
-              {user?.businessName
+              {businessName
                 ? t("welcome.withBusiness", {
-                    businessName: user.businessName,
+                    businessName,
                   })
                 : t("welcome.withoutBusiness")}
             </p>
@@ -85,6 +88,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {needsBusiness ? (
+          <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {t("selectBusiness")}
+          </p>
+        ) : (
+        <>
         {/* KPIs - Carga inmediata con Suspense */}
         <section aria-label={t("sections.kpis")}>
           <Suspense fallback={<KpiSectionSkeleton />}>
@@ -117,6 +126,8 @@ export default function DashboardPage() {
         <section aria-label={t("sections.whatsappUsage")}>
           <WhatsAppUsageChart />
         </section>
+        </>
+        )}
 
         {isSuperAdmin && (
           <section aria-label={t("sections.aiUsage")}>

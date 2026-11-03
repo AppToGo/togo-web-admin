@@ -8,6 +8,14 @@ import type { TourContextValue, TourStep } from "@/components/tour/tour.types";
 
 const TOUR_START_DELAY_MS = 600;
 
+/**
+ * TEMPORALMENTE APAGADO — el tour no se muestra a nadie mientras se ajusta.
+ * No eliminar: el código del tour sigue intacto; este flag solo bloquea el
+ * auto-inicio, la señal de "tour en curso" y el inicio manual. Para
+ * reactivarlo, poner en `false`.
+ */
+export const TOUR_DISABLED_TEMPORARILY = true;
+
 export function useTour(tourId: string, steps: TourStep[], readyToStart = true): TourContextValue {
   const user = useAuthStore((state) => state.user);
   const { markCompleted, isTourCompleted, setTourRunning } = useTourStore();
@@ -33,6 +41,9 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
   // run (sync storage completes in a microtask prior to the effects flush).
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Tour apagado temporalmente (ver TOUR_DISABLED_TEMPORARILY): no cuenta
+    // como en curso para que nada lo espere (ej. el modal de plan).
+    if (TOUR_DISABLED_TEMPORARILY) return;
     // The tour is not shown on mobile, so it never counts as running there.
     if (isMobileViewport()) return;
     const alreadyDone = useTourStore.getState().completedTours[tourKey] === true;
@@ -48,6 +59,8 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
 
   // Auto-start the visual tour after delay if it hasn't been completed
   useEffect(() => {
+    // Tour apagado temporalmente: nadie lo ve en el primer ingreso.
+    if (TOUR_DISABLED_TEMPORARILY) return;
     if (!hydrated) return; // Wait for hydration — avoids SSR key mismatch
     if (!readyToStart) return; // Wait until caller signals data is ready
     if (typeof window === "undefined") return;
@@ -71,6 +84,8 @@ export function useTour(tourId: string, steps: TourStep[], readyToStart = true):
   }, [tourKey, readyToStart, hydrated]);
 
   const startTour = useCallback(() => {
+    // Tour apagado temporalmente: el inicio manual no hace nada.
+    if (TOUR_DISABLED_TEMPORARILY) return;
     setCurrentStepIndex(0);
     setTourRunning(true);
     setIsActive(true);

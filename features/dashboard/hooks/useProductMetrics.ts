@@ -1,9 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
-import { useDashboardBranchId } from '../stores/branch-filter.store';
+import {
+  useDashboardBranchId,
+  useDashboardBusinessId,
+} from '../stores/branch-filter.store';
 import apiClient from '@/services/api.service';
 import type {
   ProductMetrics,
@@ -91,7 +93,7 @@ export interface UseProductMetricsOptions {
 
 /** Estadísticas de productos con el período y la sede del dashboard. */
 export function useProductMetrics(options?: UseProductMetricsOptions) {
-  const businessId = useCurrentUser()?.businessId;
+  const businessId = useDashboardBusinessId();
   const dateRange = useDateFilterRange();
   const dashboardBranchId = useDashboardBranchId();
 

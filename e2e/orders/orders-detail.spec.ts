@@ -126,6 +126,47 @@ test.describe("Orders — detalle y tabs", () => {
     // Subtotal, item line and total all read $ 20.000 — first() is enough
     // to prove the amounts render
     await expect(dialog.getByText("$ 20.000").first()).toBeVisible();
+    // Con una sola sede en el negocio no se muestra el badge de sede
+    await expect(dialog.getByTestId("order-detail-branch")).toHaveCount(0);
+  });
+
+  test("el detalle muestra la sede sin prefijo cuando hay más de una sede", async ({
+    page,
+  }) => {
+    await mockDetailApi(page);
+    await page.route("**/v1/auth/session", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          defaultBranchId: "e2e-test-branch-id",
+          branches: [
+            {
+              id: "e2e-test-branch-id",
+              name: "Sede Centro",
+              isMainBranch: true,
+              role: "OWNER",
+            },
+            {
+              id: "e2e-branch-norte",
+              name: "Sucursal Norte",
+              isMainBranch: false,
+              role: "OWNER",
+            },
+          ],
+          business: {
+            id: "e2e-test-business-id",
+            name: "Test Business",
+            plan: "PRO",
+            maxBranches: 5,
+          },
+          userPreferences: { defaultBranchId: "e2e-test-branch-id" },
+        }),
+      });
+    });
+
+    const dialog = await openDetail(page);
+    await expect(dialog.getByTestId("order-detail-branch")).toHaveText("Centro");
   });
 
   test("conversación sin hilo muestra su estado vacío", async ({ page }) => {

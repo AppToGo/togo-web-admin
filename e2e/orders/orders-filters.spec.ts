@@ -147,13 +147,19 @@ test.describe("Orders — búsqueda, filtros y vistas", () => {
     });
     await openBoard(page);
 
+    // Con 1 sola sede seleccionada no se muestra el código corto en la card
+    await expect(page.getByTestId("order-card-branch")).toHaveCount(0);
+
     // The trigger carries no accessible name — locate by visible text.
-    // The selector toggles: check Norte AND uncheck Centro to isolate it.
+    // Seleccionar también Sucursal Norte (2 sedes seleccionadas): ahora sí se muestra "CEN"
     await page
       .getByRole("combobox")
       .filter({ hasText: "Sede Centro" })
       .click();
     await page.getByRole("option", { name: "Sucursal Norte" }).click();
+    await expect(page.getByTestId("order-card-branch").first()).toHaveText("CEN");
+
+    // Desmarcar Sede Centro para dejar solo Sucursal Norte
     await page.getByRole("option", { name: "Sede Centro" }).click();
     await page.keyboard.press("Escape");
 

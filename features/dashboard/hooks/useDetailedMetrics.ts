@@ -1,9 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useCurrentUser } from '@/features/auth/stores/auth.store';
 import { useDateFilterRange } from '@/features/filters/stores/date-filter.store';
-import { useDashboardBranchId } from '../stores/branch-filter.store';
+import {
+  useDashboardBranchId,
+  useDashboardBusinessId,
+} from '../stores/branch-filter.store';
 import apiClient from '@/services/api.service';
 import { DetailedMetrics } from '../types/dashboard.types';
 
@@ -127,8 +129,7 @@ function toOrderStatus(
 }
 
 export function useDetailedMetrics(options?: UseDetailedMetricsOptions) {
-  const user = useCurrentUser();
-  const businessId = user?.businessId;
+  const businessId = useDashboardBusinessId();
   const dateRange = useDateFilterRange();
   const dashboardBranchId = useDashboardBranchId();
   

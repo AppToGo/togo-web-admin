@@ -30,6 +30,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { useCanManageBilling } from "@/features/subscription/hooks/useCanManageBilling";
 import { canCustomizeAssistant } from "@/features/subscription/utils/plan.util";
 import { useBotVoicePreview, useUpdateBusiness } from "../hooks/useBusiness";
 import type { BotVoice, Business } from "../types/business.types";
@@ -113,8 +114,11 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
     : lockedVoice(tb("botVoice.locked.defaultName"));
   const [voice, setVoice] = useState<BotVoice>(saved);
 
+  // La opción de mejorar el plan es solo para quien puede cambiarlo (dueño
+  // o billing.manage): al resto se le bloquea igual, pero sin el modal.
+  const { canManage: canManageBilling } = useCanManageBilling();
   const requirePlan = () => {
-    if (!editable) setIsUpgradeOpen(true);
+    if (!editable && canManageBilling) setIsUpgradeOpen(true);
     return editable;
   };
 
@@ -200,15 +204,17 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
             <p className="text-sm text-indigo-900">
               {tb("botVoice.locked.description")}
             </p>
-            <Button
-              type="button"
-              size="sm"
-              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white"
-              onClick={() => setIsUpgradeOpen(true)}
-            >
-              <Crown className="h-3.5 w-3.5 mr-1.5" />
-              {tb("botVoice.locked.cta")}
-            </Button>
+            {canManageBilling && (
+              <Button
+                type="button"
+                size="sm"
+                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={() => setIsUpgradeOpen(true)}
+              >
+                <Crown className="h-3.5 w-3.5 mr-1.5" />
+                {tb("botVoice.locked.cta")}
+              </Button>
+            )}
           </div>
         )}
         <div className="grid gap-6 md:grid-cols-2">

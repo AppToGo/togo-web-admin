@@ -37,3 +37,11 @@ export {
   getLatenessLevel,
   type LatenessLevel,
 } from './order-lateness.utils';
+
+// Formateo de nombre y código corto de sede
+export {
+  cleanBranchName,
+  formatBranchShortCode,
+  resolveBranchDisplay,
+  type BranchDisplayInfo,
+} from './branch-label.utils';

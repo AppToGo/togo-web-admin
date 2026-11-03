@@ -34,7 +34,6 @@ import {
   useOperatorCatalogSessionOptions,
   useRevokeOperatorCatalogSession,
 } from "../hooks/useOperatorCatalogSessions";
-import { buildSessionExpiryOptions } from "../utils/session-expiry.utils";
 import type { CreatedOperatorCatalogSession } from "../types";
 
 interface OperatorCatalogSessionDialogProps {
@@ -48,10 +47,9 @@ interface OperatorCatalogSessionDialogProps {
  * "Tomar pedido en catálogo": abre el catálogo web en modo operador para
  * que el mesero tome pedidos de mesa desde ahí (en este equipo o
  * escaneando el QR con su celular). Lo suele usar el cajero o el
- * administrador: elige a nombre de qué operador queda la sesión y hasta qué
- * hora dura, sin pasar del cierre del turno de la sede (que puede ser del
- * día siguiente). El link con el token solo existe mientras este diálogo
- * está abierto.
+ * administrador: elige a nombre de qué operador queda la sesión, que dura
+ * hasta el cierre del turno de la sede (puede ser del día siguiente). El
+ * link con el token solo existe mientras este diálogo está abierto.
  */
 export function OperatorCatalogSessionDialog({
   isOpen,
@@ -85,10 +83,12 @@ export function OperatorCatalogSessionDialog({
   const createSession = useCreateOperatorCatalogSession(businessId);
   const revokeSession = useRevokeOperatorCatalogSession(businessId);
   const { data: activeSessions = [] } = useMyOperatorCatalogSessions(businessId, isOpen);
-  // Auditoría: solo el dueño la ve (el servidor la restringe por rol).
+  // Auditoría: solo el dueño la ve (el servidor la restringe por rol). Va
+  // plegada y se pide recién al desplegarla.
   const isOwner = useHasRole("OWNER");
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const { data: audit = { items: [], hasMore: false }, isPending: isAuditPending } =
-    useOperatorCatalogSessionAudit(businessId, isOpen && isOwner);
+    useOperatorCatalogSessionAudit(businessId, isOpen && isOwner && isAuditOpen);
 
   const optionsQuery = useOperatorCatalogSessionOptions(
     businessId,
@@ -109,44 +109,6 @@ export function OperatorCatalogSessionDialog({
     operators.find((o) => o.id === currentUserId)?.id ??
     null;
 
-  // Las horas parten de "ahora": se recalculan cada minuto mientras se
-  // elige, para no ofrecer una que la API ya rechaza (mínimo 5 minutos).
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    if (!isOpen || session) return;
-    // Al abrir de nuevo, "ahora" puede ser de hace horas.
-    const refresh = () => setNow(new Date());
-    const first = setTimeout(refresh, 0);
-    const timer = setInterval(refresh, 60_000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(timer);
-    };
-  }, [isOpen, session]);
-
-  const expiryOptions = useMemo(
-    () =>
-      sessionWindow
-        ? buildSessionExpiryOptions(sessionWindow.closesAt, sessionWindow.timezone, now)
-        : [],
-    [sessionWindow, now]
-  );
-  // Por defecto, el cierre del turno (la última opción).
-  const [selectedExpiresAt, setSelectedExpiresAt] = useState<string | null>(null);
-  const expiresAt =
-    expiryOptions.find((o) => o.value === selectedExpiresAt)?.value ??
-    expiryOptions[expiryOptions.length - 1]?.value ??
-    null;
-
-  // Horas del selector en la zona de la sede, no la del navegador.
-  const formatBranchTime = useMemo(() => {
-    const formatter = new Intl.DateTimeFormat(locale, {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: sessionWindow?.timezone,
-    });
-    return (iso: string) => formatter.format(new Date(iso));
-  }, [locale, sessionWindow?.timezone]);
 
   useEffect(() => {
     if (!session) return;
@@ -174,7 +136,7 @@ export function OperatorCatalogSessionDialog({
     setQrAttempt(0);
     setSelectedBranchId(null);
     setSelectedOperatorId(null);
-    setSelectedExpiresAt(null);
+    setIsAuditOpen(false);
     onClose();
   };
 
@@ -182,7 +144,6 @@ export function OperatorCatalogSessionDialog({
     // Otra sede: otros operadores y otro horario.
     setSelectedBranchId(id);
     setSelectedOperatorId(null);
-    setSelectedExpiresAt(null);
   };
 
   const handleQrRetry = () => {
@@ -191,15 +152,20 @@ export function OperatorCatalogSessionDialog({
   };
 
   const handleCreate = () => {
-    if (!branchId || !operatorId || !expiresAt) return;
+    if (!branchId || !operatorId || !sessionWindow) return;
     createSession.mutate(
-      { branchId, userId: operatorId, expiresAt },
+      { branchId, userId: operatorId },
       { onSuccess: setSession }
     );
   };
 
+  // Horas en la zona de la sede, no la del navegador del admin.
   const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    new Intl.DateTimeFormat(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: sessionWindow?.timezone,
+    }).format(new Date(iso));
 
   // Auditoría: fecha con día para ubicar habilitaciones de días pasados.
   const formatAuditDateTime = (iso: string) =>
@@ -220,6 +186,23 @@ export function OperatorCatalogSessionDialog({
     });
     return f.format(new Date(aIso)) === f.format(new Date(bIso));
   };
+
+  // Sin elegir hora: la sesión dura hasta el cierre del turno (la API lo
+  // pone si no llega `expiresAt`). Fuera de un memo: "mañana" se evalúa en
+  // cada render, aunque el diálogo quede abierto al cruzar la medianoche.
+  const closing = sessionWindow
+    ? {
+        time: formatTime(sessionWindow.closesAt),
+        nextDay: !isSameDay(sessionWindow.closesAt, new Date().toISOString()),
+      }
+    : null;
+
+  // Inicio de la sesión continuada: con fecha si no es de hoy (turno de
+  // noche que cruzó la medianoche).
+  const formatStartedAt = (iso: string) =>
+    isSameDay(iso, new Date().toISOString())
+      ? formatTime(iso)
+      : formatAuditDateTime(iso);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -260,7 +243,7 @@ export function OperatorCatalogSessionDialog({
                 </div>
               ) : optionsQuery.isError ? (
                 <p className="text-sm text-red-600">{t("optionsError")}</p>
-              ) : !sessionWindow || expiryOptions.length === 0 ? (
+              ) : !sessionWindow || !closing ? (
                 <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
                   {t("noShift")}
                 </p>
@@ -289,40 +272,22 @@ export function OperatorCatalogSessionDialog({
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="operator-session-expires">{t("expiresAt")}</Label>
-                    <Select
-                      value={expiresAt ?? undefined}
-                      onValueChange={setSelectedExpiresAt}
-                    >
-                      <SelectTrigger id="operator-session-expires">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {expiryOptions.map((option, index) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {formatBranchTime(option.value)}
-                            {option.nextDay && ` (${t("nextDay")})`}
-                            {index === expiryOptions.length - 1 &&
-                              sessionWindow.scheduleConfigured &&
-                              ` · ${t("closingTime")}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-slate-500">
-                      {sessionWindow.scheduleConfigured
-                        ? t("expiresHint")
-                        : t("noScheduleHint")}
-                    </p>
-                  </div>
+                  <p className="text-xs text-slate-500">
+                    {sessionWindow.scheduleConfigured
+                      ? t("expiresInfo", {
+                          time: closing.nextDay
+                            ? `${closing.time} (${t("nextDay")})`
+                            : closing.time,
+                        })
+                      : t("noScheduleHint")}
+                  </p>
                 </>
               )}
 
               <Button
                 className="w-full"
                 onClick={handleCreate}
-                disabled={!branchId || !businessId || !operatorId || !expiresAt}
+                disabled={!branchId || !businessId || !operatorId || !sessionWindow}
                 isLoading={createSession.isPending}
               >
                 {t("create")}
@@ -355,6 +320,14 @@ export function OperatorCatalogSessionDialog({
                   time: formatTime(session.expiresAt),
                 })}
               </p>
+              {session.continued && (
+                <p className="text-xs text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">
+                  {t("continuedNotice", {
+                    operator: session.operatorName,
+                    time: formatStartedAt(session.startedAt),
+                  })}
+                </p>
+              )}
               <Button asChild className="w-full">
                 <a href={session.url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink />
@@ -382,6 +355,7 @@ export function OperatorCatalogSessionDialog({
                         branch: active.branchName,
                         time: formatTime(active.expiresAt),
                       })}
+                      {active.origin === "CATALOG_LOGIN" && ` · ${t("viaLogin")}`}
                     </span>
                     <Button
                       variant="ghost"
@@ -401,57 +375,69 @@ export function OperatorCatalogSessionDialog({
           )}
 
           {isOwner && (
-            <div className="border-t border-slate-100 pt-4 space-y-2">
-              <p className="text-xs font-semibold text-slate-500">{t("auditTitle")}</p>
-              {isAuditPending ? (
-                <Skeleton className="h-10 w-full" />
-              ) : audit.items.length === 0 ? (
-                <p className="text-sm text-slate-500">{t("auditEmpty")}</p>
-              ) : (
-                <>
-                  <ul className="space-y-1.5">
-                    {audit.items.map((entry) => {
-                      const expired = new Date(entry.expiresAt) <= new Date();
-                      const entered = entry.firstUsedAt
-                        ? isSameDay(entry.firstUsedAt, entry.createdAt)
-                          ? t("auditEntered", {
-                              time: formatTime(entry.firstUsedAt),
-                            })
-                          : t("auditEnteredAt", {
-                              datetime: formatAuditDateTime(entry.firstUsedAt),
-                            })
-                        : t("auditNotEntered");
-                      const status = entry.revokedAt
-                        ? t("auditRevoked")
-                        : expired
-                          ? t("auditExpired")
-                          : entered;
-                      return (
-                        <li key={entry.id} className="text-sm text-slate-700">
-                          <span className="block truncate font-medium">
-                            {entry.createdById === entry.userId
-                              ? t("auditSelf", {
-                                  operator: entry.operatorName,
-                                })
-                              : t("auditEntry", {
-                                  creator: entry.createdByName,
-                                  operator: entry.operatorName,
-                                })}
-                          </span>
-                          <span className="block truncate text-xs text-slate-500">
-                            {entry.branchName} ·{" "}
-                            {formatAuditDateTime(entry.createdAt)} · {status}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {audit.hasMore && (
-                    <p className="text-xs text-slate-400">{t("auditMore")}</p>
-                  )}
-                </>
-              )}
-            </div>
+            <details
+              className="border-t border-slate-100 pt-4"
+              open={isAuditOpen}
+              onToggle={(e) => setIsAuditOpen(e.currentTarget.open)}
+            >
+              <summary className="cursor-pointer text-xs font-semibold text-slate-500">
+                {t("auditTitle")}
+              </summary>
+              <div className="mt-2 space-y-2">
+                {isAuditPending ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : audit.items.length === 0 ? (
+                  <p className="text-sm text-slate-500">{t("auditEmpty")}</p>
+                ) : (
+                  <>
+                    <ul className="space-y-1.5">
+                      {audit.items.map((entry) => {
+                        const expired = new Date(entry.expiresAt) <= new Date();
+                        const entered = entry.firstUsedAt
+                          ? isSameDay(entry.firstUsedAt, entry.createdAt)
+                            ? t("auditEntered", {
+                                time: formatTime(entry.firstUsedAt),
+                              })
+                            : t("auditEnteredAt", {
+                                datetime: formatAuditDateTime(entry.firstUsedAt),
+                              })
+                          : t("auditNotEntered");
+                        const status = entry.revokedAt
+                          ? t("auditRevoked")
+                          : expired
+                            ? t("auditExpired")
+                            : entered;
+                        return (
+                          <li key={entry.id} className="text-sm text-slate-700">
+                            <span className="block truncate font-medium">
+                              {entry.origin === "CATALOG_LOGIN"
+                                ? t("auditLogin", {
+                                    operator: entry.operatorName,
+                                  })
+                                : entry.createdById === entry.userId
+                                ? t("auditSelf", {
+                                    operator: entry.operatorName,
+                                  })
+                                : t("auditEntry", {
+                                    creator: entry.createdByName,
+                                    operator: entry.operatorName,
+                                  })}
+                            </span>
+                            <span className="block truncate text-xs text-slate-500">
+                              {entry.branchName} ·{" "}
+                              {formatAuditDateTime(entry.createdAt)} · {status}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {audit.hasMore && (
+                      <p className="text-xs text-slate-400">{t("auditMore")}</p>
+                    )}
+                  </>
+                )}
+              </div>
+            </details>
           )}
         </div>
       </DialogContent>
