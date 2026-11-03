@@ -12,6 +12,8 @@ import {
   type PaymentOverdueEventDetail,
 } from "@/services/session.service";
 import { useWompiReturnHandler } from "./useWompiReturnHandler";
+import { useCanManageBilling } from "./useCanManageBilling";
+import { TOUR_DISABLED_TEMPORARILY } from "@/hooks/useTour";
 
 const SESSION_FLAG_PREFIX = "togo-upgrade-modal-shown-";
 
@@ -44,6 +46,7 @@ const useUpgradePlanModalStore = create<UpgradePlanModalStore>((set) => ({
  */
 export function useUpgradePlanModal() {
   const user = useCurrentUser();
+  const canManageBilling = useCanManageBilling();
   const { open, openModal, closeModal } = useUpgradePlanModalStore();
 
   // Detecta la vuelta del Checkout de Wompi y refresca el estado de cuenta —
@@ -56,8 +59,11 @@ export function useUpgradePlanModal() {
   const completedTours = useTourStore((state) => state.completedTours);
 
   // Auto-open once per session for free-plan users, on any page (except demo sessions).
+  // Solo para quien puede gestionar la facturación (dueño o billing.manage):
+  // el resto del equipo no debe ver ni poder abrir el modal de plan.
   useEffect(() => {
     if (!user?.userId || user.isDemo) return;
+    if (!canManageBilling) return;
     if (user.subscriptionPlan === undefined) return;
     if (user.subscriptionPlan !== 1) return;
 
@@ -65,8 +71,11 @@ export function useUpgradePlanModal() {
     // On first login the tour runs on the orders page; showing the modal at the same
     // time creates a confusing overlap. Once markCompleted() fires (via goNext or skip),
     // completedTours updates, this effect re-runs, and the modal opens.
-    const tourKey = `orders:${user.userId}:${user.businessId}`;
-    if (!completedTours[tourKey]) return;
+    // Con el tour apagado temporalmente no hay nada que esperar.
+    if (!TOUR_DISABLED_TEMPORARILY) {
+      const tourKey = `orders:${user.userId}:${user.businessId}`;
+      if (!completedTours[tourKey]) return;
+    }
 
     const flagKey = `${SESSION_FLAG_PREFIX}${user.userId}-${user.businessId}`;
     const alreadyShown = sessionStorage.getItem(flagKey);
@@ -79,7 +88,7 @@ export function useUpgradePlanModal() {
       // sessionStorage unavailable (private mode, quota exceeded) — skip flag
     }
     openModal();
-  }, [user?.userId, user?.isDemo, user?.subscriptionPlan, user?.businessId, completedTours, openModal]);
+  }, [user?.userId, user?.isDemo, user?.subscriptionPlan, user?.businessId, canManageBilling, completedTours, openModal]);
 
   // Reacciona al evento TRIAL_EXPIRED_EVENT (disparado por el interceptor de Axios
   // en services/api.service.ts al recibir un 402). El mismo patrón que
@@ -89,6 +98,14 @@ export function useUpgradePlanModal() {
   useEffect(() => {
     function handleTrialExpired(event: Event) {
       const { message } = (event as CustomEvent<TrialExpiredEventDetail>).detail;
+      // Sin permiso de facturación no se abre el modal: se avisa para que lo
+      // vea con el dueño del negocio.
+      if (!canManageBilling) {
+        toast.error("Tu período de prueba terminó. Pide al dueño del negocio que elija un plan.", {
+          id: TRIAL_EXPIRED_TOAST_ID,
+        });
+        return;
+      }
       toast.error(
         message || "Tu período de prueba terminó. Elige un plan para continuar.",
         { id: TRIAL_EXPIRED_TOAST_ID },
@@ -98,7 +115,7 @@ export function useUpgradePlanModal() {
 
     window.addEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
     return () => window.removeEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
-  }, [openModal]);
+  }, [openModal, canManageBilling]);
 
   // Reacciona a PAYMENT_OVERDUE_EVENT (plan pago con pago vencido más allá
   // del período de gracia). A diferencia de TRIAL_EXPIRED, NO abre el modal

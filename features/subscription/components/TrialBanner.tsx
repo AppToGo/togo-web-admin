@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useOpenUpgradePlanModal } from "../hooks/useUpgradePlanModal";
+import { useCanManageBilling } from "../hooks/useCanManageBilling";
 
 const URGENT_THRESHOLD_DAYS = 3;
 
@@ -22,10 +23,14 @@ export function TrialBanner() {
   const t = useTranslations("dashboard.trialBanner");
   const user = useCurrentUser();
   const openUpgradeModal = useOpenUpgradePlanModal();
+  const canManageBilling = useCanManageBilling();
   const [now] = React.useState(() => Date.now());
 
   // Solo aplica a negocios reales en plan Free con trialEndsAt conocido (no en modo demo)
   if (user?.isDemo || user?.subscriptionPlan !== 1 || !user?.trialEndsAt) return null;
+  // El recordatorio del plan y su CTA son solo para quien puede cambiarlo
+  // (dueño o billing.manage); el resto del equipo no lo ve.
+  if (!canManageBilling) return null;
 
   const trialEndsAtMs = new Date(user.trialEndsAt).getTime();
   if (Number.isNaN(trialEndsAtMs)) return null; // fecha inválida — no mostrar basura al usuario

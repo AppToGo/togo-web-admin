@@ -35,6 +35,8 @@ interface UsersMobileViewProps {
   limitText: string;
   isLimitReached: boolean;
   onUpgrade: () => void;
+  /** Sin esto se ocultan los CTAs de mejorar plan (dueño o billing.manage). */
+  canUpgrade?: boolean;
   onCreate: () => void;
   /** Usuario logueado: no puede desactivarse a sí mismo. */
   currentUserId: string | undefined;
@@ -50,6 +52,7 @@ export function UsersMobileView({
   limitText,
   isLimitReached,
   onUpgrade,
+  canUpgrade = true,
   onCreate,
   currentUserId,
   onDeactivate,
@@ -88,7 +91,7 @@ export function UsersMobileView({
           className={cn("flex items-center gap-2 text-xs", isLimitReached ? "text-amber-700" : "text-slate-500")}
         >
           {limitText}
-          {isLimitReached && (
+          {isLimitReached && canUpgrade && (
             <button
               type="button"
               onClick={onUpgrade}
@@ -170,7 +173,11 @@ export function UsersMobileView({
         <div aria-hidden className="h-16" />
       </div>
 
-      <MobileFab label={t("mobile.newUser")} onClick={isLimitReached ? onUpgrade : onCreate} />
+      <MobileFab
+        label={t("mobile.newUser")}
+        onClick={isLimitReached ? onUpgrade : onCreate}
+        disabled={isLimitReached && !canUpgrade}
+      />
 
       <BottomSheet
         open={!!actionsFor}

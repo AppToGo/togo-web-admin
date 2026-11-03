@@ -40,6 +40,7 @@ import { useCurrentBusiness } from "@/features/business";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { useCanManageBilling } from "@/features/subscription/hooks/useCanManageBilling";
 import { canCustomizeAssistant } from "@/features/subscription/utils/plan.util";
 import {
   useBotMessages,
@@ -62,6 +63,8 @@ export function BotMessagesPage() {
     business?.subscriptionPlan ?? jwtPlan
   );
   const allowed = !permissionsLoading && hasPermission(BOT_MESSAGES_PERMISSION);
+  // La opción de mejorar el plan es solo para quien puede cambiarlo.
+  const canManageBilling = useCanManageBilling();
 
   const businessId = business?.id ?? "";
   const catalog = useBotMessages(
@@ -126,15 +129,19 @@ export function BotMessagesPage() {
         {header}
         <div className="flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
           <p className="text-sm text-indigo-900">{t("locked.description")}</p>
-          <Button
-            type="button"
-            size="sm"
-            className="shrink-0 bg-indigo-600 text-white hover:bg-indigo-700"
-            onClick={() => setUpgradeOpen(true)}
-          >
-            <Crown className="mr-1.5 h-3.5 w-3.5" />
-            {t("locked.cta")}
-          </Button>
+          {/* La opción de mejorar el plan es solo para quien puede cambiarlo
+              (dueño o billing.manage). */}
+          {canManageBilling && (
+            <Button
+              type="button"
+              size="sm"
+              className="shrink-0 bg-indigo-600 text-white hover:bg-indigo-700"
+              onClick={() => setUpgradeOpen(true)}
+            >
+              <Crown className="mr-1.5 h-3.5 w-3.5" />
+              {t("locked.cta")}
+            </Button>
+          )}
         </div>
         <UpgradePlanModal
           open={upgradeOpen}
