@@ -330,7 +330,17 @@ export interface CreatedOperatorCatalogSession {
   url: string;
   expiresAt: string;
   operatorName: string;
+  /**
+   * El operador ya tenía una sesión abierta en la sede: este link la
+   * continúa (mismos pedidos del turno) y el anterior deja de servir.
+   */
+  continued: boolean;
+  /** Inicio de la sesión: desde ahí cuentan sus pedidos del turno */
+  startedAt: string;
 }
+
+/** Cómo se abrió: link/QR del admin o login del operario en el catálogo. */
+export type OperatorSessionOrigin = "ADMIN_LINK" | "CATALOG_LOGIN";
 
 export interface CreateOperatorCatalogSessionInput {
   branchId: string;
@@ -367,6 +377,7 @@ export interface OperatorCatalogSessionSummary {
   createdAt: string;
   expiresAt: string;
   lastUsedAt: string | null;
+  origin: OperatorSessionOrigin;
 }
 
 /** Auditoría de habilitaciones: solo la ve el dueño del negocio. */
@@ -384,6 +395,7 @@ export interface OperatorCatalogSessionAudit {
   /** null: habilitada pero el mesero no ha ingresado */
   firstUsedAt: string | null;
   lastUsedAt: string | null;
+  origin: OperatorSessionOrigin;
 }
 
 export interface OperatorCatalogSessionAuditResponse {
