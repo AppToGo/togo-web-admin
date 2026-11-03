@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useCurrentUser } from "@/features/auth/stores/auth.store";
 import { useTourStore } from "@/stores/tour.store";
 import {
@@ -46,7 +47,9 @@ const useUpgradePlanModalStore = create<UpgradePlanModalStore>((set) => ({
  */
 export function useUpgradePlanModal() {
   const user = useCurrentUser();
-  const canManageBilling = useCanManageBilling();
+  const t = useTranslations("subscription.trialNotices");
+  const { canManage: canManageBilling, isLoading: billingLoading } =
+    useCanManageBilling();
   const { open, openModal, closeModal } = useUpgradePlanModalStore();
 
   // Detecta la vuelta del Checkout de Wompi y refresca el estado de cuenta —
@@ -63,6 +66,9 @@ export function useUpgradePlanModal() {
   // el resto del equipo no debe ver ni poder abrir el modal de plan.
   useEffect(() => {
     if (!user?.userId || user.isDemo) return;
+    // Sin permisos cargados no se decide: un billing.manage tardío vería el
+    // toast de "pide al dueño" en vez del modal.
+    if (billingLoading) return;
     if (!canManageBilling) return;
     if (user.subscriptionPlan === undefined) return;
     if (user.subscriptionPlan !== 1) return;
@@ -88,7 +94,7 @@ export function useUpgradePlanModal() {
       // sessionStorage unavailable (private mode, quota exceeded) — skip flag
     }
     openModal();
-  }, [user?.userId, user?.isDemo, user?.subscriptionPlan, user?.businessId, canManageBilling, completedTours, openModal]);
+  }, [user?.userId, user?.isDemo, user?.subscriptionPlan, user?.businessId, canManageBilling, billingLoading, completedTours, openModal]);
 
   // Reacciona al evento TRIAL_EXPIRED_EVENT (disparado por el interceptor de Axios
   // en services/api.service.ts al recibir un 402). El mismo patrón que
@@ -99,23 +105,23 @@ export function useUpgradePlanModal() {
     function handleTrialExpired(event: Event) {
       const { message } = (event as CustomEvent<TrialExpiredEventDetail>).detail;
       // Sin permiso de facturación no se abre el modal: se avisa para que lo
-      // vea con el dueño del negocio.
-      if (!canManageBilling) {
-        toast.error("Tu período de prueba terminó. Pide al dueño del negocio que elija un plan.", {
-          id: TRIAL_EXPIRED_TOAST_ID,
-        });
+      // vea con el dueño del negocio. Si los permisos aún cargan, no se
+      // decide (el efecto se re-registra al terminar la carga).
+      if (billingLoading || !canManageBilling) {
+        if (!billingLoading) {
+          toast.error(t("trialExpiredAskOwner"), { id: TRIAL_EXPIRED_TOAST_ID });
+        }
         return;
       }
-      toast.error(
-        message || "Tu período de prueba terminó. Elige un plan para continuar.",
-        { id: TRIAL_EXPIRED_TOAST_ID },
-      );
+      toast.error(message || t("trialExpiredChoosePlan"), {
+        id: TRIAL_EXPIRED_TOAST_ID,
+      });
       openModal();
     }
 
     window.addEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
     return () => window.removeEventListener(TRIAL_EXPIRED_EVENT, handleTrialExpired);
-  }, [openModal, canManageBilling]);
+  }, [openModal, canManageBilling, billingLoading, t]);
 
   // Reacciona a PAYMENT_OVERDUE_EVENT (plan pago con pago vencido más allá
   // del período de gracia). A diferencia de TRIAL_EXPIRED, NO abre el modal
@@ -124,15 +130,14 @@ export function useUpgradePlanModal() {
   useEffect(() => {
     function handlePaymentOverdue(event: Event) {
       const { message } = (event as CustomEvent<PaymentOverdueEventDetail>).detail;
-      toast.error(
-        message || "Tu pago está vencido. Regulariza tu suscripción para seguir creando y editando.",
-        { id: PAYMENT_OVERDUE_TOAST_ID },
-      );
+      toast.error(message || t("paymentOverdue"), {
+        id: PAYMENT_OVERDUE_TOAST_ID,
+      });
     }
 
     window.addEventListener(PAYMENT_OVERDUE_EVENT, handlePaymentOverdue);
     return () => window.removeEventListener(PAYMENT_OVERDUE_EVENT, handlePaymentOverdue);
-  }, []);
+  }, [t]);
 
   return { open, closeModal };
 }

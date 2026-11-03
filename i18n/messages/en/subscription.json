@@ -1,4 +1,9 @@
 {
+  "trialNotices": {
+    "trialExpiredChoosePlan": "Your trial period ended. Choose a plan to continue.",
+    "trialExpiredAskOwner": "Your trial period ended. Ask the business owner to choose a plan.",
+    "paymentOverdue": "Your payment is overdue. Bring your subscription up to date to keep creating and editing."
+  },
   "upgradePlanModal": {
     "title": "Upgrade your plan",
     "subtitle": "Unlock all ToGo features and grow your business",

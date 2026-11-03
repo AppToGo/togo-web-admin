@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { useFormatDate } from "@/hooks/useFormatDate";
 import { useOpenUpgradePlanModal } from "../../hooks/useUpgradePlanModal";
+import { useCanManageBilling } from "../../hooks/useCanManageBilling";
 import { BillingStatusBadge } from "./BillingStatusBadge";
 import type { SubscriptionStatus } from "../../types/billing.types";
 
@@ -55,6 +56,9 @@ function daysUntilTrialEnds(trialEndsAt: string): number | null {
 export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatusCardProps) {
   const t = useTranslations("subscription.billing");
   const openUpgradeModal = useOpenUpgradePlanModal();
+  // "Elegir/Cambiar plan" es solo para quien puede cambiarlo (dueño o
+  // billing.manage): la página la ve cualquiera con billing.view.
+  const { canManage: canManageBilling } = useCanManageBilling();
 
   const trialEndsAt = useFormatDate(status?.trialEndsAt, { preset: "short" });
   const nextPaymentDue = useFormatDate(status?.nextPaymentDue, { preset: "short" });
@@ -134,9 +138,11 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
                     ? t("trial.endingSoon", { date: trialEndsAt })
                     : t("trial.active", { date: trialEndsAt })}
               </p>
-              <Button size="sm" className="mt-2" onClick={openUpgradeModal}>
-                {t("cta.choosePlan")}
-              </Button>
+              {canManageBilling && (
+                <Button size="sm" className="mt-2" onClick={openUpgradeModal}>
+                  {t("cta.choosePlan")}
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -202,9 +208,11 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
           </div>
         </dl>
 
-        <Button variant="outline" size="sm" onClick={openUpgradeModal}>
-          {t("cta.changePlan")}
-        </Button>
+        {canManageBilling && (
+          <Button variant="outline" size="sm" onClick={openUpgradeModal}>
+            {t("cta.changePlan")}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

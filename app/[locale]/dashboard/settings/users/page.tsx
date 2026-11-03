@@ -60,7 +60,7 @@ export default function UsersPage() {
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
   // La opción de mejorar el plan es solo para quien puede cambiarlo (dueño
   // o billing.manage).
-  const canManageBilling = useCanManageBilling();
+  const { canManage: canManageBilling } = useCanManageBilling();
   const openUpgrade = () => {
     if (canManageBilling) setIsUpgradeOpen(true);
   };
@@ -173,12 +173,19 @@ export default function UsersPage() {
 
         {isLimitReached && (
           <Card className="border-amber-200 bg-amber-50">
-            <CardContent className="py-4 flex items-center justify-between">
-              <p className="text-sm text-amber-800">
-                {t("limits.reached", { max: maxUsers })}
-              </p>
+            <CardContent className="py-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-amber-800">
+                  {t("limits.reached", { max: maxUsers })}
+                </p>
+                {!canManageBilling && (
+                  <p className="text-xs text-amber-700 mt-1">
+                    {t("limits.askOwner")}
+                  </p>
+                )}
+              </div>
               {canManageBilling && (
-                <Button size="sm" variant="outline" onClick={openUpgrade} className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                <Button size="sm" variant="outline" onClick={openUpgrade} className="border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0">
                   <Crown className="w-4 h-4 mr-1" />
                   {t("limits.upgradeCta")}
                 </Button>

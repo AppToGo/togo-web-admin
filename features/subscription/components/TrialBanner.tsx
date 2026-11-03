@@ -23,7 +23,7 @@ export function TrialBanner() {
   const t = useTranslations("dashboard.trialBanner");
   const user = useCurrentUser();
   const openUpgradeModal = useOpenUpgradePlanModal();
-  const canManageBilling = useCanManageBilling();
+  const { canManage: canManageBilling } = useCanManageBilling();
   const [now] = React.useState(() => Date.now());
 
   // Solo aplica a negocios reales en plan Free con trialEndsAt conocido (no en modo demo)

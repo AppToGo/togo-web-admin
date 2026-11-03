@@ -9,9 +9,14 @@ import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
  * Hoy solo el dueño del negocio (OWNER) o quien tenga permiso de
  * facturación (`billing.manage`, el mismo que gestiona la suscripción).
  * Centraliza el criterio para no repetirlo en cada CTA.
+ *
+ * `isLoading` es true mientras llegan `/auth/me/permissions`: hasta
+ * entonces `hasPermission` responde false y no se puede decidir para un
+ * no-OWNER. Quien decida algo visible (modal, toast) debe esperar a que
+ * termine; para render condicional basta `canManage`.
  */
-export function useCanManageBilling(): boolean {
+export function useCanManageBilling(): { canManage: boolean; isLoading: boolean } {
   const isOwner = useHasRole("OWNER");
-  const { hasPermission } = useMyPermissions();
-  return isOwner || hasPermission("billing.manage");
+  const { hasPermission, isLoading } = useMyPermissions();
+  return { canManage: isOwner || hasPermission("billing.manage"), isLoading };
 }

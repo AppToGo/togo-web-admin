@@ -36,7 +36,7 @@ interface UsersMobileViewProps {
   isLimitReached: boolean;
   onUpgrade: () => void;
   /** Sin esto se ocultan los CTAs de mejorar plan (dueño o billing.manage). */
-  canUpgrade?: boolean;
+  canUpgrade: boolean;
   onCreate: () => void;
   /** Usuario logueado: no puede desactivarse a sí mismo. */
   currentUserId: string | undefined;
@@ -52,7 +52,7 @@ export function UsersMobileView({
   limitText,
   isLimitReached,
   onUpgrade,
-  canUpgrade = true,
+  canUpgrade,
   onCreate,
   currentUserId,
   onDeactivate,

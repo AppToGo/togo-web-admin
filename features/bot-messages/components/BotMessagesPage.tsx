@@ -64,7 +64,7 @@ export function BotMessagesPage() {
   );
   const allowed = !permissionsLoading && hasPermission(BOT_MESSAGES_PERMISSION);
   // La opción de mejorar el plan es solo para quien puede cambiarlo.
-  const canManageBilling = useCanManageBilling();
+  const { canManage: canManageBilling } = useCanManageBilling();
 
   const businessId = business?.id ?? "";
   const catalog = useBotMessages(

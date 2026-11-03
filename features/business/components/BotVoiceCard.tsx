@@ -116,7 +116,7 @@ export function BotVoiceCard({ business }: BotVoiceCardProps) {
 
   // La opción de mejorar el plan es solo para quien puede cambiarlo (dueño
   // o billing.manage): al resto se le bloquea igual, pero sin el modal.
-  const canManageBilling = useCanManageBilling();
+  const { canManage: canManageBilling } = useCanManageBilling();
   const requirePlan = () => {
     if (!editable && canManageBilling) setIsUpgradeOpen(true);
     return editable;
