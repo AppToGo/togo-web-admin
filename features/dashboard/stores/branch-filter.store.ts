@@ -62,22 +62,34 @@ export const useBranchFilterStore = create<BranchFilterStore>()(
     {
       name: 'togo-dashboard-branch-filter',
       storage: createJSONStorage(() => localStorage),
+      // v1 agrega `businessId`. Una sede guardada antes no sabe de qué
+      // negocio es: se descarta (vuelve a "Todas las sedes") en vez de
+      // aplicarla a cualquier negocio que elija el SUPER_ADMIN.
+      version: 1,
+      migrate: (persisted, version) =>
+        version < 1 ? initialState : (persisted as BranchFilterState),
     }
   )
 );
 
 /**
  * Hook para obtener el ID de la sede seleccionada, solo si se eligió en el
- * negocio actual. Las selecciones guardadas antes del campo `businessId`
- * (llegan como null) se respetan: un usuario de negocio no cambia de negocio.
+ * negocio actual.
  */
 export function useDashboardBranchId(): string | null {
   const businessId = useEffectiveBusinessId();
   return useBranchFilterStore((state) =>
-    state.businessId === null || state.businessId === businessId
-      ? state.selectedBranchId
-      : null
+    state.businessId === businessId ? state.selectedBranchId : null
   );
+}
+
+/**
+ * Negocio de las estadísticas del dashboard: el del selector (SUPER_ADMIN)
+ * o el propio. Con "Todos los negocios" (`""`) es undefined: las métricas
+ * son de un negocio y no se consultan.
+ */
+export function useDashboardBusinessId(): string | undefined {
+  return useEffectiveBusinessId() || undefined;
 }
 
 /**
