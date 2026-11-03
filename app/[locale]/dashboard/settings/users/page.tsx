@@ -32,6 +32,7 @@ import { CreateUserDialog } from "@/features/users/components/CreateUserDialog";
 import { UNLIMITED_PLAN_LIMIT } from "@/features/subscription/services/subscription.service";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 import { UpgradePlanModal } from "@/features/subscription/components/UpgradePlanModal";
+import { useCanManageBilling } from "@/features/subscription/hooks/useCanManageBilling";
 import { UsersMobileView } from "@/features/users/components/UsersMobileView";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,12 @@ export default function UsersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const isMobile = useIsMobile();
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  // La opción de mejorar el plan es solo para quien puede cambiarlo (dueño
+  // o billing.manage).
+  const { canManage: canManageBilling } = useCanManageBilling();
+  const openUpgrade = () => {
+    if (canManageBilling) setIsUpgradeOpen(true);
+  };
   const [deleteTarget, setDeleteTarget] = useState<UserType | null>(null);
   const deleteUser = useDeleteUser();
   const activateUser = useActivateUser();
@@ -123,7 +130,8 @@ export default function UsersPage() {
           isLoading={isLoading}
           limitText={limitText}
           isLimitReached={isLimitReached}
-          onUpgrade={() => setIsUpgradeOpen(true)}
+          onUpgrade={openUpgrade}
+          canUpgrade={canManageBilling}
           onCreate={() => setIsCreateOpen(true)}
           currentUserId={user?.userId}
           onDeactivate={setDeleteTarget}
@@ -146,15 +154,18 @@ export default function UsersPage() {
                 {" · "}
                 {limitLabel}
               </span>
-              {isLimitReached && (
-                <button onClick={() => setIsUpgradeOpen(true)} className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium">
+              {isLimitReached && canManageBilling && (
+                <button onClick={openUpgrade} className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium">
                   <Crown className="w-3 h-3" />
                   {t("limits.upgradeCta")}
                 </button>
               )}
             </p>
           </div>
-          <Button onClick={() => (isLimitReached ? setIsUpgradeOpen(true) : setIsCreateOpen(true))}>
+          <Button
+            onClick={() => (isLimitReached ? openUpgrade() : setIsCreateOpen(true))}
+            disabled={isLimitReached && !canManageBilling}
+          >
             <Plus className="w-4 h-4 mr-2" />
             {t("buttons.addUser")}
           </Button>
@@ -162,14 +173,23 @@ export default function UsersPage() {
 
         {isLimitReached && (
           <Card className="border-amber-200 bg-amber-50">
-            <CardContent className="py-4 flex items-center justify-between">
-              <p className="text-sm text-amber-800">
-                {t("limits.reached", { max: maxUsers })}
-              </p>
-              <Button size="sm" variant="outline" onClick={() => setIsUpgradeOpen(true)} className="border-amber-300 text-amber-700 hover:bg-amber-100">
-                <Crown className="w-4 h-4 mr-1" />
-                {t("limits.upgradeCta")}
-              </Button>
+            <CardContent className="py-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-amber-800">
+                  {t("limits.reached", { max: maxUsers })}
+                </p>
+                {!canManageBilling && (
+                  <p className="text-xs text-amber-700 mt-1">
+                    {t("limits.askOwner")}
+                  </p>
+                )}
+              </div>
+              {canManageBilling && (
+                <Button size="sm" variant="outline" onClick={openUpgrade} className="border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0">
+                  <Crown className="w-4 h-4 mr-1" />
+                  {t("limits.upgradeCta")}
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
@@ -198,7 +218,10 @@ export default function UsersPage() {
                 <p className="text-slate-500 max-w-sm mx-auto mb-6">
                   {t("empty.description")}
                 </p>
-                <Button onClick={() => (isLimitReached ? setIsUpgradeOpen(true) : setIsCreateOpen(true))}>
+                <Button
+                  onClick={() => (isLimitReached ? openUpgrade() : setIsCreateOpen(true))}
+                  disabled={isLimitReached && !canManageBilling}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   {t("buttons.addUser")}
                 </Button>

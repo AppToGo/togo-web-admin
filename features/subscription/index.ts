@@ -12,6 +12,7 @@ export {
   useUpgradePlan,
   useUpgradePlanModal,
   useOpenUpgradePlanModal,
+  useCanManageBilling,
   usePlanCatalog,
   useTrialDays,
   useSubscriptionStatus,

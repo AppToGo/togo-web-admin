@@ -36,6 +36,7 @@ import { useEffectiveBusinessId } from "@/features/business/stores/business.stor
 import { useEffectiveBranches } from "@/features/branches/hooks";
 import { useBranchStore } from "@/stores/branch.store";
 import { TourProvider, useTourContext } from "@/components/tour";
+import { TOUR_DISABLED_TEMPORARILY } from "@/hooks/useTour";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ORDERS_TOUR_STEPS } from "@/features/orders/config/orders-tour-steps";
 
@@ -46,6 +47,9 @@ function TourHelpButton() {
   const { startTour } = useTourContext();
   const t = useTranslations("orders.tour");
   const isMobile = useIsMobile();
+  // Tour oculto temporalmente (ver TOUR_DISABLED_TEMPORARILY): no se muestra
+  // a nadie mientras se ajusta. No eliminar este botón, solo está oculto.
+  if (TOUR_DISABLED_TEMPORARILY) return null;
   // The tour is not available on mobile
   if (isMobile) return null;
   return (

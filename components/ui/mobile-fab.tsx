@@ -14,17 +14,20 @@ interface MobileFabProps {
   /** Hay barra inferior debajo: sube el botón para no taparla. */
   aboveBottomNav?: boolean;
   testId?: string;
+  disabled?: boolean;
 }
 
-export function MobileFab({ label, onClick, aboveBottomNav, testId }: MobileFabProps) {
+export function MobileFab({ label, onClick, aboveBottomNav, testId, disabled }: MobileFabProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       data-testid={testId}
       className={cn(
         "fixed right-4 z-30 flex h-[52px] items-center gap-2 rounded-full bg-slate-900 pl-4 pr-5 text-[15px] font-semibold text-white shadow-lg md:hidden",
-        aboveBottomNav ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]" : "bottom-6"
+        aboveBottomNav ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]" : "bottom-6",
+        disabled && "opacity-40"
       )}
     >
       <Plus className="h-5 w-5" />

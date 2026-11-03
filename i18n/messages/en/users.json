@@ -115,7 +115,8 @@
   "limits": {
     "activeUsers": "active users",
     "upgradeCta": "Upgrade plan",
-    "reached": "You reached your plan limit of {max} active users. Upgrade to add more operators."
+    "reached": "You reached your plan limit of {max} active users. Upgrade to add more operators.",
+    "askOwner": "Ask the business owner to upgrade the plan to add more operators."
   },
   "errors": {
     "loadFailed": "Error loading user",
