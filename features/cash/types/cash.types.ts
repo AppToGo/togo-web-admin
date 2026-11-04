@@ -111,7 +111,8 @@ export interface CashReceivable {
 /** ¿Se puede mandar el recibo por WhatsApp? (`GET …/orders/:id/receipt/whatsapp-window`) */
 export interface ReceiptWhatsappWindow {
   available: boolean;
-  reason: "OPEN" | "WINDOW_CLOSED" | "NO_PHONE";
+  /** `TEMPLATE`: ventana cerrada, pero sale como plantilla aprobada. */
+  reason: "OPEN" | "TEMPLATE" | "WINDOW_CLOSED" | "NO_PHONE";
   windowExpiresAt: string | null;
 }
 

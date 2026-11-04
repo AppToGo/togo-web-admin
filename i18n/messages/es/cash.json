@@ -391,6 +391,7 @@
       "whatsappFailed": "No se pudo enviar el recibo por WhatsApp",
       "noPhone": "Para enviarlo por WhatsApp agrega el teléfono del cliente en la venta.",
       "windowClosed": "El cliente no ha escrito por WhatsApp en las últimas 24 horas: WhatsApp no deja enviarle el recibo.",
+      "template": "El cliente no ha escrito en las últimas 24 horas: el recibo saldrá como plantilla de WhatsApp, que Meta cobra.",
       "order": "Pedido",
       "paidWith": "Pagado con",
       "received": "Recibido",

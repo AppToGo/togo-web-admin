@@ -391,6 +391,7 @@
       "whatsappFailed": "Couldn't send the receipt via WhatsApp",
       "noPhone": "To send it via WhatsApp, add the customer's phone to the sale.",
       "windowClosed": "The customer hasn't written on WhatsApp in the last 24 hours: WhatsApp doesn't allow sending them the receipt.",
+      "template": "The customer hasn't written in the last 24 hours: the receipt will go out as a WhatsApp template, which Meta charges for.",
       "order": "Order",
       "paidWith": "Paid with",
       "received": "Received",
