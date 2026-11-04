@@ -33,6 +33,7 @@ import {
   useSyncWhatsAppUsage,
   useWhatsAppUsage,
 } from "../hooks/useWhatsAppUsage";
+import type { WhatsAppUsageMonth } from "../types";
 
 /** Cupo gratis por número y mes (doc oficial de Meta, igual que la API). */
 export const FREE_MESSAGES_PER_MONTH = 1000;
@@ -49,6 +50,10 @@ export function WhatsAppUsageChart() {
   const sync = useSyncWhatsAppUsage();
   const branchId = useDashboardBranchId();
   const [selected, setSelected] = useState<string | null>(null);
+  // Mes a mostrar (yearMonth "YYYY-MM"). Null = mes en curso. La API trae el
+  // historial de 6 meses con totales; el día por día solo existe del mes en
+  // curso (conteo en vivo).
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   // Sin sedes en el routing el número es compartido: atiende a todas.
   // `?? []` cubre una API anterior que aún no manda `branchIds`.
@@ -58,6 +63,23 @@ export function WhatsAppUsageChart() {
   });
   if (accounts.length === 0) return null;
   const account = accounts.find((a) => a.accountId === selected) ?? accounts[0];
+
+  // Meses disponibles: el historial más el mes en curso (vive en `current`
+  // y ya viene mezclado en `history`, pero se agrega si faltara).
+  const months = account.history.some(
+    (m) => m.yearMonth === account.current.yearMonth
+  )
+    ? account.history
+    : [account.current, ...account.history];
+  const viewMonth =
+    months.find((m) => m.yearMonth === selectedMonth) ?? account.current;
+  const isCurrentMonth = viewMonth.yearMonth === account.current.yearMonth;
+  const monthLabel = (yearMonth: string) =>
+    new Date(`${yearMonth}-01T00:00:00Z`).toLocaleDateString(locale, {
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 
   // Acumulado de gratis día a día, para la línea contra el cupo.
   const points = account.daily.map((day, index) => ({
@@ -73,12 +95,19 @@ export function WhatsAppUsageChart() {
       .slice(0, index + 1)
       .reduce((sum, d) => sum + d.free, 0),
   }));
-  const current = account.current;
+  // Totales del mes a la vista (en curso: en vivo; pasados: conciliado).
+  const current = viewMonth;
   const number = (value: number) => value.toLocaleString(locale);
   const syncedAt = current.syncedAt
     ? new Date(current.syncedAt).toLocaleTimeString(locale, {
         hour: "2-digit",
         minute: "2-digit",
+      })
+    : null;
+  const syncedDate = current.syncedAt
+    ? new Date(current.syncedAt).toLocaleDateString(locale, {
+        day: "2-digit",
+        month: "short",
       })
     : null;
 
@@ -87,7 +116,13 @@ export function WhatsAppUsageChart() {
       <DashboardCardHeader
         icon={MessageCircle}
         title={t("usageChart.title")}
-        subtitle={t("usageChart.subtitle")}
+        subtitle={
+          isCurrentMonth
+            ? t("usageChart.subtitle")
+            : t("usageChart.pastSubtitle", {
+                month: monthLabel(viewMonth.yearMonth),
+              })
+        }
       >
         <div className="flex gap-6 sm:text-right">
           <div>
@@ -133,6 +168,37 @@ export function WhatsAppUsageChart() {
             ))}
           </div>
         )}
+        {months.length > 1 && (
+          <div
+            className="mb-3 flex flex-wrap gap-2"
+            role="group"
+            aria-label={t("usageChart.monthSelector")}
+          >
+            {months.map((m) => (
+              <button
+                key={m.yearMonth}
+                type="button"
+                onClick={() => setSelectedMonth(m.yearMonth)}
+                aria-pressed={m.yearMonth === viewMonth.yearMonth}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  m.yearMonth === viewMonth.yearMonth
+                    ? "bg-slate-900 text-white"
+                    : "bg-white text-slate-600 border border-slate-200"
+                }`}
+              >
+                {monthLabel(m.yearMonth)}
+              </button>
+            ))}
+          </div>
+        )}
+        {!isCurrentMonth ? (
+          <PastMonthSummary
+            month={viewMonth}
+            syncedDate={syncedDate}
+            number={number}
+            monthLabel={monthLabel(viewMonth.yearMonth)}
+          />
+        ) : (
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
@@ -247,6 +313,7 @@ export function WhatsAppUsageChart() {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
           <span className="flex items-center gap-1.5">
             <i
@@ -269,22 +336,99 @@ export function WhatsAppUsageChart() {
             />
             {t("usageChart.legendAccumulated")}
           </span>
-          <span className="sm:ml-auto">
-            {syncedAt
-              ? t("usageChart.syncedAt", { time: syncedAt })
-              : t("usageChart.notSynced")}
-          </span>
-          <Button
-            variant="slate-outline"
-            size="sm"
-            isLoading={sync.isPending}
-            onClick={() => sync.mutate()}
-          >
-            {!sync.isPending && <RefreshCw aria-hidden />}
-            {t("usageChart.sync")}
-          </Button>
+          {isCurrentMonth ? (
+            <>
+              <span className="sm:ml-auto">
+                {syncedAt
+                  ? t("usageChart.syncedAt", { time: syncedAt })
+                  : t("usageChart.notSynced")}
+              </span>
+              <Button
+                variant="slate-outline"
+                size="sm"
+                isLoading={sync.isPending}
+                onClick={() => sync.mutate()}
+              >
+                {!sync.isPending && <RefreshCw aria-hidden />}
+                {t("usageChart.sync")}
+              </Button>
+            </>
+          ) : (
+            <span className="sm:ml-auto">
+              {syncedDate
+                ? t("usageChart.monthSynced", { date: syncedDate })
+                : t("usageChart.notSynced")}
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Resumen de un mes ya cerrado: la API no guarda el día por día de esos
+ * meses (solo del mes en curso), así que se muestra el total contra el
+ * cupo, los cobrados y el costo si Meta lo devolvió.
+ */
+function PastMonthSummary({
+  month,
+  syncedDate,
+  number,
+  monthLabel,
+}: {
+  month: WhatsAppUsageMonth;
+  syncedDate: string | null;
+  number: (value: number) => string;
+  monthLabel: string;
+}) {
+  const t = useTranslations("whatsapp");
+  const percent = Math.min(100, Math.max(0, month.percent));
+  return (
+    <div className="flex flex-col gap-3 py-2">
+      <p className="m-0 text-[13px] text-slate-600">
+        {t("usageChart.pastSummary", {
+          month: monthLabel,
+          count: number(month.freeMessages),
+          quota: number(FREE_MESSAGES_PER_MONTH),
+        })}
+      </p>
+      <div
+        className="h-2.5 overflow-hidden rounded-full bg-slate-100"
+        role="progressbar"
+        aria-valuenow={Math.round(percent)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t("usageChart.quotaUsed", {
+          percent: Math.round(percent),
+        })}
+      >
+        <div
+          className="h-full rounded-full bg-green-500"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[13px] text-slate-600">
+        <span>
+          {t("usageChart.billed")}:{" "}
+          <strong className="font-semibold text-slate-900">
+            {number(month.billableMessages)}
+          </strong>
+        </span>
+        <span>
+          {t("usageChart.cost")}:{" "}
+          <strong className="font-semibold text-slate-900">
+            {month.costAvailable && month.estimatedCost != null
+              ? `${number(month.estimatedCost)} ${month.currency ?? ""}`.trim()
+              : "—"}
+          </strong>
+        </span>
+        {syncedDate && (
+          <span className="sm:ml-auto">
+            {t("usageChart.monthSynced", { date: syncedDate })}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
