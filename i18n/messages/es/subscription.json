@@ -129,6 +129,12 @@
       "OVERDUE": "Vencido",
       "WARNING": "Advertencia",
       "PAYMENT_REMINDER": "Recordatorio de pago"
+    },
+    "breakdown": {
+      "plan": "Plan {planName}",
+      "users": "{count, plural, =1 {# usuario adicional} other {# usuarios adicionales}} × {price}",
+      "branches": "{count, plural, =1 {# sede adicional} other {# sedes adicionales}} × {price}",
+      "total": "Total mensual"
     }
   },
   "actions": {

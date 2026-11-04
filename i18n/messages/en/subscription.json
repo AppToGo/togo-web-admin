@@ -129,6 +129,12 @@
       "OVERDUE": "Overdue",
       "WARNING": "Warning",
       "PAYMENT_REMINDER": "Payment reminder"
+    },
+    "breakdown": {
+      "plan": "{planName} plan",
+      "users": "{count, plural, =1 {# extra user} other {# extra users}} × {price}",
+      "branches": "{count, plural, =1 {# extra branch} other {# extra branches}} × {price}",
+      "total": "Monthly total"
     }
   },
   "actions": {

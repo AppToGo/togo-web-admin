@@ -17,6 +17,10 @@ export interface BusinessSubscription {
   maxUsersOverride: number | null;
   /** Cupo mensual personalizado de análisis de comprobantes. null = límite del plan. */
   proofQuotaOverride: number | null;
+  /** Precio mensual por usuario por encima del límite del plan. null = sin cobro. */
+  extraUserPriceMonthly: number | null;
+  /** Precio mensual por sede por encima del límite del plan. null = sin cobro. */
+  extraBranchPriceMonthly: number | null;
   gracePeriodDays: number;
   /** Plan solicitado por el negocio (UpgradePlanModal), pendiente de verificación. null = sin solicitud. */
   requestedPlan: number | null;
@@ -75,10 +79,60 @@ export interface PaginatedBusinesses {
 
 export interface UpdateBranchesLimitDto {
   maxBranchesOverride: number | null;
+  /** Precio mensual por sede adicional. Obligatorio si el límite supera el del plan. */
+  extraUnitPrice?: number | null;
 }
 
 export interface UpdateUsersLimitDto {
   maxUsersOverride: number | null;
+  /** Precio mensual por usuario adicional. Obligatorio si el límite supera el del plan. */
+  extraUnitPrice?: number | null;
+}
+
+/** Usuarios o sedes por encima del límite del plan (montos en pesos). */
+export interface ExtraLine {
+  count: number;
+  unitPrice: number;
+  amount: number;
+}
+
+/** Lo que se cobra cada mes: plan más usuarios y sedes adicionales. */
+export interface MonthlyBreakdown {
+  plan: number;
+  planName: string;
+  planAmount: number;
+  users: ExtraLine;
+  branches: ExtraLine;
+  total: number;
+}
+
+export type AddonType = "USERS" | "BRANCHES";
+
+/**
+ * - CHARGED: se cobra hoy el prorrateo; el límite se activa al aprobarse.
+ * - APPLIED_NEXT_CYCLE: se aplica ya y se cobra desde el próximo pago.
+ * - APPLIED: se aplica ya, sin subir la mensualidad.
+ */
+export type AddonMode = "CHARGED" | "APPLIED_NEXT_CYCLE" | "APPLIED";
+
+export interface AddonQuoteParams {
+  type: AddonType;
+  limit: number | null;
+  unitPrice: number | null;
+}
+
+export interface AddonQuote {
+  mode: AddonMode;
+  amountInCents: number;
+  currency: string;
+  proratedDays: number | null;
+  current: MonthlyBreakdown;
+  next: MonthlyBreakdown;
+  card: { brand: string | null; lastFour: string | null } | null;
+}
+
+export interface UpdateLimitResponse extends BusinessWithSubscription {
+  charge: { mode: AddonMode; amountInCents: number; reference: string | null };
 }
 
 export interface UpdateProofQuotaDto {

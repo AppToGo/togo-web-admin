@@ -170,6 +170,12 @@
     "sync": "Actualizar",
     "syncSuccess": "Consumo actualizado con Meta",
     "syncFailed": "Meta no respondió para {count, plural, one {# número} other {# números}}: se muestra el conteo en vivo",
-    "syncError": "No se pudo actualizar el consumo con Meta"
+    "syncError": "No se pudo actualizar el consumo con Meta",
+    "monthSelector": "Mes a mostrar",
+    "pastSubtitle": "Resumen de {month} · totales conciliados",
+    "pastSummary": "En {month}: {count} gratis de {quota}.",
+    "quotaUsed": "{percent}% del cupo gratis usado",
+    "cost": "Costo aprox.",
+    "monthSynced": "Conciliado con Meta el {date}"
   }
 }

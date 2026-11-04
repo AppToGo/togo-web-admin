@@ -51,6 +51,25 @@ export interface SubscriptionStatus {
   scheduledPlanName: string | null;
   /** Canceló: sigue activo hasta nextPaymentDue y no se le vuelve a cobrar. */
   cancelAtPeriodEnd: boolean;
+  /** Lo que se cobra cada mes: plan más usuarios y sedes adicionales. */
+  monthlyBreakdown?: MonthlyBreakdown;
+}
+
+/** Usuarios o sedes por encima del límite del plan (montos en pesos). */
+export interface ExtraLine {
+  count: number;
+  unitPrice: number;
+  amount: number;
+}
+
+/** `MonthlyBreakdownDto` del backend (docs/cobro-suscripciones.md §16 en api-togo). */
+export interface MonthlyBreakdown {
+  plan: number;
+  planName: string;
+  planAmount: number;
+  users: ExtraLine;
+  branches: ExtraLine;
+  total: number;
 }
 
 export interface SavedCard {

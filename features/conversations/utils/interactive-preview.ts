@@ -193,6 +193,7 @@ function buildOutboundTemplate(raw: Record<string, unknown>): InteractivePreview
     templateName,
     languageCode: asString(raw.languageCode),
     params,
+    body: asString(raw.renderedText),
   };
 }
 

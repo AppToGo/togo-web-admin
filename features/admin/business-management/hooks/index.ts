@@ -9,6 +9,7 @@ export {
   useChargeAttempts,
   useUpdateBranchesLimit,
   useUpdateUsersLimit,
+  useAddonQuote,
   useUpdateProofQuota,
   useRecordPayment,
   useSendNotification,

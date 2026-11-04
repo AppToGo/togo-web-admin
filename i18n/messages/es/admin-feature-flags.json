@@ -94,6 +94,10 @@
     "BOT_MESSAGES": {
       "name": "Mensajes editables del asistente",
       "description": "El negocio edita los mensajes del asistente a mano o con IA. Además requiere plan Pro o Enterprise."
+    },
+    "WHATSAPP_TEMPLATE_FALLBACK": {
+      "name": "Avisos con plantilla fuera de la ventana de 24 h",
+      "description": "Envía los avisos de pedido y pago con plantillas aprobadas cuando el cliente lleva más de 24 h sin escribir (las cobra Meta)."
     }
   }
 }

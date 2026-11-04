@@ -209,7 +209,9 @@ export function CheckoutDrawer({
       ? t("pos.receipt.noPhone")
       : whatsappWindow.reason === "WINDOW_CLOSED"
         ? t("pos.receipt.windowClosed")
-        : null;
+        : whatsappWindow.reason === "TEMPLATE"
+          ? t("pos.receipt.template")
+          : null;
 
   return (
     <Drawer

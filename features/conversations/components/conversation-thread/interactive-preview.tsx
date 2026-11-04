@@ -245,12 +245,20 @@ export function InteractiveMessagePreview({ preview, tone }: InteractiveMessageP
           <div className={cn("text-[10px] uppercase tracking-wide", mutedText[tone])}>
             {t("template.label")}
           </div>
-          <div className="text-sm font-mono">{preview.templateName}</div>
-          {preview.params.map((param, i) => (
-            <p key={i} className="text-sm whitespace-pre-wrap break-words">
-              {param}
+          {preview.body ? (
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {preview.body}
             </p>
-          ))}
+          ) : (
+            <>
+              <div className="text-sm font-mono">{preview.templateName}</div>
+              {preview.params.map((param, i) => (
+                <p key={i} className="text-sm whitespace-pre-wrap break-words">
+                  {param}
+                </p>
+              ))}
+            </>
+          )}
         </div>
       );
 

@@ -85,6 +85,11 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
   const isFreeTrial = status.plan === 1 && status.trialEndsAt !== null;
   const hasPendingRequest = status.requestedPlan !== null;
   const trialDaysRemaining = status.trialEndsAt ? daysUntilTrialEnds(status.trialEndsAt) : null;
+  // Usuarios o sedes por encima del plan: la mensualidad es el total.
+  const breakdown = status.monthlyBreakdown;
+  const hasExtras =
+    !!breakdown && (breakdown.users.count > 0 || breakdown.branches.count > 0);
+  const monthlyPrice = hasExtras ? breakdown.total : status.priceMonthly;
 
   return (
     <Card variant="glass">
@@ -96,9 +101,9 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
               {t("plan.title", { planName: status.planName })}
             </CardTitle>
             <CardDescription>
-              {status.priceMonthly > 0
+              {monthlyPrice > 0
                 ? t("plan.priceMonthly", {
-                    price: formatCurrency(status.priceMonthly, status.currency),
+                    price: formatCurrency(monthlyPrice, status.currency),
                   })
                 : t("plan.free")}
             </CardDescription>
@@ -107,6 +112,41 @@ export function SubscriptionStatusCard({ status, isLoading }: SubscriptionStatus
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {hasExtras && (
+          <dl className="grid gap-1 rounded-lg border border-slate-200 p-3 text-sm text-slate-600">
+            <div className="flex justify-between">
+              <dt>{t("breakdown.plan", { planName: breakdown.planName })}</dt>
+              <dd>{formatCurrency(breakdown.planAmount, status.currency)}</dd>
+            </div>
+            {breakdown.users.count > 0 && (
+              <div className="flex justify-between">
+                <dt>
+                  {t("breakdown.users", {
+                    count: breakdown.users.count,
+                    price: formatCurrency(breakdown.users.unitPrice, status.currency),
+                  })}
+                </dt>
+                <dd>{formatCurrency(breakdown.users.amount, status.currency)}</dd>
+              </div>
+            )}
+            {breakdown.branches.count > 0 && (
+              <div className="flex justify-between">
+                <dt>
+                  {t("breakdown.branches", {
+                    count: breakdown.branches.count,
+                    price: formatCurrency(breakdown.branches.unitPrice, status.currency),
+                  })}
+                </dt>
+                <dd>{formatCurrency(breakdown.branches.amount, status.currency)}</dd>
+              </div>
+            )}
+            <div className="flex justify-between border-t border-slate-200 pt-1 font-medium text-slate-900">
+              <dt>{t("breakdown.total")}</dt>
+              <dd>{formatCurrency(breakdown.total, status.currency)}</dd>
+            </div>
+          </dl>
+        )}
+
         {/* Rama 5: sin fila de suscripción — estado neutro, sin fechas inventadas */}
         {!status.hasSubscriptionRecord && (
           <p className="text-sm text-slate-500">{t("noRecord")}</p>
