@@ -7,6 +7,7 @@
  * - GET /admin/businesses/payment-alerts
  * - PATCH /admin/businesses/:id/branches-limit
  * - PATCH /admin/businesses/:id/users-limit
+ * - GET /admin/businesses/:id/addons/quote
  * - POST /admin/businesses/:id/payments
  * - POST /admin/businesses/:id/notifications
  * - PATCH /admin/businesses/:id/status
@@ -25,6 +26,9 @@ import type {
   PaymentRecord,
   PaymentAlert,
   ChargeAttempt,
+  AddonQuote,
+  AddonQuoteParams,
+  UpdateLimitResponse,
 } from "../types/business-subscription.types";
 
 // ============================================================================
@@ -80,8 +84,8 @@ export async function getChargeAttempts(businessId: string): Promise<ChargeAttem
 export async function updateBranchesLimit(
   businessId: string,
   data: UpdateBranchesLimitDto
-): Promise<BusinessWithSubscription> {
-  const response = await apiClient.patch<BusinessWithSubscription>(
+): Promise<UpdateLimitResponse> {
+  const response = await apiClient.patch<UpdateLimitResponse>(
     `/admin/businesses/${businessId}/branches-limit`,
     data
   );
@@ -95,10 +99,28 @@ export async function updateBranchesLimit(
 export async function updateUsersLimit(
   businessId: string,
   data: UpdateUsersLimitDto
-): Promise<BusinessWithSubscription> {
-  const response = await apiClient.patch<BusinessWithSubscription>(
+): Promise<UpdateLimitResponse> {
+  const response = await apiClient.patch<UpdateLimitResponse>(
     `/admin/businesses/${businessId}/users-limit`,
     data
+  );
+  return response.data;
+}
+
+/**
+ * Qué pasará al cambiar el límite de usuarios o sedes: cobro de hoy
+ * (prorrateado) o desde el próximo pago, y la mensualidad con el cambio.
+ * GET /admin/businesses/:id/addons/quote
+ */
+export async function getAddonQuote(
+  businessId: string,
+  { type, limit, unitPrice }: AddonQuoteParams
+): Promise<AddonQuote> {
+  const params = new URLSearchParams({ type });
+  if (limit !== null) params.append("limit", String(limit));
+  if (unitPrice !== null) params.append("unitPrice", String(unitPrice));
+  const response = await apiClient.get<AddonQuote>(
+    `/admin/businesses/${businessId}/addons/quote?${params}`
   );
   return response.data;
 }

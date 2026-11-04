@@ -13,7 +13,8 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { ADMIN_BUSINESS_KEYS } from "./query-keys";
 import * as adminBusinessService from "../services/admin-business.service";
-import type { BusinessFilters, PaginatedBusinesses, UpdateBranchesLimitDto, UpdateUsersLimitDto, UpdateProofQuotaDto, RecordPaymentDto, SendNotificationDto } from "../types/business-subscription.types";
+import type { BusinessFilters, PaginatedBusinesses, UpdateBranchesLimitDto, UpdateUsersLimitDto, UpdateProofQuotaDto, RecordPaymentDto, SendNotificationDto, AddonQuoteParams, UpdateLimitResponse } from "../types/business-subscription.types";
+import { formatCurrency } from "@/lib/utils";
 
 // ============================================================================
 // QUERY HOOKS
@@ -81,17 +82,62 @@ export function useUpdateBranchesLimit() {
       return adminBusinessService.updateBranchesLimit(businessId, data);
     },
     onSuccess: (data) => {
-      toast.success(t("notifications.branchesLimitUpdated"));
-      queryClient.invalidateQueries({
-        queryKey: ADMIN_BUSINESS_KEYS.businesses(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: ADMIN_BUSINESS_KEYS.business(data.id),
-      });
+      notifyLimitResult(data, t("notifications.branchesLimitUpdated"), t);
+      invalidateLimitQueries(queryClient, data.id);
     },
     onError: (error: Error) => {
       toast.error(error.message || t("errors.updateBranchesLimit"));
     },
+  });
+}
+
+/**
+ * Cotización del cambio de límite de usuarios o sedes (cobro de hoy o desde
+ * el próximo pago). `enabled` lo decide el modal: solo con un límite válido
+ * y, si hay adicionales, con su precio.
+ */
+export function useAddonQuote(
+  businessId: string | undefined,
+  params: AddonQuoteParams,
+  enabled: boolean
+) {
+  return useQuery({
+    queryKey: ADMIN_BUSINESS_KEYS.addonQuote(businessId ?? "", params),
+    queryFn: () => adminBusinessService.getAddonQuote(businessId!, params),
+    enabled: enabled && !!businessId,
+    staleTime: 30_000,
+  });
+}
+
+/** Con un cobro en curso el límite todavía no cambió: se avisa distinto. */
+function notifyLimitResult(
+  data: UpdateLimitResponse,
+  appliedMessage: string,
+  t: ReturnType<typeof useTranslations>
+) {
+  if (data.charge.mode === "CHARGED") {
+    toast.success(
+      t("notifications.addonCharged", {
+        amount: formatCurrency(data.charge.amountInCents / 100),
+      })
+    );
+  } else if (data.charge.mode === "APPLIED_NEXT_CYCLE") {
+    toast.success(t("notifications.addonNextCycle"));
+  } else {
+    toast.success(appliedMessage);
+  }
+}
+
+function invalidateLimitQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  businessId: string
+) {
+  queryClient.invalidateQueries({ queryKey: ADMIN_BUSINESS_KEYS.businesses() });
+  queryClient.invalidateQueries({
+    queryKey: ADMIN_BUSINESS_KEYS.business(businessId),
+  });
+  queryClient.invalidateQueries({
+    queryKey: ADMIN_BUSINESS_KEYS.chargeAttempts(businessId),
   });
 }
 
@@ -113,13 +159,8 @@ export function useUpdateUsersLimit() {
       return adminBusinessService.updateUsersLimit(businessId, data);
     },
     onSuccess: (data) => {
-      toast.success(t("notifications.usersLimitUpdated"));
-      queryClient.invalidateQueries({
-        queryKey: ADMIN_BUSINESS_KEYS.businesses(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: ADMIN_BUSINESS_KEYS.business(data.id),
-      });
+      notifyLimitResult(data, t("notifications.usersLimitUpdated"), t);
+      invalidateLimitQueries(queryClient, data.id);
     },
     onError: (error: Error) => {
       toast.error(error.message || t("errors.updateUsersLimit"));

@@ -10,6 +10,8 @@ export const ADMIN_BUSINESS_KEYS = {
   alerts: () => [...ADMIN_BUSINESS_KEYS.all, "alerts"] as const,
   chargeAttempts: (id: string) =>
     [...ADMIN_BUSINESS_KEYS.all, "charge-attempts", id] as const,
+  addonQuote: (id: string, params: object) =>
+    [...ADMIN_BUSINESS_KEYS.all, "addon-quote", id, params] as const,
   filters: (filters: object) =>
     [...ADMIN_BUSINESS_KEYS.businesses(), { filters }] as const,
 } as const;

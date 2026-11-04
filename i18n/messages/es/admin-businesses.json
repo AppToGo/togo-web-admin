@@ -174,6 +174,21 @@
       "overrideValue": "Límite personalizado",
       "overrideHint": "Cuenta usuarios activos de todas las sedes. Si es menor que los activos actuales, no se podrán crear ni reactivar usuarios hasta bajar de ese número.",
       "submit": "Guardar Cambios"
+    },
+    "addon": {
+      "perUser": "Valor mensual por usuario adicional",
+      "perBranch": "Valor mensual por sede adicional",
+      "pricePlaceholder": "Ej: 15000",
+      "priceHint": "{count, plural, =1 {# adicional} other {# adicionales}} por encima del plan. Se cobra cada mes junto con el plan.",
+      "chargedToday": "Se cobrará hoy {amount} (proporcional a {days, plural, =1 {# día} other {# días}} del ciclo) al medio de pago guardado {card}.",
+      "activatesOnApproval": "El nuevo límite se activa cuando se apruebe el pago. Si se rechaza, no cambia nada.",
+      "nextCycle": "Sin cobro hoy: el negocio no tiene medio de pago guardado o no tiene un ciclo pagado en curso. El valor adicional se cobra desde el próximo pago.",
+      "lowered": "Se aplica de inmediato y la mensualidad baja desde el próximo pago (sin devolución).",
+      "noChange": "Se aplica de inmediato. La mensualidad no cambia.",
+      "planLine": "Plan {name}",
+      "usersLine": "{count, plural, =1 {# usuario adicional} other {# usuarios adicionales}} × {price}",
+      "branchesLine": "{count, plural, =1 {# sede adicional} other {# sedes adicionales}} × {price}",
+      "monthlyTotal": "Mensualidad"
     }
   },
   "notifications": {
@@ -186,7 +201,9 @@
     "statusUpdated": "Estado actualizado exitosamente",
     "businessDeactivated": "Negocio desactivado exitosamente",
     "businessActivated": "Negocio activado exitosamente",
-    "usersLimitUpdated": "Límite de usuarios actualizado exitosamente"
+    "usersLimitUpdated": "Límite de usuarios actualizado exitosamente",
+    "addonCharged": "Cobro de {amount} en proceso: el nuevo límite se activa al aprobarse el pago",
+    "addonNextCycle": "Límite actualizado: el valor adicional se cobra desde el próximo pago"
   },
   "chargeAttempts": {
     "title": "Cobros de {businessName}",

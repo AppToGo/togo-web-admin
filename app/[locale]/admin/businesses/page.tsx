@@ -455,6 +455,7 @@ export default function BusinessManagementPage() {
         />
 
         <EditBranchesLimitModal
+          key={selectedBusiness?.id ?? "none"}
           business={selectedBusiness}
           isOpen={isBranchesModalOpen}
           onClose={() => {

@@ -22,12 +22,20 @@ import { Switch } from "@/components/ui/switch";
 import { PLAN_OPTIONS, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
+import {
+  AddonChargeSection,
+  hasExtraUnits,
+  isValidAddonInput,
+} from "./AddonChargeSection";
 
 interface EditUsersLimitModalProps {
   business: BusinessWithSubscription | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { maxUsersOverride: number | null }) => void;
+  onSubmit: (data: {
+    maxUsersOverride: number | null;
+    extraUnitPrice: number | null;
+  }) => void;
   isSubmitting?: boolean;
 }
 
@@ -47,17 +55,32 @@ export function EditUsersLimitModal({
   const [overrideValue, setOverrideValue] = useState(
     hasOverride ? String(currentOverride) : ""
   );
+  const currentPrice = business?.subscription?.extraUserPriceMonthly;
+  const [unitPrice, setUnitPrice] = useState(
+    currentPrice != null ? String(currentPrice) : ""
+  );
 
   const { data: catalog } = usePlanCatalog();
   const currentPlan = business?.subscription?.plan || 1;
   const planMaxUsers = catalog?.plans.find((p) => p.plan === currentPlan)?.maxUsers;
   const isPlanUnlimited =
     planMaxUsers !== undefined && planMaxUsers >= UNLIMITED_PLAN_LIMIT;
+  // Override vacío o no numérico = NaN (inválido), no "el límite del plan".
+  const limit = useOverride
+    ? overrideValue === ""
+      ? NaN
+      : Number(overrideValue)
+    : null;
+  const withExtras = hasExtraUnits(limit, planMaxUsers, isPlanUnlimited);
+  const canSubmit = isValidAddonInput(limit, unitPrice, withExtras);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) return;
     onSubmit({
-      maxUsersOverride: useOverride ? parseInt(overrideValue, 10) : null,
+      maxUsersOverride: limit,
+      // Solo los usuarios por encima del plan se cobran (precio por usuario/mes).
+      extraUnitPrice: withExtras ? Number(unitPrice) : null,
     });
   };
 
@@ -153,6 +176,16 @@ export function EditUsersLimitModal({
                 </p>
               </div>
             )}
+
+            <AddonChargeSection
+              businessId={business?.id}
+              type="USERS"
+              limit={limit}
+              planLimit={planMaxUsers}
+              isPlanUnlimited={isPlanUnlimited}
+              unitPrice={unitPrice}
+              onUnitPriceChange={setUnitPrice}
+            />
           </div>
 
           <DialogFooter>
@@ -164,7 +197,11 @@ export function EditUsersLimitModal({
             >
               {t("modals.cancel")}
             </Button>
-            <Button type="submit" isLoading={isSubmitting}>
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={!canSubmit}
+            >
               {t("modals.editUsers.submit")}
             </Button>
           </DialogFooter>
