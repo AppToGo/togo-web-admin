@@ -454,8 +454,10 @@ export default function BusinessManagementPage() {
           isSubmitting={recordPayment.isPending}
         />
 
+        {/* Keys distintas por modal: con la misma key React confunde los dos
+            hermanos y el modal queda montado a medias. */}
         <EditBranchesLimitModal
-          key={selectedBusiness?.id ?? "none"}
+          key={`branches-${selectedBusiness?.id ?? "none"}`}
           business={selectedBusiness}
           isOpen={isBranchesModalOpen}
           onClose={() => {
@@ -467,7 +469,7 @@ export default function BusinessManagementPage() {
         />
 
         <EditUsersLimitModal
-          key={selectedBusiness?.id ?? "none"}
+          key={`users-${selectedBusiness?.id ?? "none"}`}
           business={selectedBusiness}
           isOpen={isUsersModalOpen}
           onClose={() => {

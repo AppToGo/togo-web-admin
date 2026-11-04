@@ -204,7 +204,7 @@ export interface PaymentAlert {
 /** Un cobro que ToGo inició en Wompi (historial por negocio). */
 export interface ChargeAttempt {
   id: string;
-  kind: 'RENEWAL' | 'CHECKOUT' | 'UPGRADE';
+  kind: 'RENEWAL' | 'CHECKOUT' | 'UPGRADE' | 'ADDON';
   status: 'PENDING' | 'APPROVED' | 'DECLINED' | 'ERROR' | 'VOIDED';
   cycleDueDate: string | null;
   attemptNumber: number;

@@ -202,8 +202,12 @@
     "businessDeactivated": "Business deactivated successfully",
     "businessActivated": "Business activated successfully",
     "usersLimitUpdated": "User limit updated successfully",
-    "addonCharged": "{amount} charge in progress: the new limit takes effect once the payment is approved",
-    "addonNextCycle": "Limit updated: the extra amount is charged from the next payment"
+    "addonNextCycle": "Limit updated: the extra amount is charged from the next payment",
+    "addonCharging": "Processing the {amount} charge…",
+    "addonChargeApproved": "{amount} charge approved: the new limit is now active",
+    "addonChargeFailed": "The {amount} charge was not approved: {reason}. The limit did not change.",
+    "addonChargeFailedNoReason": "The {amount} charge was not approved. The limit did not change.",
+    "addonChargeTimeout": "The charge is still processing. Check the business charge history in a few minutes."
   },
   "chargeAttempts": {
     "title": "Charges for {businessName}",
@@ -218,7 +222,8 @@
     "kinds": {
       "RENEWAL": "Renewal",
       "CHECKOUT": "Payment",
-      "UPGRADE": "Plan upgrade"
+      "UPGRADE": "Plan upgrade",
+      "ADDON": "Extra users or branches"
     },
     "statuses": {
       "PENDING": "In progress",
