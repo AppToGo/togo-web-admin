@@ -44,6 +44,22 @@ export function hasExtraUnits(
   );
 }
 
+/**
+ * Límite entero ≥ 1 (o null = el del plan) y, si hay adicionales, precio
+ * entero ≥ 0. Los modales lo usan para habilitar Guardar: sin esto un precio
+ * con decimales se truncaba al enviar sin haber mostrado la cotización.
+ */
+export function isValidAddonInput(
+  limit: number | null,
+  unitPrice: string,
+  withExtras: boolean
+): boolean {
+  const validLimit = limit === null || (Number.isInteger(limit) && limit >= 1);
+  const price = unitPrice === "" ? NaN : Number(unitPrice);
+  const validPrice = !withExtras || (Number.isInteger(price) && price >= 0);
+  return validLimit && validPrice;
+}
+
 export function AddonChargeSection({
   businessId,
   type,
@@ -56,10 +72,7 @@ export function AddonChargeSection({
   const t = useTranslations("admin-businesses.modals.addon");
   const withExtras = hasExtraUnits(limit, planLimit, isPlanUnlimited);
   const parsedPrice = unitPrice === "" ? null : Number(unitPrice);
-  const validLimit = limit === null || (Number.isInteger(limit) && limit >= 1);
-  const validPrice =
-    !withExtras ||
-    (parsedPrice !== null && Number.isInteger(parsedPrice) && parsedPrice >= 0);
+  const valid = isValidAddonInput(limit, unitPrice, withExtras);
 
   const params = useMemo(
     () => ({ type, limit, unitPrice: withExtras ? parsedPrice : null }),
@@ -69,7 +82,7 @@ export function AddonChargeSection({
   const { data: quote, isFetching } = useAddonQuote(
     businessId,
     debouncedParams,
-    validLimit && validPrice
+    valid
   );
 
   const unitLabel = type === "USERS" ? t("perUser") : t("perBranch");
@@ -95,7 +108,7 @@ export function AddonChargeSection({
         </div>
       )}
 
-      {quote && validLimit && validPrice && (
+      {quote && valid && (
         <div
           className={`rounded-lg border p-4 text-sm ${
             quote.mode === "CHARGED"

@@ -22,7 +22,11 @@ import { Switch } from "@/components/ui/switch";
 import { getPlanMaxBranches, PLAN_OPTIONS, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
-import { AddonChargeSection, hasExtraUnits } from "./AddonChargeSection";
+import {
+  AddonChargeSection,
+  hasExtraUnits,
+  isValidAddonInput,
+} from "./AddonChargeSection";
 
 interface EditBranchesLimitModalProps {
   business: BusinessWithSubscription | null;
@@ -61,15 +65,22 @@ export function EditBranchesLimitModal({
   const planMaxBranches = getPlanMaxBranches(currentPlan, catalog?.plans);
   const isPlanUnlimited = planMaxBranches >= UNLIMITED_PLAN_LIMIT;
 
-  const limit = useOverride && overrideValue !== "" ? Number(overrideValue) : null;
+  // Override vacío o no numérico = NaN (inválido), no "el límite del plan".
+  const limit = useOverride
+    ? overrideValue === ""
+      ? NaN
+      : Number(overrideValue)
+    : null;
   const withExtras = hasExtraUnits(limit, planMaxBranches, isPlanUnlimited);
+  const canSubmit = isValidAddonInput(limit, unitPrice, withExtras);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) return;
     onSubmit({
-      maxBranchesOverride: useOverride ? parseInt(overrideValue, 10) : null,
+      maxBranchesOverride: limit,
       // Solo las sedes por encima del plan se cobran (precio por sede/mes).
-      extraUnitPrice: withExtras ? parseInt(unitPrice, 10) : null,
+      extraUnitPrice: withExtras ? Number(unitPrice) : null,
     });
   };
 
@@ -179,7 +190,11 @@ export function EditBranchesLimitModal({
             >
               {t("modals.cancel")}
             </Button>
-            <Button type="submit" isLoading={isSubmitting}>
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={!canSubmit}
+            >
               {t("modals.editBranches.submit")}
             </Button>
           </DialogFooter>

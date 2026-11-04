@@ -22,7 +22,11 @@ import { Switch } from "@/components/ui/switch";
 import { PLAN_OPTIONS, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
-import { AddonChargeSection, hasExtraUnits } from "./AddonChargeSection";
+import {
+  AddonChargeSection,
+  hasExtraUnits,
+  isValidAddonInput,
+} from "./AddonChargeSection";
 
 interface EditUsersLimitModalProps {
   business: BusinessWithSubscription | null;
@@ -61,15 +65,22 @@ export function EditUsersLimitModal({
   const planMaxUsers = catalog?.plans.find((p) => p.plan === currentPlan)?.maxUsers;
   const isPlanUnlimited =
     planMaxUsers !== undefined && planMaxUsers >= UNLIMITED_PLAN_LIMIT;
-  const limit = useOverride && overrideValue !== "" ? Number(overrideValue) : null;
+  // Override vacío o no numérico = NaN (inválido), no "el límite del plan".
+  const limit = useOverride
+    ? overrideValue === ""
+      ? NaN
+      : Number(overrideValue)
+    : null;
   const withExtras = hasExtraUnits(limit, planMaxUsers, isPlanUnlimited);
+  const canSubmit = isValidAddonInput(limit, unitPrice, withExtras);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) return;
     onSubmit({
-      maxUsersOverride: useOverride ? parseInt(overrideValue, 10) : null,
+      maxUsersOverride: limit,
       // Solo los usuarios por encima del plan se cobran (precio por usuario/mes).
-      extraUnitPrice: withExtras ? parseInt(unitPrice, 10) : null,
+      extraUnitPrice: withExtras ? Number(unitPrice) : null,
     });
   };
 
@@ -186,7 +197,11 @@ export function EditUsersLimitModal({
             >
               {t("modals.cancel")}
             </Button>
-            <Button type="submit" isLoading={isSubmitting}>
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={!canSubmit}
+            >
               {t("modals.editUsers.submit")}
             </Button>
           </DialogFooter>
