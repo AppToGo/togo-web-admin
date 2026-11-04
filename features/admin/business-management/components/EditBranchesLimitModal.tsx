@@ -5,7 +5,7 @@
  * Modal for editing the branches limit override for a business
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -22,12 +22,16 @@ import { Switch } from "@/components/ui/switch";
 import { getPlanMaxBranches, PLAN_OPTIONS, UNLIMITED_PLAN_LIMIT } from "../constants/payment-status";
 import type { BusinessWithSubscription } from "../types/business-subscription.types";
 import { usePlanCatalog } from "@/features/subscription/hooks/usePlanCatalog";
+import { AddonChargeSection, hasExtraUnits } from "./AddonChargeSection";
 
 interface EditBranchesLimitModalProps {
   business: BusinessWithSubscription | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { maxBranchesOverride: number | null }) => void;
+  onSubmit: (data: {
+    maxBranchesOverride: number | null;
+    extraUnitPrice: number | null;
+  }) => void;
   isSubmitting?: boolean;
 }
 
@@ -39,34 +43,37 @@ export function EditBranchesLimitModal({
   isSubmitting,
 }: EditBranchesLimitModalProps) {
   const t = useTranslations("admin-businesses");
-  const [useOverride, setUseOverride] = useState(false);
-  const [overrideValue, setOverrideValue] = useState("");
+  // El estado inicial sale del negocio: la página monta el modal con
+  // key={business.id}, así cada negocio arranca con sus propios valores.
+  const currentOverride = business?.subscription?.maxBranchesOverride;
+  const currentPrice = business?.subscription?.extraBranchPriceMonthly;
+  const hasOverride = currentOverride !== null && currentOverride !== undefined;
+  const [useOverride, setUseOverride] = useState(hasOverride);
+  const [overrideValue, setOverrideValue] = useState(
+    hasOverride ? String(currentOverride) : ""
+  );
+  const [unitPrice, setUnitPrice] = useState(
+    currentPrice != null ? String(currentPrice) : ""
+  );
 
   const { data: catalog } = usePlanCatalog();
   const currentPlan = business?.subscription?.plan || 1;
   const planMaxBranches = getPlanMaxBranches(currentPlan, catalog?.plans);
   const isPlanUnlimited = planMaxBranches >= UNLIMITED_PLAN_LIMIT;
-  const currentOverride = business?.subscription?.maxBranchesOverride;
 
-  useEffect(() => {
-    if (business) {
-      const hasOverride =
-        currentOverride !== null && currentOverride !== undefined;
-      setUseOverride(hasOverride);
-      setOverrideValue(hasOverride ? String(currentOverride) : "");
-    }
-  }, [business, currentOverride]);
+  const limit = useOverride && overrideValue !== "" ? Number(overrideValue) : null;
+  const withExtras = hasExtraUnits(limit, planMaxBranches, isPlanUnlimited);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       maxBranchesOverride: useOverride ? parseInt(overrideValue, 10) : null,
+      // Solo las sedes por encima del plan se cobran (precio por sede/mes).
+      extraUnitPrice: withExtras ? parseInt(unitPrice, 10) : null,
     });
   };
 
   const handleClose = () => {
-    setUseOverride(false);
-    setOverrideValue("");
     onClose();
   };
 
@@ -151,6 +158,16 @@ export function EditBranchesLimitModal({
                 </p>
               </div>
             )}
+
+            <AddonChargeSection
+              businessId={business?.id}
+              type="BRANCHES"
+              limit={limit}
+              planLimit={planMaxBranches}
+              isPlanUnlimited={isPlanUnlimited}
+              unitPrice={unitPrice}
+              onUnitPriceChange={setUnitPrice}
+            />
           </div>
 
           <DialogFooter>
