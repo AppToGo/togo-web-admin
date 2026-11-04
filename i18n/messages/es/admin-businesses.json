@@ -202,8 +202,12 @@
     "businessDeactivated": "Negocio desactivado exitosamente",
     "businessActivated": "Negocio activado exitosamente",
     "usersLimitUpdated": "Límite de usuarios actualizado exitosamente",
-    "addonCharged": "Cobro de {amount} en proceso: el nuevo límite se activa al aprobarse el pago",
-    "addonNextCycle": "Límite actualizado: el valor adicional se cobra desde el próximo pago"
+    "addonNextCycle": "Límite actualizado: el valor adicional se cobra desde el próximo pago",
+    "addonCharging": "Procesando el cobro de {amount}…",
+    "addonChargeApproved": "Cobro de {amount} aprobado: el nuevo límite ya está activo",
+    "addonChargeFailed": "El cobro de {amount} no se aprobó: {reason}. El límite no cambió.",
+    "addonChargeFailedNoReason": "El cobro de {amount} no se aprobó. El límite no cambió.",
+    "addonChargeTimeout": "El cobro sigue en proceso. Revisa el historial de cobros del negocio en unos minutos."
   },
   "chargeAttempts": {
     "title": "Cobros de {businessName}",
@@ -218,7 +222,8 @@
     "kinds": {
       "RENEWAL": "Renovación",
       "CHECKOUT": "Pago",
-      "UPGRADE": "Subida de plan"
+      "UPGRADE": "Subida de plan",
+      "ADDON": "Usuarios o sedes adicionales"
     },
     "statuses": {
       "PENDING": "En curso",

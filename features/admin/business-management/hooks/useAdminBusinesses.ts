@@ -82,7 +82,7 @@ export function useUpdateBranchesLimit() {
       return adminBusinessService.updateBranchesLimit(businessId, data);
     },
     onSuccess: (data) => {
-      notifyLimitResult(data, t("notifications.branchesLimitUpdated"), t);
+      notifyLimitResult(data, t("notifications.branchesLimitUpdated"), t, queryClient);
       invalidateLimitQueries(queryClient, data.id);
     },
     onError: (error: Error) => {
@@ -113,19 +113,74 @@ export function useAddonQuote(
 function notifyLimitResult(
   data: UpdateLimitResponse,
   appliedMessage: string,
-  t: ReturnType<typeof useTranslations>
+  t: ReturnType<typeof useTranslations>,
+  queryClient: ReturnType<typeof useQueryClient>
 ) {
-  if (data.charge.mode === "CHARGED") {
-    toast.success(
-      t("notifications.addonCharged", {
-        amount: formatCurrency(data.charge.amountInCents / 100),
-      })
+  if (data.charge.mode === "CHARGED" && data.charge.reference) {
+    void trackAddonCharge(
+      data.id,
+      data.charge.reference,
+      formatCurrency(data.charge.amountInCents / 100),
+      t,
+      queryClient
     );
   } else if (data.charge.mode === "APPLIED_NEXT_CYCLE") {
     toast.success(t("notifications.addonNextCycle"));
   } else {
     toast.success(appliedMessage);
   }
+}
+
+const CHARGE_POLL_INTERVAL_MS = 2_000;
+const CHARGE_POLL_TIMEOUT_MS = 60_000;
+
+/**
+ * El resultado del cobro llega por el webhook de Wompi, segundos después de
+ * guardar: se sigue el intento por su referencia y se avisa si se aprobó
+ * (límite activo) o no (con el motivo del banco). Sin esto el super admin
+ * solo veía "en proceso" y nunca se enteraba de un rechazo.
+ */
+async function trackAddonCharge(
+  businessId: string,
+  reference: string,
+  amount: string,
+  t: ReturnType<typeof useTranslations>,
+  queryClient: ReturnType<typeof useQueryClient>
+) {
+  const toastId = toast.loading(t("notifications.addonCharging", { amount }));
+  const deadline = Date.now() + CHARGE_POLL_TIMEOUT_MS;
+
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, CHARGE_POLL_INTERVAL_MS));
+    const attempt = await adminBusinessService
+      .getChargeAttempts(businessId)
+      .then((attempts) => attempts.find((a) => a.reference === reference))
+      .catch(() => undefined);
+    if (!attempt || attempt.status === "PENDING") continue;
+
+    if (attempt.status === "APPROVED") {
+      toast.success(t("notifications.addonChargeApproved", { amount }), {
+        id: toastId,
+      });
+    } else {
+      toast.error(
+        attempt.statusMessage
+          ? t("notifications.addonChargeFailed", {
+              amount,
+              reason: attempt.statusMessage,
+            })
+          : t("notifications.addonChargeFailedNoReason", { amount }),
+        { id: toastId, duration: 15_000 }
+      );
+    }
+    invalidateLimitQueries(queryClient, businessId);
+    return;
+  }
+
+  toast.info(t("notifications.addonChargeTimeout"), {
+    id: toastId,
+    duration: 15_000,
+  });
 }
 
 function invalidateLimitQueries(
@@ -159,7 +214,7 @@ export function useUpdateUsersLimit() {
       return adminBusinessService.updateUsersLimit(businessId, data);
     },
     onSuccess: (data) => {
-      notifyLimitResult(data, t("notifications.usersLimitUpdated"), t);
+      notifyLimitResult(data, t("notifications.usersLimitUpdated"), t, queryClient);
       invalidateLimitQueries(queryClient, data.id);
     },
     onError: (error: Error) => {

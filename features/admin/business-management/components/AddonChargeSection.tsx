@@ -79,10 +79,12 @@ export function AddonChargeSection({
     [type, limit, withExtras, parsedPrice]
   );
   const debouncedParams = useDebounce(params, 400);
+  // Solo se cotiza cuando el debounce alcanzó a lo escrito: si no, se pedía
+  // con valores viejos (p. ej. el límite nuevo sin su precio → 400).
   const { data: quote, isFetching } = useAddonQuote(
     businessId,
     debouncedParams,
-    valid
+    valid && debouncedParams === params
   );
 
   const unitLabel = type === "USERS" ? t("perUser") : t("perBranch");
