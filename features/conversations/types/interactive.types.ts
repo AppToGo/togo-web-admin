@@ -85,6 +85,12 @@ export interface InteractivePreviewTemplate {
   templateName: string;
   languageCode?: string;
   params: string[];
+  /**
+   * Cuerpo ya armado que guarda la API para las plantillas de plataforma
+   * (avisos fuera de la ventana de 24 h). Si viene, se muestra en lugar del
+   * nombre técnico y las variables sueltas.
+   */
+  body?: string;
 }
 
 export interface InteractivePreviewContact {
