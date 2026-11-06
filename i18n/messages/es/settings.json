@@ -55,9 +55,17 @@
         "label": "Mostrar imágenes de productos",
         "description": "Muestra la imagen del producto en el catálogo. Si el producto no tiene imagen, se mostrarán sus iniciales."
       },
+      "surveyEnabled": {
+        "label": "Encuesta de satisfacción",
+        "description": "Con el aviso de pedido entregado, el cliente recibe un botón para contarte cómo le fue con el pedido, la entrega y la atención."
+      },
+      "productRatingsEnabled": {
+        "label": "Calificación de productos",
+        "description": "En la misma encuesta, el cliente califica con estrellas cada producto que pidió."
+      },
       "showProductRatings": {
-        "label": "Mostrar calificaciones en el catálogo",
-        "description": "Muestra las estrellas de cada producto cuando tiene al menos 3 calificaciones de clientes."
+        "label": "Mostrar calificaciones al público",
+        "description": "Muestra las estrellas de los productos en el catálogo (con 3 o más calificaciones) y la calificación del negocio en el directorio. Si lo apagas, se sigue preguntando, pero solo lo ves tú."
       },
       "directory": {
         "label": "Aparecer en el directorio de TOGO",

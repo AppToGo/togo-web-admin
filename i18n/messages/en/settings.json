@@ -60,9 +60,17 @@
         "label": "Show product images",
         "description": "Shows the product image in the catalog. If the product has no image, initials will be shown."
       },
+      "surveyEnabled": {
+        "label": "Satisfaction survey",
+        "description": "With the order delivered notice, customers get a button to tell you how the order, the delivery and the service went."
+      },
+      "productRatingsEnabled": {
+        "label": "Product ratings",
+        "description": "In the same survey, customers rate each product they ordered with stars."
+      },
       "showProductRatings": {
-        "label": "Show ratings in the catalog",
-        "description": "Shows each product's stars once it has at least 3 customer ratings."
+        "label": "Show ratings publicly",
+        "description": "Shows product stars in the catalog (with 3 or more ratings) and the business rating in the directory. If you turn it off, customers are still asked, but only you see the results."
       },
       "directory": {
         "label": "Appear in the TOGO directory",
