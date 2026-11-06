@@ -12,7 +12,9 @@
     "analysis": "Analysis",
     "aiUsage": "AI usage",
     "whatsappUsage": "WhatsApp usage",
-    "products": "Products"
+    "products": "Products",
+    "catalog": "Web catalog",
+    "reviews": "Ratings"
   },
   "periods": {
     "today": "Today",
@@ -159,5 +161,89 @@
       "empty": "All your active products had sales in this period!",
       "error": "We couldn't load the products without sales."
     }
+  },
+  "catalog": {
+    "error": "We could not load the catalog analytics.",
+    "funnel": {
+      "title": "Catalog funnel",
+      "subtitle": "Web catalog visitors and how far they got",
+      "stages": {
+        "sessions": "Visitors",
+        "viewedProduct": "Viewed a product",
+        "addedToCart": "Added to cart",
+        "placedOrder": "Placed an order"
+      },
+      "abandoned": "{count, plural, =0 {No cart was left without an order.} one {# cart was left without an order ({percent}% of those who added something).} other {# carts were left without an order ({percent}% of those who added something).}}",
+      "origin": "Source",
+      "conversion": "Conversion",
+      "visitorsShort": "Visitors",
+      "ordersShort": "Orders",
+      "origins": {
+        "whatsapp": "WhatsApp",
+        "direct": "Direct",
+        "qr": "QR code",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "directory": "TOGO directory"
+      }
+    },
+    "topViewed": {
+      "title": "Most viewed products",
+      "subtitle": "What your customers open the most in the catalog",
+      "product": "Product",
+      "views": "Views",
+      "viewers": "Visitors",
+      "addedToCart": "To cart",
+      "orders": "Orders",
+      "conversion": "Conversion",
+      "lowConversion": "Viewed a lot, rarely ordered",
+      "conversionHint": "Conversion: visitors who opened the product and ordered it from the catalog. If a product is viewed a lot but rarely ordered, check its price, photo or description.",
+      "empty": "No catalog visits in this period yet."
+    },
+    "searches": {
+      "title": "Searches",
+      "subtitle": "What your customers type in the search box",
+      "noResults": "Searched but not found",
+      "noResultsHint": "Products you could add or words missing from product names.",
+      "allFound": "Every search found something.",
+      "top": "Most searched",
+      "people": "{count, plural, one {# person} other {# people}}",
+      "empty": "No searches in this period yet."
+    },
+    "hours": {
+      "title": "Visit hours",
+      "subtitle": "Catalog visitors by hour of the day",
+      "hourLabel": "{hour}:00 – {hour}:59",
+      "visitors": "{count, plural, one {# visitor} other {# visitors}}",
+      "orders": "{count, plural, one {# order} other {# orders}}",
+      "peak": "The busiest hour is {hour}:00 ({count, plural, one {# visitor} other {# visitors}}).",
+      "empty": "No visits in this period yet."
+    },
+    "categories": {
+      "title": "Categories and featured",
+      "subtitle": "Which sections they browse and how much featured products help",
+      "empty": "No categories opened in this period yet.",
+      "featuredTitle": "Featured",
+      "featured": "{clicks, plural, =0 {Nobody opened a featured product yet.} one {# click; {rate}% ended up in the cart.} other {# clicks; {rate}% ended up in the cart.}}",
+      "recommendedTitle": "\"Goes great with\"",
+      "recommended": "{count, plural, =0 {Nothing added from recommendations yet.} one {# product added from recommendations ({share}% of everything added to cart).} other {# products added from recommendations ({share}% of everything added to cart).}}"
+    }
+  },
+  "reviews": {
+    "title": "Customer ratings",
+    "subtitle": "What customers who received their order think",
+    "total": "{count, plural, one {# rating} other {# ratings}}",
+    "best": "Top rated",
+    "worst": "Lowest rated",
+    "rankingPending": "The ranking shows up once a product has at least {min} ratings.",
+    "recent": "Recent reviews",
+    "noComments": "No reviews with comments yet.",
+    "hide": "Hide from catalog",
+    "show": "Show in catalog",
+    "hiddenToast": "Review hidden from the catalog",
+    "shownToast": "Review visible in the catalog",
+    "toggleError": "We could not update the review",
+    "empty": "No ratings yet. The rating link is sent with the order delivered notice.",
+    "error": "We could not load the ratings."
   }
 }

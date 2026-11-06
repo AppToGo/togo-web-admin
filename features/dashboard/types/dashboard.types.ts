@@ -82,3 +82,81 @@ export interface ProductMetrics {
   withoutSales: { total: number; products: ProductWithoutSales[] };
   trends: { rising: ProductTrend[]; falling: ProductTrend[] };
 }
+
+// ─── Analítica del catálogo (flag CATALOG_ANALYTICS) ─────────────────────────
+
+/** Sesiones del catálogo por etapa; `origin` = 'total' en la fila de todos. */
+export interface CatalogFunnelStage {
+  origin: string;
+  sessions: number;
+  viewedProduct: number;
+  addedToCart: number;
+  startedCheckout: number;
+  placedOrder: number;
+  abandonedCarts: number;
+  conversionRate: number;
+}
+
+export interface CatalogProductMetric {
+  productId: string;
+  name: string;
+  image: string | null;
+  views: number;
+  viewers: number;
+  addedToCart: number;
+  orders: number;
+  units: number;
+  viewToCartRate: number;
+  viewToOrderRate: number;
+}
+
+export interface CatalogSearchMetric {
+  query: string;
+  searches: number;
+  sessions: number;
+  noResults: number;
+}
+
+export interface CatalogMetrics {
+  funnel: { total: CatalogFunnelStage; byOrigin: CatalogFunnelStage[] };
+  products: {
+    mostViewed: CatalogProductMetric[];
+    viewedRarelyOrdered: CatalogProductMetric[];
+  };
+  searches: { top: CatalogSearchMetric[]; noResults: CatalogSearchMetric[] };
+  byHour: Array<{ hour: number; sessions: number; orders: number }>;
+  categories: Array<{ categoryId: string; name: string; views: number; sessions: number }>;
+  featured: { clicks: number; addedToCart: number; rate: number };
+  recommended: { added: number; shareOfAdds: number };
+}
+
+// ─── Calificaciones (flag PRODUCT_REVIEWS) ───────────────────────────────────
+
+export interface ProductReviewItem {
+  id: string;
+  productId: string;
+  productName: string;
+  rating: number;
+  comment: string | null;
+  hidden: boolean;
+  createdAt: string;
+  orderNumber: string;
+}
+
+export interface RatedProduct {
+  productId: string;
+  name: string;
+  image: string | null;
+  ratingAvg: number | null;
+  ratingCount: number;
+}
+
+export interface ProductReviewsSummary {
+  total: number;
+  average: number | null;
+  distribution: Array<{ stars: number; count: number }>;
+  /** Mejor y peor calificados; solo productos con 3+ calificaciones. */
+  best: RatedProduct[];
+  worst: RatedProduct[];
+  recent: ProductReviewItem[];
+}

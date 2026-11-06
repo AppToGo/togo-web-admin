@@ -55,6 +55,10 @@
         "label": "Mostrar imágenes de productos",
         "description": "Muestra la imagen del producto en el catálogo. Si el producto no tiene imagen, se mostrarán sus iniciales."
       },
+      "showProductRatings": {
+        "label": "Mostrar calificaciones en el catálogo",
+        "description": "Muestra las estrellas de cada producto cuando tiene al menos 3 calificaciones de clientes."
+      },
       "directory": {
         "label": "Aparecer en el directorio de TOGO",
         "description": "Tu negocio sale en el directorio público de TOGO cuando alguien busca por tipo de comida o ciudad, y puede pedirte directo desde tu catálogo.",
