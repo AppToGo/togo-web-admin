@@ -16,6 +16,8 @@ export type FeatureKey =
   | "BOT_MESSAGES"
   | "WHATSAPP_TEMPLATE_FALLBACK"
   | "CATALOG_ANALYTICS"
+  | "LLM_CATALOG_CONTEXT"
+  | "LLM_INTENT_ALT_MODEL"
   | "PRODUCT_REVIEWS";
 
 /**
@@ -37,5 +39,7 @@ export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
   BOT_MESSAGES: false,
   WHATSAPP_TEMPLATE_FALLBACK: true,
   CATALOG_ANALYTICS: true,
+  LLM_CATALOG_CONTEXT: false,
+  LLM_INTENT_ALT_MODEL: false,
   PRODUCT_REVIEWS: true,
 };
