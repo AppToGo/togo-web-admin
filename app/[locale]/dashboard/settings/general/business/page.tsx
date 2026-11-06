@@ -57,6 +57,10 @@ interface FormData {
   accentColor: string;
   description: string;
   useProductImages: boolean;
+  /** Encuesta de satisfacción del pedido entregado (flag PRODUCT_REVIEWS). */
+  surveyEnabled: boolean;
+  /** Calificación de productos en la página de la encuesta (flag PRODUCT_REVIEWS). */
+  productRatingsEnabled: boolean;
   /** Estrellas de los productos en el catálogo (flag PRODUCT_REVIEWS). */
   showProductRatings: boolean;
   /** catalogVisibility === "PUBLIC": el negocio sale en el directorio público. */
@@ -72,6 +76,8 @@ const defaultFormData: FormData = {
   accentColor: "#10B981",
   description: "",
   useProductImages: false,
+  surveyEnabled: true,
+  productRatingsEnabled: true,
   showProductRatings: true,
   listedInDirectory: false,
 };
@@ -101,7 +107,9 @@ function formDataFrom(business: Business): FormData {
     accentColor: (s.accentColor as string) || "#10B981",
     description: (s.description as string) || "",
     useProductImages: Boolean(s.useProductImages),
-    // Sin valor = se muestran (mismo default que la API).
+    // Sin valor = encendidas (mismo default que la API).
+    surveyEnabled: s.surveyEnabled !== false,
+    productRatingsEnabled: s.productRatingsEnabled !== false,
     showProductRatings: s.showProductRatings !== false,
     listedInDirectory: business.catalogVisibility === "PUBLIC",
   };
@@ -234,6 +242,8 @@ export default function BusinessSettingsPage() {
               accentColor: formData.accentColor || undefined,
               description: formData.description || undefined,
               useProductImages: formData.useProductImages,
+              surveyEnabled: formData.surveyEnabled,
+              productRatingsEnabled: formData.productRatingsEnabled,
               showProductRatings: formData.showProductRatings,
             },
           },
@@ -511,6 +521,21 @@ export default function BusinessSettingsPage() {
                   />
                 </div>
                 <Feature name="PRODUCT_REVIEWS">
+                  {(["surveyEnabled", "productRatingsEnabled"] as const).map((key) => (
+                    <div key={key} className="flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
+                      <div className="min-w-0 flex-1">
+                        <Label htmlFor={key} className="text-sm font-semibold">
+                          {tb(`config.${key}.label`)}
+                        </Label>
+                        <p className="text-xs text-slate-500">{tb(`config.${key}.description`)}</p>
+                      </div>
+                      <Switch
+                        id={key}
+                        checked={formData[key]}
+                        onCheckedChange={(checked) => handleBooleanChange(key, checked)}
+                      />
+                    </div>
+                  ))}
                   <div className="flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
                     <div className="min-w-0 flex-1">
                       <Label htmlFor="showProductRatings" className="text-sm font-semibold">
