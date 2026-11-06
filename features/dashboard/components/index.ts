@@ -7,3 +7,4 @@ export { BranchSelector } from './BranchSelector';
 export type { BranchSelectorProps } from './BranchSelector';
 export { DashboardCardHeader } from './DashboardCardHeader';
 export { ProductReviewsCard } from './catalog/ProductReviewsCard';
+export { SurveyCard } from './catalog/SurveyCard';

@@ -151,6 +151,43 @@ export interface RatedProduct {
   ratingCount: number;
 }
 
+export type SurveyQuestion =
+  | "overall"
+  | "time"
+  | "condition"
+  | "place"
+  | "service"
+  | "bot"
+  | "recommend";
+
+export type OrderDeliveryType = "DELIVERY" | "PICKUP" | "DINE_IN" | "COUNTER";
+
+/** Encuesta de satisfacción del pedido (todas las preguntas de 1 a 5). */
+export interface SurveySummary {
+  total: number;
+  /** Promedio sobre quienes respondieron cada pregunta. */
+  questions: Array<{
+    question: SurveyQuestion;
+    average: number | null;
+    answers: number;
+  }>;
+  /** Tiempo por tipo de pedido: cada tipo tiene su propia pregunta. */
+  timeByType: Array<{
+    deliveryType: OrderDeliveryType | null;
+    average: number | null;
+    answers: number;
+  }>;
+  /** % que respondió 4 o 5 a si recomendaría el negocio. */
+  recommendShare: number | null;
+  recent: Array<{
+    id: string;
+    orderNumber: string;
+    overallRating: number;
+    comment: string | null;
+    createdAt: string;
+  }>;
+}
+
 export interface ProductReviewsSummary {
   total: number;
   average: number | null;
@@ -159,4 +196,5 @@ export interface ProductReviewsSummary {
   best: RatedProduct[];
   worst: RatedProduct[];
   recent: ProductReviewItem[];
+  survey: SurveySummary;
 }

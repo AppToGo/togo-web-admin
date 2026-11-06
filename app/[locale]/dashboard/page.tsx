@@ -23,6 +23,7 @@ import {
   LazyProductsSection,
   LazyCatalogSection,
   ProductReviewsCard,
+  SurveyCard,
   ProductsSectionSkeleton,
   BranchSelector,
 } from "@/features/dashboard";
@@ -130,10 +131,11 @@ export default function DashboardPage() {
           </Feature>
         )}
 
-        {/* Calificaciones de los clientes (mismo permiso que el endpoint) */}
+        {/* Encuesta de satisfacción y calificaciones de los clientes (mismo permiso que el endpoint) */}
         {canViewReviews && (
           <Feature name="PRODUCT_REVIEWS">
-            <section aria-label={t("sections.reviews")}>
+            <section aria-label={t("sections.reviews")} className="space-y-4 md:space-y-6">
+              <SurveyCard />
               <ProductReviewsCard />
             </section>
           </Feature>
