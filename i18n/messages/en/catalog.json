@@ -90,7 +90,6 @@
     "modified": "Modified",
     "noInventoryWarning": "Product will be created but won't be available at any branch until you configure its inventory",
     "presentation": "Presentation: {unit}",
-    "sku": "SKU",
     "barcode": "Barcode",
     "brand": "Brand",
     "available": "Available",
