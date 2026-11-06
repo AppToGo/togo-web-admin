@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { VariantList } from "./VariantList";
+import { ProductImageCropper } from "./ProductImageCropper";
 import { useIndustryCategoryVariantTemplates } from "../hooks";
 import {
   useVariants,
@@ -427,6 +428,8 @@ export function ProductForm({
   const branchInitRef = useRef(false);
 
   const [imagePreview, setImagePreview] = useState<string | null>(initialValues?.image ?? null);
+  // Archivo elegido para recortar al tamaño maestro antes de subirlo.
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const initializedProductIdRef = useRef<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const uploadImage = useUploadCatalogProductImage(businessId);
@@ -671,29 +674,31 @@ export function ProductForm({
     setImagePreview(url || null);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (imageInputRef.current) imageInputRef.current.value = "";
     if (!file) return;
 
     if (!PRODUCT_IMAGE_TYPES.includes(file.type)) {
       toast.error(t("products.form.invalidImageType"));
-      if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
     if (file.size > PRODUCT_IMAGE_MAX_SIZE) {
       toast.error(t("products.form.imageTooLarge"));
-      if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
+    // Se recorta al tamaño maestro en el diálogo antes de subir.
+    setCropFile(file);
+  };
 
+  const handleCroppedImage = async (file: File) => {
+    setCropFile(null);
     try {
       const { imageUrl } = await uploadImage.mutateAsync(file);
       setFormData((prev) => ({ ...prev, image: imageUrl }));
       setImagePreview(imageUrl);
     } catch {
       // El toast de error ya lo maneja el hook useUploadCatalogProductImage
-    } finally {
-      if (imageInputRef.current) imageInputRef.current.value = "";
     }
   };
 
@@ -957,7 +962,7 @@ export function ProductForm({
     <>
       {showProductImages && (
         <div className="flex justify-center">
-          <div className="relative w-28 h-28 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
+          <div className="relative w-28 aspect-4/5 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
             {imagePreview ? (
               <img
                 src={imagePreview}
@@ -1135,6 +1140,11 @@ export function ProductForm({
                 : t("products.form.uploadImage")}
             </Button>
           </div>
+          <ProductImageCropper
+            file={cropFile}
+            onClose={() => setCropFile(null)}
+            onCropped={handleCroppedImage}
+          />
         </div>
       )}
 

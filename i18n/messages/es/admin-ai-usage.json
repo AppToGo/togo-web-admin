@@ -60,5 +60,21 @@
   "models": {
     "title": "Por modelo",
     "tokens": "{input} de entrada · {output} de salida"
+  },
+  "intentModels": {
+    "title": "Clasificador por modelo",
+    "subtitle": "Mensajes que entendió la IA, por modelo. El alternativo se activa por negocio con \"Modelo alternativo de IA (prueba)\".",
+    "model": "Modelo",
+    "calls": "Llamadas",
+    "perCall": "Costo / llamada",
+    "per1k": "Por 1.000",
+    "cached": "Caché",
+    "latency": "Latencia p50 · p90",
+    "confidence": "Confianza",
+    "lowConfidence": "Dudosas",
+    "lowConfidenceHint": "Respuestas con confianza menor a 0,7: el bot no las usa.",
+    "best": "En verde, el mejor de cada columna.",
+    "savings": "{cheaper} sale {share}% más barato por llamada que {other}.",
+    "single": "Solo hay datos de un modelo. Activa \"Modelo alternativo de IA (prueba)\" en algún negocio para compararlo."
   }
 }

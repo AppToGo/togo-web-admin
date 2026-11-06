@@ -53,6 +53,28 @@ export interface AiUsageByModel {
   outputTokens: number;
 }
 
+/**
+ * Clasificador de intenciones por modelo: compara el principal con el
+ * alternativo (flag LLM_INTENT_ALT_MODEL) en costo, caché, latencia y
+ * confianza.
+ */
+export interface AiUsageIntentByModel {
+  /** Sin el sufijo de fecha de la versión. */
+  model: string;
+  calls: number;
+  costUsd: number;
+  costPerCallUsd: number | null;
+  /** Parte de los tokens de entrada servida desde la caché (0 a 1). */
+  cachedInputShare: number | null;
+  avgLatencyMs: number | null;
+  p50LatencyMs: number | null;
+  p90LatencyMs: number | null;
+  /** Confianza promedio de la IA (0 a 1). */
+  avgConfidence: number | null;
+  /** Parte de las respuestas con confianza menor a 0,7 (no se usan). */
+  lowConfidenceShare: number | null;
+}
+
 export interface AiUsageByBusiness {
   /** null = plataforma (catálogo global, categorías de industria). */
   businessId: string | null;
@@ -70,6 +92,8 @@ export interface AiUsageSummary {
   daily: AiUsageDaily[];
   byFeature: AiUsageByFeature[];
   byModel: AiUsageByModel[];
+  /** Vacío hasta que la API registre llamadas del clasificador. */
+  intentByModel?: AiUsageIntentByModel[];
   /** Vacío cuando se filtra por negocio. */
   byBusiness: AiUsageByBusiness[];
 }

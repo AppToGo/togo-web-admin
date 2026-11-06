@@ -22,6 +22,7 @@ import { AiCostChart } from "@/features/admin/ai-usage/components/AiCostChart";
 import { AiFeatureBreakdown } from "@/features/admin/ai-usage/components/AiFeatureBreakdown";
 import { AiBusinessTable } from "@/features/admin/ai-usage/components/AiBusinessTable";
 import { AiModelList } from "@/features/admin/ai-usage/components/AiModelList";
+import { AiIntentModelTable } from "@/features/admin/ai-usage/components/AiIntentModelTable";
 import { usePlatformPermission } from "@/features/auth/hooks/usePlatformPermission";
 
 export default function AdminAiUsagePage() {
@@ -142,6 +143,8 @@ export default function AdminAiUsagePage() {
                   )}
                   <AiModelList rows={data.byModel} />
                 </div>
+
+                <AiIntentModelTable rows={data.intentByModel ?? []} />
               </>
             )}
           </>

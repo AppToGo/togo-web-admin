@@ -42,6 +42,7 @@ import {
   PRODUCT_IMAGE_MAX_SIZE,
   PRODUCT_IMAGE_TYPES,
 } from "../utils/product-image";
+import { ProductImageCropper } from "./ProductImageCropper";
 
 interface FeatureProductDrawerProps {
   businessId: string;
@@ -187,6 +188,8 @@ function FeatureEditor({
   });
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
+  // Archivo elegido para recortar al tamaño maestro antes de subirlo.
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
   const image = uploadedImage ?? product.image ?? null;
   const hasImage = !!image && !imageFailed;
@@ -220,7 +223,7 @@ function FeatureEditor({
       return next;
     });
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (!file) return;
@@ -232,6 +235,12 @@ function FeatureEditor({
       toast.error(t("image.tooLarge"));
       return;
     }
+    // Se recorta al tamaño maestro en el diálogo antes de subir.
+    setCropFile(file);
+  };
+
+  const handleCropped = async (file: File) => {
+    setCropFile(null);
     try {
       const { imageUrl } = await upload.mutateAsync(file);
       setUploadedImage(imageUrl);
@@ -386,7 +395,7 @@ function FeatureEditor({
 
           {hasImage ? (
             <div className="space-y-3">
-              <div className="relative h-48 rounded-card overflow-hidden bg-slate-100">
+              <div className="relative mx-auto w-full max-w-60 aspect-4/5 rounded-card overflow-hidden bg-slate-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={image}
@@ -457,6 +466,11 @@ function FeatureEditor({
           {saveLabel}
         </Button>
       </DrawerFooter>
+      <ProductImageCropper
+        file={cropFile}
+        onClose={() => setCropFile(null)}
+        onCropped={handleCropped}
+      />
     </>
   );
 }
