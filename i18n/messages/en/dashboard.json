@@ -231,7 +231,7 @@
   },
   "reviews": {
     "title": "Customer ratings",
-    "subtitle": "What customers who received their order think",
+    "subtitle": "What customers who received their order think · all-time, not affected by the period",
     "total": "{count, plural, one {# rating} other {# ratings}}",
     "best": "Top rated",
     "worst": "Lowest rated",
@@ -245,5 +245,33 @@
     "toggleError": "We could not update the review",
     "empty": "No ratings yet. The rating link is sent with the order delivered notice.",
     "error": "We could not load the ratings."
+  },
+  "survey": {
+    "title": "Satisfaction survey",
+    "subtitle": "How customers rate the order, the delivery and the service · all-time, not affected by the period",
+    "responses": "{count, plural, one {# response} other {# responses}}",
+    "answers": "{count, plural, =0 {No answers} one {# answer} other {# answers}}",
+    "recommendShare": "{percent}% would recommend you",
+    "recommendHint": "Customers who gave 4 or 5 stars to recommending you.",
+    "questions": {
+      "overall": "Overall order",
+      "time": "Time (all order types)",
+      "condition": "Order condition (delivery)",
+      "place": "The place (dine-in)",
+      "service": "Service",
+      "bot": "WhatsApp assistant",
+      "recommend": "Would recommend"
+    },
+    "recent": "Recent general comments",
+    "noComments": "No general comments yet.",
+    "empty": "No responses yet. The survey is sent with the order delivered notice.",
+    "error": "We could not load the survey.",
+    "deliveryTypes": {
+      "DELIVERY": "Delivery",
+      "PICKUP": "Pickup",
+      "DINE_IN": "Dine-in",
+      "COUNTER": "Counter",
+      "none": "No type"
+    }
   }
 }
