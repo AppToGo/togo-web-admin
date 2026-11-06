@@ -9,10 +9,10 @@ export const PRODUCT_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 
 export const PRODUCT_IMAGE_MAX_SIZE = 5 * 1024 * 1024;
 
-/** Tamaño maestro de la foto (post de Instagram 4:5). */
-export const PRODUCT_IMAGE_ASPECT = 4 / 5;
+/** Tamaño maestro de la foto (cuadrado 1080×1080, como la miniatura y el detalle). */
+export const PRODUCT_IMAGE_ASPECT = 1;
 export const PRODUCT_IMAGE_MAX_WIDTH = 1080;
-export const PRODUCT_IMAGE_MAX_HEIGHT = 1350;
+export const PRODUCT_IMAGE_MAX_HEIGHT = 1080;
 const JPEG_QUALITY = 0.85;
 
 export interface CropPixels {
@@ -32,7 +32,7 @@ export function loadImageElement(src: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Recorta la región elegida y la escala al tamaño maestro (1080×1350; si la
+ * Recorta la región elegida y la escala al tamaño maestro (1080×1080; si la
  * fuente es menor se amplía y el usuario decide si la deja). Exporta JPEG:
  * el PNG/WebP con transparencia se aplana sobre blanco, porque el JPEG no
  * tiene canal alfa (sin esto saldría en negro).
@@ -42,7 +42,7 @@ export async function cropImageToMaster(
   fileName: string,
   pixels: CropPixels,
 ): Promise<File> {
-  // El recorte es 4:5 exacto, así que ambas razones coinciden.
+  // El recorte es cuadrado exacto, así que ambas razones coinciden.
   const scale = Math.min(
     PRODUCT_IMAGE_MAX_WIDTH / pixels.width,
     PRODUCT_IMAGE_MAX_HEIGHT / pixels.height,

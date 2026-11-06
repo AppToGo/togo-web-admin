@@ -22,14 +22,14 @@ interface ProductImageCropperProps {
   /** Archivo a recortar. Con null el diálogo está cerrado. */
   file: File | null;
   onClose: () => void;
-  /** Recorte 4:5 exportado como JPEG (1080×1350, ampliado si hace falta). */
+  /** Recorte cuadrado exportado como JPEG (1080×1080, ampliado si hace falta). */
   onCropped: (file: File) => void;
 }
 
 /**
  * Recorte de la foto del producto estilo Instagram/Facebook: muestra qué
  * parte de la imagen subida se va a ver y entrega el archivo ya cortado al
- * tamaño maestro, para que todas las fotos midan lo mismo.
+ * tamaño maestro cuadrado, para que todas las fotos midan lo mismo.
  */
 export function ProductImageCropper({ file, onClose, onCropped }: ProductImageCropperProps) {
   const t = useTranslations("catalog");
