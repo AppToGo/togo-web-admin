@@ -73,7 +73,7 @@
     "confidence": "Confianza",
     "lowConfidence": "Dudosas",
     "lowConfidenceHint": "Respuestas con confianza menor a 0,7: el bot no las usa.",
-    "best": "Mejor",
+    "best": "En verde, el mejor de cada columna.",
     "savings": "{cheaper} sale {share}% más barato por llamada que {other}.",
     "single": "Solo hay datos de un modelo. Activa \"Modelo alternativo de IA (prueba)\" en algún negocio para compararlo."
   }

@@ -188,6 +188,15 @@ export function AiIntentModelTable({
                 </tbody>
               </table>
             </div>
+            {rows.length > 1 && (
+              <p className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span
+                  className="h-2 w-2 rounded-full bg-emerald-600"
+                  aria-hidden
+                />
+                {t("intentModels.best")}
+              </p>
+            )}
             <p className="text-xs text-slate-500">
               {savings !== null
                 ? t("intentModels.savings", {

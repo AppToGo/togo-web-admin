@@ -73,7 +73,7 @@
     "confidence": "Confidence",
     "lowConfidence": "Unsure",
     "lowConfidenceHint": "Answers with confidence below 0.7: the bot does not use them.",
-    "best": "Best",
+    "best": "In green, the best of each column.",
     "savings": "{cheaper} is {share}% cheaper per call than {other}.",
     "single": "Only one model has data. Enable \"Alternative AI model (test)\" on a business to compare."
   }
