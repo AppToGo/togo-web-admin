@@ -12,7 +12,9 @@
     "analysis": "Análisis",
     "aiUsage": "Consumo de IA",
     "whatsappUsage": "Consumo de WhatsApp",
-    "products": "Productos"
+    "products": "Productos",
+    "catalog": "Catálogo web",
+    "reviews": "Calificaciones"
   },
   "periods": {
     "today": "Hoy",
@@ -159,5 +161,89 @@
       "empty": "¡Todos tus productos activos tuvieron ventas en este período!",
       "error": "No pudimos cargar los productos sin ventas."
     }
+  },
+  "catalog": {
+    "error": "No pudimos cargar la analítica del catálogo.",
+    "funnel": {
+      "title": "Embudo del catálogo",
+      "subtitle": "Visitantes del catálogo web y hasta dónde llegaron",
+      "stages": {
+        "sessions": "Visitantes",
+        "viewedProduct": "Vieron un producto",
+        "addedToCart": "Agregaron al carrito",
+        "placedOrder": "Hicieron un pedido"
+      },
+      "abandoned": "{count, plural, =0 {Ningún carrito quedó sin pedido.} one {# carrito quedó sin pedido ({percent}% de los que agregaron algo).} other {# carritos quedaron sin pedido ({percent}% de los que agregaron algo).}}",
+      "origin": "Origen",
+      "conversion": "Conversión",
+      "visitorsShort": "Visitantes",
+      "ordersShort": "Pedidos",
+      "origins": {
+        "whatsapp": "WhatsApp",
+        "direct": "Directo",
+        "qr": "Código QR",
+        "instagram": "Instagram",
+        "facebook": "Facebook",
+        "directory": "Directorio TOGO"
+      }
+    },
+    "topViewed": {
+      "title": "Productos más vistos",
+      "subtitle": "Lo que más abren tus clientes en el catálogo",
+      "product": "Producto",
+      "views": "Vistas",
+      "viewers": "Visitantes",
+      "addedToCart": "Al carrito",
+      "orders": "Pedidos",
+      "conversion": "Conversión",
+      "lowConversion": "Muy visto, poco pedido",
+      "conversionHint": "Conversión: visitantes que abrieron el producto y lo pidieron desde el catálogo. Si un producto se mira mucho y casi no se pide, revisa su precio, foto o descripción.",
+      "empty": "Aún no hay visitas al catálogo en este período."
+    },
+    "searches": {
+      "title": "Búsquedas",
+      "subtitle": "Lo que tus clientes escriben en el buscador",
+      "noResults": "Buscan y no encuentran",
+      "noResultsHint": "Productos que podrías agregar o palabras que faltan en los nombres.",
+      "allFound": "Todas las búsquedas encontraron algo.",
+      "top": "Lo más buscado",
+      "people": "{count, plural, one {# persona} other {# personas}}",
+      "empty": "Aún no hay búsquedas en este período."
+    },
+    "hours": {
+      "title": "Horas de visita",
+      "subtitle": "Visitantes del catálogo por hora del día",
+      "hourLabel": "{hour}:00 – {hour}:59",
+      "visitors": "{count, plural, one {# visitante} other {# visitantes}}",
+      "orders": "{count, plural, one {# pedido} other {# pedidos}}",
+      "peak": "La hora con más visitas es {hour}:00 ({count, plural, one {# visitante} other {# visitantes}}).",
+      "empty": "Aún no hay visitas en este período."
+    },
+    "categories": {
+      "title": "Categorías y destacados",
+      "subtitle": "Qué secciones exploran y qué tanto ayudan los destacados",
+      "empty": "Aún no hay categorías abiertas en este período.",
+      "featuredTitle": "Destacados",
+      "featured": "{clicks, plural, =0 {Nadie abrió un destacado todavía.} one {# clic; el {rate}% terminó en el carrito.} other {# clics; el {rate}% terminó en el carrito.}}",
+      "recommendedTitle": "\"Va muy bien con\"",
+      "recommended": "{count, plural, =0 {Aún no se agregó nada desde las recomendaciones.} one {# producto agregado desde las recomendaciones ({share}% de lo que entró al carrito).} other {# productos agregados desde las recomendaciones ({share}% de lo que entró al carrito).}}"
+    }
+  },
+  "reviews": {
+    "title": "Calificaciones de tus clientes",
+    "subtitle": "Lo que opinan quienes recibieron su pedido",
+    "total": "{count, plural, one {# calificación} other {# calificaciones}}",
+    "best": "Mejor calificados",
+    "worst": "Peor calificados",
+    "rankingPending": "El ranking aparece cuando un producto tiene al menos {min} calificaciones.",
+    "recent": "Opiniones recientes",
+    "noComments": "Aún no hay opiniones con comentario.",
+    "hide": "Ocultar del catálogo",
+    "show": "Mostrar en el catálogo",
+    "hiddenToast": "Opinión oculta del catálogo",
+    "shownToast": "Opinión visible en el catálogo",
+    "toggleError": "No pudimos actualizar la opinión",
+    "empty": "Aún no hay calificaciones. El enlace para calificar llega con el aviso de pedido entregado.",
+    "error": "No pudimos cargar las calificaciones."
   }
 }

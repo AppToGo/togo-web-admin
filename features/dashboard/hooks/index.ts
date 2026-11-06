@@ -6,3 +6,5 @@ export type { UseDetailedMetricsOptions } from './useDetailedMetrics';
 export { usePeriodLabel } from './usePeriodLabel';
 export { useProductMetrics } from './useProductMetrics';
 export type { UseProductMetricsOptions } from './useProductMetrics';
+export { useCatalogMetrics } from './useCatalogMetrics';
+export { useProductReviewsSummary, useToggleReviewHidden } from './useProductReviews';
