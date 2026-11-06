@@ -416,7 +416,8 @@ export function GlobalProductForm({
                 placeholder={tCatalog("products.form.imageUrl")}
               />
             </div>
-            <div className="w-11 h-11 bg-slate-100 rounded-sm flex items-center justify-center overflow-hidden">
+            {/* Las URL externas no pasan por el recorte (el canvas no puede leer imágenes de otro origen): se muestran centradas. */}
+            <div className="w-11 aspect-4/5 bg-slate-100 rounded-sm flex items-center justify-center overflow-hidden">
               {imagePreview ? (
                 <img
                   src={imagePreview}

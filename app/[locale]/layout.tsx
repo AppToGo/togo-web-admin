@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "react-day-picker/dist/style.css";
+// Sin CSS de react-easy-crop: la librería inyecta sus estilos sola al montar
+// el Cropper (solo se importaría para `disableAutomaticStylesInjection`).
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
