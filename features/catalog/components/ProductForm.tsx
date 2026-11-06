@@ -962,7 +962,7 @@ export function ProductForm({
     <>
       {showProductImages && (
         <div className="flex justify-center">
-          <div className="relative w-28 aspect-4/5 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
+          <div className="relative w-28 h-28 rounded-card-lg bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden">
             {imagePreview ? (
               <img
                 src={imagePreview}
