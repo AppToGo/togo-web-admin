@@ -29,7 +29,7 @@ export function GlobalProductCard({
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/5] bg-slate-50 overflow-hidden">
+      <div className="relative aspect-4/5 bg-slate-50 overflow-hidden">
         {product.image && !imageError ? (
           <img
             src={product.image}

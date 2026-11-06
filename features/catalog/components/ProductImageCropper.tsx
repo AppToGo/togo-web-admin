@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 import { useTranslations } from "next-intl";
 import {
@@ -12,65 +12,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-
-/** Tamaño maestro de la foto (post de Instagram 4:5). Si la fuente es menor, se amplía: el usuario ve si se pixela y decide. */
-export const PRODUCT_IMAGE_ASPECT = 4 / 5;
-export const PRODUCT_IMAGE_MAX_WIDTH = 1080;
-export const PRODUCT_IMAGE_MAX_HEIGHT = 1350;
-const JPEG_QUALITY = 0.85;
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-/** Recorta la región elegida y la escala hasta el tamaño maestro sin ampliar. */
-async function cropToMaster(source: File, pixels: Area): Promise<File> {
-  const objectUrl = URL.createObjectURL(source);
-  try {
-    const img = await loadImage(objectUrl);
-    // El recorte es 4:5 exacto, así que ambas razones coinciden; sin tope
-    // de 1: una fuente menor se amplía al tamaño definido.
-    const scale = Math.min(
-      PRODUCT_IMAGE_MAX_WIDTH / pixels.width,
-      PRODUCT_IMAGE_MAX_HEIGHT / pixels.height
-    );
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(pixels.width * scale));
-    canvas.height = Math.max(1, Math.round(pixels.height * scale));
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas sin contexto 2d");
-    ctx.drawImage(
-      img,
-      pixels.x,
-      pixels.y,
-      pixels.width,
-      pixels.height,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY)
-    );
-    if (!blob) throw new Error("No se pudo exportar el recorte");
-    const name = source.name.replace(/\.[^.]+$/, "") || "producto";
-    return new File([blob], `${name}.jpg`, { type: "image/jpeg" });
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
-}
+import {
+  PRODUCT_IMAGE_ASPECT,
+  cropImageToMaster,
+  loadImageElement,
+} from "../utils/product-image";
 
 interface ProductImageCropperProps {
   /** Archivo a recortar. Con null el diálogo está cerrado. */
   file: File | null;
   onClose: () => void;
-  /** Recorte 4:5 exportado como JPEG (máx. 1080×1350). */
+  /** Recorte 4:5 exportado como JPEG (1080×1350, ampliado si hace falta). */
   onCropped: (file: File) => void;
 }
 
@@ -81,8 +33,11 @@ interface ProductImageCropperProps {
  */
 export function ProductImageCropper({ file, onClose, onCropped }: ProductImageCropperProps) {
   const t = useTranslations("catalog");
+  // Mientras se aplica el recorte el diálogo no se puede cerrar (Escape,
+  // clic fuera o X): cerrar igual subiría la foto que el usuario canceló.
+  const busyRef = useRef(false);
   return (
-    <Dialog open={file !== null} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={file !== null} onOpenChange={(open) => !open && !busyRef.current && onClose()}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>{t("products.form.cropTitle")}</DialogTitle>
@@ -92,6 +47,7 @@ export function ProductImageCropper({ file, onClose, onCropped }: ProductImageCr
           <CropperBody
             key={`${file.name}-${file.size}-${file.lastModified}`}
             file={file}
+            busyRef={busyRef}
             onClose={onClose}
             onCropped={onCropped}
           />
@@ -103,10 +59,12 @@ export function ProductImageCropper({ file, onClose, onCropped }: ProductImageCr
 
 function CropperBody({
   file,
+  busyRef,
   onClose,
   onCropped,
 }: {
   file: File;
+  busyRef: React.MutableRefObject<boolean>;
   onClose: () => void;
   onCropped: (file: File) => void;
 }) {
@@ -114,22 +72,47 @@ function CropperBody({
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [applying, setApplying] = useState(false);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const pixelsRef = useRef<Area | null>(null);
-  const [src] = useState(() => URL.createObjectURL(file));
+  const imageRef = useRef<HTMLImageElement | null>(null);
 
+  // El object URL se crea una sola vez por archivo; StrictMode puede
+  // invocar el factory dos veces en dev (se libera una copia, sin romperse).
+  const src = useMemo(() => URL.createObjectURL(file), [file]);
   useEffect(() => () => URL.revokeObjectURL(src), [src]);
+
+  // La imagen ya cargada se reutiliza al aplicar, sin decodificar dos veces.
+  useEffect(() => {
+    let cancelled = false;
+    loadImageElement(src)
+      .then((img) => {
+        if (!cancelled) imageRef.current = img;
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      });
+    return () => {
+      cancelled = true;
+      imageRef.current = null;
+    };
+  }, [src]);
+
+  useEffect(() => {
+    busyRef.current = applying;
+  }, [applying, busyRef]);
 
   const onCropComplete = useCallback((_: Area, pixels: Area) => {
     pixelsRef.current = pixels;
+    setReady(true);
   }, []);
 
   const handleApply = async () => {
-    if (!pixelsRef.current || applying) return;
+    if (!pixelsRef.current || !imageRef.current || applying) return;
     setApplying(true);
     setError(false);
     try {
-      onCropped(await cropToMaster(file, pixelsRef.current));
+      onCropped(await cropImageToMaster(imageRef.current, file.name, pixelsRef.current));
     } catch {
       setError(true);
       setApplying(false);
@@ -159,7 +142,7 @@ function CropperBody({
         <Button type="button" variant="outline" onClick={onClose} disabled={applying}>
           {t("products.form.cropCancel")}
         </Button>
-        <Button type="button" onClick={handleApply} isLoading={applying}>
+        <Button type="button" onClick={handleApply} disabled={!ready} isLoading={applying}>
           {t("products.form.cropApply")}
         </Button>
       </DialogFooter>

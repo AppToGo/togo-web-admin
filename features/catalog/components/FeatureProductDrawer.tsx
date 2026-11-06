@@ -395,7 +395,7 @@ function FeatureEditor({
 
           {hasImage ? (
             <div className="space-y-3">
-              <div className="relative mx-auto w-full max-w-60 aspect-[4/5] rounded-card overflow-hidden bg-slate-100">
+              <div className="relative mx-auto w-full max-w-60 aspect-4/5 rounded-card overflow-hidden bg-slate-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={image}

@@ -146,7 +146,7 @@ export function ProductCard({
       >
         {/* Image */}
         {showImage ? (
-          <div className="relative aspect-[4/5] rounded-card bg-slate-50 mb-4 overflow-hidden">
+          <div className="relative aspect-4/5 rounded-card bg-slate-50 mb-4 overflow-hidden">
             {product.image && !imageError ? (
               <img
                 src={product.image}
