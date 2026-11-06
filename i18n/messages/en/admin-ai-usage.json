@@ -60,5 +60,21 @@
   "models": {
     "title": "By model",
     "tokens": "{input} input · {output} output"
+  },
+  "intentModels": {
+    "title": "Classifier by model",
+    "subtitle": "Messages understood by the AI, per model. The alternative model is enabled per business with \"Alternative AI model (test)\".",
+    "model": "Model",
+    "calls": "Calls",
+    "perCall": "Cost / call",
+    "per1k": "Per 1,000",
+    "cached": "Cache",
+    "latency": "Latency p50 · p90",
+    "confidence": "Confidence",
+    "lowConfidence": "Unsure",
+    "lowConfidenceHint": "Answers with confidence below 0.7: the bot does not use them.",
+    "best": "Best",
+    "savings": "{cheaper} is {share}% cheaper per call than {other}.",
+    "single": "Only one model has data. Enable \"Alternative AI model (test)\" on a business to compare."
   }
 }
