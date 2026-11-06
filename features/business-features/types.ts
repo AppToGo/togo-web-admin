@@ -36,6 +36,6 @@ export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
   AI_BOT_PARAPHRASE: false,
   BOT_MESSAGES: false,
   WHATSAPP_TEMPLATE_FALLBACK: true,
-  CATALOG_ANALYTICS: false,
+  CATALOG_ANALYTICS: true,
   PRODUCT_REVIEWS: false,
 };
