@@ -143,16 +143,20 @@ export interface ProductReviewItem {
   orderNumber: string;
 }
 
+export interface RatedProduct {
+  productId: string;
+  name: string;
+  image: string | null;
+  ratingAvg: number | null;
+  ratingCount: number;
+}
+
 export interface ProductReviewsSummary {
   total: number;
   average: number | null;
   distribution: Array<{ stars: number; count: number }>;
-  products: Array<{
-    productId: string;
-    name: string;
-    image: string | null;
-    ratingAvg: number | null;
-    ratingCount: number;
-  }>;
+  /** Mejor y peor calificados; solo productos con 3+ calificaciones. */
+  best: RatedProduct[];
+  worst: RatedProduct[];
   recent: ProductReviewItem[];
 }
