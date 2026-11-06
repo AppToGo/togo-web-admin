@@ -57,6 +57,8 @@ interface FormData {
   accentColor: string;
   description: string;
   useProductImages: boolean;
+  /** Estrellas de los productos en el catálogo (flag PRODUCT_REVIEWS). */
+  showProductRatings: boolean;
   /** catalogVisibility === "PUBLIC": el negocio sale en el directorio público. */
   listedInDirectory: boolean;
 }
@@ -70,6 +72,7 @@ const defaultFormData: FormData = {
   accentColor: "#10B981",
   description: "",
   useProductImages: false,
+  showProductRatings: true,
   listedInDirectory: false,
 };
 
@@ -98,6 +101,8 @@ function formDataFrom(business: Business): FormData {
     accentColor: (s.accentColor as string) || "#10B981",
     description: (s.description as string) || "",
     useProductImages: Boolean(s.useProductImages),
+    // Sin valor = se muestran (mismo default que la API).
+    showProductRatings: s.showProductRatings !== false,
     listedInDirectory: business.catalogVisibility === "PUBLIC",
   };
 }
@@ -229,6 +234,7 @@ export default function BusinessSettingsPage() {
               accentColor: formData.accentColor || undefined,
               description: formData.description || undefined,
               useProductImages: formData.useProductImages,
+              showProductRatings: formData.showProductRatings,
             },
           },
         });
@@ -504,6 +510,21 @@ export default function BusinessSettingsPage() {
                     onCheckedChange={(checked) => handleBooleanChange("useProductImages", checked)}
                   />
                 </div>
+                <Feature name="PRODUCT_REVIEWS">
+                  <div className="flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
+                    <div className="min-w-0 flex-1">
+                      <Label htmlFor="showProductRatings" className="text-sm font-semibold">
+                        {tb("config.showProductRatings.label")}
+                      </Label>
+                      <p className="text-xs text-slate-500">{tb("config.showProductRatings.description")}</p>
+                    </div>
+                    <Switch
+                      id="showProductRatings"
+                      checked={formData.showProductRatings}
+                      onCheckedChange={(checked) => handleBooleanChange("showProductRatings", checked)}
+                    />
+                  </div>
+                </Feature>
                 <div className="flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3.5">
                   <div className="min-w-0 flex-1">
                     <Label htmlFor="listedInDirectory" className="text-sm font-semibold">

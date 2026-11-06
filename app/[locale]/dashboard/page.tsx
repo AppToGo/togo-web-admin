@@ -21,10 +21,13 @@ import {
   LazyMetricsGrid,
   LazyChartsSection,
   LazyProductsSection,
+  LazyCatalogSection,
+  ProductReviewsCard,
   ProductsSectionSkeleton,
   BranchSelector,
 } from "@/features/dashboard";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { Feature } from "@/features/business-features";
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
@@ -39,6 +42,7 @@ export default function DashboardPage() {
   // sección no aparezca de golpe y empuje lo de abajo.
   const { hasPermission, isLoading: permissionsLoading } = useMyPermissions();
   const canViewProducts = hasPermission("metrics.view");
+  const canViewReviews = hasPermission("product.view");
   // Negocio del selector (SUPER_ADMIN) o el propio; "" = todos los negocios.
   const aiBusinessId = useEffectiveBusinessId() || null;
   const { data: businesses } = useBusinesses({
@@ -115,6 +119,24 @@ export default function DashboardPage() {
               <LazyProductsSection />
             </section>
           )
+        )}
+
+        {/* Analítica del catálogo web: vistos, búsquedas, embudo - Lazy load */}
+        {canViewProducts && (
+          <Feature name="CATALOG_ANALYTICS">
+            <section aria-label={t("sections.catalog")}>
+              <LazyCatalogSection />
+            </section>
+          </Feature>
+        )}
+
+        {/* Calificaciones de los clientes (mismo permiso que el endpoint) */}
+        {canViewReviews && (
+          <Feature name="PRODUCT_REVIEWS">
+            <section aria-label={t("sections.reviews")}>
+              <ProductReviewsCard />
+            </section>
+          </Feature>
         )}
 
         {/* Embudo + horas pico - Lazy load */}

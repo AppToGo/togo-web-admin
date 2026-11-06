@@ -14,7 +14,9 @@ export type FeatureKey =
   | "GLOBAL_CATALOG"
   | "AI_BOT_PARAPHRASE"
   | "BOT_MESSAGES"
-  | "WHATSAPP_TEMPLATE_FALLBACK";
+  | "WHATSAPP_TEMPLATE_FALLBACK"
+  | "CATALOG_ANALYTICS"
+  | "PRODUCT_REVIEWS";
 
 /**
  * Valor de arranque de cada funcionalidad (mismo `defaultEnabled` que el
@@ -34,4 +36,6 @@ export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
   AI_BOT_PARAPHRASE: false,
   BOT_MESSAGES: false,
   WHATSAPP_TEMPLATE_FALLBACK: true,
+  CATALOG_ANALYTICS: false,
+  PRODUCT_REVIEWS: false,
 };
