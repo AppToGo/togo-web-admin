@@ -111,6 +111,7 @@
     "WHATSAPP_RECEIVED": "Escribió por WhatsApp",
     "LEAD_CREATED": "Creado en el CRM",
     "WHATSAPP_OUTREACH_SENT": "Se envió mensaje de WhatsApp (wa.me)",
+    "ADVISORY_OFFERED": "Se le ofreció asesoría por WhatsApp (automático)",
     "ADVISORY_REQUESTED": "Pidió asesoría por WhatsApp",
     "ADVISORY_DECLINED": "No quiso asesoría por ahora",
     "DEMO_STARTED_FIRST": "Probó la demo por primera vez"
