@@ -100,7 +100,10 @@
     "groupOpportunity": "Opportunity",
     "groupPrivacy": "Privacy",
     "mainNeedPlaceholder": "What problem do they want ToGo to solve?",
-    "deleteLead": "Delete prospect"
+    "deleteLead": "Delete prospect",
+    "sourceDemo": "Came from the web demo",
+    "sourceWhatsapp": "Came from the demo WhatsApp",
+    "sourceLabel": "Source: {source}"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -306,5 +309,11 @@
     "dateLabel": "Date and time",
     "hint": "The board card always shows the nearest pending action.",
     "submit": "Add action"
+  },
+  "sources": {
+    "DEMO": "Web demo",
+    "WHATSAPP": "WhatsApp demo",
+    "MANUAL": "Manual",
+    "SCOUT": "ToGo Scout"
   }
 }
