@@ -18,7 +18,8 @@ export type FeatureKey =
   | "CATALOG_ANALYTICS"
   | "LLM_CATALOG_CONTEXT"
   | "LLM_INTENT_ALT_MODEL"
-  | "PRODUCT_REVIEWS";
+  | "PRODUCT_REVIEWS"
+  | "DEMO_SALES_AI";
 
 /**
  * Valor de arranque de cada funcionalidad (mismo `defaultEnabled` que el
@@ -42,4 +43,5 @@ export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
   LLM_CATALOG_CONTEXT: false,
   LLM_INTENT_ALT_MODEL: false,
   PRODUCT_REVIEWS: true,
+  DEMO_SALES_AI: false,
 };
