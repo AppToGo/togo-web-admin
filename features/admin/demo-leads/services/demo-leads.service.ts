@@ -20,8 +20,17 @@ import type {
   ScoutSearchResponse,
   ScoutImportRequest,
   ScoutImportResponse,
+  DemoFunnelParams,
+  DemoFunnelResponse,
+  SendDemoLeadTemplateResponse,
 } from "@/types/auth.types";
 import type { DemoLeadOwnerOption } from "@/types/auth.types";
+import type {
+  ConversationDetail,
+  ConversationMessage,
+  ConversationSessionSummary,
+  SendMessageParams,
+} from "@/features/conversations";
 
 /**
  * Posibles clientes de la demo (solo SUPER_ADMIN).
@@ -201,5 +210,78 @@ export async function importScoutProspects(
  */
 export async function getDemoLeadOwners(): Promise<DemoLeadOwnerOption[]> {
   const response = await apiClient.get<DemoLeadOwnerOption[]>("/admin/demo-leads/owners");
+  return response.data;
+}
+
+/**
+ * Conversación del lead con el WhatsApp de la demo. `conversation` es null
+ * mientras el lead no haya escrito.
+ */
+export interface DemoLeadConversationResponse {
+  businessId: string;
+  conversation: ConversationDetail | null;
+}
+
+export async function getDemoLeadConversation(
+  id: string
+): Promise<DemoLeadConversationResponse> {
+  const response = await apiClient.get<DemoLeadConversationResponse>(
+    `/admin/demo-leads/${id}/conversation`
+  );
+  return response.data;
+}
+
+export async function takeoverDemoLeadConversation(
+  id: string
+): Promise<ConversationSessionSummary> {
+  const response = await apiClient.post<ConversationSessionSummary>(
+    `/admin/demo-leads/${id}/conversation/takeover`,
+    {}
+  );
+  return response.data;
+}
+
+export async function releaseDemoLeadConversation(
+  id: string,
+  note?: string
+): Promise<ConversationSessionSummary> {
+  const response = await apiClient.post<ConversationSessionSummary>(
+    `/admin/demo-leads/${id}/conversation/release`,
+    note ? { note } : {}
+  );
+  return response.data;
+}
+
+export async function sendDemoLeadConversationMessage(
+  id: string,
+  params: SendMessageParams
+): Promise<ConversationMessage> {
+  const response = await apiClient.post<ConversationMessage>(
+    `/admin/demo-leads/${id}/conversation/messages`,
+    params
+  );
+  return response.data;
+}
+
+/** Plantilla fuera de la ventana de 24 h (una cada 24 h por lead). */
+export async function sendDemoLeadConversationTemplate(
+  id: string,
+  text: string
+): Promise<SendDemoLeadTemplateResponse> {
+  const response = await apiClient.post<SendDemoLeadTemplateResponse>(
+    `/admin/demo-leads/${id}/conversation/template`,
+    { text }
+  );
+  return response.data;
+}
+
+/** Embudo del bot comercial (permiso platform.leads.view_all). */
+export async function getDemoLeadsFunnel(
+  params: DemoFunnelParams = {}
+): Promise<DemoFunnelResponse> {
+  const response = await apiClient.get<DemoFunnelResponse>(
+    "/admin/demo-leads/funnel",
+    { params }
+  );
   return response.data;
 }

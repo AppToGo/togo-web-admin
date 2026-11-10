@@ -47,9 +47,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { leadEntryChannelStyle } from "./LeadEntryChannelBadge";
 import { leadSourceStyle } from "./LeadSourceBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
+import { LeadTrialBadge } from "@/features/admin/demo-leads/components/LeadTrialBadge";
+import { LeadConversationPanel } from "@/features/admin/demo-leads/components/LeadConversationPanel";
 import { LeadWhatsAppAgentSection } from "@/features/admin/demo-leads/components/LeadWhatsAppAgentSection";
 import { LeadOwnerAvatar } from "@/features/admin/demo-leads/components/LeadOwnerAvatar";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
@@ -79,7 +82,25 @@ import {
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
-type DetailTab = "contact" | "followUp" | "profile" | "history";
+type DetailTab =
+  | "contact"
+  | "followUp"
+  | "profile"
+  | "history"
+  | "conversation";
+
+const DETAIL_TABS: readonly DetailTab[] = [
+  "contact",
+  "followUp",
+  "profile",
+  "history",
+  "conversation",
+];
+
+/** Valida el valor que llega por URL (`?tab=`): solo pestañas conocidas. */
+function parseDetailTab(value: string | null | undefined): DetailTab | null {
+  return DETAIL_TABS.find((tab) => tab === value) ?? null;
+}
 
 /** Valor del selector de etapa: las abiertas tal cual, cerrado con su resultado. */
 type StageOption = DemoLeadStage | `CLOSED:${DemoLeadOutcome}`;
@@ -88,12 +109,18 @@ interface LeadDetailPanelProps {
   leadId: string | null;
   onClose: () => void;
   onDeleted?: () => void;
+  /** Pestaña con la que abre la ficha (ej. `conversation` desde un enlace). */
+  initialTab?: string | null;
+  /** Avisa el cambio de pestaña para reflejarlo en la URL. */
+  onTabChange?: (tab: string) => void;
 }
 
 export function LeadDetailPanel({
   leadId,
   onClose,
   onDeleted,
+  initialTab,
+  onTabChange,
 }: LeadDetailPanelProps) {
   const t = useTranslations("admin-demo-leads");
   const {
@@ -143,6 +170,8 @@ export function LeadDetailPanel({
             <LeadDetailBody
               key={detail.lead.id}
               detail={detail}
+              initialTab={parseDetailTab(initialTab)}
+              onTabChange={onTabChange}
               onDelete={() => setConfirmDeleteOpen(true)}
               isDeleting={deleteLead.isPending}
             />
@@ -181,10 +210,14 @@ export function LeadDetailPanel({
 
 function LeadDetailBody({
   detail,
+  initialTab,
+  onTabChange,
   onDelete,
   isDeleting,
 }: {
   detail: DemoLeadDetail;
+  initialTab: DetailTab | null;
+  onTabChange?: (tab: string) => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
@@ -194,9 +227,13 @@ function LeadDetailBody({
   const updateLead = useUpdateDemoLead();
   const { lead, summary, suggestion } = detail;
   // Sin consentimiento no hay agente: arranca en Seguimiento.
-  const [tab, setTab] = useState<DetailTab>(
-    lead.revoked ? "followUp" : "contact"
+  const [tab, setTabState] = useState<DetailTab>(
+    initialTab ?? (lead.revoked ? "followUp" : "contact")
   );
+  const setTab = (next: DetailTab) => {
+    setTabState(next);
+    onTabChange?.(next);
+  };
 
   const pendingActions = (detail.actions ?? []).filter((a) => !a.doneAt).length;
   // Origen del registro: mismo icono y color que la etiqueta de la tarjeta.
@@ -212,6 +249,17 @@ function LeadDetailBody({
         : lead.source === "WHATSAPP"
           ? t("detail.sourceWhatsapp")
           : t("detail.sourceDemo");
+  // Canal de entrada: solo si la API lo envía.
+  const entryChannel = lead.entryChannel ?? null;
+  const entryStyle = entryChannel ? leadEntryChannelStyle(entryChannel) : null;
+  const EntryIcon = entryStyle?.icon;
+  const entryLabel = entryChannel
+    ? safeLabel(tt, `entryChannels.${entryChannel}`, t("entryChannels.DIRECT"))
+    : "";
+  const adUrl =
+    lead.adSourceUrl && /^https?:\/\//i.test(lead.adSourceUrl)
+      ? lead.adSourceUrl
+      : null;
   const business = [lead.establishmentName, lead.businessType]
     .filter(Boolean)
     .join(" · ");
@@ -266,6 +314,43 @@ function LeadDetailBody({
                 {sourceLabel}
               </span>
             </p>
+            {entryChannel && entryStyle && EntryIcon && (
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-slate-500">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 font-semibold",
+                    entryStyle.text
+                  )}
+                >
+                  <EntryIcon className="h-3.5 w-3.5" aria-hidden />
+                  {t("detail.entryChannelLabel", { channel: entryLabel })}
+                </span>
+                {entryChannel === "AD" && lead.adHeadline && (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span className="truncate">
+                      {t("detail.adHeadline", { headline: lead.adHeadline })}
+                    </span>
+                  </>
+                )}
+                {entryChannel === "AD" && adUrl && (
+                  <a
+                    href={adUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-sky-700 underline-offset-2 hover:underline"
+                  >
+                    {t("detail.adLink")}
+                  </a>
+                )}
+              </p>
+            )}
+            {lead.signupAt && (
+              <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[13px] text-slate-500">
+                <LeadTrialBadge />
+                <span>{formatDateTime(lead.signupAt, locale)}</span>
+              </p>
+            )}
             <p className="mt-1 flex items-center gap-0.5 text-[13px] tabular-nums text-slate-700">
               <span className="mr-1">{formatPhone(lead.phone)}</span>
               <button
@@ -409,6 +494,7 @@ function LeadDetailBody({
                 ? `${t("detail.tabHistory")} · ${detail.notes.length}`
                 : t("detail.tabHistory"),
             },
+            { id: "conversation", label: t("detail.tabConversation") },
           ]}
         />
       </DrawerHeader>
@@ -460,6 +546,14 @@ function LeadDetailBody({
         )}
 
         {tab === "history" && <LeadHistory detail={detail} />}
+
+        {tab === "conversation" && (
+          <LeadConversationPanel
+            leadId={lead.id}
+            revoked={lead.revoked}
+            suggestionKey={suggestion.key}
+          />
+        )}
       </div>
     </>
   );
@@ -617,6 +711,38 @@ function LeadHistory({ detail }: { detail: DemoLeadDetail }) {
   const addNote = useAddDemoLeadNote();
   const [noteBody, setNoteBody] = useState("");
 
+  // Línea secundaria de ciertos eventos (estado del seguimiento, elección, origen).
+  const eventDetail = (event: DemoLeadDetail["events"][number]): string | null => {
+    const meta = event.metadata ?? {};
+    if (event.type === "SALES_FOLLOWUP_SENT") {
+      const status = String(meta.status ?? "");
+      return status
+        ? safeLabel(tt, `eventDetail.followupStatus.${status}`, status)
+        : null;
+    }
+    if (event.type === "SALES_FOLLOWUP_REPLIED") {
+      const choice = String(meta.choice ?? "");
+      return choice
+        ? safeLabel(tt, `eventDetail.followupChoice.${choice}`, choice)
+        : null;
+    }
+    // Un registro con el mismo teléfono pero sin venir del enlace del bot no
+    // marca "Empezó prueba": se muestra como coincidencia sin verificar.
+    if (event.type === "SALES_SIGNUP_COMPLETED" && meta.verified === false) {
+      return t("eventDetail.signupUnverified");
+    }
+    if (event.type === "ADVISORY_REQUESTED" && meta.source === "SALES_FOLLOWUP") {
+      return t("eventDetail.fromFollowup");
+    }
+    if (
+      event.type === "WHATSAPP_OUTREACH_SENT" &&
+      meta.via === "MINICRM_TEMPLATE"
+    ) {
+      return t("eventDetail.viaTemplate");
+    }
+    return null;
+  };
+
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
     const body = noteBody.trim();
@@ -694,6 +820,11 @@ function LeadHistory({ detail }: { detail: DemoLeadDetail }) {
                       ? t("events.DEMO_STARTED_FIRST")
                       : safeLabel(tt, `events.${event.type}`, event.type)}
                   </span>
+                  {eventDetail(event) && (
+                    <span className="mt-0.5 text-[13px] text-slate-600">
+                      {eventDetail(event)}
+                    </span>
+                  )}
                   <span className="mt-0.5 text-[13px] text-slate-500">
                     {formatDateTime(event.occurredAt, locale)}
                   </span>

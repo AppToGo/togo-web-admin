@@ -22,6 +22,8 @@ import {
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 import { LeadOwnerAvatar } from "./LeadOwnerAvatar";
+import { LeadEntryChannelBadge } from "./LeadEntryChannelBadge";
+import { LeadTrialBadge } from "./LeadTrialBadge";
 import { LeadSourceBadge } from "./LeadSourceBadge";
 import { LeadActionDialog } from "./LeadActionDialog";
 
@@ -91,7 +93,16 @@ export function LeadCard({
               {business}
             </span>
           )}
-          <LeadSourceBadge source={lead.source} className="mt-1" />
+          <span className="mt-1 flex flex-wrap items-center gap-1">
+            <LeadSourceBadge source={lead.source} />
+            {lead.entryChannel && (
+              <LeadEntryChannelBadge
+                channel={lead.entryChannel}
+                adHeadline={lead.adHeadline}
+              />
+            )}
+            {lead.signupAt && <LeadTrialBadge />}
+          </span>
         </span>
         {closed && lead.outcome ? (
           <span

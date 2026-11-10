@@ -103,7 +103,11 @@
     "deleteLead": "Delete prospect",
     "sourceDemo": "Came from the web demo",
     "sourceWhatsapp": "Came from the demo WhatsApp",
-    "sourceLabel": "Source: {source}"
+    "sourceLabel": "Source: {source}",
+    "entryChannelLabel": "Came in via: {channel}",
+    "adHeadline": "Ad · {headline}",
+    "adLink": "View ad",
+    "tabConversation": "Conversation"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -117,19 +121,31 @@
     "ADVISORY_OFFERED": "Advisory offered on WhatsApp (automatic)",
     "ADVISORY_REQUESTED": "Requested advisory via WhatsApp",
     "ADVISORY_DECLINED": "Declined advisory for now",
-    "DEMO_STARTED_FIRST": "Tried the demo for the first time"
+    "DEMO_STARTED_FIRST": "Tried the demo for the first time",
+    "SALES_STARTED": "Wrote to the demo WhatsApp",
+    "SALES_INDUSTRY_SET": "Chose an industry",
+    "SALES_VOLUME_SET": "Shared order volume",
+    "SALES_DEMO_STARTED": "Entered the demo",
+    "SALES_DEMO_COMPLETED": "Finished the test order",
+    "SALES_PRICING_VIEWED": "Viewed pricing",
+    "SALES_SIGNUP_CLICKED": "Clicked sign up",
+    "SALES_SIGNUP_COMPLETED": "Signed up (started trial)",
+    "SALES_FOLLOWUP_SENT": "Follow-up sent",
+    "SALES_FOLLOWUP_REPLIED": "Replied to the follow-up"
   },
   "suggestions": {
     "CLOSE_ONBOARD": "Close the sale and move to onboarding.",
     "REVIEW_LOSS": "Document why they didn't continue.",
-    "NO_CONTACT": "Do not contact: consent withdrawn.",
+    "NO_CONTACT": "Do not contact: consent withdrawn or not given.",
     "DO_PLANNED_ACTION": "Do the planned action that went overdue.",
+    "CONTACT": "Contact: they reached out asking for info.",
     "COLD_OUTREACH": "Cold prospect: send first WhatsApp message and invite to try the demo.",
     "INVITE_CONTINUE": "Invite them to keep trying the demo.",
     "NUDGE_FIRST_ORDER": "Nudge them to create their first test order.",
     "PERSONAL_OUTREACH": "Personal outreach based on what they tried.",
     "ASK_BLOCKER": "Ask what kept them from deciding.",
-    "MONITOR": "Just watch for now."
+    "MONITOR": "Just watch for now.",
+    "ONBOARD_TRIAL": "Started the trial: help them set up."
   },
   "toasts": {
     "updated": "Lead updated",
@@ -310,10 +326,121 @@
     "hint": "The board card always shows the nearest pending action.",
     "submit": "Add action"
   },
+  "entryChannels": {
+    "AD": "Ad",
+    "WEB": "Web",
+    "DIRECT": "Direct"
+  },
   "sources": {
     "DEMO": "Web demo",
     "WHATSAPP": "WhatsApp demo",
     "MANUAL": "Manual",
     "SCOUT": "ToGo Scout"
+  },
+  "conversation": {
+    "empty": "This lead hasn't written to the demo WhatsApp yet.",
+    "error": "The conversation could not be loaded.",
+    "closed": "The conversation is closed.",
+    "readOnly": "You don't have permission to reply to this lead."
+  },
+  "eventDetail": {
+    "followupStatus": {
+      "PENDING": "Pending",
+      "SENT": "Sent",
+      "FAILED": "Failed to send"
+    },
+    "followupChoice": {
+      "try": "Try now",
+      "advisor": "Talk to an advisor"
+    },
+    "fromFollowup": "From the follow-up",
+    "viaTemplate": "With a template from the CRM",
+    "signupUnverified": "Phone matches, but they didn't come from the bot link (unverified)"
+  },
+  "salesSteps": {
+    "TRIAL_STARTED": "Trial started"
+  },
+  "trial": {
+    "badge": "Started trial"
+  },
+  "template": {
+    "title": "Send with a template",
+    "hint": "The 24 h window is closed: you can only write with an approved Meta template (one every 24 h).",
+    "before": "Hola, te escribe {name} del equipo de ToGo por la solicitud que hiciste en nuestro WhatsApp. Sobre tu solicitud:",
+    "after": ". Responde este mensaje y seguimos por aquí.",
+    "placeholderToken": "[your message]",
+    "defaultSender": "an advisor",
+    "placeholder": "Write your message on a single line",
+    "fieldLabel": "Template message",
+    "send": "Send with template",
+    "sending": "Sending…",
+    "confirmTitle": "Send the template?",
+    "confirmBody": "The full template text will be sent to the lead. Meta may charge for this message and you can send only one every 24 h.",
+    "cancel": "Cancel",
+    "confirmSend": "Send",
+    "sent": "Template sent",
+    "noContact": "Can't send: this lead revoked or didn't authorize contact.",
+    "errors": {
+      "LEAD_REVOKED": "This lead revoked contact: you can't message them.",
+      "DO_NOT_CONTACT": "This lead is marked as do-not-contact.",
+      "WINDOW_OPEN": "The 24 h window is still open: send a regular message instead of the template.",
+      "TEMPLATE_ALREADY_SENT": "A template was already sent to this lead in the last 24 h.",
+      "TEMPLATE_UNAVAILABLE": "The template isn't approved by Meta yet. Try again later.",
+      "TEMPLATE_DAILY_LIMIT": "You reached today's template limit. Try again tomorrow.",
+      "PROVIDER_SEND_FAILED": "WhatsApp couldn't send the message. Try again in a moment.",
+      "generic": "Couldn't send the template."
+    }
+  },
+  "funnel": {
+    "button": "Funnel",
+    "title": "Sales bot funnel",
+    "subtitle": "How many leads reach each step of the demo WhatsApp conversation.",
+    "back": "Back to leads",
+    "note": "Data since the follow-up launch.",
+    "empty": "No funnel data in this range yet",
+    "error": "Couldn't load the funnel.",
+    "totalLeads": "{count, plural, one {# lead in the cohort} other {# leads in the cohort}}",
+    "ofStarted": "{pct}% of those who started",
+    "ofPrevious": "{pct}% of previous step",
+    "filters": {
+      "range": "Date range",
+      "days7": "7 days",
+      "days30": "30 days",
+      "custom": "Custom",
+      "from": "From",
+      "to": "To",
+      "channel": "Channel",
+      "allChannels": "All",
+      "ad": "Ad",
+      "allAds": "All ads",
+      "noHeadline": "Ad without headline"
+    },
+    "channels": {
+      "AD": "Ad",
+      "WEB": "Web",
+      "DIRECT": "Direct",
+      "NONE": "No channel"
+    },
+    "steps": {
+      "STARTED": "Started",
+      "INDUSTRY_SET": "Chose industry",
+      "VOLUME_SET": "Gave volume",
+      "DEMO_STARTED": "Entered demo",
+      "DEMO_COMPLETED": "Finished test order",
+      "PRICING_VIEWED": "Viewed pricing",
+      "ADVISOR_REQUESTED": "Asked for advisor",
+      "SIGNUP_CLICKED": "Clicked sign up",
+      "SIGNUP_COMPLETED": "Signed up",
+      "FOLLOWUP_SENT": "Follow-up sent",
+      "FOLLOWUP_REPLIED": "Replied to follow-up"
+    },
+    "tables": {
+      "byChannel": "By channel",
+      "byAd": "By ad",
+      "noAds": "No leads came from an ad in this range.",
+      "leads": "Leads",
+      "name": "Ad",
+      "channel": "Channel"
+    }
   }
 }

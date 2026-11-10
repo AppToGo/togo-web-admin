@@ -100,6 +100,8 @@ export interface RegisterRequest {
   industryId?: string;
   address?: string;
   city?: string;
+  /** Origen del registro; la API solo acepta 'whatsapp-demo'. */
+  signupRef?: "whatsapp-demo";
 }
 
 // Registration wizard state (persisted in sessionStorage for multi-step flow)
@@ -207,7 +209,31 @@ export interface DemoLead {
   /** Cómo se creó: DEMO (demo web), WHATSAPP (WhatsApp de la demo), MANUAL (super admin) o SCOUT. */
   source: DemoLeadSource;
   referredBy?: string | null;
+  /** Por dónde llegó: anuncio (AD), web (WEB) o directo (DIRECT). Opcional: la API puede no enviarlo aún. */
+  entryChannel?: DemoEntryChannel | null;
+  /** Titular del anuncio de origen (solo canal AD). */
+  adHeadline?: string | null;
+  /** Paso actual de la conversación comercial del bot. */
+  salesStep?: DemoSalesStep | null;
+  /** Cuándo se registró (empezó la prueba) tras el bot comercial; null si no. */
+  signupAt?: string | null;
+  /** Escribió primero al WhatsApp demo (solicitud entrante). No es consentimiento; un "Ahora no" posterior a la asesoría la anula para sugerir contacto. */
+  inboundRequest?: boolean;
 }
+
+export type DemoEntryChannel = "AD" | "WEB" | "DIRECT";
+
+/** Pasos de la conversación comercial del bot (la API puede sumar más). */
+export type DemoSalesStep =
+  | "STARTED"
+  | "INDUSTRY_SET"
+  | "VOLUME_SET"
+  | "DEMO_STARTED"
+  | "DEMO_COMPLETED"
+  | "PRICING_VIEWED"
+  | "ADVISOR_REQUESTED"
+  | "TRIAL_STARTED"
+  | (string & {});
 
 export type DemoLeadSource = "DEMO" | "WHATSAPP" | "MANUAL" | "SCOUT";
 
@@ -323,9 +349,22 @@ export interface DemoLeadPipelineEntry {
   lost?: number;
 }
 
+/** Tipos de evento de la línea de tiempo (la API puede sumar más). */
+export type DemoLeadEventType =
+  | "SALES_INDUSTRY_SET"
+  | "SALES_VOLUME_SET"
+  | "SALES_DEMO_STARTED"
+  | "SALES_DEMO_COMPLETED"
+  | "SALES_PRICING_VIEWED"
+  | "SALES_SIGNUP_CLICKED"
+  | "SALES_SIGNUP_COMPLETED"
+  | "SALES_FOLLOWUP_SENT"
+  | "SALES_FOLLOWUP_REPLIED"
+  | (string & {});
+
 export interface DemoLeadActivityEvent {
   id: string;
-  type: string;
+  type: DemoLeadEventType;
   occurredAt: string;
   metadata?: Record<string, unknown> | null;
 }
@@ -338,7 +377,8 @@ export interface DemoLeadNote {
 }
 
 export interface DemoLeadSuggestion {
-  key: string;
+  /** Incluye ONBOARD_TRIAL (empezó la prueba: acompañar la configuración). */
+  key: "ONBOARD_TRIAL" | (string & {});
   reason: string;
 }
 
@@ -352,6 +392,11 @@ export interface DemoLeadDetailLead extends DemoLead {
   lostAt?: string | null;
   whatsappDrafts?: WhatsAppDraftsResponse | null;
   whatsappDraftsAt?: string | null;
+  /** Enlace al anuncio de origen (solo detalle). */
+  adSourceUrl?: string | null;
+  adSourceType?: string | null;
+  /** Fecha ISO de la primera entrada por el canal. */
+  entryAt?: string | null;
 }
 
 /** Acción de seguimiento de un lead (varias por lead). */
@@ -410,4 +455,73 @@ export interface DemoLeadOwnerOption {
   id: string;
   name: string;
   email: string | null;
+}
+
+/** Canales de entrada del embudo. */
+export type DemoFunnelChannel = "AD" | "WEB" | "DIRECT";
+
+export type DemoFunnelStep =
+  | "STARTED"
+  | "INDUSTRY_SET"
+  | "VOLUME_SET"
+  | "DEMO_STARTED"
+  | "DEMO_COMPLETED"
+  | "PRICING_VIEWED"
+  | "ADVISOR_REQUESTED"
+  | "SIGNUP_CLICKED"
+  | "SIGNUP_COMPLETED"
+  | "FOLLOWUP_SENT"
+  | "FOLLOWUP_REPLIED";
+
+export type DemoFunnelCounts = Record<DemoFunnelStep, number>;
+
+export interface DemoFunnelParams {
+  /** YYYY-MM-DD (zona America/Bogota). */
+  from?: string;
+  to?: string;
+  channel?: DemoFunnelChannel;
+  adKey?: string;
+}
+
+export interface DemoFunnelGroup {
+  totalLeads: number;
+  counts: DemoFunnelCounts;
+}
+
+export interface DemoFunnelChannelRow extends DemoFunnelGroup {
+  /** null = lead sin canal registrado. */
+  channel: DemoFunnelChannel | null;
+}
+
+export interface DemoFunnelAdRow extends DemoFunnelGroup {
+  adKey: string;
+  adHeadline: string | null;
+}
+
+export interface DemoFunnelResponse extends DemoFunnelGroup {
+  from: string;
+  to: string;
+  timeZone: string;
+  channel: DemoFunnelChannel | null;
+  adKey: string | null;
+  stepOrder: DemoFunnelStep[];
+  byChannel: DemoFunnelChannelRow[];
+  byAd: DemoFunnelAdRow[];
+}
+
+/** Códigos de error del envío por plantilla. */
+export type DemoLeadTemplateErrorCode =
+  | "LEAD_REVOKED"
+  | "DO_NOT_CONTACT"
+  | "WINDOW_OPEN"
+  | "TEMPLATE_ALREADY_SENT"
+  | "TEMPLATE_UNAVAILABLE"
+  | "TEMPLATE_DAILY_LIMIT"
+  | "PROVIDER_SEND_FAILED";
+
+export interface SendDemoLeadTemplateResponse {
+  status: "SENT";
+  template: string;
+  renderedText: string;
+  sentAt: string;
 }

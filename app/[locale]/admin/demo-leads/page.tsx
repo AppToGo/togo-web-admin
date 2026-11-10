@@ -10,6 +10,7 @@
 import * as React from "react";
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import { useIsSuperAdmin } from "@/features/auth/stores/auth.store";
@@ -20,6 +21,7 @@ import {
   CheckCircle2,
   Clock,
   Compass,
+  Filter,
   Plus,
   Search,
   UserPlus,
@@ -30,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParamState } from "@/hooks/useUrlParamState";
 import {
   useDemoLeadOwners,
   useDemoLeads,
@@ -82,7 +85,40 @@ export default function DemoLeadsPage() {
   const { can } = usePlatformPermissions();
   const canSeeAll = can("platform.leads.view_all");
   const { data: owners } = useDemoLeadOwners(isSuperAdmin && canSeeAll);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // La ficha vive en la URL (`?lead=<id>&tab=conversation`): un enlace abre
+  // el lead directo en su pestaña. El detalle se carga por id, así que
+  // funciona aunque el lead no esté en la lista filtrada.
+  const [selectedId] = useUrlParamState("lead");
+  const [selectedTab] = useUrlParamState("tab");
+  // Cambia `lead` y `tab` juntos (replace, sin llenar el historial): abrir
+  // otro lead no debe heredar la pestaña del anterior.
+  const updateLeadUrl = useCallback(
+    (leadId: string | null, tab: string | null) => {
+      const url = new URL(window.location.href);
+      if (leadId) url.searchParams.set("lead", leadId);
+      else url.searchParams.delete("lead");
+      if (leadId && tab) url.searchParams.set("tab", tab);
+      else url.searchParams.delete("tab");
+      window.history.replaceState(
+        null,
+        "",
+        `${url.pathname}${url.search}${url.hash}`
+      );
+    },
+    []
+  );
+  const setSelectedId = useCallback(
+    (id: string) => updateLeadUrl(id, null),
+    [updateLeadUrl]
+  );
+  const handleCloseLead = useCallback(
+    () => updateLeadUrl(null, null),
+    [updateLeadUrl]
+  );
+  const handleTabChange = useCallback(
+    (tab: string) => updateLeadUrl(selectedId, tab),
+    [updateLeadUrl, selectedId]
+  );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isScoutOpen, setIsScoutOpen] = useState(false);
   // Teléfono: el tablero no cabe, se ve una etapa a la vez.
@@ -221,6 +257,18 @@ export default function DemoLeadsPage() {
             <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
           </div>
           <div className="flex items-center gap-2 lg:shrink-0">
+            {canSeeAll && (
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 shrink-0 rounded-full border-indigo-200 bg-white/85 px-4 text-indigo-700 hover:bg-indigo-50"
+              >
+                <Link href="/admin/demo-leads/funnel" aria-label={t("funnel.button")}>
+                  <Filter className="h-[18px] w-[18px]" aria-hidden />
+                  <span className="hidden sm:inline">{t("funnel.button")}</span>
+                </Link>
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
@@ -457,7 +505,9 @@ export default function DemoLeadsPage() {
 
       <LeadDetailPanel
         leadId={selectedId}
-        onClose={() => setSelectedId(null)}
+        initialTab={selectedTab}
+        onTabChange={handleTabChange}
+        onClose={handleCloseLead}
       />
     </DashboardLayout>
   );

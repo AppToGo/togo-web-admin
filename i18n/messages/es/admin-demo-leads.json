@@ -103,7 +103,11 @@
     "deleteLead": "Eliminar posible cliente",
     "sourceDemo": "Llegó por la demo web",
     "sourceWhatsapp": "Llegó por el WhatsApp de la demo",
-    "sourceLabel": "Origen: {source}"
+    "sourceLabel": "Origen: {source}",
+    "entryChannelLabel": "Llegó por: {channel}",
+    "adHeadline": "Anuncio · {headline}",
+    "adLink": "Ver anuncio",
+    "tabConversation": "Conversación"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -117,19 +121,31 @@
     "ADVISORY_OFFERED": "Se le ofreció asesoría por WhatsApp (automático)",
     "ADVISORY_REQUESTED": "Pidió asesoría por WhatsApp",
     "ADVISORY_DECLINED": "No quiso asesoría por ahora",
-    "DEMO_STARTED_FIRST": "Probó la demo por primera vez"
+    "DEMO_STARTED_FIRST": "Probó la demo por primera vez",
+    "SALES_STARTED": "Escribió al WhatsApp de la demo",
+    "SALES_INDUSTRY_SET": "Eligió industria",
+    "SALES_VOLUME_SET": "Dio volumen",
+    "SALES_DEMO_STARTED": "Entró a la demo",
+    "SALES_DEMO_COMPLETED": "Terminó el pedido de prueba",
+    "SALES_PRICING_VIEWED": "Vio precios",
+    "SALES_SIGNUP_CLICKED": "Hizo clic en registrarse",
+    "SALES_SIGNUP_COMPLETED": "Se registró (empezó prueba)",
+    "SALES_FOLLOWUP_SENT": "Se le envió el seguimiento",
+    "SALES_FOLLOWUP_REPLIED": "Respondió al seguimiento"
   },
   "suggestions": {
     "CLOSE_ONBOARD": "Cerrar lo comercial y pasar a incorporación.",
     "REVIEW_LOSS": "Documentar por qué no continuó.",
-    "NO_CONTACT": "No contactar: revocó la autorización.",
+    "NO_CONTACT": "No contactar: revocó o no autorizó el contacto.",
     "DO_PLANNED_ACTION": "Hacer la acción planeada que venció.",
+    "CONTACT": "Contactar: escribió pidiendo información.",
     "COLD_OUTREACH": "Prospecto en frío: enviar primer WhatsApp e invitar a probar la demo.",
     "INVITE_CONTINUE": "Invitar a seguir probando la demo.",
     "NUDGE_FIRST_ORDER": "Animar a crear su primer pedido de prueba.",
     "PERSONAL_OUTREACH": "Contacto personalizado según lo que probó.",
     "ASK_BLOCKER": "Preguntar qué le faltó para decidir.",
-    "MONITOR": "Solo observar por ahora."
+    "MONITOR": "Solo observar por ahora.",
+    "ONBOARD_TRIAL": "Empezó la prueba: acompañar la configuración."
   },
   "toasts": {
     "updated": "Lead actualizado",
@@ -310,10 +326,121 @@
     "hint": "La tarjeta del tablero muestra siempre la acción pendiente más próxima.",
     "submit": "Agregar acción"
   },
+  "entryChannels": {
+    "AD": "Anuncio",
+    "WEB": "Web",
+    "DIRECT": "Directo"
+  },
   "sources": {
     "DEMO": "Demo web",
     "WHATSAPP": "WhatsApp demo",
     "MANUAL": "Manual",
     "SCOUT": "ToGo Scout"
+  },
+  "conversation": {
+    "empty": "Este lead todavía no escribió al WhatsApp de la demo.",
+    "error": "No se pudo cargar la conversación.",
+    "closed": "La conversación está cerrada.",
+    "readOnly": "No tenés permiso para responder a este lead."
+  },
+  "eventDetail": {
+    "followupStatus": {
+      "PENDING": "Pendiente de envío",
+      "SENT": "Enviado",
+      "FAILED": "Falló el envío"
+    },
+    "followupChoice": {
+      "try": "Probar ahora",
+      "advisor": "Hablar con asesor"
+    },
+    "fromFollowup": "Desde el seguimiento",
+    "viaTemplate": "Con plantilla desde el CRM",
+    "signupUnverified": "Coincide el teléfono, pero no llegó desde el enlace del bot (sin verificar)"
+  },
+  "salesSteps": {
+    "TRIAL_STARTED": "Empezó prueba"
+  },
+  "trial": {
+    "badge": "Empezó prueba"
+  },
+  "template": {
+    "title": "Enviar con plantilla",
+    "hint": "La ventana de 24 h está cerrada: solo se puede escribir con una plantilla aprobada de Meta (una cada 24 h).",
+    "before": "Hola, te escribe {name} del equipo de ToGo por la solicitud que hiciste en nuestro WhatsApp. Sobre tu solicitud:",
+    "after": ". Responde este mensaje y seguimos por aquí.",
+    "placeholderToken": "[tu mensaje]",
+    "defaultSender": "un asesor",
+    "placeholder": "Escribe tu mensaje en una sola línea",
+    "fieldLabel": "Mensaje de la plantilla",
+    "send": "Enviar con plantilla",
+    "sending": "Enviando…",
+    "confirmTitle": "¿Enviar la plantilla?",
+    "confirmBody": "Se enviará al lead el texto completo de la plantilla. Meta puede cobrar por este mensaje y solo puedes enviar una cada 24 h.",
+    "cancel": "Cancelar",
+    "confirmSend": "Enviar",
+    "sent": "Plantilla enviada",
+    "noContact": "No se puede enviar: este lead revocó o no autorizó el contacto.",
+    "errors": {
+      "LEAD_REVOKED": "Este lead revocó el contacto: no se le puede escribir.",
+      "DO_NOT_CONTACT": "Este lead está marcado como no contactar.",
+      "WINDOW_OPEN": "La ventana de 24 h sigue abierta: escribe un mensaje normal en lugar de la plantilla.",
+      "TEMPLATE_ALREADY_SENT": "Ya se envió una plantilla a este lead en las últimas 24 h.",
+      "TEMPLATE_UNAVAILABLE": "La plantilla todavía no está aprobada por Meta. Intenta más tarde.",
+      "TEMPLATE_DAILY_LIMIT": "Llegaste al tope diario de plantillas. Intenta mañana.",
+      "PROVIDER_SEND_FAILED": "WhatsApp no pudo enviar el mensaje. Intenta de nuevo en un momento.",
+      "generic": "No se pudo enviar la plantilla."
+    }
+  },
+  "funnel": {
+    "button": "Embudo",
+    "title": "Embudo del bot comercial",
+    "subtitle": "Cuántos leads llegan a cada paso de la conversación del WhatsApp de la demo.",
+    "back": "Volver a posibles clientes",
+    "note": "Datos desde el lanzamiento del seguimiento.",
+    "empty": "Aún no hay datos del embudo en este rango",
+    "error": "No se pudo cargar el embudo.",
+    "totalLeads": "{count, plural, one {# lead en la cohorte} other {# leads en la cohorte}}",
+    "ofStarted": "{pct}% de los que empezaron",
+    "ofPrevious": "{pct}% del paso anterior",
+    "filters": {
+      "range": "Rango de fechas",
+      "days7": "7 días",
+      "days30": "30 días",
+      "custom": "Personalizado",
+      "from": "Desde",
+      "to": "Hasta",
+      "channel": "Canal",
+      "allChannels": "Todos",
+      "ad": "Anuncio",
+      "allAds": "Todos los anuncios",
+      "noHeadline": "Anuncio sin titular"
+    },
+    "channels": {
+      "AD": "Anuncio",
+      "WEB": "Web",
+      "DIRECT": "Directo",
+      "NONE": "Sin canal"
+    },
+    "steps": {
+      "STARTED": "Empezó",
+      "INDUSTRY_SET": "Eligió industria",
+      "VOLUME_SET": "Dio volumen",
+      "DEMO_STARTED": "Entró a la demo",
+      "DEMO_COMPLETED": "Terminó pedido de prueba",
+      "PRICING_VIEWED": "Vio precios",
+      "ADVISOR_REQUESTED": "Pidió asesor",
+      "SIGNUP_CLICKED": "Clic en registrarse",
+      "SIGNUP_COMPLETED": "Se registró",
+      "FOLLOWUP_SENT": "Seguimiento enviado",
+      "FOLLOWUP_REPLIED": "Respondió seguimiento"
+    },
+    "tables": {
+      "byChannel": "Por canal",
+      "byAd": "Por anuncio",
+      "noAds": "Ningún lead llegó por anuncio en este rango.",
+      "leads": "Leads",
+      "name": "Anuncio",
+      "channel": "Canal"
+    }
   }
 }

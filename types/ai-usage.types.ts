@@ -13,7 +13,9 @@ export type AiUsageFeature =
   | "CATALOG_VISION"
   | "CATALOG_CLASSIFIER"
   | "PRODUCT_KEYWORDS"
-  | "BOT_MESSAGES";
+  | "BOT_MESSAGES"
+  | "CRM_SALES_AGENT"
+  | "DEMO_SALES_INTENT";
 
 export interface AiUsageQuery {
   from: string; // YYYY-MM-DD

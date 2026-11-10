@@ -98,6 +98,10 @@
     "WHATSAPP_TEMPLATE_FALLBACK": {
       "name": "Avisos con plantilla fuera de la ventana de 24 h",
       "description": "Envía los avisos de pedido y pago con plantillas aprobadas cuando el cliente lleva más de 24 h sin escribir (las cobra Meta)."
+    },
+    "DEMO_SALES_AI": {
+      "name": "IA en el bot comercial del WhatsApp demo",
+      "description": "La IA entiende lo que escribe el visitante del WhatsApp demo (precios, preguntas, asesor, tipo de negocio, volumen) y elige entre respuestas fijas; a un saludo o un gracias responde con una frase corta validada. Apagada, el bot comercial usa solo botones y palabras clave. Solo tiene efecto en el negocio demo."
     }
   }
 }
