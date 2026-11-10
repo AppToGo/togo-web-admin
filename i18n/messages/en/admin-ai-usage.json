@@ -43,7 +43,9 @@
       "CATALOG_VISION": "Catalog import (image or PDF)",
       "CATALOG_CLASSIFIER": "Import categories",
       "PRODUCT_KEYWORDS": "Product keywords",
-      "BOT_MESSAGES": "Edit messages with AI"
+      "BOT_MESSAGES": "Edit messages with AI",
+      "CRM_SALES_AGENT": "Mini CRM sales agent",
+      "DEMO_SALES_INTENT": "Demo WhatsApp sales bot"
     }
   },
   "businesses": {

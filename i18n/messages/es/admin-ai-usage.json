@@ -43,7 +43,9 @@
       "CATALOG_VISION": "Importar catálogo (imagen o PDF)",
       "CATALOG_CLASSIFIER": "Categorías al importar",
       "PRODUCT_KEYWORDS": "Palabras clave de productos",
-      "BOT_MESSAGES": "Editar mensajes con IA"
+      "BOT_MESSAGES": "Editar mensajes con IA",
+      "CRM_SALES_AGENT": "Agente comercial del miniCRM",
+      "DEMO_SALES_INTENT": "Bot comercial del WhatsApp demo"
     }
   },
   "businesses": {

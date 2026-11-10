@@ -98,6 +98,10 @@
     "WHATSAPP_TEMPLATE_FALLBACK": {
       "name": "Template notices outside the 24-hour window",
       "description": "Sends order and payment notices with approved templates when the customer hasn't written in over 24 hours (Meta charges for them)."
+    },
+    "DEMO_SALES_AI": {
+      "name": "AI in the demo WhatsApp sales bot",
+      "description": "AI understands what the demo WhatsApp visitor writes (pricing, questions, advisor, business type, volume) and picks from fixed replies; it answers a greeting or thanks with a short validated phrase. When off, the sales bot only uses buttons and keywords. Only affects the demo business."
     }
   }
 }
