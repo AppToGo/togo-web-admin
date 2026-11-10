@@ -103,7 +103,10 @@
     "deleteLead": "Eliminar posible cliente",
     "sourceDemo": "Llegó por la demo web",
     "sourceWhatsapp": "Llegó por el WhatsApp de la demo",
-    "sourceLabel": "Origen: {source}"
+    "sourceLabel": "Origen: {source}",
+    "entryChannelLabel": "Llegó por: {channel}",
+    "adHeadline": "Anuncio · {headline}",
+    "adLink": "Ver anuncio"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -117,13 +120,15 @@
     "ADVISORY_OFFERED": "Se le ofreció asesoría por WhatsApp (automático)",
     "ADVISORY_REQUESTED": "Pidió asesoría por WhatsApp",
     "ADVISORY_DECLINED": "No quiso asesoría por ahora",
-    "DEMO_STARTED_FIRST": "Probó la demo por primera vez"
+    "DEMO_STARTED_FIRST": "Probó la demo por primera vez",
+    "SALES_STARTED": "Escribió al WhatsApp de la demo"
   },
   "suggestions": {
     "CLOSE_ONBOARD": "Cerrar lo comercial y pasar a incorporación.",
     "REVIEW_LOSS": "Documentar por qué no continuó.",
-    "NO_CONTACT": "No contactar: revocó la autorización.",
+    "NO_CONTACT": "No contactar: revocó o no autorizó el contacto.",
     "DO_PLANNED_ACTION": "Hacer la acción planeada que venció.",
+    "CONTACT": "Contactar: escribió pidiendo información.",
     "COLD_OUTREACH": "Prospecto en frío: enviar primer WhatsApp e invitar a probar la demo.",
     "INVITE_CONTINUE": "Invitar a seguir probando la demo.",
     "NUDGE_FIRST_ORDER": "Animar a crear su primer pedido de prueba.",
@@ -309,6 +314,11 @@
     "dateLabel": "Fecha y hora",
     "hint": "La tarjeta del tablero muestra siempre la acción pendiente más próxima.",
     "submit": "Agregar acción"
+  },
+  "entryChannels": {
+    "AD": "Anuncio",
+    "WEB": "Web",
+    "DIRECT": "Directo"
   },
   "sources": {
     "DEMO": "Demo web",

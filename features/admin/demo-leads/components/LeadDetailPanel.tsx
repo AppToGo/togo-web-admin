@@ -47,6 +47,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { leadEntryChannelStyle } from "./LeadEntryChannelBadge";
 import { leadSourceStyle } from "./LeadSourceBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
@@ -212,6 +213,17 @@ function LeadDetailBody({
         : lead.source === "WHATSAPP"
           ? t("detail.sourceWhatsapp")
           : t("detail.sourceDemo");
+  // Canal de entrada: solo si la API lo envía.
+  const entryChannel = lead.entryChannel ?? null;
+  const entryStyle = entryChannel ? leadEntryChannelStyle(entryChannel) : null;
+  const EntryIcon = entryStyle?.icon;
+  const entryLabel = entryChannel
+    ? safeLabel(tt, `entryChannels.${entryChannel}`, t("entryChannels.DIRECT"))
+    : "";
+  const adUrl =
+    lead.adSourceUrl && /^https?:\/\//i.test(lead.adSourceUrl)
+      ? lead.adSourceUrl
+      : null;
   const business = [lead.establishmentName, lead.businessType]
     .filter(Boolean)
     .join(" · ");
@@ -266,6 +278,37 @@ function LeadDetailBody({
                 {sourceLabel}
               </span>
             </p>
+            {entryChannel && entryStyle && EntryIcon && (
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-slate-500">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 font-semibold",
+                    entryStyle.text
+                  )}
+                >
+                  <EntryIcon className="h-3.5 w-3.5" aria-hidden />
+                  {t("detail.entryChannelLabel", { channel: entryLabel })}
+                </span>
+                {entryChannel === "AD" && lead.adHeadline && (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span className="truncate">
+                      {t("detail.adHeadline", { headline: lead.adHeadline })}
+                    </span>
+                  </>
+                )}
+                {entryChannel === "AD" && adUrl && (
+                  <a
+                    href={adUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-sky-700 underline-offset-2 hover:underline"
+                  >
+                    {t("detail.adLink")}
+                  </a>
+                )}
+              </p>
+            )}
             <p className="mt-1 flex items-center gap-0.5 text-[13px] tabular-nums text-slate-700">
               <span className="mr-1">{formatPhone(lead.phone)}</span>
               <button

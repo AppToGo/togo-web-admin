@@ -207,7 +207,17 @@ export interface DemoLead {
   /** Cómo se creó: DEMO (demo web), WHATSAPP (WhatsApp de la demo), MANUAL (super admin) o SCOUT. */
   source: DemoLeadSource;
   referredBy?: string | null;
+  /** Por dónde llegó: anuncio (AD), web (WEB) o directo (DIRECT). Opcional: la API puede no enviarlo aún. */
+  entryChannel?: DemoEntryChannel | null;
+  /** Titular del anuncio de origen (solo canal AD). */
+  adHeadline?: string | null;
+  /** Paso actual de la conversación comercial del bot. */
+  salesStep?: string | null;
+  /** Escribió primero al WhatsApp demo (solicitud entrante). No es consentimiento; un "Ahora no" posterior a la asesoría la anula para sugerir contacto. */
+  inboundRequest?: boolean;
 }
+
+export type DemoEntryChannel = "AD" | "WEB" | "DIRECT";
 
 export type DemoLeadSource = "DEMO" | "WHATSAPP" | "MANUAL" | "SCOUT";
 
@@ -352,6 +362,11 @@ export interface DemoLeadDetailLead extends DemoLead {
   lostAt?: string | null;
   whatsappDrafts?: WhatsAppDraftsResponse | null;
   whatsappDraftsAt?: string | null;
+  /** Enlace al anuncio de origen (solo detalle). */
+  adSourceUrl?: string | null;
+  adSourceType?: string | null;
+  /** Fecha ISO de la primera entrada por el canal. */
+  entryAt?: string | null;
 }
 
 /** Acción de seguimiento de un lead (varias por lead). */
