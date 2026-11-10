@@ -106,7 +106,8 @@
     "sourceLabel": "Origen: {source}",
     "entryChannelLabel": "Llegó por: {channel}",
     "adHeadline": "Anuncio · {headline}",
-    "adLink": "Ver anuncio"
+    "adLink": "Ver anuncio",
+    "tabConversation": "Conversación"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -325,5 +326,11 @@
     "WHATSAPP": "WhatsApp demo",
     "MANUAL": "Manual",
     "SCOUT": "ToGo Scout"
+  },
+  "conversation": {
+    "empty": "Este lead todavía no escribió al WhatsApp de la demo.",
+    "error": "No se pudo cargar la conversación.",
+    "closed": "La conversación está cerrada.",
+    "readOnly": "No tenés permiso para responder a este lead."
   }
 }

@@ -51,6 +51,7 @@ import { leadEntryChannelStyle } from "./LeadEntryChannelBadge";
 import { leadSourceStyle } from "./LeadSourceBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
+import { LeadConversationPanel } from "@/features/admin/demo-leads/components/LeadConversationPanel";
 import { LeadWhatsAppAgentSection } from "@/features/admin/demo-leads/components/LeadWhatsAppAgentSection";
 import { LeadOwnerAvatar } from "@/features/admin/demo-leads/components/LeadOwnerAvatar";
 import { IndustrySelect } from "@/features/auth/components/IndustrySelect";
@@ -80,7 +81,25 @@ import {
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 
-type DetailTab = "contact" | "followUp" | "profile" | "history";
+type DetailTab =
+  | "contact"
+  | "followUp"
+  | "profile"
+  | "history"
+  | "conversation";
+
+const DETAIL_TABS: readonly DetailTab[] = [
+  "contact",
+  "followUp",
+  "profile",
+  "history",
+  "conversation",
+];
+
+/** Valida el valor que llega por URL (`?tab=`): solo pestañas conocidas. */
+function parseDetailTab(value: string | null | undefined): DetailTab | null {
+  return DETAIL_TABS.find((tab) => tab === value) ?? null;
+}
 
 /** Valor del selector de etapa: las abiertas tal cual, cerrado con su resultado. */
 type StageOption = DemoLeadStage | `CLOSED:${DemoLeadOutcome}`;
@@ -89,12 +108,18 @@ interface LeadDetailPanelProps {
   leadId: string | null;
   onClose: () => void;
   onDeleted?: () => void;
+  /** Pestaña con la que abre la ficha (ej. `conversation` desde un enlace). */
+  initialTab?: string | null;
+  /** Avisa el cambio de pestaña para reflejarlo en la URL. */
+  onTabChange?: (tab: string) => void;
 }
 
 export function LeadDetailPanel({
   leadId,
   onClose,
   onDeleted,
+  initialTab,
+  onTabChange,
 }: LeadDetailPanelProps) {
   const t = useTranslations("admin-demo-leads");
   const {
@@ -144,6 +169,8 @@ export function LeadDetailPanel({
             <LeadDetailBody
               key={detail.lead.id}
               detail={detail}
+              initialTab={parseDetailTab(initialTab)}
+              onTabChange={onTabChange}
               onDelete={() => setConfirmDeleteOpen(true)}
               isDeleting={deleteLead.isPending}
             />
@@ -182,10 +209,14 @@ export function LeadDetailPanel({
 
 function LeadDetailBody({
   detail,
+  initialTab,
+  onTabChange,
   onDelete,
   isDeleting,
 }: {
   detail: DemoLeadDetail;
+  initialTab: DetailTab | null;
+  onTabChange?: (tab: string) => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
@@ -195,9 +226,13 @@ function LeadDetailBody({
   const updateLead = useUpdateDemoLead();
   const { lead, summary, suggestion } = detail;
   // Sin consentimiento no hay agente: arranca en Seguimiento.
-  const [tab, setTab] = useState<DetailTab>(
-    lead.revoked ? "followUp" : "contact"
+  const [tab, setTabState] = useState<DetailTab>(
+    initialTab ?? (lead.revoked ? "followUp" : "contact")
   );
+  const setTab = (next: DetailTab) => {
+    setTabState(next);
+    onTabChange?.(next);
+  };
 
   const pendingActions = (detail.actions ?? []).filter((a) => !a.doneAt).length;
   // Origen del registro: mismo icono y color que la etiqueta de la tarjeta.
@@ -452,6 +487,7 @@ function LeadDetailBody({
                 ? `${t("detail.tabHistory")} · ${detail.notes.length}`
                 : t("detail.tabHistory"),
             },
+            { id: "conversation", label: t("detail.tabConversation") },
           ]}
         />
       </DrawerHeader>
@@ -503,6 +539,8 @@ function LeadDetailBody({
         )}
 
         {tab === "history" && <LeadHistory detail={detail} />}
+
+        {tab === "conversation" && <LeadConversationPanel leadId={lead.id} />}
       </div>
     </>
   );

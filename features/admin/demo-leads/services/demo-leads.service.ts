@@ -22,6 +22,12 @@ import type {
   ScoutImportResponse,
 } from "@/types/auth.types";
 import type { DemoLeadOwnerOption } from "@/types/auth.types";
+import type {
+  ConversationDetail,
+  ConversationMessage,
+  ConversationSessionSummary,
+  SendMessageParams,
+} from "@/features/conversations";
 
 /**
  * Posibles clientes de la demo (solo SUPER_ADMIN).
@@ -201,5 +207,55 @@ export async function importScoutProspects(
  */
 export async function getDemoLeadOwners(): Promise<DemoLeadOwnerOption[]> {
   const response = await apiClient.get<DemoLeadOwnerOption[]>("/admin/demo-leads/owners");
+  return response.data;
+}
+
+/**
+ * Conversación del lead con el WhatsApp de la demo. `conversation` es null
+ * mientras el lead no haya escrito.
+ */
+export interface DemoLeadConversationResponse {
+  businessId: string;
+  conversation: ConversationDetail | null;
+}
+
+export async function getDemoLeadConversation(
+  id: string
+): Promise<DemoLeadConversationResponse> {
+  const response = await apiClient.get<DemoLeadConversationResponse>(
+    `/admin/demo-leads/${id}/conversation`
+  );
+  return response.data;
+}
+
+export async function takeoverDemoLeadConversation(
+  id: string
+): Promise<ConversationSessionSummary> {
+  const response = await apiClient.post<ConversationSessionSummary>(
+    `/admin/demo-leads/${id}/conversation/takeover`,
+    {}
+  );
+  return response.data;
+}
+
+export async function releaseDemoLeadConversation(
+  id: string,
+  note?: string
+): Promise<ConversationSessionSummary> {
+  const response = await apiClient.post<ConversationSessionSummary>(
+    `/admin/demo-leads/${id}/conversation/release`,
+    note ? { note } : {}
+  );
+  return response.data;
+}
+
+export async function sendDemoLeadConversationMessage(
+  id: string,
+  params: SendMessageParams
+): Promise<ConversationMessage> {
+  const response = await apiClient.post<ConversationMessage>(
+    `/admin/demo-leads/${id}/conversation/messages`,
+    params
+  );
   return response.data;
 }
