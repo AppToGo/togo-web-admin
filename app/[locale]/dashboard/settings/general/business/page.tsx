@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useReadOnly } from "@/components/ui/read-only";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -47,6 +48,33 @@ const SECTION =
   "flex flex-col gap-4 rounded-3xl border border-white/90 bg-white/65 p-6";
 const FIELD = "h-11 rounded-[14px] border-0 bg-white";
 const FORM_ID = "business-settings-form";
+
+/**
+ * Selector de color nativo. Va en un componente propio para leer
+ * `useReadOnly()` dentro del provider (la página lo monta más abajo, en
+ * `RequirePermission`): en la demo queda deshabilitado como el resto.
+ */
+function ColorSwatchInput({
+  value,
+  onChange,
+  "aria-label": ariaLabel,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  "aria-label": string;
+}) {
+  const readOnly = useReadOnly();
+  return (
+    <input
+      type="color"
+      value={value}
+      disabled={readOnly}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label={ariaLabel}
+      className="h-11 w-11 shrink-0 cursor-pointer rounded-xl border-0 p-0 disabled:cursor-not-allowed disabled:opacity-50"
+    />
+  );
+}
 
 interface FormData {
   name: string;
@@ -333,7 +361,7 @@ export default function BusinessSettingsPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5">
         {/* Header (< md el título está en la barra superior) */}
         <header className="hidden md:block">
@@ -485,12 +513,10 @@ export default function BusinessSettingsPage() {
                         {tb(field === "primaryColor" ? "branding.colors.primaryHelp" : "branding.colors.accentHelp")}
                       </p>
                       <div className="flex items-center gap-2">
-                        <input
-                          type="color"
+                        <ColorSwatchInput
                           value={formData[field]}
-                          onChange={(e) => handleChange(field, e.target.value)}
+                          onChange={(value) => handleChange(field, value)}
                           aria-label={tb(field === "primaryColor" ? "branding.colors.primary" : "branding.colors.accent")}
-                          className="h-11 w-11 shrink-0 cursor-pointer rounded-xl border-0 p-0"
                         />
                         <Input
                           id={field}

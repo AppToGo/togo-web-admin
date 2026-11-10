@@ -100,7 +100,10 @@
     "groupOpportunity": "Oportunidad",
     "groupPrivacy": "Privacidad",
     "mainNeedPlaceholder": "¿Qué problema quiere resolver con ToGo?",
-    "deleteLead": "Eliminar posible cliente"
+    "deleteLead": "Eliminar posible cliente",
+    "sourceDemo": "Llegó por la demo web",
+    "sourceWhatsapp": "Llegó por el WhatsApp de la demo",
+    "sourceLabel": "Origen: {source}"
   },
   "events": {
     "DEMO_STARTED": "Entró a la demo",
@@ -306,5 +309,11 @@
     "dateLabel": "Fecha y hora",
     "hint": "La tarjeta del tablero muestra siempre la acción pendiente más próxima.",
     "submit": "Agregar acción"
+  },
+  "sources": {
+    "DEMO": "Demo web",
+    "WHATSAPP": "WhatsApp demo",
+    "MANUAL": "Manual",
+    "SCOUT": "ToGo Scout"
   }
 }

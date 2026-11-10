@@ -189,7 +189,7 @@ export default function BranchesPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       <div className="flex flex-col gap-5 flex-1 min-h-0">
         {/* Header (< md: título en la barra superior y crear en el botón flotante) */}
         <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

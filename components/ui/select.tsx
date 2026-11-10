@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import { useReadOnly } from "@/components/ui/read-only";
 
 const Select = SelectPrimitive.Root;
 
@@ -44,18 +45,22 @@ export interface SelectTriggerProps
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   SelectTriggerProps
->(({ className, variant, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(selectTriggerVariants({ variant }), className)}
-    {...props}
-  >
-    {props.children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
+>(({ className, variant, disabled, ...props }, ref) => {
+  const readOnly = useReadOnly();
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      disabled={disabled || readOnly}
+      className={cn(selectTriggerVariants({ variant }), className)}
+      {...props}
+    >
+      {props.children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  );
+});
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<

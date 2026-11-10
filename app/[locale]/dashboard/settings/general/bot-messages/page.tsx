@@ -12,7 +12,7 @@ function BotMessagesSettingsPageContent() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
         <BotMessagesPage />
       </RequirePermission>
     </DashboardLayout>

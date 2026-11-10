@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { useReadOnly } from "@/components/ui/read-only"
 
 const textareaVariants = cva(
   "flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
@@ -22,9 +23,11 @@ export interface TextareaProps
     VariantProps<typeof textareaVariants> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, variant, ...props }, ref) => {
+  ({ className, variant, disabled, ...props }, ref) => {
+    const readOnly = useReadOnly()
     return (
       <textarea
+        disabled={disabled || readOnly}
         className={cn(textareaVariants({ variant }), className)}
         ref={ref}
         {...props}

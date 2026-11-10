@@ -5,13 +5,16 @@ import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 import { Circle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useReadOnly } from "@/components/ui/read-only"
 
 const RadioGroup = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
->(({ className, ...props }, ref) => {
+>(({ className, disabled, ...props }, ref) => {
+  const readOnly = useReadOnly()
   return (
     <RadioGroupPrimitive.Root
+      disabled={disabled || readOnly}
       className={cn("grid gap-2", className)}
       {...props}
       ref={ref}

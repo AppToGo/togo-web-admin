@@ -35,7 +35,7 @@ export default function NotificationSettingsPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       <div className="flex flex-col gap-6">
         {/* Header (< md el título está en la barra superior) */}
         <div className="hidden md:block">

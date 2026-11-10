@@ -4,6 +4,7 @@ import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { useReadOnly } from "@/components/ui/read-only";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -72,8 +73,11 @@ export function MultiSelect({
   maxDisplay = 2,
   variant,
   className,
-  disabled,
+  disabled: disabledProp,
 }: MultiSelectProps) {
+  // Solo lectura (ver ReadOnlyProvider): deshabilitado como cualquier control.
+  const readOnly = useReadOnly();
+  const disabled = disabledProp || readOnly;
   const [open, setOpen] = React.useState(false);
 
   const selectedLabels = value.map(
