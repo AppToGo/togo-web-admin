@@ -213,7 +213,7 @@ export interface DemoLead {
   adHeadline?: string | null;
   /** Paso actual de la conversación comercial del bot. */
   salesStep?: string | null;
-  /** Escribió pidiendo información (autoriza el primer contacto). */
+  /** Escribió primero al WhatsApp demo (solicitud entrante). No es consentimiento; un "Ahora no" posterior a la asesoría la anula para sugerir contacto. */
   inboundRequest?: boolean;
 }
 
