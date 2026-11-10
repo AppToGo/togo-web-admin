@@ -1,5 +1,9 @@
 /**
- * Servicio de posibles clientes del modo demo (solo SUPER_ADMIN).
+ * Servicio de posibles clientes del modo demo. El acceso lo gobiernan los
+ * permisos de plataforma `platform.leads.view_own`, `platform.leads.view_all`
+ * y `platform.leads.manage` (escritura y conversación); el backend es quien
+ * aplica la regla real. Los ids de lead pueden venir de la URL (`?lead=`),
+ * por eso se codifican al armar las rutas.
  */
 
 import apiClient from "@/services/api.service";
@@ -30,7 +34,7 @@ import type {
 } from "@/features/conversations";
 
 /**
- * Posibles clientes de la demo (solo SUPER_ADMIN).
+ * Posibles clientes de la demo.
  */
 export async function getDemoLeads(
   filters: DemoLeadFilters = {}
@@ -49,7 +53,7 @@ export async function getDemoLeads(
 }
 
 /**
- * Conteo de leads por etapa del pipeline (solo SUPER_ADMIN).
+ * Conteo de leads por etapa del pipeline.
  */
 export async function getDemoLeadsPipeline(): Promise<DemoLeadPipelineEntry[]> {
   const response = await apiClient.get<DemoLeadPipelineEntry[]>(
@@ -60,11 +64,11 @@ export async function getDemoLeadsPipeline(): Promise<DemoLeadPipelineEntry[]> {
 
 /**
  * Detalle comercial del lead con ficha, resumen, sugerencia,
- * línea de tiempo y notas (solo SUPER_ADMIN).
+ * línea de tiempo y notas.
  */
 export async function getDemoLeadDetail(id: string): Promise<DemoLeadDetail> {
   const response = await apiClient.get<DemoLeadDetail>(
-    `/admin/demo-leads/${id}`
+    `/admin/demo-leads/${encodeURIComponent(id)}`
   );
   return response.data;
 }
@@ -75,7 +79,7 @@ export async function addDemoLeadAction(
   data: { title: string; dueAt?: string }
 ): Promise<DemoLeadAction> {
   const response = await apiClient.post<DemoLeadAction>(
-    `/admin/demo-leads/${id}/actions`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/actions`,
     data
   );
   return response.data;
@@ -88,7 +92,7 @@ export async function setDemoLeadActionDone(
   done: boolean
 ): Promise<DemoLeadAction> {
   const response = await apiClient.patch<DemoLeadAction>(
-    `/admin/demo-leads/${id}/actions/${actionId}`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/actions/${encodeURIComponent(actionId)}`,
     { done }
   );
   return response.data;
@@ -98,11 +102,11 @@ export async function deleteDemoLeadAction(
   id: string,
   actionId: string
 ): Promise<void> {
-  await apiClient.delete(`/admin/demo-leads/${id}/actions/${actionId}`);
+  await apiClient.delete(`/admin/demo-leads/${encodeURIComponent(id)}/actions/${encodeURIComponent(actionId)}`);
 }
 
 /**
- * Crear un posible cliente a mano (solo SUPER_ADMIN). 409 con `leadId` si
+ * Crear un posible cliente a mano. 409 con `leadId` si
  * ya existe uno con ese número.
  */
 export async function createDemoLead(
@@ -113,38 +117,38 @@ export async function createDemoLead(
 }
 
 /**
- * Actualizar ficha comercial del lead (solo SUPER_ADMIN).
+ * Actualizar ficha comercial del lead.
  */
 export async function updateDemoLead(
   id: string,
   data: UpdateDemoLeadRequest
 ): Promise<DemoLead> {
   const response = await apiClient.patch<DemoLead>(
-    `/admin/demo-leads/${id}`,
+    `/admin/demo-leads/${encodeURIComponent(id)}`,
     data
   );
   return response.data;
 }
 
 /**
- * Agregar nota al lead (solo SUPER_ADMIN).
+ * Agregar nota al lead.
  */
 export async function addDemoLeadNote(
   id: string,
   body: string
 ): Promise<DemoLeadNote> {
   const response = await apiClient.post<DemoLeadNote>(
-    `/admin/demo-leads/${id}/notes`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/notes`,
     { body }
   );
   return response.data;
 }
 
 /**
- * Eliminar un lead de la demo (solo SUPER_ADMIN).
+ * Eliminar un lead de la demo.
  */
 export async function deleteDemoLead(id: string): Promise<void> {
-  await apiClient.delete(`/admin/demo-leads/${id}`);
+  await apiClient.delete(`/admin/demo-leads/${encodeURIComponent(id)}`);
 }
 
 /**
@@ -155,7 +159,7 @@ export async function generateDemoLeadWhatsAppDrafts(
   data: GenerateWhatsAppDraftsRequest = {}
 ): Promise<WhatsAppDraftsResponse> {
   const response = await apiClient.post<WhatsAppDraftsResponse>(
-    `/admin/demo-leads/${id}/whatsapp-drafts`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/whatsapp-drafts`,
     data
   );
   return response.data;
@@ -169,7 +173,7 @@ export async function logDemoLeadWhatsAppOutreach(
   data: LogWhatsAppOutreachRequest
 ): Promise<LogWhatsAppOutreachResponse> {
   const response = await apiClient.post<LogWhatsAppOutreachResponse>(
-    `/admin/demo-leads/${id}/whatsapp-outreach`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/whatsapp-outreach`,
     data
   );
   return response.data;
@@ -223,7 +227,7 @@ export async function getDemoLeadConversation(
   id: string
 ): Promise<DemoLeadConversationResponse> {
   const response = await apiClient.get<DemoLeadConversationResponse>(
-    `/admin/demo-leads/${id}/conversation`
+    `/admin/demo-leads/${encodeURIComponent(id)}/conversation`
   );
   return response.data;
 }
@@ -232,7 +236,7 @@ export async function takeoverDemoLeadConversation(
   id: string
 ): Promise<ConversationSessionSummary> {
   const response = await apiClient.post<ConversationSessionSummary>(
-    `/admin/demo-leads/${id}/conversation/takeover`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/conversation/takeover`,
     {}
   );
   return response.data;
@@ -243,7 +247,7 @@ export async function releaseDemoLeadConversation(
   note?: string
 ): Promise<ConversationSessionSummary> {
   const response = await apiClient.post<ConversationSessionSummary>(
-    `/admin/demo-leads/${id}/conversation/release`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/conversation/release`,
     note ? { note } : {}
   );
   return response.data;
@@ -254,7 +258,7 @@ export async function sendDemoLeadConversationMessage(
   params: SendMessageParams
 ): Promise<ConversationMessage> {
   const response = await apiClient.post<ConversationMessage>(
-    `/admin/demo-leads/${id}/conversation/messages`,
+    `/admin/demo-leads/${encodeURIComponent(id)}/conversation/messages`,
     params
   );
   return response.data;

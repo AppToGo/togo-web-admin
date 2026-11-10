@@ -331,6 +331,6 @@
     "empty": "Este lead todavía no escribió al WhatsApp de la demo.",
     "error": "No se pudo cargar la conversación.",
     "closed": "La conversación está cerrada.",
-    "readOnly": "No tenés permiso para responder a este lead."
+    "readOnly": "No tienes permiso para responder a este lead."
   }
 }

@@ -238,6 +238,7 @@ Los sockets de `/orders` y `/conversations` se abren **una sola vez** en `app/[l
 
 - No montes `useOrdersRealtime` / `useConversationsRealtime` en una página: abrirías una segunda conexión y el sonido se duplicaría.
 - Para mostrar el estado de conexión, leelo de `stores/realtime-status.store.ts`.
+- La pestaña Conversación de la ficha del lead (miniCRM) usa polling (`LEAD_CONVERSATION_POLL_MS`) y no sockets, porque el usuario de plataforma no está en el room del negocio demo.
 - Eventos y payloads: `api-togo/docs/realtime-eventos.md`.
 - Los badges dependen de la API (`unseen-count`, `order:viewed`, `needsAttention`): desplegar primero la API con su migración.
 

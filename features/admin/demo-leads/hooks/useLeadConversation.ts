@@ -7,6 +7,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { getHumanizedErrorMessage } from "@/lib/error.utils";
@@ -38,44 +39,70 @@ export function useLeadConversation(leadId: string | null, enabled = true) {
   });
 }
 
+/** Estados HTTP que indican que la vista de la conversación quedó vieja. */
+const STALE_CONVERSATION_STATUSES = [409, 422];
+
 function useInvalidateLeadConversation(leadId: string) {
   const queryClient = useQueryClient();
   return () =>
     queryClient.invalidateQueries({ queryKey: LEAD_CONVERSATION_KEY(leadId) });
 }
 
+/**
+ * Ante 409 (CONVERSATION_ALREADY_TAKEN, CONTROL_NOT_HELD, SESSION_CLOSED o
+ * handoff deshabilitado) o 422 (OUTSIDE_24H_WINDOW) la UI quedó desactualizada
+ * (botón "Tomar" o composer que ya no aplican): se refresca la conversación y
+ * se muestra el mensaje humanizado del backend.
+ */
+function useLeadConversationErrorHandler(leadId: string, fallback?: string) {
+  const invalidate = useInvalidateLeadConversation(leadId);
+  return (error: unknown) => {
+    if (
+      isAxiosError(error) &&
+      error.response &&
+      STALE_CONVERSATION_STATUSES.includes(error.response.status)
+    ) {
+      void invalidate();
+    }
+    toast.error(getHumanizedErrorMessage(error) || fallback);
+  };
+}
+
 export function useTakeoverLeadConversation(leadId: string) {
   const t = useTranslations("inbox");
   const invalidate = useInvalidateLeadConversation(leadId);
+  const handleError = useLeadConversationErrorHandler(
+    leadId,
+    t("errors.takeoverFailed")
+  );
   return useMutation({
     mutationFn: () => takeoverDemoLeadConversation(leadId),
     onSuccess: invalidate,
-    onError: (error) => {
-      toast.error(getHumanizedErrorMessage(error) || t("errors.takeoverFailed"));
-    },
+    onError: handleError,
   });
 }
 
 export function useReleaseLeadConversation(leadId: string) {
   const t = useTranslations("inbox");
   const invalidate = useInvalidateLeadConversation(leadId);
+  const handleError = useLeadConversationErrorHandler(
+    leadId,
+    t("errors.releaseFailed")
+  );
   return useMutation({
     mutationFn: (note?: string) => releaseDemoLeadConversation(leadId, note),
     onSuccess: invalidate,
-    onError: (error) => {
-      toast.error(getHumanizedErrorMessage(error) || t("errors.releaseFailed"));
-    },
+    onError: handleError,
   });
 }
 
 export function useSendLeadConversationMessage(leadId: string) {
   const invalidate = useInvalidateLeadConversation(leadId);
+  const handleError = useLeadConversationErrorHandler(leadId);
   return useMutation({
     mutationFn: (params: SendMessageParams) =>
       sendDemoLeadConversationMessage(leadId, params),
     onSuccess: invalidate,
-    onError: (error) => {
-      toast.error(getHumanizedErrorMessage(error));
-    },
+    onError: handleError,
   });
 }

@@ -61,6 +61,9 @@ import {
   usePlatformPermissions,
 } from "@/features/auth/hooks/usePlatformPermission";
 
+/** Los ids de DemoLead son cuid (`@default(cuid())`): "c" + alfanuméricos. */
+const DEMO_LEAD_ID_PATTERN = /^c[a-z0-9]{20,30}$/;
+
 type PriorityFilter = DemoLeadPriority | "ALL";
 
 export default function DemoLeadsPage() {
@@ -86,7 +89,12 @@ export default function DemoLeadsPage() {
   // La ficha vive en la URL (`?lead=<id>&tab=conversation`): un enlace abre
   // el lead directo en su pestaña. El detalle se carga por id, así que
   // funciona aunque el lead no esté en la lista filtrada.
-  const [selectedId] = useUrlParamState("lead");
+  const [rawSelectedId] = useUrlParamState("lead");
+  // El id viene de la URL: se ignora si no tiene forma de cuid.
+  const selectedId =
+    rawSelectedId && DEMO_LEAD_ID_PATTERN.test(rawSelectedId)
+      ? rawSelectedId
+      : null;
   const [selectedTab] = useUrlParamState("tab");
   // Cambia `lead` y `tab` juntos (replace, sin llenar el historial): abrir
   // otro lead no debe heredar la pestaña del anterior.
