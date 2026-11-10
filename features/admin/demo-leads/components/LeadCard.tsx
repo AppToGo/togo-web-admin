@@ -23,6 +23,7 @@ import {
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 import { LeadOwnerAvatar } from "./LeadOwnerAvatar";
 import { LeadEntryChannelBadge } from "./LeadEntryChannelBadge";
+import { LeadTrialBadge } from "./LeadTrialBadge";
 import { LeadSourceBadge } from "./LeadSourceBadge";
 import { LeadActionDialog } from "./LeadActionDialog";
 
@@ -100,6 +101,7 @@ export function LeadCard({
                 adHeadline={lead.adHeadline}
               />
             )}
+            {lead.signupAt && <LeadTrialBadge />}
           </span>
         </span>
         {closed && lead.outcome ? (
