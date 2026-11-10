@@ -103,7 +103,10 @@
     "deleteLead": "Delete prospect",
     "sourceDemo": "Came from the web demo",
     "sourceWhatsapp": "Came from the demo WhatsApp",
-    "sourceLabel": "Source: {source}"
+    "sourceLabel": "Source: {source}",
+    "entryChannelLabel": "Came in via: {channel}",
+    "adHeadline": "Ad · {headline}",
+    "adLink": "View ad"
   },
   "events": {
     "DEMO_STARTED": "Entered the demo",
@@ -117,13 +120,15 @@
     "ADVISORY_OFFERED": "Advisory offered on WhatsApp (automatic)",
     "ADVISORY_REQUESTED": "Requested advisory via WhatsApp",
     "ADVISORY_DECLINED": "Declined advisory for now",
-    "DEMO_STARTED_FIRST": "Tried the demo for the first time"
+    "DEMO_STARTED_FIRST": "Tried the demo for the first time",
+    "SALES_STARTED": "Wrote to the demo WhatsApp"
   },
   "suggestions": {
     "CLOSE_ONBOARD": "Close the sale and move to onboarding.",
     "REVIEW_LOSS": "Document why they didn't continue.",
-    "NO_CONTACT": "Do not contact: consent withdrawn.",
+    "NO_CONTACT": "Do not contact: consent withdrawn or not given.",
     "DO_PLANNED_ACTION": "Do the planned action that went overdue.",
+    "CONTACT": "Contact: they reached out asking for info.",
     "COLD_OUTREACH": "Cold prospect: send first WhatsApp message and invite to try the demo.",
     "INVITE_CONTINUE": "Invite them to keep trying the demo.",
     "NUDGE_FIRST_ORDER": "Nudge them to create their first test order.",
@@ -309,6 +314,11 @@
     "dateLabel": "Date and time",
     "hint": "The board card always shows the nearest pending action.",
     "submit": "Add action"
+  },
+  "entryChannels": {
+    "AD": "Ad",
+    "WEB": "Web",
+    "DIRECT": "Direct"
   },
   "sources": {
     "DEMO": "Web demo",
