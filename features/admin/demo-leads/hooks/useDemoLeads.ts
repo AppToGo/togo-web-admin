@@ -21,6 +21,7 @@ import {
   searchScoutProspects,
   importScoutProspects,
   getDemoLeadOwners,
+  getDemoLeadsFunnel,
 } from "../services/demo-leads.service";
 import type {
   CreateDemoLeadRequest,
@@ -31,6 +32,7 @@ import type {
   LogWhatsAppOutreachRequest,
   ScoutSearchRequest,
   ScoutImportRequest,
+  DemoFunnelParams,
 } from "@/types/auth.types";
 import { extractErrorMessage } from "@/lib/error.utils";
 
@@ -40,6 +42,8 @@ export const DEMO_LEADS_KEYS = {
     [...DEMO_LEADS_KEYS.all, "list", filters] as const,
   pipeline: () => [...DEMO_LEADS_KEYS.all, "pipeline"] as const,
   detail: (id: string) => [...DEMO_LEADS_KEYS.all, "detail", id] as const,
+  funnel: (params: DemoFunnelParams) =>
+    [...DEMO_LEADS_KEYS.all, "funnel", params] as const,
   owners: () => [...DEMO_LEADS_KEYS.all, "owners"] as const,
 };
 
@@ -316,5 +320,17 @@ export function useScoutImport() {
     onError: (error) => {
       toast.error(extractErrorMessage(error, t("toasts.scoutImportError")));
     },
+  });
+}
+
+/** Embudo del bot comercial; sin rango la API usa los últimos 30 días. */
+export function useDemoLeadsFunnel(
+  params: DemoFunnelParams = {},
+  enabled: boolean = true
+) {
+  return useQuery({
+    queryKey: DEMO_LEADS_KEYS.funnel(params),
+    queryFn: () => getDemoLeadsFunnel(params),
+    enabled,
   });
 }

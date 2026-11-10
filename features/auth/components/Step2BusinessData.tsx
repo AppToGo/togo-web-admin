@@ -16,6 +16,8 @@ import type { Step1Data } from "./Step1BasicData";
 
 interface Step2BusinessDataProps {
   step1Data: Step1Data;
+  /** Origen del registro (`?ref=whatsapp-demo`), capturado por el wizard. */
+  signupRef?: "whatsapp-demo";
   onBack: () => void;
 }
 
@@ -26,6 +28,7 @@ const PHONE_PREFIX = "+57";
 
 export function Step2BusinessData({
   step1Data,
+  signupRef,
   onBack,
 }: Step2BusinessDataProps) {
   const t = useTranslations("auth.register");
@@ -65,6 +68,7 @@ export function Step2BusinessData({
       industryId: industryId || undefined,
       address: address || undefined,
       city: city || undefined,
+      signupRef,
     });
   };
 

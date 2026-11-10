@@ -24,6 +24,7 @@ import {
   type ConversationDetail,
 } from "@/features/conversations";
 import { InboxWindowNotice } from "@/features/conversations/components/inbox/inbox-window-notice";
+import { LeadTemplateComposer } from "./LeadTemplateComposer";
 import {
   useLeadConversation,
   useReleaseLeadConversation,
@@ -33,9 +34,17 @@ import {
 
 interface LeadConversationPanelProps {
   leadId: string;
+  /** Lead que revocó el contacto: no se le envían plantillas. */
+  revoked?: boolean;
+  /** Clave de la sugerencia (NO_CONTACT también bloquea el envío). */
+  suggestionKey?: string;
 }
 
-export function LeadConversationPanel({ leadId }: LeadConversationPanelProps) {
+export function LeadConversationPanel({
+  leadId,
+  revoked = false,
+  suggestionKey,
+}: LeadConversationPanelProps) {
   const t = useTranslations("admin-demo-leads");
   const { data, isLoading, isError, refetch } = useLeadConversation(leadId);
   const conversation = data?.conversation ?? null;
@@ -75,7 +84,11 @@ export function LeadConversationPanel({ leadId }: LeadConversationPanelProps) {
       />
       <div ref={bottomRef} />
       {conversation && (
-        <LeadConversationFooter leadId={leadId} conversation={conversation} />
+        <LeadConversationFooter
+          leadId={leadId}
+          conversation={conversation}
+          noContact={revoked || suggestionKey === "NO_CONTACT"}
+        />
       )}
     </div>
   );
@@ -84,9 +97,11 @@ export function LeadConversationPanel({ leadId }: LeadConversationPanelProps) {
 function LeadConversationFooter({
   leadId,
   conversation,
+  noContact,
 }: {
   leadId: string;
   conversation: ConversationDetail;
+  noContact: boolean;
 }) {
   const t = useTranslations("admin-demo-leads");
   const tInbox = useTranslations("inbox");
@@ -114,7 +129,22 @@ function LeadConversationFooter({
   }
 
   if (!windowOpen) {
-    return <InboxWindowNotice />;
+    return (
+      <div className="space-y-3">
+        <InboxWindowNotice />
+        {canManage &&
+          (noContact ? (
+            <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+              {t("template.noContact")}
+            </p>
+          ) : (
+            <LeadTemplateComposer
+              leadId={leadId}
+              senderName={user?.name ?? ""}
+            />
+          ))}
+      </div>
+    );
   }
 
   if (!canManage) {

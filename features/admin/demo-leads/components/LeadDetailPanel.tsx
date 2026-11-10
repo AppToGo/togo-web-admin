@@ -51,6 +51,7 @@ import { leadEntryChannelStyle } from "./LeadEntryChannelBadge";
 import { leadSourceStyle } from "./LeadSourceBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
+import { LeadTrialBadge } from "@/features/admin/demo-leads/components/LeadTrialBadge";
 import { LeadConversationPanel } from "@/features/admin/demo-leads/components/LeadConversationPanel";
 import { LeadWhatsAppAgentSection } from "@/features/admin/demo-leads/components/LeadWhatsAppAgentSection";
 import { LeadOwnerAvatar } from "@/features/admin/demo-leads/components/LeadOwnerAvatar";
@@ -344,6 +345,12 @@ function LeadDetailBody({
                 )}
               </p>
             )}
+            {lead.signupAt && (
+              <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[13px] text-slate-500">
+                <LeadTrialBadge />
+                <span>{formatDateTime(lead.signupAt, locale)}</span>
+              </p>
+            )}
             <p className="mt-1 flex items-center gap-0.5 text-[13px] tabular-nums text-slate-700">
               <span className="mr-1">{formatPhone(lead.phone)}</span>
               <button
@@ -540,7 +547,13 @@ function LeadDetailBody({
 
         {tab === "history" && <LeadHistory detail={detail} />}
 
-        {tab === "conversation" && <LeadConversationPanel leadId={lead.id} />}
+        {tab === "conversation" && (
+          <LeadConversationPanel
+            leadId={lead.id}
+            revoked={lead.revoked}
+            suggestionKey={suggestion.key}
+          />
+        )}
       </div>
     </>
   );
@@ -698,6 +711,38 @@ function LeadHistory({ detail }: { detail: DemoLeadDetail }) {
   const addNote = useAddDemoLeadNote();
   const [noteBody, setNoteBody] = useState("");
 
+  // Línea secundaria de ciertos eventos (estado del seguimiento, elección, origen).
+  const eventDetail = (event: DemoLeadDetail["events"][number]): string | null => {
+    const meta = event.metadata ?? {};
+    if (event.type === "SALES_FOLLOWUP_SENT") {
+      const status = String(meta.status ?? "");
+      return status
+        ? safeLabel(tt, `eventDetail.followupStatus.${status}`, status)
+        : null;
+    }
+    if (event.type === "SALES_FOLLOWUP_REPLIED") {
+      const choice = String(meta.choice ?? "");
+      return choice
+        ? safeLabel(tt, `eventDetail.followupChoice.${choice}`, choice)
+        : null;
+    }
+    // Un registro con el mismo teléfono pero sin venir del enlace del bot no
+    // marca "Empezó prueba": se muestra como coincidencia sin verificar.
+    if (event.type === "SALES_SIGNUP_COMPLETED" && meta.verified === false) {
+      return t("eventDetail.signupUnverified");
+    }
+    if (event.type === "ADVISORY_REQUESTED" && meta.source === "SALES_FOLLOWUP") {
+      return t("eventDetail.fromFollowup");
+    }
+    if (
+      event.type === "WHATSAPP_OUTREACH_SENT" &&
+      meta.via === "MINICRM_TEMPLATE"
+    ) {
+      return t("eventDetail.viaTemplate");
+    }
+    return null;
+  };
+
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
     const body = noteBody.trim();
@@ -775,6 +820,11 @@ function LeadHistory({ detail }: { detail: DemoLeadDetail }) {
                       ? t("events.DEMO_STARTED_FIRST")
                       : safeLabel(tt, `events.${event.type}`, event.type)}
                   </span>
+                  {eventDetail(event) && (
+                    <span className="mt-0.5 text-[13px] text-slate-600">
+                      {eventDetail(event)}
+                    </span>
+                  )}
                   <span className="mt-0.5 text-[13px] text-slate-500">
                     {formatDateTime(event.occurredAt, locale)}
                   </span>

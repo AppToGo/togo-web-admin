@@ -14,10 +14,12 @@ import type { SendMessageParams } from "@/features/conversations";
 import {
   getDemoLeadConversation,
   releaseDemoLeadConversation,
+  sendDemoLeadConversationTemplate,
   sendDemoLeadConversationMessage,
   takeoverDemoLeadConversation,
   type DemoLeadConversationResponse,
 } from "../services/demo-leads.service";
+import type { DemoLeadTemplateErrorCode } from "@/types/auth.types";
 import { DEMO_LEADS_KEYS } from "./useDemoLeads";
 
 /** Intervalo de refresco de la conversación (ms). */
@@ -76,6 +78,50 @@ export function useSendLeadConversationMessage(leadId: string) {
     onSuccess: invalidate,
     onError: (error) => {
       toast.error(getHumanizedErrorMessage(error));
+    },
+  });
+}
+
+const TEMPLATE_ERROR_CODES: readonly DemoLeadTemplateErrorCode[] = [
+  "LEAD_REVOKED",
+  "DO_NOT_CONTACT",
+  "WINDOW_OPEN",
+  "TEMPLATE_ALREADY_SENT",
+  "TEMPLATE_UNAVAILABLE",
+  "TEMPLATE_DAILY_LIMIT",
+  "PROVIDER_SEND_FAILED",
+];
+
+/** Código `{code, message}` del error del envío por plantilla, si lo trae. */
+export function templateErrorCodeOf(
+  error: unknown
+): DemoLeadTemplateErrorCode | null {
+  const code = (error as { response?: { data?: { code?: unknown } } })
+    ?.response?.data?.code;
+  return TEMPLATE_ERROR_CODES.find((c) => c === code) ?? null;
+}
+
+/**
+ * Envío con plantilla aprobada cuando la ventana de 24 h está cerrada.
+ * Invalida la conversación y el lead (el evento queda en su línea de tiempo).
+ */
+export function useSendLeadConversationTemplate(leadId: string) {
+  const t = useTranslations("admin-demo-leads");
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (text: string) =>
+      sendDemoLeadConversationTemplate(leadId, text),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: LEAD_CONVERSATION_KEY(leadId) });
+      queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: DEMO_LEADS_KEYS.detail(leadId) });
+      toast.success(t("template.sent"));
+    },
+    onError: (error) => {
+      const code = templateErrorCodeOf(error);
+      toast.error(
+        code ? t(`template.errors.${code}`) : t("template.errors.generic")
+      );
     },
   });
 }

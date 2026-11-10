@@ -10,12 +10,25 @@ import { Step1BasicData, type Step1Data } from "./Step1BasicData";
 import { Step2BusinessData } from "./Step2BusinessData";
 import { Step3PaymentPlaceholder } from "./Step3PaymentPlaceholder";
 
+/** Único origen de registro que acepta la API. */
+const WHATSAPP_DEMO_REF = "whatsapp-demo";
+
+/** Lee `?ref` de la URL; solo conserva el valor exacto permitido. */
+function readSignupRef(): "whatsapp-demo" | undefined {
+  if (typeof window === "undefined") return undefined;
+  const ref = new URLSearchParams(window.location.search).get("ref");
+  return ref === WHATSAPP_DEMO_REF ? WHATSAPP_DEMO_REF : undefined;
+}
+
 export function RegistrationWizard() {
   const t = useTranslations("auth.register.wizard");
   const { currentStep, isExpired, resetWizard } = useRegistrationStore();
 
   // Step1 data is kept in local React state — NOT persisted (avoids storing passwords)
   const [step1Data, setStep1Data] = useState<Step1Data | null>(null);
+
+  // `?ref` se captura al entrar: queda en el estado del wizard entre pasos.
+  const [signupRef] = useState(readSignupRef);
 
   // Reset if session expired (only if past step 1)
   useEffect(() => {
@@ -77,7 +90,11 @@ export function RegistrationWizard() {
         <Step1BasicData onContinue={handleStep1Continue} />
       )}
       {currentStep === 2 && step1Data && (
-        <Step2BusinessData step1Data={step1Data} onBack={handleGoBack} />
+        <Step2BusinessData
+          step1Data={step1Data}
+          signupRef={signupRef}
+          onBack={handleGoBack}
+        />
       )}
       {currentStep === 3 && <Step3PaymentPlaceholder />}
     </div>

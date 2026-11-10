@@ -20,6 +20,9 @@ import type {
   ScoutSearchResponse,
   ScoutImportRequest,
   ScoutImportResponse,
+  DemoFunnelParams,
+  DemoFunnelResponse,
+  SendDemoLeadTemplateResponse,
 } from "@/types/auth.types";
 import type { DemoLeadOwnerOption } from "@/types/auth.types";
 import type {
@@ -256,6 +259,29 @@ export async function sendDemoLeadConversationMessage(
   const response = await apiClient.post<ConversationMessage>(
     `/admin/demo-leads/${id}/conversation/messages`,
     params
+  );
+  return response.data;
+}
+
+/** Plantilla fuera de la ventana de 24 h (una cada 24 h por lead). */
+export async function sendDemoLeadConversationTemplate(
+  id: string,
+  text: string
+): Promise<SendDemoLeadTemplateResponse> {
+  const response = await apiClient.post<SendDemoLeadTemplateResponse>(
+    `/admin/demo-leads/${id}/conversation/template`,
+    { text }
+  );
+  return response.data;
+}
+
+/** Embudo del bot comercial (permiso platform.leads.view_all). */
+export async function getDemoLeadsFunnel(
+  params: DemoFunnelParams = {}
+): Promise<DemoFunnelResponse> {
+  const response = await apiClient.get<DemoFunnelResponse>(
+    "/admin/demo-leads/funnel",
+    { params }
   );
   return response.data;
 }
