@@ -208,5 +208,9 @@
   "dateTime": {
     "placeholder": "Pick date and time",
     "time": "Time"
+  },
+  "demoReadOnly": {
+    "title": "Demo mode: read only",
+    "description": "You can browse all the settings to see how ToGo works, but changes are turned off."
   }
 }

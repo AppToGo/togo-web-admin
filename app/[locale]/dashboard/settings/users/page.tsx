@@ -123,7 +123,7 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       {isMobile ? (
         <UsersMobileView
           users={users}

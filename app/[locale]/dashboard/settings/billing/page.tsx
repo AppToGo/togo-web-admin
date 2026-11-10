@@ -52,7 +52,7 @@ export default function BillingPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       <div className="flex flex-col gap-6">
         {/* < md el título está en la barra superior. */}
         <div className="hidden md:block">

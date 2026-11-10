@@ -10,7 +10,9 @@ import {
   Copy,
   Lock,
   Sparkles,
+  Eye,
 } from "lucide-react";
+import { useReadOnly } from "@/components/ui/read-only";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -44,6 +46,8 @@ export const OperatorProfileCard = memo(function OperatorProfileCard({
 }: OperatorProfileCardProps) {
   const t = useTranslations("operatorProfiles");
   const tCommon = useTranslations("common");
+  // Solo lectura (Configuración en la demo): el botón abre el perfil para verlo.
+  const readOnly = useReadOnly();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const permissionCount = profile.permissions?.length || 0;
@@ -134,11 +138,16 @@ export const OperatorProfileCard = memo(function OperatorProfileCard({
             variant="ghost"
             size="sm"
             className="h-8 px-2 text-slate-600 hover:text-slate-900"
+            readOnlySafe
             onClick={() => onEdit?.(profile)}
             disabled={isLoading}
           >
-            <Edit2 className="w-4 h-4 mr-1.5" />
-            {tCommon("buttons.edit")}
+            {readOnly ? (
+              <Eye className="w-4 h-4 mr-1.5" />
+            ) : (
+              <Edit2 className="w-4 h-4 mr-1.5" />
+            )}
+            {tCommon(readOnly ? "buttons.view" : "buttons.edit")}
           </Button>
 
           <Button

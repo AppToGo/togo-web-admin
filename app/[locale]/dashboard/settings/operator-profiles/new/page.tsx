@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Shield, Save } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DemoReadOnly } from "@/features/auth/components/DemoReadOnly";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useHasBusiness,
@@ -121,117 +122,119 @@ export default function CreateProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button
-            className="hidden md:inline-flex"
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/dashboard/settings/operator-profiles")}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              {t("create.title")}
-            </h1>
-            <p className="text-slate-500">{t("create.subtitle")}</p>
+      <DemoReadOnly>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <Button
+              className="hidden md:inline-flex"
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push("/dashboard/settings/operator-profiles")}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                {t("create.title")}
+              </h1>
+              <p className="text-slate-500">{t("create.subtitle")}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            {/* Basic Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-indigo-500" />
+                  {t("form.sections.basic")}
+                </CardTitle>
+                <CardDescription>{t("form.descriptions.basic")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 max-w-md">
+                  <Label htmlFor="profile-name">
+                    {t("form.fields.name")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="profile-name"
+                    value={name}
+                    onChange={handleNameChange}
+                    placeholder={t("form.placeholders.name")}
+                    disabled={createProfile.isPending}
+                    error={nameError || undefined}
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-slate-500">{t("form.help.name")}</p>
+                </div>
+                <div className="space-y-2 max-w-md">
+                  <Label htmlFor="profile-description">
+                    {t("form.fields.description")}
+                  </Label>
+                  <Textarea
+                    id="profile-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t("form.placeholders.description")}
+                    disabled={createProfile.isPending}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
+                    rows={3}
+                  />
+                  <p className="text-xs text-slate-500">
+                    {t("form.help.description")}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Permissions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-indigo-500" />
+                  {t("permissions.title")}
+                </CardTitle>
+                <CardDescription>{t("permissions.description")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingPermissions ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                ) : (
+                  <PermissionSelector
+                    permissions={permissionsCatalog || []}
+                    selectedPermissions={selectedPermissions}
+                    onChange={setSelectedPermissions}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={createProfile.isPending}
+            >
+              {tc("buttons.cancel")}
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={createProfile.isPending || !isValid}
+              isLoading={createProfile.isPending}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {t("form.createProfile")}
+            </Button>
           </div>
         </div>
-
-        <div className="flex flex-col gap-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="w-4 h-4 text-indigo-500" />
-                {t("form.sections.basic")}
-              </CardTitle>
-              <CardDescription>{t("form.descriptions.basic")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2 max-w-md">
-                <Label htmlFor="profile-name">
-                  {t("form.fields.name")} <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="profile-name"
-                  value={name}
-                  onChange={handleNameChange}
-                  placeholder={t("form.placeholders.name")}
-                  disabled={createProfile.isPending}
-                  error={nameError || undefined}
-                  maxLength={100}
-                />
-                <p className="text-xs text-slate-500">{t("form.help.name")}</p>
-              </div>
-              <div className="space-y-2 max-w-md">
-                <Label htmlFor="profile-description">
-                  {t("form.fields.description")}
-                </Label>
-                <Textarea
-                  id="profile-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t("form.placeholders.description")}
-                  disabled={createProfile.isPending}
-                  maxLength={DESCRIPTION_MAX_LENGTH}
-                  rows={3}
-                />
-                <p className="text-xs text-slate-500">
-                  {t("form.help.description")}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Permissions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="w-4 h-4 text-indigo-500" />
-                {t("permissions.title")}
-              </CardTitle>
-              <CardDescription>{t("permissions.description")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoadingPermissions ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-64 w-full" />
-                </div>
-              ) : (
-                <PermissionSelector
-                  permissions={permissionsCatalog || []}
-                  selectedPermissions={selectedPermissions}
-                  onChange={setSelectedPermissions}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCancel}
-            disabled={createProfile.isPending}
-          >
-            {tc("buttons.cancel")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={createProfile.isPending || !isValid}
-            isLoading={createProfile.isPending}
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {t("form.createProfile")}
-          </Button>
-        </div>
-      </div>
+      </DemoReadOnly>
     </DashboardLayout>
   );
 }

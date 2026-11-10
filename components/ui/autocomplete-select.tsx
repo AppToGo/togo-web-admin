@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useReadOnly } from "@/components/ui/read-only";
 import {
   Command,
   CommandEmpty,
@@ -42,11 +43,14 @@ export function AutocompleteSelect({
   placeholder = "Seleccionar...",
   searchPlaceholder = "Buscar...",
   emptyMessage = "No se encontraron resultados.",
-  disabled = false,
+  disabled: disabledProp = false,
   required = false,
   label,
   className,
 }: AutocompleteSelectProps) {
+  // Solo lectura (ver ReadOnlyProvider): deshabilitado como cualquier control.
+  const readOnly = useReadOnly();
+  const disabled = disabledProp || readOnly;
   const [open, setOpen] = React.useState(false);
   const selectedOption = options.find((option) => option.value === value);
 

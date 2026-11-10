@@ -2,6 +2,7 @@ import * as React from "react";
 import { useId } from "react";
 
 import { cn } from "@/lib/utils";
+import { useReadOnly } from "@/components/ui/read-only";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const inputVariants = cva(
@@ -36,7 +37,9 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, helperText, error, variant, prefix, id: providedId, ...props }, ref) => {
+  ({ className, type, label, helperText, error, variant, prefix, id: providedId, ...inputProps }, ref) => {
+    const readOnly = useReadOnly();
+    const props = { ...inputProps, disabled: inputProps.disabled || readOnly };
     const generatedId = useId();
     const inputId = providedId || generatedId;
     const helperId = helperText ? `${inputId}-helper` : undefined;

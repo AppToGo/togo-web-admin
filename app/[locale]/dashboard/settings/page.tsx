@@ -35,7 +35,7 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       <SettingsMobileHub />
       </RequirePermission>
     </DashboardLayout>

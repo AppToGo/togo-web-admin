@@ -333,7 +333,7 @@ export default function BusinessSettingsPage() {
 
   return (
     <DashboardLayout>
-      <RequirePermission code="settings.view">
+      <RequirePermission code="settings.view" demoReadOnly>
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5">
         {/* Header (< md el título está en la barra superior) */}
         <header className="hidden md:block">
