@@ -22,10 +22,12 @@ import {
   safeLabel,
 } from "@/features/admin/demo-leads/utils/demo-leads.utils";
 import { LeadOwnerAvatar } from "./LeadOwnerAvatar";
+import { LeadSourceBadge } from "./LeadSourceBadge";
 import { LeadActionDialog } from "./LeadActionDialog";
 
 /**
- * Tarjeta de un posible cliente en el tablero, en 3 bandas: quién es, qué
+ * Tarjeta de un posible cliente en el tablero, en 3 bandas: quién es (y de
+ * dónde vino: demo web, WhatsApp demo, manual o Scout), qué
  * sigue (la próxima acción en una sola línea, con "+" para agregar otra) y
  * contexto (actividad en la demo y responsable). Toda la tarjeta abre la
  * ficha; los botones internos no.
@@ -89,6 +91,7 @@ export function LeadCard({
               {business}
             </span>
           )}
+          <LeadSourceBadge source={lead.source} className="mt-1" />
         </span>
         {closed && lead.outcome ? (
           <span

@@ -204,12 +204,12 @@ export interface DemoLead {
   nextActionAt?: string | null;
   revoked: boolean;
   orderCount: number;
-  /** DEMO: entró por el login demo. MANUAL: lo creó un super admin. */
+  /** Cómo se creó: DEMO (demo web), WHATSAPP (WhatsApp de la demo), MANUAL (super admin) o SCOUT. */
   source: DemoLeadSource;
   referredBy?: string | null;
 }
 
-export type DemoLeadSource = "DEMO" | "MANUAL" | "SCOUT";
+export type DemoLeadSource = "DEMO" | "WHATSAPP" | "MANUAL" | "SCOUT";
 
 export type WhatsAppDraftTone = "DIRECT" | "CONSULTATIVE" | "FRIENDLY";
 
