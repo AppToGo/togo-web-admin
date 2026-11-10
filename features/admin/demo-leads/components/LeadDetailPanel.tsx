@@ -40,9 +40,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Ban,
-  Compass,
-  Globe,
-  MessageCircle,
   Copy,
   Flag,
   Lightbulb,
@@ -50,6 +47,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { leadSourceStyle } from "./LeadSourceBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { LeadActionsSection } from "@/features/admin/demo-leads/components/LeadActionsSection";
 import { LeadWhatsAppAgentSection } from "@/features/admin/demo-leads/components/LeadWhatsAppAgentSection";
@@ -201,6 +199,19 @@ function LeadDetailBody({
   );
 
   const pendingActions = (detail.actions ?? []).filter((a) => !a.doneAt).length;
+  // Origen del registro: mismo icono y color que la etiqueta de la tarjeta.
+  const sourceStyle = leadSourceStyle(lead.source);
+  const SourceIcon = sourceStyle.icon;
+  const sourceLabel =
+    lead.source === "MANUAL"
+      ? lead.referredBy
+        ? t("detail.manualReferred", { name: lead.referredBy })
+        : t("detail.manual")
+      : lead.source === "SCOUT"
+        ? t("detail.scout")
+        : lead.source === "WHATSAPP"
+          ? t("detail.sourceWhatsapp")
+          : t("detail.sourceDemo");
   const business = [lead.establishmentName, lead.businessType]
     .filter(Boolean)
     .join(" · ");
@@ -245,31 +256,15 @@ function LeadDetailBody({
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-slate-500">
               {business && <span className="truncate">{business}</span>}
               {business && <span aria-hidden>·</span>}
-              {lead.source === "SCOUT" && (
-                <span className="inline-flex items-center gap-1 font-semibold text-teal-700">
-                  <Compass className="h-3.5 w-3.5" aria-hidden />
-                  {t("card.scout")}
-                </span>
-              )}
-              {lead.source === "MANUAL" && (
-                <span className="font-semibold text-violet-700">
-                  {lead.referredBy
-                    ? t("detail.manualReferred", { name: lead.referredBy })
-                    : t("detail.manual")}
-                </span>
-              )}
-              {lead.source === "DEMO" && (
-                <span className="inline-flex items-center gap-1 font-semibold text-indigo-700">
-                  <Globe className="h-3.5 w-3.5" aria-hidden />
-                  {t("detail.sourceDemo")}
-                </span>
-              )}
-              {lead.source === "WHATSAPP" && (
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
-                  <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-                  {t("detail.sourceWhatsapp")}
-                </span>
-              )}
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 font-semibold",
+                  sourceStyle.text
+                )}
+              >
+                <SourceIcon className="h-3.5 w-3.5" aria-hidden />
+                {sourceLabel}
+              </span>
             </p>
             <p className="mt-1 flex items-center gap-0.5 text-[13px] tabular-nums text-slate-700">
               <span className="mr-1">{formatPhone(lead.phone)}</span>
