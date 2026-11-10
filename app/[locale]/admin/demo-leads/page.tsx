@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { DemoLeadPriority, DemoLeadStage } from "@/types/auth.types";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParamState } from "@/hooks/useUrlParamState";
 import {
   useDemoLeadOwners,
   useDemoLeads,
@@ -82,7 +83,40 @@ export default function DemoLeadsPage() {
   const { can } = usePlatformPermissions();
   const canSeeAll = can("platform.leads.view_all");
   const { data: owners } = useDemoLeadOwners(isSuperAdmin && canSeeAll);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // La ficha vive en la URL (`?lead=<id>&tab=conversation`): un enlace abre
+  // el lead directo en su pestaña. El detalle se carga por id, así que
+  // funciona aunque el lead no esté en la lista filtrada.
+  const [selectedId] = useUrlParamState("lead");
+  const [selectedTab] = useUrlParamState("tab");
+  // Cambia `lead` y `tab` juntos (replace, sin llenar el historial): abrir
+  // otro lead no debe heredar la pestaña del anterior.
+  const updateLeadUrl = useCallback(
+    (leadId: string | null, tab: string | null) => {
+      const url = new URL(window.location.href);
+      if (leadId) url.searchParams.set("lead", leadId);
+      else url.searchParams.delete("lead");
+      if (leadId && tab) url.searchParams.set("tab", tab);
+      else url.searchParams.delete("tab");
+      window.history.replaceState(
+        null,
+        "",
+        `${url.pathname}${url.search}${url.hash}`
+      );
+    },
+    []
+  );
+  const setSelectedId = useCallback(
+    (id: string) => updateLeadUrl(id, null),
+    [updateLeadUrl]
+  );
+  const handleCloseLead = useCallback(
+    () => updateLeadUrl(null, null),
+    [updateLeadUrl]
+  );
+  const handleTabChange = useCallback(
+    (tab: string) => updateLeadUrl(selectedId, tab),
+    [updateLeadUrl, selectedId]
+  );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isScoutOpen, setIsScoutOpen] = useState(false);
   // Teléfono: el tablero no cabe, se ve una etapa a la vez.
@@ -457,7 +491,9 @@ export default function DemoLeadsPage() {
 
       <LeadDetailPanel
         leadId={selectedId}
-        onClose={() => setSelectedId(null)}
+        initialTab={selectedTab}
+        onTabChange={handleTabChange}
+        onClose={handleCloseLead}
       />
     </DashboardLayout>
   );
