@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Store } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DemoReadOnly } from "@/features/auth/components/DemoReadOnly";
 import { useAuthGuard } from "@/features/auth/hooks/useAuthGuard";
 import {
   useHasBusiness,
@@ -114,61 +115,63 @@ export default function CreateBranchPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button
-            className="hidden md:inline-flex"
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/dashboard/branches")}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              {t("create.title")}
-            </h1>
-            <p className="text-slate-500">{t("create.subtitle")}</p>
+      <DemoReadOnly>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <Button
+              className="hidden md:inline-flex"
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push("/dashboard/branches")}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                {t("create.title")}
+              </h1>
+              <p className="text-slate-500">{t("create.subtitle")}</p>
+            </div>
           </div>
+
+          {/* Form Card */}
+          {isLoadingCanCreate ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          ) : (
+            <BranchForm
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              isLoading={createBranch.isPending}
+            />
+          )}
+
+          {/* Tips Card */}
+          <Card className="bg-slate-50 border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-base">{t("tips.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-slate-600">
+              <p>
+                <strong>{t("tips.code")}:</strong> {t("tips.codeDescription")}
+              </p>
+              <p>
+                <strong>{t("tips.mainBranch")}:</strong>{" "}
+                {t("tips.mainBranchDescription")}
+              </p>
+              <p>
+                <strong>{t("tips.whatsapp")}:</strong>{" "}
+                {t("tips.whatsappDescription")}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Form Card */}
-        {isLoadingCanCreate ? (
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-        ) : (
-          <BranchForm
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            isLoading={createBranch.isPending}
-          />
-        )}
-
-        {/* Tips Card */}
-        <Card className="bg-slate-50 border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-base">{t("tips.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-slate-600">
-            <p>
-              <strong>{t("tips.code")}:</strong> {t("tips.codeDescription")}
-            </p>
-            <p>
-              <strong>{t("tips.mainBranch")}:</strong>{" "}
-              {t("tips.mainBranchDescription")}
-            </p>
-            <p>
-              <strong>{t("tips.whatsapp")}:</strong>{" "}
-              {t("tips.whatsappDescription")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      </DemoReadOnly>
     </DashboardLayout>
   );
 }

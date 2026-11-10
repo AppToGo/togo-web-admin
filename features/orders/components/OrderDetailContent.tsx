@@ -359,15 +359,13 @@ export function OrderDetailContent({
     user?.role === "ADMIN" ||
     isPlatformStaffRole(user?.role);
 
-  // Sesión demo: sin pestaña Conversación — el backend la deniega (solo
-  // inbox propio) y el 403 se vería como error en vez de estado vacío.
-  const isDemo = user?.isDemo === true;
-
   // Sin permiso conversation.view el backend responde 403 en
   // GET .../orders/:id/conversation: se oculta la pestaña y ni siquiera se
   // llama al endpoint para no arruinar la experiencia.
   const { hasPermission } = useMyPermissions();
-  const canViewConversation = !isDemo && hasPermission("conversation.view");
+  // Sesión demo incluida: el backend solo abre la conversación de un pedido
+  // de su número; la de uno ajeno responde 404 (estado vacío).
+  const canViewConversation = hasPermission("conversation.view");
 
   // Tab "Conversación" se muestra de forma optimista (§4 del plan Fase B):
   // en vez de agregar conversationSessionId a Order, se resuelve perezosamente

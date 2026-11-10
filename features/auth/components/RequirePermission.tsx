@@ -11,13 +11,23 @@
 import { Loader2, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMyPermissions } from "@/features/auth/hooks/useMyPermissions";
+import { DemoReadOnly } from "@/features/auth/components/DemoReadOnly";
 
 interface RequirePermissionProps {
   code: string;
+  /**
+   * En una sesión demo la sección se muestra en solo lectura (ver
+   * `DemoReadOnly`). Lo usa Configuración.
+   */
+  demoReadOnly?: boolean;
   children: React.ReactNode;
 }
 
-export function RequirePermission({ code, children }: RequirePermissionProps) {
+export function RequirePermission({
+  code,
+  demoReadOnly = false,
+  children,
+}: RequirePermissionProps) {
   const t = useTranslations("common");
   const { hasPermission, isLoading } = useMyPermissions();
 
@@ -41,6 +51,8 @@ export function RequirePermission({ code, children }: RequirePermissionProps) {
       </div>
     );
   }
+
+  if (demoReadOnly) return <DemoReadOnly>{children}</DemoReadOnly>;
 
   return <>{children}</>;
 }

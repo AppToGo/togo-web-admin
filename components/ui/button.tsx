@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useReadOnly } from "@/components/ui/read-only"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -55,11 +56,15 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
   isLoading?: boolean
+  /** Sigue activo en solo lectura (volver, pestañas, ver detalle). */
+  readOnlySafe?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, isLoading, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, isLoading, readOnlySafe, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    // Solo lectura: un enlace (asChild) navega, no modifica nada.
+    const readOnly = useReadOnly() && !asChild && !readOnlySafe
     // Radix's Slot requires its rendered child to be exactly one React
     // element (it calls React.Children.only internally to merge props
     // like className/ref onto it). Passing `{isLoading && <Loader2 />}`
@@ -74,7 +79,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={disabled || isLoading}
+        disabled={disabled || isLoading || readOnly}
         {...props}
       >
         {asChild ? (

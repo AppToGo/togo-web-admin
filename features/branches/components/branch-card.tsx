@@ -245,6 +245,7 @@ export const BranchCard = memo(function BranchCard({
         <Button
           variant="slate-outline"
           className="h-11 w-full rounded-[14px] font-semibold text-slate-700"
+          readOnlySafe
           onClick={() => onEdit?.(branch)}
           disabled={isLoading}
         >

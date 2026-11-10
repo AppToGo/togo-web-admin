@@ -207,5 +207,9 @@
   "dateTime": {
     "placeholder": "Elegir fecha y hora",
     "time": "Hora"
+  },
+  "demoReadOnly": {
+    "title": "Modo demo: solo lectura",
+    "description": "Puedes recorrer toda la configuración para ver cómo funciona ToGo, pero los cambios están desactivados."
   }
 }

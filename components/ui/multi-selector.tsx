@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useReadOnly } from "@/components/ui/read-only";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -52,7 +53,7 @@ export function MultiSelector({
   emptyMessage = "No options found.",
   allLabel = "All",
   className,
-  disabled,
+  disabled: disabledProp,
   showSelectAll = true,
   showFooter = true,
   clearAllLabel = "Clear",
@@ -60,6 +61,9 @@ export function MultiSelector({
   icon,
   maxDisplay = 1,
 }: MultiSelectorProps) {
+  // Solo lectura (ver ReadOnlyProvider): deshabilitado como cualquier control.
+  const readOnly = useReadOnly();
+  const disabled = disabledProp || readOnly;
   const [open, setOpen] = React.useState(false);
 
   const allValues = React.useMemo(() => options.map((o) => o.value), [options]);

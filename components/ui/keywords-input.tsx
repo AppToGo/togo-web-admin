@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useReadOnly } from "@/components/ui/read-only";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { KeywordEntry } from "@/features/catalog/types";
@@ -36,13 +37,16 @@ export function KeywordsInput({
   helperText,
   placeholder,
   inheritedTooltip,
-  disabled,
+  disabled: disabledProp,
   max = 20,
   onRegenerateAi,
   isRegenerating,
   regenerateLabel,
   className,
 }: KeywordsInputProps) {
+  // Solo lectura (ver ReadOnlyProvider): deshabilitado como cualquier control.
+  const readOnly = useReadOnly();
+  const disabled = disabledProp || readOnly;
   const [draft, setDraft] = React.useState("");
   const isEditable = (entry: KeywordEntry) =>
     EDITABLE_KEYWORD_SOURCES.includes(entry.source);
